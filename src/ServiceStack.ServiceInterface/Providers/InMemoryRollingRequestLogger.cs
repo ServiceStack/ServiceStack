@@ -104,10 +104,7 @@ namespace ServiceStack.ServiceInterface.Providers
                 return errorResult.Response;
 
             var ex = response as Exception;
-            if (ex != null)
-                ResponseStatusTranslator.Instance.Parse(ex);
-
-            return null;
+            return ex != null ? ex.ToResponseStatus() : null;
         }
     }
 }

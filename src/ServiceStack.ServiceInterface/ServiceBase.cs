@@ -4,7 +4,9 @@ using ServiceStack.CacheAccess;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
+using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
+using ServiceStack.ServiceInterface.Validation;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 
@@ -236,7 +238,7 @@ namespace ServiceStack.ServiceInterface
 
             var errorResponse = useAppHost != null && useAppHost.ServiceExceptionHandler != null
                 ? useAppHost.ServiceExceptionHandler(request, ex)
-                : ErrorHandler.Instance.HandleException(useAppHost, request, ex);
+                : DtoUtils.HandleException(useAppHost, request, ex);
 
             AfterEachRequest(request, errorResponse ?? ex);
             
@@ -293,7 +295,7 @@ namespace ServiceStack.ServiceInterface
                 producer.Publish(request);
             }
 
-            return DtoUtils.CreateResponseDto(request);
+            return WebRequestUtils.GetErrorResponseDtoType(request).CreateInstance();
         }
 
     }

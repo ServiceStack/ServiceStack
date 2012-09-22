@@ -4,6 +4,8 @@ using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
+using ServiceStack.Redis;
+using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.Validation;
@@ -20,11 +22,6 @@ namespace ServiceStack.ServiceHost
         /// </summary>
         public const string ResponseStatusPropertyName = "ResponseStatus";
 
-        /// <summary>
-        /// Naming convention for the request's Response DTO
-        /// </summary>
-        public const string ResponseDtoSuffix = "Response";
-        
         public static ResponseStatus ToResponseStatus(this Exception exception)
         {
             var validationError = exception as ValidationError;
@@ -44,25 +41,11 @@ namespace ServiceStack.ServiceHost
             return CreateErrorResponse(validationException.ErrorCode, validationException.Message, validationException.Violations);
         }
 
-        /// <summary>
-        /// Create an instance of the response dto based on the requestDto type and default naming convention
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        public static object CreateResponseDto<TRequest>(TRequest request)
+        public static ResponseStatus ToResponseStatus(this ValidationErrorResult validationResult)
         {
-            // Get the type
-            var responseDtoType = AssemblyUtils.FindType(GetResponseDtoName(request));
-
-            if (responseDtoType == null)
-            {
-                // We don't support creation of response messages without a predictable type name
-                return null;
-            }
-
-            // Create an instance of the response message for this request
-            var responseDto = ReflectionUtils.CreateInstance(responseDtoType);
-            return responseDto;
+            return validationResult.IsValid
+                ? CreateSuccessResponse(validationResult.SuccessMessage)
+                : CreateErrorResponse(validationResult.ErrorCode, validationResult.ErrorMessage, validationResult.Errors);
         }
 
         public static ResponseStatus CreateSuccessResponse(string message)
@@ -79,6 +62,18 @@ namespace ServiceStack.ServiceHost
         public static ResponseStatus CreateErrorResponse(string errorCode, string errorMessage)
         {
             return CreateErrorResponse(errorCode, errorMessage, null);
+        }
+
+        public static object CreateErrorResponse<TRequest>(TRequest request, ValidationErrorResult validationError)
+        {
+            var responseStatus = validationError.ToResponseStatus();
+
+            var errorResponse = CreateErrorResponse(
+                request,
+                new ValidationError(validationError),
+                responseStatus);
+
+            return errorResponse;
         }
 
         public static object CreateErrorResponse<TRequest>(TRequest request, Exception ex, ResponseStatus responseStatus)
@@ -114,10 +109,8 @@ namespace ServiceStack.ServiceHost
         public static object CreateResponseDto<TRequest>(TRequest request, ResponseStatus responseStatus)
         {
             // Predict the Response message type name
-            // Get the type
-            var responseDtoType = AssemblyUtils.FindType(GetResponseDtoName(request));
-            var responseDto = CreateResponseDto(request);
-
+            var responseDtoType = WebRequestUtils.GetErrorResponseDtoType(request);
+            var responseDto = responseDtoType.CreateInstance();
             if (responseDto == null)
                 return null;
 
@@ -129,9 +122,7 @@ namespace ServiceStack.ServiceHost
             }
             else
             {
-                // Get the ResponseStatus property
                 var responseStatusProperty = responseDtoType.GetProperty(ResponseStatusPropertyName);
-
                 if (responseStatusProperty != null)
                 {
                     // Set the ResponseStatus
@@ -141,13 +132,6 @@ namespace ServiceStack.ServiceHost
 
             // Return an Error DTO with the exception populated
             return responseDto;
-        }
-
-        public static string GetResponseDtoName<TRequest>(TRequest request)
-        {
-            return typeof(TRequest) != typeof(object)
-                   ? typeof(TRequest).FullName + ResponseDtoSuffix
-                   : request.GetType().FullName + ResponseDtoSuffix;
         }
 
         /// <summary>
@@ -198,7 +182,7 @@ namespace ServiceStack.ServiceHost
             return to;
         }
         
-        public static object HandleException<TRequest>(IAppHost appHost, TRequest request, Exception ex)
+        public static object HandleException(IAppHost appHost, object request, Exception ex)
         {
             if (ex.InnerException != null && !(ex is IHttpError))
                 ex = ex.InnerException;
@@ -213,9 +197,56 @@ namespace ServiceStack.ServiceHost
 
             Log.Error("ServiceBase<TRequest>::Service Exception", ex);
 
+            if (appHost != null)
+                LogErrorInRedisIfExists(appHost.TryResolve<IRedisClientsManager>(), request.GetType().Name, responseStatus);
+
             var errorResponse = CreateErrorResponse(request, ex, responseStatus);
 
             return errorResponse;
+        }
+
+        /// <summary>
+        /// Service error logs are kept in 'urn:ServiceErrors:{ServiceName}'
+        /// </summary>
+        public const string UrnServiceErrorType = "ServiceErrors";
+
+        /// <summary>
+        /// Combined service error logs are maintained in 'urn:ServiceErrors:All'
+        /// </summary>
+        public const string CombinedServiceLogId = "All";
+
+        public static void LogErrorInRedisIfExists(
+            IRedisClientsManager redisManager, string operationName, ResponseStatus responseStatus)
+        {
+            //If Redis is configured, maintain rolling service error logs in Redis (an in-memory datastore)
+            if (redisManager == null) return;
+            try
+            {
+                //Get a thread-safe redis client from the client manager pool
+                using (var client = redisManager.GetClient())
+                {
+                    //Get a client with a native interface for storing 'ResponseStatus' objects
+                    var redis = client.GetTypedClient<ResponseStatus>();
+
+                    //Store the errors in predictable Redis-named lists i.e. 
+                    //'urn:ServiceErrors:{ServiceName}' and 'urn:ServiceErrors:All' 
+                    var redisSeriviceErrorList = redis.Lists[UrnId.Create(UrnServiceErrorType, operationName)];
+                    var redisCombinedErrorList = redis.Lists[UrnId.Create(UrnServiceErrorType, CombinedServiceLogId)];
+
+                    //Append the error at the start of the service-specific and combined error logs.
+                    redisSeriviceErrorList.Prepend(responseStatus);
+                    redisCombinedErrorList.Prepend(responseStatus);
+
+                    //Clip old error logs from the managed logs
+                    const int rollingErrorCount = 1000;
+                    redisSeriviceErrorList.Trim(0, rollingErrorCount);
+                    redisCombinedErrorList.Trim(0, rollingErrorCount);
+                }
+            }
+            catch (Exception suppressRedisException)
+            {
+                Log.Error("Could not append exception to redis service error logs", suppressRedisException);
+            }
         }
 
         /// <summary>

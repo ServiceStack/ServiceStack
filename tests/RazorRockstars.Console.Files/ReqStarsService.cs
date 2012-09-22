@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
@@ -10,6 +11,7 @@ using ServiceStack.OrmLite;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
 
 namespace RazorRockstars.Console.Files
@@ -34,6 +36,14 @@ namespace RazorRockstars.Console.Files
         public int? Age { get; set; }
     }
 
+    public class ReqstarsResponse
+    {
+        public int Total { get; set; }
+        public int? Aged { get; set; }
+        public List<Reqstar> Results { get; set; }
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
     [Route("/reqstars/reset")]
     public class ResetReqstar : IReturnVoid { }
 
@@ -50,7 +60,7 @@ namespace RazorRockstars.Console.Files
     }
 
     [Route("/reqstars")]
-    public class Reqstar : IReturn<ReqstarsResponse>
+    public class Reqstar : IReturn<List<Reqstar>>
     {
         public int Id { get; set; }
         public string FirstName { get; set; }
@@ -65,14 +75,6 @@ namespace RazorRockstars.Console.Files
             LastName = lastName;
             Age = age;
         }
-    }
-
-    [Csv(CsvBehavior.FirstEnumerable)]
-    public class ReqstarsResponse
-    {
-        public int Total { get; set; }
-        public int? Aged { get; set; }
-        public List<Reqstar> Results { get; set; }
     }
 
     
@@ -92,6 +94,9 @@ namespace RazorRockstars.Console.Files
 
         public object Get(SearchReqstars request)
         {
+            if (request.Age.HasValue && request.Age <= 0)
+                throw new ArgumentException("Invalid Age");
+
             return new ReqstarsResponse //matches ReqstarsResponse.cshtml razor view
             {
                 Aged = request.Age,
@@ -110,8 +115,11 @@ namespace RazorRockstars.Console.Files
 
         public object Post(Reqstar request)
         {
+            if (!request.Age.HasValue)
+                throw new ArgumentException("Age is required");
+
             Db.Insert(request.TranslateTo<Reqstar>());
-            return Get(new SearchReqstars());
+            return Db.Select<Reqstar>();
         }
 
         public void Any(DeleteReqstar request)
@@ -130,6 +138,8 @@ namespace RazorRockstars.Console.Files
         private const string BaseUri = Host + "/";
 
         JsonServiceClient client;
+        //XmlServiceClient client;
+        //JsvServiceClient client;
 
         private AppHost appHost;
 
@@ -205,6 +215,29 @@ namespace RazorRockstars.Console.Files
             Assert.That(response.Results.Count, Is.EqualTo(ReqstarsService.SeedData.Length));
         }
 
+        [Test]
+        public void Invalid_GET_SearchReqstars_throws_typed_Response_PrettyRestApi()
+        {
+            try
+            {
+                var response = client.Get(new SearchReqstars { Age = -1 });
+                Assert.Fail("POST's to SearchReqstars should not be allowed");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo(400));
+                Assert.That(webEx.StatusDescription, Is.EqualTo("ArgumentException"));
+
+                Assert.That(webEx.ResponseStatus, Is.Not.Null);
+                Assert.That(webEx.ResponseDto, Is.Not.Null);
+
+                var typedError = webEx.ResponseDto as ReqstarsResponse;
+                Assert.That(typedError, Is.Not.Null);
+                Assert.That(typedError.ResponseStatus.ErrorCode, Is.EqualTo("ArgumentException"));
+                Assert.That(typedError.ResponseStatus.Message, Is.EqualTo("Invalid Age"));
+            }
+        }
+
 
         [Test]
         public void Can_GET_SearchReqstars_aged_20()
@@ -278,10 +311,10 @@ namespace RazorRockstars.Console.Files
         [Test]
         public void Can_CREATE_Reqstar()
         {
-            var response = client.Post<ReqstarsResponse>("/reqstars",
+            var response = client.Post<List<Reqstar>>("/reqstars",
                 new Reqstar(4, "Just", "Created", 25));
 
-            Assert.That(response.Results.Count,
+            Assert.That(response.Count,
                 Is.EqualTo(ReqstarsService.SeedData.Length + 1));
         }
 
@@ -290,7 +323,7 @@ namespace RazorRockstars.Console.Files
         {
             var response = client.Send(new Reqstar(4, "Just", "Created", 25));
 
-            Assert.That(response.Results.Count,
+            Assert.That(response.Count,
                 Is.EqualTo(ReqstarsService.SeedData.Length + 1));
         }
 
@@ -299,10 +332,31 @@ namespace RazorRockstars.Console.Files
         {
             var response = client.Post(new Reqstar(4, "Just", "Created", 25));
 
-            Assert.That(response.Results.Count,
+            Assert.That(response.Count,
                 Is.EqualTo(ReqstarsService.SeedData.Length + 1));
         }
 
+        [Test]
+        public void Fails_to_CREATE_Empty_Reqstar_PrettyRestApi()
+        {
+            try
+            {
+                var response = client.Post(new Reqstar());
+                Assert.Fail("Should've thrown 400 Bad Request Error");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo(400));
+                Assert.That(webEx.StatusDescription, Is.EqualTo("ArgumentException"));
+
+                Assert.That(webEx.ResponseStatus, Is.Not.Null);
+
+                var responseDto = webEx.ResponseDto as ErrorResponse;
+                Assert.That(responseDto, Is.Not.Null);
+                Assert.That(responseDto.ResponseStatus.ErrorCode, Is.EqualTo("ArgumentException"));
+                Assert.That(responseDto.ResponseStatus.Message, Is.EqualTo("Age is required"));
+            }
+        }
 
         [Test]
         public void Can_GET_ResetReqstars()
@@ -317,7 +371,7 @@ namespace RazorRockstars.Console.Files
         }
 
         [Test]
-        public void Can_GET_ResetReqstars_PrettyTypedApi()
+        public void Can_SEND_ResetReqstars_PrettyTypedApi()
         {
             db.DeleteAll<Reqstar>();
 

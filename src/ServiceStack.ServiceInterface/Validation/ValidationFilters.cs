@@ -9,23 +9,22 @@ namespace ServiceStack.ServiceInterface.Validation
         public void RequestFilter(IHttpRequest req, IHttpResponse res, object requestDto)
         {
             var validator = ValidatorCache.GetValidator(req, requestDto.GetType());
-            if (validator != null)
-            {
-                var validatorWithHttpRequest = validator as IRequiresHttpRequest;
-                if (validatorWithHttpRequest != null)
-                    validatorWithHttpRequest.HttpRequest = req;
+            if (validator == null) return;
 
-                string ruleSet = req.HttpMethod;
-                var validationResult = validator.Validate(
-                    new ValidationContext(requestDto, null, new MultiRuleSetValidatorSelector(ruleSet)));
+            var validatorWithHttpRequest = validator as IRequiresHttpRequest;
+            if (validatorWithHttpRequest != null)
+                validatorWithHttpRequest.HttpRequest = req;
 
-                if (validationResult.IsValid) return;
+            var ruleSet = req.HttpMethod;
+            var validationResult = validator.Validate(
+            new ValidationContext(requestDto, null, new MultiRuleSetValidatorSelector(ruleSet)));
 
-                var errorResponse = ServiceUtils.CreateErrorResponse(
-                    requestDto, validationResult.ToErrorResult());
+            if (validationResult.IsValid) return;
 
-                res.WriteToResponse(req, errorResponse);
-            }
-        }		
+            var errorResponse = DtoUtils.CreateErrorResponse(
+                requestDto, validationResult.ToErrorResult());
+
+            res.WriteToResponse(req, errorResponse);
+        }
     }
 }

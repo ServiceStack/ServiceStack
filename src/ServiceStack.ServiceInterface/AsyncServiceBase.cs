@@ -1,6 +1,8 @@
 using System;
 using ServiceStack.Messaging;
+using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface
 {
@@ -37,7 +39,7 @@ namespace ServiceStack.ServiceInterface
                 producer.Publish(request);
             }
 
-            return DtoUtils.CreateResponseDto(request);
+            return WebRequestUtils.GetErrorResponseDtoType(request).CreateInstance();
         }
 
         /// <summary>

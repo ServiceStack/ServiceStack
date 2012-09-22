@@ -3,11 +3,13 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 #if !(MONOTOUCH || SILVERLIGHT)
+using System.Reflection;
 using System.Web;
 #endif
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
+using ServiceStack.Net30.Collections.Concurrent;
 using ServiceStack.Service;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -74,8 +76,7 @@ namespace ServiceStack.ServiceClient.Web
         {
             this.HttpMethod = DefaultHttpMethod;
             this.CookieContainer = new CookieContainer();
-            asyncClient = new AsyncServiceClient
-            {
+            asyncClient = new AsyncServiceClient {
                 ContentType = ContentType,
                 StreamSerializer = SerializeToStream,
                 StreamDeserializer = StreamDeserializer,
@@ -350,7 +351,12 @@ namespace ServiceStack.ServiceClient.Web
             {
                 TResponse response;
 
-                if (!HandleResponseException(ex, requestUri, () => SendRequest(Web.HttpMethod.Post, requestUri, request), c => c.GetResponse(), out response))
+                if (!HandleResponseException(ex, 
+                    request, 
+                    requestUri,
+                    () => SendRequest(Web.HttpMethod.Post, requestUri, request),
+                    c => c.GetResponse(),
+                    out response))
                 {
                     throw;
                 }
@@ -359,7 +365,8 @@ namespace ServiceStack.ServiceClient.Web
             }
         }
 
-        private bool HandleResponseException<TResponse>(Exception ex, string requestUri, Func<WebRequest> createWebRequest, Func<WebRequest, WebResponse> getResponse, out TResponse response)
+        private bool HandleResponseException<TResponse>(Exception ex, object request, string requestUri, 
+            Func<WebRequest> createWebRequest, Func<WebRequest, WebResponse> getResponse, out TResponse response)
         {
             try
             {
@@ -385,20 +392,47 @@ namespace ServiceStack.ServiceClient.Web
                 // than the old one.
                 // The new exception is either this one or the one thrown
                 // by the following method.
-                HandleResponseException<TResponse>(subEx, requestUri);
+                ThrowResponseTypeException<TResponse>(request, subEx, requestUri);
                 throw;
             }
 
             // If this doesn't throw, the calling method 
             // should rethrow the original exception upon
             // return value of false.
-            HandleResponseException<TResponse>(ex, requestUri);
+            ThrowResponseTypeException<TResponse>(request, ex, requestUri);
 
             response = default(TResponse);
             return false;
         }
 
-        private void HandleResponseException<TResponse>(Exception ex, string requestUri)
+        readonly ConcurrentDictionary<Type,Action<Exception,string>> ResponseHandlers
+            = new ConcurrentDictionary<Type, Action<Exception, string>>();
+
+        private void ThrowResponseTypeException<TResponse>(object request, Exception ex, string requestUri)
+        {
+            if (request == null)
+            {
+                ThrowWebServiceException<TResponse>(ex, requestUri);
+                return;
+            }
+
+            var responseType = WebRequestUtils.GetErrorResponseDtoType(request);
+            Action<Exception, string> responseHandler;
+            if (!ResponseHandlers.TryGetValue(responseType, out responseHandler))
+            {
+                var mi = GetType().GetMethod("ThrowWebServiceException", 
+                        BindingFlags.Instance | BindingFlags.NonPublic)
+                    .MakeGenericMethod(new[] { responseType });
+
+                responseHandler = (Action<Exception, string>)Delegate.CreateDelegate(
+                    typeof(Action<Exception, string>), this, mi);
+
+                ResponseHandlers[responseType] = responseHandler;
+            }
+            responseHandler(ex, requestUri);
+        }
+
+        internal void ThrowWebServiceException<TResponse>(Exception ex, string requestUri)
         {
             var webEx = ex as WebException;
             if (webEx != null && webEx.Status == WebExceptionStatus.ProtocolError)
@@ -408,8 +442,7 @@ namespace ServiceStack.ServiceClient.Web
                 log.DebugFormat("Status Code : {0}", errorResponse.StatusCode);
                 log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
 
-                var serviceEx = new WebServiceException(errorResponse.StatusDescription)
-                {
+                var serviceEx = new WebServiceException(errorResponse.StatusDescription) {
                     StatusCode = (int)errorResponse.StatusCode,
                     StatusDescription = errorResponse.StatusDescription,
                 };
@@ -433,8 +466,7 @@ namespace ServiceStack.ServiceClient.Web
                 catch (Exception innerEx)
                 {
                     // Oh, well, we tried
-                    throw new WebServiceException(errorResponse.StatusDescription, innerEx)
-                    {
+                    throw new WebServiceException(errorResponse.StatusDescription, innerEx) {
                         StatusCode = (int)errorResponse.StatusCode,
                         StatusDescription = errorResponse.StatusDescription,
                         ResponseBody = serviceEx.ResponseBody
@@ -459,8 +491,7 @@ namespace ServiceStack.ServiceClient.Web
 
         private WebRequest SendRequest(string httpMethod, string requestUri, object request)
         {
-            return PrepareWebRequest(httpMethod, requestUri, request, client =>
-                {
+            return PrepareWebRequest(httpMethod, requestUri, request, client => {
                     using (var requestStream = client.GetRequestStream())
                     {
                         SerializeToStream(null, request, requestStream);
@@ -736,7 +767,13 @@ namespace ServiceStack.ServiceClient.Web
             {
                 TResponse response;
 
-                if (!HandleResponseException(ex, requestUri, () => SendRequest(httpMethod, requestUri, request), c => c.GetResponse(), out response))
+                if (!HandleResponseException(
+                    ex, 
+                    request,
+                    requestUri, 
+                    () => SendRequest(httpMethod, requestUri, request), 
+                    c => c.GetResponse(), 
+                    out response))
                 {
                     throw;
                 }
@@ -815,7 +852,7 @@ namespace ServiceStack.ServiceClient.Web
             SendOneWay(Web.HttpMethod.Patch, request.ToUrl(Web.HttpMethod.Patch), request);
         }
 
-		public virtual TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object request)
+        public virtual TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object request)
         {
             return Send<TResponse>(Web.HttpMethod.Patch, relativeOrAbsoluteUrl, request);
         }
@@ -895,7 +932,8 @@ namespace ServiceStack.ServiceClient.Web
                 // restore original position before retry
                 fileToUpload.Seek(currentStreamPosition, SeekOrigin.Begin);
 
-                if (!HandleResponseException(ex, requestUri, createWebRequest, c => c.GetResponse(), out response))
+                if (!HandleResponseException(
+                    ex, request, requestUri, createWebRequest, c => c.GetResponse(), out response))
                 {
                     throw;
                 }
@@ -929,7 +967,12 @@ namespace ServiceStack.ServiceClient.Web
                 // restore original position before retry
                 fileToUpload.Seek(currentStreamPosition, SeekOrigin.Begin);
 
-                if (!HandleResponseException(ex, requestUri, createWebRequest, c => { c.UploadFile(fileToUpload, fileName, mimeType); return c.GetResponse(); }, out response))
+                if (!HandleResponseException(ex, 
+                    null, 
+                    requestUri, 
+                    createWebRequest, 
+                    c => { c.UploadFile(fileToUpload, fileName, mimeType); return c.GetResponse(); }, 
+                    out response))
                 {
                     throw;
                 }

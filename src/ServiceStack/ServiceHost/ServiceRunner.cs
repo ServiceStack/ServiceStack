@@ -4,6 +4,7 @@ using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
+using ServiceStack.ServiceClient.Web;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 
@@ -142,7 +143,7 @@ namespace ServiceStack.ServiceHost
             //TODO workout validation errors
             var errorResponse = useAppHost != null && useAppHost.ServiceExceptionHandler != null
                 ? useAppHost.ServiceExceptionHandler(request, ex)
-                : DtoUtils.HandleException(GetAppHost(), request, ex);
+                : DtoUtils.HandleException(useAppHost, request, ex);
 
             AfterEachRequest(requestContext, request, errorResponse ?? ex);
             
@@ -164,7 +165,7 @@ namespace ServiceStack.ServiceHost
                 producer.Publish(request);
             }
 
-            return DtoUtils.CreateResponseDto(request);
+            return WebRequestUtils.GetErrorResponseDtoType(request).CreateInstance();
         }
 
         //signature matches ServiceExecFn

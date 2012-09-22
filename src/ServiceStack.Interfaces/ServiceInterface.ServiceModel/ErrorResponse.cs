@@ -8,7 +8,7 @@ namespace ServiceStack.ServiceInterface.ServiceModel
     /// </summary>
 
     [DataContract]
-    public class ErrorResponse
+    public class ErrorResponse : IHasResponseStatus
     {
         [DataMember]
         public ResponseStatus ResponseStatus { get; set; }

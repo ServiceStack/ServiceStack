@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Common.Web;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.FluentValidation;
 using ServiceStack.Service;
@@ -153,7 +154,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 			var validationResult = validator.Validate(
 			new ValidationContext(request, null, new MultiRuleSetValidatorSelector(httpMethod)));
 
-			var responseStatus = ResponseStatusTranslator.Instance.Parse(validationResult.ToErrorResult());
+            var responseStatus = validationResult.ToErrorResult().ToResponseStatus();
 
 			var errorFields = responseStatus.Errors;
 			return errorFields ?? new List<ResponseError>();

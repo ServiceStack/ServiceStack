@@ -1,4 +1,5 @@
 using System.IO;
+using System.Xml;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
@@ -33,12 +34,23 @@ namespace ServiceStack.ServiceClient.Web
 
         public override void SerializeToStream(IRequestContext requestContext, object request, Stream stream)
         {
+            if (request == null) return;
             DataContractSerializer.Instance.SerializeToStream(request, stream);
         }
 
         public override T DeserializeFromStream<T>(Stream stream)
         {
-            return DataContractDeserializer.Instance.DeserializeFromStream<T>(stream);
+            try
+            {
+                return DataContractDeserializer.Instance.DeserializeFromStream<T>(stream);
+            }
+            catch (XmlException ex)
+            {
+                if (ex.Message == "Unexpected end of file.") //Empty responses
+                    return default(T);
+
+                throw;
+            }
         }
 
         public override StreamDeserializerDelegate StreamDeserializer
