@@ -97,6 +97,12 @@ namespace RazorRockstars.Console.Files
         }
     }
 
+    public class RoutelessReqstar : IReturn<RoutelessReqstar>
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+    }
 
     public class ReqstarsService : Service
     {
@@ -160,6 +166,11 @@ namespace RazorRockstars.Console.Files
         {
             Db.DeleteById<Reqstar>(request.Id);
         }
+
+        public object Any(RoutelessReqstar request)
+        {
+            return request;
+        }
     }
 
 
@@ -181,7 +192,7 @@ namespace RazorRockstars.Console.Files
             LogManager.LogFactory = new ConsoleLogFactory();
             startedAt = Stopwatch.StartNew();
             appHost = new AppHost {
-                //EnableRazor = false, //faster tests!
+                EnableRazor = false, //faster tests!
             };
             //Fast
             appHost.Init();
@@ -267,7 +278,7 @@ namespace RazorRockstars.Console.Files
         [Test]
         public void Can_GET_AllReqstars_View()
         {
-            var html = "{0}/reqstars".Fmt(Host).GetStringFromUrl(acceptContentType:"text/html");
+            var html = "{0}/reqstars".Fmt(Host).GetStringFromUrl(acceptContentType: "text/html");
             html.Print();
             Assert.That(html, Is.StringContaining("<!--view:AllReqstars.cshtml-->"));
             Assert.That(html, Is.StringContaining("<!--template:HtmlReport.cshtml-->"));
@@ -539,6 +550,25 @@ namespace RazorRockstars.Console.Files
             var reqstarsLeft = db.Select<Reqstar>();
 
             Assert.That(reqstarsLeft.Count, Is.EqualTo(ReqstarsService.SeedData.Length));
+        }
+
+        [Test, TestCaseSource("RestClients")]
+        public void Can_GET_RoutelessReqstar_PrettyRestApi(IRestClient client)
+        {
+            var request = new RoutelessReqstar {
+                Id = 1,
+                FirstName = "Foo",
+                LastName = "Bar",
+            };
+
+            var response = client.Get(request);
+
+            var format = ((ServiceClientBase) client).Format;
+            Assert.That(request.ToUrl("GET", format), Is.EqualTo(
+                "/{0}/syncreply/RoutelessReqstar?id=1&firstName=Foo&lastName=Bar".Fmt(format)));
+            Assert.That(response.Id, Is.EqualTo(request.Id));
+            Assert.That(response.FirstName, Is.EqualTo(request.FirstName));
+            Assert.That(response.LastName, Is.EqualTo(request.LastName));
         }
     }
 }

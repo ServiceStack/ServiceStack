@@ -20,7 +20,7 @@ namespace ServiceStack.ServiceClient.Web
         private static readonly ConcurrentDictionary<Type, List<RestRoute>> routesCache =
             new ConcurrentDictionary<Type, List<RestRoute>>();
 
-        public static string ToUrl(this IReturn request, string httpMethod)
+        public static string ToUrl(this IReturn request, string httpMethod, string formatFallbackToPredefinedRoute=null)
         {
             httpMethod = httpMethod.ToUpper();
 
@@ -28,9 +28,17 @@ namespace ServiceStack.ServiceClient.Web
             var requestRoutes = routesCache.GetOrAdd(requestType, GetRoutesForType);
             if (!requestRoutes.Any())
             {
-                throw new InvalidOperationException("There is no rest routes mapped for '{0}' type. ".Fmt(requestType)
-                    + "(Note: The automatic route selection only works with [Route] attributes on the request DTO and" 
-                    + "not with routes registered in the IAppHost!)");
+                if (formatFallbackToPredefinedRoute == null)
+                    throw new InvalidOperationException("There is no rest routes mapped for '{0}' type. ".Fmt(requestType)
+                        + "(Note: The automatic route selection only works with [Route] attributes on the request DTO and" 
+                        + "not with routes registered in the IAppHost!)");
+
+                var predefinedRoute = "/{0}/syncreply/{1}?{2}".Fmt(
+                    formatFallbackToPredefinedRoute,
+                    request.GetType().Name,
+                    request.GetType().GetProperties().ToQueryString(request));
+
+                return predefinedRoute;
             }
 
             var routesApplied =
@@ -38,7 +46,7 @@ namespace ServiceStack.ServiceClient.Web
             var matchingRoutes = routesApplied.Where(x => x.Result.Matches).ToList();
             if (!matchingRoutes.Any())
             {
-                var errors = string.Join(string.Empty, routesApplied.Select(x => "\r\n\t{0}:\t{1}".Fmt(x.Route.Path, x.Result.FailReason)).ToArray());
+                var errors = string.Join(String.Empty, routesApplied.Select(x => "\r\n\t{0}:\t{1}".Fmt(x.Route.Path, x.Result.FailReason)).ToArray());
                 var errMsg = "None of the given rest routes matches '{0}' request:{1}"
                     .Fmt(requestType.Name, errors);
 
@@ -51,7 +59,7 @@ namespace ServiceStack.ServiceClient.Web
                 var mostSpecificRoute = FindMostSpecificRoute(matchingRoutes.Select(x => x.Route));
                 if (mostSpecificRoute == null)
                 {
-                    var errors = string.Join(string.Empty, matchingRoutes.Select(x => "\r\n\t" + x.Route.Path).ToArray());
+                    var errors = String.Join(String.Empty, matchingRoutes.Select(x => "\r\n\t" + x.Route.Path).ToArray());
                     var errMsg = "Ambiguous matching routes found for '{0}' request:{1}".Fmt(requestType.Name, errors);
                     throw new InvalidOperationException(errMsg);
                 }
@@ -67,7 +75,7 @@ namespace ServiceStack.ServiceClient.Web
             if (httpMethod == HttpMethod.Get || httpMethod == HttpMethod.Delete)
             {
                 var queryParams = matchingRoute.Route.FormatQueryParameters(request);
-                if (!string.IsNullOrEmpty(queryParams))
+                if (!String.IsNullOrEmpty(queryParams))
                 {
                     url += "?" + queryParams;
                 }
@@ -111,6 +119,25 @@ namespace ServiceStack.ServiceClient.Web
                 .First();
 
             return shortestPath;
+        }
+
+        public static string ToQueryString(this IEnumerable<PropertyInfo> propertyInfos, object request)
+        {
+            var parameters = String.Empty;
+            foreach (var property in propertyInfos)
+            {
+                var value = property.GetValue(request, null);
+                if (value == null)
+                {
+                    continue;
+                }
+                parameters += "&{0}={1}".Fmt(property.Name.ToCamelCase(), RestRoute.FormatQueryParameterValue(value));
+            }
+            if (!String.IsNullOrEmpty(parameters))
+            {
+                parameters = parameters.Substring(1);
+            }
+            return parameters;
         }
     }
 
@@ -203,23 +230,9 @@ namespace ServiceStack.ServiceClient.Web
 
         public string FormatQueryParameters(object request)
         {
-            string parameters = string.Empty;
+            var propertyInfos = this.Type.GetProperties().Except(this.variablesMap.Values);
 
-            foreach (var property in this.Type.GetProperties().Except(this.variablesMap.Values))
-            {
-                var value = property.GetValue(request, null);
-                if (value == null)
-                {
-                    continue;
-                }
-
-                parameters += "&{0}={1}".Fmt(property.Name.ToCamelCase(), FormatQueryParameterValue(value));
-            }
-
-            if (!string.IsNullOrEmpty(parameters))
-            {
-                parameters = parameters.Substring(1);
-            }
+            var parameters = UrlExtensions.ToQueryString(propertyInfos, request);
 
             return parameters;
         }
