@@ -30,7 +30,7 @@ namespace RazorRockstars.Console.Files
     /// Notes: 
     /// Content Negotiation built-in, i.e. by default each method/route is automatically available in every registered Content-Type (HTTP Only).
     /// New API are also available in ServiceStack's typed service clients (they're actually even more succinct :)
-    /// Any Views rendered is based on Returned DTO type, see: http://razor.servicestack.net/#unified-stack
+    /// Any Views rendered is based on Request or Returned DTO type, see: http://razor.servicestack.net/#unified-stack
 
     [Route("/reqstars/search", "GET")]
     [Route("/reqstars/aged/{Age}")]
