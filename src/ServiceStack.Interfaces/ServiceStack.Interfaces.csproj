@@ -555,6 +555,7 @@
     <Compile Include="ServiceHost\IRestService.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ServiceHost\IServiceRunner.cs" />
     <Compile Include="ServiceHost\IService`1.cs">
       <SubType>Code</SubType>
     </Compile>
