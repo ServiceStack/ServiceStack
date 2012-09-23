@@ -203,6 +203,19 @@ namespace ServiceStack.ServiceHost
 
 		private readonly Dictionary<string, string> propertyNamesMap = new Dictionary<string, string>();
 
+        public int MatchScore(string httpMethod, string[] withPathInfoParts)
+        {
+            var isMatch = IsMatch(httpMethod, withPathInfoParts);
+            if (!isMatch) return -1;
+
+            var exactVerb = httpMethod == AllowedVerbs;
+            var score = exactVerb ? 1 : 10;
+            var varArgsCount = propertyNamesMap.Count;
+            score += Math.Max((10 - varArgsCount), 1) * 100;
+
+            return score;
+        }
+
 		/// <summary>
 		/// For performance withPathInfoParts should already be a lower case string
 		/// to minimize redundant matching operations.

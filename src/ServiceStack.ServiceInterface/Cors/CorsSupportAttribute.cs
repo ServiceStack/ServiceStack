@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 
@@ -10,7 +7,7 @@ namespace ServiceStack.ServiceInterface.Cors
     /// <summary>
     /// Attribute marks that specific response class has support for Cross-origin resource sharing (CORS, see http://www.w3.org/TR/access-control/). CORS allows to access resources from different domain which usually forbidden by origin policy. 
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class CorsSupportAttribute : Attribute, IHasResponseFilter
     {
         public int Priority { get { return 0; } }

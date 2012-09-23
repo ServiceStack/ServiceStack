@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.Logging;
@@ -12,6 +13,7 @@ using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceInterface.Cors;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
 
@@ -29,13 +31,16 @@ namespace RazorRockstars.Console.Files
     /// Content Negotiation built-in, i.e. by default each method/route is automatically available in every registered Content-Type (HTTP Only).
     /// New API are also available in ServiceStack's typed service clients (they're actually even more succinct :)
     /// Any Views rendered is based on Returned DTO type, see: http://razor.servicestack.net/#unified-stack
-    
-    [Route("/reqstars", "GET")]
+
+    [Route("/reqstars/search", "GET")]
     [Route("/reqstars/aged/{Age}")]
     public class SearchReqstars : IReturn<ReqstarsResponse>
     {
         public int? Age { get; set; }
     }
+
+    [Route("/reqstars", "GET")]
+    public class AllReqstars : IReturn<List<Reqstar>> { }
 
     public class ReqstarsResponse
     {
@@ -78,7 +83,21 @@ namespace RazorRockstars.Console.Files
         }
     }
 
-    
+    [Route("/reqstars/{Id}", "PATCH")]
+    public class UpdateReqstar : IReturn<Reqstar>
+    {
+        public int Id { get; set; }
+        public int Age { get; set; }
+
+        public UpdateReqstar() { }
+        public UpdateReqstar(int id, int age)
+        {
+            Id = id;
+            Age = age;
+        }
+    }
+
+
     public class ReqstarsService : Service
     {
         public static Reqstar[] SeedData = new[] {
@@ -86,6 +105,9 @@ namespace RazorRockstars.Console.Files
             new Reqstar(2, "Something", "Else", 30), 
             new Reqstar(3, "Foo2", "Bar2", 20), 
         };
+
+        [CorsSupport]
+        public void Options(Reqstar reqstar) { }
 
         public void Any(ResetReqstar request)
         {
@@ -108,6 +130,11 @@ namespace RazorRockstars.Console.Files
             };
         }
 
+        public object Any(AllReqstars request)
+        {
+            return Db.Select<Reqstar>();
+        }
+
         [ClientCanSwapTemplates] //allow action-level filters
         public object Get(GetReqstar request)
         {
@@ -123,12 +150,18 @@ namespace RazorRockstars.Console.Files
             return Db.Select<Reqstar>();
         }
 
+        public object Patch(UpdateReqstar request)
+        {
+            Db.Update<Reqstar>(request, x => x.Id == request.Id);
+            return Db.Id<Reqstar>(request.Id);
+        }
+
         public void Any(DeleteReqstar request)
         {
             Db.DeleteById<Reqstar>(request.Id);
         }
     }
-    
+
 
     [TestFixture]
     public class ReqStarsServiceTests
@@ -147,7 +180,10 @@ namespace RazorRockstars.Console.Files
         {
             LogManager.LogFactory = new ConsoleLogFactory();
             startedAt = Stopwatch.StartNew();
-            appHost = new AppHost();
+            appHost = new AppHost {
+                //EnableRazor = false, //faster tests!
+            };
+            //Fast
             appHost.Init();
             appHost.Start(ListeningOn);
         }
@@ -186,15 +222,67 @@ namespace RazorRockstars.Console.Files
         protected static IServiceClient[] ServiceClients = 
             RestClients.OfType<IServiceClient>().ToArray();
 
+
+        [Test]
+        public void Can_Process_OPTIONS_request_with_Cors_ActionFilter()
+        {
+            var webReq = (HttpWebRequest)WebRequest.Create(Host + "/reqstars");
+            webReq.Method = "OPTIONS";
+            using (var webRes = webReq.GetResponse())
+            {
+                Assert.That(webRes.Headers["Access-Control-Allow-Origin"], Is.EqualTo("*"));
+                Assert.That(webRes.Headers["Access-Control-Allow-Methods"], Is.EqualTo("GET, POST, PUT, DELETE, OPTIONS"));
+                Assert.That(webRes.Headers["Access-Control-Allow-Headers"], Is.EqualTo("Content-Type"));
+
+                var response = webRes.GetResponseStream().ReadFully();
+                Assert.That(response.Length, Is.EqualTo(0));
+            }
+        }
+
+
+        [Test, TestCaseSource("RestClients")]
+        public void Can_GET_AllReqstars(IRestClient client)
+        {
+            var allReqstars = client.Get<List<Reqstar>>("/reqstars");
+            Assert.That(allReqstars.Count, Is.EqualTo(ReqstarsService.SeedData.Length));
+        }
+
+        [Test, TestCaseSource("ServiceClients")]
+        public void Can_SEND_AllReqstars_PrettyTypedApi(IServiceClient client)
+        {
+            var allReqstars = client.Send(new AllReqstars());
+            Assert.That(allReqstars.Count, Is.EqualTo(ReqstarsService.SeedData.Length));
+        }
+
+        [Test, TestCaseSource("RestClients")]
+        public void Can_GET_AllReqstars_PrettyRestApi(IRestClient client)
+        {
+            var request = new AllReqstars();
+            var response = client.Get(request);
+
+            Assert.That(request.ToUrl("GET"), Is.EqualTo("/reqstars"));
+            Assert.That(response.Count, Is.EqualTo(ReqstarsService.SeedData.Length));
+        }
+
+        [Test]
+        public void Can_GET_AllReqstars_View()
+        {
+            var html = "{0}/reqstars".Fmt(Host).GetStringFromUrl(acceptContentType:"text/html");
+            html.Print();
+            Assert.That(html, Is.StringContaining("<!--view:AllReqstars.cshtml-->"));
+            Assert.That(html, Is.StringContaining("<!--template:HtmlReport.cshtml-->"));
+        }
+
+
         [Test, TestCaseSource("RestClients")]
         public void Can_GET_SearchReqstars(IRestClient client)
         {
-            var response = client.Get<ReqstarsResponse>("/reqstars");
+            var response = client.Get<ReqstarsResponse>("/reqstars/search");
             Assert.That(response.Results.Count, Is.EqualTo(ReqstarsService.SeedData.Length));
         }
 
         [Test, TestCaseSource("ServiceClients")]
-        public void Disallows_GET_SearchReqstars_PrettyTypedApi(IServiceClient client)
+        public void Disallows_SEND_SearchReqstars_PrettyTypedApi(IServiceClient client)
         {
             try
             {
@@ -214,7 +302,7 @@ namespace RazorRockstars.Console.Files
             var request = new SearchReqstars();
             var response = client.Get(request);
 
-            Assert.That(request.ToUrl("GET"), Is.EqualTo("/reqstars"));
+            Assert.That(request.ToUrl("GET"), Is.EqualTo("/reqstars/search"));
             Assert.That(response.Results.Count, Is.EqualTo(ReqstarsService.SeedData.Length));
         }
 
@@ -231,13 +319,10 @@ namespace RazorRockstars.Console.Files
                 Assert.That(webEx.StatusCode, Is.EqualTo(400));
                 Assert.That(webEx.StatusDescription, Is.EqualTo("ArgumentException"));
 
-                Assert.That(webEx.ResponseStatus, Is.Not.Null);
-                Assert.That(webEx.ResponseDto, Is.Not.Null);
+                Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo("ArgumentException"));
+                Assert.That(webEx.ResponseStatus.Message, Is.EqualTo("Invalid Age"));
 
-                var typedError = webEx.ResponseDto as ReqstarsResponse;
-                Assert.That(typedError, Is.Not.Null);
-                Assert.That(typedError.ResponseStatus.ErrorCode, Is.EqualTo("ArgumentException"));
-                Assert.That(typedError.ResponseStatus.Message, Is.EqualTo("Invalid Age"));
+                Assert.That(webEx.ResponseDto as ReqstarsResponse, Is.Not.Null);
             }
         }
 
@@ -251,7 +336,7 @@ namespace RazorRockstars.Console.Files
         }
 
         [Test, TestCaseSource("ServiceClients")]
-        public void Disallows_GET_SearchReqstars_aged_20_PrettyTypedApi(IServiceClient client)
+        public void Disallows_SEND_SearchReqstars_aged_20_PrettyTypedApi(IServiceClient client)
         {
             try
             {
@@ -261,7 +346,7 @@ namespace RazorRockstars.Console.Files
             catch (WebServiceException webEx)
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo(405));
-                Assert.That(webEx.StatusDescription, Is.EqualTo("Method Not Allowed"));                
+                Assert.That(webEx.StatusDescription, Is.EqualTo("Method Not Allowed"));
             }
         }
 
@@ -274,6 +359,50 @@ namespace RazorRockstars.Console.Files
             Assert.That(request.ToUrl("GET"), Is.EqualTo("/reqstars/aged/20"));
             Assert.That(response.Results.Count,
                 Is.EqualTo(ReqstarsService.SeedData.Count(x => x.Age == 20)));
+        }
+
+
+        [Test, TestCaseSource("RestClients")]
+        public void Can_GET_GetReqstar(IRestClient client)
+        {
+            var response = client.Get<Reqstar>("/reqstars/1");
+            Assert.That(response.FirstName,
+                Is.EqualTo(ReqstarsService.SeedData[0].FirstName));
+        }
+
+        [Test, TestCaseSource("RestClients")]
+        public void Can_GET_GetReqstar_PrettyRestApi(IRestClient client)
+        {
+            var request = new GetReqstar { Id = 1 };
+            var response = client.Get(request);
+
+            Assert.That(request.ToUrl("GET"), Is.EqualTo("/reqstars/1"));
+            Assert.That(response.FirstName,
+                Is.EqualTo(ReqstarsService.SeedData[0].FirstName));
+        }
+
+        [Test, TestCaseSource("ServiceClients")]
+        public void Disallows_SEND_GetReqstar_PrettyTypedApi(IServiceClient client)
+        {
+            try
+            {
+                var response = client.Send(new GetReqstar { Id = 1 });
+                Assert.Fail("POST's to GetReqstar should not be allowed");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo(405));
+                Assert.That(webEx.StatusDescription, Is.EqualTo("Method Not Allowed"));
+            }
+        }
+
+        [Test]
+        public void Can_GET_GetReqstar_View()
+        {
+            var html = "{0}/reqstars/1".Fmt(Host).GetStringFromUrl(acceptContentType: "text/html");
+            html.Print();
+            Assert.That(html, Is.StringContaining("<!--view:GetReqstar.cshtml-->"));
+            Assert.That(html, Is.StringContaining("<!--template:HtmlReport.cshtml-->"));
         }
 
 
@@ -310,6 +439,21 @@ namespace RazorRockstars.Console.Files
 
             Assert.That(reqstarsLeft.Count,
                 Is.EqualTo(ReqstarsService.SeedData.Length - 1));
+        }
+
+
+        [Test, TestCaseSource("RestClients")]
+        public void Can_PATCH_UpdateReqstar(IRestClient client)
+        {
+            var response = client.Patch<Reqstar>("/reqstars/1", new UpdateReqstar(1, 18));
+            Assert.That(response.Age, Is.EqualTo(18));
+        }
+
+        [Test, TestCaseSource("RestClients")]
+        public void Can_PATCH_UpdateReqstar_PrettyRestApi(IRestClient client)
+        {
+            var response = client.Patch(new UpdateReqstar(1, 18));
+            Assert.That(response.Age, Is.EqualTo(18));
         }
 
 
@@ -354,12 +498,10 @@ namespace RazorRockstars.Console.Files
                 Assert.That(webEx.StatusCode, Is.EqualTo(400));
                 Assert.That(webEx.StatusDescription, Is.EqualTo("ArgumentException"));
 
-                Assert.That(webEx.ResponseStatus, Is.Not.Null);
+                Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo("ArgumentException"));
+                Assert.That(webEx.ResponseStatus.Message, Is.EqualTo("Age is required"));
 
-                var responseDto = webEx.ResponseDto as ErrorResponse;
-                Assert.That(responseDto, Is.Not.Null);
-                Assert.That(responseDto.ResponseStatus.ErrorCode, Is.EqualTo("ArgumentException"));
-                Assert.That(responseDto.ResponseStatus.Message, Is.EqualTo("Age is required"));
+                Assert.That(webEx.ResponseDto as ErrorResponse, Is.Not.Null);
             }
         }
 
