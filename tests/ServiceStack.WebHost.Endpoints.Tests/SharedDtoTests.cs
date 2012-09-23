@@ -10,6 +10,7 @@ using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
+    [Explicit("This isn't supported at the moment.")]
     public class SharedDtoTests
     {
         [Route("/shareddto")]
