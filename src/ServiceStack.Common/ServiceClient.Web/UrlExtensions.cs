@@ -33,10 +33,12 @@ namespace ServiceStack.ServiceClient.Web
                         + "(Note: The automatic route selection only works with [Route] attributes on the request DTO and" 
                         + "not with routes registered in the IAppHost!)");
 
-                var predefinedRoute = "/{0}/syncreply/{1}?{2}".Fmt(
-                    formatFallbackToPredefinedRoute,
-                    request.GetType().Name,
-                    request.GetType().GetProperties().ToQueryString(request));
+                var predefinedRoute = "/{0}/syncreply/{1}".Fmt(formatFallbackToPredefinedRoute, request.GetType().Name);
+                if (httpMethod == "GET" || httpMethod == "DELETE" || httpMethod == "OPTIONS")
+                {
+                    var queryString = "?{0}".Fmt(request.GetType().GetProperties().ToQueryString(request));
+                    predefinedRoute += queryString;
+                }
 
                 return predefinedRoute;
             }

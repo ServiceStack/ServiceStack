@@ -563,9 +563,28 @@ namespace RazorRockstars.Console.Files
 
             var response = client.Get(request);
 
-            var format = ((ServiceClientBase) client).Format;
+            var format = ((ServiceClientBase)client).Format;
             Assert.That(request.ToUrl("GET", format), Is.EqualTo(
                 "/{0}/syncreply/RoutelessReqstar?id=1&firstName=Foo&lastName=Bar".Fmt(format)));
+            Assert.That(response.Id, Is.EqualTo(request.Id));
+            Assert.That(response.FirstName, Is.EqualTo(request.FirstName));
+            Assert.That(response.LastName, Is.EqualTo(request.LastName));
+        }
+
+        [Test, TestCaseSource("RestClients")]
+        public void Can_POST_RoutelessReqstar_PrettyRestApi(IRestClient client)
+        {
+            var request = new RoutelessReqstar {
+                Id = 1,
+                FirstName = "Foo",
+                LastName = "Bar",
+            };
+
+            var response = client.Post(request);
+
+            var format = ((ServiceClientBase)client).Format;
+            Assert.That(request.ToUrl("POST", format), Is.EqualTo(
+                "/{0}/syncreply/RoutelessReqstar".Fmt(format)));
             Assert.That(response.Id, Is.EqualTo(request.Id));
             Assert.That(response.FirstName, Is.EqualTo(request.FirstName));
             Assert.That(response.LastName, Is.EqualTo(request.LastName));
