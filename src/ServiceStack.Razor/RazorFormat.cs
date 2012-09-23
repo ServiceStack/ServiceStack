@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using ServiceStack.Common;
 using ServiceStack.Html;
 using ServiceStack.Logging;
@@ -48,19 +49,15 @@ namespace ServiceStack.Razor
         public static string TemplatePlaceHolder = "@RenderBody()";
 
         // ~/View - Dynamic Pages
-        public Dictionary<string, ViewPageRef> ViewPages = new Dictionary<string, ViewPageRef>(
-            StringComparer.CurrentCultureIgnoreCase);
+        public Dictionary<string, ViewPageRef> ViewPages;
 
         // ~/View/Shared - Dynamic Shared Pages
-        public Dictionary<string, ViewPageRef> ViewSharedPages = new Dictionary<string, ViewPageRef>(
-            StringComparer.CurrentCultureIgnoreCase);
+        public Dictionary<string, ViewPageRef> ViewSharedPages;
 
         //Content Pages outside of ~/View
-        public Dictionary<string, ViewPageRef> ContentPages = new Dictionary<string, ViewPageRef>(
-            StringComparer.CurrentCultureIgnoreCase);
+        public Dictionary<string, ViewPageRef> ContentPages;
 
-        public Dictionary<string, ViewPageRef> MasterPageTemplates = new Dictionary<string, ViewPageRef>(
-            StringComparer.CurrentCultureIgnoreCase);
+        public Dictionary<string, ViewPageRef> MasterPageTemplates;
 
         public IAppHost AppHost { get; set; }
 
@@ -260,6 +257,13 @@ namespace ServiceStack.Razor
 
         public void Init()
         {
+            ViewPages = new Dictionary<string, ViewPageRef>(StringComparer.CurrentCultureIgnoreCase);
+            // ~/View/Shared - Dynamic Shared Pages
+            ViewSharedPages = new Dictionary<string, ViewPageRef>(StringComparer.CurrentCultureIgnoreCase);
+            //Content Pages outside of ~/View
+            ContentPages = new Dictionary<string, ViewPageRef>(StringComparer.CurrentCultureIgnoreCase);
+            MasterPageTemplates = new Dictionary<string, ViewPageRef>(StringComparer.CurrentCultureIgnoreCase);
+
             //Force Binder to load
             var loaded = typeof(Microsoft.CSharp.RuntimeBinder.Binder).Assembly != null;
             if (!loaded)
