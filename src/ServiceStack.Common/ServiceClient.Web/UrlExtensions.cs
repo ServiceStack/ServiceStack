@@ -28,7 +28,9 @@ namespace ServiceStack.ServiceClient.Web
             var requestRoutes = routesCache.GetOrAdd(requestType, GetRoutesForType);
             if (!requestRoutes.Any())
             {
-                throw new InvalidOperationException("There is no rest routes mapped for '{0}' type.".Fmt(requestType));
+                throw new InvalidOperationException("There is no rest routes mapped for '{0}' type. ".Fmt(requestType)
+                    + "(Note: The automatic route selection only works with [Route] attributes on the request DTO and" 
+                    + "not with routes registered in the IAppHost!)");
             }
 
             var routesApplied =

@@ -133,6 +133,7 @@
     <Compile Include="IntegrationTests\CachedMoviesService.cs" />
     <Compile Include="IntegrationTests\ErrorRestTests.cs" />
     <Compile Include="ProtoBufServiceTests.cs" />
+    <Compile Include="SharedDtoTests.cs" />
     <Compile Include="Support\Operations\CustomRequestBinder.cs" />
     <Compile Include="TodoListTests.cs" />
     <Compile Include="CustomerServiceValidationTests.cs" />
