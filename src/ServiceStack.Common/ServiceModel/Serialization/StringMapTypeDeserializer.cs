@@ -38,10 +38,7 @@ namespace ServiceStack.ServiceModel.Serialization
         {
             this.type = type;
 
-            if (type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>)))
-                return;
-
-            foreach (var propertyInfo in type.GetProperties())
+            foreach (var propertyInfo in type.GetSerializableProperties())
             {
                 var propertySetFn = JsvDeserializeType.GetSetPropertyMethod(type, propertyInfo);
 			    var propertyType = propertyInfo.PropertyType;
