@@ -185,6 +185,11 @@
             and parsing member names and enum values in a case-insensitive manner.
             </summary>
         </member>
+        <member name="F:ServiceStack.Text.JsConfig._propertyConvention">
+            <summary>
+            Define how property names are mapped during deserialization
+            </summary>
+        </member>
         <member name="F:ServiceStack.Text.JsConfig.tsThrowOnDeserializationError">
             <summary>
             Gets or sets a value indicating if the framework should throw serialization exceptions
@@ -200,6 +205,11 @@
         <member name="P:ServiceStack.Text.JsConfig.PreferInterfaces">
             <summary>
             If set to true, Interface types will be prefered over concrete types when serializing.
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Text.JsConfig`1.IncludeTypeInfo">
+            <summary>
+            Always emit type info for this type.  Takes precedence over ExcludeTypeInfo
             </summary>
         </member>
         <member name="F:ServiceStack.Text.JsConfig`1.ExcludeTypeInfo">
@@ -253,6 +263,16 @@
         <member name="P:ServiceStack.Text.JsConfig`1.HasSerializeFn">
             <summary>
             Whether there is a fn (raw or otherwise)
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Text.JsonPropertyConvention.ExactMatch">
+            <summary>
+            The property names on target types must match property names in the JSON source
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Text.JsonPropertyConvention.Lenient">
+            <summary>
+            The property names on target types may not match the property names in the JSON source
             </summary>
         </member>
         <member name="F:ServiceStack.Text.JsonTimeSpanHandler.DurationFormat">
