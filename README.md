@@ -94,13 +94,13 @@ all = restClient.Get(new Todos());						// Count = 0
 
 ### Calling the TODO REST service from jQuery
 
-    $.getJSON("http://localhost/Backbone.Todo/todos", function(todos) {
+    $.getJSON(baseUri, function(todos) {
     	alert(todos.length == 1);
     });
 
 ### Calling the TODO REST service from [Dart JsonClient](https://github.com/mythz/DartJsonClient)
 
-    var client = new JsonClient("http://localhost/Backbone.Todo");
+    var client = new JsonClient(baseUri);
     client.todos()
     	.then((todos) => alert(todos.length == 1) ); 
 
