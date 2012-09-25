@@ -145,17 +145,25 @@ namespace ServiceStack.ServiceClient.Web
 
     public class RestRoute
     {
+        static char[] ArrayBrackets = new[]{'[',']'};
+
+        public static string FormatValue(object value)
+        {
+            var jsv = value.ToJsv().Trim(ArrayBrackets);
+            return jsv;
+        }
+
         [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:FieldsMustBePrivate", Justification = "Using field is just easier.")]
         public static Func<object, string> FormatVariable = value => {
             var valueString = value as string;
-            return valueString != null ? Uri.EscapeDataString(valueString) : value.ToString();
+            return valueString != null ? Uri.EscapeDataString(valueString) : FormatValue(value);
         };
 
         [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:FieldsMustBePrivate", Justification = "Using field is just easier.")]
         public static Func<object, string> FormatQueryParameterValue = value => {
             // Perhaps custom formatting needed for DateTimes, lists, etc.
             var valueString = value as string;
-            return valueString != null ? Uri.EscapeDataString(valueString) : value.ToString();
+            return valueString != null ? Uri.EscapeDataString(valueString) : FormatValue(value);
         };
 
         private const char PathSeparatorChar = '/';
@@ -234,7 +242,7 @@ namespace ServiceStack.ServiceClient.Web
         {
             var propertyInfos = this.Type.GetProperties().Except(this.variablesMap.Values);
 
-            var parameters = UrlExtensions.ToQueryString(propertyInfos, request);
+            var parameters = propertyInfos.ToQueryString(request);
 
             return parameters;
         }
