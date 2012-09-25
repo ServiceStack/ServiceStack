@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using ServiceStack.Common;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 
 namespace Funq
 {
@@ -292,66 +293,94 @@ namespace Funq
 
         public bool CheckAdapterFirst { get; set; }
 
-		private ServiceEntry<TService, TFunc> GetEntry<TService, TFunc>(string serviceName, bool throwIfMissing)
-		{
-            if (CheckAdapterFirst
-                && Adapter != null
-                && typeof(TService) != typeof(IRequestContext)
-                && !Equals(default(TService), Adapter.TryResolve<TService>()))
+        private ServiceEntry<TService, TFunc> GetEntry<TService, TFunc>(string serviceName, bool throwIfMissing)
+        {
+            try
             {
-                return new ServiceEntry<TService, TFunc>(
-                    (TFunc)(object)(Func<Container, TService>)(c => Adapter.TryResolve<TService>())) {
+                if (CheckAdapterFirst
+                    && Adapter != null
+                    && typeof(TService) != typeof(IRequestContext)
+                    && !Equals(default(TService), Adapter.TryResolve<TService>()))
+                {
+                    return new ServiceEntry<TService, TFunc>(
+                        (TFunc)(object)(Func<Container, TService>)(c => Adapter.TryResolve<TService>()))
+                    {
                         Owner = Owner.Container,
                         Container = this,
                     };
+                }
             }
-            
+            catch (Exception ex)
+            {
+                throw CreateAdapterException<TService>(ex);
+            }
+
             var key = new ServiceKey(typeof(TFunc), serviceName);
-			ServiceEntry entry = null;
-			Container container = this;
+            ServiceEntry entry = null;
+            Container container = this;
 
-			// Go up the hierarchy always for registrations.
-			while (!container.TryGetServiceEntry(key, out entry) && container.parent != null)
-			{
-				container = container.parent;
-			}
-
-			if (entry != null)
-			{
-                if (entry.Reuse == ReuseScope.Container && entry.Container != this)
-					entry = SetServiceEntry(key, ((ServiceEntry<TService, TFunc>)entry).CloneFor(this));
+            // Go up the hierarchy always for registrations.
+            while (!container.TryGetServiceEntry(key, out entry) && container.parent != null)
+            {
+                container = container.parent;
             }
-			else
-			{
-				//i.e. if called Resolve<> for Constructor injection
-				if (throwIfMissing)
-				{
-					if (Adapter != null)
-					{
-						return new ServiceEntry<TService, TFunc>(
-							(TFunc)(object)(Func<Container, TService>)(c => Adapter.Resolve<TService>())) {
-								Owner = Owner.Container,
-								Container = this,
-							};
-					}
-					ThrowMissing<TService>(serviceName);
-				}
-				else
-				{
-					if (Adapter != null
-						&& (typeof(TService) != typeof(IRequestContext)))
-					{
-						return new ServiceEntry<TService, TFunc>(
-							(TFunc)(object)(Func<Container, TService>)(c => Adapter.TryResolve<TService>())) {
-								Owner = Owner.Container,
-								Container = this,								
-							};
-					}
-				}
-			}
 
-			return (ServiceEntry<TService, TFunc>)entry;
-		}	    
+            if (entry != null)
+            {
+                if (entry.Reuse == ReuseScope.Container && entry.Container != this)
+                    entry = SetServiceEntry(key, ((ServiceEntry<TService, TFunc>)entry).CloneFor(this));
+            }
+            else
+            {
+                try
+                {
+                    //i.e. if called Resolve<> for Constructor injection
+                    if (throwIfMissing)
+                    {
+                        if (Adapter != null)
+                        {
+                            return new ServiceEntry<TService, TFunc>(
+                                (TFunc)(object)(Func<Container, TService>)(c => Adapter.Resolve<TService>()))
+                            {
+                                Owner = Owner.Container,
+                                Container = this,
+                            };
+                        }
+                        ThrowMissing<TService>(serviceName);
+                    }
+                    else
+                    {
+                        if (Adapter != null
+                            && (typeof(TService) != typeof(IRequestContext)))
+                        {
+                            return new ServiceEntry<TService, TFunc>(
+                                (TFunc)(object)(Func<Container, TService>)(c => Adapter.TryResolve<TService>()))
+                            {
+                                Owner = Owner.Container,
+                                Container = this,
+                            };
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw CreateAdapterException<TService>(ex);
+                }
+            }
+
+            return (ServiceEntry<TService, TFunc>)entry;
+        }
+
+        private Exception CreateAdapterException<TService>(Exception ex)
+        {
+            if (Adapter == null)
+                return ex;
+
+            var errMsg = "Error trying to resolve Service '{0}' from Adapter '{1}': {2}"
+                .Fmt(typeof(TService).FullName, Adapter.GetType().Name, ex.Message);
+
+            return new Exception(errMsg, ex);
+        }
 
 	    private static TService ThrowMissing<TService>(string serviceName)
 		{
