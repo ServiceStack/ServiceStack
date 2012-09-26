@@ -1,7 +1,9 @@
-﻿using ServiceStack.ServiceHost;
+﻿using System;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.ServiceInterface
 {
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
     public class ClientCanSwapTemplatesAttribute : ResponseFilterAttribute
     {
         public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)

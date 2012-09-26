@@ -12,7 +12,7 @@ namespace ServiceStack.ServiceInterface
     /// Indicates that the request dto, which is associated with this attribute,
     /// requires authentication.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method /*MVC Actions*/, Inherited = false, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
     public class AuthenticateAttribute : RequestFilterAttribute
     {
         public string Provider { get; set; }
