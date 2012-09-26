@@ -7,9 +7,8 @@ namespace ServiceStack.ServiceInterface.Cors
     /// <summary>
     /// Attribute marks that specific response class has support for Cross-origin resource sharing (CORS, see http://www.w3.org/TR/access-control/). CORS allows to access resources from different domain which usually forbidden by origin policy. 
     /// </summary>
-    [Obsolete("Renamed to [EnableCors]")] //Attributes that apply behaviour should have a name that reflect what it does (verb). When it's marking a state it can be a noun, e.g: [AsyncService]
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public class CorsSupportAttribute : Attribute, IHasResponseFilter
+    public class EnableCorsAttribute : Attribute, IHasResponseFilter
     {
         public int Priority { get { return 0; } }
 
@@ -22,7 +21,7 @@ namespace ServiceStack.ServiceInterface.Cors
         /// <summary>
         /// Represents a default constructor with Allow Origin equals to "*", Allowed GET, POST, PUT, DELETE, OPTIONS request and allowed "Content-Type" header.
         /// </summary>
-        public CorsSupportAttribute(string allowedOrigins = "*", string allowedMethods = CorsFeature.DefaultMethods, string allowedHeaders = CorsFeature.DefaultHeaders, bool allowCredentials = false)
+        public EnableCorsAttribute(string allowedOrigins = "*", string allowedMethods = CorsFeature.DefaultMethods, string allowedHeaders = CorsFeature.DefaultHeaders, bool allowCredentials = false)
         {
             this.allowedOrigins = allowedOrigins;
             this.allowedMethods = allowedMethods;
