@@ -127,29 +127,22 @@ namespace NewApi.Todos
         [Test]
         public void Run()
         {
-            try
-            {
-                var restClient = new JsonServiceClient(BaseUri);
-                List<Todo> all = restClient.Get(new Todos());
-                Assert.That(all.Count, Is.EqualTo(0));
+            var restClient = new JsonServiceClient(BaseUri);
+            List<Todo> all = restClient.Get(new Todos());
+            Assert.That(all.Count, Is.EqualTo(0));
 
-                var todo = restClient.Post(new Todo { Content = "New TODO", Order = 1 });
-                Assert.That(todo.Id, Is.EqualTo(1));
-                all = restClient.Get(new Todos());
-                Assert.That(all.Count, Is.EqualTo(1));
+            var todo = restClient.Post(new Todo { Content = "New TODO", Order = 1 });
+            Assert.That(todo.Id, Is.EqualTo(1));
+            all = restClient.Get(new Todos());
+            Assert.That(all.Count, Is.EqualTo(1));
 
-                todo.Content = "Updated TODO";
-                todo = restClient.Post(todo);
-                Assert.That(todo.Content, Is.EqualTo("Updated TODO"));
+            todo.Content = "Updated TODO";
+            todo = restClient.Put(todo);
+            Assert.That(todo.Content, Is.EqualTo("Updated TODO"));
 
-                restClient.Delete(new Todos(todo.Id));
-                all = restClient.Get(new Todos());
-                Assert.That(all.Count, Is.EqualTo(0));
-            }
-            catch (Exception ex)
-            {                
-                throw ex;
-            }
+            restClient.Delete(new Todos(todo.Id));
+            all = restClient.Get(new Todos());
+            Assert.That(all.Count, Is.EqualTo(0));
         }
 
     }

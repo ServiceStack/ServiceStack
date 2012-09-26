@@ -101,6 +101,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AddHeaderAttribute.cs" />
     <Compile Include="Admin\RequestLogsFeature.cs" />
     <Compile Include="ApplyTo.cs" />
     <Compile Include="AsyncServiceBase.cs" />
@@ -220,6 +221,7 @@
     <Compile Include="SessionFactory.cs" />
     <Compile Include="SessionExtensions.cs" />
     <Compile Include="SessionFeature.cs" />
+    <Compile Include="SetStatusAttribute.cs" />
     <Compile Include="Testing\BasicAppHost.cs" />
     <Compile Include="Testing\BasicResolver.cs" />
     <Compile Include="Testing\MockHttpRequest.cs">
