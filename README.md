@@ -9,62 +9,67 @@ For more info check out [servicestack.net](http://www.servicestack.net).
 Simple REST service example
 =========================== 
 
+This example is also available as a [stand-alone integration test](https://github.com/ServiceStack/ServiceStack/blob/master/tests/ServiceStack.WebHost.Endpoints.Tests/NewApiTodos.cs):
+
 ```csharp
 //Web Service Host Configuration
-public class AppHost : AppHostBase
+public class AppHost : AppHostHttpListenerBase
 {
-	public AppHost() : base("Backbone.js TODO", typeof(TodoService).Assembly) {}
+    public AppHost() : base("TODOs Tests", typeof(Todo).Assembly) {}
 
-	public override void Configure(Funq.Container container)
-	{
-		//Register Web Service dependencies
-		container.Register(new TodoRepository());
-
-		//Register user-defined REST-ful routes			
-		Routes
-		  .Add<Todo>("/todos")
-		  .Add<Todo>("/todos/{Id}");
-	}
+    public override void Configure(Container container)
+    {
+        container.Register(new TodoRepository());
+    }
 }
-
 
 //REST Resource DTO
-public class Todo 
+[Route("/todos")]
+[Route("/todos/{Ids}")]
+public class Todos : IReturn<List<Todo>>
 {
-	public long Id { get; set; }
-	public string Content { get; set; }
-	public int Order { get; set; }
-	public bool Done { get; set; }
+    public long[] Ids { get; set; }
+    public Todos(params long[] ids)
+    {
+        this.Ids = ids;
+    }
 }
 
-//Todo REST Service implementation
-public class TodoService : RestServiceBase<Todo>
+[Route("/todos", "POST")]
+[Route("/todos/{Id}", "PUT")]
+public class Todo : IReturn<Todo>
 {
-	public TodoRepository Repository { get; set; }  //Injected by IOC
+    public long Id { get; set; }
+    public string Content { get; set; }
+    public int Order { get; set; }
+    public bool Done { get; set; }
+}
 
-	public override object OnGet(Todo request)
-	{
-		if (request.Id != default(long))
-			return Repository.GetById(request.Id);
+public class TodosService : Service
+{
+    public TodoRepository Repository { get; set; }  //Injected by IOC
 
-		return Repository.GetAll();
-	}
+    public object Get(Todos request)
+    {
+        return request.Ids.IsEmpty()
+            ? Repository.GetAll()
+            : Repository.GetByIds(request.Ids);
+    }
 
-	public override object OnPost(Todo todo)
-	{
-		return Repository.Store(todo);
-	}
+    public object Post(Todo todo)
+    {
+        return Repository.Store(todo);
+    }
 
-	public override object OnPut(Todo todo)
-	{
-		return Repository.Store(todo);
-	}
+    public object Put(Todo todo)
+    {
+        return Repository.Store(todo);
+    }
 
-	public override object OnDelete(Todo request)
-	{
-		Repository.DeleteById(request.Id);
-		return null;
-	}
+    public void Delete(Todos request)
+    {
+        Repository.DeleteByIds(request.Ids);
+    }
 }
 ```
 
@@ -73,25 +78,31 @@ public class TodoService : RestServiceBase<Todo>
 ```csharp
 //no code-gen required, can re-use above DTO's
 
-var restClient = new JsonServiceClient("http://localhost/Backbone.Todo");
-var all = restClient.Get<List<Todo>>("/todos"); // Count = 0
+var restClient = new JsonServiceClient(BaseUri);
+List<Todo> all = restClient.Get(new Todos()); 			// Count = 0
 
-var todo = restClient.Post<Todo>("/todos", new Todo { Content = "New TODO", Order = 1 }); //todo.Id = 1
-all = restClient.Get<List<Todo>>("/todos"); // Count = 1
+var todo = restClient.Post(
+    new Todo { Content = "New TODO", Order = 1 }); 	    // todo.Id = 1
+all = restClient.Get(new Todos());						// Count = 1
 
 todo.Content = "Updated TODO";
-todo = restClient.Post<Todo>("/todos", todo); // todo.Content = Updated TODO
+todo = restClient.Put(todo);							// todo.Content = Updated TODO
 
-restClient.Delete<Todo>("/todos/" + todo.Id);
-all = restClient.Get<List<Todo>>("/todos"); // Count = 0
+restClient.Delete(new Todos(todo.Id));
+all = restClient.Get(new Todos());						// Count = 0
 ```
 
 ### Calling the TODO REST service from jQuery
 
-    $.getJSON("http://localhost/Backbone.Todo/todos", function(todos) {
+    $.getJSON(baseUri, function(todos) {
     	alert(todos.length == 1);
     });
 
+### Calling the TODO REST service from [Dart JsonClient](https://github.com/mythz/DartJsonClient)
+
+    var client = new JsonClient(baseUri);
+    client.todos()
+    	.then((todos) => alert(todos.length == 1) ); 
 
 That's all the application code required to create a simple REST web service.
 
