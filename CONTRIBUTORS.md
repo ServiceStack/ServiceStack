@@ -109,3 +109,4 @@
  - [vansha](https://github.com/vansha) (Ivan Korneliuk)
  - [aaronlerch](https://github.com/aaronlerch) (Aaron Lerch)
  - [glikoz](https://github.com/glikoz)
+ - [danielcrenna](https://github.com/danielcrenna) (Daniel Crenna)
