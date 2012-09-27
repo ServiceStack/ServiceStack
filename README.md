@@ -403,6 +403,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [glikoz](https://github.com/glikoz)
  - [danielcrenna](https://github.com/danielcrenna) (Daniel Crenna)
  - [stevegraygh](https://github.com/stevegraygh) (Steve Graygh)
+ - [jrmitch120](https://github.com/jrmitch120) (Jeff Mitchell)
  
 ***
 
