@@ -398,6 +398,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [ckasabula](https://github.com/ckasabula) (Chuck Kasabula)
  - [dortzur](https://github.com/dortzur) (Dor Tzur)
  - [allenarthurgay](https://github.com/allenarthurgay) (Allen Gay)
+ - [vansha](https://github.com/vansha) (Ivan Korneliuk)
  
 ***
 

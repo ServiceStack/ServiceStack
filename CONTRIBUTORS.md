@@ -105,3 +105,5 @@
  - [ckasabula](https://github.com/ckasabula) (Chuck Kasabula)
  - [dortzur](https://github.com/dortzur) (Dor Tzur)
  - [allenarthurgay](https://github.com/allenarthurgay) (Allen Gay)
+ - [viceberg](https://github.com/vIceBerg)
+ - [vansha](https://github.com/vansha) (Ivan Korneliuk)
