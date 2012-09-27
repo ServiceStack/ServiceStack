@@ -400,6 +400,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [allenarthurgay](https://github.com/allenarthurgay) (Allen Gay)
  - [vansha](https://github.com/vansha) (Ivan Korneliuk)
  - [aaronlerch](https://github.com/aaronlerch) (Aaron Lerch)
+ - [glikoz](https://github.com/glikoz)
  
 ***
 
