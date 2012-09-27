@@ -1,7 +1,9 @@
+using System;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.ServiceInterface
 {
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
     public class DefaultViewAttribute : RequestFilterAttribute
     {
         public string View { get; set; }
