@@ -132,6 +132,7 @@
     <Compile Include="CorsFeatureTest.cs" />
     <Compile Include="IntegrationTests\CachedMoviesService.cs" />
     <Compile Include="IntegrationTests\ErrorRestTests.cs" />
+    <Compile Include="NewApiTodos.cs" />
     <Compile Include="ProtoBufServiceTests.cs" />
     <Compile Include="SharedDtoTests.cs" />
     <Compile Include="Support\Operations\CustomRequestBinder.cs" />

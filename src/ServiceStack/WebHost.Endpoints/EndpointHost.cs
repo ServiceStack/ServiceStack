@@ -146,8 +146,14 @@ namespace ServiceStack.WebHost.Endpoints
 
 			AfterPluginsLoaded(specifiedContentType);
 
-            if (AppHost.TryResolve<ICacheClient>() == null)
-                Container.Register<ICacheClient>(new MemoryCacheClient());
+		    var registeredCacheClient = AppHost.TryResolve<ICacheClient>();
+            using (registeredCacheClient)
+            {
+                if (registeredCacheClient == null)
+                {
+                    Container.Register<ICacheClient>(new MemoryCacheClient());
+                }
+            }
 
 		    ReadyAt = DateTime.Now;
 		}

@@ -12,7 +12,7 @@ namespace ServiceStack.ServiceInterface
     /// Indicates that the request dto, which is associated with this attribute,
     /// can only execute, if the user has specific permissions.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method /*MVC Actions*/, Inherited = false, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
     public class RequiredPermissionAttribute : RequestFilterAttribute
     {
         public List<string> RequiredPermissions { get; set; }

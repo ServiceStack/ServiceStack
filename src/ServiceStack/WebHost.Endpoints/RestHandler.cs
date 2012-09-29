@@ -37,7 +37,7 @@ namespace ServiceStack.WebHost.Endpoints
 			return this.RestPath;
 		}
 
-		internal IRestPath RestPath { get; set; }
+		public IRestPath RestPath { get; set; }
 
 		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{

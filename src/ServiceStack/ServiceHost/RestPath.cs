@@ -28,6 +28,7 @@ namespace ServiceStack.ServiceHost
 		private readonly string[] literalsToMatch = new string[0];
 
 		private readonly string[] variablesNames = new string[0];
+        private int variableArgsCount;
 
 		/// <summary>
 		/// The number of segments separated by '/' determinable by path.Split('/').Length
@@ -39,7 +40,7 @@ namespace ServiceStack.ServiceHost
 		/// The total number of segments after subparts have been exploded ('.') 
 		/// e.g. /path/to/here.ext == 4
 		/// </summary>
-		public int TotalComponentsCount { get; set; }
+        public int TotalComponentsCount { get; set; }
 
 		public string[] Verbs = new string[0];
 
@@ -137,6 +138,7 @@ namespace ServiceStack.ServiceHost
 				if (component.StartsWith(VariablePrefix))
 				{
 					this.variablesNames[i] = component.Substring(1, component.Length - 2);
+				    this.variableArgsCount++;
 					lastVariableMatchPos = i;
 				}
 				else
@@ -209,9 +211,8 @@ namespace ServiceStack.ServiceHost
             if (!isMatch) return -1;
 
             var exactVerb = httpMethod == AllowedVerbs;
-            var score = exactVerb ? 1 : 10;
-            var varArgsCount = propertyNamesMap.Count;
-            score += Math.Max((10 - varArgsCount), 1) * 100;
+            var score = exactVerb ? 10 : 1;
+            score += Math.Max((10 - variableArgsCount), 1) * 100;
 
             return score;
         }

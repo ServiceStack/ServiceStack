@@ -18,7 +18,7 @@ namespace ServiceStack.Mvc
 			if (ssController == null) return;
 
 			var authAttrs = GetActionAndControllerAttributes<AuthenticateAttribute>(filterContext);
-			if (authAttrs.Count > 0 && !ssController.AuthSession.IsAuthenticated)
+			if (authAttrs.Count > 0 && ( ssController.AuthSession==null || !ssController.AuthSession.IsAuthenticated))
 			{
 				var returnUrl = filterContext.HttpContext.Request.Url.AbsolutePath;
 			    returnUrl += filterContext.HttpContext.Request.QueryString;

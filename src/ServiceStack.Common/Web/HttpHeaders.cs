@@ -18,6 +18,8 @@ namespace ServiceStack.Common.Web
 
         public const string IfModifiedSince = "If-Modified-Since";
 
+        public const string IfNoneMatch = "If-None-Match";
+
         public const string LastModified = "Last-Modified";
 
         public const string Accept = "Accept";
