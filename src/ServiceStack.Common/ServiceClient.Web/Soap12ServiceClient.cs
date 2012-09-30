@@ -19,6 +19,41 @@ namespace ServiceStack.ServiceClient.Web
             throw new NotImplementedException();
         }
 
+        TResponse IReplyClient.Send<TResponse>(object request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Send<TResponse>(ServiceStack.ServiceHost.IReturn<TResponse> request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Send(ServiceStack.ServiceHost.IReturnVoid request)
+        {
+            throw new NotImplementedException();
+        }
+
+        TResponse IReplyClient.PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
+        {
+            throw new NotImplementedException();
+        }
+
+        TResponse IReplyClient.PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
+        {
+            throw new NotImplementedException();
+        }
+
+        TResponse IReplyClient.PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request)
+        {
+            throw new NotImplementedException();
+        }
+
+        TResponse IReplyClient.PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request)
+        {
+            throw new NotImplementedException();
+        }
+
         public void SetCredentials(string userName, string password)
         {
             throw new NotImplementedException();
