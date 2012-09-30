@@ -107,7 +107,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 					.Fmt(contentType, requestType, ex);
 				throw new SerializationException(msg);
 			}
-			return null;
+            return requestType.CreateInstance(); //Return an empty DTO, even for empty request bodies
 		}
 
 		protected static object GetCustomRequestFromBinder(IHttpRequest httpReq, Type requestType)

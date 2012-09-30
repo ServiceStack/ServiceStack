@@ -9,6 +9,7 @@ using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.OrmLite;
+using ServiceStack.Plugins.MsgPack;
 using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
@@ -16,6 +17,7 @@ using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Cors;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints;
 
 namespace RazorRockstars.Console.Files
 {
@@ -112,7 +114,7 @@ namespace RazorRockstars.Console.Files
             new Reqstar(3, "Foo2", "Bar2", 20), 
         };
 
-        [CorsSupport]
+        [EnableCors]
         public void Options(Reqstar reqstar) { }
 
         public void Any(ResetReqstar request)
@@ -194,8 +196,10 @@ namespace RazorRockstars.Console.Files
             appHost = new AppHost {
                 //EnableRazor = false, //Uncomment for faster tests!
             };
+            appHost.Plugins.Add(new MsgPackFormat());
             //Fast
             appHost.Init();
+            EndpointHost.Config.DebugMode = true;
             appHost.Start(ListeningOn);
         }
 
@@ -227,7 +231,8 @@ namespace RazorRockstars.Console.Files
 		{
 			new JsonServiceClient(BaseUri),
 			new XmlServiceClient(BaseUri),
-			new JsvServiceClient(BaseUri)
+			new JsvServiceClient(BaseUri),
+			new MsgPackServiceClient(BaseUri),
 		};
 
         protected static IServiceClient[] ServiceClients = 

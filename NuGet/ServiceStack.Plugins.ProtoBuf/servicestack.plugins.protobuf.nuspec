@@ -3,13 +3,12 @@
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Plugins.ProtoBuf</id> 
     <title>Protocol Buffers support for ServiceStack. Includes typed ProtoBuf Client</title>
-    <version>3.9.14</version> 
+    <version>3.9.19</version> 
     <authors>Demis Bellot</authors> 
     <owners>Demis Bellot</owners>
     <summary>ProtoBuf Format Serializer ContentType ServiceClients for ServiceStack</summary>
     <description>
       Add the ProtoBuf binary format and endpoint to a ServiceStack web service host. 
-      Includes the WebActivator App_Start/ProtoBuf_AppStart.cs startup script to auto register and load the ProtoBufFormat plugin.
     </description> 
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/LICENSE</licenseUrl>
@@ -18,8 +17,8 @@
     <language>en-US</language>
     <copyright>servicestack.net 2012 and contributors</copyright>
     <dependencies>
-      <dependency id="WebActivator" version="1.5" />
       <dependency id="protobuf-net" />
+      <dependency id="ServiceStack.Common" />
     </dependencies> 
   </metadata> 
 </package>

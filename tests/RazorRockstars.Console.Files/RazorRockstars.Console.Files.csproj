@@ -36,6 +36,7 @@
     <Reference Include="Mono.Data.Sqlite">
       <HintPath>..\..\lib\tests\Mono.Data.Sqlite.dll</HintPath>
     </Reference>
+    <Reference Include="MsgPack, Version=0.3.0.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="ServiceStack.OrmLite, Version=3.9.9.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\ServiceStack.OrmLite.dll</HintPath>
@@ -66,6 +67,7 @@
     <Compile Include="Benchmarks.cs" />
     <Compile Include="DynamicJsonTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="MsgPackServiceTests.cs" />
     <Compile Include="RazorRockstars_FilesTests.cs" />
     <Compile Include="ReqStarsService.cs" />
   </ItemGroup>
@@ -208,6 +210,10 @@
     <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
       <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
       <Name>ServiceStack.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.Plugins.MsgPack\ServiceStack.Plugins.MsgPack.csproj">
+      <Project>{6B751A07-75D4-4A9D-B3A0-EEA27808E64C}</Project>
+      <Name>ServiceStack.Plugins.MsgPack</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj">
       <Project>{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}</Project>
