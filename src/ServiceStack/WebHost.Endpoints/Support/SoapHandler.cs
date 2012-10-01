@@ -63,6 +63,11 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		    try
 			{
 				var request = DataContractDeserializer.Instance.Parse(requestXml, requestType);
+			    var requiresSoapMessage = request as IRequiresSoapMessage;
+                if (requiresSoapMessage != null)
+                {
+                    requiresSoapMessage.Message = requestMsg;
+                }
 
 			    var httpReq = HttpContext.Current != null 
                     ? new HttpRequestWrapper(requestType.Name, HttpContext.Current.Request)

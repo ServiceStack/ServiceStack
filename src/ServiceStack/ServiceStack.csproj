@@ -177,7 +177,9 @@
     <Compile Include="MiniProfiler\WebRequestProfilerProvider.Settings.cs" />
     <Compile Include="ServiceHost\ContainerResolveCache.cs" />
     <Compile Include="ServiceHost\Cookies.cs" />
+    <Compile Include="ServiceHost\DefaultRequestAttribute.cs" />
     <Compile Include="ServiceHost\DtoUtils.cs" />
+    <Compile Include="ServiceHost\IRequiresSoapMessage.cs" />
     <Compile Include="ServiceHost\NServiceExec.cs" />
     <Compile Include="ServiceHost\ServiceRunner.cs" />
     <Compile Include="VirtualPath\AbstractVirtualDirectoryBase.cs" />
