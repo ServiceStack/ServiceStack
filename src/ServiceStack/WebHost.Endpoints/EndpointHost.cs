@@ -388,7 +388,14 @@ namespace ServiceStack.WebHost.Endpoints
             }
 		}
 
-        /// <summary>
+        public static IServiceRunner<TRequest> CreateServiceRunner<TRequest>(ActionContext actionContext)
+        {
+            return AppHost != null 
+                ? AppHost.CreateServiceRunner<TRequest>(actionContext) 
+                : new ServiceRunner<TRequest>(null, actionContext);
+        }
+
+	    /// <summary>
         /// Call to signal the completion of a ServiceStack-handled Request
         /// </summary>
 	    internal static void CompleteRequest()
