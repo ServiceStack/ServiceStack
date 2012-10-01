@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using ServiceStack.Common;
+using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
@@ -16,6 +17,7 @@ namespace ServiceStack.ServiceInterface
     public class AuthenticateAttribute : RequestFilterAttribute
     {
         public string Provider { get; set; }
+        public string HtmlRedirect { get; set; }
 
         public AuthenticateAttribute(ApplyTo applyTo)
             : base(applyTo)
@@ -65,6 +67,19 @@ namespace ServiceStack.ServiceInterface
 
                 if (session == null || !matchingOAuthConfigs.Any(x => session.IsAuthorized(x.Provider)))
                 {
+                    var htmlRedirect = HtmlRedirect ?? AuthService.HtmlRedirect;
+                    if (htmlRedirect != null && req.ResponseContentType.MatchesContentType(ContentType.Html))
+                    {
+                        var url = htmlRedirect;
+                        if (url.SafeSubstring(0, 2) == "~/")
+                        {
+                            url = req.GetBaseUrl() + url.Substring(2);
+                        }
+                        url = url.AddQueryParam("redirect", req.AbsoluteUri);
+                        res.RedirectToUrl(url);
+                        return;
+                    }
+
                     AuthProvider.HandleFailedAuth(matchingOAuthConfigs[0], session, req, res);
                 }
             }

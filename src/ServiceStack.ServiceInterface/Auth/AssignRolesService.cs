@@ -2,6 +2,7 @@
 using System.Linq;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.ServiceInterface.Auth
@@ -37,11 +38,12 @@ namespace ServiceStack.ServiceInterface.Auth
     }
 
     [RequiredRole(RoleNames.Admin)]
-    public class AssignRolesService : RestServiceBase<AssignRoles>
+    [DefaultRequest(typeof(AssignRoles))]
+    public class AssignRolesService : Service
     {
         public IUserAuthRepository UserAuthRepo { get; set; }
 
-        public override object OnPost(AssignRoles request)
+        public object Post(AssignRoles request)
         {
             request.UserName.ThrowIfNullOrEmpty();
 

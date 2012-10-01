@@ -61,7 +61,8 @@ namespace ServiceStack.ServiceInterface.Auth
         [DataMember(Order=4)] public ResponseStatus ResponseStatus { get; set; }
     }
 
-    public class AuthService : RestServiceBase<Auth>
+    [DefaultRequest(typeof(Auth))]
+    public class AuthService : Service
     {
         public const string BasicProvider = "basic";
         public const string CredentialsProvider = "credentials";
@@ -73,6 +74,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
         public static string DefaultOAuthProvider { get; private set; }
         public static string DefaultOAuthRealm { get; private set; }
+        public static string HtmlRedirect { get; internal set; }
         public static IAuthProvider[] AuthProviders { get; private set; }
 
 
@@ -115,12 +117,12 @@ namespace ServiceStack.ServiceInterface.Auth
                 throw new ConfigurationException("No OAuth providers have been registered in your AppHost.");
         }
 
-        public override object OnGet(Auth request)
+        public object Get(Auth request)
         {
-            return OnPost(request);
+            return Post(request);
         }
 
-        public override object OnPost(Auth request)
+        public object Post(Auth request)
         {
             AssertAuthProviders();
 
@@ -149,35 +151,49 @@ namespace ServiceStack.ServiceInterface.Auth
                 return oAuthConfig.Logout(this, request);
 
             var session = this.GetSession();
-            var response = Authenticate(request, provider, session, oAuthConfig);
-
             var referrerUrl = request.Continue
                 ?? session.ReferrerUrl
                 ?? this.RequestContext.GetHeader("Referer")
                 ?? oAuthConfig.CallbackUrl;
 
-            var alreadyAuthenticated = response == null;
-            response = response ?? new AuthResponse {
-                UserName = session.UserName,
-                SessionId = session.Id,
-                ReferrerUrl = referrerUrl,
-            };
-
-            var isHtml = base.RequestContext.ResponseContentType == ContentType.Html;
-            if (isHtml)
+            var isHtml = base.RequestContext.ResponseContentType.MatchesContentType(ContentType.Html);
+            try
             {
-                if (alreadyAuthenticated)
-                    return this.Redirect(referrerUrl.AddHashParam("s", "0"));
+                var response = Authenticate(request, provider, session, oAuthConfig);
 
-                if (!(response is IHttpResult))
+                var alreadyAuthenticated = response == null;
+                response = response ?? new AuthResponse {
+                    UserName = session.UserName,
+                    SessionId = session.Id,
+                    ReferrerUrl = referrerUrl,
+                };
+
+                if (isHtml)
                 {
-                    return new HttpResult(response) {
-                        Location = referrerUrl
-                    };
-                }
-            }
+                    if (alreadyAuthenticated)
+                        return this.Redirect(referrerUrl.AddHashParam("s", "0"));
 
-            return response;
+                    if (!(response is IHttpResult))
+                    {
+                        return new HttpResult(response) {
+                            Location = referrerUrl
+                        };
+                    }
+                }
+
+                return response;
+            }
+            catch (HttpError ex)
+            {
+                referrerUrl = this.RequestContext.GetHeader("Referer");
+                if (isHtml && referrerUrl != null)
+                {
+                    referrerUrl = referrerUrl.SetQueryParam("error", ex.Message);
+                    return HttpResult.Redirect(referrerUrl);
+                }
+
+                throw;
+            }
         }
 
         /// <summary>
@@ -216,7 +232,7 @@ namespace ServiceStack.ServiceInterface.Auth
             return response;
         }
 
-        public override object OnDelete(Auth request)
+        public object Delete(Auth request)
         {
             if (ValidateFn != null)
             {

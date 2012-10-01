@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
@@ -445,13 +446,27 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public void RegisterService(Type serviceType, params string[] atRestPaths)
 		{
-			var genericService = EndpointHost.Config.ServiceManager.RegisterService(serviceType);
-			var requestType = genericService.GetGenericArguments()[0];
-			foreach (var atRestPath in atRestPaths)
-			{
-				this.Routes.Add(requestType, atRestPath, null);
-			}
-		}
+            var genericService = EndpointHost.Config.ServiceManager.RegisterService(serviceType);
+            if (genericService != null)
+            {
+                var requestType = genericService.GetGenericArguments()[0];
+                foreach (var atRestPath in atRestPaths)
+                {
+                    this.Routes.Add(requestType, atRestPath, null);
+                }
+            }
+            else
+            {
+                var reqAttr = serviceType.GetCustomAttributes(true).OfType<DefaultRequestAttribute>().FirstOrDefault();
+                if (reqAttr != null)
+                {
+                    foreach (var atRestPath in atRestPaths)
+                    {
+                        this.Routes.Add(reqAttr.RequestType, atRestPath, null);
+                    }
+                }
+            }
+        }
 
 		public virtual void Dispose()
 		{

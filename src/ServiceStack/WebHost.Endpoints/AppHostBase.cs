@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Funq;
 using ServiceStack.Common;
@@ -263,11 +264,25 @@ namespace ServiceStack.WebHost.Endpoints
 		public void RegisterService(Type serviceType, params string[] atRestPaths)
 		{
 			var genericService = EndpointHost.Config.ServiceManager.RegisterService(serviceType);
-			var requestType = genericService.GetGenericArguments()[0];
-			foreach (var atRestPath in atRestPaths)
-			{
-				this.Routes.Add(requestType, atRestPath, null);
-			}
+            if (genericService != null)
+            {
+                var requestType = genericService.GetGenericArguments()[0];
+                foreach (var atRestPath in atRestPaths)
+                {
+                    this.Routes.Add(requestType, atRestPath, null);
+                }
+            }
+            else
+            {
+                var reqAttr = serviceType.GetCustomAttributes(true).OfType<DefaultRequestAttribute>().FirstOrDefault();
+                if (reqAttr != null)
+                {
+                    foreach (var atRestPath in atRestPaths)
+                    {
+                        this.Routes.Add(reqAttr.RequestType, atRestPath, null);
+                    }
+                }
+            }
 		}
 		
 		public virtual void Dispose()

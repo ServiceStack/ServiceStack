@@ -2,6 +2,7 @@
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.OrmLite;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.ServiceInterface.Auth
@@ -36,11 +37,12 @@ namespace ServiceStack.ServiceInterface.Auth
     }
 
     [RequiredRole(RoleNames.Admin)]
-    public class UnAssignRolesService : RestServiceBase<UnAssignRoles>
+    [DefaultRequest(typeof(UnAssignRoles))]
+    public class UnAssignRolesService : Service
     {
         public IUserAuthRepository UserAuthRepo { get; set; }
 
-        public override object OnPost(UnAssignRoles request)
+        public object Post(UnAssignRoles request)
         {
             request.UserName.ThrowIfNullOrEmpty();
 

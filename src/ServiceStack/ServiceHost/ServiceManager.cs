@@ -110,20 +110,31 @@ namespace ServiceStack.ServiceHost
 
 		public Type RegisterService(Type serviceType)
 		{
-			var genericServiceType = serviceType.GetTypeWithGenericTypeDefinitionOf(typeof(IService<>));
-			if (genericServiceType == null)
-				throw new ArgumentException("Type {0} is not a Web Service that inherits IService<>".Fmt(serviceType.FullName));
-
-			try
+            var genericServiceType = serviceType.GetTypeWithGenericTypeDefinitionOf(typeof(IService<>));
+            try
 			{
-				this.ServiceController.RegisterGService(typeFactory, serviceType);
-				this.Container.RegisterAutoWiredType(serviceType);
-			}
+                if (genericServiceType != null)
+                {
+                    this.ServiceController.RegisterGService(typeFactory, serviceType);
+                    this.Container.RegisterAutoWiredType(serviceType);
+                    return genericServiceType;
+                }
+
+                var isNService = typeof(IService).IsAssignableFrom(serviceType);
+                if (isNService)
+                {
+                    this.ServiceController.RegisterNService(typeFactory, serviceType);
+                    this.Container.RegisterAutoWiredType(serviceType);
+                    return null;
+                }
+
+                throw new ArgumentException("Type {0} is not a Web Service that inherits IService<> or IService".Fmt(serviceType.FullName));
+            }
 			catch (Exception ex)
 			{
 				Log.Error(ex);
-			}			
-			return genericServiceType;
+			    return genericServiceType;
+			}
 		}
 
 		public object Execute(object dto)

@@ -20,6 +20,8 @@ namespace ServiceStack.ServiceInterface
         public Dictionary<Type, string[]> ServiceRoutes { get; set; }
         public List<IPlugin> RegisterPlugins { get; set; }
 
+        public string HtmlRedirect { get; set; }
+
         public bool IncludeAssignRoleServices
         {
             set
@@ -48,11 +50,13 @@ namespace ServiceStack.ServiceInterface
             RegisterPlugins = new List<IPlugin> {
                 new SessionFeature()                          
             };
+            this.HtmlRedirect = "~/login";
         }
 
         public void Register(IAppHost appHost)
         {
             AuthService.Init(sessionFactory, authProviders);
+            AuthService.HtmlRedirect = HtmlRedirect;
 
             var unitTest = appHost == null;
             if (unitTest) return;
