@@ -171,9 +171,11 @@ namespace ServiceStack.Common.Tests.OAuth
 
 			requestContext.Container.Register(userAuthRepository);
 
-			mockAppHost.Register(new AuthService {
-				RequestContext = requestContext,
-			}.SetAppHost(mockAppHost) as AuthService);
+		    var authService = new AuthService {
+                RequestContext = requestContext,
+            };
+            authService.SetAppHost(mockAppHost);
+            mockAppHost.Register(authService);
 
 			var registrationService = new RegistrationService {
 				UserAuthRepo = userAuthRepository,

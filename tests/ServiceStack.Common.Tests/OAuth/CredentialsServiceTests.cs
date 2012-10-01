@@ -5,6 +5,7 @@ using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.ServiceInterface.Validation;
+using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Common.Tests.OAuth
 {
@@ -22,18 +23,39 @@ namespace ServiceStack.Common.Tests.OAuth
 		{
 		    var authService = new AuthService {
                 RequestContext = new MockRequestContext(),
-                ServiceExceptionHandler = (req, ex) =>
-                    ValidationFeature.HandleException(new BasicResolver(), req, ex)
+                //ServiceExceptionHandler = (req, ex) =>
+                //    ValidationFeature.HandleException(new BasicResolver(), req, ex)
             };
 		    return authService;
 		}
+
+        class ValidateServiceRunner<T> : ServiceRunner<T>
+        {
+            public ValidateServiceRunner(IAppHost appHost, ActionContext actionContext)
+                : base(appHost, actionContext) {}
+
+            public override object HandleException(IRequestContext requestContext, T request, System.Exception ex)
+            {
+                return ValidationFeature.HandleException(new BasicResolver(), request, ex);
+            }
+        }
+
+        public object GetAuthService(AuthService authService, Auth request)
+        {
+            var serviceRunner = new ValidateServiceRunner<Auth>(null, new ActionContext {
+                Id = "GET Auth",
+                ServiceAction = (service, req) => ((AuthService)service).Get((Auth)req)
+            });
+
+            return serviceRunner.Process(authService.RequestContext, authService, request);
+        }
 
 	    [Test]
 		public void Empty_request_invalidates_all_fields()
 		{
 			var authService = GetAuthService();
 
-			var response = (HttpError)authService.Get(new Auth());
+            var response = (HttpError)GetAuthService(authService, new Auth());
 			var errors = response.GetFieldErrors();
 
 			Assert.That(errors.Count, Is.EqualTo(2));
@@ -48,8 +70,8 @@ namespace ServiceStack.Common.Tests.OAuth
 		{
 			var authService = GetAuthService();
 
-			var response = (HttpError)authService.Get(
-				new Auth { provider = AuthService.CredentialsProvider });
+            var response = (HttpError)GetAuthService(authService,
+                new Auth { provider = AuthService.CredentialsProvider });
 
 			var errors = response.GetFieldErrors();
 
