@@ -6,6 +6,7 @@ COPY ..\NuGet\ServiceStack\lib\net40\*  latest\ServiceStack
 COPY ..\NuGet\ServiceStack.Common\lib\net35\*  latest\ServiceStack
 COPY ..\NuGet\ServiceStack.Mvc\lib\net40\*  latest\ServiceStack
 COPY ..\NuGet\ServiceStack.Plugins.ProtoBuf\lib\net35\*  latest\ServiceStack
+COPY ..\NuGet\ServiceStack.Plugins.MsgPack\lib\net40\*  latest\ServiceStack
 
 COPY ..\..\ServiceStack.Text\NuGet\lib\net35\*  latest\ServiceStack
 COPY ..\..\ServiceStack.Redis\NuGet\lib\net35\*  latest\ServiceStack
