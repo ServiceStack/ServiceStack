@@ -11,7 +11,7 @@ namespace ServiceStack.ServiceInterface
     /// <summary>
     /// Generic + Useful IService base class
     /// </summary>
-    public class Service : IService, IRequiresRequestContext, IDisposable
+    public class Service : IService, IRequiresRequestContext, IServiceBase, IDisposable
     {
         public IRequestContext RequestContext { get; set; }
 

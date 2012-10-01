@@ -171,11 +171,17 @@ namespace ServiceStack.ServiceInterface
         public static TUserSession SessionAs<TUserSession>(this ICacheClient cache)
         {
             if (SessionKey != null)
-                return cache.Get<TUserSession>(SessionKey);
-            
-            SessionFeature.CreateSessionIds();
-            var unAuthorizedSession = typeof(TUserSession).CreateInstance();
-            return (TUserSession)unAuthorizedSession;
+            {
+                var userSession = cache.Get<TUserSession>(SessionKey);
+                if (!Equals(userSession, default(TUserSession)))
+                    return userSession;
+            }
+
+            if (SessionKey == null)
+                SessionFeature.CreateSessionIds();
+
+            var unAuthorizedSession = (TUserSession)typeof(TUserSession).CreateInstance();
+            return unAuthorizedSession;
         }
 
         public static void ClearSession(this ICacheClient cache)
