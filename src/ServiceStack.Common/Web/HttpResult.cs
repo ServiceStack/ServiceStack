@@ -242,6 +242,17 @@ namespace ServiceStack.Common.Web
                 }
             };
         }
+
+        public static HttpResult Redirect(string newLocationUri, HttpStatusCode redirectStatus=HttpStatusCode.Found)
+        {
+            return new HttpResult {
+                StatusCode = redirectStatus,
+                Headers =
+                {
+                    { HttpHeaders.Location, newLocationUri },
+                }
+            };
+        }
     }
 }
 #endif
