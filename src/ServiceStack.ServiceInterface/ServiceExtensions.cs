@@ -30,6 +30,28 @@ namespace ServiceStack.ServiceInterface
             return url + prefix + key + "=" + val.UrlEncode();
         }
 
+        public static string SetQueryParam(this string url, string key, string val)
+        {
+            if (string.IsNullOrEmpty(url)) return null;
+            var qsPos = url.IndexOf('?');
+            if (qsPos != -1)
+            {
+                var existingKeyPos = url.IndexOf(key, qsPos, StringComparison.InvariantCulture);
+                if (existingKeyPos != -1)
+                {
+                    var endPos = url.IndexOf('&', existingKeyPos);
+                    if (endPos == -1) endPos = url.Length;
+
+                    var newUrl = url.Substring(0, existingKeyPos + key.Length + 1)
+                        + val.UrlEncode()
+                        + url.Substring(endPos);
+                    return newUrl;
+                }
+            }
+            var prefix = qsPos == -1 ? "?" : "&";
+            return url + prefix + key + "=" + val.UrlEncode();
+        }
+
         public static string AddHashParam(this string url, string key, object val)
         {
             return url.AddHashParam(key, val.ToString());
@@ -104,6 +126,13 @@ namespace ServiceStack.ServiceInterface
             service.RequestContext.Get<IHttpRequest>().RemoveSession();
         }
 
+        public static void RemoveSession(this Service service)
+        {
+            if (service == null) return;
+
+            service.RequestContext.Get<IHttpRequest>().RemoveSession();
+        }
+
         public static void CacheSet<T>(this ICacheClient cache, string key, T value, TimeSpan? expiresIn)
         {
             if (expiresIn.HasValue)
@@ -139,6 +168,11 @@ namespace ServiceStack.ServiceInterface
         }
 
         public static IAuthSession GetSession(this IServiceBase service, bool reload = false)
+        {
+            return service.RequestContext.Get<IHttpRequest>().GetSession(reload);
+        }
+
+        public static IAuthSession GetSession(this Service service, bool reload = false)
         {
             return service.RequestContext.Get<IHttpRequest>().GetSession(reload);
         }
