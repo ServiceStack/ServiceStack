@@ -388,6 +388,26 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
         {
             return httpReq.GetItem("Template") as string;
         }
+
+        public static string GetBaseUrl(this IHttpRequest httpReq)
+        {
+            var baseUrl = ServiceStackHttpHandlerFactory.GetBaseUrl();
+            if (baseUrl != null) return baseUrl;
+
+            var handlerPath = EndpointHost.Config.ServiceStackHandlerFactoryPath;
+            if (handlerPath != null)
+            {
+                var pos = httpReq.AbsoluteUri.IndexOf(handlerPath, StringComparison.InvariantCultureIgnoreCase);
+                if (pos >= 0)
+                {
+                    baseUrl = httpReq.AbsoluteUri.Substring(0, pos + handlerPath.Length);
+                    return baseUrl;
+                }
+                return "/" + handlerPath;
+            }
+
+            return "/"; //Can't infer Absolute Uri, fallback to root relative path
+        }
     }
 
 
