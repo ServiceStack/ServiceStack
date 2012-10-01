@@ -15,6 +15,9 @@ namespace ServiceStack.MiniProfiler.Data
         /// This will be made private; use <see cref="InnerConnection"/>
         /// </summary>
         protected DbConnection _conn; // TODO: in MiniProfiler 2.0, make private
+
+        protected bool autoDisposeConnection;
+
         /// <summary>
         /// The underlying, real database connection to your db provider.
         /// </summary>
@@ -59,8 +62,9 @@ namespace ServiceStack.MiniProfiler.Data
     		}
     	}
 
-    	public ProfiledDbConnection(IDbConnection connection, IDbProfiler profiler)
-    	{
+        public ProfiledDbConnection(IDbConnection connection, IDbProfiler profiler, bool autoDisposeConnection=true)
+        {
+            this.autoDisposeConnection = autoDisposeConnection;
     		var hasConn = connection as IHasDbConnection;
 			if (hasConn != null) connection = hasConn.DbConnection;
     		var dbConn = connection as DbConnection;
@@ -126,7 +130,8 @@ namespace ServiceStack.MiniProfiler.Data
 
         public override void Close()
         {
-            _conn.Close();
+            if (autoDisposeConnection)
+                _conn.Close();
         }
 
 		//public override void EnlistTransaction(System.Transactions.Transaction transaction)
@@ -151,7 +156,8 @@ namespace ServiceStack.MiniProfiler.Data
 
         public override void Open()
         {
-            _conn.Open();
+            if (_conn.State != ConnectionState.Open)
+                _conn.Open();
         }
 
         protected override DbTransaction BeginDbTransaction(System.Data.IsolationLevel isolationLevel)
@@ -169,7 +175,8 @@ namespace ServiceStack.MiniProfiler.Data
             if (disposing && _conn != null)
             {
                 _conn.StateChange -= StateChangeHandler;
-                _conn.Dispose();
+                if (autoDisposeConnection)
+                    _conn.Dispose();
             }
             _conn = null;
             _profiler = null;
