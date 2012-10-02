@@ -59,7 +59,7 @@ namespace ServiceStack.Mvc
         /// <summary>
         /// Typed UserSession
         /// </summary>
-        protected object userSession;
+        private object userSession;
         protected TUserSession SessionAs<TUserSession>()
         {
             return (TUserSession)(userSession ?? (userSession = Cache.SessionAs<TUserSession>()));

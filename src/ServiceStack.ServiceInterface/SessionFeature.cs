@@ -39,24 +39,28 @@ namespace ServiceStack.ServiceInterface
             }
         }
 
-        public static string GetSessionId()
+        public static string GetSessionId(IHttpRequest httpReq = null)
         {
-            if (HttpContext.Current == null)
+            if (httpReq == null && HttpContext.Current == null)
                 throw new NotImplementedException(OnlyAspNet);
 
-            return HttpContext.Current.Request.ToRequest().GetSessionId();
+            httpReq = httpReq ?? HttpContext.Current.Request.ToRequest();
+
+            return httpReq.GetSessionId();
         }
 
-        public static void CreateSessionIds()
+        public static void CreateSessionIds(IHttpRequest httpReq = null, IHttpResponse httpRes = null)
         {
-            if (HttpContext.Current != null)
+            if (httpReq == null || httpRes == null)
             {
-                HttpContext.Current.Response.ToResponse()
-                .CreateSessionIds(HttpContext.Current.Request.ToRequest());
-                return;
+                if (HttpContext.Current == null)
+                    throw new NotImplementedException(OnlyAspNet);
             }
 
-            throw new NotImplementedException(OnlyAspNet);
+            httpReq = httpReq ?? HttpContext.Current.Request.ToRequest();
+            httpRes = httpRes ?? HttpContext.Current.Response.ToResponse();
+
+            httpRes.CreateSessionIds(httpReq);
         }
 
         public static string GetSessionKey(string sessionId)

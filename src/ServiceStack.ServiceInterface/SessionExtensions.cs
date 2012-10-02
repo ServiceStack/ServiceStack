@@ -159,34 +159,34 @@ namespace ServiceStack.ServiceInterface
             return new HttpListenerResponseWrapper(listenerHttpRes);
         }
 
-        public static string SessionKey
+        public static string GetSessionKey(IHttpRequest httpReq = null)
         {
-            get
-            {
-                var sessionId = SessionFeature.GetSessionId();
-                return sessionId == null ? null : SessionFeature.GetSessionKey(sessionId);
-            }
+            var sessionId = SessionFeature.GetSessionId(httpReq);
+            return sessionId == null ? null : SessionFeature.GetSessionKey(sessionId);
         }
 
-        public static TUserSession SessionAs<TUserSession>(this ICacheClient cache)
+        public static TUserSession SessionAs<TUserSession>(this ICacheClient cache,
+            IHttpRequest httpReq = null, IHttpResponse httpRes = null)
         {
-            if (SessionKey != null)
+            var sessionKey = GetSessionKey(httpReq);
+
+            if (sessionKey != null)
             {
-                var userSession = cache.Get<TUserSession>(SessionKey);
+                var userSession = cache.Get<TUserSession>(sessionKey);
                 if (!Equals(userSession, default(TUserSession)))
                     return userSession;
             }
 
-            if (SessionKey == null)
-                SessionFeature.CreateSessionIds();
+            if (sessionKey == null)
+                SessionFeature.CreateSessionIds(httpReq, httpRes);
 
             var unAuthorizedSession = (TUserSession)typeof(TUserSession).CreateInstance();
             return unAuthorizedSession;
         }
 
-        public static void ClearSession(this ICacheClient cache)
+        public static void ClearSession(this ICacheClient cache, IHttpRequest httpReq = null)
         {
-            cache.Remove(SessionKey);
+            cache.Remove(GetSessionKey(httpReq));
         }
 
     }

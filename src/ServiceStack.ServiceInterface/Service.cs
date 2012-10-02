@@ -92,25 +92,7 @@ namespace ServiceStack.ServiceInterface
         private object userSession;
         protected virtual TUserSession SessionAs<TUserSession>()
         {
-            if (userSession != null) return (TUserSession)userSession;
-            if (SessionKey != null)
-                userSession = Cache.Get<TUserSession>(SessionKey);
-            else
-                SessionFeature.CreateSessionIds();
-            var unAuthorizedSession = typeof(TUserSession).CreateInstance();
-            return (TUserSession)(userSession ?? (userSession = unAuthorizedSession));
-        }
-
-        /// <summary>
-        /// The UserAgent's SessionKey
-        /// </summary>
-        protected virtual string SessionKey
-        {
-            get
-            {
-                var sessionId = SessionFeature.GetSessionId();
-                return sessionId == null ? null : SessionFeature.GetSessionKey(sessionId);
-            }
+            return (TUserSession)(userSession ?? (userSession = Cache.SessionAs<TUserSession>(Request, Response)));
         }
 
         public virtual void Dispose()

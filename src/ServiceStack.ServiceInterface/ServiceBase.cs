@@ -148,7 +148,7 @@ namespace ServiceStack.ServiceInterface
         private object userSession;
         protected TUserSession SessionAs<TUserSession>()
         {
-            return (TUserSession)(userSession ?? (userSession = this.GetCacheClient().SessionAs<TUserSession>()));
+            return (TUserSession)(userSession ?? (userSession = this.GetCacheClient().SessionAs<TUserSession>(Request, Response)));
         }
 
         /// <summary>
