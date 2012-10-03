@@ -34,6 +34,11 @@ namespace ServiceStack.ServiceHost
 		/// </summary>
 		IServiceRoutes Routes { get; }
 
+        /// <summary>
+        /// Executes the DTO request with no requestContext.
+        /// </summary>
+        object Execute(object dto);
+
 		/// <summary>
 		/// Executes the DTO request under the supplied requestContext.
 		/// </summary>
