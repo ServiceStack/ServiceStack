@@ -96,15 +96,15 @@ namespace ServiceStack.ServiceHost
             {
                 BeforeEachRequest(requestContext, request);
 
-                var httpReq = requestContext.Get<IHttpRequest>();
-                var httpRes = requestContext.Get<IHttpResponse>();
+                var httpReq = requestContext != null ? requestContext.Get<IHttpRequest>() : null;
+                var httpRes = requestContext != null ? requestContext.Get<IHttpResponse>() : null;
 
                 if (RequestFilters != null)
                 {
                     foreach (var requestFilter in RequestFilters)
                     {
                         requestFilter.RequestFilter(httpReq, httpRes, request);
-                        if (httpRes.IsClosed) return null;
+                        if (httpRes != null && httpRes.IsClosed) return null;
                     }
                 }
 
@@ -115,7 +115,7 @@ namespace ServiceStack.ServiceHost
                     foreach (var responseFilter in ResponseFilters)
                     {
                         responseFilter.ResponseFilter(httpReq, httpRes, response);
-                        if (httpRes.IsClosed) return null;
+                        if (httpRes != null && httpRes.IsClosed) return null;
                     }
                 }
 
