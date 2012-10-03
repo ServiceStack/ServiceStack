@@ -147,7 +147,9 @@ namespace ServiceStack.ServiceHost
         public static object Execute(IRequestContext requestContext,
                                      object instance, object request, string requestName)
         {
-            var actionName = requestContext.Get<IHttpRequest>().HttpMethod;
+            var actionName = requestContext != null
+                ? requestContext.Get<IHttpRequest>().HttpMethod
+                : HttpMethod.Post; //MQ Services
 
             InstanceExecFn action;
             if (execMap.TryGetValue(ActionContext.Key(actionName, requestName), out action)
