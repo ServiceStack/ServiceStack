@@ -14,33 +14,13 @@
 *.gif 	binary
 
 *.cs text eol=crlf diff=csharp 
-*.vb text eol=crlf
-*.c text eol=crlf
-*.cpp text=auto
-*.cxx text=auto
-*.h text=auto
-*.hxx text=auto
-*.py text=auto
-*.rb text=auto
-*.java text=auto
-*.html text=auto
-*.htm text=auto
+*.aspx text eol=crlf 
+*.asax text eol=crlf 
+*.config text=auto 
+*.html text eol=crlf
+*.htm text eol=crlf
 *.css text=auto
-*.scss text=auto
-*.sass text=auto
-*.less text=auto
 *.js text=auto
-*.lisp text=auto
-*.clj text=auto
-*.sql text=auto
-*.php text=auto
-*.lua text=auto
-*.m text=auto
-*.asm text=auto
-*.erl text=auto
-*.fs text=auto
-*.fsx text=auto
-*.hs text=auto
 
 *.csproj text=auto merge=union 
 *.vbproj text=auto merge=union 
