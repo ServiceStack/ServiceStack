@@ -20,5 +20,9 @@
       <dependency id="protobuf-net" />
       <dependency id="ServiceStack.Common" />
     </dependencies> 
-  </metadata> 
+  </metadata>
+  <files>
+    <file src="lib\**\*.*" target="lib" />
+    <file src="..\..\src\ServiceStack.Plugins.ProtoBuf\**\*.cs" target="src" />
+  </files>
 </package>
