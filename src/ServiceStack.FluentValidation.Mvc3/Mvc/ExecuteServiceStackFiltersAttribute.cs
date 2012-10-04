@@ -20,9 +20,8 @@ namespace ServiceStack.Mvc
 			var authAttrs = GetActionAndControllerAttributes<AuthenticateAttribute>(filterContext);
 			if (authAttrs.Count > 0 && ( ssController.AuthSession==null || !ssController.AuthSession.IsAuthenticated))
 			{
-				var returnUrl = filterContext.HttpContext.Request.Url.AbsolutePath;
-			    returnUrl += filterContext.HttpContext.Request.QueryString;
-				filterContext.Result = new RedirectResult(ssController.LoginRedirectUrl.Fmt(returnUrl));
+			    var returnUrl = filterContext.HttpContext.Request.Url.PathAndQuery;
+				filterContext.Result = new RedirectResult(ssController.LoginRedirectUrl.Fmt(HttpUtility.UrlEncode(returnUrl)));
 				return;
 			}
 
