@@ -94,8 +94,12 @@ namespace ServiceStack.ServiceHost
 
 		public void ReloadServiceOperations()
 		{
-			this.ServiceOperations = new ServiceOperations(this.ServiceController.OperationTypes);
-			this.AllServiceOperations = new ServiceOperations(this.ServiceController.AllOperationTypes);
+			this.ServiceOperations = new ServiceOperations(this.ServiceController.OperationTypes) {
+                OperationResponseTypesMap = this.ServiceController.OperationResponseTypesMap
+            };
+            this.AllServiceOperations = new ServiceOperations(this.ServiceController.AllOperationTypes) {
+                OperationResponseTypesMap = this.ServiceController.OperationResponseTypesMap
+            };
 		}
 
 		public void RegisterService<T>()

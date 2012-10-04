@@ -123,6 +123,7 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RazorRockstars_WebTests.cs" />
+    <Compile Include="ReqStarsService.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
@@ -132,6 +133,10 @@
     <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
       <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
       <Name>ServiceStack.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.Plugins.MsgPack\ServiceStack.Plugins.MsgPack.csproj">
+      <Project>{6B751A07-75D4-4A9D-B3A0-EEA27808E64C}</Project>
+      <Name>ServiceStack.Plugins.MsgPack</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj">
       <Project>{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}</Project>

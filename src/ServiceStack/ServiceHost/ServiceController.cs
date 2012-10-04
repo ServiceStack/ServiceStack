@@ -29,7 +29,8 @@ namespace ServiceStack.ServiceHost
 			this.RequestServiceTypeMap = new Dictionary<Type, Type>();
 			this.ResponseServiceTypeMap = new Dictionary<Type, Type>();
 			this.AllOperationTypes = new List<Type>();
-			this.OperationTypes = new List<Type>();
+            this.OperationTypes = new List<Type>();
+            this.OperationResponseTypesMap = new Dictionary<Type, Type>();
 			this.RequestTypeFactoryMap = new Dictionary<Type, Func<IHttpRequest, object>>();
 			this.ServiceTypes = new HashSet<Type>();
 			this.EnableAccessRestrictions = true;
@@ -53,7 +54,9 @@ namespace ServiceStack.ServiceHost
 
 		public IList<Type> AllOperationTypes { get; protected set; }
 
-		public IList<Type> OperationTypes { get; protected set; }
+        public IList<Type> OperationTypes { get; protected set; }
+
+        public Dictionary<Type, Type> OperationResponseTypesMap { get; protected set; }
 
 		public Dictionary<Type, Func<IHttpRequest, object>> RequestTypeFactoryMap { get; set; }
 
@@ -159,7 +162,7 @@ namespace ServiceStack.ServiceHost
             {
                 this.ResponseServiceTypeMap[responseType] = serviceType;
                 this.AllOperationTypes.Add(responseType);
-                this.OperationTypes.Add(responseType);
+                this.OperationResponseTypesMap[requestType] = responseType;
             }
 
             if (typeof (IRequiresRequestStream).IsAssignableFrom(requestType))

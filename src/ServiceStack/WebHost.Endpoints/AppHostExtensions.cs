@@ -5,6 +5,7 @@ using System.Reflection;
 using ServiceStack.Common.Utils;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -35,7 +36,7 @@ namespace ServiceStack.WebHost.Endpoints
 				{
 					try
 					{
-						var plugin = ReflectionUtils.CreateInstance(pluginType) as IPlugin;
+                        var plugin = pluginType.CreateInstance() as IPlugin;
 						if (plugin != null)
 						{
 							EndpointHost.AddPlugin(plugin);

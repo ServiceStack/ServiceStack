@@ -6,6 +6,7 @@ using System.Reflection.Emit;
 using ServiceStack.Common.Support;
 using ServiceStack.Logging;
 using ServiceStack.Net30.Collections.Concurrent;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Utils
 {
@@ -22,6 +23,13 @@ namespace ServiceStack.Common.Utils
         {
             if (obj == null) return null;
 
+            var type = obj.GetType();
+            if (type.IsArray || type.IsValueType || type.IsGenericType)
+            {
+                var value = CreateDefaultValue(type, new Dictionary<Type, int>(20));
+                return value;
+            }
+
             return PopulateObjectInternal(obj, new Dictionary<Type, int>(20));
         }
 
@@ -35,8 +43,9 @@ namespace ServiceStack.Common.Utils
         {
             if (obj == null) return null;
             if (obj is string) return obj; // prevents it from dropping into the char[] Chars property.  Sheesh
+            var type = obj.GetType();
 
-            var members = obj.GetType().GetMembers(BindingFlags.Public | BindingFlags.Instance);
+            var members = type.GetMembers(BindingFlags.Public | BindingFlags.Instance);
             foreach (var info in members)
             {
                 var fieldInfo = info as FieldInfo;
@@ -256,7 +265,7 @@ namespace ServiceStack.Common.Utils
 
                 if (type.IsValueType)
                 {
-                    return Activator.CreateInstance(type);
+                    return type.CreateInstance();
                 }
 
                 if (type.IsArray)
@@ -273,15 +282,10 @@ namespace ServiceStack.Common.Utils
 
 #if !SILVERLIGHT && !MONOTOUCH && !XBOX
 
-                    Type[] interfaces = type.FindInterfaces((t, critera) =>
-                        t.IsGenericType && t.GetGenericTypeDefinition() == typeof(ICollection<>)
-                        , null);
-
-                    bool isGenericCollection = interfaces.Length > 0;
-
-                    if (isGenericCollection)
+                    var genericCollectionType = GetGenericCollectionType(type);
+                    if (genericCollectionType != null)
                     {
-                        SetGenericCollection(interfaces[0], value, recursionInfo);
+                        SetGenericCollection(genericCollectionType, value, recursionInfo);
                     }
 #endif
 
@@ -294,6 +298,15 @@ namespace ServiceStack.Common.Utils
             {
                 recursionInfo[type] = recurseLevel;
             }
+        }
+
+        private static Type GetGenericCollectionType(Type type)
+        {
+            var genericCollectionType = type.FindInterfaces((t, critera) =>
+                t.IsGenericType
+                && t.GetGenericTypeDefinition() == typeof (ICollection<>), null).FirstOrDefault();
+
+            return genericCollectionType;
         }
 
         public static void SetGenericCollection(Type realisedListType, object genericObj, Dictionary<Type, int> recursionInfo)
@@ -413,11 +426,6 @@ namespace ServiceStack.Common.Utils
                 }
             }
             while ((baseType = baseType.BaseType) != null);
-        }
-
-        public static object CreateInstance(Type type)
-        {
-            return Text.ReflectionExtensions.CreateInstance(type);
         }
     }
 }

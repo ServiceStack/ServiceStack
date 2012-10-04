@@ -116,6 +116,7 @@
     <Compile Include="Configuration\AppSettings.cs" />
     <Compile Include="Configuration\ConfigurationResourceManager.cs" />
     <Compile Include="Configuration\ConfigUtils.cs" />
+    <Compile Include="PredefinedRoutesFeature.cs" />
     <Compile Include="Funq\Action.cs" />
     <Compile Include="Funq\Container.cs" />
     <Compile Include="Funq\Container.Overloads.cs">
@@ -125,6 +126,8 @@
     <Compile Include="Html\IViewEngine.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="MetadataFeature.cs" />
+    <Compile Include="RequestInfoFeature.cs" />
     <Compile Include="ServiceHost\ContainerTypeExtensions.cs" />
     <Compile Include="Funq\Func.cs" />
     <Compile Include="Funq\IFluentInterface.cs" />
@@ -344,7 +347,6 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="MiniProfiler\UI\includes.tmpl.orig" />
-    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Funq\License.txt" />

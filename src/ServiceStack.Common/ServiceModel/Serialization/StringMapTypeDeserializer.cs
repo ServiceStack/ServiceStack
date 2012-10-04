@@ -62,7 +62,7 @@ namespace ServiceStack.ServiceModel.Serialization
 
             try
             {
-                if (instance == null) instance = ReflectionUtils.CreateInstance(type);
+                if (instance == null) instance = type.CreateInstance();
 
                 foreach (var pair in keyValuePairs)
                 {
