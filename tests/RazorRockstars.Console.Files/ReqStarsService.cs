@@ -175,6 +175,41 @@ namespace RazorRockstars.Console.Files
         }
     }
 
+    [Route("/filterattributes")]
+    public class RequestDto : IReturn<ResponseDto> { }
+    public class ResponseDto {
+        public string Foo { get; set; }
+    }
+
+    [MyResponseFilter]
+    [MyRequestFilter]
+    public class MyService : Service
+    {
+        public object Get(RequestDto request)
+        {
+            return new ResponseDto { Foo = "Bar" };
+        }
+    }
+
+    public class MyResponseFilterAttribute : ResponseFilterAttribute
+    {
+        public static int Called = 0;
+        public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+        {
+            Called++;
+            var x = requestDto;
+        }
+    }
+
+    public class MyRequestFilterAttribute : RequestFilterAttribute
+    {
+        public static int Called = 0;
+        public override void Execute(IHttpRequest req, IHttpResponse res, object responseDto)
+        {
+            Called++;
+            var x = responseDto;
+        }
+    }
 
     [TestFixture]
     public class ReqStarsServiceTests
@@ -238,6 +273,15 @@ namespace RazorRockstars.Console.Files
         protected static IServiceClient[] ServiceClients = 
             RestClients.OfType<IServiceClient>().ToArray();
 
+        [Test, TestCaseSource("RestClients")]
+        public void Does_execute_request_and_response_filter_attributes(IRestClient client)
+        {
+            MyRequestFilterAttribute.Called = MyResponseFilterAttribute.Called = 0;
+            var response = client.Get(new RequestDto());
+            Assert.That(response.Foo, Is.EqualTo("Bar"));
+            Assert.That(MyRequestFilterAttribute.Called, Is.EqualTo(1));
+            Assert.That(MyResponseFilterAttribute.Called, Is.EqualTo(1));
+        }
 
         [Test]
         public void Can_Process_OPTIONS_request_with_Cors_ActionFilter()
