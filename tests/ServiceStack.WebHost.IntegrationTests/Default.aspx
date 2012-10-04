@@ -14,7 +14,7 @@
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="Content/bootstrap.css" rel="stylesheet" />    <link href="Content/default.css" rel="stylesheet" />    <script src="Content/js/jquery-1.7.1.min.js" type="text/javascript"></script>    <script src="Content/js/underscore.min.js" type="text/javascript"></script>    <script src="Content/js/backbone.min.js" type="text/javascript"></script>    <script src="Content/js/jsonreport.js" type="text/javascript"></script>    <script src="Content/js/ss-validation.js" type="text/javascript"></script>    <script src="Content/js/base.js" type="text/javascript"></script>
+    <link href="Content/bootstrap.css" rel="stylesheet" />    <link href="Content/default.css" rel="stylesheet" />    <script src="Content/js/jquery-1.7.1.min.js" type="text/javascript"></script>    <script src="Content/js/underscore.min.js" type="text/javascript"></script>    <script src="Content/js/backbone.min.js" type="text/javascript"></script>    <script src="Content/js/jsonreport.js" type="text/javascript"></script>    <script src="Content/js/ss-validation.js" type="text/javascript"></script>    <script src="Content/js/base.js" type="text/javascript"></script>
     <style type="text/css">
       body {
         padding-top: 60px;
@@ -23,8 +23,8 @@
   </head>
 
   <body>
-    <div class="topbar">      <div class="fill">        <div class="container">          <a class="brand" href="/">Home</a>          <ul class="nav">            <li class="active"><a href="#">Home</a></li>            <li><a href="#about">About</a></li>		  	<li><a href="#contact">Contact</a></li>		  	<li><a href="api/auth/logout">Log Off</a></li>          </ul>        </div>      </div>    </div>
-    <div id="login" class="container">    
+    <div class="topbar">      <div class="fill">        <div class="container">          <a class="brand" href="/">Home</a>          <ul class="nav">            <li class="active"><a href="#">Home</a></li>            <li><a href="#about">About</a></li>		  	<li><a href="#contact">Contact</a></li>		  	<li><a href="api/auth/logout">Log Off</a></li>          </ul>        </div>      </div>    </div>
+    <div id="login" class="container">    
 <h2 id="title">Authentication / Validation tests</h2>
 
 <div class="row">
@@ -34,8 +34,8 @@
                 <fieldset>
                     <legend>Sign In</legend>
 
-                    <div class="clearfix">                        <label for="UserName">Email Address</label>                        <input id="UserName" name="UserName" type="text" value="" />                        <span class="help-inline"></span>                    </div>
-                    <div class="clearfix">                        <label for="Password">Password</label>                        <input id="Password" name="Password" type="password" />                        <span class="help-inline"></span>                    </div>
+                    <div class="clearfix">                        <label for="UserName">Email Address</label>                        <input id="UserName" name="UserName" type="text" value="" />                        <span class="help-inline"></span>                    </div>
+                    <div class="clearfix">                        <label for="Password">Password</label>                        <input id="Password" name="Password" type="password" />                        <span class="help-inline"></span>                    </div>
                     <div class="clearfix">                        <div class="input">                            <ul class="inputs-list">                                <li>                                    <label>                                        <input id="RememberMe" name="RememberMe" type="checkbox" value="true" />                                        <span>Remember me</span>                                    </label>                                </li>                            </ul>                        </div>                        <span class="help-block"></span>                    </div>                    
                     <p>
                         <span class="error-summary"></span>
@@ -73,9 +73,9 @@
                 <fieldset>
                     <legend>Create your member account</legend>
 
-                    <div class="clearfix">                        <label for="DisplayName">DisplayName</label>                        <input id="DisplayName" name="DisplayName" type="text" value="" />                        <span class="help-inline"></span>                    </div>
-                    <div class="clearfix">                        <label for="Email">Email</label>                        <input id="Email" name="Email" type="text" value="" />                        <span class="help-inline"></span>                    </div>
-                    <div class="clearfix">                        <label for="Password">Password</label>                        <input id="Password" name="Password" type="password" />                        <span class="help-inline"></span>                    </div>
+                    <div class="clearfix">                        <label for="DisplayName">DisplayName</label>                        <input id="DisplayName" name="DisplayName" type="text" value="" />                        <span class="help-inline"></span>                    </div>
+                    <div class="clearfix">                        <label for="Email">Email</label>                        <input id="Email" name="Email" type="text" value="" />                        <span class="help-inline"></span>                    </div>
+                    <div class="clearfix">                        <label for="Password">Password</label>                        <input id="Password" name="Password" type="password" />                        <span class="help-inline"></span>                    </div>
                     <div class="clearfix">                        <label for="ConfirmPassword">ConfirmPassword</label>                        <input id="ConfirmPassword" name="ConfirmPassword" type="password" />                        <span class="help-inline"></span>                    </div>
                  
                     <p>
@@ -192,9 +192,9 @@
                 <fieldset>
                     <legend>Sign In w/ Redirect</legend>
 
-                    <div class="clearfix">                        <label for="UserName">Email Address</label>                        <input id="Text1" name="UserName" type="text" value="" />                    </div>
-                    <div class="clearfix">                        <label for="Password">Password</label>                        <input id="Password1" name="Password" type="password" />                    </div>
-                    <div class="clearfix">                        <label for="Continue">Continue</label>                        <input id="Password2" name="Continue" type="text" value="http://google.com" />                    </div>
+                    <div class="clearfix">                        <label for="UserName">Email Address</label>                        <input id="Text1" name="UserName" type="text" value="" />                    </div>
+                    <div class="clearfix">                        <label for="Password">Password</label>                        <input id="Password1" name="Password" type="password" />                    </div>
+                    <div class="clearfix">                        <label for="Continue">Continue</label>                        <input id="Password2" name="Continue" type="text" value="http://google.com" />                    </div>
                     <div class="clearfix">                        <div class="input">                            <ul class="inputs-list">                                <li>                                    <label>                                        <input id="Checkbox1" name="RememberMe" type="checkbox" value="true" />                                        <span>Remember me</span>                                    </label>                                </li>                            </ul>                        </div>                        <span class="help-block"></span>                    </div>                    
                     <p>
                         <span class="error-summary"></span>
