@@ -8,6 +8,7 @@ namespace ServiceStack.Common.Web
         Jsv,
         Csv,
         ProtoBuf,
+        MsgPack,
         Soap11,
         Soap12,
     }

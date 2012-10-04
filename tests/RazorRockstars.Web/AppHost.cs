@@ -28,6 +28,9 @@ namespace RazorRockstars.Web
             {
                 db.CreateTableIfNotExists<Rockstar>();
                 db.Insert(Rockstar.SeedData); //Populate with seed data
+
+                db.DropAndCreateTable<Reqstar>();
+                db.Insert(ReqstarsService.SeedData);
             }
 		}
     }

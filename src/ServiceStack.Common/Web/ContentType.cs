@@ -89,6 +89,13 @@ namespace ServiceStack.Common.Web
 
                 case Soap12:
                     return EndpointAttributes.Soap12;
+
+                case ProtoBuf:
+                    return EndpointAttributes.ProtoBuf;
+
+                case MsgPack:
+                    return EndpointAttributes.MsgPack;
+
             }
 
             return EndpointAttributes.None;
@@ -161,6 +168,12 @@ namespace ServiceStack.Common.Web
 
                 case Soap12:
                     return Feature.Soap12;
+
+                case ProtoBuf:
+                    return Feature.ProtoBuf;
+
+                case MsgPack:
+                    return Feature.MsgPack;
             }
 
             return Feature.None;
@@ -198,8 +211,14 @@ namespace ServiceStack.Common.Web
                 case EndpointType.Jsv:
                     return JsvText;
 
+                case EndpointType.Csv:
+                    return Csv;
+
                 case EndpointType.ProtoBuf:
                     return ProtoBuf;
+
+                case EndpointType.MsgPack:
+                    return MsgPack;
                 
                 default:
                     return null;

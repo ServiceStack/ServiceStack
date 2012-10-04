@@ -323,9 +323,6 @@ namespace ServiceStack.WebHost.Endpoints
 			var pathParts = pathInfo.TrimStart('/').Split('/');
 			if (pathParts.Length == 0) return NotFoundHttpHandler;
 
-			var handler = GetHandlerForPathParts(pathParts);
-			if (handler != null) return handler;
-
 			var existingFile = pathParts[0].ToLower();
 			if (WebHostRootFileNames.Contains(existingFile))
 			{
@@ -374,98 +371,6 @@ namespace ServiceStack.WebHost.Endpoints
 					if (httpHandler != null)
 						return httpHandler;
 				}
-			}
-
-			return null;
-		}
-
-		private static IHttpHandler GetHandlerForPathParts(string[] pathParts)
-		{
-			var pathController = string.Intern(pathParts[0].ToLower());
-			if (pathParts.Length == 1)
-			{
-				if (pathController == "metadata")
-					return new IndexMetadataHandler();
-				if (pathController == "soap11")
-					return new Soap11MessageSyncReplyHttpHandler();
-				if (pathController == "soap12")
-					return new Soap12MessageSyncReplyHttpHandler();
-				if (pathController == RequestInfoHandler.RestPath)
-					return new RequestInfoHandler();
-
-				return null;
-			}
-
-			var pathAction = string.Intern(pathParts[1].ToLower());
-			var requestName = pathParts.Length > 2 ? pathParts[2] : null;
-			switch (pathController)
-			{
-				case "json":
-					if (pathAction == "syncreply")
-						return new JsonSyncReplyHandler { RequestName = requestName };
-					if (pathAction == "asynconeway")
-						return new JsonAsyncOneWayHandler { RequestName = requestName };
-					if (pathAction == "metadata")
-						return new JsonMetadataHandler();
-					break;
-
-				case "xml":
-					if (pathAction == "syncreply")
-						return new XmlSyncReplyHandler { RequestName = requestName };
-					if (pathAction == "asynconeway")
-						return new XmlAsyncOneWayHandler { RequestName = requestName };
-					if (pathAction == "metadata")
-						return new XmlMetadataHandler();
-					break;
-
-				case "jsv":
-					if (pathAction == "syncreply")
-						return new JsvSyncReplyHandler { RequestName = requestName };
-					if (pathAction == "asynconeway")
-						return new JsvAsyncOneWayHandler { RequestName = requestName };
-					if (pathAction == "metadata")
-						return new JsvMetadataHandler();
-					break;
-
-				case "soap11":
-					if (pathAction == "wsdl")
-						return new Soap11WsdlMetadataHandler();
-					if (pathAction == "metadata")
-						return new Soap11MetadataHandler();
-					break;
-
-				case "soap12":
-					if (pathAction == "wsdl")
-						return new Soap12WsdlMetadataHandler();
-					if (pathAction == "metadata")
-						return new Soap12MetadataHandler();
-					break;
-
-				case RequestInfoHandler.RestPath:
-					return new RequestInfoHandler();
-
-				default:
-
-					string contentType;
-					if (EndpointHost.ContentTypeFilter
-						.ContentTypeFormats.TryGetValue(pathController, out contentType))
-					{
-						var feature = Common.Web.ContentType.GetFeature(contentType);
-						if (feature == Feature.None) feature = Feature.CustomFormat;
-
-						var format = Common.Web.ContentType.GetContentFormat(contentType);
-						if (pathAction == "syncreply")
-							return new GenericHandler(contentType, EndpointAttributes.SyncReply, feature) {
-								RequestName = requestName
-							};
-						if (pathAction == "asynconeway")
-							return new GenericHandler(contentType, EndpointAttributes.AsyncOneWay, feature) {
-								RequestName = requestName
-							};
-						if (pathAction == "metadata")
-							return new CustomMetadataHandler(contentType, format);
-					}
-					break;
 			}
 
 			return null;
