@@ -26,4 +26,9 @@
       <dependency id="ServiceStack.Text" />
     </dependencies> 
   </metadata> 
+  <files>
+    <file src="lib\**\*.*" target="lib" />
+    <file src="..\..\src\ServiceStack.Common\**\*.cs" target="src\ServiceStack.Common" />
+    <file src="..\..\src\ServiceStack.Interfaces\**\*.cs" target="src\ServiceStack.Interfaces" />
+  </files>
 </package>
