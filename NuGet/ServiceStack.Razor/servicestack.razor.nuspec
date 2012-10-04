@@ -32,11 +32,7 @@
     </dependencies> 
   </metadata> 
   <files>
-
     <file src="lib\**\*.*" target="lib" />
-
     <file src="..\..\src\ServiceStack.Razor\**\*.cs" target="src" />
-
   </files>
-
 </package>

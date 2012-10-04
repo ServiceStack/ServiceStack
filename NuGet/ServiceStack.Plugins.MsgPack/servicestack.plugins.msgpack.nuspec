@@ -23,7 +23,5 @@
   <files>
     <file src="lib\**\*.*" target="lib" />
     <file src="..\..\src\ServiceStack.Plugins.MsgPack\**\*.cs" target="src" />
-
   </files>
- 
 </package>
