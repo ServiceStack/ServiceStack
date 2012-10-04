@@ -30,7 +30,16 @@ namespace ServiceStack
             }
 
             var pathAction = string.Intern(pathParts[1].ToLower());
+            if (pathAction == "wsdl")
+            {
+                if (pathController == "soap11")
+                    return new Soap11WsdlMetadataHandler();
+                if (pathController == "soap12")
+                    return new Soap12WsdlMetadataHandler();
+            }
+            
             if (pathAction != "metadata") return null;
+
             switch (pathController)
             {
                 case "json":
