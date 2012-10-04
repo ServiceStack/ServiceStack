@@ -176,6 +176,7 @@ namespace RazorRockstars.Web
     }
 
 
+    [Explicit("Find out why dev server doesn't handle multiple requests")]
     [TestFixture]
     public class ReqStarsServiceTests
     {
@@ -192,7 +193,7 @@ namespace RazorRockstars.Web
             LogManager.LogFactory = new ConsoleLogFactory();
             startedAt = Stopwatch.StartNew();
             appHost = new AppHost {
-                //EnableRazor = false, //Uncomment for faster tests!
+                EnableRazor = false, //Uncomment for faster tests!
             };
             appHost.Plugins.Add(new MsgPackFormat());
             appHost.Init();
