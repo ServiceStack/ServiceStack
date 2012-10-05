@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
+using ServiceStack.Messaging;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
@@ -61,7 +61,14 @@ namespace ServiceStack.ServiceHost
 
 		public string DefaultOperationsNamespace { get; set; }
 
-		public IServiceRoutes Routes { get { return routes; } }
+        public IServiceRoutes Routes { get { return routes; } }
+
+        private IResolver resolver;
+        public IResolver Resolver
+        {
+            get { return resolver ?? EndpointHost.AppHost; }
+            set { resolver = value; }
+        }
 
 		public Func<IEnumerable<Type>> ResolveServicesFn { get; set; }
 
@@ -429,11 +436,24 @@ namespace ServiceStack.ServiceHost
 			}
 		}
 
-		public object Execute(object dto)
-		{
-			return Execute(dto, null);
-		}
+        //Execute MQ
+        public object ExecuteMessage<T>(IMessage<T> mqMessage)
+        {
+            return Execute(mqMessage.Body, new MqRequestContext(this.Resolver, mqMessage));
+        }
 
+        //Execute MQ with requestContext
+        public object ExecuteMessage<T>(IMessage<T> dto, IRequestContext requestContext)
+        {
+            return Execute(dto.Body, requestContext);
+        }
+
+        public object Execute(object request)
+        {
+            return Execute(request, null);
+        }
+
+        //Execute HTTP
 		public object Execute(object request, IRequestContext requestContext)
 		{
 			var requestType = request.GetType();

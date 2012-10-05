@@ -55,6 +55,8 @@ namespace ServiceStack.ServiceHost
 
 		Html = 1 << 22,
 		Yaml = 1 << 23,
+
+        MessageQueue = 1 << 24,
 	}
 
 }
