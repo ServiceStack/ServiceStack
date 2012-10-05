@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
@@ -29,7 +30,8 @@ namespace ServiceStack.ServiceHost
 			this.RequestServiceTypeMap = new Dictionary<Type, Type>();
 			this.ResponseServiceTypeMap = new Dictionary<Type, Type>();
 			this.AllOperationTypes = new List<Type>();
-			this.OperationTypes = new List<Type>();
+            this.OperationTypes = new List<Type>();
+            this.OperationResponseTypesMap = new Dictionary<Type, Type>();
 			this.RequestTypeFactoryMap = new Dictionary<Type, Func<IHttpRequest, object>>();
 			this.ServiceTypes = new HashSet<Type>();
 			this.EnableAccessRestrictions = true;
@@ -53,7 +55,9 @@ namespace ServiceStack.ServiceHost
 
 		public IList<Type> AllOperationTypes { get; protected set; }
 
-		public IList<Type> OperationTypes { get; protected set; }
+        public IList<Type> OperationTypes { get; protected set; }
+
+        public Dictionary<Type, Type> OperationResponseTypesMap { get; protected set; }
 
 		public Dictionary<Type, Func<IHttpRequest, object>> RequestTypeFactoryMap { get; set; }
 
@@ -166,7 +170,7 @@ namespace ServiceStack.ServiceHost
             {
                 this.ResponseServiceTypeMap[responseType] = serviceType;
                 this.AllOperationTypes.Add(responseType);
-                this.OperationTypes.Add(responseType);
+                this.OperationResponseTypesMap[requestType] = responseType;
             }
 
             if (typeof (IRequiresRequestStream).IsAssignableFrom(requestType))
@@ -244,10 +248,10 @@ namespace ServiceStack.ServiceHost
                 }
             }
 
-			var yieldedWildcardMatches = RestPath.GetFirstMatchWildCardHashKeys(matchUsingPathParts);
-			foreach (var potentialHashMatch in yieldedWildcardMatches)
-			{
-				if (!this.RestPathMap.TryGetValue(potentialHashMatch, out firstMatches)) continue;
+            var yieldedWildcardMatches = RestPath.GetFirstMatchWildCardHashKeys(matchUsingPathParts);
+            foreach (var potentialHashMatch in yieldedWildcardMatches)
+            {
+                if (!this.RestPathMap.TryGetValue(potentialHashMatch, out firstMatches)) continue;
 
                 var bestScore = -1;
                 foreach (var restPath in firstMatches)
@@ -265,8 +269,8 @@ namespace ServiceStack.ServiceHost
                 }
             }
 
-			return null;
-		}
+            return null;
+        }
 
 		internal class TypeFactoryWrapper : ITypeFactory
 		{
@@ -391,50 +395,50 @@ namespace ServiceStack.ServiceHost
         }
 
         private static void InjectRequestContext(object service, IRequestContext requestContext)
-		{
-			if (requestContext == null) return;
+        {
+            if (requestContext == null) return;
 
-			var serviceRequiresContext = service as IRequiresRequestContext;
-			if (serviceRequiresContext != null)
-			{
-				serviceRequiresContext.RequestContext = requestContext;
-			}
+            var serviceRequiresContext = service as IRequiresRequestContext;
+            if (serviceRequiresContext != null)
+            {
+                serviceRequiresContext.RequestContext = requestContext;
+            }
 
-			var servicesRequiresHttpRequest = service as IRequiresHttpRequest;
-			if (servicesRequiresHttpRequest != null)
-				servicesRequiresHttpRequest.HttpRequest = requestContext.Get<IHttpRequest>();
-		}
+            var servicesRequiresHttpRequest = service as IRequiresHttpRequest;
+            if (servicesRequiresHttpRequest != null)
+                servicesRequiresHttpRequest.HttpRequest = requestContext.Get<IHttpRequest>();
+        }
 
-		private static Func<object, object, EndpointAttributes, object> CallServiceExecuteGeneric(
+        private static Func<object, object, EndpointAttributes, object> CallServiceExecuteGeneric(
 			Type requestType, Type serviceType)
-		{
+        {
             var mi = GServiceExec.GetExecMethodInfo(serviceType, requestType);
             
             try
-			{
-				var requestDtoParam = Expression.Parameter(typeof(object), "requestDto");
-				var requestDtoStrong = Expression.Convert(requestDtoParam, requestType);
+            {
+                var requestDtoParam = Expression.Parameter(typeof(object), "requestDto");
+                var requestDtoStrong = Expression.Convert(requestDtoParam, requestType);
 
-				var serviceParam = Expression.Parameter(typeof(object), "serviceObj");
-				var serviceStrong = Expression.Convert(serviceParam, serviceType);
+                var serviceParam = Expression.Parameter(typeof(object), "serviceObj");
+                var serviceStrong = Expression.Convert(serviceParam, serviceType);
 
-				var attrsParam = Expression.Parameter(typeof(EndpointAttributes), "attrs");
+                var attrsParam = Expression.Parameter(typeof(EndpointAttributes), "attrs");
 
-				Expression callExecute = Expression.Call(
-					mi, new Expression[] { serviceStrong, requestDtoStrong, attrsParam });
+                Expression callExecute = Expression.Call(
+                    mi, new Expression[] { serviceStrong, requestDtoStrong, attrsParam });
 
-				var executeFunc = Expression.Lambda<Func<object, object, EndpointAttributes, object>>
-					(callExecute, requestDtoParam, serviceParam, attrsParam).Compile();
+                var executeFunc = Expression.Lambda<Func<object, object, EndpointAttributes, object>>
+                    (callExecute, requestDtoParam, serviceParam, attrsParam).Compile();
 
-				return executeFunc;
+                return executeFunc;
 
-			}
-			catch (Exception)
-			{
-				//problems with MONO, using reflection for fallback
-				return (request, service, attrs) => mi.Invoke(null, new[] { service, request, attrs });
-			}
-		}
+            }
+            catch (Exception)
+            {
+                //problems with MONO, using reflection for fallback
+                return (request, service, attrs) => mi.Invoke(null, new[] { service, request, attrs });
+            }
+        }
 
         //Execute MQ
         public object ExecuteMessage<T>(IMessage<T> mqMessage)
@@ -454,74 +458,74 @@ namespace ServiceStack.ServiceHost
         }
 
         //Execute HTTP
-		public object Execute(object request, IRequestContext requestContext)
-		{
-			var requestType = request.GetType();
+	public object Execute(object request, IRequestContext requestContext)
+	{
+            var requestType = request.GetType();
+		
+            if (EnableAccessRestrictions)
+            {
+                AssertServiceRestrictions(requestType,
+		    requestContext != null ? requestContext.EndpointAttributes : EndpointAttributes.None);
+            }
 
-			if (EnableAccessRestrictions)
-			{
-				AssertServiceRestrictions(requestType,
-					requestContext != null ? requestContext.EndpointAttributes : EndpointAttributes.None);
-			}
-
-			var handlerFn = GetService(requestType);
-			return handlerFn(requestContext, request);
-		}
+            var handlerFn = GetService(requestType);
+            return handlerFn(requestContext, request);
+        }
 
         public ServiceExecFn GetService(Type requestType)
-		{
+	{
             ServiceExecFn handlerFn;
-			if (!requestExecMap.TryGetValue(requestType, out handlerFn))
-			{
-				throw new NotImplementedException(
-						string.Format("Unable to resolve service '{0}'", requestType.Name));
-			}
+            if (!requestExecMap.TryGetValue(requestType, out handlerFn))
+            {
+                throw new NotImplementedException(string.Format("Unable to resolve service '{0}'", requestType.Name));
+            }
 
-			return handlerFn;
-		}
+            return handlerFn;
+        }
 
-		public object ExecuteText(string requestXml, Type requestType, IRequestContext requestContext)
-		{
-			var request = DataContractDeserializer.Instance.Parse(requestXml, requestType);
-			var response = Execute(request, requestContext);
-			var responseXml = DataContractSerializer.Instance.Parse(response);
-			return responseXml;
-		}
+        public object ExecuteText(string requestXml, Type requestType, IRequestContext requestContext)
+        {
+            var request = DataContractDeserializer.Instance.Parse(requestXml, requestType);
+            var response = Execute(request, requestContext);
+            var responseXml = DataContractSerializer.Instance.Parse(response);
+            return responseXml;
+        }
 
-		public void AssertServiceRestrictions(Type requestType, EndpointAttributes actualAttributes)
-		{
-			ServiceAttribute serviceAttr;
-			var hasNoAccessRestrictions = !requestServiceAttrs.TryGetValue(requestType, out serviceAttr)
-				|| serviceAttr.HasNoAccessRestrictions;
+        public void AssertServiceRestrictions(Type requestType, EndpointAttributes actualAttributes)
+        {
+            ServiceAttribute serviceAttr;
+            var hasNoAccessRestrictions = !requestServiceAttrs.TryGetValue(requestType, out serviceAttr)
+                || serviceAttr.HasNoAccessRestrictions;
 
-			if (hasNoAccessRestrictions)
-			{
-				return;
-			}
+            if (hasNoAccessRestrictions)
+            {
+                return;
+            }
 
-			var failedScenarios = new StringBuilder();
-			foreach (var requiredScenario in serviceAttr.RestrictAccessToScenarios)
-			{
-				var allServiceRestrictionsMet = (requiredScenario & actualAttributes) == actualAttributes;
-				if (allServiceRestrictionsMet)
-				{
-					return;
-				}
+            var failedScenarios = new StringBuilder();
+            foreach (var requiredScenario in serviceAttr.RestrictAccessToScenarios)
+            {
+                var allServiceRestrictionsMet = (requiredScenario & actualAttributes) == actualAttributes;
+                if (allServiceRestrictionsMet)
+                {
+                    return;
+                }
 
-				var passed = requiredScenario & actualAttributes;
-				var failed = requiredScenario & ~(passed);
+                var passed = requiredScenario & actualAttributes;
+                var failed = requiredScenario & ~(passed);
 
-				failedScenarios.AppendFormat("\n -[{0}]", failed);
-			}
 
-			var internalDebugMsg = (EndpointAttributes.InternalNetworkAccess & actualAttributes) != 0
-				? "\n Unauthorized call was made from: " + actualAttributes
-				: "";
+                failedScenarios.AppendFormat("\n -[{0}]", failed);
+            }
 
-			throw new UnauthorizedAccessException(
-				string.Format("Could not execute service '{0}', The following restrictions were not met: '{1}'" + internalDebugMsg,
-					requestType.Name, failedScenarios));
-		}
-	}
+            var internalDebugMsg = (EndpointAttributes.InternalNetworkAccess & actualAttributes) != 0
+                ? "\n Unauthorized call was made from: " + actualAttributes
+                : "";
+
+            throw new UnauthorizedAccessException(
+                string.Format("Could not execute service '{0}', The following restrictions were not met: '{1}'" + internalDebugMsg,
+                    requestType.Name, failedScenarios));
+        }
+    }
 
 }

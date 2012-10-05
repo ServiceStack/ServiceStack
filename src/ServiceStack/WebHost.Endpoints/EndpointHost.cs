@@ -62,6 +62,9 @@ namespace ServiceStack.WebHost.Endpoints
 				new HtmlFormat(),
 				new CsvFormat(),
 				new MarkdownFormat(),
+                new PredefinedRoutesFeature(),
+                new MetadataFeature(),
+                new RequestInfoFeature(),
 			};
 		}
 		
@@ -116,14 +119,26 @@ namespace ServiceStack.WebHost.Endpoints
 			if ((Feature.Csv & config.EnableFeatures) != Feature.Csv)
 				Plugins.RemoveAll(x => x is CsvFormat);
 
-			if ((Feature.Markdown & config.EnableFeatures) != Feature.Markdown)
-				Plugins.RemoveAll(x => x is MarkdownFormat);
+            if ((Feature.Markdown & config.EnableFeatures) != Feature.Markdown)
+                Plugins.RemoveAll(x => x is MarkdownFormat);
+
+            if ((Feature.PredefinedRoutes & config.EnableFeatures) != Feature.PredefinedRoutes)
+                Plugins.RemoveAll(x => x is PredefinedRoutesFeature);
+
+            if ((Feature.Metadata & config.EnableFeatures) != Feature.Metadata)
+                Plugins.RemoveAll(x => x is MetadataFeature);
+
+            if ((Feature.RequestInfo & config.EnableFeatures) != Feature.RequestInfo)
+                Plugins.RemoveAll(x => x is RequestInfoFeature);
 
 			if ((Feature.Razor & config.EnableFeatures) != Feature.Razor)
 				Plugins.RemoveAll(x => x is IRazorPlugin);    //external
 
-			if ((Feature.ProtoBuf & config.EnableFeatures) != Feature.ProtoBuf)
-				Plugins.RemoveAll(x => x is IProtoBufPlugin); //external
+            if ((Feature.ProtoBuf & config.EnableFeatures) != Feature.ProtoBuf)
+                Plugins.RemoveAll(x => x is IProtoBufPlugin); //external
+
+            if ((Feature.MsgPack & config.EnableFeatures) != Feature.MsgPack)
+                Plugins.RemoveAll(x => x is IMsgPackPlugin);  //external
 
             if (ExceptionHandler == null) {
                 ExceptionHandler = (httpReq, httpRes, operationName, ex) => {

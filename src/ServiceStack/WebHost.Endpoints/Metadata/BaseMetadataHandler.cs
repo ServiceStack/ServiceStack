@@ -56,12 +56,21 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 				var requestMessage = CreateMessage(operationType);
 				var restPaths = CreateRestPaths(operationType);
 				string responseMessage = null;
-				if (allTypes.Any(x => x.Name == operationName + ResponseSuffix))
-				{
-					var operationResponseType = allTypes.Single(x => x.Name == operationName + ResponseSuffix);
-					responseMessage = CreateMessage(operationResponseType);
-				}
-				var description = "";
+
+			    Type operationResponseType = null;
+                if (!operations.OperationResponseTypesMap.TryGetValue(operationType, out operationResponseType))
+			    {
+                    if (allTypes.Any(x => x.Name == operationName + ResponseSuffix))
+                    {
+                        operationResponseType = allTypes.Single(x => x.Name == operationName + ResponseSuffix);
+                    }
+                }
+                if (operationResponseType != null)
+                {
+                    responseMessage = CreateMessage(operationResponseType);                    
+                }
+				
+                var description = "";
 				var descAttrs = operationType.GetCustomAttributes(typeof(DescriptionAttribute), true);
 				if (descAttrs.Length > 0)
 				{

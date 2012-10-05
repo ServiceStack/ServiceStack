@@ -31,8 +31,8 @@ namespace ServiceStack.ServiceHost
 		HttpPost = 1 << 7,
 		HttpPut = 1 << 8,
 		HttpDelete = 1 << 9,
-        HttpPatch = 1 << 10,
-        HttpOptions = 1 << 11,
+		HttpPatch = 1 << 10,
+		HttpOptions = 1 << 11,
 		//Future 12
 
 		//Call Styles
@@ -56,7 +56,8 @@ namespace ServiceStack.ServiceHost
 		Html = 1 << 22,
 		Yaml = 1 << 23,
 
-        MessageQueue = 1 << 24,
-	}
+ 		MsgPack = 1 << 24,
+		MessageQueue = 1 << 25,
+    }
 
 }
