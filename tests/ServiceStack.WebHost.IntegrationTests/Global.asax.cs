@@ -1,5 +1,6 @@
 ﻿using System;
 using Funq;
+using ServiceStack.Authentication.OpenId;
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common;
@@ -132,6 +133,7 @@ namespace ServiceStack.WebHost.IntegrationTests
 						new CredentialsAuthProvider(appSettings), 
 						new FacebookAuthProvider(appSettings), 
 						new TwitterAuthProvider(appSettings), 
+                        new GoogleOpenIdOAuthProvider(appSettings), 
                         new DigestAuthProvider(appSettings),
 						new BasicAuthProvider(appSettings), 
 					}));
@@ -142,7 +144,7 @@ namespace ServiceStack.WebHost.IntegrationTests
 					new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()));
 
 				var authRepo = (OrmLiteAuthRepository)container.Resolve<IUserAuthRepository>();
-				if (new AppSettings().Get("Recr	eateTables", true))
+				if (new AppSettings().Get("RecreateTables", true))
 					authRepo.DropAndReCreateTables();
 				else 
 					authRepo.CreateMissingTables();

@@ -133,7 +133,7 @@ namespace ServiceStack.ServiceInterface.Auth
                 || session.ReferrerUrl.IndexOf("/auth", StringComparison.OrdinalIgnoreCase) >= 0)
                 session.ReferrerUrl = this.RedirectUrl 
                     ?? ServiceStackHttpHandlerFactory.GetBaseUrl()
-                    ?? requestUri.Substring(0, requestUri.IndexOf("/", "https://".Length + 1));
+                    ?? requestUri.Substring(0, requestUri.IndexOf("/", "https://".Length + 1, StringComparison.Ordinal));
 
             var tokens = session.ProviderOAuthAccess.FirstOrDefault(x => x.Provider == Provider);
             if (tokens == null)
