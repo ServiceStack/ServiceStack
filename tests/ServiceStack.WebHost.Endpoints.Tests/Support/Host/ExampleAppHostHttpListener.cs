@@ -477,6 +477,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 			}
 
             Plugins.Add(new ProtoBufFormat());
+            Plugins.Add(new RequestInfoFeature());
 		}
 	}
 
@@ -546,6 +547,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
             {
                 ConfigureFilter(container);
             }
+
+            Plugins.Add(new RequestInfoFeature());
         }
     }
 
