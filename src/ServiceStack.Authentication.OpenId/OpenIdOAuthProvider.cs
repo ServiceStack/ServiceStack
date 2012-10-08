@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using DotNetOpenAuth.Messaging;
 using DotNetOpenAuth.OpenId.Extensions.AttributeExchange;
 using DotNetOpenAuth.OpenId.Extensions.SimpleRegistration;
@@ -8,7 +7,6 @@ using DotNetOpenAuth.OpenId.RelyingParty;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
-using ServiceStack.Logging;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
@@ -17,43 +15,36 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Authentication.OpenId
 {
-    public class GoogleOpenIdOAuthProvider : OpenIdOAuthProvider
-    {
-        public const string Name = "GoogleOpenId";
-        public static string Realm = "https://www.google.com/accounts/o8/id";
-
-        public GoogleOpenIdOAuthProvider(IResourceManager appSettings) 
-            : base(appSettings, Realm, Name, null) {}
-    }
-
     public class OpenIdOAuthProvider : OAuthProvider
     {
-        private static ILog Log = LogManager.GetLogger(typeof(OpenIdOAuthProvider));
+        public const string DefaultName = "OpenId";
 
-        public static readonly ClaimsRequest DefaultClaimsRequest = new ClaimsRequest {
-            Country = DemandLevel.Request,
-            Email = DemandLevel.Request,
-            Gender = DemandLevel.Require,
-            PostalCode = DemandLevel.Require,
-            TimeZone = DemandLevel.Require,
-        };
+        public OpenIdOAuthProvider(IResourceManager appSettings, string name = DefaultName, string realm = null)
+            : base(appSettings, realm, name) { }
 
-        private ClaimsRequest ClaimsRequest;
-
-        public OpenIdOAuthProvider(IResourceManager appSettings, string realm, string name, ClaimsRequest claimsRequest)
-            : base(appSettings, realm, name)
+        public virtual ClaimsRequest CreateClaimsRequest(IHttpRequest httpReq)
         {
-            this.ClaimsRequest = claimsRequest ?? DefaultClaimsRequest;
+            return new ClaimsRequest {
+                Country = DemandLevel.Request,
+                Email = DemandLevel.Request,
+                Gender = DemandLevel.Require,
+                PostalCode = DemandLevel.Require,
+                TimeZone = DemandLevel.Require,
+            };
         }
 
         public override object Authenticate(IServiceBase authService, IAuthSession session, Auth request)
         {
             var tokens = Init(authService, ref session, request);
 
-            var httpMethod = authService.RequestContext.Get<IHttpRequest>().HttpMethod;
+            var httpReq = authService.RequestContext.Get<IHttpRequest>();
+            var httpMethod = httpReq.HttpMethod;
             if (httpMethod == HttpMethod.Post)
             {
-                var openIdUrl = base.AuthRealm;
+                var openIdUrl = httpReq.GetParam("OpenIdUrl") ?? base.AuthRealm;
+                if (openIdUrl.IsNullOrEmpty())
+                    throw new ArgumentNullException("'OpenIdUrl' is required a required field");
+
                 try
                 {
                     using (var openid = new OpenIdRelyingParty())
@@ -64,14 +55,14 @@ namespace ServiceStack.Authentication.OpenId
 
                         // This is where you would add any OpenID extensions you wanted
                         // to include in the authentication request.
-                        openIdRequest.AddExtension(ClaimsRequest);
+                        openIdRequest.AddExtension(CreateClaimsRequest(httpReq));
 
                         // Send your visitor to their Provider for authentication.
-                        var openIdResponse = openIdRequest.RedirectingResponse;                        
+                        var openIdResponse = openIdRequest.RedirectingResponse;
                         var contentType = openIdResponse.Headers[HttpHeaders.ContentType];
                         var httpResult = new HttpResult(openIdResponse.ResponseStream, contentType) {
                             StatusCode = openIdResponse.Status,
-                            StatusDescription = "Moved Temporarily",                            
+                            StatusDescription = "Moved Temporarily",
                         };
                         foreach (string header in openIdResponse.Headers)
                         {
@@ -86,46 +77,49 @@ namespace ServiceStack.Authentication.OpenId
                     return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "Unknown"));
                 }
             }
-            else if (httpMethod == HttpMethod.Get)
+
+            if (httpMethod == HttpMethod.Get)
             {
-                var openid = new OpenIdRelyingParty();
-                var response = openid.GetResponse();
-                if (response != null)
+                using (var openid = new OpenIdRelyingParty())
                 {
-                    switch (response.Status)
+                    var response = openid.GetResponse();
+                    if (response != null)
                     {
-                        case AuthenticationStatus.Authenticated:
-                            // This is where you would look for any OpenID extension responses included
-                            // in the authentication assertion.
-                            var claimsResponse = response.GetExtension<ClaimsResponse>();
-                            var authInfo = claimsResponse.ToDictionary();
-                            
-                            authInfo["user_id"] = response.ClaimedIdentifier; //a url
+                        switch (response.Status)
+                        {
+                            case AuthenticationStatus.Authenticated:
+                                // This is where you would look for any OpenID extension responses included
+                                // in the authentication assertion.
+                                var claimsResponse = response.GetExtension<ClaimsResponse>();
+                                var authInfo = claimsResponse.ToDictionary();
 
-                            // Store off the "friendly" username to display -- NOT for username lookup
-                            authInfo["openid_ref"] = response.FriendlyIdentifierForDisplay;
-                            
-                            var provided = GetAttributeEx(response);
-                            foreach (var entry in provided)
-                            {
-                                authInfo[entry.Key] = entry.Value;
-                            }
+                                authInfo["user_id"] = response.ClaimedIdentifier; //a url
 
-                            // Use FormsAuthentication to tell ASP.NET that the user is now logged in,
-                            // with the OpenID Claimed Identifier as their username.
+                                // Store off the "friendly" username to display -- NOT for username lookup
+                                authInfo["openid_ref"] = response.FriendlyIdentifierForDisplay;
 
-                            session.IsAuthenticated = true;
-                            authService.SaveSession(session, SessionExpiry);
-                            OnAuthenticated(authService, session, tokens, authInfo);
+                                var provided = GetAttributeEx(response);
+                                foreach (var entry in provided)
+                                {
+                                    authInfo[entry.Key] = entry.Value;
+                                }
 
-                            //Haz access!
-                            return authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
+                                // Use FormsAuthentication to tell ASP.NET that the user is now logged in,
+                                // with the OpenID Claimed Identifier as their username.
 
-                        case AuthenticationStatus.Canceled:
-                            return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "ProviderCancelled"));
+                                session.IsAuthenticated = true;
+                                authService.SaveSession(session, SessionExpiry);
+                                OnAuthenticated(authService, session, tokens, authInfo);
 
-                        case AuthenticationStatus.Failed:
-                            return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "Unknown"));
+                                //Haz access!
+                                return authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
+
+                            case AuthenticationStatus.Canceled:
+                                return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "ProviderCancelled"));
+
+                            case AuthenticationStatus.Failed:
+                                return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "Unknown"));
+                        }
                     }
                 }
             }
@@ -141,12 +135,16 @@ namespace ServiceStack.Authentication.OpenId
 
             if (authInfo.ContainsKey("name"))
                 tokens.DisplayName = authInfo.GetValueOrDefault("name");
-            
-            if (authInfo.ContainsKey("Email"))
-                tokens.Email = authInfo.GetValueOrDefault("Email");
 
             if (authInfo.ContainsKey("FullName"))
+            {
                 tokens.FullName = authInfo.GetValueOrDefault("FullName");
+                if (tokens.DisplayName.IsNullOrEmpty())
+                    tokens.DisplayName = tokens.FullName;
+            }
+
+            if (authInfo.ContainsKey("Email"))
+                tokens.Email = authInfo.GetValueOrDefault("Email");
 
             if (authInfo.ContainsKey("BirthDate"))
                 tokens.BirthDate = authInfo.GetValueOrDefault("BirthDate").FromJsv<DateTime?>();
@@ -174,7 +172,7 @@ namespace ServiceStack.Authentication.OpenId
 
             if (authInfo.ContainsKey("TimeZone"))
                 tokens.TimeZone = authInfo.GetValueOrDefault("TimeZone");
-            
+
             LoadUserOAuthProvider(userSession, tokens);
         }
 
@@ -207,7 +205,7 @@ namespace ServiceStack.Authentication.OpenId
 
             auth.AddExtension(fetch);
         }
-        
+
         /// <summary>
         /// Extracts an Attribute Exchange response, if one exists
         /// </summary>
@@ -255,7 +253,7 @@ namespace ServiceStack.Authentication.OpenId
 
     public static class OpenIdExtensions
     {
-        public static Dictionary<string,string> ToDictionary(this ClaimsResponse response)
+        public static Dictionary<string, string> ToDictionary(this ClaimsResponse response)
         {
             var map = new Dictionary<string, string>();
             if (response == null) return map;

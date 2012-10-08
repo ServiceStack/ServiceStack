@@ -61,14 +61,16 @@ namespace ServiceStack.ServiceInterface.Auth
 
         public virtual void PopulateMissing(UserOAuthProvider authProvider)
         {
+            //Don't explicitly override after if values exist
+            if (!authProvider.DisplayName.IsNullOrEmpty() && this.DisplayName.IsNullOrEmpty())
+                this.DisplayName = authProvider.DisplayName;
+            if (!authProvider.Email.IsNullOrEmpty() && this.PrimaryEmail.IsNullOrEmpty())
+                this.PrimaryEmail = authProvider.Email;
+
             if (!authProvider.FirstName.IsNullOrEmpty())
                 this.FirstName = authProvider.FirstName;
             if (!authProvider.LastName.IsNullOrEmpty())
                 this.LastName = authProvider.LastName;
-            if (!authProvider.DisplayName.IsNullOrEmpty())
-                this.DisplayName = authProvider.DisplayName;
-            if (!authProvider.Email.IsNullOrEmpty())
-                this.PrimaryEmail = authProvider.Email;            
             if (!authProvider.FullName.IsNullOrEmpty())
                 this.FullName = authProvider.FullName;
             if (authProvider.BirthDate != null)
