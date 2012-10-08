@@ -73,7 +73,7 @@ namespace ServiceStack.Authentication.OpenId
                 }
                 catch (ProtocolException ex)
                 {
-                    Log.Error("Falied to login to {0}".Fmt(openIdUrl), ex);
+                    Log.Error("Failed to login to {0}".Fmt(openIdUrl), ex);
                     return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "Unknown"));
                 }
             }
