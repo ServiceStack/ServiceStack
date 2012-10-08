@@ -6,6 +6,7 @@ using System.Text;
 using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
+using ServiceStack.Messaging;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
@@ -65,6 +66,13 @@ namespace ServiceStack.ServiceHost
 		public string DefaultOperationsNamespace { get; set; }
 
 		public IServiceRoutes Routes { get { return routes; } }
+
+        private IResolver resolver;
+        public IResolver Resolver
+        {
+            get { return resolver ?? EndpointHost.AppHost; }
+            set { resolver = value; }
+        }
 
 		public Func<IEnumerable<Type>> ResolveServicesFn { get; set; }
 
@@ -432,15 +440,28 @@ namespace ServiceStack.ServiceHost
 			}
 		}
 
-		public object Execute(object dto)
+        //Execute MQ
+        public object ExecuteMessage<T>(IMessage<T> mqMessage)
 		{
-			return Execute(dto, null);
+            return Execute(mqMessage.Body, new MqRequestContext(this.Resolver, mqMessage));
 		}
 
+        //Execute MQ with requestContext
+        public object ExecuteMessage<T>(IMessage<T> dto, IRequestContext requestContext)
+        {
+            return Execute(dto.Body, requestContext);
+        }
+
+        public object Execute(object request)
+        {
+            return Execute(request, null);
+        }
+
+        //Execute HTTP
 		public object Execute(object request, IRequestContext requestContext)
 		{
 			var requestType = request.GetType();
-
+		
 			if (EnableAccessRestrictions)
 			{
 				AssertServiceRestrictions(requestType,
@@ -456,8 +477,7 @@ namespace ServiceStack.ServiceHost
             ServiceExecFn handlerFn;
 			if (!requestExecMap.TryGetValue(requestType, out handlerFn))
 			{
-				throw new NotImplementedException(
-						string.Format("Unable to resolve service '{0}'", requestType.Name));
+                throw new NotImplementedException(string.Format("Unable to resolve service '{0}'", requestType.Name));
 			}
 
 			return handlerFn;
@@ -493,6 +513,7 @@ namespace ServiceStack.ServiceHost
 
 				var passed = requiredScenario & actualAttributes;
 				var failed = requiredScenario & ~(passed);
+
 
 				failedScenarios.AppendFormat("\n -[{0}]", failed);
 			}

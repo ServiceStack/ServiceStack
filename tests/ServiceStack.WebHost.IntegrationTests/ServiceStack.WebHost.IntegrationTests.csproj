@@ -237,6 +237,10 @@
     <Compile Include="Tests\WebServicesTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\ServiceStack.Authentication.OpenId\ServiceStack.Authentication.OpenId.csproj">
+      <Project>{6E240294-9D93-4C09-9BB0-38D82A22DEEE}</Project>
+      <Name>ServiceStack.Authentication.OpenId</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
@@ -257,9 +261,6 @@
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
       <Name>ServiceStack</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\DataSources\ServiceStack.ServiceInterface.ServiceModel.ResponseStatus.datasource" />

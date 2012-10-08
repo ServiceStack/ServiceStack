@@ -64,7 +64,6 @@ namespace ServiceStack.WebHost.Endpoints
 				new MarkdownFormat(),
                 new PredefinedRoutesFeature(),
                 new MetadataFeature(),
-                new RequestInfoFeature(),
 			};
 		}
 		
@@ -79,6 +78,12 @@ namespace ServiceStack.WebHost.Endpoints
 			var config = EndpointHostConfig.Instance;
 			Config = config; // avoid cross-dependency on Config setter
 			VirtualPathProvider = new FileSystemVirtualPathProvider(AppHost, Config.WebHostPhysicalPath);
+
+		    Config.DebugMode = appHost.GetType().Assembly.IsDebugBuild();             
+            if (Config.DebugMode)
+            {
+                Plugins.Add(new RequestInfoFeature());
+            }
 		}
 
 		// Config has changed

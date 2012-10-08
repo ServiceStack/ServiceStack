@@ -186,6 +186,12 @@
 </script>
 
     <h2>Test Redirect</h2>
+
+        <form action="api/auth/GoogleOpenId" method="POST">
+            <p>
+				<button class="btn" type="submit">Sign In with Google OpenId</button>
+			</p>
+        </form>
     
         <form action="api/auth/credentials" method="POST">
             <div>
