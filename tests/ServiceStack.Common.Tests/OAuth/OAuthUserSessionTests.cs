@@ -118,10 +118,10 @@ namespace ServiceStack.Common.Tests.OAuth
 
             var userAuth = userAuthRepository.GetUserAuth(oAuthUserSession.UserAuthId);
             Assert.That(userAuth.Id.ToString(CultureInfo.InvariantCulture), Is.EqualTo(oAuthUserSession.UserAuthId));
-            Assert.That(userAuth.DisplayName, Is.EqualTo(serviceTokensTw.DisplayName));
+            Assert.That(userAuth.DisplayName, Is.EqualTo(serviceTokensFb.DisplayName));
+            Assert.That(userAuth.PrimaryEmail, Is.EqualTo(serviceTokensFb.Email));
             Assert.That(userAuth.FirstName, Is.EqualTo(serviceTokensFb.FirstName));
             Assert.That(userAuth.LastName, Is.EqualTo(serviceTokensFb.LastName));
-            Assert.That(userAuth.PrimaryEmail, Is.EqualTo(serviceTokensFb.Email));
 
             var authProviders = userAuthRepository.GetUserOAuthProviders(oAuthUserSession.UserAuthId);
             Assert.That(authProviders.Count, Is.EqualTo(2));
