@@ -1,5 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Web;
 using NUnit.Framework;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
@@ -19,7 +25,14 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		public void OnBeforeTest()
 		{
 			base.OnBeforeEachTest();
+		    RegisterConfig();
 		}
+
+        private void RegisterConfig()
+        {
+            EndpointHost.CatchAllHandlers.Add(new PredefinedRoutesFeature().ProcessRequest);
+            EndpointHost.CatchAllHandlers.Add(new MetadataFeature().ProcessRequest);
+        }
 
 		[Test]
 		public void Can_process_default_request()

@@ -68,7 +68,6 @@ namespace ServiceStack.WebHost.Endpoints
 
 			Instance = this;
 
-		    EndpointHost.Config.DebugMode = GetType().Assembly.IsDebugBuild(); 
 			var serviceManager = EndpointHost.Config.ServiceManager;
 			if (serviceManager != null)
 			{

@@ -32,8 +32,7 @@ namespace ServiceStack.WebHost.IntegrationTests
 		{
 			get
 			{
-				var sessionId = SessionFeature.GetSessionId();
-				return sessionId == null ? null : SessionFeature.GetSessionKey(sessionId);
+				return SessionFeature.GetSessionKey();
 			}
 		}
 
@@ -42,14 +41,7 @@ namespace ServiceStack.WebHost.IntegrationTests
 		{
 			get
 			{
-				if (userSession != null) return userSession;
-				if (SessionKey != null)
-					userSession = this.Cache.Get<CustomUserSession>(SessionKey);
-				else
-					SessionFeature.CreateSessionIds();
-
-				var unAuthorizedSession = new CustomUserSession();
-				return userSession ?? (userSession = unAuthorizedSession);
+				return userSession ?? (userSession = SessionFeature.GetOrCreateSession<CustomUserSession>(Cache));
 			}
 		}
 

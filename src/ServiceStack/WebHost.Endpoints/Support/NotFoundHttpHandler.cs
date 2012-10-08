@@ -27,16 +27,25 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
             Log.ErrorFormat("{0} Request not found: {1}", request.UserHostAddress, request.RawUrl);
 
-			var text = new StringBuilder("Handler for Request not found: \n\n")
-				.AppendLine("Request.HttpMethod: " + request.HttpMethod)
-				.AppendLine("Request.HttpMethod: " + request.HttpMethod)
-				.AppendLine("Request.PathInfo: " + request.PathInfo)
-				.AppendLine("Request.QueryString: " + request.QueryString)
-				.AppendLine("Request.RawUrl: " + request.RawUrl).ToString();
+		    var text = new StringBuilder();
 
-			response.ContentType = "text/plain";
+            if (EndpointHost.Config.DebugMode)
+            {
+                text.AppendLine("Handler for Request not found: \n\n")
+                    .AppendLine("Request.HttpMethod: " + request.HttpMethod)
+                    .AppendLine("Request.HttpMethod: " + request.HttpMethod)
+                    .AppendLine("Request.PathInfo: " + request.PathInfo)
+                    .AppendLine("Request.QueryString: " + request.QueryString)
+                    .AppendLine("Request.RawUrl: " + request.RawUrl);
+            }
+            else
+            {
+                text.Append("404");
+            }
+
+		    response.ContentType = "text/plain";
 			response.StatusCode = 404;
-            response.EndHttpRequest(skipClose: true, afterBody: r => r.Write(text));
+            response.EndHttpRequest(skipClose: true, afterBody: r => r.Write(text.ToString()));
 		}
 
 		public void ProcessRequest(HttpContext context)

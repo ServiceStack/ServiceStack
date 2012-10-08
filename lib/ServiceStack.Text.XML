@@ -213,6 +213,13 @@
             If set to true, Interface types will be prefered over concrete types when serializing.
             </summary>
         </member>
+        <member name="P:ServiceStack.Text.JsConfig.ModelFactory">
+            <summary>
+            Set this to enable your own type construction provider.
+            This is helpful for integration with IoC containers where you need to call the container constructor.
+            Return null if you don't know how to construct the type and the parameterless constructor will be used.
+            </summary>
+        </member>
         <member name="F:ServiceStack.Text.JsConfig`1.IncludeTypeInfo">
             <summary>
             Always emit type info for this type.  Takes precedence over ExcludeTypeInfo

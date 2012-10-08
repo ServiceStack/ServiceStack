@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ServiceStack.Messaging;
 
 namespace ServiceStack.ServiceHost
 {
@@ -35,9 +36,14 @@ namespace ServiceStack.ServiceHost
 		IServiceRoutes Routes { get; }
 
         /// <summary>
-        /// Executes the DTO request with no requestContext.
+        /// Executes the MQ DTO request.
         /// </summary>
-        object Execute(object dto);
+        object ExecuteMessage<T>(IMessage<T> mqMessage);
+
+        /// <summary>
+        /// Executes the MQ DTO request with the supplied requestContext
+        /// </summary>
+	    object ExecuteMessage<T>(IMessage<T> dto, IRequestContext requestContext);
 
 		/// <summary>
 		/// Executes the DTO request under the supplied requestContext.

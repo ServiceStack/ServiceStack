@@ -116,6 +116,7 @@
     <Compile Include="Configuration\AppSettings.cs" />
     <Compile Include="Configuration\ConfigurationResourceManager.cs" />
     <Compile Include="Configuration\ConfigUtils.cs" />
+    <Compile Include="PredefinedRoutesFeature.cs" />
     <Compile Include="Funq\Action.cs" />
     <Compile Include="Funq\Container.cs" />
     <Compile Include="Funq\Container.Overloads.cs">
@@ -125,6 +126,8 @@
     <Compile Include="Html\IViewEngine.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="MetadataFeature.cs" />
+    <Compile Include="RequestInfoFeature.cs" />
     <Compile Include="ServiceHost\ContainerTypeExtensions.cs" />
     <Compile Include="Funq\Func.cs" />
     <Compile Include="Funq\IFluentInterface.cs" />
@@ -180,6 +183,9 @@
     <Compile Include="ServiceHost\DefaultRequestAttribute.cs" />
     <Compile Include="ServiceHost\DtoUtils.cs" />
     <Compile Include="ServiceHost\IRequiresSoapMessage.cs" />
+    <Compile Include="ServiceHost\MqHttpRequest.cs" />
+    <Compile Include="ServiceHost\MqHttpResponse.cs" />
+    <Compile Include="ServiceHost\MqRequestContext.cs" />
     <Compile Include="ServiceHost\NServiceExec.cs" />
     <Compile Include="ServiceHost\ServiceRunner.cs" />
     <Compile Include="VirtualPath\AbstractVirtualDirectoryBase.cs" />

@@ -76,21 +76,14 @@ namespace ServiceStack.Razor
         public virtual T GetSession<T>() where T : class, IAuthSession, new()
         {
             if (userSession != null) return (T)userSession;
-            if (SessionKey != null)
-                userSession = Cache.Get<T>(SessionKey);
-            else
-                SessionFeature.CreateSessionIds();
-
-            var unAuthorizedSession = new T();
-            return (T)(userSession ?? (userSession = unAuthorizedSession));
+            return (T)(userSession = SessionFeature.GetOrCreateSession<T>(Cache));
         }
 
         public string SessionKey
         {
             get
             {
-                var sessionId = SessionFeature.GetSessionId();
-                return sessionId == null ? null : SessionFeature.GetSessionKey(sessionId);
+                return SessionFeature.GetSessionKey();
             }
         }
 

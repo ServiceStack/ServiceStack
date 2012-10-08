@@ -39,6 +39,28 @@ namespace ServiceStack.ServiceInterface.Auth
         
         public string PrimaryEmail { get; set; }
 
+        public DateTime? BirthDate { get; set; }
+
+        public string BirthDateRaw { get; set; }
+
+        public string Country { get; set; }
+
+        public string Culture { get; set; }
+
+        public string FullName { get; set; }
+
+        public string Gender { get; set; }
+
+        public string Language { get; set; }
+
+        public string MailAddress { get; set; }
+
+        public string Nickname { get; set; }
+
+        public string PostalCode { get; set; }
+
+        public string TimeZone { get; set; }
+
         public string RequestTokenSecret { get; set; }
 
         public DateTime CreatedAt { get; set; }
