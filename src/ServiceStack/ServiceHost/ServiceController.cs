@@ -185,7 +185,7 @@ namespace ServiceStack.ServiceHost
 			var attrs = requestType.GetCustomAttributes(typeof(RouteAttribute), true);
 			foreach (RouteAttribute attr in attrs)
 			{
-				var restPath = new RestPath(requestType, attr.Path, attr.Verbs);
+				var restPath = new RestPath(requestType, attr.Path, attr.Verbs, attr.Summary, attr.Notes);
 				if (!restPath.IsValid)
 					throw new NotSupportedException(string.Format(
 						"RestPath '{0}' on Type '{1}' is not Valid", attr.Path, requestType.Name));

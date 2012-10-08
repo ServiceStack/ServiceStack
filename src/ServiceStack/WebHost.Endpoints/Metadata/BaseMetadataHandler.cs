@@ -70,31 +70,39 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
                     responseMessage = CreateMessage(operationResponseType);                    
                 }
 				
-                var description = "";
-				var descAttrs = operationType.GetCustomAttributes(typeof(DescriptionAttribute), true);
-				if (descAttrs.Length > 0)
-				{
-					var descAttr = (DescriptionAttribute) descAttrs[0]; 
-					if (!descAttr.Description.IsNullOrEmpty())
-					{
-						description = "<div id='desc'>" 
-							+ "<p>" + descAttr.Description
-								.Replace("<", "&lt;")
-								.Replace(">", "&gt;")
-								.Replace("\n", "<br />\n")
-							+ "</p>"
-							+ "</div>";
-					}
-				}
+                var description = GetDescriptionFromOperationType(operationType);
+                if (!description.IsNullOrEmpty())
+                {
+                    description = "<div id='desc'>"
+                                  + "<p>" + description
+                                                .Replace("<", "&lt;")
+                                                .Replace(">", "&gt;")
+                                                .Replace("\n", "<br />\n")
+                                  + "</p>"
+                                  + "</div>";
+                }
 
-				RenderOperation(writer, httpReq, operationName, requestMessage, responseMessage, restPaths, description);
+
+			    RenderOperation(writer, httpReq, operationName, requestMessage, responseMessage, restPaths, description);
 				return;
 			}
 
 			RenderOperations(writer, httpReq, operations.AllOperations);
 		}
 
-		protected abstract string CreateMessage(Type dtoType);
+	    public static string GetDescriptionFromOperationType(Type operationType)
+	    {
+	        var description = "";
+	        var descAttrs = operationType.GetCustomAttributes(typeof(DescriptionAttribute), true);
+	        if (descAttrs.Length > 0)
+	        {
+	            var descAttr = (DescriptionAttribute) descAttrs[0];
+	            return descAttr.Description;
+	        }
+	        return description;
+	    }
+
+	    protected abstract string CreateMessage(Type dtoType);
 
 		protected virtual void RenderOperation(HtmlTextWriter writer, IHttpRequest httpReq, string operationName, 
 			string requestMessage, string responseMessage, string restPaths, string descriptionHtml)
