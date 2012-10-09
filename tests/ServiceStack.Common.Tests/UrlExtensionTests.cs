@@ -45,6 +45,19 @@ namespace ServiceStack.Common.Tests
         public string Excluded { get; set; }
     }
 
+    [DataContract]
+    [Route("/route/{Key}")]
+    public class RequestWithNamedDataMembers : IReturn
+    {
+        [DataMember(Name = "Key")]
+        public long Id { get; set; }
+
+        [DataMember(Name = "Inc")]
+        public string Included { get; set; }
+
+        public string Excluded { get; set; }
+    }
+
     [TestFixture]
     public class UrlExtensionTests
     {
@@ -74,6 +87,13 @@ namespace ServiceStack.Common.Tests
         {
             var url = new RequestWithDataMembers { Id = 1, Included = "Yes", Excluded = "No" }.ToUrl("GET");
             Assert.That(url, Is.EqualTo("/route/1?included=Yes"));
+        }
+
+        [Test]
+        public void Use_data_member_names_on_querystring()
+        {
+            var url = new RequestWithNamedDataMembers { Id = 1, Included = "Yes", Excluded = "No" }.ToUrl("GET");
+            Assert.That(url, Is.EqualTo("/route/1?inc=Yes"));
         }
     }
 }
