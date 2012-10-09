@@ -78,6 +78,12 @@ namespace ServiceStack.ServiceModel.Serialization
                         continue;
                     }
 
+                    if (propertySerializerEntry.PropertySetFn == null)
+                    {
+                        Log.WarnFormat("Could not set value of read-only property '{0}' on type '{1}'", propertyName, type.FullName);
+                        continue;
+                    }
+
                     var value = propertySerializerEntry.PropertyParseStringFn(propertyTextValue);
                     if (value == null)
                     {

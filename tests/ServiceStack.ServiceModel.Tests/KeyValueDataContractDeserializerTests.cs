@@ -42,5 +42,26 @@ namespace ServiceStack.ServiceModel.Tests
             Assert.That(result.FirstName, Is.EqualTo("james"));
             Assert.That(result.LastName, Is.EqualTo("bond"));
         }
+
+        public class Customer2
+        {
+            public string FirstName { get; set; }
+
+            public string LastName { get; set; }
+
+            public string FullName
+            {
+                get { return FirstName + " " + LastName; }
+            }
+        }
+
+        [Test]
+        public void KVP_Serializer_ignores_readonly_properties()
+        {
+            var valueMap = new Dictionary<string, string> { { "FirstName", "james" }, { "LastName", "bond" }, { "FullName", "james bond" } };
+            var result = (Customer2)KeyValueDataContractDeserializer.Instance.Parse(valueMap, typeof(Customer2));
+            Assert.That(result.FirstName, Is.EqualTo("james"));
+            Assert.That(result.LastName, Is.EqualTo("bond"));
+        }
     }
 }
