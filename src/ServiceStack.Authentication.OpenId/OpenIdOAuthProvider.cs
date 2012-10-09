@@ -43,7 +43,7 @@ namespace ServiceStack.Authentication.OpenId
             {
                 var openIdUrl = httpReq.GetParam("OpenIdUrl") ?? base.AuthRealm;
                 if (openIdUrl.IsNullOrEmpty())
-                    throw new ArgumentNullException("'OpenIdUrl' is required a required field");
+                    throw new ArgumentException("'OpenIdUrl' is required a required field");
 
                 try
                 {
@@ -88,25 +88,11 @@ namespace ServiceStack.Authentication.OpenId
                         switch (response.Status)
                         {
                             case AuthenticationStatus.Authenticated:
-                                // This is where you would look for any OpenID extension responses included
-                                // in the authentication assertion.
-                                var claimsResponse = response.GetExtension<ClaimsResponse>();
-                                var authInfo = claimsResponse.ToDictionary();
 
-                                authInfo["user_id"] = response.ClaimedIdentifier; //a url
-
-                                // Store off the "friendly" username to display -- NOT for username lookup
-                                authInfo["openid_ref"] = response.FriendlyIdentifierForDisplay;
-
-                                var provided = GetAttributeEx(response);
-                                foreach (var entry in provided)
-                                {
-                                    authInfo[entry.Key] = entry.Value;
-                                }
+                                var authInfo = CreateAuthInfo(response);
 
                                 // Use FormsAuthentication to tell ASP.NET that the user is now logged in,
                                 // with the OpenID Claimed Identifier as their username.
-
                                 session.IsAuthenticated = true;
                                 authService.SaveSession(session, SessionExpiry);
                                 OnAuthenticated(authService, session, tokens, authInfo);
@@ -126,6 +112,27 @@ namespace ServiceStack.Authentication.OpenId
 
             //Shouldn't get here
             return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "Unknown"));
+        }
+
+        protected virtual Dictionary<string, string> CreateAuthInfo(IAuthenticationResponse response)
+        {
+            // This is where you would look for any OpenID extension responses included
+            // in the authentication assertion.
+            var claimsResponse = response.GetExtension<ClaimsResponse>();
+            var authInfo = claimsResponse.ToDictionary();
+
+            authInfo["user_id"] = response.ClaimedIdentifier; //a url
+
+            // Store off the "friendly" username to display -- NOT for username lookup
+            authInfo["openid_ref"] = response.FriendlyIdentifierForDisplay;
+
+            var provided = GetAttributeEx(response);
+            foreach (var entry in provided)
+            {
+                authInfo[entry.Key] = entry.Value;
+            }
+
+            return authInfo;
         }
 
         protected override void LoadUserAuthInfo(AuthUserSession userSession, IOAuthTokens tokens, Dictionary<string, string> authInfo)
