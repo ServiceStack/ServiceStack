@@ -41,9 +41,9 @@ namespace ServiceStack.ServiceModel.Serialization
             foreach (var propertyInfo in type.GetSerializableProperties())
             {
                 var propertySetFn = JsvDeserializeType.GetSetPropertyMethod(type, propertyInfo);
-			    var propertyType = propertyInfo.PropertyType;
-				var propertyParseStringFn = JsvReader.GetParseFn(propertyType);
-				var propertySerializer = new PropertySerializerEntry(propertySetFn, propertyParseStringFn) { PropertyType = propertyType };
+                var propertyType = propertyInfo.PropertyType;
+                var propertyParseStringFn = JsvReader.GetParseFn(propertyType);
+                var propertySerializer = new PropertySerializerEntry(propertySetFn, propertyParseStringFn) { PropertyType = propertyType };
 
                 var attr = propertyInfo.FirstAttribute<DataMemberAttribute>();
                 if (attr != null && attr.Name != null)
@@ -57,8 +57,8 @@ namespace ServiceStack.ServiceModel.Serialization
         public object PopulateFromMap(object instance, IDictionary<string, string> keyValuePairs)
         {
             string propertyName = null;
-		    string propertyTextValue = null;
-		    PropertySerializerEntry propertySerializerEntry = null;
+            string propertyTextValue = null;
+            PropertySerializerEntry propertySerializerEntry = null;
 
             try
             {
@@ -66,8 +66,8 @@ namespace ServiceStack.ServiceModel.Serialization
 
                 foreach (var pair in keyValuePairs)
                 {
-					propertyName = pair.Key;
-					propertyTextValue = pair.Value;
+                    propertyName = pair.Key;
+                    propertyTextValue = pair.Value;
 
                     if (!propertySetterMap.TryGetValue(propertyName, out propertySerializerEntry))
                     {
@@ -102,7 +102,7 @@ namespace ServiceStack.ServiceModel.Serialization
                 if (propertySerializerEntry != null && propertySerializerEntry.PropertyType != null) {
                     serializationException.Data.Add("propertyType", propertySerializerEntry.PropertyType);
                 }
-			    throw serializationException;
+                throw serializationException;
             }
         }
 
