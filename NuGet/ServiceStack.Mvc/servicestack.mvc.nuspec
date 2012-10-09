@@ -23,4 +23,8 @@
       <dependency id="ServiceStack" />
     </dependencies> 
   </metadata> 
+  <files>
+    <file src="lib\**\*.*" target="lib" />
+    <file src="..\..\src\ServiceStack.FluentValidation.Mvc3\**\*.cs" target="src" />
+  </files>
 </package>

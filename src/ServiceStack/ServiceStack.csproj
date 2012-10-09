@@ -350,6 +350,7 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="MiniProfiler\UI\includes.tmpl.orig" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Funq\License.txt" />
