@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using ServiceStack.Net30.Collections.Concurrent;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -145,9 +146,9 @@ namespace ServiceStack.ServiceClient.Web
 
     public class RestRoute
     {
-        static char[] ArrayBrackets = new[]{'[',']'};
+        private static readonly char[] ArrayBrackets = new[]{ '[' , ']' };
 
-        public static string FormatValue(object value)
+        private static string FormatValue(object value)
         {
             var jsv = value.ToJsv().Trim(ArrayBrackets);
             return jsv;
@@ -172,7 +173,8 @@ namespace ServiceStack.ServiceClient.Web
         private const string VariablePostfix = "}";
         private const char VariablePostfixChar = '}';
 
-        private readonly Dictionary<string, PropertyInfo> variablesMap = new Dictionary<string, PropertyInfo>();
+        private readonly Dictionary<string, PropertyInfo> queryProperties = new Dictionary<string, PropertyInfo>(StringComparer.InvariantCultureIgnoreCase);
+        private readonly Dictionary<string, PropertyInfo> variablesMap = new Dictionary<string, PropertyInfo>(StringComparer.InvariantCultureIgnoreCase);
 
         public RestRoute(Type type, string path, string verbs)
         {
@@ -180,24 +182,42 @@ namespace ServiceStack.ServiceClient.Web
             this.Type = type;
             this.Path = path;
 
-            this.MapUrlVariablesToProperties();
-            this.Variables = this.variablesMap.Keys.Select(x => x.ToLowerInvariant()).Distinct().ToList().AsReadOnly();
+            foreach (var propertyInfo in GetRequestProperties(type))
+            {
+                this.queryProperties[propertyInfo.Name] = propertyInfo;
+            }
+
+            foreach (var variableName in GetUrlVariables(path))
+            {
+                PropertyInfo propertyInfo;
+                if (!this.queryProperties.TryGetValue(variableName, out propertyInfo))
+                {
+                    this.AppendError("Variable '{0}' does not match any property.".Fmt(variableName));
+                    continue;
+                }
+
+                this.variablesMap[variableName] = propertyInfo;
+                this.queryProperties.Remove(variableName);
+            }
         }
 
-        public string ErrorMsg { get; set; }
+        public string ErrorMsg { get; private set; }
 
-        public Type Type { get; set; }
+        public Type Type { get; private set; }
 
         public bool IsValid
         {
             get { return string.IsNullOrEmpty(this.ErrorMsg); }
         }
 
-        public string Path { get; set; }
+        public string Path { get; private set; }
 
         public string[] HttpMethods { get; private set; }
 
-        public IList<string> Variables { get; set; }
+        public ICollection<string> Variables
+        {
+            get { return this.variablesMap.Keys; }
+        }
 
         public RouteResolutionResult Apply(object request, string httpMethod)
         {
@@ -240,19 +260,32 @@ namespace ServiceStack.ServiceClient.Web
 
         public string FormatQueryParameters(object request)
         {
-            var propertyInfos = this.Type.GetProperties().Except(this.variablesMap.Values);
-
-            var parameters = propertyInfos.ToQueryString(request);
-
-            return parameters;
+            return this.queryProperties.Values.ToQueryString(request);
         }
 
-        private void MapUrlVariablesToProperties()
+        private static IEnumerable<PropertyInfo> GetRequestProperties(Type requestType)
         {
-            // Perhaps other filters needed: do not include indexers, property should have public getter, etc.
-            var properties = this.Type.GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            var hasDataContract = requestType.HasAttr<DataContractAttribute>();
 
-            var components = this.Path.Split(PathSeparatorChar);
+            foreach (var propertyInfo in requestType.GetProperties(BindingFlags.Instance | BindingFlags.Public))
+            {
+                if (!propertyInfo.CanRead) continue;
+                if (hasDataContract)
+                {
+                    if (!propertyInfo.IsDefined(typeof(DataMemberAttribute), true)) continue;
+                }
+                else
+                {
+                    if (propertyInfo.IsDefined(typeof(IgnoreDataMemberAttribute), true)) continue;
+                }
+
+                yield return propertyInfo;
+            }
+        }
+
+        private IEnumerable<string> GetUrlVariables(string path)
+        {
+            var components = path.Split(PathSeparatorChar);
             foreach (var component in components)
             {
                 if (string.IsNullOrEmpty(component))
@@ -273,28 +306,7 @@ namespace ServiceStack.ServiceClient.Web
                         continue;
                     }
 
-                    if (!this.variablesMap.ContainsKey(variableName))
-                    {
-                        var matchingProperties = properties
-                            .Where(p => p.Name.Equals(variableName, StringComparison.OrdinalIgnoreCase))
-                            .ToList();
-
-                        if (!matchingProperties.Any())
-                        {
-                            this.AppendError("Variable '{0}' does not match any property.".Fmt(variableName));
-                            continue;
-                        }
-
-                        if (matchingProperties.Count > 1)
-                        {
-                            var msg = "Variable '{0}' matches '{1}' properties which are differ by case only."
-                                .Fmt(variableName, matchingProperties.Count);
-                            this.AppendError(msg);
-                            continue;
-                        }
-
-                        this.variablesMap.Add(variableName, matchingProperties.Single());
-                    }
+                    yield return variableName;
                 }
             }
         }
