@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
+using System.Web;
 using NUnit.Framework;
+using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Metadata;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-	[TestFixture]
-	public class ServiceStackHttpHandlerFactoryTests
-	{
-		readonly Dictionary<string, Type> pathInfoMap = new Dictionary<string, Type>
+    [TestFixture]
+    public class ServiceStackHttpHandlerFactoryTests
+    {
+        readonly Dictionary<string, Type> pathInfoMap = new Dictionary<string, Type>
 		{
 			{"Metadata", typeof(IndexMetadataHandler)},
 			{"Soap11", typeof(Soap11MessageSyncReplyHttpHandler)},
@@ -33,29 +36,42 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			{"Soap12/Metadata", typeof(Soap12MetadataHandler)},
 		};
 
-		[Test]
-		public void Resolves_the_right_handler_for_expexted_paths()
-		{
-			foreach (var item in pathInfoMap)
-			{
-				var expectedType = item.Value;
-				var handler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(null, item.Key, null, null);
-				Assert.That(handler.GetType(), Is.EqualTo(expectedType));
-			}
-		}
+        [Test]
+        public void Resolves_the_right_handler_for_expexted_paths()
+        {
+            RegisterConfig();
+            foreach (var item in pathInfoMap)
+            {
+                var expectedType = item.Value;
+                var handler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(null, item.Key, null, null);
+                Assert.That(handler.GetType(), Is.EqualTo(expectedType));
+            }
+        }
 
-		[Test]
-		public void Resolves_the_right_handler_for_case_insensitive_expexted_paths()
-		{
-			foreach (var item in pathInfoMap)
-			{
-				var expectedType = item.Value;
-				var lowerPathInfo = item.Key.ToLower();
-				var handler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(null, lowerPathInfo, null, null);
-				Assert.That(handler.GetType(), Is.EqualTo(expectedType));
-			}
-		}
+        private void RegisterConfig()
+        {
+            EndpointHost.Config = new EndpointHostConfig("ServiceName", new ServiceManager(GetType().Assembly)) {
+                RawHttpHandlers = new List<Func<IHttpRequest,IHttpHandler>>(),
+                CustomHttpHandlers = new Dictionary<HttpStatusCode, IHttpHandler>(),
+                WebHostPhysicalPath = "~/".MapServerPath()
+            };
+            EndpointHost.CatchAllHandlers.Add(new PredefinedRoutesFeature().ProcessRequest);
+            EndpointHost.CatchAllHandlers.Add(new MetadataFeature().ProcessRequest);
+        }
+
+        [Test]
+        public void Resolves_the_right_handler_for_case_insensitive_expexted_paths()
+        {
+            RegisterConfig();
+            foreach (var item in pathInfoMap)
+            {
+                var expectedType = item.Value;
+                var lowerPathInfo = item.Key.ToLower();
+                var handler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(null, lowerPathInfo, null, null);
+                Assert.That(handler.GetType(), Is.EqualTo(expectedType));
+            }
+        }
 
 
-	}
+    }
 }

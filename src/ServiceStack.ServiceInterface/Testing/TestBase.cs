@@ -258,7 +258,7 @@ namespace ServiceStack.ServiceInterface.Testing
 
             private static void HandleException<TResponse>(Exception exception, Action<TResponse, Exception> onError)
             {
-                var response = (TResponse)ReflectionUtils.CreateInstance(typeof(TResponse));
+                var response = (TResponse)typeof(TResponse).CreateInstance();
                 var hasResponseStatus = response as IHasResponseStatus;
                 if (hasResponseStatus != null)
                 {

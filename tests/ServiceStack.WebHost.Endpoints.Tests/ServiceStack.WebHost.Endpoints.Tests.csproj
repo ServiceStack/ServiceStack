@@ -129,6 +129,7 @@
     <Compile Include="AuthTests.cs" />
     <Compile Include="CachedServiceTests.cs" />
     <Compile Include="CompressionTests.cs" />
+    <Compile Include="SwaggerFeatureTests.cs" />
     <Compile Include="CorsFeatureTest.cs" />
     <Compile Include="IntegrationTests\CachedMoviesService.cs" />
     <Compile Include="IntegrationTests\ErrorRestTests.cs" />

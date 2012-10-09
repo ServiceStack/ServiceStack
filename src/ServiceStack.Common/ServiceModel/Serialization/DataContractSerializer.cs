@@ -20,6 +20,7 @@ namespace ServiceStack.ServiceModel.Serialization
         {
             try
             {
+                if (Equals(@from, default(XmlDto))) return null;
                 using (var ms = new MemoryStream())
                 {
                     var serializer = new System.Runtime.Serialization.DataContractSerializer(from.GetType());

@@ -24,5 +24,11 @@ namespace ServiceStack.ServiceHost
             RestPaths.Add(new RestPath(requestType, restPath, verbs));
             return this;
         }
+
+        public IServiceRoutes Add(Type requestType, string restPath, string verbs, string summary, string notes)
+        {
+            RestPaths.Add(new RestPath(requestType, restPath, verbs, summary, notes));
+            return this;
+        }
 	}
 }

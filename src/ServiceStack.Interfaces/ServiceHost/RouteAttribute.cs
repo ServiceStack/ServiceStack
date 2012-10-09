@@ -91,6 +91,16 @@ namespace ServiceStack.ServiceHost
 		/// </remarks>
 		public string Path { get; set; }
 
+        /// <summary>
+        ///    Gets or sets short summary of what the route does.
+        /// </summary>
+        public string Summary { get; set; }
+
+        /// <summary>
+        ///    Gets or sets longer text to explain the behaviour of the route. 
+        /// </summary>
+        public string Notes { get; set; }
+
 		/// <summary>
 		///		Gets or sets a comma-delimited list of HTTP verbs supported by the service, such as
 		///		"GET,PUT,POST,DELETE".

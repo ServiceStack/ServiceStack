@@ -48,6 +48,10 @@ namespace ServiceStack.ServiceHost
 
 		public string Path { get { return this.restPath; } }
 
+        public string Summary { get; private set; }
+
+        public string Notes { get; private set; }
+
 		public bool AllowsAllVerbs { get { return this.allowsAllVerbs; } }
 
 		public string AllowedVerbs { get { return this.allowedVerbs; } }
@@ -88,11 +92,13 @@ namespace ServiceStack.ServiceHost
 
 		public RestPath(Type requestType, string path) : this(requestType, path, null) { }
 
-		public RestPath(Type requestType, string path, string verbs)
+		public RestPath(Type requestType, string path, string verbs, string summary = null, string notes = null)
 		{
 			this.RequestType = requestType;
-
+		    this.Summary = summary;
+		    this.Notes = notes;
 			this.restPath = path;
+
 			this.allowsAllVerbs = verbs == null || verbs == WildCard;
 			if (!this.allowsAllVerbs)
 			{

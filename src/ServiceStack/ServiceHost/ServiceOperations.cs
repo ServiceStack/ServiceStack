@@ -8,13 +8,15 @@ namespace ServiceStack.ServiceHost
 {
 	public class ServiceOperations
 	{
-		IDictionary<string, Type> OperationTypesMap { get; set; }
+        public Dictionary<Type, Type> OperationResponseTypesMap { get; set; }
 
-		public ServiceOperations(IList<Type> dtoTypes)
+        IDictionary<string, Type> OperationTypesMap { get; set; }
+
+        public ServiceOperations(IList<Type> dtoTypes)
 		{
 			AllOperations = new Operations(dtoTypes);
 			ReplyOperations = AllOperations.ReplyOperations;
-			OneWayOperations = AllOperations.OneWayOperations;
+			OneWayOperations = AllOperations.OneWayOperations;            
 			LoadOperationTypes(dtoTypes);
 		}
 

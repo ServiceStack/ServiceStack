@@ -9,6 +9,7 @@ using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.ServiceClient.Web;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
@@ -93,7 +94,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_call_jsv_debug_on_GetFactorial_WebService()
         {
             const string url = ListeningOn + "jsv/syncreply/GetFactorial?ForNumber=3&debug=true";
-            var contents = new StreamReader(WebRequest.Create(url).GetResponse().GetResponseStream()).ReadToEnd();
+            var contents = url.GetStringFromUrl();
 
             Console.WriteLine("JSV DEBUG: " + contents);
 
@@ -107,7 +108,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             int errorCount = 0;
             try
             {
-                new StreamReader(WebRequest.Create(missingUrl).GetResponse().GetResponseStream()).ReadToEnd();
+                missingUrl.GetStringFromUrl();
             }
             catch (Exception ex)
             {
@@ -116,7 +117,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             try
             {
-                new StreamReader(WebRequest.Create(missingUrl).GetResponse().GetResponseStream()).ReadToEnd();
+                missingUrl.GetStringFromUrl();
             }
             catch (Exception ex)
             {

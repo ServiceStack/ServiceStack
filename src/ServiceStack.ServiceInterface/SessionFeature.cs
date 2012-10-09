@@ -1,5 +1,6 @@
 using System;
 using System.Web;
+using ServiceStack.CacheAccess;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
@@ -63,9 +64,26 @@ namespace ServiceStack.ServiceInterface
             httpRes.CreateSessionIds(httpReq);
         }
 
+        public static string GetSessionKey()
+        {
+            var sessionId = GetSessionId();
+            return sessionId == null ? null : GetSessionKey(sessionId);
+        }
+
         public static string GetSessionKey(string sessionId)
         {
             return IdUtils.CreateUrn<IAuthSession>(sessionId);
+        }
+
+        public static T GetOrCreateSession<T>(ICacheClient cacheClient) where T : class, new()
+        {
+            T session = null;
+            if (GetSessionKey() != null)
+                session = cacheClient.Get<T>(GetSessionKey());
+            else
+                CreateSessionIds();
+
+            return session ?? new T();
         }
     }
 }

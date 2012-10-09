@@ -2,16 +2,21 @@ using System.ComponentModel;
 using System.Runtime.Serialization;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceInterface.Swagger;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
 	[DataContract]
 	[Description("ServiceStack's Hello World web service.")]
-	[Route("/hello")]
-	[Route("/hello/{Name}")]
-	public class Hello
+    [Route("/hello", Summary = @"Default hello service.", Notes = "Longer description for hello service.")]
+    [Route("/hello/{Name}", "GET", Summary = @"Says ""Hello"" to provided Name with GET.", Notes = "Longer description of the GET method which says \"Hello\"")]
+    [Route("/hello/{Name}", "POST", Summary = @"Says ""Hello"" to provided Name with POST.", Notes = "Longer description of the POST method which says \"Hello\"")]
+    [Route("/hello/{Name}", "PUT", Summary = @"Says ""Hello"" to provided Name with PUT.", Notes = "Longer description of the PUT method which says \"Hello\"")]
+    [Route("/hello/{Name}", "DELETE", Summary = @"Says ""Hello"" to provided Name with DELETE.", Notes = "Longer description of the DELETE method which says \"Hello\"")]
+    public class Hello
 	{
-		[DataMember]
+        [DataMember]
+        [SwaggerParameter(Name = "Name", Description = "Name Description", ParameterType = "path", DataType = "string", IsRequired = true)]
 		public string Name { get; set; }
 	}
 

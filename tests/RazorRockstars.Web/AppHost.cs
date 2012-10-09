@@ -17,9 +17,12 @@ namespace RazorRockstars.Web
     {
         public AppHost() : base("Test Razor", typeof(AppHost).Assembly) { }
 
+        public bool EnableRazor = true;
+
         public override void Configure(Container container)
         {
-            Plugins.Add(new RazorFormat());
+            if (EnableRazor)
+                Plugins.Add(new RazorFormat());
 
             container.Register<IDbConnectionFactory>(
                 new OrmLiteConnectionFactory(":memory:", false, SqliteDialect.Provider));
@@ -28,6 +31,9 @@ namespace RazorRockstars.Web
             {
                 db.CreateTableIfNotExists<Rockstar>();
                 db.Insert(Rockstar.SeedData); //Populate with seed data
+
+                db.DropAndCreateTable<Reqstar>();
+                db.Insert(ReqstarsService.SeedData);
             }
 		}
     }
