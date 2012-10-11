@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using ServiceStack.Logging;
 using ServiceStack.ServiceModel.Serialization;
 
@@ -59,6 +61,28 @@ namespace ServiceStack.CacheAccess.Providers
 				catch (Exception ex)
 				{
 					Log.Error(string.Format("Error trying to remove {0} from the FileSystem Cache", key), ex);
+				}
+			}
+		}
+
+		public void RemoveByPattern(string pattern)
+		{
+			RemoveByRegex(pattern.Replace("*", ".*").Replace("?", ".+"));
+		}
+
+		public void RemoveByRegex(string pattern)
+		{
+			var regex = new Regex(pattern);
+			foreach (var filename in Directory.GetFiles(baseFilePath, "*.*", SearchOption.AllDirectories)
+				.Where(path => regex.IsMatch(path)))
+			{
+				try
+				{
+					File.Delete(filename);
+				}
+				catch (Exception ex)
+				{
+					Log.Error(string.Format("Error trying to remove {0} from the FileSystem Cache", filename), ex);
 				}
 			}
 		}
