@@ -106,6 +106,11 @@ namespace RazorRockstars.Console.Files
         public string LastName { get; set; }
     }
 
+    public class ReqstarsByNames : List<string>
+    {
+        
+    }
+
     public class ReqstarsService : Service
     {
         public static Reqstar[] SeedData = new[] {
@@ -172,6 +177,11 @@ namespace RazorRockstars.Console.Files
         public object Any(RoutelessReqstar request)
         {
             return request;
+        }
+
+        public object Any(ReqstarsByNames request)
+        {
+            return Db.Select<Reqstar>(q => Sql.In(q.FirstName, request.ToArray()));
         }
     }
 
@@ -272,6 +282,15 @@ namespace RazorRockstars.Console.Files
 
         protected static IServiceClient[] ServiceClients = 
             RestClients.OfType<IServiceClient>().ToArray();
+
+
+
+        [Test, TestCaseSource("RestClients")]
+        public void Does_allow_sending_collections(IServiceClient client)
+        {
+            var results = client.Send<List<Reqstar>>(new ReqstarsByNames { "Foo", "Foo2" });
+            results.PrintDump();
+        }
 
         [Test, TestCaseSource("RestClients")]
         public void Does_execute_request_and_response_filter_attributes(IRestClient client)
