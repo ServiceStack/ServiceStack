@@ -92,6 +92,7 @@
     <Compile Include="CacheAccess\ICacheClient.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="CacheAccess\IRemoveByPattern.cs" />
     <Compile Include="CacheAccess\ICacheHasContentType.cs">
       <SubType>Code</SubType>
     </Compile>
