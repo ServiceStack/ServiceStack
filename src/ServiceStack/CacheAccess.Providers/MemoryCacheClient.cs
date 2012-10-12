@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using ServiceStack.Logging;
 using ServiceStack.Net30.Collections.Concurrent;
 
@@ -153,6 +154,31 @@ namespace ServiceStack.CacheAccess.Providers
 				{
 					Log.Error(string.Format("Error trying to remove {0} from the cache", key), ex);
 				}
+			}
+		}
+
+		public void RemoveByPattern(string pattern)
+		{
+			RemoveByRegex(pattern.Replace("*", ".*").Replace("?", ".+"));
+		}
+
+		public void RemoveByRegex(string pattern)
+		{
+			var regex = new Regex(pattern);
+			var enumerator = this.memory.GetEnumerator();
+			try
+			{
+				while (enumerator.MoveNext())
+				{
+					var current = enumerator.Current;
+					if (regex.IsMatch(current.Key))
+					{
+						this.Remove(current.Key);
+					}
+				}
+			}
+			catch
+			{
 			}
 		}
 

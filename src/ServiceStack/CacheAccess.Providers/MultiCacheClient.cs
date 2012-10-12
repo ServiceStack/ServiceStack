@@ -30,6 +30,16 @@ namespace ServiceStack.CacheAccess.Providers
 			return firstResult;
 		}
 
+		public void RemoveByPattern(string pattern)
+		{
+			cacheClients.ExecAll(client => client.RemoveByPattern(pattern));
+		}
+
+		public void RemoveByRegex(string regex)
+		{
+			cacheClients.ExecAll(client => client.RemoveByRegex(regex));
+		}
+
 		public T Get<T>(string key)
 		{
 			return cacheClients.ExecReturnFirstWithResult(client => client.Get<T>(key));
