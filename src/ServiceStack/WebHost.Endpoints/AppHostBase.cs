@@ -150,6 +150,17 @@ namespace ServiceStack.WebHost.Endpoints
 			return this.Container.TryResolve<T>();
 		}
 
+        /// <summary>
+        /// Resolves from IoC container a specified type instance.
+        /// </summary>
+        /// <typeparam name="T">Type to be resolved.</typeparam>
+        /// <returns>Instance of <typeparamref name="T"/>.</returns>
+        public static T Resolve<T>()
+        {
+            if (Instance == null) throw new InvalidOperationException("AppHostBase is not initialized.");
+            return Instance.Container.Resolve<T>();
+        }
+        
 		public Dictionary<Type, Func<IHttpRequest, object>> RequestBinders
 		{
 			get { return EndpointHost.ServiceManager.ServiceController.RequestTypeFactoryMap; }
