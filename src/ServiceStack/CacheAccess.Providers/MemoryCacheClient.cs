@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using ServiceStack.Logging;
 using ServiceStack.Net30.Collections.Concurrent;
 
 namespace ServiceStack.CacheAccess.Providers
 {
-	public class MemoryCacheClient 
-		: ICacheClient
+	public class MemoryCacheClient
+		: ICacheClient, IRemoveByPattern
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof (MemoryCacheClient));
 
@@ -273,6 +274,31 @@ namespace ServiceStack.CacheAccess.Providers
 			foreach (var entry in values)
 			{
 				Set(entry.Key, entry.Value);
+			}
+		}
+
+		public void RemoveByPattern(string pattern)
+		{
+			RemoveByRegex(pattern.Replace("*", ".*").Replace("?", ".+"));
+		}
+
+		public void RemoveByRegex(string pattern)
+		{
+			var regex = new Regex(pattern);
+			var enumerator = this.memory.GetEnumerator();
+			try
+			{
+				while (enumerator.MoveNext())
+				{
+					var current = enumerator.Current;
+					if (regex.IsMatch(current.Key))
+					{
+						this.Remove(current.Key);
+					}
+				}
+			}
+			catch
+			{
 			}
 		}
 	}
