@@ -1,28 +1,33 @@
 <?xml version="1.0"?>
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
-    <id>ServiceStack</id> 
+    <id>ServiceStack</id>
     <title>ServiceStack webservice framework: Faster, Cleaner, Modern WCF alternative</title>
-    <version>3.9.24</version> 
-    <authors>Demis Bellot</authors> 
+    <version>3.9.24</version>
+    <authors>Demis Bellot</authors>
     <owners>Demis Bellot</owners>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>
     <description>
-		Binaries for the ServiceStack web framework.
-		Visit http://www.servicestack.net/ServiceStack.Hello/ 
-		and https://github.com/ServiceStack/ServiceStack/wiki/Create-your-first-webservice 
-		for walk throughs and docs on creating your first web service.
-	</description> 
+      Binaries for the ServiceStack web framework.
+      Visit http://www.servicestack.net/ServiceStack.Hello/
+      and https://github.com/ServiceStack/ServiceStack/wiki/Create-your-first-webservice
+      for walk throughs and docs on creating your first web service.
+    </description>
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/LICENSE</licenseUrl>
     <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
     <tags>Fast JSON XML CSV HTML SOAP JSV REST Web Service Framework MONO</tags>
     <language>en-US</language>
-	<copyright>servicestack.net 2012 and contributors</copyright>
-	<dependencies>
+    <copyright>servicestack.net 2012 and contributors</copyright>
+    <dependencies>
       <dependency id="ServiceStack.Common" />
       <dependency id="ServiceStack.Redis" />
       <dependency id="ServiceStack.OrmLite.SqlServer" />
-    </dependencies> 
-  </metadata> 
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="lib\**\*.*" target="lib" />
+    <file src="..\..\src\ServiceStack\**\*.cs" target="src\ServiceStack" />
+    <file src="..\..\src\ServiceStack.ServiceInterface\**\*.cs" target="src\ServiceStack.ServiceInterface" />
+  </files>
 </package>

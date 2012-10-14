@@ -31,6 +31,7 @@ namespace ServiceStack.ServiceInterface.Swagger
     public class SwaggerResourcesService : RestServiceBase<ResourcesRequest>
     {
         private readonly Regex resourcePathCleanerRegex = new Regex(@"/[^\/\{]*", RegexOptions.Compiled);
+        internal static Regex resourceFilterRegex;
 
         public override object OnGet(ResourcesRequest request)
         {
@@ -46,6 +47,7 @@ namespace ServiceStack.ServiceInterface.Swagger
             for (var i = 0; i < operations.AllOperations.Names.Count; i++)
             {
                 var operationName = operations.AllOperations.Names[i];
+                if (resourceFilterRegex != null && !resourceFilterRegex.IsMatch(operationName)) continue;
 				var operationType = allTypes.FirstOrDefault(x => x.Name == operationName);
                 if (operationType == null) continue;
                 if (operationType == typeof(ResourcesRequest) || operationType == typeof(ResourceRequest))

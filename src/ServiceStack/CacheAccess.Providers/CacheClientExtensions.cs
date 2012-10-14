@@ -160,5 +160,32 @@ namespace ServiceStack.CacheAccess.Providers
 		{
 			return cacheKeySerialized + "." + compressionType;
 		}
+
+		/// <summary>
+		/// Removes items from cache that have keys matching the specified wildcard pattern
+		/// </summary>
+		/// <param name="cacheClient">Cache client</param>
+		/// <param name="pattern">The wildcard, where "*" means any sequence of characters and "?" means any single character.</param>
+		public static void RemoveByPattern(this ICacheClient cacheClient, string pattern)
+		{
+			var canRemoveByPattern = cacheClient as IRemoveByPattern;
+			if (canRemoveByPattern == null)
+				throw new NotImplementedException("ICacheRemovableByPattern is not implemented by the cache client: " + cacheClient.GetType().FullName);
+
+			canRemoveByPattern.RemoveByPattern(pattern);
+		}
+		/// <summary>
+		/// Removes items from the cache based on the specified regular expression pattern
+		/// </summary>
+		/// <param name="cacheClient">Cache client</param>
+		/// <param name="regex">Regular expression pattern to search cache keys</param>
+		public static void RemoveByRegex(this ICacheClient cacheClient, string regex)
+		{
+			var canRemoveByPattern = cacheClient as IRemoveByPattern;
+			if (canRemoveByPattern == null)
+				throw new NotImplementedException("ICacheRemovableByPattern is not implemented by the cache client: " + cacheClient.GetType().FullName);
+
+			canRemoveByPattern.RemoveByRegex(regex);
+		}
 	}
 }
