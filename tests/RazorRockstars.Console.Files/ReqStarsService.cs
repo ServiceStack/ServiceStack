@@ -106,10 +106,7 @@ namespace RazorRockstars.Console.Files
         public string LastName { get; set; }
     }
 
-    public class ReqstarsByNames : List<string>
-    {
-        
-    }
+    public class ReqstarsByNames : List<string> { }
 
     public class ReqstarsService : Service
     {
