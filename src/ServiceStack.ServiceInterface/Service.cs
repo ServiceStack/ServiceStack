@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Data;
 using ServiceStack.CacheAccess;
+using ServiceStack.Messaging;
 using ServiceStack.OrmLite;
+using ServiceStack.Redis;
 using ServiceStack.ServiceHost;
-using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface
@@ -68,6 +69,18 @@ namespace ServiceStack.ServiceInterface
             get { return db ?? (db = TryResolve<IDbConnectionFactory>().Open()); }
         }
 
+        private IRedisClient redis;
+        public virtual IRedisClient Redis
+        {
+            get { return redis ?? (redis = TryResolve<IRedisClientsManager>().GetClient()); }
+        }
+
+        private IMessageProducer messageProducer;
+        public virtual IMessageProducer MessageProducer
+        {
+            get { return messageProducer ?? (messageProducer = TryResolve<IMessageFactory>().CreateMessageProducer()); }
+        }
+
         private ISessionFactory sessionFactory;
         public virtual ISessionFactory SessionFactory
         {
@@ -101,6 +114,10 @@ namespace ServiceStack.ServiceInterface
                 cache.Dispose();
             if (db != null)
                 db.Dispose();
+            if (redis != null)
+                redis.Dispose();
+            if (messageProducer != null)
+                messageProducer.Dispose();
         }
     }
 
