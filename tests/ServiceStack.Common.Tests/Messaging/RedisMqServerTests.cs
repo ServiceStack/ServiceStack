@@ -1,5 +1,6 @@
 ﻿using Funq;
 using NUnit.Framework;
+using ServiceStack.Configuration;
 using ServiceStack.Messaging;
 using ServiceStack.Redis;
 using ServiceStack.Redis.Messaging;
@@ -49,11 +50,13 @@ namespace ServiceStack.Common.Tests.Messaging
 
         public override void Configure(Container container)
         {
-            container.Register<IRedisClientsManager>(c => new PooledRedisClientManager());
+            var appSettings = new AppSettings();
+            container.Register<IRedisClientsManager>(c => new PooledRedisClientManager(
+                new string[] { appSettings.GetString("Redis.Host") ?? "localhost" }));
             container.Register<IMessageService>(c => new RedisMqServer(c.Resolve<IRedisClientsManager>()));
             container.Register<IMessageFactory>(c => c.Resolve<IMessageService>().MessageFactory);
 
-            var mqServer =(RedisMqServer)container.Resolve<IMessageService>();
+            var mqServer = (RedisMqServer)container.Resolve<IMessageService>();
             mqServer.RegisterHandler<AnyTestMq>(ServiceController.ExecuteMessage);
             mqServer.RegisterHandler<PostTestMq>(ServiceController.ExecuteMessage);
 
