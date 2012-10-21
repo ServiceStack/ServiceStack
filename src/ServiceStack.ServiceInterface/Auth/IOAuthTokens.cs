@@ -25,6 +25,8 @@ namespace ServiceStack.ServiceInterface.Auth
         string TimeZone { get; set; }
         string AccessToken { get; set; }
         string AccessTokenSecret { get; set; }
+        string RefreshToken { get; set; }
+        DateTime? RefreshTokenExpiry { get; set; }
         string RequestToken { get; set; }
         string RequestTokenSecret { get; set; }
         Dictionary<string, string> Items { get; set; }
@@ -57,6 +59,8 @@ namespace ServiceStack.ServiceInterface.Auth
         public string TimeZone { get; set; }
         public string AccessToken { get; set; }
         public string AccessTokenSecret { get; set; }
+        public string RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpiry { get; set; }
         public string RequestToken { get; set; }
         public string RequestTokenSecret { get; set; }
         public Dictionary<string, string> Items { get; set; }

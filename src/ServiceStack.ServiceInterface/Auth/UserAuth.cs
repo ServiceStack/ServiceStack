@@ -99,7 +99,6 @@ namespace ServiceStack.ServiceInterface.Auth
         public UserOAuthProvider()
         {
             this.Items = new Dictionary<string, string>();
-            this.OAuthFields = new OAuthFields();
         }
 
         [AutoIncrement]
@@ -108,17 +107,27 @@ namespace ServiceStack.ServiceInterface.Auth
         public virtual string Provider { get; set; }
         public virtual string UserId { get; set; }
         public virtual string UserName { get; set; }
+        public virtual string FullName { get; set; }
         public virtual string DisplayName { get; set; }
         public virtual string FirstName { get; set; }
         public virtual string LastName { get; set; }
         public virtual string Email { get; set; }
-        public virtual string FullName { get; set; }
 
-        public virtual OAuthFields OAuthFields { get; set; }
-        public virtual string RequestToken { get; set; }
-        public virtual string RequestTokenSecret { get; set; }
+        public virtual DateTime? BirthDate { get; set; }
+        public virtual string BirthDateRaw { get; set; }
+        public virtual string Country { get; set; }
+        public virtual string Culture { get; set; }
+        public virtual string Gender { get; set; }
+        public virtual string Language { get; set; }
+        public virtual string MailAddress { get; set; }
+        public virtual string Nickname { get; set; }
+        public virtual string PostalCode { get; set; }
+        public virtual string TimeZone { get; set; }
+
         public virtual string RefreshToken { get; set; }
         public virtual DateTime? RefreshTokenExpiry { get; set; }
+        public virtual string RequestToken { get; set; }
+        public virtual string RequestTokenSecret { get; set; }
         public virtual Dictionary<string, string> Items { get; set; }
         public virtual string AccessToken { get; set; }
         public virtual string AccessTokenSecret { get; set; }
@@ -130,57 +139,6 @@ namespace ServiceStack.ServiceInterface.Auth
         public virtual string RefIdStr { get; set; }
         public virtual Dictionary<string, string> Meta { get; set; }
 
-        public string Culture
-        {
-            get { return OAuthFields.Culture; }
-            set { OAuthFields.Culture = value; }
-        }
-        public string Gender
-        {
-            get { return OAuthFields.Gender; }
-            set { OAuthFields.Gender = value; }
-        }
-        public string Language
-        {
-            get { return OAuthFields.Language; }
-            set { OAuthFields.Language = value; }
-        }
-        public string MailAddress
-        {
-            get { return OAuthFields.MailAddress; }
-            set { OAuthFields.MailAddress = value; }
-        }
-        public string Nickname
-        {
-            get { return OAuthFields.Nickname; }
-            set { OAuthFields.Nickname = value; }
-        }
-        public string PostalCode
-        {
-            get { return OAuthFields.PostalCode; }
-            set { OAuthFields.PostalCode = value; }
-        }
-        public string TimeZone
-        {
-            get { return OAuthFields.TimeZone; }
-            set { OAuthFields.TimeZone = value; }
-        }
-        public DateTime? BirthDate
-        {
-            get { return OAuthFields.BirthDate; }
-            set { OAuthFields.BirthDate = value; }
-        }
-        public string BirthDateRaw
-        {
-            get { return OAuthFields.BirthDateRaw; }
-            set { OAuthFields.BirthDateRaw = value; }
-        }
-        public string Country
-        {
-            get { return OAuthFields.Country; }
-            set { OAuthFields.Country = value; }
-        }
-        
         public T Get<T>()
         {
             string str = null;
@@ -200,6 +158,10 @@ namespace ServiceStack.ServiceInterface.Auth
                 this.UserId = withTokens.UserId;
             if (!withTokens.UserName.IsNullOrEmpty())
                 this.UserName = withTokens.UserName;
+            if (!withTokens.RefreshToken.IsNullOrEmpty())
+                this.RefreshToken = withTokens.RefreshToken;
+            if (withTokens.RefreshTokenExpiry.HasValue)
+                this.RefreshTokenExpiry = withTokens.RefreshTokenExpiry;
             if (!withTokens.RequestToken.IsNullOrEmpty())
                 this.RequestToken = withTokens.RequestToken;
             if (!withTokens.RequestTokenSecret.IsNullOrEmpty())
@@ -237,23 +199,6 @@ namespace ServiceStack.ServiceInterface.Auth
             if (!withTokens.TimeZone.IsNullOrEmpty())
                 this.TimeZone = withTokens.TimeZone;
         }
-    }
-
-    /// <summary>
-    /// Typed OAuth properties, blobbed in a single field
-    /// </summary>
-    public class OAuthFields
-    {
-        public virtual DateTime? BirthDate { get; set; }
-        public virtual string BirthDateRaw { get; set; }
-        public virtual string Country { get; set; }
-        public virtual string Culture { get; set; }
-        public virtual string Gender { get; set; }
-        public virtual string Language { get; set; }
-        public virtual string MailAddress { get; set; }
-        public virtual string Nickname { get; set; }
-        public virtual string PostalCode { get; set; }
-        public virtual string TimeZone { get; set; }
     }
 
 }
