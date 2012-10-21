@@ -135,6 +135,14 @@ namespace ServiceStack.ServiceInterface
             return existingOptions;
         }
 
+        public static HttpRequestContext ToRequestContext(this HttpContext httpContext, object requestDto=null)
+        {
+            return new HttpRequestContext(
+                httpContext.Request.ToRequest(),
+                httpContext.Response.ToResponse(),
+                requestDto);
+        }
+
         public static IHttpRequest ToRequest(this HttpRequest aspnetHttpReq)
         {
             return new HttpRequestWrapper(aspnetHttpReq) {
