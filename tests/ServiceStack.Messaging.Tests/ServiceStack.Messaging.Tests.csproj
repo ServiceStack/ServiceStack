@@ -101,7 +101,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MessageSerializationTests.cs" />
-    <Compile Include="RedisMqServerTests.cs" />
     <Compile Include="TransientServiceMessagingTests.cs" />
     <Compile Include="InMemoryTransientMessagingHostTests.cs" />
     <Compile Include="MessagingHostTestBase.cs" />

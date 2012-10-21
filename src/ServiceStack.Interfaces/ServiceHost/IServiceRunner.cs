@@ -6,8 +6,6 @@ namespace ServiceStack.ServiceHost
     public interface IServiceRunner
     {
         object Process(IRequestContext requestContext, object instance, object request);
-        object Process(IRequestContext requestContext, object instance, IMessage message);
-        object ProcessOneWay(IRequestContext requestContext, object instance, object request);
     }
 
     public interface IServiceRunner<TRequest> : IServiceRunner

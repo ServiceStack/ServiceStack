@@ -1,12 +1,13 @@
-﻿using System.Reflection;
-using Funq;
+﻿using Funq;
 using NUnit.Framework;
+using ServiceStack.Messaging;
 using ServiceStack.Redis;
 using ServiceStack.Redis.Messaging;
+using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
 
-namespace ServiceStack.Messaging.Tests
+namespace ServiceStack.Common.Tests.Messaging
 {
     public class AnyTestMq
     {
@@ -44,7 +45,7 @@ namespace ServiceStack.Messaging.Tests
     public class AppHost : AppHostHttpListenerBase
     {
         public AppHost()
-            : base("Service Name", typeof(AnyTestMq).Assembly) {}
+            : base("Service Name", typeof(AnyTestMq).Assembly) { }
 
         public override void Configure(Container container)
         {
@@ -63,6 +64,10 @@ namespace ServiceStack.Messaging.Tests
     [TestFixture]
     public class RedisMqServerTests
     {
+        private const string ListeningOn = "http://*:1337/";
+        public const string Host = "http://localhost:1337";
+        private const string BaseUri = Host + "/";
+
         AppHost appHost;
 
         [TestFixtureSetUp]
@@ -70,11 +75,10 @@ namespace ServiceStack.Messaging.Tests
         {
             appHost = new AppHost();
             appHost.Init();
+            appHost.Start(ListeningOn);
 
             using (var redis = appHost.TryResolve<IRedisClientsManager>().GetClient())
-            {
                 redis.FlushAll();
-            }
         }
 
         [TestFixtureTearDown]
@@ -89,7 +93,7 @@ namespace ServiceStack.Messaging.Tests
         {
             using (var mqFactory = appHost.TryResolve<IMessageFactory>())
             {
-                var request = new AnyTestMq {Id = 1};
+                var request = new AnyTestMq { Id = 1 };
                 mqFactory.CreateMessageProducer().Publish(request);
                 var msg = mqFactory.CreateMessageQueueClient().Get(QueueNames<AnyTestMqResponse>.In, null)
                     .ToMessage<AnyTestMqResponse>();
@@ -102,8 +106,40 @@ namespace ServiceStack.Messaging.Tests
         {
             using (var mqFactory = appHost.TryResolve<IMessageFactory>())
             {
-                var request = new PostTestMq { Id = 1 };
+                var request = new PostTestMq { Id = 2 };
                 mqFactory.CreateMessageProducer().Publish(request);
+                var msg = mqFactory.CreateMessageQueueClient().Get(QueueNames<PostTestMqResponse>.In, null)
+                    .ToMessage<PostTestMqResponse>();
+                Assert.That(msg.GetBody().CorrelationId, Is.EqualTo(request.Id));
+            }
+        }
+
+        [Test]
+        public void SendOneWay_calls_AnyTestMq_Service_via_MQ()
+        {
+            var client = new JsonServiceClient(BaseUri);
+            var request = new AnyTestMq { Id = 3 };
+
+            client.SendOneWay(request);
+
+            using (var mqFactory = appHost.TryResolve<IMessageFactory>())
+            {
+                var msg = mqFactory.CreateMessageQueueClient().Get(QueueNames<AnyTestMqResponse>.In, null)
+                    .ToMessage<AnyTestMqResponse>();
+                Assert.That(msg.GetBody().CorrelationId, Is.EqualTo(request.Id));
+            }
+        }
+
+        [Test]
+        public void SendOneWay_calls_PostTestMq_Service_via_MQ()
+        {
+            var client = new JsonServiceClient(BaseUri);
+            var request = new PostTestMq { Id = 4 };
+
+            client.SendOneWay(request);
+
+            using (var mqFactory = appHost.TryResolve<IMessageFactory>())
+            {
                 var msg = mqFactory.CreateMessageQueueClient().Get(QueueNames<PostTestMqResponse>.In, null)
                     .ToMessage<PostTestMqResponse>();
                 Assert.That(msg.GetBody().CorrelationId, Is.EqualTo(request.Id));
