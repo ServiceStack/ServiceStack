@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
@@ -132,8 +131,7 @@ namespace ServiceStack.ServiceHost
             {
                 foreach (var mi in serviceType.GetMethods(BindingFlags.Public | BindingFlags.Instance))
                 {
-                    if ((mi.ReturnType != typeof(object) && mi.ReturnType != typeof(void))
-                        || mi.GetParameters().Length != 1)
+                    if (mi.GetParameters().Length != 1)
                         continue;
 
                     var actionName = mi.Name.ToUpper();
@@ -147,8 +145,10 @@ namespace ServiceStack.ServiceHost
                     RegisterNServiceExecutor(requestType, serviceType, serviceFactoryFn);
 
                     var returnMarker = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
-                    var responseType = returnMarker != null 
-                        ? returnMarker.GetGenericArguments()[0]
+                    var responseType = returnMarker != null ? 
+                          returnMarker.GetGenericArguments()[0] 
+                        : mi.ReturnType != typeof(object) && mi.ReturnType != typeof(void) ? 
+                          mi.ReturnType
                         : AssemblyUtils.FindType(requestType.FullName + ResponseDtoSuffix);
 
                     RegisterCommon(serviceType, requestType, responseType);

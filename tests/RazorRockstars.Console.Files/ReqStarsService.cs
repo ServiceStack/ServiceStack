@@ -125,7 +125,7 @@ namespace RazorRockstars.Console.Files
             Db.Insert(SeedData);
         }
 
-        public object Get(SearchReqstars request)
+        public ReqstarsResponse Get(SearchReqstars request)
         {
             if (request.Age.HasValue && request.Age <= 0)
                 throw new ArgumentException("Invalid Age");
@@ -140,13 +140,13 @@ namespace RazorRockstars.Console.Files
             };
         }
 
-        public object Any(AllReqstars request)
+        public List<Reqstar> Any(AllReqstars request)
         {
             return Db.Select<Reqstar>();
         }
 
         [ClientCanSwapTemplates] //allow action-level filters
-        public object Get(GetReqstar request)
+        public Reqstar Get(GetReqstar request)
         {
             return Db.Id<Reqstar>(request.Id);
         }
@@ -160,7 +160,7 @@ namespace RazorRockstars.Console.Files
             return Db.Select<Reqstar>();
         }
 
-        public object Patch(UpdateReqstar request)
+        public Reqstar Patch(UpdateReqstar request)
         {
             Db.Update<Reqstar>(request, x => x.Id == request.Id);
             return Db.Id<Reqstar>(request.Id);
@@ -171,12 +171,12 @@ namespace RazorRockstars.Console.Files
             Db.DeleteById<Reqstar>(request.Id);
         }
 
-        public object Any(RoutelessReqstar request)
+        public RoutelessReqstar Any(RoutelessReqstar request)
         {
             return request;
         }
 
-        public object Any(ReqstarsByNames request)
+        public List<Reqstar> Any(ReqstarsByNames request)
         {
             return Db.Select<Reqstar>(q => Sql.In(q.FirstName, request.ToArray()));
         }
