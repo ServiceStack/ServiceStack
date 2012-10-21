@@ -74,6 +74,9 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ServiceStack.Redis">
+      <HintPath>..\..\lib\ServiceStack.Redis.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -98,6 +101,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MessageSerializationTests.cs" />
+    <Compile Include="RedisMqServerTests.cs" />
     <Compile Include="TransientServiceMessagingTests.cs" />
     <Compile Include="InMemoryTransientMessagingHostTests.cs" />
     <Compile Include="MessagingHostTestBase.cs" />
@@ -105,7 +109,6 @@
     <Compile Include="Services\AlwaysFailService.cs" />
     <Compile Include="Services\UnRetryableFail.cs" />
     <Compile Include="Services\GreetService.cs" />
-    <Compile Include="Services\MessagingServiceBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">

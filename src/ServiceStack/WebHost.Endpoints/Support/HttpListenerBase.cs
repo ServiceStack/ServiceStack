@@ -340,6 +340,14 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			return this.Container.TryResolve<T>();
 		}
 
+        protected IServiceController ServiceController
+        {
+            get
+            {
+                return EndpointHost.Config.ServiceController;
+            }
+        }
+
 		public IServiceRoutes Routes
 		{
 			get { return EndpointHost.Config.ServiceController.Routes; }

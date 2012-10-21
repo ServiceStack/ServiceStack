@@ -14,7 +14,7 @@ using ServiceStack.WebHost.Endpoints;
 namespace ServiceStack.Razor
 {
     public abstract class ViewPageBase<TModel>
-        : TemplateBase<TModel>, IRazorTemplate
+        : TemplateBase<TModel>, IRazorTemplate, ICloneable
     {
         public abstract Type ModelType { get; }
 
@@ -97,12 +97,20 @@ namespace ServiceStack.Razor
         {
             try
             {
+                if (cache != null) cache.Dispose();
+                cache = null;
+            }
+            catch { }
+            try
+            {
                 if (db != null) db.Dispose();
+                db = null;
             }
             catch { }
             try
             {
                 if (redis != null) redis.Dispose();
+                redis = null;
             }
             catch { }
         }
@@ -120,6 +128,11 @@ namespace ServiceStack.Razor
         {
             if (contents == null) return;
             Builder.Insert(0, contents);
+        }
+
+        public object Clone()
+        {
+            return base.MemberwiseClone();
         }
     }
 }
