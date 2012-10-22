@@ -33,7 +33,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 			appHost.Config.IgnoreFormatsInMetadata.Add(ContentType.JsonReport.ToContentFormat());
 		}
 
-		public void SerializeToStream(IRequestContext requestContext, object dto, IHttpResponse httpRes)
+		public void SerializeToStream(IRequestContext requestContext, object response, IHttpResponse httpRes)
 		{
             var httpReq = requestContext.Get<IHttpRequest>();
             if (AppHost.ViewEngines.Any(x => x.ProcessRequest(httpReq, httpRes, dto))) return;
@@ -41,26 +41,31 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 			if (requestContext.ResponseContentType != ContentType.Html
 				&& httpReq.ResponseContentType != ContentType.JsonReport) return;
 
-			// Serialize then escape any potential script tags to avoid XSS when displaying as HTML
-            var json = JsonDataContractSerializer.Instance.SerializeToString(dto) ?? "null";
-			json = json.Replace("<", "&lt;").Replace(">", "&gt;");
+		    var dto = response.ToDto();
+		    var html = dto as string;
+            if (html == null)
+            {
+                // Serialize then escape any potential script tags to avoid XSS when displaying as HTML
+                var json = JsonDataContractSerializer.Instance.SerializeToString(dto) ?? "null";
+                json = json.Replace("<", "&lt;").Replace(">", "&gt;");
 
-			var url = httpReq.AbsoluteUri
-				.Replace("format=html", "")
-				.Replace("format=shtm", "")
-				.TrimEnd('?', '&');
+                var url = httpReq.AbsoluteUri
+                    .Replace("format=html", "")
+                    .Replace("format=shtm", "")
+                    .TrimEnd('?', '&');
 
-			url += url.Contains("?") ? "&" : "?";
+                url += url.Contains("?") ? "&" : "?";
 
-			var now = DateTime.UtcNow;
-			var requestName = httpReq.OperationName ?? dto.GetType().Name;
+                var now = DateTime.UtcNow;
+                var requestName = httpReq.OperationName ?? dto.GetType().Name;
 
-			string html = GetHtmlTemplate()
-				.Replace("${Dto}", json)
-				.Replace("${Title}", string.Format(TitleFormat, requestName, now))
-				.Replace("${MvcIncludes}", MiniProfiler.Profiler.RenderIncludes().ToString())
-				.Replace("${Header}", string.Format(HtmlTitleFormat, requestName, now))
-				.Replace("${ServiceUrl}", url);
+                html = GetHtmlTemplate()
+                    .Replace("${Dto}", json)
+                    .Replace("${Title}", string.Format(TitleFormat, requestName, now))
+                    .Replace("${MvcIncludes}", MiniProfiler.Profiler.RenderIncludes().ToString())
+                    .Replace("${Header}", string.Format(HtmlTitleFormat, requestName, now))
+                    .Replace("${ServiceUrl}", url);
+            }
 
 			var utf8Bytes = html.ToUtf8Bytes();
 			httpRes.OutputStream.Write(utf8Bytes, 0, utf8Bytes.Length);
