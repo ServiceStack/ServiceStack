@@ -3,8 +3,10 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 #if !(MONOTOUCH || SILVERLIGHT)
-using System.Reflection;
 using System.Web;
+#endif
+#if !SILVERLIGHT
+using System.Reflection;
 #endif
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
