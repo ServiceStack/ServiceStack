@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using ServiceStack.CacheAccess;
 using ServiceStack.Html;
+using ServiceStack.Messaging;
 using ServiceStack.OrmLite;
 using ServiceStack.Razor.Templating;
 using ServiceStack.Redis;
@@ -59,6 +60,12 @@ namespace ServiceStack.Razor
             get { return redis ?? (redis = Get<IRedisClientsManager>().GetClient()); }
         }
 
+        private IMessageProducer messageProducer;
+        public virtual IMessageProducer MessageProducer
+        {
+            get { return messageProducer ?? (messageProducer = Get<IMessageFactory>().CreateMessageProducer()); }
+        }
+
         private ISessionFactory sessionFactory;
         private ISession session;
         public virtual ISession Session
@@ -113,6 +120,12 @@ namespace ServiceStack.Razor
                 redis = null;
             }
             catch { }
+            try
+            {
+                if (messageProducer != null) messageProducer.Dispose();
+                messageProducer = null;
+            }
+            catch { }
         }
         
         public string Layout { get; set; }
@@ -128,11 +141,6 @@ namespace ServiceStack.Razor
         {
             if (contents == null) return;
             Builder.Insert(0, contents);
-        }
-
-        public object Clone()
-        {
-            return base.MemberwiseClone();
         }
     }
 }

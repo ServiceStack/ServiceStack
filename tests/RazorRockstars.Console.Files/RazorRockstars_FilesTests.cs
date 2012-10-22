@@ -1,12 +1,15 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
+using ServiceStack.Razor;
 using ServiceStack.ServiceClient.Web;
+using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
 
 namespace RazorRockstars.Console.Files
@@ -49,7 +52,28 @@ namespace RazorRockstars.Console.Files
         {
             Thread.Sleep(TimeSpan.FromMinutes(10));
         }
+        
+        [Test]
+        public void Does_not_use_same_razor_page_instance()
+        {
+            var html = GetRazorInstanceHtml();
+            Assert.That(html, Is.StringContaining("<h5>Counter: 1</h5>"));
+            
+            html = GetRazorInstanceHtml();
+            Assert.That(html, Is.StringContaining("<h5>Counter: 1</h5>"));
+        }
 
+        private static string GetRazorInstanceHtml()
+        {
+            var razorFormat = RazorFormat.Instance;
+            var mockReq = new MockHttpRequest {OperationName = "RazorInstance"};
+            var mockRes = new MockHttpResponse();
+            var dto = new RockstarsResponse {Results = Rockstar.SeedData.ToList()};
+            razorFormat.ProcessRequest(mockReq, mockRes, dto);
+            var html = mockRes.ReadAsString();
+            return html;
+        }
+        
         public static string AcceptContentType = "*/*";
         public void Assert200(string url, params string[] containsItems)
         {

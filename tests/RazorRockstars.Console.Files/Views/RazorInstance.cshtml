@@ -1,0 +1,11 @@
+﻿@inherits ViewPage<RockstarsResponse>
+
+@{
+    ViewBag.Title = Model.Aged.HasValue ? "{0} year old rockstars".Fmt(Model.Aged) : "All Rockstars";
+    Layout = "HtmlReport";
+    Counter++;
+}
+
+<h5>Counter: @Counter</h5>
+
+<!--view:RazorInstance.cshtml-->

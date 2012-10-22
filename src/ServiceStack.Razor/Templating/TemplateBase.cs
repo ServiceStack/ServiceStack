@@ -269,5 +269,20 @@ namespace ServiceStack.Razor.Templating
 
             writer.Write(obj);
         }
+
+        public int Counter { get; set; }
+
+        public object Clone()
+        {
+            return base.MemberwiseClone();
+        }
+    }
+
+    public static class TemplateExtensions
+    {
+        public static ITemplate CloneTemplate(this ITemplate template)
+        {
+            return (ITemplate)template.Clone();
+        }
     }
 }
