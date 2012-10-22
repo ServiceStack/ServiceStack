@@ -266,7 +266,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 				lastPos = pos;
 			}
 
-			if (lastPos != content.Length - 1)
+			if (lastPos != content.Length)
 			{
 				var lastBlock = lastPos == 0 ? content : content.Substring(lastPos);
 				blocks.Add(new TextBlock(lastBlock));
