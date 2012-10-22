@@ -282,7 +282,9 @@ namespace ServiceStack.Razor.Templating
     {
         public static ITemplate CloneTemplate(this ITemplate template)
         {
-            return (ITemplate)template.Clone();
+            return template == null 
+                ? null 
+                : (ITemplate) template.Clone();
         }
     }
 }
