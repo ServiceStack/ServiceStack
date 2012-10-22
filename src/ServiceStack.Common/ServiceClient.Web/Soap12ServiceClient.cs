@@ -1,3 +1,4 @@
+#if !(SILVERLIGHT || MONOTOUCH || XBOX || __ANDROID__)
 using System;
 using System.IO;
 using ServiceStack.Service;
@@ -5,61 +6,6 @@ using System.Net;
 
 namespace ServiceStack.ServiceClient.Web
 {
-#if SILVERLIGHT || MONOTOUCH || XBOX || ANDROID
-	public class Soap12ServiceClient  : IServiceClient
-	{
-		public Soap12ServiceClient(string url)
-		{
-			throw new NotImplementedException();
-		}
-		
-		void IOneWayClient.SendOneWay(object request)
-		{
-			throw new NotImplementedException();
-		}
-		
-		void IOneWayClient.SendOneWay(string relativeOrAbsoluteUrl, object request)
-		{
-			throw new NotImplementedException();
-		}
-		
-		void IServiceClientAsync.SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
-		{
-			throw new NotImplementedException();
-		}
-		
-		void IRestClientAsync.SetCredentials(string userName, string password)
-		{
-			throw new NotImplementedException();
-		}
-		
-		void IRestClientAsync.GetAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
-		{
-			throw new NotImplementedException();
-		}
-		
-		void IRestClientAsync.DeleteAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
-		{
-			throw new NotImplementedException();
-		}
-		
-		void IRestClientAsync.PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
-		{
-			throw new NotImplementedException();
-		}
-		
-		void IRestClientAsync.PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
-		{
-			throw new NotImplementedException();
-		}
-		
-		void IDisposable.Dispose()
-		{
-			throw new NotImplementedException();
-		}
-	}
-#else
-
     using System.ServiceModel;
     using System.ServiceModel.Channels;
     using ServiceStack.Text;
@@ -118,6 +64,5 @@ namespace ServiceStack.ServiceClient.Web
             return;
         }
     }
-
-#endif
 }
+#endif
