@@ -25,14 +25,9 @@ namespace ServiceStack.Razor.Templating
 
 		    using (instance as IDisposable)
 		    {
-                SetService(instance, this);
-                SetModel(instance, model);
-                TemplateBase.ViewBag = new ExpandoObject();
+                var razorTemplate = InitTemplate(model, instance, httpReq, httpRes);
 
-                var razorTemplate = (IRazorTemplate)instance;
-                razorTemplate.Init(viewEngine, new ViewDataDictionary<T>(model), httpReq, httpRes);
-
-                instance.Execute();
+		        instance.Execute();
 
                 var template = httpReq.GetTemplate();
                 if (!string.IsNullOrEmpty(template))
@@ -63,6 +58,17 @@ namespace ServiceStack.Razor.Templating
                 return razorTemplate;
             }
 		}
+
+        internal IRazorTemplate InitTemplate<T>(T model, ITemplate instance, IHttpRequest httpReq = null, IHttpResponse httpRes = null)
+        {
+            SetService(instance, this);
+            SetModel(instance, model);
+            TemplateBase.ViewBag = new ExpandoObject();
+
+            var razorTemplate = (IRazorTemplate) instance;
+            razorTemplate.Init(viewEngine, new ViewDataDictionary<T>(model), httpReq, httpRes);
+            return razorTemplate;
+        }
 
         readonly Dictionary<string, string> pagePathAndNames = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
 

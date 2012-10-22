@@ -151,8 +151,21 @@ namespace ServiceStack.Razor
 		
 		public string RenderToString<T>(T model)
 		{
-			var template = RazorFormat.ExecuteTemplate(model, this.PageName, this.Template);
+			var template = ExecuteTemplate(model);
 			return template.Result;
 		}
-	}
+
+        public IRazorTemplate ExecuteTemplate<T>(T model)
+        {
+            return RazorFormat.ExecuteTemplate(model, this.PageName, this.Template);
+        }
+
+        public IRazorTemplate InitTemplate<T>(T model)
+        {
+            var templateService = RazorFormat.GetTemplateService(PageName);
+            var template = templateService.GetTemplate(PageName);
+            templateService.InitTemplate(model, template);
+            return template;
+        }
+    }
 }

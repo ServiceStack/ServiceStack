@@ -262,7 +262,7 @@ namespace ServiceStack.Razor.Templating
         /// <typeparam name="T">The model type.</typeparam>
         /// <param name="template">The template instance to set the model on.</param>
         /// <param name="model">The model.</param>
-        private static void SetModel<T>(ITemplate template, T model)
+        internal static void SetModel<T>(ITemplate template, T model)
         {
             var dynamicModel = template as ITemplate<dynamic>;
             if (dynamicModel != null)
@@ -283,7 +283,7 @@ namespace ServiceStack.Razor.Templating
         /// </summary>
         /// <param name="template">The template to set the service on.</param>
         /// <param name="service">The template service managing the template.</param>
-        private static void SetService(ITemplate template, TemplateService service)
+        internal static void SetService(ITemplate template, TemplateService service)
         {
             template.Service = service;
         }

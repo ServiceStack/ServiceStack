@@ -69,7 +69,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 			Assert.That(template.Result, Is.EqualTo("<html><body><div></div>This is my sample template, Hello World!</body></html>"));
 
 			template = mvcRazorFormat.TemplateService.GetTemplate("simple2");
-			Assert.That(template.Layout, Is.EqualTo("TheLayout.cshtml"));
+            Assert.That(template.ChildTemplate.Layout, Is.EqualTo("TheLayout.cshtml"));
 		}
 
 		[Test]
@@ -85,9 +85,9 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 			Assert.That(template.Result, Is.EqualTo("<html><body><div><h1>Hello World!</h1></div>This is my sample template, </body></html>"));
 
 			template = mvcRazorFormat.TemplateService.GetTemplate("simple3");
-			Assert.That(template.Layout, Is.EqualTo("TheLayout.cshtml"));
+            Assert.That(template.ChildTemplate.Layout, Is.EqualTo("TheLayout.cshtml"));
 
-			var titleAction = template.Sections["Title"];
+			var titleAction = template.ChildTemplate.Sections["Title"];
 			template.Clear();
 			titleAction();
 			Assert.That(template.Result, Is.EqualTo("<h1>Hello World!</h1>"));

@@ -670,12 +670,13 @@ Plain text in a comment
 			Console.WriteLine(templateOutput);
 
 			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
-			
-			var razorTemplate = dynamicPage.GetRazorTemplate();
 
-			razorTemplate.Clear();
+		    var razorTemplate = dynamicPage.InitTemplate(templateArgs);
+
 			Action section;
-			razorTemplate.Sections.TryGetValue("Salutations", out section);
+            razorTemplate.Execute();
+            razorTemplate.Clear();
+            razorTemplate.Sections.TryGetValue("Salutations", out section);
 			section();
 
 			Assert.That(razorTemplate.Result, Is.EqualTo("\r\n<p>Hello BELLOT, Demis</p>\r\n"));
