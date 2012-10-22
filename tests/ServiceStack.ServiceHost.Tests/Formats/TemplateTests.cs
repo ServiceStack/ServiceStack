@@ -205,7 +205,7 @@ Hello Demis,
   }
 }
 
-### heading 3";
+### heading 3".NormalizeNewLines();
 
             var expected = @"# Demis Dynamic Nested Markdown Template
 
@@ -224,7 +224,7 @@ Hello Demis,
     - AJAX
     - SPA
 
-### heading 3";
+### heading 3".NormalizeNewLines();
 
             var expectedHtml = markdownFormat.Transform(expected);
 
@@ -317,7 +317,7 @@ Hello @Upper(Model.LastName), @Model.FirstName
 
 ### HTML Table 
 @Table(Model)
-";
+".NormalizeNewLines();
 
             var expectedHtml = @"<h2>Welcome to Razor!</h2>
 <h2>Header Links!</h2>
@@ -517,7 +517,7 @@ Hello @Upper(Model.LastName), @Model.FirstName
   @foreach (var label in link.Labels) { 
     - @label
   }
-}";
+}".NormalizeNewLines();
             var expectedHtml = @"## Welcome to Razor!
 
  ## Header Links!
@@ -538,7 +538,7 @@ Hello  BELLOT, Demis
     - HTML5
     - AJAX
     - SPA
-".Replace("\r\n", "\n");
+".NormalizeNewLines();
 
             markdownFormat.RegisterMarkdownPage(new MarkdownPage(markdownFormat,
                 "/path/to/page", "HeaderLinks", headerTemplate));
@@ -578,7 +578,7 @@ Hello @Upper(lastName), @Model.FirstName
   @foreach (var label in labels) { 
     - @label
   }
-}";
+}".NormalizeNewLines();
             var expectedHtml = @"## Welcome to Razor!
 
 
@@ -597,7 +597,7 @@ Hello  BELLOT, Demis
     - HTML5
     - AJAX
     - SPA
-".Replace("\r\n", "\n");
+".NormalizeNewLines();
 
             var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
             dynamicPage.Compile();
@@ -719,7 +719,7 @@ Hello @Upper(lastName), @Model.FirstName
 @Menus
 
 ## Salutations
-@Salutations";
+@Salutations".NormalizeNewLines();
 
             var expectedHtml = @"<h2>Welcome to Razor!</h2>
 <h2>Captured Sections</h2>
@@ -788,7 +788,7 @@ Hello @Upper(lastName), @Model.FirstName,
     - @label
   }
 }
-}";
+}".NormalizeNewLines();
 
             var websiteTemplate = @"<!doctype html>
 <html lang=""en-us"">
@@ -810,7 +810,7 @@ Hello @Upper(lastName), @Model.FirstName,
     </footer>
 
 </body>
-</html>";
+</html>".NormalizeNewLines();
 
             var expectedHtml = @"<!doctype html>
 <html lang=""en-us"">
