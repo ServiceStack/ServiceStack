@@ -679,7 +679,7 @@ Plain text in a comment
             razorTemplate.Sections.TryGetValue("Salutations", out section);
 			section();
 
-			Assert.That(razorTemplate.Result, Is.EqualTo("\r\n<p>Hello BELLOT, Demis</p>\r\n"));
+			Assert.That(razorTemplate.Result.NormalizeNewLines(), Is.EqualTo("\n<p>Hello BELLOT, Demis</p>\n"));
 		}
 
 
