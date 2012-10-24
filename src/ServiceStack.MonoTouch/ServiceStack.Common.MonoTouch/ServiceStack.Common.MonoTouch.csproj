@@ -249,9 +249,6 @@
     <Compile Include="..\..\ServiceStack.Common\ServiceClient.Web\Soap11ServiceClient.cs">
       <Link>ServiceClient.Web\Soap11ServiceClient.cs</Link>
     </Compile>
-    <Compile Include="..\..\ServiceStack.Common\ServiceClient.Web\Soap12ServiceClient.cs">
-      <Link>ServiceClient.Web\Soap12ServiceClient.cs</Link>
-    </Compile>
     <Compile Include="..\..\ServiceStack.Common\ServiceClient.Web\WcfServiceClient.cs">
       <Link>ServiceClient.Web\WcfServiceClient.cs</Link>
     </Compile>
@@ -413,6 +410,12 @@
     </Compile>
     <Compile Include="..\..\ServiceStack.Common\RequestContextExtensions.cs">
       <Link>RequestContextExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\..\ServiceStack.Common\ServiceClient.Web\UrlExtensions.cs">
+      <Link>ServiceClient.Web\UrlExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\..\ServiceStack.Common\ServiceClient.Web\Soap12ServiceClient.cs">
+      <Link>ServiceClient.Web\Soap12ServiceClient.cs</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>

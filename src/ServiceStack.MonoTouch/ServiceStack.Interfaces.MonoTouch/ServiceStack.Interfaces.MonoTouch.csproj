@@ -591,6 +591,9 @@
     <Compile Include="..\..\ServiceStack.Interfaces\ServiceHost\RouteAttribute.cs">
       <Link>ServiceHost\RouteAttribute.cs</Link>
     </Compile>
+    <Compile Include="..\..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\ErrorResponse.cs">
+      <Link>ServiceInterface.ServiceModel\ErrorResponse.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\..\ServiceStack.Interfaces\Redis\Redis-annotated.png">

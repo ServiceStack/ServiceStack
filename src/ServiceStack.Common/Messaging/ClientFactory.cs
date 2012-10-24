@@ -24,8 +24,10 @@ namespace ServiceStack.Messaging
              if (endpointUrl.IndexOf("format=soap11") >= 0)
                  return new Soap11ServiceClient(endpointUrl);
 
+#if !(SILVERLIGHT || MONOTOUCH || XBOX || __ANDROID__)
              if (endpointUrl.IndexOf("format=soap12") >= 0)
                  return new Soap12ServiceClient(endpointUrl);
+#endif
 
              throw new NotImplementedException("could not find service client for " + endpointUrl);
          }
