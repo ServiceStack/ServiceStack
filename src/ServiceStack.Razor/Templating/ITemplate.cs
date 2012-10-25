@@ -38,5 +38,11 @@
         /// </summary>
         /// <param name="string">The string to write.</param>
         void WriteLiteral(string @string);
+
+        /// <summary>
+        /// Create new instance of template
+        /// </summary>
+        /// <returns></returns>
+        object Clone();
     }
 }

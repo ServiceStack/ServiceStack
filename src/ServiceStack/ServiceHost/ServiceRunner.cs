@@ -171,17 +171,9 @@ namespace ServiceStack.ServiceHost
         //signature matches ServiceExecFn
         public object Process(IRequestContext requestContext, object instance, object request)
         {
-            return Execute(requestContext, instance, (TRequest)request);
-        }
-
-        public object ProcessOneWay(IRequestContext requestContext, object instance, object request)
-        {
-            return ExecuteOneWay(requestContext, instance, (TRequest)request);
-        }
-
-        public object Process(IRequestContext requestContext, object instance, IMessage message)
-        {
-            return Execute(requestContext, instance, (IMessage<TRequest>)message);
+            return requestContext.EndpointAttributes.Has(EndpointAttributes.AsyncOneWay) 
+                ? ExecuteOneWay(requestContext, instance, (TRequest)request) 
+                : Execute(requestContext, instance, (TRequest)request);
         }
     }
 

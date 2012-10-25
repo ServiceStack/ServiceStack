@@ -107,21 +107,25 @@ namespace ServiceStack.ServiceInterface.Auth
         public virtual string Provider { get; set; }
         public virtual string UserId { get; set; }
         public virtual string UserName { get; set; }
+        public virtual string FullName { get; set; }
         public virtual string DisplayName { get; set; }
         public virtual string FirstName { get; set; }
         public virtual string LastName { get; set; }
         public virtual string Email { get; set; }
+
         public virtual DateTime? BirthDate { get; set; }
         public virtual string BirthDateRaw { get; set; }
         public virtual string Country { get; set; }
         public virtual string Culture { get; set; }
-        public virtual string FullName { get; set; }
         public virtual string Gender { get; set; }
         public virtual string Language { get; set; }
         public virtual string MailAddress { get; set; }
         public virtual string Nickname { get; set; }
         public virtual string PostalCode { get; set; }
         public virtual string TimeZone { get; set; }
+
+        public virtual string RefreshToken { get; set; }
+        public virtual DateTime? RefreshTokenExpiry { get; set; }
         public virtual string RequestToken { get; set; }
         public virtual string RequestTokenSecret { get; set; }
         public virtual Dictionary<string, string> Items { get; set; }
@@ -154,6 +158,10 @@ namespace ServiceStack.ServiceInterface.Auth
                 this.UserId = withTokens.UserId;
             if (!withTokens.UserName.IsNullOrEmpty())
                 this.UserName = withTokens.UserName;
+            if (!withTokens.RefreshToken.IsNullOrEmpty())
+                this.RefreshToken = withTokens.RefreshToken;
+            if (withTokens.RefreshTokenExpiry.HasValue)
+                this.RefreshTokenExpiry = withTokens.RefreshTokenExpiry;
             if (!withTokens.RequestToken.IsNullOrEmpty())
                 this.RequestToken = withTokens.RequestToken;
             if (!withTokens.RequestTokenSecret.IsNullOrEmpty())

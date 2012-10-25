@@ -130,6 +130,7 @@
     <Compile Include="FluentValidation\ErrorCodeTests.cs" />
     <Compile Include="MappingTests.cs" />
     <Compile Include="MessagingTests.cs" />
+    <Compile Include="Messaging\RedisMqServerTests.cs" />
     <Compile Include="Models\DdnContentIngest.cs" />
     <Compile Include="EnumerableExtensionsTests.cs" />
     <Compile Include="IdUtilsTests.cs" />

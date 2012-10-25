@@ -23,43 +23,52 @@ namespace ServiceStack.Razor.Templating
             if (instance == null)
                 throw new ArgumentException("No compiled template exists with the specified name.");
 
-			SetService(instance, this);
-			SetModel(instance, model);
+		    using (instance as IDisposable)
+		    {
+                var razorTemplate = InitTemplate(model, instance, httpReq, httpRes);
+
+		        instance.Execute();
+
+                var template = httpReq.GetTemplate();
+                if (!string.IsNullOrEmpty(template))
+                    template = viewEngine.HasTemplate(template) ? template : null;
+
+                if (template == null && !razorTemplate.Layout.IsNullOrEmpty())
+                    template = razorTemplate.Layout.MapServerPath();
+
+                if (template == null)
+                    template = defaultTemplatePath;
+
+                var layoutTemplate = GetTemplate(template ?? RazorFormat.DefaultTemplate);
+                if (layoutTemplate != null)
+                {
+                    layoutTemplate.ChildTemplate = razorTemplate;
+                    SetService(layoutTemplate, this);
+                    SetModel(layoutTemplate, model);
+                    layoutTemplate.Execute();
+
+                    return layoutTemplate;
+                }
+                else if (defaultTemplatePath != null)
+                {
+                    throw new ArgumentException(
+                        "No template exists with the specified Layout: " + defaultTemplatePath);
+                }
+
+                return razorTemplate;
+            }
+		}
+
+        internal IRazorTemplate InitTemplate<T>(T model, ITemplate instance, IHttpRequest httpReq = null, IHttpResponse httpRes = null)
+        {
+            SetService(instance, this);
+            SetModel(instance, model);
             TemplateBase.ViewBag = new ExpandoObject();
 
-			var razorTemplate = (IRazorTemplate)instance;
+            var razorTemplate = (IRazorTemplate) instance;
             razorTemplate.Init(viewEngine, new ViewDataDictionary<T>(model), httpReq, httpRes);
-	
-			instance.Execute();
-
-		    var template = httpReq.GetTemplate();
-            if (!string.IsNullOrEmpty(template))
-		        template = viewEngine.HasTemplate(template) ? template : null;
-
-            if (template == null && !razorTemplate.Layout.IsNullOrEmpty())
-                template = razorTemplate.Layout.MapServerPath();
-
-            if (template == null)
-                template = defaultTemplatePath;
-
-            var layoutTemplate = GetTemplate(template ?? RazorFormat.DefaultTemplate);
-            if (layoutTemplate != null)
-			{
-				layoutTemplate.ChildTemplate = razorTemplate;
-				SetService(layoutTemplate, this);
-				SetModel(layoutTemplate, model);
-				layoutTemplate.Execute();
-
-				return layoutTemplate;
-			}
-            else if (defaultTemplatePath != null)
-            {
-                throw new ArgumentException(
-                    "No template exists with the specified Layout: " + defaultTemplatePath);
-            }
-
-			return razorTemplate;
-		}
+            return razorTemplate;
+        }
 
         readonly Dictionary<string, string> pagePathAndNames = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
 
@@ -86,7 +95,8 @@ namespace ServiceStack.Razor.Templating
 
             ITemplate instance;
 		    templateCache.TryGetValue(name, out instance);
-		    return instance;
+		    
+            return instance.CloneTemplate();
 		}
 
 		public IRazorTemplate GetTemplate(string name)
@@ -103,7 +113,7 @@ namespace ServiceStack.Razor.Templating
                     //Re-check after all templates have been compiled
                     viewEngine.EnsureAllCompiled();
                     if (templateCache.TryGetValue(name, out instance))
-                        return instance as IRazorTemplate;
+                        return instance.CloneTemplate() as IRazorTemplate;
 
                     view = viewEngine.GetView(name);                    
                     if (view == null)
@@ -113,33 +123,36 @@ namespace ServiceStack.Razor.Templating
 
 			    templateCache.TryGetValue(name, out instance);
 			}
-			return instance as IRazorTemplate;
+            return instance as IRazorTemplate; //Cloned in GetAndCheckTemplate()
 		}
 
 		public IRazorTemplate RenderPartial<T>(T model, string name)
 		{
 			var template = GetTemplate(name);
-			SetService(template, this);
-			SetModel(template, model);
+            using (template as IDisposable)
+            {
+                SetService(template, this);
+                SetModel(template, model);
 
-			//TODO: make less ugly, 
-			//since executing templates clears the buffer we need to capture 
-			//what's been rendered and prepend after.
-			var capture = template.Result;
+                //TODO: make less ugly, 
+                //since executing templates clears the buffer we need to capture 
+                //what's been rendered and prepend after.
+                var capture = template.Result;
 
-		    try
-		    {
-                template.Execute();
+                try
+                {
+                    template.Execute();
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException(
+                        "Could not execute partial: " + name + ", model: " + model);
+                }
+
+                template.Prepend(capture);
+
+                return template;
             }
-		    catch (Exception ex)
-		    {
-		        throw new InvalidOperationException(
-                    "Could not execute partial: " + name + ", model: " + model);
-		    }
-
-			template.Prepend(capture);
-			
-			return template;
 		}
 	}
 }

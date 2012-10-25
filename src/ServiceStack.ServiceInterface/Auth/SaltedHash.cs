@@ -4,11 +4,19 @@ using System.Text;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
+    public interface IHashProvider
+    {
+        void GetHashAndSalt(byte[] Data, out byte[] Hash, out byte[] Salt);
+        void GetHashAndSaltString(string Data, out string Hash, out string Salt);
+        bool VerifyHash(byte[] Data, byte[] Hash, byte[] Salt);
+        bool VerifyHashString(string Data, string Hash, string Salt);
+    }
+
     /// <summary>
     /// Thank you Martijn
     /// http://www.dijksterhuis.org/creating-salted-hash-values-in-c/
     /// </summary>
-    public class SaltedHash
+    public class SaltedHash : IHashProvider
     {
         readonly HashAlgorithm HashProvider;
         readonly int SalthLength;

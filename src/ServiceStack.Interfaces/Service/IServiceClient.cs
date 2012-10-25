@@ -3,7 +3,7 @@ using System;
 namespace ServiceStack.Service
 {
 	public interface IServiceClient : IServiceClientAsync, IOneWayClient
-#if !SILVERLIGHT
+#if !(SILVERLIGHT || MONOTOUCH)
 		, IReplyClient
 #endif
 	{

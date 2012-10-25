@@ -114,3 +114,5 @@
  - [jrmitch120](https://github.com/jrmitch120) (Jeff Mitchell)
  - [manuelnelson](https://github.com/manuelnelson) (Manuel Nelson)
  - [babcca](https://github.com/babcca) (Petr Babicka)
+ - [jgeurts](https://github.com/jgeurts) (Jim Geurts)
+ - [driis](https://github.com/driis) (Dennis Riis)

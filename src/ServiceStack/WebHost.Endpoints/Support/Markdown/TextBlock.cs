@@ -99,11 +99,11 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 
 	        var pos = 0;
 	        var hasEscapedTags = false;
-	        while ((pos = html.IndexOf(EscapedStartTagArtefact, pos)) != -1)
+            while ((pos = html.IndexOf(EscapedStartTagArtefact, pos, StringComparison.CurrentCulture)) != -1)
 	        {
 	            hasEscapedTags = true;
 
-	            var endPos = html.IndexOf("</p>", pos);
+	            var endPos = html.IndexOf("</p>", pos, StringComparison.CurrentCulture);
 	            if (endPos == -1) return html; //Unexpected Error so skip
 
 	            html = html.Substring(0, endPos)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using ServiceStack.CacheAccess;
 using ServiceStack.Html;
+using ServiceStack.Messaging;
 using ServiceStack.OrmLite;
 using ServiceStack.Razor.Templating;
 using ServiceStack.Redis;
@@ -14,7 +15,7 @@ using ServiceStack.WebHost.Endpoints;
 namespace ServiceStack.Razor
 {
     public abstract class ViewPageBase<TModel>
-        : TemplateBase<TModel>, IRazorTemplate
+        : TemplateBase<TModel>, IRazorTemplate, ICloneable
     {
         public abstract Type ModelType { get; }
 
@@ -59,6 +60,12 @@ namespace ServiceStack.Razor
             get { return redis ?? (redis = Get<IRedisClientsManager>().GetClient()); }
         }
 
+        private IMessageProducer messageProducer;
+        public virtual IMessageProducer MessageProducer
+        {
+            get { return messageProducer ?? (messageProducer = Get<IMessageFactory>().CreateMessageProducer()); }
+        }
+
         private ISessionFactory sessionFactory;
         private ISession session;
         public virtual ISession Session
@@ -97,12 +104,26 @@ namespace ServiceStack.Razor
         {
             try
             {
+                if (cache != null) cache.Dispose();
+                cache = null;
+            }
+            catch { }
+            try
+            {
                 if (db != null) db.Dispose();
+                db = null;
             }
             catch { }
             try
             {
                 if (redis != null) redis.Dispose();
+                redis = null;
+            }
+            catch { }
+            try
+            {
+                if (messageProducer != null) messageProducer.Dispose();
+                messageProducer = null;
             }
             catch { }
         }

@@ -157,7 +157,7 @@ namespace ServiceStack.Razor.Templating
         {
             if (!string.IsNullOrEmpty(name))
                 if (templateCache.ContainsKey(name))
-                    return templateCache[name];
+                    return templateCache[name].CloneTemplate();
 
             var instance = CreateTemplate(template, modelType);
 
@@ -165,7 +165,7 @@ namespace ServiceStack.Razor.Templating
                 if (!templateCache.ContainsKey(name))
                     templateCache.Add(name, instance);
 
-            return instance;
+            return instance.CloneTemplate();
         }
 
         /// <summary>
@@ -177,11 +177,13 @@ namespace ServiceStack.Razor.Templating
         public string Parse(string template, string name = null)
         {
             var instance = GetTemplate(template, null, name);
+            using (instance as IDisposable)
+            {
+                SetService(instance, this);
+                instance.Execute();
 
-            SetService(instance, this);
-            instance.Execute();
-
-            return instance.Result;
+                return instance.Result;
+            }
         }
 
         /// <summary>
@@ -195,12 +197,14 @@ namespace ServiceStack.Razor.Templating
         public string Parse<T>(string template, T model, string name = null)
         {
             var instance = GetTemplate(template, typeof(T), name);
+            using (instance as IDisposable)
+            {
+                SetService(instance, this);
+                SetModel(instance, model);
+                instance.Execute();
 
-            SetService(instance, this);
-            SetModel(instance, model);
-            instance.Execute();
-
-            return instance.Result;
+                return instance.Result;
+            }
         }
 
         /// <summary>
@@ -217,10 +221,13 @@ namespace ServiceStack.Razor.Templating
             if (instance == null)
                 throw new ArgumentException("No compiled template exists with the specified name.");
 
-            SetService(instance, this);
-            instance.Execute();
+            using (instance as IDisposable)
+            {
+                SetService(instance, this);
+                instance.Execute();
 
-            return instance.Result;
+                return instance.Result;
+            }
         }
 
         /// <summary>
@@ -239,11 +246,14 @@ namespace ServiceStack.Razor.Templating
             if (instance == null)
                 throw new ArgumentException("No compiled template exists with the specified name.");
 
-            SetService(instance, this);
-            SetModel(instance, model);
-            instance.Execute();
+            using (instance as IDisposable)
+            {
+                SetService(instance, this);
+                SetModel(instance, model);
+                instance.Execute();
 
-            return instance.Result;
+                return instance.Result;
+            }
         }
 
         /// <summary>
@@ -252,7 +262,7 @@ namespace ServiceStack.Razor.Templating
         /// <typeparam name="T">The model type.</typeparam>
         /// <param name="template">The template instance to set the model on.</param>
         /// <param name="model">The model.</param>
-        private static void SetModel<T>(ITemplate template, T model)
+        internal static void SetModel<T>(ITemplate template, T model)
         {
             var dynamicModel = template as ITemplate<dynamic>;
             if (dynamicModel != null)
@@ -273,10 +283,10 @@ namespace ServiceStack.Razor.Templating
         /// </summary>
         /// <param name="template">The template to set the service on.</param>
         /// <param name="service">The template service managing the template.</param>
-        private static void SetService(ITemplate template, TemplateService service)
+        internal static void SetService(ITemplate template, TemplateService service)
         {
             template.Service = service;
         }
-
     }
+
 }

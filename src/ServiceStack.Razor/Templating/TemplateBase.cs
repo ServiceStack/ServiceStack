@@ -17,6 +17,7 @@ namespace ServiceStack.Razor.Templating
 
     public abstract partial class TemplateBase
     {
+        [ThreadStatic]
         public static dynamic ViewBag;
 
         private Dictionary<string, Action> sections;
@@ -268,6 +269,25 @@ namespace ServiceStack.Razor.Templating
                 return;
 
             writer.Write(obj);
+        }
+
+        public int Counter { get; set; }
+
+        public object Clone()
+        {
+            return base.MemberwiseClone();
+        }
+    }
+
+    public static class TemplateExtensions
+    {
+        public static ITemplate CloneTemplate(this ITemplate template)
+        {
+            if (template == null) 
+                return null;
+            
+            var clone = (ITemplate) template.Clone();
+            return clone;
         }
     }
 }

@@ -3,8 +3,10 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 #if !(MONOTOUCH || SILVERLIGHT)
-using System.Reflection;
 using System.Web;
+#endif
+#if !SILVERLIGHT
+using System.Reflection;
 #endif
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
@@ -641,9 +643,9 @@ namespace ServiceStack.ServiceClient.Web
         }
 
 #if !SILVERLIGHT
-        private byte[] DownloadBytes(string requestUri, object request)
+        private byte[] DownloadBytes(string httpMethod, string requestUri, object request)
         {
-            var webRequest = SendRequest(requestUri, request);
+            var webRequest = SendRequest(httpMethod, requestUri, request);
             using (var response = webRequest.GetResponse())
             {
                 ApplyWebResponseFilters(response);
@@ -652,9 +654,9 @@ namespace ServiceStack.ServiceClient.Web
             }
         }
 #else
-        private void DownloadBytes(string requestUri, object request, Action<byte[]> callback = null)
+        private void DownloadBytes(string httpMethod, string requestUri, object request, Action<byte[]> callback = null)
         {
-            SendRequest(requestUri, request, webRequest => webRequest.BeginGetResponse(delegate(IAsyncResult result)
+            SendRequest(httpMethod, requestUri, request, webRequest => webRequest.BeginGetResponse(delegate(IAsyncResult result)
             {
                 var webReq = (HttpWebRequest)result.AsyncState;
                 var response = (HttpWebResponse)webReq.EndGetResponse(result);
@@ -673,19 +675,19 @@ namespace ServiceStack.ServiceClient.Web
         public virtual void SendOneWay(object request)
         {
             var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
-            DownloadBytes(requestUri, request);
+            DownloadBytes(HttpMethods.Post, requestUri, request);
         }
 
         public virtual void SendOneWay(string relativeOrAbsoluteUrl, object request)
         {
             var requestUri = GetUrl(relativeOrAbsoluteUrl);
-            DownloadBytes(requestUri, request);
+            DownloadBytes(HttpMethods.Post, requestUri, request);
         }
 
         public virtual void SendOneWay(string httpMethod, string relativeOrAbsoluteUrl, object request)
         {
             var requestUri = GetUrl(relativeOrAbsoluteUrl);
-            DownloadBytes(requestUri, request);
+            DownloadBytes(httpMethod, requestUri, request);
         }
 
         public virtual void SendAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)

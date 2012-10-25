@@ -304,8 +304,17 @@ namespace ServiceStack.WebHost.Endpoints.Formats
         /// <summary>
         /// Render Markdown for text/markdown and text/plain ContentTypes
         /// </summary>
-        public void SerializeToStream(IRequestContext requestContext, object dto, Stream stream)
+        public void SerializeToStream(IRequestContext requestContext, object response, Stream stream)
         {
+            var dto = response.ToDto();
+            var text = dto as string;
+            if (text != null)
+            {
+                var bytes = text.ToUtf8Bytes();
+                stream.Write(bytes, 0, bytes.Length);
+                return;
+            }
+
             MarkdownPage markdownPage;
             if ((markdownPage = GetViewPageByResponse(dto, requestContext.Get<IHttpRequest>())) == null)
                 throw new InvalidDataException(ErrorPageNotFound.FormatWith(GetPageName(dto, requestContext)));

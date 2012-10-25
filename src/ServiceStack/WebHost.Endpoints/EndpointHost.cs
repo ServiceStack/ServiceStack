@@ -178,6 +178,11 @@ namespace ServiceStack.WebHost.Endpoints
 		    ReadyAt = DateTime.Now;
 		}
 
+        public static T TryResolve<T>()
+        {
+            return AppHost != null ? AppHost.TryResolve<T>() : default(T);
+        }
+
         /// <summary>
         /// The AppHost.Container. Note: it is not thread safe to register dependencies after AppStart.
         /// </summary>

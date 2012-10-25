@@ -44,15 +44,17 @@ namespace ServiceStack.MiniProfiler.Data
         /// </summary>
         /// <param name="connection">Your provider-specific flavor of connection, e.g. SqlConnection, OracleConnection</param>
         /// <param name="profiler">The currently started <see cref="MiniProfiler.Profiler"/> or null.</param>
-        public ProfiledDbConnection(DbConnection connection, IDbProfiler profiler)
+        /// <param name="autoDisposeConnection">Determines whether the ProfiledDbConnection will dispose the underlying connection.</param>
+        public ProfiledDbConnection(DbConnection connection, IDbProfiler profiler, bool autoDisposeConnection = true)
         {
-        	Init(connection, profiler);
+        	Init(connection, profiler, autoDisposeConnection);
         }
 
-    	private void Init(DbConnection connection, IDbProfiler profiler)
+        private void Init(DbConnection connection, IDbProfiler profiler, bool autoDisposeConnection)
     	{
     		if (connection == null) throw new ArgumentNullException("connection");
 
+    	    this.autoDisposeConnection = autoDisposeConnection;
     		_conn = connection;
     		_conn.StateChange += StateChangeHandler;
 
@@ -64,7 +66,6 @@ namespace ServiceStack.MiniProfiler.Data
 
         public ProfiledDbConnection(IDbConnection connection, IDbProfiler profiler, bool autoDisposeConnection=true)
         {
-            this.autoDisposeConnection = autoDisposeConnection;
     		var hasConn = connection as IHasDbConnection;
 			if (hasConn != null) connection = hasConn.DbConnection;
     		var dbConn = connection as DbConnection;
@@ -72,7 +73,7 @@ namespace ServiceStack.MiniProfiler.Data
 			if (dbConn == null)
 				throw new ArgumentException(connection.GetType().Name + " does not inherit DbConnection");
 			
-			Init(dbConn, profiler);
+			Init(dbConn, profiler, autoDisposeConnection);
         }
 
 
@@ -192,7 +193,7 @@ namespace ServiceStack.MiniProfiler.Data
         {
             ICloneable tail = _conn as ICloneable;
             if (tail == null) throw new NotSupportedException("Underlying " + _conn.GetType().Name + " is not cloneable");
-            return new ProfiledDbConnection((DbConnection)tail.Clone(), _profiler);
+            return new ProfiledDbConnection((DbConnection)tail.Clone(), _profiler, autoDisposeConnection);
         }
         object ICloneable.Clone() { return Clone(); }
 

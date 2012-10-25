@@ -30,10 +30,10 @@ namespace ServiceStack.ServiceHost
     public class NServiceExec<TService>
     {
         private static Dictionary<Type, List<ActionContext>> actionMap
-        = new Dictionary<Type, List<ActionContext>>();
+            = new Dictionary<Type, List<ActionContext>>();
 
         private static Dictionary<string, InstanceExecFn> execMap 
-        = new Dictionary<string, InstanceExecFn>();
+            = new Dictionary<string, InstanceExecFn>();
 
         static NServiceExec()
         {
@@ -41,7 +41,6 @@ namespace ServiceStack.ServiceHost
             foreach (var methodInfo in mis)
             {
                 var mi = methodInfo;
-                if (mi.ReturnType != typeof(object) && mi.ReturnType != typeof(void)) continue;
                 var args = mi.GetParameters();
                 if (args.Length != 1) continue;
                 var actionName = mi.Name.ToUpper();
