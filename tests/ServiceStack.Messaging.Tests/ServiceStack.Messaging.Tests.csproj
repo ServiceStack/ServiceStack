@@ -108,6 +108,7 @@
     <Compile Include="Services\AlwaysFailService.cs" />
     <Compile Include="Services\UnRetryableFail.cs" />
     <Compile Include="Services\GreetService.cs" />
+    <Compile Include="Services\MessagingServiceBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
