@@ -73,7 +73,7 @@ namespace ServiceStack.ServiceInterface
                         var url = htmlRedirect;
                         if (url.SafeSubstring(0, 2) == "~/")
                         {
-                            url = req.GetBaseUrl() + url.Substring(2);
+                            url = req.GetBaseUrl().CombineWith(url.Substring(2));
                         }
                         url = url.AddQueryParam("redirect", req.AbsoluteUri);
                         res.RedirectToUrl(url);
