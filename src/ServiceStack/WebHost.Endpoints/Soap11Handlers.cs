@@ -26,8 +26,8 @@ namespace ServiceStack.WebHost.Endpoints
 				return;
 			}
 
-			var requestMessage = GetSoap11RequestMessage(context);
-			SendOneWay(requestMessage);
+			var requestMessage = GetSoap11RequestMessage(context.Request.InputStream);
+			SendOneWay(requestMessage, null, null);
 		}
 	}
 
@@ -44,15 +44,33 @@ namespace ServiceStack.WebHost.Endpoints
 				return;
 			}
 
-			var requestMessage = GetSoap11RequestMessage(context);
-			var responseMessage = Send(requestMessage);
+			var requestMessage = GetSoap11RequestMessage(context.Request.InputStream);
+			var responseMessage = Send(requestMessage, null, null);
 
-			context.Response.ContentType = GetSoapContentType(context);
+			context.Response.ContentType = GetSoapContentType(context.Request.ContentType);
 			using (var writer = XmlWriter.Create(context.Response.OutputStream))
 			{
 				responseMessage.WriteMessage(writer);
 			}
 		}
+
+        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName){
+            if (httpReq.HttpMethod == HttpMethods.Get)
+            {
+                var wsdl = new Soap11WsdlMetadataHandler();
+                wsdl.Execute(httpReq, httpRes);
+                return;
+            }
+
+            var requestMessage = GetSoap11RequestMessage(httpReq.InputStream);
+            var responseMessage = Send(requestMessage, httpReq, httpRes);
+
+            httpRes.ContentType = GetSoapContentType(httpReq.ContentType);
+            using (var writer = XmlWriter.Create(httpRes.OutputStream))
+            {
+                responseMessage.WriteMessage(writer);
+            }
+        }
 	}
 
 }
