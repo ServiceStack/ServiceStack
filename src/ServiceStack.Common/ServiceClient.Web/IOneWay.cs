@@ -1,6 +1,7 @@
 #if !SILVERLIGHT && !MONOTOUCH && !XBOX
 using System.ServiceModel;
 using System.ServiceModel.Channels;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.ServiceClient.Web
 {
@@ -8,7 +9,7 @@ namespace ServiceStack.ServiceClient.Web
     public interface IOneWay
     {
         [OperationContract(Action = "*", IsOneWay = true)]
-        void SendOneWay(Message requestMsg);
+        void SendOneWay(Message requestMsg, IHttpRequest httpRequest, IHttpResponse httpResponse);
     }
 }
 #endif
