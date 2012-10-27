@@ -249,6 +249,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 				if (!SkipPathValidation && instance.MetadataRedirectPath == null)
 				{
+					//this doesn't make sense, this exception is caught and swallowed, TODO: Fix this.  Naybe we can remove SkipPathValidation?
 					throw new ConfigurationErrorsException(
 						"Unable to infer ServiceStack's <httpHandler.Path/> from the Web.Config\n"
 						+ "Check with http://www.servicestack.net/ServiceStack.Hello/ to ensure you have configured ServiceStack properly.\n"
