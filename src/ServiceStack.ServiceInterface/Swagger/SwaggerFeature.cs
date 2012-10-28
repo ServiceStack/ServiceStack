@@ -18,6 +18,7 @@ namespace ServiceStack.ServiceInterface.Swagger
         {
             if (ResourceFilterPattern != null)
                 SwaggerResourcesService.resourceFilterRegex = new Regex(ResourceFilterPattern, RegexOptions.Compiled);
+            
             appHost.RegisterService(typeof (SwaggerResourcesService), new string[] {"/resources"});
             appHost.RegisterService(typeof(SwaggerApiService), new string[] { "/resource/{Name*}" });
         }
