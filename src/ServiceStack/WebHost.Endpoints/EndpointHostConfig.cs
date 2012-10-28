@@ -246,19 +246,18 @@ namespace ServiceStack.WebHost.Endpoints
 						if (instance.MetadataRedirectPath != null) { break; }
 					}
 				}
-
-				if (!SkipPathValidation && instance.MetadataRedirectPath == null)
-				{
-					throw new ConfigurationErrorsException(
-						"Unable to infer ServiceStack's <httpHandler.Path/> from the Web.Config\n"
-						+ "Check with http://www.servicestack.net/ServiceStack.Hello/ to ensure you have configured ServiceStack properly.\n"
-						+ "Otherwise you can explicitly set your httpHandler.Path by setting: EndpointHostConfig.ServiceStackPath");
-				}
 			}
 			catch (Exception exc)
 			{
-				log.Error("Bad Path", exc);
-				throw;
+				log.Error("Bad Config", exc);
+			}
+			
+			if (!SkipPathValidation && instance.MetadataRedirectPath == null)
+			{
+				throw new ConfigurationErrorsException(
+					"Unable to infer ServiceStack's <httpHandler.Path/> from the Web.Config\n"
+					+ "Check with http://www.servicestack.net/ServiceStack.Hello/ to ensure you have configured ServiceStack properly.\n"
+					+ "Otherwise you can explicitly set your httpHandler.Path by setting: EndpointHostConfig.ServiceStackPath");
 			}
 		}
 
