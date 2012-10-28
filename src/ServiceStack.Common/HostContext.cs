@@ -8,10 +8,18 @@ namespace ServiceStack.Common
 {
     public class HostContext
     {
-        public static HostContext Instance = new HostContext();
+        public static readonly HostContext Instance = new HostContext();
 
-        [ThreadStatic] public static IDictionary items;
-        public virtual IDictionary Items
+        [ThreadStatic] 
+		private static IDictionary items; //Thread Specific
+        
+		/// <summary>
+		/// Gets a list of items for this request. 
+		/// </summary>
+		/// <remarks>This list will be cleared on every request and is specific to the original thread that is handling the request.
+		/// If a handler uses additional threads, this data will not be available on those threads.
+		/// </remarks>
+		public virtual IDictionary Items
         {
             get
             {
