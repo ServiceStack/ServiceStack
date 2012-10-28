@@ -255,7 +255,11 @@ namespace ServiceStack.WebHost.Endpoints
 						+ "Otherwise you can explicitly set your httpHandler.Path by setting: EndpointHostConfig.ServiceStackPath");
 				}
 			}
-			catch (Exception) { }
+			catch (Exception exc)
+			{
+				log.Error("Bad Path", exc);
+				throw;
+			}
 		}
 
 		private static void SetPathsFromConfiguration(System.Configuration.Configuration config, string locationPath)
