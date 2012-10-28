@@ -116,8 +116,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             resource.Apis.PrintDump();
 
-            var api1 = resource.Apis[0];
-            var getOperation = api1.Operations.Single(t => t.HttpMethod == "GET");
+            var operations = new List<MethodOperation>();
+            foreach(var api in resource.Apis) operations.AddRange(api.Operations);
+
+            var getOperation = operations.Single(t => t.HttpMethod == "GET");
             Assert.That(getOperation.Summary, Is.EqualTo("GET Summary"));
             Assert.That(getOperation.Notes, Is.EqualTo("GET Notes"));
             Assert.That(getOperation.HttpMethod, Is.EqualTo("GET"));
@@ -131,11 +133,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(p1.Required, Is.EqualTo(true));
 
 
-            //var api2 = resource.Apis[0];
-            //var postOperation = api2.Operations.Single(t => t.HttpMethod == "POST");
-            //Assert.That(postOperation.Summary, Is.EqualTo("POST Summary"));
-            //Assert.That(postOperation.Notes, Is.EqualTo("POST Notes"));
-            //Assert.That(postOperation.HttpMethod, Is.EqualTo("POST"));
+            var postOperation = operations.Single(t => t.HttpMethod == "POST");
+            Assert.That(postOperation.Summary, Is.EqualTo("POST Summary"));
+            Assert.That(postOperation.Notes, Is.EqualTo("POST Notes"));
+            Assert.That(postOperation.HttpMethod, Is.EqualTo("POST"));
         }
     }
 }

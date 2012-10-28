@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using ServiceStack.Common.Web;
@@ -17,16 +20,22 @@ using ServiceStack.WebHost.Endpoints.Utils;
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
     [Route("/onewayrequest", "DELETE")]
+    [DataContract]
     public class DeleteOneWayRequest : IReturnVoid
     {
         public string Prefix { get; set; }
     }
 
     [Route("/onewayrequest", "POST")]
+    [Route("/onewayrequest", "PUT")]
+    [DataContract]
     public class PostOneWayRequest : IReturnVoid
     {
         public string Prefix { get; set; }
-    }
+
+        [DataMember(Name = "some-title")]
+        public string Title { get; set; }
+    }    
 
     public class OneWayService : ServiceInterface.Service
     {
@@ -38,7 +47,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public void Post(PostOneWayRequest oneWayRequest)
         {
-            LastResult = oneWayRequest.Prefix + " " + Request.HttpMethod;
+            LastResult = oneWayRequest.Prefix + " " + Request.HttpMethod + oneWayRequest.Title;
+        }
+
+        public void Put(PostOneWayRequest oneWayRequest)
+        {
+            Post(oneWayRequest);
         }
     }
 
@@ -94,6 +108,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             client.Post(new PostOneWayRequest() { Prefix = "Post" });
             Assert.That(OneWayService.LastResult, Is.EqualTo("Post POST"));
+        }
+
+        [Test]
+        public void Should_Respect_DataMember_Name()
+        {
+            GetResponse(ServiceClientBaseUri + "onewayrequest", "{\"some-title\": \"right\", \"Title\": \"wrong\"}");
+            Assert.That(OneWayService.LastResult, Is.EqualTo(" PUTright"));
+        }
+
+        public static string GetResponse(String url, string json)
+        {
+            var webRequest = (HttpWebRequest)WebRequest.Create(url);
+            webRequest.Method = "PUT";
+            var formDataBytes = Encoding.UTF8.GetBytes(json);
+            webRequest.ContentLength = formDataBytes.Length;
+            webRequest.ContentType = "application/json";
+            webRequest.GetRequestStream().Write(formDataBytes, 0, formDataBytes.Length);
+            var webResponse = webRequest.GetResponse();
+            return new StreamReader(webResponse.GetResponseStream()).ReadToEnd();
         }
 
     }
