@@ -11,7 +11,7 @@ namespace ServiceStack.Common
         public static readonly HostContext Instance = new HostContext();
 
         [ThreadStatic] 
-		public static IDictionary _items; //Thread Specific
+		private static IDictionary items; //Thread Specific
         
 		/// <summary>
 		/// Gets a list of items for this request. 
@@ -23,11 +23,11 @@ namespace ServiceStack.Common
         {
             get
             {
-                return _items ?? (HttpContext.Current != null
+                return items ?? (HttpContext.Current != null
                     ? HttpContext.Current.Items
-                    : _items = new Dictionary<object, object>());
+                    : items = new Dictionary<object, object>());
             }
-            set { _items = value; }
+            set { items = value; }
         }
 
         public T GetOrCreate<T>(Func<T> createFn)
@@ -40,7 +40,7 @@ namespace ServiceStack.Common
 
         public void EndRequest()
         {
-            _items = null;
+            items = null;
         }
     }
 }
