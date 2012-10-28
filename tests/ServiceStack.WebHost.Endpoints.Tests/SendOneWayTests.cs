@@ -20,7 +20,6 @@ using ServiceStack.WebHost.Endpoints.Utils;
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
     [Route("/onewayrequest", "DELETE")]
-    [DataContract]
     public class DeleteOneWayRequest : IReturnVoid
     {
         public string Prefix { get; set; }
@@ -31,6 +30,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [DataContract]
     public class PostOneWayRequest : IReturnVoid
     {
+        [DataMember]
         public string Prefix { get; set; }
 
         [DataMember(Name = "some-title")]
@@ -67,7 +67,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
 
             public OneWayServiceAppHostHttpListener()
-                : base("Cors Feature Tests", typeof(OneWayService).Assembly) { }
+                : base("", typeof(OneWayService).Assembly) { }
 
             public override void Configure(Funq.Container container)
             {
