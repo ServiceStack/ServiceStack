@@ -115,6 +115,12 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			return GetAuthority(request) + endpointsPath;
 		}
 
+        public static string GetParentBaseUrl(this IHttpRequest request){
+            var rawUrl = request.RawUrl;
+            var endpointsPath = rawUrl.Substring(0, rawUrl.LastIndexOf('/') + 1);
+            return new Uri(request.AbsoluteUri).GetLeftPart(UriPartial.Authority) + endpointsPath;
+        }
+
 		public static string GetBaseUrl(this HttpRequest request)
 		{
 			return GetAuthority(request) + request.RawUrl;
