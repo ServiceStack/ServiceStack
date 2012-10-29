@@ -24,7 +24,9 @@ namespace ServiceStack.WebHost.Endpoints
 {
 	public class EndpointHostConfig
 	{
-	    private static ILog log = LogManager.GetLogger(typeof (EndpointHostConfig));
+		//use of "_" for private member variables makes it easier to maintain thread safe code, by clearly seperating stack vars from heap vars
+
+	    private readonly static ILog _log = LogManager.GetLogger(typeof (EndpointHostConfig));
 
 		public static bool SkipPathValidation = false;
 		public static string ServiceStackPath = null;
@@ -32,87 +34,76 @@ namespace ServiceStack.WebHost.Endpoints
 		private const string DefaultUsageExamplesBaseUri =
 			"https://github.com/ServiceStack/ServiceStack.Extras/blob/master/doc/UsageExamples";
 
-		private static EndpointHostConfig instance;
+		private static Dictionary<string, EndpointHostConfig> _namedConfigs = new Dictionary<string, EndpointHostConfig>();
+		private readonly static object _syncRoot = new object();
+
+		/// <summary>
+		/// Gets a <see cref="EndpointHostConfig"/> by name, and creates a new one if one doesn't exist by that name.
+		/// </summary>
+		/// <param name="name">The name of the config to return or create.</param>
+		/// <returns>Returns the instance.</returns>
+		/// <remarks>This method is thread safe.</remarks>
+		internal static EndpointHostConfig GetNamedConfig(string name)
+		{
+			EndpointHostConfig config;
+			if (_namedConfigs.TryGetValue(name, out config))
+			{
+				return config;
+			}
+
+			lock (_syncRoot) 
+			{
+				if (_namedConfigs.TryGetValue(name, out config)) //double checked locking works in .Net unlike Java
+				{
+					return config;
+				}
+
+				config = CreateDefaultConfig();
+				//Question: do we use InferHttpHandlerPath here? or some analagous setup here? 
+
+				var namedConfigs = new Dictionary<string, EndpointHostConfig>(_namedConfigs);
+				namedConfigs.Add(name, config);
+				_namedConfigs = namedConfigs;
+				return config;
+			}
+		}
+
+		internal static void RemoveNamedConfig(string name)
+		{
+			if (string.IsNullOrEmpty(name)) return;
+
+			lock(_syncRoot)
+			{
+				var namedConfigs = new Dictionary<string, EndpointHostConfig>(_namedConfigs);
+				namedConfigs.Remove(name);
+				_namedConfigs = namedConfigs;
+			}
+		}
+
+		private static EndpointHostConfig _instance;
+		/// <summary>
+		/// Gets the default instance of the config.
+		/// </summary>
+		/// <remarks>This method is thread safe.</remarks>
 		public static EndpointHostConfig Instance
 		{
 			get
 			{
-				if (instance == null)
+				if (_instance != null) return _instance;
+
+				lock (_syncRoot)
 				{
-					instance = new EndpointHostConfig {
-						MetadataPageBodyHtml = @"
-    <br />
-    <h3>Client Usage Examples:</h3>
-    <ul>
-        <li><a href=""{0}/UsingServiceClients.cs"">Using Service Clients</a></li>
-        <li><a href=""{0}/UsingDtoFromAssembly.cs"">Using Dto From Assembly</a></li>
-        <li><a href=""{0}/UsingDtoFromXsd.cs"">Using Dto From Xsd</a></li>
-        <li><a href=""{0}/UsingServiceReferenceClient.cs"">Using Service Reference Client</a></li>
-        <li><a href=""{0}/UsingSvcutilGeneratedClient.cs"">Using SvcUtil Generated Client</a></li>
-        <li><a href=""{0}/UsingRawHttpClient.cs"">Using Raw Http Client</a></li>
-        <li><a href=""{0}/UsingRestAndJson.cs"">Using Rest and Json</a></li>
-        <li><a href=""{0}/UsingRestAndXml.cs"">Using Rest and Xml</a></li>
-    </ul>".Fmt(DefaultUsageExamplesBaseUri),
-						MetadataOperationPageBodyHtml = @"
-    <br />
-    <h3>Usage Examples:</h3>
-    <ul>
-        <li><a href=""{0}/UsingRestAndJson.cs"">Using Rest and JSON</a></li>
-        <li><a href=""{0}/UsingRestAndXml.cs"">Using Rest and XML</a></li>
-    </ul>".Fmt(DefaultUsageExamplesBaseUri),
-						LogFactory = new NullLogFactory(),
-						EnableAccessRestrictions = true,
-						WsdlServiceNamespace = "http://schemas.servicestack.net/types",
-						WebHostPhysicalPath = "~".MapServerPath(),
-						ServiceStackHandlerFactoryPath = ServiceStackPath,
-						MetadataRedirectPath = null,
-						DefaultContentType = null,
-						AllowJsonpRequests = true,
-						DebugMode = false,
-						DefaultDocuments = new List<string> {
-							"default.htm",
-							"default.html",
-							"default.cshtml",
-							"default.md",
-							"index.htm",
-							"index.html",
-							"default.aspx",
-							"default.ashx",
-						},
-						GlobalResponseHeaders = new Dictionary<string, string> { { "X-Powered-By", Env.ServerUserAgent } },
-						IgnoreFormatsInMetadata = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase),
-						AllowFileExtensions = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
-						{
-							"js", "css", "htm", "html", "shtm", "txt", "xml", "rss", "csv", 
-							"jpg", "jpeg", "gif", "png", "bmp", "ico", "tif", "tiff", 
-							"avi", "divx", "m3u", "mov", "mp3", "mpeg", "mpg", "qt", "vob", "wav", "wma", "wmv", 
-							"flv", "xap", "xaml", 
-						},
-						DebugAspNetHostEnvironment = Env.IsMono ? "FastCGI" : "IIS7",
-						DebugHttpListenerHostEnvironment = Env.IsMono ? "XSP" : "WebServer20",
-						EnableFeatures = Feature.All,
-						WriteErrorsToResponse = true,
-						MarkdownOptions = new MarkdownOptions(),
-						MarkdownBaseType = typeof(MarkdownViewBase),
-						MarkdownGlobalHelpers = new Dictionary<string, Type>(),
-						HtmlReplaceTokens = new Dictionary<string, string>(),
-						AddMaxAgeForStaticMimeTypes = new Dictionary<string, TimeSpan> {
-							{ "image/gif", TimeSpan.FromHours(1) },
-							{ "image/png", TimeSpan.FromHours(1) },
-							{ "image/jpeg", TimeSpan.FromHours(1) },
-						},
-						AppendUtf8CharsetOnContentTypes = new HashSet<string> { ContentType.Json, },
-						RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>>(),
-						CustomHttpHandlers = new Dictionary<HttpStatusCode, IHttpHandler>(),
-						DefaultJsonpCacheExpiration = new TimeSpan(0, 20, 0)
-					};
+					if (_instance != null) return _instance;
+				
+					var instance = CreateDefaultConfig();
 
 					if (instance.ServiceStackHandlerFactoryPath == null)
 					{
-						InferHttpHandlerPath();
+						InferHttpHandlerPath(instance);
 					}
+					_instance = instance;
 				}
-				return instance;
+				return _instance;
 			}
 		}
 
@@ -125,45 +116,120 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public EndpointHostConfig()
 		{
-			if (instance == null) return;
+			EndpointHostConfig instance = _instance;
+			//copy the default singleton already partially configured
+			ExtractExistingValues(instance);
+		}
 
-			//Get a copy of the singleton already partially configured
-			this.MetadataPageBodyHtml = instance.MetadataPageBodyHtml;
-			this.MetadataOperationPageBodyHtml = instance.MetadataOperationPageBodyHtml;
-			this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
-			this.ServiceEndpointsMetadataConfig = instance.ServiceEndpointsMetadataConfig;
-			this.LogFactory = instance.LogFactory;
-			this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
-			this.WsdlServiceNamespace = instance.WsdlServiceNamespace;
-			this.WebHostUrl = instance.WebHostUrl;
-			this.WebHostPhysicalPath = instance.WebHostPhysicalPath;
-			this.DefaultRedirectPath = instance.DefaultRedirectPath;
-			this.MetadataRedirectPath = instance.MetadataRedirectPath;
-			this.ServiceStackHandlerFactoryPath = instance.ServiceStackHandlerFactoryPath;
-			this.DefaultContentType = instance.DefaultContentType;
-			this.AllowJsonpRequests = instance.AllowJsonpRequests;
-			this.DebugMode = instance.DebugMode;
-			this.DefaultDocuments = instance.DefaultDocuments;
-			this.GlobalResponseHeaders = instance.GlobalResponseHeaders;
-			this.IgnoreFormatsInMetadata = instance.IgnoreFormatsInMetadata;
-			this.AllowFileExtensions = instance.AllowFileExtensions;
-			this.EnableFeatures = instance.EnableFeatures;
-			this.WriteErrorsToResponse = instance.WriteErrorsToResponse;
-			this.MarkdownOptions = instance.MarkdownOptions;
-			this.MarkdownBaseType = instance.MarkdownBaseType;
-			this.MarkdownGlobalHelpers = instance.MarkdownGlobalHelpers;
-			this.HtmlReplaceTokens = instance.HtmlReplaceTokens;
-			this.AddMaxAgeForStaticMimeTypes = instance.AddMaxAgeForStaticMimeTypes;
-			this.AppendUtf8CharsetOnContentTypes = instance.AppendUtf8CharsetOnContentTypes;
-			this.RawHttpHandlers = instance.RawHttpHandlers;
-			this.CustomHttpHandlers = instance.CustomHttpHandlers;
-			this.DefaultJsonpCacheExpiration = instance.DefaultJsonpCacheExpiration;
+		private void ExtractExistingValues(EndpointHostConfig existing)
+		{
+			if (existing == null) return;
+			this.MetadataPageBodyHtml = existing.MetadataPageBodyHtml;
+			this.MetadataOperationPageBodyHtml = existing.MetadataOperationPageBodyHtml;
+			this.EnableAccessRestrictions = existing.EnableAccessRestrictions;
+			this.ServiceEndpointsMetadataConfig = existing.ServiceEndpointsMetadataConfig;
+			this.LogFactory = existing.LogFactory;
+			this.EnableAccessRestrictions = existing.EnableAccessRestrictions;
+			this.WsdlServiceNamespace = existing.WsdlServiceNamespace;
+			this.WebHostUrl = existing.WebHostUrl;
+			this.WebHostPhysicalPath = existing.WebHostPhysicalPath;
+			this.DefaultRedirectPath = existing.DefaultRedirectPath;
+			this.MetadataRedirectPath = existing.MetadataRedirectPath;
+			this.ServiceStackHandlerFactoryPath = existing.ServiceStackHandlerFactoryPath;
+			this.DefaultContentType = existing.DefaultContentType;
+			this.AllowJsonpRequests = existing.AllowJsonpRequests;
+			this.DebugMode = existing.DebugMode;
+			this.DefaultDocuments = existing.DefaultDocuments;
+			this.GlobalResponseHeaders = existing.GlobalResponseHeaders;
+			this.IgnoreFormatsInMetadata = existing.IgnoreFormatsInMetadata;
+			this.AllowFileExtensions = existing.AllowFileExtensions;
+			this.EnableFeatures = existing.EnableFeatures;
+			this.WriteErrorsToResponse = existing.WriteErrorsToResponse;
+			this.MarkdownOptions = existing.MarkdownOptions;
+			this.MarkdownBaseType = existing.MarkdownBaseType;
+			this.MarkdownGlobalHelpers = existing.MarkdownGlobalHelpers;
+			this.HtmlReplaceTokens = existing.HtmlReplaceTokens;
+			this.AddMaxAgeForStaticMimeTypes = existing.AddMaxAgeForStaticMimeTypes;
+			this.AppendUtf8CharsetOnContentTypes = existing.AppendUtf8CharsetOnContentTypes;
+			this.RawHttpHandlers = existing.RawHttpHandlers;
+			this.CustomHttpHandlers = existing.CustomHttpHandlers;
+			this.DefaultJsonpCacheExpiration = existing.DefaultJsonpCacheExpiration;
+		}
+
+		private static EndpointHostConfig CreateDefaultConfig()
+		{
+			return new EndpointHostConfig
+			{
+				MetadataPageBodyHtml = @"
+    <br />
+    <h3>Client Usage Examples:</h3>
+    <ul>
+        <li><a href=""{0}/UsingServiceClients.cs"">Using Service Clients</a></li>
+        <li><a href=""{0}/UsingDtoFromAssembly.cs"">Using Dto From Assembly</a></li>
+        <li><a href=""{0}/UsingDtoFromXsd.cs"">Using Dto From Xsd</a></li>
+        <li><a href=""{0}/UsingServiceReferenceClient.cs"">Using Service Reference Client</a></li>
+        <li><a href=""{0}/UsingSvcutilGeneratedClient.cs"">Using SvcUtil Generated Client</a></li>
+        <li><a href=""{0}/UsingRawHttpClient.cs"">Using Raw Http Client</a></li>
+        <li><a href=""{0}/UsingRestAndJson.cs"">Using Rest and Json</a></li>
+        <li><a href=""{0}/UsingRestAndXml.cs"">Using Rest and Xml</a></li>
+    </ul>".Fmt(DefaultUsageExamplesBaseUri),
+				MetadataOperationPageBodyHtml = @"
+    <br />
+    <h3>Usage Examples:</h3>
+    <ul>
+        <li><a href=""{0}/UsingRestAndJson.cs"">Using Rest and JSON</a></li>
+        <li><a href=""{0}/UsingRestAndXml.cs"">Using Rest and XML</a></li>
+    </ul>".Fmt(DefaultUsageExamplesBaseUri),
+				LogFactory = new NullLogFactory(),
+				EnableAccessRestrictions = true,
+				WsdlServiceNamespace = "http://schemas.servicestack.net/types",
+				WebHostPhysicalPath = "~".MapServerPath(),
+				ServiceStackHandlerFactoryPath = ServiceStackPath,
+				MetadataRedirectPath = null,
+				DefaultContentType = null,
+				AllowJsonpRequests = true,
+				DebugMode = false,
+				DefaultDocuments = new List<string> {
+							"default.htm",
+							"default.html",
+							"default.cshtml",
+							"default.md",
+							"index.htm",
+							"index.html",
+							"default.aspx",
+							"default.ashx",
+						},
+				GlobalResponseHeaders = new Dictionary<string, string> { { "X-Powered-By", Env.ServerUserAgent } },
+				IgnoreFormatsInMetadata = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase),
+				AllowFileExtensions = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
+						{
+							"js", "css", "htm", "html", "shtm", "txt", "xml", "rss", "csv", 
+							"jpg", "jpeg", "gif", "png", "bmp", "ico", "tif", "tiff", 
+							"avi", "divx", "m3u", "mov", "mp3", "mpeg", "mpg", "qt", "vob", "wav", "wma", "wmv", 
+							"flv", "xap", "xaml", 
+						},
+				DebugAspNetHostEnvironment = Env.IsMono ? "FastCGI" : "IIS7",
+				DebugHttpListenerHostEnvironment = Env.IsMono ? "XSP" : "WebServer20",
+				EnableFeatures = Feature.All,
+				WriteErrorsToResponse = true,
+				MarkdownOptions = new MarkdownOptions(),
+				MarkdownBaseType = typeof(MarkdownViewBase),
+				MarkdownGlobalHelpers = new Dictionary<string, Type>(),
+				HtmlReplaceTokens = new Dictionary<string, string>(),
+				AddMaxAgeForStaticMimeTypes = new Dictionary<string, TimeSpan> {
+							{ "image/gif", TimeSpan.FromHours(1) },
+							{ "image/png", TimeSpan.FromHours(1) },
+							{ "image/jpeg", TimeSpan.FromHours(1) },
+						},
+				AppendUtf8CharsetOnContentTypes = new HashSet<string> { ContentType.Json, },
+				RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>>(),
+				CustomHttpHandlers = new Dictionary<HttpStatusCode, IHttpHandler>(),
+				DefaultJsonpCacheExpiration = new TimeSpan(0, 20, 0)
+			};
 		}
 
         public static string GetAppConfigPath()
         {
-            if (EndpointHost.AppHost == null) return null;
-
             var configPath = "~/web.config".MapHostAbsolutePath();
             if (File.Exists(configPath))
                 return configPath;
@@ -178,39 +244,50 @@ namespace ServiceStack.WebHost.Endpoints
         }
 
 	    const string NamespacesAppSettingsKey = "servicestack.razor.namespaces";
-	    private static HashSet<string> razorNamespaces;
+	    private static HashSet<string> _razorNamespaces;
+		/// <summary>
+		/// Gets the Razor Namespaces.
+		/// </summary>
+		/// <remarks>This method is thread safe.</remarks>
 	    public static HashSet<string> RazorNamespaces
         {
             get
             {
-                if (razorNamespaces != null)
-                    return razorNamespaces;
+                if (_razorNamespaces != null) return _razorNamespaces;
 
-                razorNamespaces = new HashSet<string>();
-                //Infer from <system.web.webPages.razor> - what VS.NET's intell-sense uses
-                var configPath = GetAppConfigPath();
-                if (configPath != null)
-                {
-                    var xml = configPath.ReadAllText();
-                    var doc = XElement.Parse(xml);
-                    doc.AnyElement("system.web.webPages.razor")
-                        .AnyElement("pages")
-                            .AnyElement("namespaces")
-                                .AllElements("add").ToList()
-                                    .ForEach(x => razorNamespaces.Add(x.AnyAttribute("namespace").Value));
-                }
+				lock (_syncRoot)
+				{
+					if (_razorNamespaces != null) return _razorNamespaces; //double checked locking works fine in .Net, not in Java
 
-                //E.g. <add key="servicestack.razor.namespaces" value="System,ServiceStack.Text" />
-                if (ConfigUtils.GetNullableAppSetting(NamespacesAppSettingsKey) != null)
-                {
-                    ConfigUtils.GetListFromAppSetting(NamespacesAppSettingsKey)
-                        .ForEach(x => razorNamespaces.Add(x));
-                }
+					var razorNamespaces = new HashSet<string>();
+					//Infer from <system.web.webPages.razor> - what VS.NET's intell-sense uses
+					var configPath = GetAppConfigPath();
+					if (configPath != null)
+					{
+						var xml = configPath.ReadAllText();
+						var doc = XElement.Parse(xml);
+						doc.AnyElement("system.web.webPages.razor")
+							.AnyElement("pages")
+								.AnyElement("namespaces")
+									.AllElements("add").ToList()
+										.ForEach(x => razorNamespaces.Add(x.AnyAttribute("namespace").Value));
+					}
+
+					//E.g. <add key="servicestack.razor.namespaces" value="System,ServiceStack.Text" />
+					if (ConfigUtils.GetNullableAppSetting(NamespacesAppSettingsKey) != null)
+					{
+						ConfigUtils.GetListFromAppSetting(NamespacesAppSettingsKey)
+							.ForEach(x => razorNamespaces.Add(x));
+					}
                 
-                log.Debug("Loaded Razor Namespaces: in {0}: {1}: {2}"
+					_log.Debug("Loaded Razor Namespaces: in {0}: {1}: {2}"
                     .Fmt(configPath, "~/Web.config".MapHostAbsolutePath(), razorNamespaces.Dump()));
+					
+					//publish value last
+					_razorNamespaces = razorNamespaces;
+				}
 
-                return razorNamespaces;
+                return _razorNamespaces;
             }
         }
 
@@ -228,20 +305,20 @@ namespace ServiceStack.WebHost.Endpoints
             return null;
         }
 
-		private static void InferHttpHandlerPath()
+		private static void InferHttpHandlerPath(EndpointHostConfig instance)
 		{
 			try
 			{
 				var config = GetAppConfig();
                 if (config == null) return;
 
-				SetPathsFromConfiguration(config, null);
+				SetPathsFromConfiguration(instance, config, null);
 
 				if (instance.MetadataRedirectPath == null)
 				{
 					foreach (ConfigurationLocation location in config.Locations)
 					{
-						SetPathsFromConfiguration(location.OpenConfiguration(), (location.Path ?? "").ToLower());
+						SetPathsFromConfiguration(instance, location.OpenConfiguration(), (location.Path ?? "").ToLower());
 
 						if (instance.MetadataRedirectPath != null) { break; }
 					}
@@ -249,7 +326,7 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 			catch (Exception exc)
 			{
-				log.Error("Bad Config", exc);
+				_log.Error("Bad Config", exc);
 			}
 			
 			if (!SkipPathValidation && instance.MetadataRedirectPath == null)
@@ -261,7 +338,7 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
-		private static void SetPathsFromConfiguration(System.Configuration.Configuration config, string locationPath)
+		private static void SetPathsFromConfiguration(EndpointHostConfig instance, System.Configuration.Configuration config, string locationPath)
 		{
 			if (config == null)
 				return;
@@ -276,7 +353,7 @@ namespace ServiceStack.WebHost.Endpoints
 					if (!httpHandler.Type.StartsWith("ServiceStack"))
 						continue;
 
-					SetPaths(httpHandler.Path, locationPath);
+					SetPaths(instance, httpHandler.Path, locationPath);
 					break;
 				}
 			}
@@ -290,13 +367,13 @@ namespace ServiceStack.WebHost.Endpoints
 					var rawXml = webServerSection.SectionInformation.GetRawXml();
 					if (!String.IsNullOrEmpty(rawXml))
 					{
-						SetPaths(ExtractHandlerPathFromWebServerConfigurationXml(rawXml), locationPath);
+						SetPaths(instance, ExtractHandlerPathFromWebServerConfigurationXml(rawXml), locationPath);
 					}
 				}
 			}
 		}
 
-		private static void SetPaths(string handlerPath, string locationPath)
+		private static void SetPaths(EndpointHostConfig instance, string handlerPath, string locationPath)
 		{
 			if (null == handlerPath) { return; }
 
@@ -371,27 +448,38 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public TimeSpan DefaultJsonpCacheExpiration { get; set; }
 
-		private string defaultOperationNamespace;
+		private string _defaultOperationNamespace;
+		/// <summary>
+		/// Gets the default operation namespace.
+		/// </summary>
+		/// <remarks>This method is thread safe</remarks>
 		public string DefaultOperationNamespace
 		{
 			get
 			{
-				if (this.defaultOperationNamespace == null)
+				if (_defaultOperationNamespace != null) return _defaultOperationNamespace;
+			
+				string defaultNamespace = GetDefaultNamespace();
+				if (defaultNamespace == null) return "";
+
+				lock (_syncRoot)
 				{
-					this.defaultOperationNamespace = GetDefaultNamespace();
+					if (_defaultOperationNamespace == null)
+					{
+						_defaultOperationNamespace = defaultNamespace;
+					}
 				}
-				return this.defaultOperationNamespace;
+					return _defaultOperationNamespace;
 			}
 			set
 			{
-				this.defaultOperationNamespace = value;
+				_defaultOperationNamespace = value;
 			}
 		}
 
 		private string GetDefaultNamespace()
 		{
-			if (!String.IsNullOrEmpty(this.defaultOperationNamespace)
-				|| this.ServiceController == null) return null;
+			if (this.ServiceController == null) return null;
 
 			foreach (var operationType in this.ServiceController.OperationTypes)
 			{
