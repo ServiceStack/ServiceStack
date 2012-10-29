@@ -32,7 +32,7 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 
 			var requestMessage = GetSoap12RequestMessage(context.Request.InputStream);
-			SendOneWay(requestMessage, null, null);
+			SendOneWay(requestMessage);
 		}
 	}
 
@@ -50,7 +50,7 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 
 			var requestMessage = GetSoap12RequestMessage(context.Request.InputStream);
-			var responseMessage = Send(requestMessage, null, null);
+			var responseMessage = Send(requestMessage);
 
 			context.Response.ContentType = GetSoapContentType(context.Request.ContentType);
 			using (var writer = XmlWriter.Create(context.Response.OutputStream))

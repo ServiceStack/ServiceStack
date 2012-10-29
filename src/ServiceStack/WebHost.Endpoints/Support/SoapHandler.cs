@@ -22,19 +22,28 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			this.HandlerAttributes = soapType;
 		}
 
-		public void SendOneWay(Message requestMsg, IHttpRequest httpRequest, IHttpResponse httpResponse)
-		{
-			var endpointAttributes = EndpointAttributes.AsyncOneWay | this.HandlerAttributes;
+        public void SendOneWay(Message requestMsg)
+        {
+            SendOneWay(requestMsg, null, null);
+        }
 
-			ExecuteMessage(requestMsg, endpointAttributes, httpRequest, httpResponse);
+        protected void SendOneWay(Message requestMsg, IHttpRequest httpRequest, IHttpResponse httpResponse)
+        {
+            var endpointAttributes = EndpointAttributes.AsyncOneWay | this.HandlerAttributes;
+
+            ExecuteMessage(requestMsg, endpointAttributes, httpRequest, httpResponse);
+        }
+
+		public Message Send(Message requestMsg){
+		    return Send(requestMsg, null, null);
 		}
 
-		public Message Send(Message requestMsg, IHttpRequest httpRequest, IHttpResponse httpResponse)
-		{
-			var endpointAttributes = EndpointAttributes.SyncReply | this.HandlerAttributes;
+        protected Message Send(Message requestMsg, IHttpRequest httpRequest, IHttpResponse httpResponse)
+        {
+            var endpointAttributes = EndpointAttributes.SyncReply | this.HandlerAttributes;
 
             return ExecuteMessage(requestMsg, endpointAttributes, httpRequest, httpResponse);
-		}
+        }
 
         public Message EmptyResponse(Message requestMsg, Type requestType)
         {

@@ -226,7 +226,7 @@ namespace ServiceStack.ServiceClient.Web
                 // CCB Custom...add behavior to propagate cookies across SOAP method calls
                 if (StoreCookies)
                     client.ChannelFactory.Endpoint.Behaviors.Add(new CookieManagerEndpointBehavior());
-                var response = client.Proxy.Send(message, null, null);
+                var response = client.Proxy.Send(message);
                 return response;
             }
         }
@@ -342,7 +342,7 @@ namespace ServiceStack.ServiceClient.Web
         {
             using (var client = new GenericProxy<IOneWay>(SyncReply))
             {
-                client.Proxy.SendOneWay(message, null, null);
+                client.Proxy.SendOneWay(message);
             }
         }
 
