@@ -52,7 +52,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
 
             public SwaggerFeatureAppHostHttpListener()
-                : base("Swagger Feature Tests", typeof(SwaggerFeatureService).Assembly) { }
+                : base("Swagger Feature Tests", typeof(SwaggerFeatureServiceTests).Assembly) { }
 
             public override void Configure(Funq.Container container)
             {
