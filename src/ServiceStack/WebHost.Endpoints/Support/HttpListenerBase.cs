@@ -106,7 +106,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		/// <param name="urlBase">
 		/// A Uri that acts as the base that the server is listening on.
 		/// Format should be: http://127.0.0.1:8080/ or http://127.0.0.1:8080/somevirtual/
-		/// Note: the trailing backslash is required! For more info see the
+		/// Note: the trailing slash is required! For more info see the
 		/// HttpListener.Prefixes property on MSDN.
 		/// </param>
 		public virtual void Start(string urlBase)

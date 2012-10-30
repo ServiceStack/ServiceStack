@@ -22,19 +22,28 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			this.HandlerAttributes = soapType;
 		}
 
-		public void SendOneWay(Message requestMsg)
-		{
-			var endpointAttributes = EndpointAttributes.AsyncOneWay | this.HandlerAttributes;
+        public void SendOneWay(Message requestMsg)
+        {
+            SendOneWay(requestMsg, null, null);
+        }
 
-			ExecuteMessage(requestMsg, endpointAttributes);
+        protected void SendOneWay(Message requestMsg, IHttpRequest httpRequest, IHttpResponse httpResponse)
+        {
+            var endpointAttributes = EndpointAttributes.AsyncOneWay | this.HandlerAttributes;
+
+            ExecuteMessage(requestMsg, endpointAttributes, httpRequest, httpResponse);
+        }
+
+		public Message Send(Message requestMsg){
+		    return Send(requestMsg, null, null);
 		}
 
-		public Message Send(Message requestMsg)
-		{
-			var endpointAttributes = EndpointAttributes.SyncReply | this.HandlerAttributes;
+        protected Message Send(Message requestMsg, IHttpRequest httpRequest, IHttpResponse httpResponse)
+        {
+            var endpointAttributes = EndpointAttributes.SyncReply | this.HandlerAttributes;
 
-			return ExecuteMessage(requestMsg, endpointAttributes);
-		}
+            return ExecuteMessage(requestMsg, endpointAttributes, httpRequest, httpResponse);
+        }
 
         public Message EmptyResponse(Message requestMsg, Type requestType)
         {
@@ -46,7 +55,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
                 : Message.CreateMessage(requestMsg.Version, requestType.Name + "Response", response);
         }
 
-		protected Message ExecuteMessage(Message requestMsg, EndpointAttributes endpointAttributes)
+		protected Message ExecuteMessage(Message requestMsg, EndpointAttributes endpointAttributes, IHttpRequest httpRequest, IHttpResponse httpResponse)
 		{
 			if ((EndpointAttributes.Soap11 & this.HandlerAttributes) == EndpointAttributes.Soap11)
 				EndpointHost.Config.AssertFeatures(Feature.Soap11);
@@ -71,10 +80,10 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			    var httpReq = HttpContext.Current != null 
                     ? new HttpRequestWrapper(requestType.Name, HttpContext.Current.Request)
-                    : null;
+                    : httpRequest;
 				var httpRes = HttpContext.Current != null 
                     ? new HttpResponseWrapper(HttpContext.Current.Response)
-                    : null;
+                    : httpResponse;
 
                 if (EndpointHost.ApplyPreRequestFilters(httpReq, httpRes))
                     return EmptyResponse(requestMsg, requestType);
@@ -109,19 +118,19 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 		}
 
-		protected static Message GetSoap12RequestMessage(HttpContext context)
+        protected static Message GetSoap12RequestMessage(Stream inputStream)
 		{
-			return GetRequestMessage(context, MessageVersion.Soap12WSAddressingAugust2004);
+            return GetRequestMessage(inputStream, MessageVersion.Soap12WSAddressingAugust2004);
 		}
 
-		protected static Message GetSoap11RequestMessage(HttpContext context)
+		protected static Message GetSoap11RequestMessage(Stream inputStream)
 		{
-			return GetRequestMessage(context, MessageVersion.Soap11WSAddressingAugust2004);
+            return GetRequestMessage(inputStream, MessageVersion.Soap11WSAddressingAugust2004);
 		}
 
-		protected static Message GetRequestMessage(HttpContext context, MessageVersion msgVersion)
+        protected static Message GetRequestMessage(Stream inputStream, MessageVersion msgVersion)
 		{
-			using (var sr = new StreamReader(context.Request.InputStream))
+			using (var sr = new StreamReader(inputStream))
 			{
 				var requestXml = sr.ReadToEnd();
 
@@ -163,14 +172,13 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		protected static string GetActionFromHttpContext()
 		{
 			var context = HttpContext.Current;
-			return GetAction(context);
+			return context == null ? null : GetAction(context.Request.ContentType);
 		}
 
-		private static string GetAction(HttpContext context)
+		private static string GetAction(string contentType)
 		{
-			if (context != null)
+            if (contentType != null)
 			{
-				var contentType = context.Request.ContentType;
 				return GetOperationName(contentType);
 			}
 
@@ -195,11 +203,11 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			return null;
 		}
 
-		public string GetSoapContentType(HttpContext context)
+		public string GetSoapContentType(string contentType)
 		{
-			var requestOperationName = GetAction(context);
+            var requestOperationName = GetAction(contentType);
 			return requestOperationName != null
-					? context.Request.ContentType.Replace(requestOperationName, requestOperationName + "Response")
+                    ? contentType.Replace(requestOperationName, requestOperationName + "Response")
 					: (this.HandlerAttributes == EndpointAttributes.Soap11 ? ContentType.Soap11 : ContentType.Soap12);
 		}
 
