@@ -36,10 +36,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			{"Soap12/Metadata", typeof(Soap12MetadataHandler)},
 		};
 
+        [TestFixtureSetUp]
+        public void Setup()
+        {
+            RegisterConfig();
+        }
+
+        [TestFixtureTearDown]
+        public void TearDown()
+        {
+            EndpointHost.CatchAllHandlers.Clear();
+        }
+
         [Test]
         public void Resolves_the_right_handler_for_expexted_paths()
         {
-            RegisterConfig();
             foreach (var item in pathInfoMap)
             {
                 var expectedType = item.Value;
@@ -62,7 +73,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Resolves_the_right_handler_for_case_insensitive_expexted_paths()
         {
-            RegisterConfig();
             foreach (var item in pathInfoMap)
             {
                 var expectedType = item.Value;

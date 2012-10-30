@@ -19,9 +19,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     /// </summary>
     public abstract class SyncRestClientTests : IDisposable
     {
-        protected const string ListeningOn = "http://localhost:85/";
+        protected string ListeningOn = "http://localhost:";
 
         ExampleAppHostHttpListener appHost;
+
+        protected SyncRestClientTests(int port)
+        {
+            ListeningOn += port + "/";
+        }
 
         [TestFixtureSetUp]
         public void OnTestFixtureSetUp()
@@ -227,6 +232,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class JsonSyncRestClientTests : SyncRestClientTests
     {
+        public JsonSyncRestClientTests() : base(8090)
+        {
+        }
+
         protected override IRestClient CreateRestClient()
         {
             return new JsonServiceClient(ListeningOn);
@@ -243,12 +252,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             restClient.Get<MoviesResponse>("movies");
             Assert.That(isActioncalledGlobal, Is.True);
             Assert.That(isActioncalledLocal, Is.True);
+
+            ServiceClientBase.HttpWebResponseFilter = null;
         }
     }
 
     [TestFixture]
     public class JsvSyncRestClientTests : SyncRestClientTests
     {
+        public JsvSyncRestClientTests()
+            : base(8091)
+        {
+        }
+
         protected override IRestClient CreateRestClient()
         {
             return new JsvServiceClient(ListeningOn);
@@ -258,6 +274,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class XmlSyncRestClientTests : SyncRestClientTests
     {
+        public XmlSyncRestClientTests()
+            : base(8092)
+        {
+        }
+
         protected override IRestClient CreateRestClient()
         {
             return new XmlServiceClient(ListeningOn);
