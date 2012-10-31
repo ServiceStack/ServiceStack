@@ -37,8 +37,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		protected bool IsStarted = false;
 
 		private readonly DateTime _startTime;
-		private bool _runAsNamedInstance;
-		private string _serviceName; //also the name of this instance if running as named instance
+		private string _serviceName; 
 		public static HttpListenerBase Instance { get; protected set; }
 
 		private readonly AutoResetEvent _listenForNextRequest = new AutoResetEvent(false);
@@ -49,73 +48,64 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			_startTime = DateTime.Now;
 			_log.Info("Begin Initializing Application...");
-			_runAsNamedInstance = false;
 			EndpointHostConfig.SkipPathValidation = true;
 		}
 
-		protected HttpListenerBase(string serviceName,  params Assembly[] assembliesWithServices)
+		protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
 			: this()
 		{
-			_runAsNamedInstance = false;
+			if (string.IsNullOrEmpty(serviceName)) throw new ArgumentException("Must provide a service name.", "serviceName");
 			_serviceName = serviceName;
 			OurEndpointHost.ConfigureHost(this, serviceName, CreateServiceManager(assembliesWithServices));
 		}
 
-		protected HttpListenerBase(string serviceName, bool runAsNamedInstance, params Assembly[] assembliesWithServices)
-			: this()
+		public string ServiceName
 		{
-			if (runAsNamedInstance && string.IsNullOrEmpty(serviceName)) throw new ArgumentException("Must provide a service name of named instances.", "serviceName");
-			_runAsNamedInstance = runAsNamedInstance;
-			_serviceName = serviceName;
-			OurEndpointHost.ConfigureHost(this, serviceName, CreateServiceManager(assembliesWithServices));
+			get
+			{
+				return _serviceName;
+			}
 		}
 
+		private EndpointHostInstance _ourEndpointHost;
 		protected EndpointHostInstance OurEndpointHost
 		{
 			get
 			{
-				if (_runAsNamedInstance)
+				if (_ourEndpointHost != null) return _ourEndpointHost;
+				lock (_syncRoot)
 				{
-					return EndpointHost.GetNamedHost(_serviceName);
+					if (_ourEndpointHost != null) return _ourEndpointHost; //double check locking works in .Net
+
+					if (RunAsInstance)
+					{
+						_ourEndpointHost = EndpointHost.Create(this);
+					}
+					else
+					{
+						_ourEndpointHost = EndpointHost.Instance;
+					}
 				}
-				else
-				{
-					return EndpointHost.Instance;
-				}
+				return _ourEndpointHost;
 			}
-
 		}
-
-		private static Dictionary<string, HttpListenerBase> _namedListener = new Dictionary<string, HttpListenerBase>();
-		private readonly static object _syncRoot = new object();
 
 		/// <summary>
-		/// Gets a <see cref="EndpointHostConfig"/> by name, and creates a new one if one doesn't exist by that name.
+		/// Override the property to run this listener as a seperate instance from the singleton.
 		/// </summary>
-		/// <param name="name">The name of the config to return or create.</param>
-		/// <returns>Returns the instance.</returns>
-		/// <remarks>This method is thread safe.</remarks>
-		internal static HttpListenerBase GetNamedConfig(string name)
+		/// <remarks>
+		/// You can run multiple instance of service stack listening on different ports.  In order
+		/// to accomplish this, implementors who subclass <see cref="HttpListenerBase"/> should override
+		/// this property and return <see langword="true"/>.  This ability only applies to <see cref="HttpListnerBase"/>
+		/// and not the ASP version of this subclass. This property must return the same value on every call and can not
+		/// change once it has been set.
+		/// </remarks>
+		protected virtual bool RunAsInstance
 		{
-			HttpListenerBase listener;
-			if (_namedListener.TryGetValue(name, out listener))
-			{
-				return listener;
-			}
-
-			lock (_syncRoot)
-			{
-				if (_namedListener.TryGetValue(name, out listener)) //double checked locking works in .Net 
-				{
-					return listener;
-				}
-
-				var namedListener = new Dictionary<string, HttpListenerBase>(_namedListener);
-				namedListener.Add(name, listener);
-				_namedListener = namedListener;
-				return listener;
-			}
+			get { return false; }
 		}
+
+		private readonly static object _syncRoot = new object();
 
 		protected virtual ServiceManager CreateServiceManager(params Assembly[] assembliesWithServices)
 		{		
@@ -124,7 +114,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public void Init()
 		{
-			if (_runAsNamedInstance == false)
+			if (RunAsInstance == false)
 			{
 				if (Instance != null)
 				{
@@ -553,16 +543,11 @@ namespace ServiceStack.WebHost.Endpoints.Support
 						OurEndpointHost.Config.ServiceManager.Dispose();
 					}
 
-					if (_runAsNamedInstance)
-					{
-						//remove named instances
-						EndpointHostConfig.RemoveNamedConfig(_serviceName);
-						EndpointHost.RemoveNamedHost(_serviceName);
-					}
-					else
+					if (!RunAsInstance)
 					{
 						Instance = null;
 					}
+					_ourEndpointHost = null;
 				}
 
 				// There are no unmanaged resources to release, but
@@ -577,6 +562,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			Dispose(true);
 			GC.SuppressFinalize(this);
-		}	
+		}
+
 	}
 }

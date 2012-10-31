@@ -34,7 +34,6 @@ namespace ServiceStack.WebHost.Endpoints
 		private const string DefaultUsageExamplesBaseUri =
 			"https://github.com/ServiceStack/ServiceStack.Extras/blob/master/doc/UsageExamples";
 
-		private static Dictionary<string, EndpointHostConfig> _namedConfigs = new Dictionary<string, EndpointHostConfig>();
 		private readonly static object _syncRoot = new object();
 
 		/// <summary>
@@ -43,41 +42,10 @@ namespace ServiceStack.WebHost.Endpoints
 		/// <param name="name">The name of the config to return or create.</param>
 		/// <returns>Returns the instance.</returns>
 		/// <remarks>This method is thread safe.</remarks>
-		internal static EndpointHostConfig GetNamedConfig(string name)
+		internal static EndpointHostConfig Create()
 		{
-			EndpointHostConfig config;
-			if (_namedConfigs.TryGetValue(name, out config))
-			{
-				return config;
-			}
-
-			lock (_syncRoot) 
-			{
-				if (_namedConfigs.TryGetValue(name, out config)) //double checked locking works in .Net unlike Java
-				{
-					return config;
-				}
-
-				config = CreateDefaultConfig();
-				//Question: do we use InferHttpHandlerPath here? or some analagous setup here? 
-
-				var namedConfigs = new Dictionary<string, EndpointHostConfig>(_namedConfigs);
-				namedConfigs.Add(name, config);
-				_namedConfigs = namedConfigs;
-				return config;
-			}
-		}
-
-		internal static void RemoveNamedConfig(string name)
-		{
-			if (string.IsNullOrEmpty(name)) return;
-
-			lock(_syncRoot)
-			{
-				var namedConfigs = new Dictionary<string, EndpointHostConfig>(_namedConfigs);
-				namedConfigs.Remove(name);
-				_namedConfigs = namedConfigs;
-			}
+			EndpointHostConfig config = CreateDefaultConfig();
+			return config;
 		}
 
 		private static EndpointHostConfig _instance;
@@ -95,6 +63,8 @@ namespace ServiceStack.WebHost.Endpoints
 				{
 					if (_instance != null) return _instance;
 				
+					//in order for the default config to be created, we need to know
+					//our app host
 					var instance = CreateDefaultConfig();
 
 					if (instance.ServiceStackHandlerFactoryPath == null)
@@ -116,9 +86,13 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public EndpointHostConfig()
 		{
-			EndpointHostConfig instance = _instance;
+			EndpointHostConfig defaultConfig = CreateDefaultConfig();
 			//copy the default singleton already partially configured
-			ExtractExistingValues(instance);
+			ExtractExistingValues(defaultConfig);
+		}
+
+		private EndpointHostConfig(bool lame)
+		{
 		}
 
 		private void ExtractExistingValues(EndpointHostConfig existing)
@@ -158,7 +132,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 		private static EndpointHostConfig CreateDefaultConfig()
 		{
-			return new EndpointHostConfig
+			return new EndpointHostConfig(false)
 			{
 				MetadataPageBodyHtml = @"
     <br />
