@@ -17,9 +17,59 @@ using ServiceStack.WebHost.Endpoints.Utils;
 
 namespace ServiceStack.WebHost.Endpoints
 {
+	/// <summary>
+	/// Responsible for access to the default <see cref="EndpointHost"/>.  
+	/// </summary>
 	public class EndpointHost
 	{
 		private static readonly EndpointHostInstance _instance = new EndpointHostInstance();
+
+		internal static EndpointHostInstance Instance { get { return _instance; } }
+
+		private static Dictionary<string, EndpointHostInstance> _namedHosts = new Dictionary<string, EndpointHostInstance>();
+		private readonly static object _syncRoot = new object();
+
+		/// <summary>
+		/// Gets a <see cref="EndpointHostInstance"/> by name, and creates a new host if one doesn't exist by that name.
+		/// </summary>
+		/// <param name="name">The name of the endpoint to create.</param>
+		/// <returns>Returns the instance.</returns>
+		/// <remarks>This method is thread safe.</remarks>
+		internal static EndpointHostInstance GetNamedHost(string name)
+		{
+			if (string.IsNullOrEmpty(name)) throw new ArgumentException("Agument must not be not or empty", "name");
+
+			EndpointHostInstance host;
+			if (_namedHosts.TryGetValue(name, out host))
+			{
+				return host;
+			}
+
+			lock (_syncRoot) 
+			{
+				if (_namedHosts.TryGetValue(name, out host)) //double checked locking works fine in .Net
+				{
+					return host;
+				}
+				var namedHosts = new Dictionary<string, EndpointHostInstance>(_namedHosts);
+				namedHosts.Add(name, host = new EndpointHostInstance(true));
+				//publish last
+				_namedHosts = namedHosts;
+				return host;
+			}
+		}
+
+		internal static void RemoveNamedHost(string name)
+		{
+			if (string.IsNullOrEmpty(name)) return;
+
+			lock (_syncRoot)
+			{
+				var namedHosts = new Dictionary<string, EndpointHostInstance>(_namedHosts);
+				namedHosts.Remove(name);
+				_namedHosts = namedHosts;
+			}
+		}
 
 		public static ServiceOperations ServiceOperations { get { return _instance.ServiceOperations; }  }
 		public static ServiceOperations AllServiceOperations { get { return _instance.AllServiceOperations; } }
