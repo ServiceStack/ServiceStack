@@ -513,6 +513,8 @@ namespace ServiceStack.ServiceClient.Web
                         //var strResponse = new StreamReader(stream).ReadToEnd();
                         //Console.WriteLine("Response: " + strResponse);
                         //stream.Position = 0;
+                        serviceEx.ResponseBody = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
+                        stream.Position = 0;
 
                         serviceEx.ResponseDto = this.StreamDeserializer(typeof(TResponse), stream);
                         requestState.HandleError((TResponse)serviceEx.ResponseDto, serviceEx);
