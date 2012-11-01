@@ -79,7 +79,7 @@ namespace ServiceStack.Common
 
         public static bool IsDynamic(this Assembly assembly)
         {
-#if MONOTOUCH
+#if MONOTOUCH || WINDOWS_PHONE
             return false;
 #else
             try
@@ -98,10 +98,16 @@ namespace ServiceStack.Common
 
         public static bool IsDebugBuild(this Assembly assembly)
         {
+#if WINDOWS_PHONE
+            return assembly.GetCustomAttributes(false)
+                .OfType<DebuggableAttribute>()
+                .Any();
+#else
             return assembly.GetCustomAttributes(false)
                 .OfType<DebuggableAttribute>()
                 .Select(attr => attr.IsJITTrackingEnabled)
                 .FirstOrDefault();
+#endif
         }
     }
 }
