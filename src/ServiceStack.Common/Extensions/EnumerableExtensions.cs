@@ -1,6 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+#if WINDOWS_PHONE
+using ServiceStack.Text.WP;
+#endif
 
 using Proxy = ServiceStack.Common.EnumerableExtensions;
 

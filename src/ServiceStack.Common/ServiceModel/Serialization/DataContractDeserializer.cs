@@ -44,8 +44,10 @@ namespace ServiceStack.ServiceModel.Serialization
 
 #if MONOTOUCH				
                 using (var reader = XmlDictionaryReader.CreateTextReader(bytes, null))
-#elif SILVERLIGHT
+#elif SILVERLIGHT && !WINDOWS_PHONE
                 using (var reader = XmlDictionaryReader.CreateTextReader(bytes, XmlDictionaryReaderQuotas.Max))
+#elif WINDOWS_PHONE
+                using (var reader = XmlDictionaryReader.CreateBinaryReader(bytes, XmlDictionaryReaderQuotas.Max))
 #else
                 using (var reader = XmlDictionaryReader.CreateTextReader(bytes, this.quotas))
 #endif

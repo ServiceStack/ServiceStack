@@ -239,7 +239,7 @@ namespace ServiceStack.Common.Utils
 
             if (type.IsEnum)
             {
-#if SILVERLIGHT4
+#if SILVERLIGHT4 || WINDOWS_PHONE
                 return Enum.ToObject(type, 0);
 #else
                 return Enum.GetValues(type).GetValue(0);
@@ -302,9 +302,15 @@ namespace ServiceStack.Common.Utils
 
         private static Type GetGenericCollectionType(Type type)
         {
+#if WINDOWS_PHONE
+            var genericCollectionType =
+                type.GetInterfaces()
+                    .FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof (ICollection<>));
+#else
             var genericCollectionType = type.FindInterfaces((t, critera) =>
                 t.IsGenericType
                 && t.GetGenericTypeDefinition() == typeof (ICollection<>), null).FirstOrDefault();
+#endif
 
             return genericCollectionType;
         }

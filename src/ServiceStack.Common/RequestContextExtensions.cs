@@ -1,3 +1,4 @@
+#if !SILVERLIGHT && !XBOX
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Common
@@ -29,3 +30,4 @@ namespace ServiceStack.Common
         }
     }
 }
+#endif
