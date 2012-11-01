@@ -11,9 +11,6 @@ using ServiceStack.WebHost.Endpoints.Support;
 namespace ServiceStack.WebHost.Endpoints
 {
 
-
-
-
     public abstract class AppHostHttpListenerLongRunningBase : AppHostHttpListenerBase
     {
         private class ThreadPoolManager : IDisposable
@@ -89,13 +86,22 @@ namespace ServiceStack.WebHost.Endpoints
 
 
         #region IDisposable Members
-
-        public override void Dispose()
+		private bool _isDisposed = false;
+        protected override void Dispose(bool disposing)
         {
-            base.Dispose();
-            _threadPoolManager.Dispose();
+			if (!_isDisposed)
+			{
+				if (disposing)
+				{
+					base.Dispose();
+					_threadPoolManager.Dispose();
+				}
 
-            Instance = null;
+				// new shared cleanup logic
+				_isDisposed = true;
+			}
+
+			base.Dispose(disposing);
         }
 
         #endregion
