@@ -116,6 +116,7 @@
     <Compile Include="Configuration\AppSettings.cs" />
     <Compile Include="Configuration\ConfigurationResourceManager.cs" />
     <Compile Include="Configuration\ConfigUtils.cs" />
+    <Compile Include="MetadataTypesHandler.cs" />
     <Compile Include="PredefinedRoutesFeature.cs" />
     <Compile Include="Funq\Action.cs" />
     <Compile Include="Funq\Container.cs" />
