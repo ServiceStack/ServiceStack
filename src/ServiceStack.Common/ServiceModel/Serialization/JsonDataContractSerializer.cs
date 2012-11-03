@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 using ServiceStack.DesignPatterns.Serialization;
@@ -6,9 +7,12 @@ using ServiceStack.Text;
 
 namespace ServiceStack.ServiceModel.Serialization
 {
+	/// <summary>
+	/// Responsible for JSON serialization.  Currently all serialization in the assembly uses this singleton.
+	/// </summary>
     public class JsonDataContractSerializer 
     {
-        public static JsonDataContractSerializer Instance = new JsonDataContractSerializer();
+        public static readonly JsonDataContractSerializer Instance = new JsonDataContractSerializer();
 
         public ITextSerializer TextSerializer { get; set; }
 
