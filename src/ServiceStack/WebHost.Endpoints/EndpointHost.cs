@@ -22,103 +22,99 @@ namespace ServiceStack.WebHost.Endpoints
 	/// </summary>
 	public class EndpointHost
 	{
-		private static readonly EndpointHostInstance _singletonInstance = new EndpointHostInstance();
+		private static readonly EndpointHostInstance _instance = new EndpointHostInstance();
 
-		/// <summary>
-		/// Do not expose.
-		/// </summary>
-		internal static EndpointHostInstance SingletonInstance
-		{
-			get { return _singletonInstance; }
-		}
+		internal static EndpointHostInstance Instance { get { return _instance; } }
 
-		/// <summary>
-		/// Use this instance for all access to this class.
-		/// </summary>
-		internal static EndpointHostInstance Instance 
-		{ 
-			get 
-			{
-				var ts = _threadSpecificInstance;
-				if (ts != null) return ts;
-				else return _singletonInstance;
-			} 
-		}
-
-		[ThreadStatic]
-		private static EndpointHostInstance _threadSpecificInstance;
-
-		internal static IDisposable SetThreadSpecificHost(EndpointHostInstance useInstance)
-		{
-			_threadSpecificInstance = useInstance;
-			return new ThreadCleanup();
-		}
-
-		private class ThreadCleanup : IDisposable
-		{
-			public void Dispose()
-			{
-				EndpointHost._threadSpecificInstance = null;	
-			}
-		}
-
+		private static Dictionary<string, EndpointHostInstance> _namedHosts = new Dictionary<string, EndpointHostInstance>();
 		private readonly static object _syncRoot = new object();
 
 		/// <summary>
-		/// Creates a new <see cref="EndpointHostInstance"/> to run as a seperate instance. 
+		/// Gets a <see cref="EndpointHostInstance"/> by name, and creates a new host if one doesn't exist by that name.
 		/// </summary>
 		/// <param name="name">The name of the endpoint to create.</param>
 		/// <returns>Returns the instance.</returns>
 		/// <remarks>This method is thread safe.</remarks>
-		internal static EndpointHostInstance Create(IAppHost appHost)
+		internal static EndpointHostInstance GetNamedHost(string name)
 		{
-			return EndpointHostInstance.CreateInstance(appHost);
+			if (string.IsNullOrEmpty(name)) throw new ArgumentException("Agument must not be not or empty", "name");
+
+			EndpointHostInstance host;
+			if (_namedHosts.TryGetValue(name, out host))
+			{
+				return host;
+			}
+
+			lock (_syncRoot) 
+			{
+				if (_namedHosts.TryGetValue(name, out host)) //double checked locking works fine in .Net
+				{
+					return host;
+				}
+				var namedHosts = new Dictionary<string, EndpointHostInstance>(_namedHosts);
+				namedHosts.Add(name, host = new EndpointHostInstance(true));
+				//publish last
+				_namedHosts = namedHosts;
+				return host;
+			}
 		}
 
-		public static ServiceOperations ServiceOperations { get { return Instance.ServiceOperations; }  }
-		public static ServiceOperations AllServiceOperations { get { return Instance.AllServiceOperations; } }
+		internal static void RemoveNamedHost(string name)
+		{
+			if (string.IsNullOrEmpty(name)) return;
 
-		public static IAppHost AppHost { get { return Instance != null ? Instance.AppHost: null; } internal set { Instance.AppHost = value; } }
+			lock (_syncRoot)
+			{
+				var namedHosts = new Dictionary<string, EndpointHostInstance>(_namedHosts);
+				namedHosts.Remove(name);
+				_namedHosts = namedHosts;
+			}
+		}
 
-		public static IContentTypeFilter ContentTypeFilter { get { return Instance.ContentTypeFilter; } set { Instance.ContentTypeFilter = value; } }
+		public static ServiceOperations ServiceOperations { get { return _instance.ServiceOperations; }  }
+		public static ServiceOperations AllServiceOperations { get { return _instance.AllServiceOperations; } }
 
-		public static List<Action<IHttpRequest, IHttpResponse>> RawRequestFilters { get { return Instance.RawRequestFilters; } }
+		public static IAppHost AppHost { get { return _instance.AppHost; } internal set { _instance.AppHost = value; } }
 
-		public static List<Action<IHttpRequest, IHttpResponse, object>> RequestFilters { get { return Instance.RequestFilters; } }
+		public static IContentTypeFilter ContentTypeFilter { get { return _instance.ContentTypeFilter; } set { _instance.ContentTypeFilter = value; } }
 
-		public static List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters { get { return Instance.ResponseFilters; } }
+		public static List<Action<IHttpRequest, IHttpResponse>> RawRequestFilters { get { return _instance.RawRequestFilters; } }
 
-		public static List<IViewEngine> ViewEngines { get { return Instance.ViewEngines; } set { Instance.ViewEngines = value; } }
+		public static List<Action<IHttpRequest, IHttpResponse, object>> RequestFilters { get { return _instance.RequestFilters; } }
 
-		public static HandleUncaughtExceptionDelegate ExceptionHandler { get { return Instance.ExceptionHandler; } set { Instance.ExceptionHandler = value; } }
+		public static List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters { get { return _instance.ResponseFilters; } }
 
-		public static HandleServiceExceptionDelegate ServiceExceptionHandler { get { return Instance.ServiceExceptionHandler; } set { Instance.ServiceExceptionHandler = value; } }
+		public static List<IViewEngine> ViewEngines { get { return _instance.ViewEngines; } set { _instance.ViewEngines = value; } }
 
-		public static List<HttpHandlerResolverDelegate> CatchAllHandlers { get { return Instance.CatchAllHandlers; } set { Instance.CatchAllHandlers = value; } }
+		public static HandleUncaughtExceptionDelegate ExceptionHandler { get { return _instance.ExceptionHandler; } set { _instance.ExceptionHandler = value; } }
 
-		public static List<IPlugin> Plugins { get { return Instance.Plugins; } set { Instance.Plugins = value; } }
+		public static HandleServiceExceptionDelegate ServiceExceptionHandler { get { return _instance.ServiceExceptionHandler; } set { _instance.ServiceExceptionHandler = value; } }
 
-		public static IVirtualPathProvider VirtualPathProvider { get { return Instance.VirtualPathProvider; } set { Instance.VirtualPathProvider = value; } }
+		public static List<HttpHandlerResolverDelegate> CatchAllHandlers { get { return _instance.CatchAllHandlers; } set { _instance.CatchAllHandlers = value; } }
 
-		public static DateTime StartedAt { get { return Instance.StartedAt; } set { Instance.StartedAt = value; } }
+		public static List<IPlugin> Plugins { get { return _instance.Plugins; } set { _instance.Plugins = value; } }
 
-		public static DateTime ReadyAt { get { return Instance.ReadyAt; } set { Instance.ReadyAt = value; } }
+		public static IVirtualPathProvider VirtualPathProvider { get { return _instance.VirtualPathProvider; } set { _instance.VirtualPathProvider = value; } }
+
+		public static DateTime StartedAt { get { return _instance.StartedAt; } set { _instance.StartedAt = value; } }
+
+		public static DateTime ReadyAt { get { return _instance.ReadyAt; } set { _instance.ReadyAt = value; } }
 		
 		// Pre user config
 		public static void ConfigureHost(IAppHost appHost, string serviceName, ServiceManager serviceManager)
 		{
-			Instance.ConfigureHost(appHost, serviceName, serviceManager);
+			_instance.ConfigureHost(appHost, serviceName, serviceManager);
 		}
 
 		//After configure called
 		public static void AfterInit()
 		{
-			Instance.AfterInit();
+			_instance.AfterInit();
 		}
 
         public static T TryResolve<T>()
         {
-			return Instance.TryResolve<T>();
+			return _instance.TryResolve<T>();
         }
 
         /// <summary>
@@ -127,21 +123,21 @@ namespace ServiceStack.WebHost.Endpoints
 	    public static Container Container
 	    {
 	        get {
-				return Instance.Container;
+				return _instance.Container;
 	        }
 	    }
 
 		public static void AddPlugin(params IPlugin[] plugins)
 		{
-			Instance.AddPlugin(plugins);
+			_instance.AddPlugin(plugins);
 		}
 
 		public static ServiceManager ServiceManager
 		{
-			get { return Instance.ServiceManager; }
+			get { return _instance.ServiceManager; }
 			set
 			{
-				Instance.ServiceManager = value;
+				_instance.ServiceManager = value;
 			}
 		}
 
@@ -159,11 +155,11 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			get
 			{
-				return Instance.Config;
+				return _instance.Config;
 			}
 			set
 			{
-				Instance.Config = value;
+				_instance.Config = value;
 			}
 		}
 
@@ -174,7 +170,7 @@ namespace ServiceStack.WebHost.Endpoints
 		/// <returns></returns>
 		public static bool ApplyPreRequestFilters(IHttpRequest httpReq, IHttpResponse httpRes)
 		{
-			return Instance.ApplyPreRequestFilters(httpReq, httpRes);
+			return _instance.ApplyPreRequestFilters(httpReq, httpRes);
 		}
 
 		/// <summary>
@@ -184,7 +180,7 @@ namespace ServiceStack.WebHost.Endpoints
 		/// <returns></returns>
 		public static bool ApplyRequestFilters(IHttpRequest httpReq, IHttpResponse httpRes, object requestDto)
 		{
-			return Instance.ApplyRequestFilters(httpReq, httpRes, requestDto);
+			return _instance.ApplyRequestFilters(httpReq, httpRes, requestDto);
 		}
 
 		/// <summary>
@@ -194,22 +190,22 @@ namespace ServiceStack.WebHost.Endpoints
 		/// <returns></returns>
 		public static bool ApplyResponseFilters(IHttpRequest httpReq, IHttpResponse httpRes, object response)
 		{
-			return Instance.ApplyResponseFilters(httpReq, httpRes, response);
+			return _instance.ApplyResponseFilters(httpReq, httpRes, response);
 		}
 
 		public static void SetOperationTypes(ServiceOperations operationTypes, ServiceOperations allOperationTypes)
 		{
-			Instance.SetOperationTypes(operationTypes, allOperationTypes);
+			_instance.SetOperationTypes(operationTypes, allOperationTypes);
 		}
 
 		internal static object ExecuteService(object request, EndpointAttributes endpointAttributes, IHttpRequest httpReq, IHttpResponse httpRes)
 		{
-			return Instance.ExecuteService(request, endpointAttributes, httpReq, httpRes);
+			return _instance.ExecuteService(request, endpointAttributes, httpReq, httpRes);
 		}
 
         public static IServiceRunner<TRequest> CreateServiceRunner<TRequest>(ActionContext actionContext)
         {
-			return Instance.CreateServiceRunner<TRequest>(actionContext);
+			return _instance.CreateServiceRunner<TRequest>(actionContext);
         }
 
 	    /// <summary>
@@ -217,7 +213,7 @@ namespace ServiceStack.WebHost.Endpoints
         /// </summary>
 	    internal static void CompleteRequest()
         {
-			Instance.CompleteRequest();
+			_instance.CompleteRequest();
         }
 	}
 }

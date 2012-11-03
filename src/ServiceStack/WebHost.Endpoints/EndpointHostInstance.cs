@@ -50,33 +50,14 @@ namespace ServiceStack.WebHost.Endpoints
 
         public  DateTime ReadyAt { get; set; }
 
-		private bool _runAsInstance = false;
+		private bool _runAsNamedInstance = false;
 
-		public EndpointHostInstance() : this(false, null) { }
+		public EndpointHostInstance(): this(false) { }
 
-		internal static EndpointHostInstance CreateInstance(IAppHost appHost)
+		public EndpointHostInstance(bool runAsNamedInstance)
 		{
-			return new EndpointHostInstance(true, appHost);
-		}
-
-		/// <summary>
-		/// Initializes an instance of <see cref="EndpointHostInstance"/>
-		/// </summary>
-		/// <param name="runAsInstance">Set this to <see langword="true"/> to run as a seperate instance; otherwise, false will cause this to run as a singleton.</param>
-		private EndpointHostInstance(bool runAsInstance, IAppHost appHost)
-		{
-			_runAsInstance = runAsInstance;
-			AppHost = appHost;
-			_config = EndpointHostConfig.Create();
-		
-			if (runAsInstance)
-			{
-				ContentTypeFilter = new HttpResponseFilter();
-			} 
-			else
-			{
-				ContentTypeFilter = HttpResponseFilter.Instance;
-			}
+			_runAsNamedInstance = runAsNamedInstance;
+			ContentTypeFilter = HttpResponseFilter.Instance;
 			RawRequestFilters = new List<Action<IHttpRequest, IHttpResponse>>();
 			RequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
 			ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
@@ -91,19 +72,18 @@ namespace ServiceStack.WebHost.Endpoints
 			};
 		}
 
+
 		// Pre user config
-		public void ConfigureHost(IAppHost appHost, string serviceName, ServiceManager serviceManager)
+		public  void ConfigureHost(IAppHost appHost, string serviceName, ServiceManager serviceManager)
 		{
 			AppHost = appHost;
 
-			if (!_runAsInstance)
-			{ //must be assigned after AppHost
-				_config = EndpointHostConfig.Instance;
-			}
+			EndpointHostConfig config = _runAsNamedInstance ? EndpointHostConfig.GetNamedConfig(serviceName) : EndpointHostConfig.Instance;
 
-			_config.ServiceName = serviceName;
-			_config.ServiceManager = serviceManager;
+			config.ServiceName = serviceName;
+			config.ServiceManager = serviceManager;
 
+			Config = config; 
 			VirtualPathProvider = new FileSystemVirtualPathProvider(AppHost, Config.WebHostPhysicalPath);
 
 		    Config.DebugMode = appHost.GetType().Assembly.IsDebugBuild();             
@@ -218,10 +198,10 @@ namespace ServiceStack.WebHost.Endpoints
 	    {
 	        get { 
                 var aspHost = AppHost as AppHostBase;
-                if (aspHost != null) return aspHost.Container;
+                if (aspHost != null)
+                    return aspHost.Container;
 	            var listenerHost = AppHost as HttpListenerBase;
-				if (listenerHost == null) throw new InvalidOperationException("An AppHost must must be initialized before accessing the container.");
-                return listenerHost.Container; 
+                return listenerHost != null ? listenerHost.Container : new Container(); //testing may use alt AppHost
 	        }
 	    }
 
@@ -277,12 +257,13 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
-		private EndpointHostConfig _config;
+		private  EndpointHostConfig _config;
 
 		public  EndpointHostConfig Config
 		{
 			get
 			{
+				//Q: should we instead retrieve this from EndPointHostConfig for named configs?
 				return _config;
 			}
 			set
