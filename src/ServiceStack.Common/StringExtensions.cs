@@ -155,7 +155,7 @@ namespace ServiceStack.Common
         {
             return type.IsClass
                 && type.Namespace != null
-                && !type.Namespace.StartsWith("System.")
+                && !type.Namespace.StartsWith("System")
                 && type.Name.IndexOfAny(SystemTypeChars) == -1;
         }
 

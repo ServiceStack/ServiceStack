@@ -4,6 +4,8 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Runtime.Serialization;
+using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.Logging;
@@ -180,6 +182,56 @@ namespace RazorRockstars.Console.Files
         {
             return Db.Select<Reqstar>(q => Sql.In(q.FirstName, request.ToArray()));
         }
+
+        public MixedDataContractResponse Any(MixedDataContract request)
+        {
+            return new MixedDataContractResponse();
+        }
+
+        public InheritsResponse Any(Inherits request)
+        {
+            return new InheritsResponse();
+        }
+    }
+
+    [DataContract(Name = "MixName", Namespace = "http://mix.namespace.com")]
+    public class MixedDataContract : IReturn<MixedDataContractResponse>
+    {
+        [DataMember(Name = "MixId", Order = 1, EmitDefaultValue = false, IsRequired = true)]
+        public int Id { get; set; }
+    }
+
+    [DataContract(Name = "MixedDCResponse")] 
+    public class MixedDataContractResponse
+    {
+        [DataMember(Name = "MixTotal")] public int Total { get; set; }
+        [DataMember(Order = 2)] public int? Aged { get; set; }
+        [DataMember(EmitDefaultValue = false)] public List<Rockstar> Results { get; set; }
+        [DataMember(IsRequired = true)] public string Required { get; set; }
+
+        [DataMember]
+        public MixDataType MixDataType { get; set; }
+    }
+
+    public class MixDataType
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class Inherits : InheritsBase
+    {
+        public string Name { get; set; }
+    }
+
+    public class InheritsBase
+    {
+        public int Id { get; set; }
+    }
+
+    public class InheritsResponse
+    {
+        public string Result { get; set; }
     }
 
     [Route("/filterattributes")]
@@ -236,7 +288,7 @@ namespace RazorRockstars.Console.Files
             LogManager.LogFactory = new ConsoleLogFactory();
             startedAt = Stopwatch.StartNew();
             appHost = new AppHost {
-                //EnableRazor = false, //Uncomment for faster tests!
+                EnableRazor = false, //Uncomment for faster tests!
             };
             appHost.Plugins.Add(new MsgPackFormat());
             //Fast
@@ -268,6 +320,12 @@ namespace RazorRockstars.Console.Files
             appHost.Dispose();
         }
 
+        [Explicit("Debug Run")]
+        [Test]
+        public void RunFor10Mins()
+        {
+            Thread.Sleep(TimeSpan.FromMinutes(10));
+        }
 
         protected static IRestClient[] RestClients = 
 		{

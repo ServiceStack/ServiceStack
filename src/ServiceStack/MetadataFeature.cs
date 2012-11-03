@@ -37,7 +37,7 @@ namespace ServiceStack
                 if (pathController == "soap12")
                     return new Soap12WsdlMetadataHandler();
             }
-            
+
             if (pathAction != "metadata") return null;
 
             switch (pathController)
@@ -56,6 +56,9 @@ namespace ServiceStack
 
                 case "soap12":
                     return new Soap12MetadataHandler();
+
+                case "types":
+                    return new MetadataTypesHandler();
 
                 default:
                     string contentType;
