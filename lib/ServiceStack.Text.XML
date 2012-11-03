@@ -191,7 +191,7 @@
             to support web-friendly serialized formats, ie emitting lowercase_underscore_casing for JSON
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig._propertyConvention">
+        <member name="F:ServiceStack.Text.JsConfig.propertyConvention">
             <summary>
             Define how property names are mapped during deserialization
             </summary>
@@ -388,14 +388,14 @@
             Get unescaped string value
             </summary>
         </member>
+        <member name="M:ServiceStack.Text.JsonObject.WriteValue(System.IO.TextWriter,System.Object)">
+            <summary>
+            Write JSON Array, Object, bool or number values as raw string
+            </summary>
+        </member>
         <member name="P:ServiceStack.Text.JsonObject.Item(System.String)">
             <summary>
             Get JSON string value
-            </summary>
-        </member>
-        <member name="T:ServiceStack.Text.DtoAttribute">
-            <summary>
-            Flag that your POCO is a top-level Response DTO
             </summary>
         </member>
         <member name="T:ServiceStack.Text.Controller.PathInfo">
