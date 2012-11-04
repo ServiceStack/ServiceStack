@@ -238,6 +238,9 @@ namespace ServiceStack.WebHost.Endpoints
             if (File.Exists(configPath))
                 return configPath;
 
+            if (EndpointHost.AppHost == null) 
+                return null;
+
             var appHostDll = new FileInfo(EndpointHost.AppHost.GetType().Assembly.Location).Name;
             configPath = "~/{0}.config".Fmt(appHostDll).MapAbsolutePath();
             return File.Exists(configPath) ? configPath : null;
