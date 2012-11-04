@@ -288,7 +288,7 @@ namespace RazorRockstars.Console.Files
             LogManager.LogFactory = new ConsoleLogFactory();
             startedAt = Stopwatch.StartNew();
             appHost = new AppHost {
-                EnableRazor = false, //Uncomment for faster tests!
+                EnableRazor = true, //Uncomment for faster tests!
             };
             appHost.Plugins.Add(new MsgPackFormat());
             //Fast
