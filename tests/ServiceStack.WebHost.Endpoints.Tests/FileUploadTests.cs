@@ -147,6 +147,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.CustomerId, Is.EqualTo(123));
         }
 
+        [Test]
+        public void Can_POST_upload_file_using_ServiceClient_with_request_containing_utf8_chars()
+        {
+            IServiceClient client = new JsonServiceClient(ListeningOn);
+
+            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+
+            var request = new FileUpload { CustomerId = 123, CustomerName = "Föö" };
+            var response = client.PostFileWithRequest<FileUploadResponse>(ListeningOn + "/fileuploads", uploadFile, request);
+
+            var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+            Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
+            Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
+            Assert.That(response.Contents, Is.EqualTo(expectedContents));
+            Assert.That(response.CustomerName, Is.EqualTo("Föö"));
+            Assert.That(response.CustomerId, Is.EqualTo(123));
+        }
+
 		[Test]
 		public void Can_handle_error_on_POST_upload_file_using_ServiceClient()
 		{
