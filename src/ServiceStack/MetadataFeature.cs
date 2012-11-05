@@ -18,7 +18,7 @@ namespace ServiceStack
             return GetHandlerForPathParts(pathParts);
         }
 
-        private static IHttpHandler GetHandlerForPathParts(string[] pathParts)
+        private IHttpHandler GetHandlerForPathParts(string[] pathParts)
         {
             var pathController = string.Intern(pathParts[0].ToLower());
             if (pathParts.Length == 1)
@@ -58,7 +58,16 @@ namespace ServiceStack
                     return new Soap12MetadataHandler();
 
                 case "types":
-                    return new MetadataTypesHandler();
+                    
+                    if (EndpointHost.AppHost == null
+                        || EndpointHost.AppHost.Config == null
+                        || EndpointHost.AppHost.Config.MetadataTypesConfig == null)                        
+                        return null;
+
+                    if (EndpointHost.AppHost.Config.MetadataTypesConfig.BaseUrl == null)
+                        EndpointHost.AppHost.Config.MetadataTypesConfig.BaseUrl = ServiceStackHttpHandlerFactory.GetBaseUrl();
+
+                    return new MetadataTypesHandler { Config = EndpointHost.AppHost.Config.MetadataTypesConfig };
 
                 default:
                     string contentType;

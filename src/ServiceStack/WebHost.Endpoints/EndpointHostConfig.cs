@@ -10,6 +10,7 @@ using System.Web;
 using System.Web.Configuration;
 using System.Xml.Linq;
 using MarkdownSharp;
+using ServiceStack.Common.ServiceModel;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
@@ -27,6 +28,9 @@ namespace ServiceStack.WebHost.Endpoints
 		//use of "_" for private member variables makes it easier to maintain thread safe code, by clearly seperating stack vars from heap vars
 
 	    private readonly static ILog _log = LogManager.GetLogger(typeof (EndpointHostConfig));
+
+        public static readonly string PublicKey = "<RSAKeyValue><Modulus>xRzMrP3m+3kvT6239OP1YuWIfc/S7qF5NJiPe2/kXnetXiuYtSL4bQRIX1qYh4Cz+dXqZE/sNGJJ4jl2iJQa1tjp+rK28EG6gcuTDHJdvOBBF+aSwJy1MSiT8D0KtP6pe2uvjl9m3jZP/8uRePZTSkt/GjlPOk85JXzOsyzemlaLFiJoGImGvp8dw8vQ7jzA3Ynmywpt5OQxklJfrfALHJ93ny1M5lN5Q+bGPEHLXNCXfF05EA0l9mZpa4ouicYvlbY/OAwefFXIwPQN9ER6Pu7Eq9XWLvnh1YUH8HDckuKK+ESWbAuOgnVbUDEF1BreoWutJ//a/oLDR87Q36cmwQ==</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>";
+        public static readonly string LicensePublicKey = "<RSAKeyValue><Modulus>19kx2dJoOIrMYypMTf8ssiCALJ7RS/Iz2QG0rJtYJ2X0+GI+NrgOCapkh/9aDVBieobdClnuBgW08C5QkfBdLRqsptiSu50YIqzVaNBMwZPT0e7Ke02L/fV/M/fVPsolHwzMstKhdWGdK8eNLF4SsLEcvnb79cx3/GnZbXku/ro5eOrTseKL3s4nM4SdMRNn7rEAU0o0Ijb3/RQbhab8IIRB4pHwk1mB+j/mcAQAtMerwpHfwpEBLWlQyVpu0kyKJCEkQjbaPzvfglDRpyBOT5GMUnrcTT/sBr5kSJYpYrgHnA5n4xJnvrnyFqdzXwgGFlikRTbc60pk1cQEWcHgYw==</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>";
 
 		public static bool SkipPathValidation = false;
 		public static string ServiceStackPath = null;
@@ -124,13 +128,14 @@ namespace ServiceStack.WebHost.Endpoints
 		private void ExtractExistingValues(EndpointHostConfig existing)
 		{
 			if (existing == null) return;
-			this.MetadataPageBodyHtml = existing.MetadataPageBodyHtml;
+            this.MetadataTypesConfig = existing.MetadataTypesConfig;
+            this.WsdlServiceNamespace = existing.WsdlServiceNamespace;
+            this.MetadataPageBodyHtml = existing.MetadataPageBodyHtml;
 			this.MetadataOperationPageBodyHtml = existing.MetadataOperationPageBodyHtml;
 			this.EnableAccessRestrictions = existing.EnableAccessRestrictions;
-			this.ServiceEndpointsMetadataConfig = existing.ServiceEndpointsMetadataConfig;
+            this.ServiceEndpointsMetadataConfig = existing.ServiceEndpointsMetadataConfig;
 			this.LogFactory = existing.LogFactory;
 			this.EnableAccessRestrictions = existing.EnableAccessRestrictions;
-			this.WsdlServiceNamespace = existing.WsdlServiceNamespace;
 			this.WebHostUrl = existing.WebHostUrl;
 			this.WebHostPhysicalPath = existing.WebHostPhysicalPath;
 			this.DefaultRedirectPath = existing.DefaultRedirectPath;
@@ -160,7 +165,10 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			return new EndpointHostConfig
 			{
-				MetadataPageBodyHtml = @"
+                MetadataTypesConfig = new MetadataTypesConfig(
+                    addDefaultXmlNamespace: "http://schemas.servicestack.net/types"),
+                WsdlServiceNamespace = "http://schemas.servicestack.net/types",
+                MetadataPageBodyHtml = @"
     <br />
     <h3>Client Usage Examples:</h3>
     <ul>
@@ -182,7 +190,6 @@ namespace ServiceStack.WebHost.Endpoints
     </ul>".Fmt(DefaultUsageExamplesBaseUri),
 				LogFactory = new NullLogFactory(),
 				EnableAccessRestrictions = true,
-				WsdlServiceNamespace = "http://schemas.servicestack.net/types",
 				WebHostPhysicalPath = "~".MapServerPath(),
 				ServiceStackHandlerFactoryPath = ServiceStackPath,
 				MetadataRedirectPath = null,
@@ -405,7 +412,9 @@ namespace ServiceStack.WebHost.Endpoints
 		public ServiceManager ServiceManager { get; internal set; }
 		public IServiceController ServiceController { get { return ServiceManager.ServiceController; } }
 
-		public string MetadataPageBodyHtml { get; set; }
+        public MetadataTypesConfig MetadataTypesConfig { get; set; }
+        public string WsdlServiceNamespace { get; set; }
+        public string MetadataPageBodyHtml { get; set; }
 		public string MetadataOperationPageBodyHtml { get; set; }
 
 		public string ServiceName { get; set; }
@@ -427,8 +436,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public string DefaultRedirectPath { get; set; }
 		public string MetadataRedirectPath { get; set; }
 
-		public string WsdlServiceNamespace { get; set; }
-		public ServiceEndpointsMetadataConfig ServiceEndpointsMetadataConfig { get; set; }
+        public ServiceEndpointsMetadataConfig ServiceEndpointsMetadataConfig { get; set; }
 		public ILogFactory LogFactory { get; set; }
 		public bool EnableAccessRestrictions { get; set; }
 		public bool UseBclJsonSerializers { get; set; }

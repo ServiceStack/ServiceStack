@@ -102,6 +102,7 @@
     <Compile Include="ByteArrayExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="CryptUtils.cs" />
     <Compile Include="DictionaryExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -211,6 +212,7 @@
     <Compile Include="Messaging\TransientMessageServiceBase.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ServiceModel\MetadataTypes.cs" />
     <Compile Include="Model.cs">
       <SubType>Code</SubType>
     </Compile>

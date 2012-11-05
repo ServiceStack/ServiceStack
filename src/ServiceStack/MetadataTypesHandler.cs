@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Web;
 using ServiceStack.Common;
-using ServiceStack.Common.Web;
+using ServiceStack.Common.ServiceModel;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
@@ -17,6 +18,8 @@ namespace ServiceStack
 {
     public class MetadataTypesHandler : HttpHandlerBase, IServiceStackHttpHandler
     {
+        public MetadataTypesConfig Config { get; set; }
+
         public override void Execute(HttpContext context)
         {
             ProcessRequest(
@@ -27,7 +30,9 @@ namespace ServiceStack
 
         public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
         {
-            var metadata = new MetadataTypes();
+            var metadata = new MetadataTypes {
+                Config = Config,
+            };
             var existingTypes = new HashSet<Type> {
                 typeof(ResponseStatus),
                 typeof(ErrorResponse),
@@ -73,7 +78,7 @@ namespace ServiceStack
                     }
                 }
 
-                if (type.BaseType != null 
+                if (type.BaseType != null
                     && type.BaseType.IsUserType()
                     && !considered.Contains(type.BaseType))
                 {
@@ -82,83 +87,12 @@ namespace ServiceStack
                     metadata.Types.Add(type.BaseType.ToType());
                 }
             }
-            
-            httpRes.ContentType = ContentType.Json;
-            httpRes.Write(metadata.ToJson());
+
+            httpRes.ContentType = "application/x-ssz-metatypes";
+            var json = metadata.ToJson();
+            var encJson = CryptUtils.Encrypt(EndpointHostConfig.PublicKey, json, RsaKeyLengths.Bit2048);
+            httpRes.Write(encJson);
         }
-    } 
-
-    public class MetadataTypes
-    {
-        public MetadataTypes()
-        {
-            Types = new List<MetadataType>();
-            Operations = new List<MetadataOperationType>();
-        }
-
-        public List<MetadataType> Types { get; set; }
-        public List<MetadataOperationType> Operations { get; set; }
-    }
-
-    public class MetadataOperationType
-    {
-        public MetadataType Request { get; set; }
-        public MetadataType Response { get; set; }
-    }
-
-    public class MetadataType
-    {
-        public string Name { get; set; }
-        public string Namespace { get; set; }
-        public string GenericType { get; set; }
-        public string Inherits { get; set; }
-        public string InheritsGenericType { get; set; }
-        public List<MetadataRoute> Routes { get; set; }
-        public MetadataDataContract DataContract { get; set; }
-
-        public List<MetadataPropertyType> Properties { get; set; }
-
-        public List<MetadataAttribute> Attributes { get; set; }
-    }
-
-    public class MetadataRoute
-    {
-        public string Path { get; set; }
-        public string Verbs { get; set; }
-        public string Notes { get; set; }
-        public string Summary { get; set; }
-    }
-
-    public class MetadataDataContract
-    {
-        public string Name { get; set; }
-        public string Namespace { get; set; }
-    }
-
-    public class MetadataDataMember
-    {
-        public string Name { get; set; }
-        public int? Order { get; set; }
-        public bool? IsRequired { get; set; }
-        public bool? EmitDefaultValue { get; set; }
-    }
-
-    public class MetadataPropertyType
-    {
-        public string Name { get; set; }
-        public string Type { get; set; }
-        public string GenericType { get; set; }
-        public string Value { get; set; }
-        public MetadataDataMember DataMember { get; set; }
-
-        public List<MetadataAttribute> Attributes { get; set; }
-    }
-
-    public class MetadataAttribute
-    {
-        public string Name { get; set; }
-        public List<MetadataPropertyType> ConstructorArgs { get; set; }
-        public List<MetadataPropertyType> Args { get; set; }
     }
 
     public static class MetadataTypeExtensions
@@ -168,8 +102,8 @@ namespace ServiceStack
             var metaType = new MetadataType {
                 Name = type.Name,
                 Namespace = type.Namespace,
-                GenericType = type.IsGenericType
-                    ? type.GetGenericArguments()[0].Name
+                GenericArgs = type.IsGenericType
+                    ? type.GetGenericArguments().Select(x => x.Name).ToArray()
                     : null,
                 Attributes = type.ToAttributes(),
                 Properties = type.ToProperties(),
@@ -178,9 +112,22 @@ namespace ServiceStack
             if (type.BaseType != null && type.BaseType != typeof(object))
             {
                 metaType.Inherits = type.BaseType.Name;
-                metaType.InheritsGenericType = type.BaseType.IsGenericType
-                    ? type.BaseType.GetGenericArguments()[0].Name
+                metaType.InheritsGenericArgs = type.BaseType.IsGenericType
+                    ? type.BaseType.GetGenericArguments().Select(x => x.Name).ToArray()
                     : null;
+            }
+
+            if (type.GetTypeWithInterfaceOf(typeof(IReturnVoid)) != null)
+            {
+                metaType.ReturnVoidMarker = true;
+            }
+            else
+            {
+                var genericMarker = type.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
+                if (genericMarker != null)
+                {
+                    metaType.ReturnMarkerGenericArgs = genericMarker.GetGenericArguments().Select(x => x.Name).ToArray();
+                }
             }
 
             var typeAttrs = type.GetCustomAttributes(false);
@@ -194,6 +141,12 @@ namespace ServiceStack
                         Summary = x.Summary,
                         Verbs = x.Verbs,
                     });
+            }
+
+            var descAttr = typeAttrs.OfType<DescriptionAttribute>().FirstOrDefault();
+            if (descAttr != null)
+            {
+                metaType.Description = descAttr.Description;
             }
 
             var dcAttr = type.GetDataContract();
@@ -227,6 +180,7 @@ namespace ServiceStack
         public static bool ExcludeKnownAttrsFilter(Attribute x)
         {
             return x.GetType() != typeof(RouteAttribute)
+                && x.GetType() != typeof(DescriptionAttribute)
                 && x.GetType().Name != "DataContractAttribute"  //Type equality issues with Mono .NET 3.5/4
                 && x.GetType().Name != "DataMemberAttribute";
         }
@@ -278,8 +232,8 @@ namespace ServiceStack
                 Attributes = pi.GetCustomAttributes(false).ToAttributes(),
                 Type = pi.PropertyType.Name,
                 DataMember = pi.GetDataMember().ToDataMember(),
-                GenericType = pi.PropertyType.IsGenericType
-                    ? pi.PropertyType.GetGenericArguments()[0].Name
+                GenericArgs = pi.PropertyType.IsGenericType
+                    ? pi.PropertyType.GetGenericArguments().Select(x => x.Name).ToArray()
                     : null,
             };
             if (instance != null)
@@ -295,11 +249,19 @@ namespace ServiceStack
 
         public static MetadataPropertyType ToProperty(this ParameterInfo pi)
         {
+            var propertyAttrs = pi.GetCustomAttributes(false);
             var property = new MetadataPropertyType {
                 Name = pi.Name,
-                Attributes = pi.GetCustomAttributes(false).ToAttributes(),
+                Attributes = propertyAttrs.ToAttributes(),
                 Type = pi.ParameterType.Name,
             };
+
+            var descAttr = propertyAttrs.OfType<DescriptionAttribute>().FirstOrDefault();
+            if (descAttr != null)
+            {
+                property.Description = descAttr.Description;
+            }
+
             return property;
         }
 
@@ -309,14 +271,14 @@ namespace ServiceStack
 
             var metaAttr = new MetadataDataMember {
                 Name = attr.Name,
-                EmitDefaultValue = attr.EmitDefaultValue != true ? attr.EmitDefaultValue : (bool?) null,
-                Order = attr.Order >= 0 ? attr.Order : (int?) null,
-                IsRequired = attr.IsRequired != false ? attr.IsRequired : (bool?) null,
+                EmitDefaultValue = attr.EmitDefaultValue != true ? attr.EmitDefaultValue : (bool?)null,
+                Order = attr.Order >= 0 ? attr.Order : (int?)null,
+                IsRequired = attr.IsRequired != false ? attr.IsRequired : (bool?)null,
             };
 
             return metaAttr;
         }
-        
+
         public static PropertyInfo[] GetInstancePublicProperties(this Type type)
         {
             return type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
