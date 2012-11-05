@@ -51,32 +51,58 @@ namespace ServiceStack.WebHost.Endpoints
         public  DateTime ReadyAt { get; set; }
 
 		private bool _runAsInstance = false;
+		private static EndpointHostInstance _singleton;
 
-		public EndpointHostInstance() : this(false, null) { }
+		internal static EndpointHostInstance Singleton
+		{
+			get
+			{
+				if (_singleton == null) throw new InvalidOperationException("Must initialize app host before accessing EndpointHost.");
+				return _singleton;
+			}
+		}
+
+		internal static bool HasSingleton
+		{
+			get { return (_singleton != null); }
+		}
+
+		internal static void CreateSingleton(IAppHost appHost)
+		{
+			if (_singleton != null) throw new InvalidOperationException("Endpoint already initialized.");
+			lock(_syncRoot)
+			{
+				var single = new EndpointHostInstance(false, appHost );
+				//we have to do it this way because the Init code requires the static singleton to already be setup.
+				//it's a bit of chicken and egg.  
+				_singleton = single;
+				single.Init();
+			}
+		}
 
 		internal static EndpointHostInstance CreateInstance(IAppHost appHost)
 		{
-			return new EndpointHostInstance(true, appHost);
+			var newInstance = new EndpointHostInstance(true, appHost);
+			newInstance.Init();
+			return newInstance;
 		}
 
-		/// <summary>
-		/// Initializes an instance of <see cref="EndpointHostInstance"/>
-		/// </summary>
-		/// <param name="runAsInstance">Set this to <see langword="true"/> to run as a seperate instance; otherwise, false will cause this to run as a singleton.</param>
-		private EndpointHostInstance(bool runAsInstance, IAppHost appHost)
+		private void Init()
 		{
-			_runAsInstance = runAsInstance;
-			AppHost = appHost;
-			_config = EndpointHostConfig.Create();
-		
-			if (runAsInstance)
+			//the config must be created after the AppHost assignment, because the AppHost is used in the config setup.
+			if (_runAsInstance)
 			{
+				_config = EndpointHostConfig.Create();
 				ContentTypeFilter = new HttpResponseFilter();
-			} 
+			}
 			else
 			{
+				EndpointHostConfig.CreateSingleton(AppHost);
+				_config = EndpointHostConfig.Instance;
 				ContentTypeFilter = HttpResponseFilter.Instance;
 			}
+
+		
 			RawRequestFilters = new List<Action<IHttpRequest, IHttpResponse>>();
 			RequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
 			ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
@@ -89,6 +115,18 @@ namespace ServiceStack.WebHost.Endpoints
                 new PredefinedRoutesFeature(),
                 new MetadataFeature(),
 			};
+			ApplyConfigChanges();
+		}
+
+		/// <summary>
+		/// Initializes an instance of <see cref="EndpointHostInstance"/>
+		/// </summary>
+		/// <param name="runAsInstance">Set this to <see langword="true"/> to run as a seperate instance; otherwise, false will cause this to run as a singleton.</param>
+		private EndpointHostInstance(bool runAsInstance, IAppHost appHost )
+		{
+			_runAsInstance = runAsInstance;
+			AppHost = appHost;
+			//Init() needs to be called
 		}
 
 		// Pre user config
@@ -98,7 +136,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 			if (!_runAsInstance)
 			{ //must be assigned after AppHost
-				_config = EndpointHostConfig.Instance;
+			//	_config = EndpointHostConfig.Instance;
 			}
 
 			_config.ServiceName = serviceName;
@@ -211,19 +249,32 @@ namespace ServiceStack.WebHost.Endpoints
             return AppHost != null ? AppHost.TryResolve<T>() : default(T);
         }
 
+		private static readonly object _syncRoot = new object();
+
         /// <summary>
-        /// The AppHost.Container. Note: it is not thread safe to register dependencies after AppStart.
+        /// The AppHost.Container. 
         /// </summary>
+		/// <remarks>This method is thread safe.</remarks>
 	    public  Container Container
 	    {
 	        get { 
                 var aspHost = AppHost as AppHostBase;
                 if (aspHost != null) return aspHost.Container;
 	            var listenerHost = AppHost as HttpListenerBase;
-				if (listenerHost == null) throw new InvalidOperationException("An AppHost must must be initialized before accessing the container.");
-                return listenerHost.Container; 
+				if (listenerHost != null) return listenerHost.Container;
+
+				if (_container != null) return _container;
+				lock (_syncRoot)
+				{
+					if (_container != null) return _container;
+					_container = new Container();
+				}
+					//throw new InvalidOperationException("An AppHost must must be initialized before accessing the container.");
+				return _container;
 	        }
 	    }
+
+		private Container _container;
 
 	    private  void ConfigurePlugins()
 	    {

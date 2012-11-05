@@ -48,31 +48,37 @@ namespace ServiceStack.WebHost.Endpoints
 			return config;
 		}
 
+		internal static void CreateSingleton(IAppHost appHost)
+		{
+			//the following code uses appHost, it would be better to pass it in, but this is how it works for now, by 
+			//accessing the static singleton
+
+			//in order for the default config to be created, we need to know
+			//our app host
+			var config = new EndpointHostConfig();
+
+			if (config.ServiceStackHandlerFactoryPath == null)
+			{
+				InferHttpHandlerPath(config);
+			}
+			_instance = config;
+		}
+
 		private static EndpointHostConfig _instance;
 		/// <summary>
-		/// Gets the default instance of the config.
+		/// Gets the default singleton instance of the config.
 		/// </summary>
 		/// <remarks>This method is thread safe.</remarks>
 		public static EndpointHostConfig Instance
 		{
 			get
 			{
-				if (_instance != null) return _instance;
-
-				lock (_syncRoot)
+				if (_instance == null && EndpointHost.AppHost == null)
 				{
-					if (_instance != null) return _instance;
-				
-					//in order for the default config to be created, we need to know
-					//our app host
-					var instance = CreateDefaultConfig();
-
-					if (instance.ServiceStackHandlerFactoryPath == null)
-					{
-						InferHttpHandlerPath(instance);
-					}
-					_instance = instance;
+					throw new InvalidOperationException("An App Host needs to be initialized before accessing the config");
 				}
+
+			
 				return _instance;
 			}
 		}
@@ -270,16 +276,28 @@ namespace ServiceStack.WebHost.Endpoints
 
 	    private static System.Configuration.Configuration GetAppConfig()
         {
-            Assembly entryAssembly;
-            
-            //Read the user-defined path in the Web.Config
-            if (EndpointHost.AppHost is AppHostBase)
-                return WebConfigurationManager.OpenWebConfiguration("~/");
-            
-            if ((entryAssembly = Assembly.GetEntryAssembly()) != null)
-                return ConfigurationManager.OpenExeConfiguration(entryAssembly.Location);
-            
-            return null;
+			try
+			{
+				//Read the user-defined path in the Web.Config
+				if (EndpointHost.AppHost is AppHostBase)
+					return WebConfigurationManager.OpenWebConfiguration("~/");
+			}
+			catch(Exception exc)
+			{
+				_log.Error("Can't load Web.config, trying other locations.", exc);
+				return WebConfigurationManager.OpenWebConfiguration(Environment.CurrentDirectory);
+			}
+
+			string lookInLocation = null;
+			Assembly lookInAssembly = Assembly.GetEntryAssembly();
+			if (lookInAssembly != null) lookInLocation = lookInAssembly.Location;
+
+			if (string.IsNullOrEmpty(lookInLocation))
+			{
+				lookInLocation = Assembly.GetExecutingAssembly().Location;
+			}
+
+			return ConfigurationManager.OpenExeConfiguration(lookInLocation);
         }
 
 		private static void InferHttpHandlerPath(EndpointHostConfig instance)
@@ -304,6 +322,7 @@ namespace ServiceStack.WebHost.Endpoints
 			catch (Exception exc)
 			{
 				_log.Error("Bad Config", exc);
+				throw;
 			}
 			
 			if (!SkipPathValidation && instance.MetadataRedirectPath == null)

@@ -22,16 +22,6 @@ namespace ServiceStack.WebHost.Endpoints
 	/// </summary>
 	public class EndpointHost
 	{
-		private static readonly EndpointHostInstance _singletonInstance = new EndpointHostInstance();
-
-		/// <summary>
-		/// Do not expose.
-		/// </summary>
-		internal static EndpointHostInstance SingletonInstance
-		{
-			get { return _singletonInstance; }
-		}
-
 		/// <summary>
 		/// Use this instance for all access to this class.
 		/// </summary>
@@ -41,7 +31,8 @@ namespace ServiceStack.WebHost.Endpoints
 			{
 				var ts = _threadSpecificInstance;
 				if (ts != null) return ts;
-				else return _singletonInstance;
+				else if (EndpointHostInstance.HasSingleton == false) return null; 
+				else return EndpointHostInstance.Singleton;
 			} 
 		}
 
@@ -107,6 +98,13 @@ namespace ServiceStack.WebHost.Endpoints
 		// Pre user config
 		public static void ConfigureHost(IAppHost appHost, string serviceName, ServiceManager serviceManager)
 		{
+			lock(_syncRoot)
+			{
+				if (EndpointHostInstance.HasSingleton == false)
+				{
+					EndpointHostInstance.CreateSingleton(appHost);
+				}
+			}
 			Instance.ConfigureHost(appHost, serviceName, serviceManager);
 		}
 
@@ -152,8 +150,6 @@ namespace ServiceStack.WebHost.Endpoints
 				get { return Config != null && Config.DebugMode; }
 			}
 		}
-
-		//private static EndpointHostConfig config;
 
 		public static EndpointHostConfig Config
 		{

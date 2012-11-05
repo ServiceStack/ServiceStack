@@ -43,7 +43,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		private readonly AutoResetEvent _listenForNextRequest = new AutoResetEvent(false);
 
 		public event DelReceiveWebRequest ReceiveWebRequest;
-
+		
+		//make private
 		protected HttpListenerBase()
 		{
 			_startTime = DateTime.Now;
@@ -56,8 +57,30 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			if (string.IsNullOrEmpty(serviceName)) throw new ArgumentException("Must provide a service name.", "serviceName");
 			_serviceName = serviceName;
-			OurEndpointHost.ConfigureHost(this, serviceName, CreateServiceManager(assembliesWithServices));
+			ConfigureHost(serviceName, CreateServiceManager(assembliesWithServices));
 		}
+
+		protected void ConfigureHost( string serviceName, ServiceManager serviceManager)
+		{
+			if (RunAsInstance)
+			{
+				_ourEndpointHost = EndpointHost.Create(this);
+				_ourEndpointHost.ConfigureHost(this, serviceName, serviceManager);
+			}
+			else
+			{
+				lock (_syncRoot)
+				{
+					if (EndpointHostInstance.HasSingleton == false)
+					{
+						EndpointHostInstance.CreateSingleton(this);
+					}
+				}
+				EndpointHost.Instance.ConfigureHost(this, serviceName, serviceManager);
+				_ourEndpointHost = EndpointHost.Instance;
+			}
+		}
+
 
 		public string ServiceName
 		{
@@ -72,20 +95,6 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			get
 			{
-				if (_ourEndpointHost != null) return _ourEndpointHost;
-				lock (_syncRoot)
-				{
-					if (_ourEndpointHost != null) return _ourEndpointHost; //double check locking works in .Net
-
-					if (RunAsInstance)
-					{
-						_ourEndpointHost = EndpointHost.Create(this);
-					}
-					else
-					{
-						_ourEndpointHost = EndpointHost.Instance;
-					}
-				}
 				return _ourEndpointHost;
 			}
 		}
@@ -114,11 +123,16 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public void Init()
 		{
+			if (IsStarted)
+			{
+				throw new InvalidOperationException("Server already started, can't init.");
+			}
 			if (RunAsInstance == false)
 			{
+
 				if (Instance != null)
 				{
-					throw new InvalidDataException("HttpListenerBase.Instance has already been set");
+					//throw new InvalidDataException("HttpListenerBase.Instance has already been set");
 				}
 
 				Instance = this;
@@ -158,7 +172,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		/// <param name="urlBase">
 		/// A Uri that acts as the base that the server is listening on.
 		/// Format should be: http://127.0.0.1:8080/ or http://127.0.0.1:8080/somevirtual/
-		/// Note: the trailing slash is required! For more info see the
+		/// Note: the trailing backslash is required! For more info see the
 		/// HttpListener.Prefixes property on MSDN.
 		/// </param>
 		public virtual void Start(string urlBase)
@@ -531,7 +545,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!_disposed)
+			//if (!_disposed)
 			{
 				if (disposing)
 				{
