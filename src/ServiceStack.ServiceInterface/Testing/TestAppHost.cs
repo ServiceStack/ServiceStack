@@ -25,19 +25,22 @@ namespace ServiceStack.ServiceInterface.Testing
             if (serviceAssemblies.Length == 0)
                 serviceAssemblies = new[] { Assembly.GetExecutingAssembly() };
             
-            var createInstance = EndpointHostConfig.Instance;
-
-            this.Config = EndpointHost.Config = new EndpointHostConfig(
-                GetType().Name,
-                new ServiceManager(true, serviceAssemblies));
-
             this.ContentTypeFilters = new HttpResponseFilter();
             this.PreRequestFilters = new List<Action<IHttpRequest, IHttpResponse>>();
             this.RequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
             this.ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
             this.ViewEngines = new List<IViewEngine>();
             this.CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
+
+
+			EndpointHostConfig.SkipPathValidation = true;
+			EndpointHost.ConfigureHost(this, GetType().Name, new ServiceManager(true, serviceAssemblies));
+			EndpointHostConfig.SkipPathValidation = false;
+
+			this.Config = EndpointHost.Config;
+
 			this.VirtualPathProvider = new FileSystemVirtualPathProvider(this);
+
 		}
 
         public void RegisterAs<T, TAs>() where T : TAs

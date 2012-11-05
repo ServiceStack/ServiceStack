@@ -50,14 +50,59 @@ namespace ServiceStack.WebHost.Endpoints
 
         public  DateTime ReadyAt { get; set; }
 
-		private bool _runAsNamedInstance = false;
+		private bool _runAsInstance = false;
+		private static EndpointHostInstance _singleton;
 
-		public EndpointHostInstance(): this(false) { }
-
-		public EndpointHostInstance(bool runAsNamedInstance)
+		internal static EndpointHostInstance Singleton
 		{
-			_runAsNamedInstance = runAsNamedInstance;
-			ContentTypeFilter = HttpResponseFilter.Instance;
+			get
+			{
+				if (_singleton == null) throw new InvalidOperationException("Must initialize app host before accessing EndpointHost.");
+				return _singleton;
+			}
+		}
+
+		internal static bool HasSingleton
+		{
+			get { return (_singleton != null); }
+		}
+
+		internal static void CreateSingleton(IAppHost appHost)
+		{
+			if (_singleton != null) throw new InvalidOperationException("Endpoint already initialized.");
+			lock(_syncRoot)
+			{
+				var single = new EndpointHostInstance(false, appHost );
+				//we have to do it this way because the Init code requires the static singleton to already be setup.
+				//it's a bit of chicken and egg.  
+				_singleton = single;
+				single.Init();
+			}
+		}
+
+		internal static EndpointHostInstance CreateInstance(IAppHost appHost)
+		{
+			var newInstance = new EndpointHostInstance(true, appHost);
+			newInstance.Init();
+			return newInstance;
+		}
+
+		private void Init()
+		{
+			//the config must be created after the AppHost assignment, because the AppHost is used in the config setup.
+			if (_runAsInstance)
+			{
+				_config = EndpointHostConfig.Create();
+				ContentTypeFilter = new HttpResponseFilter();
+			}
+			else
+			{
+				EndpointHostConfig.CreateSingleton(AppHost);
+				_config = EndpointHostConfig.Instance;
+				ContentTypeFilter = HttpResponseFilter.Instance;
+			}
+
+		
 			RawRequestFilters = new List<Action<IHttpRequest, IHttpResponse>>();
 			RequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
 			ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
@@ -70,20 +115,33 @@ namespace ServiceStack.WebHost.Endpoints
                 new PredefinedRoutesFeature(),
                 new MetadataFeature(),
 			};
+			ApplyConfigChanges();
 		}
 
+		/// <summary>
+		/// Initializes an instance of <see cref="EndpointHostInstance"/>
+		/// </summary>
+		/// <param name="runAsInstance">Set this to <see langword="true"/> to run as a seperate instance; otherwise, false will cause this to run as a singleton.</param>
+		private EndpointHostInstance(bool runAsInstance, IAppHost appHost )
+		{
+			_runAsInstance = runAsInstance;
+			AppHost = appHost;
+			//Init() needs to be called
+		}
 
 		// Pre user config
-		public  void ConfigureHost(IAppHost appHost, string serviceName, ServiceManager serviceManager)
+		public void ConfigureHost(IAppHost appHost, string serviceName, ServiceManager serviceManager)
 		{
 			AppHost = appHost;
 
-			EndpointHostConfig config = _runAsNamedInstance ? EndpointHostConfig.GetNamedConfig(serviceName) : EndpointHostConfig.Instance;
+			if (!_runAsInstance)
+			{ //must be assigned after AppHost
+			//	_config = EndpointHostConfig.Instance;
+			}
 
-			config.ServiceName = serviceName;
-			config.ServiceManager = serviceManager;
+			_config.ServiceName = serviceName;
+			_config.ServiceManager = serviceManager;
 
-			Config = config; 
 			VirtualPathProvider = new FileSystemVirtualPathProvider(AppHost, Config.WebHostPhysicalPath);
 
 		    Config.DebugMode = appHost.GetType().Assembly.IsDebugBuild();             
@@ -191,19 +249,32 @@ namespace ServiceStack.WebHost.Endpoints
             return AppHost != null ? AppHost.TryResolve<T>() : default(T);
         }
 
+		private static readonly object _syncRoot = new object();
+
         /// <summary>
-        /// The AppHost.Container. Note: it is not thread safe to register dependencies after AppStart.
+        /// The AppHost.Container. 
         /// </summary>
+		/// <remarks>This method is thread safe.</remarks>
 	    public  Container Container
 	    {
 	        get { 
                 var aspHost = AppHost as AppHostBase;
-                if (aspHost != null)
-                    return aspHost.Container;
+                if (aspHost != null) return aspHost.Container;
 	            var listenerHost = AppHost as HttpListenerBase;
-                return listenerHost != null ? listenerHost.Container : new Container(); //testing may use alt AppHost
+				if (listenerHost != null) return listenerHost.Container;
+
+				if (_container != null) return _container;
+				lock (_syncRoot)
+				{
+					if (_container != null) return _container;
+					_container = new Container();
+				}
+					//throw new InvalidOperationException("An AppHost must must be initialized before accessing the container.");
+				return _container;
 	        }
 	    }
+
+		private Container _container;
 
 	    private  void ConfigurePlugins()
 	    {
@@ -257,13 +328,12 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
-		private  EndpointHostConfig _config;
+		private EndpointHostConfig _config;
 
 		public  EndpointHostConfig Config
 		{
 			get
 			{
-				//Q: should we instead retrieve this from EndPointHostConfig for named configs?
 				return _config;
 			}
 			set
