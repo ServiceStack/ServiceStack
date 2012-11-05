@@ -31,7 +31,18 @@ namespace ServiceStack.WebHost.Endpoints
 			{
 				var ts = _threadSpecificInstance;
 				if (ts != null) return ts;
-				else if (EndpointHostInstance.HasSingleton == false) return null; 
+				else if (EndpointHostInstance.HasSingleton == false)
+				{
+					lock (_syncRoot)
+					{
+						if (EndpointHostInstance.HasSingleton == false && BackwardsCompatibilityMode)
+						{
+							EndpointHostInstance.CreateSingleton(null);
+							return EndpointHostInstance.Singleton;
+						}
+					}
+					return null;
+				}
 				else return EndpointHostInstance.Singleton;
 			} 
 		}
@@ -94,7 +105,9 @@ namespace ServiceStack.WebHost.Endpoints
 		public static DateTime StartedAt { get { return Instance.StartedAt; } set { Instance.StartedAt = value; } }
 
 		public static DateTime ReadyAt { get { return Instance.ReadyAt; } set { Instance.ReadyAt = value; } }
-		
+
+		public static bool BackwardsCompatibilityMode = true;
+
 		// Pre user config
 		public static void ConfigureHost(IAppHost appHost, string serviceName, ServiceManager serviceManager)
 		{
@@ -147,7 +160,11 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			public static bool DebugMode
 			{
-				get { return Config != null && Config.DebugMode; }
+				get {
+					var instance = Instance;
+					if (instance == null) return false;
+					else return instance.Config != null && instance.Config.DebugMode;
+				}
 			}
 		}
 

@@ -50,7 +50,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 	    [SetUp]
 	    public void SetUp()
 	    {
-	        EndpointHost.VirtualPathProvider = pathProvider = new InMemoryVirtualPathProvider(new BasicAppHost());
+			 pathProvider = new InMemoryVirtualPathProvider(new BasicAppHost());
             markdownFormat = new MarkdownFormat {
                 VirtualPathProvider = pathProvider,
             };

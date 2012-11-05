@@ -55,7 +55,6 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
 			: this()
 		{
-			if (string.IsNullOrEmpty(serviceName)) throw new ArgumentException("Must provide a service name.", "serviceName");
 			_serviceName = serviceName;
 			ConfigureHost(serviceName, CreateServiceManager(assembliesWithServices));
 		}
@@ -348,7 +347,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			config.ServiceManager.ServiceController.EnableAccessRestrictions = config.EnableAccessRestrictions;
 
-			OurEndpointHost.Config = config;
+			OurEndpointHost.Config =   config;
 
 			//only one serializer perr app domain, so these values will get overwritten for all
 			JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;

@@ -92,9 +92,16 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public EndpointHostConfig()
 		{
-			EndpointHostConfig defaultConfig = CreateDefaultConfig();
 			//copy the default singleton already partially configured
-			ExtractExistingValues(defaultConfig);
+			var singleton = _instance;
+			if (singleton != null)
+			{
+				ExtractExistingValues(singleton);
+			}
+			else
+			{
+				ExtractExistingValues(CreateDefaultConfig());
+			}
 		}
 
 		private EndpointHostConfig(bool lame)
