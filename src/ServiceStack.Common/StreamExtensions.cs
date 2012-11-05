@@ -90,7 +90,7 @@ namespace ServiceStack.Common
 
         public static void Write(this Stream stream, string text)
         {
-            var bytes = Encoding.ASCII.GetBytes(text);
+            var bytes = Encoding.UTF8.GetBytes(text);
             stream.Write(bytes, 0, bytes.Length);
         }
 
