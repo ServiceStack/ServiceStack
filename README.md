@@ -412,4 +412,3 @@ A big thanks to GitHub and all of ServiceStack's contributors:
 ***
 
 Runs on both Mono and .NET 3.5. _(Live preview hosted on Mono / CentOS)_
-

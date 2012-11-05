@@ -79,14 +79,14 @@ namespace ServiceStack.WebHost.Endpoints
             : base(serviceName, assembliesWithServices) { _threadPoolManager = new ThreadPoolManager(poolSize); }
 
         protected AppHostHttpListenerLongRunningBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
-            : this(serviceName, handlerPath, 500, assembliesWithServices) {}
+            : this(serviceName, handlerPath, 500, assembliesWithServices) { }
 
         protected AppHostHttpListenerLongRunningBase(string serviceName, string handlerPath, int poolSize, params Assembly[] assembliesWithServices)
             : base(serviceName, handlerPath, assembliesWithServices) { _threadPoolManager = new ThreadPoolManager(poolSize); }
 
 
         #region IDisposable Members
-		private bool _isDisposed = false;
+        private bool _isDisposed = false;
         protected override void Dispose(bool disposing)
         {
 			//if (!_isDisposed)
@@ -97,11 +97,11 @@ namespace ServiceStack.WebHost.Endpoints
 					_threadPoolManager.Dispose();
 				}
 
-				// new shared cleanup logic
-				_isDisposed = true;
-			}
+                // new shared cleanup logic
+                _isDisposed = true;
+            }
 
-			base.Dispose(disposing);
+            base.Dispose(disposing);
         }
 
         #endregion
@@ -199,8 +199,7 @@ namespace ServiceStack.WebHost.Endpoints
             RaiseReceiveWebRequest(context);
 
 
-            _threadPoolManager.Peek(() =>
-                           {
+            _threadPoolManager.Peek(() => {
                                try
                                {
                                    ProcessRequest(context);
