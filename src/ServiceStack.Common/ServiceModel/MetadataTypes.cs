@@ -12,6 +12,7 @@ namespace ServiceStack.Common.ServiceModel
             bool convertDescriptionToComments = true,
             bool addDataContractAttributes = false,
             bool makeDataContractsExtensible = false,
+            bool addIndexesToDataMembers = false,
             string addDefaultXmlNamespace = null,
             bool initializeCollections = true,
             bool addResponseStatus = false,
@@ -25,6 +26,7 @@ namespace ServiceStack.Common.ServiceModel
             AddDataContractAttributes = addDataContractAttributes;
             AddDefaultXmlNamespace = addDefaultXmlNamespace;
             MakeDataContractsExtensible = makeDataContractsExtensible;
+            AddIndexesToDataMembers = addIndexesToDataMembers;
             InitializeCollections = initializeCollections;
             AddResponseStatus = addResponseStatus;
             AddImplicitVersion = addImplicitVersion;
@@ -48,6 +50,7 @@ namespace ServiceStack.Common.ServiceModel
         public bool AddDescriptionAsComments { get; set; }
         public bool AddDataContractAttributes { get; set; }
         public bool MakeDataContractsExtensible { get; set; }
+        public bool AddIndexesToDataMembers { get; set; }
         public bool InitializeCollections { get; set; }
         public int? AddImplicitVersion { get; set; }
         public bool AddResponseStatus { get; set; }
