@@ -370,7 +370,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					input.Position = e.Start;
 					input.Read(copy, 0, (int)e.Length);
 
-					form.Add(e.Name, Encoding.UTF8.GetString(copy));
+                    form.Add(e.Name, (e.Encoding ?? ContentEncoding).GetString(copy));
 				}
 				else
 				{
@@ -928,6 +928,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				public string ContentType;
 				public string Name;
 				public string Filename;
+			    public Encoding Encoding;
 				public long Start;
 				public long Length;
 
@@ -1178,6 +1179,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					else if (StrUtils.StartsWith(header, "Content-Type:", true))
 					{
 						elem.ContentType = header.Substring("Content-Type:".Length).Trim();
+
+					    var csindex = elem.ContentType.IndexOf("utf-8", StringComparison.InvariantCultureIgnoreCase); 
+                        if (csindex > 0)
+                            elem.Encoding = Encoding.UTF8;
+                        //TODO: add more encoding support 
 					}
 				}
 
