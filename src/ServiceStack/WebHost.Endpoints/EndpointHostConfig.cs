@@ -52,23 +52,30 @@ namespace ServiceStack.WebHost.Endpoints
 			return config;
 		}
 
-		internal static void CreateSingleton(IAppHost appHost)
+		internal static EndpointHostConfig CreateSingleton(IAppHost appHost)
 		{
+			if (_singleton != null) return _singleton;
 			//the following code uses appHost, it would be better to pass it in, but this is how it works for now, by 
 			//accessing the static singleton
 
-			//in order for the default config to be created, we need to know
-			//our app host
-			var config = new EndpointHostConfig();
-
-			if (config.ServiceStackHandlerFactoryPath == null)
+			lock (_syncRoot)
 			{
-				InferHttpHandlerPath(config);
+				if (_singleton != null) return _singleton;
+				//in order for the default config to be created, we need to know
+				//our app host
+				var config = new EndpointHostConfig();
+
+				if (config.ServiceStackHandlerFactoryPath == null)
+				{
+					InferHttpHandlerPath(config);
+				}
+				_singleton = config;
+				return config;
 			}
-			_instance = config;
 		}
 
-		private static EndpointHostConfig _instance;
+		private static EndpointHostConfig _singleton;
+
 		/// <summary>
 		/// Gets the default singleton instance of the config.
 		/// </summary>
@@ -77,13 +84,7 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			get
 			{
-				if (_instance == null && EndpointHost.AppHost == null)
-				{
-					throw new InvalidOperationException("An App Host needs to be initialized before accessing the config");
-				}
-
-			
-				return _instance;
+				return EndpointHost.Instance.Config;
 			}
 		}
 
@@ -97,7 +98,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public EndpointHostConfig()
 		{
 			//copy the default singleton already partially configured
-			var singleton = _instance;
+			var singleton = _singleton;
 			if (singleton != null)
 			{
 				ExtractExistingValues(singleton);

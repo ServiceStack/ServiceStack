@@ -40,9 +40,9 @@ namespace ServiceStack.ServiceInterface.Testing
 
 			this.AppHost = new TestAppHost(serviceManager.Container, serviceAssemblies);
 
-			EndpointHost.ConfigureHost(this.AppHost, "TestBase", serviceManager);
+			//EndpointHost.ConfigureHost(this.AppHost, "TestBase", serviceManager);
 
-			EndpointHost.ServiceManager = this.AppHost.Config.ServiceManager;
+			//EndpointHost.ServiceManager = this.AppHost.Config.ServiceManager;
 		}
 
 		protected abstract void Configure(Funq.Container container);

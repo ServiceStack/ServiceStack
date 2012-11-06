@@ -47,6 +47,14 @@ namespace ServiceStack.WebHost.Endpoints
 			} 
 		}
 
+		internal static bool HasInstance
+		{
+			get
+			{
+				return (_threadSpecificInstance != null || EndpointHostInstance.HasSingleton);
+			}
+		}
+
 		[ThreadStatic]
 		private static EndpointHostInstance _threadSpecificInstance;
 
@@ -80,7 +88,18 @@ namespace ServiceStack.WebHost.Endpoints
 		public static ServiceOperations ServiceOperations { get { return Instance.ServiceOperations; }  }
 		public static ServiceOperations AllServiceOperations { get { return Instance.AllServiceOperations; } }
 
-		public static IAppHost AppHost { get { return Instance != null ? Instance.AppHost: null; } internal set { Instance.AppHost = value; } }
+		public static IAppHost AppHost
+		{
+			get
+			{
+				if (!HasInstance) return null;
+				return Instance != null ? Instance.AppHost: null;
+			} 
+			internal set
+			{
+				Instance.AppHost = value;
+			} 
+		}
 
 		public static IContentTypeFilter ContentTypeFilter { get { return Instance.ContentTypeFilter; } set { Instance.ContentTypeFilter = value; } }
 

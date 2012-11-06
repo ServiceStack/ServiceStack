@@ -90,17 +90,17 @@ namespace ServiceStack.WebHost.Endpoints
 		private void Init()
 		{
 			//the config must be created after the AppHost assignment, because the AppHost is used in the config setup.
-			if (_runAsInstance)
-			{
-			//	Config = EndpointHostConfig.Create();
-				ContentTypeFilter = new HttpResponseFilter();
-			}
-			else
-			{
-		//		EndpointHostConfig.CreateSingleton(AppHost);
-			//	Config = EndpointHostConfig.Instance;
-				ContentTypeFilter = HttpResponseFilter.Instance;
-			}
+		//	if (_runAsInstance)
+		//	{
+		//	//	Config = EndpointHostConfig.Create();
+		//		ContentTypeFilter = new HttpResponseFilter();
+		//	}
+		//	else
+		//	{
+		////		EndpointHostConfig.CreateSingleton(AppHost);
+		//	//	Config = EndpointHostConfig.Instance;
+		//		ContentTypeFilter = HttpResponseFilter.Instance;
+		//	}
 
 		
 			RawRequestFilters = new List<Action<IHttpRequest, IHttpResponse>>();
@@ -149,6 +149,7 @@ namespace ServiceStack.WebHost.Endpoints
             {
                 Plugins.Add(new RequestInfoFeature());
             }
+			ApplyConfigChanges();
 		}
 
 		// Config has changed
@@ -342,15 +343,16 @@ namespace ServiceStack.WebHost.Endpoints
 					{
 						_config = EndpointHostConfig.Create();
 						ApplyConfigChanges();
+						ContentTypeFilter = new HttpResponseFilter();
 					}
 					else
 					{
-						EndpointHostConfig.CreateSingleton(AppHost);
-						_config = EndpointHostConfig.Instance;
+						_config = EndpointHostConfig.CreateSingleton(AppHost);
 						ApplyConfigChanges();
+						ContentTypeFilter = HttpResponseFilter.Instance;
 					}
 				}
-
+			
 				return _config;
 			}
 			set
@@ -363,7 +365,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 				lock (_syncRoot)
 				{
-					Config = value;
+					_config = value;
 					ApplyConfigChanges();
 				}
 			}

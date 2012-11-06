@@ -22,7 +22,8 @@ namespace ServiceStack.WebHost.Endpoints
 		public static string DebugLastHandlerArgs;
 
 		private static ServiceStackHttpHandlerFactoryInstance _instance ;
-		
+
+		private static readonly object _syncRoot = new object();
 		
 		[ThreadStatic]
 		private static ServiceStackHttpHandlerFactoryInstance _threadSpecificInstance;
@@ -32,8 +33,18 @@ namespace ServiceStack.WebHost.Endpoints
 			{
 				var ts = _threadSpecificInstance;
 				if (ts != null) return ts;
-				else _instance = new ServiceStackHttpHandlerFactoryInstance(EndpointHostInstance.Singleton);
-				return _instance;
+				else if (_instance != null) return _instance;
+				else
+				{
+					lock (_syncRoot)
+					{
+						if (_instance != null) return _instance;
+						_instance = new ServiceStackHttpHandlerFactoryInstance(EndpointHostInstance.Singleton);
+
+						return _instance;
+					}
+				}
+			
 			}
 		}
 
