@@ -246,7 +246,7 @@ namespace ServiceStack.ServiceClient.Web
                 }
             }
 
-#if SILVERLIGHT
+#if SILVERLIGHT && !WINDOWS_PHONE
 
             var creator = this.UseBrowserHttpHandling
                             ? System.Net.Browser.WebRequestCreator.BrowserHttp
@@ -287,7 +287,7 @@ namespace ServiceStack.ServiceClient.Web
             {
                 HttpMethod = httpMethod,
                 Url = requestUri,
-#if SILVERLIGHT
+#if SILVERLIGHT && !WINDOWS_PHONE
                 WebRequest = webRequest,
 #else
                 WebRequest = _webRequest,
@@ -301,7 +301,7 @@ namespace ServiceStack.ServiceClient.Web
             };
             requestState.StartTimer(this.Timeout.GetValueOrDefault(DefaultTimeout));
 
-#if SILVERLIGHT
+#if SILVERLIGHT && !WINDOWS_PHONE
             SendWebRequestAsync(httpMethod, request, requestState, webRequest);
 #else
             SendWebRequestAsync(httpMethod, request, requestState, _webRequest);
@@ -454,7 +454,7 @@ namespace ServiceStack.ServiceClient.Web
                         response = (T)this.StreamDeserializer(typeof(T), reader);
                     }
 
-#if SILVERLIGHT
+#if SILVERLIGHT && !WINDOWS_PHONE
                     if (this.StoreCookies && this.ShareCookiesWithBrowser && !this.UseBrowserHttpHandling)
                     {
                         // browser cookies must be set on the ui thread
@@ -513,6 +513,8 @@ namespace ServiceStack.ServiceClient.Web
                         //var strResponse = new StreamReader(stream).ReadToEnd();
                         //Console.WriteLine("Response: " + strResponse);
                         //stream.Position = 0;
+                        serviceEx.ResponseBody = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
+                        stream.Position = 0;
 
                         serviceEx.ResponseDto = this.StreamDeserializer(typeof(TResponse), stream);
                         requestState.HandleError((TResponse)serviceEx.ResponseDto, serviceEx);

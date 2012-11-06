@@ -4,6 +4,8 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Runtime.Serialization;
+using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.Logging;
@@ -108,6 +110,14 @@ namespace RazorRockstars.Console.Files
 
     public class ReqstarsByNames : List<string> { }
 
+    [Route("/richrequest")]
+    public class RichRequest : IReturn<RichRequest>
+    {
+        public List<string> StringList { get; set; }
+        public HashSet<string> StringSet { get; set; }
+        public string[] StringArray { get; set; }
+    }
+
     public class ReqstarsService : Service
     {
         public static Reqstar[] SeedData = new[] {
@@ -180,11 +190,71 @@ namespace RazorRockstars.Console.Files
         {
             return Db.Select<Reqstar>(q => Sql.In(q.FirstName, request.ToArray()));
         }
+
+        public MixedDataContractResponse Any(MixedDataContract request)
+        {
+            return new MixedDataContractResponse();
+        }
+
+        public InheritsResponse Any(Inherits request)
+        {
+            return new InheritsResponse();
+        }
+
+        public RichRequest Get(RichRequest request)
+        {
+            return request;
+        }
+    }
+
+    [DataContract(Name = "MixName", Namespace = "http://mix.namespace.com")]
+    public class MixedDataContract : IReturn<MixedDataContractResponse>
+    {
+        [DataMember(Name = "MixId", Order = 1, EmitDefaultValue = false, IsRequired = true)]
+        public int Id { get; set; }
+    }
+
+    [DataContract(Name = "MixedDCResponse")]
+    public class MixedDataContractResponse
+    {
+        [DataMember(Name = "MixTotal")]
+        public int Total { get; set; }
+        [DataMember(Order = 2)]
+        public int? Aged { get; set; }
+        [DataMember(EmitDefaultValue = false)]
+        public List<Rockstar> Results { get; set; }
+        [DataMember(IsRequired = true)]
+        public string Required { get; set; }
+
+        [DataMember]
+        public MixDataType MixDataType { get; set; }
+    }
+
+    public class MixDataType
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class Inherits : InheritsBase
+    {
+        public string Name { get; set; }
+    }
+
+    public class InheritsBase
+    {
+        public int Id { get; set; }
+    }
+
+    public class InheritsResponse
+    {
+        public string Result { get; set; }
     }
 
     [Route("/filterattributes")]
     public class RequestDto : IReturn<ResponseDto> { }
-    public class ResponseDto {
+    public class ResponseDto
+    {
         public string Foo { get; set; }
     }
 
@@ -235,8 +305,9 @@ namespace RazorRockstars.Console.Files
         {
             LogManager.LogFactory = new ConsoleLogFactory();
             startedAt = Stopwatch.StartNew();
-            appHost = new AppHost {
-                //EnableRazor = false, //Uncomment for faster tests!
+            appHost = new AppHost
+            {
+                EnableRazor = true, //Uncomment for faster tests!
             };
             appHost.Plugins.Add(new MsgPackFormat());
             //Fast
@@ -268,6 +339,12 @@ namespace RazorRockstars.Console.Files
             appHost.Dispose();
         }
 
+        [Explicit("Debug Run")]
+        [Test]
+        public void RunFor10Mins()
+        {
+            Thread.Sleep(TimeSpan.FromMinutes(10));
+        }
 
         protected static IRestClient[] RestClients = 
 		{
@@ -277,7 +354,7 @@ namespace RazorRockstars.Console.Files
 			new MsgPackServiceClient(BaseUri),
 		};
 
-        protected static IServiceClient[] ServiceClients = 
+        protected static IServiceClient[] ServiceClients =
             RestClients.OfType<IServiceClient>().ToArray();
 
 
@@ -620,7 +697,8 @@ namespace RazorRockstars.Console.Files
         [Test, TestCaseSource("RestClients")]
         public void Can_GET_RoutelessReqstar_PrettyRestApi(IRestClient client)
         {
-            var request = new RoutelessReqstar {
+            var request = new RoutelessReqstar
+            {
                 Id = 1,
                 FirstName = "Foo",
                 LastName = "Bar",
@@ -639,7 +717,8 @@ namespace RazorRockstars.Console.Files
         [Test, TestCaseSource("RestClients")]
         public void Can_POST_RoutelessReqstar_PrettyRestApi(IRestClient client)
         {
-            var request = new RoutelessReqstar {
+            var request = new RoutelessReqstar
+            {
                 Id = 1,
                 FirstName = "Foo",
                 LastName = "Bar",
@@ -654,5 +733,25 @@ namespace RazorRockstars.Console.Files
             Assert.That(response.FirstName, Is.EqualTo(request.FirstName));
             Assert.That(response.LastName, Is.EqualTo(request.LastName));
         }
+
+        [Test, TestCaseSource("RestClients")]
+        public void Can_GET_RichRequest_PrettyRestApi(IRestClient client)
+        {
+            var request = new RichRequest
+            {
+                StringArray = new[] { "a", "b", "c" },
+                StringList = new List<string> { "d", "e", "f" },
+                StringSet = new HashSet<string> { "g", "h", "i" },
+            };
+
+            Assert.That(request.ToUrl("GET"), Is.EqualTo("/richrequest?stringList=d,e,f&stringSet=g,h,i&stringArray=a,b,c"));
+
+            var response = client.Get(request);
+
+            Assert.That(response.StringArray, Is.EquivalentTo(request.StringArray));
+            Assert.That(response.StringList, Is.EquivalentTo(request.StringList));
+            Assert.That(response.StringSet, Is.EquivalentTo(request.StringSet));
+        }
+
     }
 }

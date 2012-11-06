@@ -11,9 +11,6 @@ using ServiceStack.WebHost.Endpoints.Support;
 namespace ServiceStack.WebHost.Endpoints
 {
 
-
-
-
     public abstract class AppHostHttpListenerLongRunningBase : AppHostHttpListenerBase
     {
         private class ThreadPoolManager : IDisposable
@@ -82,20 +79,31 @@ namespace ServiceStack.WebHost.Endpoints
             : base(serviceName, assembliesWithServices) { _threadPoolManager = new ThreadPoolManager(poolSize); }
 
         protected AppHostHttpListenerLongRunningBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
-            : this(serviceName, handlerPath, 500, assembliesWithServices) {}
+            : this(serviceName, handlerPath, 500, assembliesWithServices) { }
 
         protected AppHostHttpListenerLongRunningBase(string serviceName, string handlerPath, int poolSize, params Assembly[] assembliesWithServices)
             : base(serviceName, handlerPath, assembliesWithServices) { _threadPoolManager = new ThreadPoolManager(poolSize); }
 
 
         #region IDisposable Members
-
-        public override void Dispose()
+        private bool _isDisposed = false;
+        protected override void Dispose(bool disposing)
         {
-            base.Dispose();
-            _threadPoolManager.Dispose();
+            if (!_isDisposed)
+            {
+                if (disposing)
+                {
+                    //Investigate: Causes cyclical StackOverflow Exception by re-calling HttpListenerBase.Dispose()
+                    //base.Dispose(); 
 
-            Instance = null;
+                    _threadPoolManager.Dispose();
+                }
+
+                // new shared cleanup logic
+                _isDisposed = true;
+            }
+
+            base.Dispose(disposing);
         }
 
         #endregion
@@ -193,8 +201,7 @@ namespace ServiceStack.WebHost.Endpoints
             RaiseReceiveWebRequest(context);
 
 
-            _threadPoolManager.Peek(() =>
-                           {
+            _threadPoolManager.Peek(() => {
                                try
                                {
                                    ProcessRequest(context);

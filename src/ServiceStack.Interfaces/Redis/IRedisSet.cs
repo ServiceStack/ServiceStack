@@ -12,6 +12,9 @@
 
 using System.Collections.Generic;
 using ServiceStack.DesignPatterns.Model;
+#if WINDOWS_PHONE
+using ServiceStack.Text.WP;
+#endif
 
 namespace ServiceStack.Redis
 {
