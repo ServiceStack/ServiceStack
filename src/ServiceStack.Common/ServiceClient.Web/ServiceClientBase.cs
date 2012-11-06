@@ -904,10 +904,8 @@ namespace ServiceStack.ServiceClient.Web
                     {
                         outputStream.Write(boundary + newLine);
                         outputStream.Write("Content-Disposition: form-data;name=\"{0}\"{1}".FormatWith(key, newLine));
-                        outputStream.Write("Content-Type: text/plain;charset=utf-8{0}{1}".FormatWith(newLine, newLine));
-
-                        var value = Encoding.UTF8.GetBytes(string.Concat(nameValueCollection[key], newLine));
-                        outputStream.Write(value, 0, value.Length);
+                        outputStream.Write("Content-Type: charset=utf-8{0}{1}".FormatWith(newLine, newLine));
+                        outputStream.Write(nameValueCollection[key] + newLine);
                     }
 #endif
                     outputStream.Write(boundary + newLine);
