@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 #if !(MONOTOUCH || SILVERLIGHT)
+using System.Text;
 using System.Web;
 #endif
 #if !SILVERLIGHT
@@ -902,8 +903,11 @@ namespace ServiceStack.ServiceClient.Web
                     foreach (var key in nameValueCollection.AllKeys)
                     {
                         outputStream.Write(boundary + newLine);
-                        outputStream.Write("Content-Disposition: form-data;name=\"{0}\"{1}{2}".FormatWith(key, newLine, newLine));
-                        outputStream.Write(nameValueCollection[key] + newLine);
+                        outputStream.Write("Content-Disposition: form-data;name=\"{0}\"{1}".FormatWith(key, newLine));
+                        outputStream.Write("Content-Type: text/plain;charset=utf-8{0}{1}".FormatWith(newLine, newLine));
+
+                        var value = Encoding.UTF8.GetBytes(string.Concat(nameValueCollection[key], newLine));
+                        outputStream.Write(value, 0, value.Length);
                     }
 #endif
                     outputStream.Write(boundary + newLine);

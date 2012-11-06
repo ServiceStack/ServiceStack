@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Net;
 using System.Threading;
@@ -150,18 +150,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_POST_upload_file_using_ServiceClient_with_request_containing_utf8_chars()
         {
-            IServiceClient client = new JsonServiceClient(ListeningOn);
-
+            var client = new JsonServiceClient(ListeningOn);
             var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
 
-            var request = new FileUpload { CustomerId = 123, CustomerName = "F��" };
+            var request = new FileUpload { CustomerId = 123, CustomerName = "Föяšč" };
             var response = client.PostFileWithRequest<FileUploadResponse>(ListeningOn + "/fileuploads", uploadFile, request);
 
             var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
             Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
             Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
             Assert.That(response.Contents, Is.EqualTo(expectedContents));
-            Assert.That(response.CustomerName, Is.EqualTo("F��"));
+            Assert.That(response.CustomerName, Is.EqualTo("Föяšč"));
             Assert.That(response.CustomerId, Is.EqualTo(123));
         }
 

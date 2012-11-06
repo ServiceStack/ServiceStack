@@ -370,7 +370,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					input.Position = e.Start;
 					input.Read(copy, 0, (int)e.Length);
 
-					form.Add(e.Name, ContentEncoding.GetString(copy));
+					form.Add(e.Name, Encoding.UTF8.GetString(copy));
 				}
 				else
 				{
