@@ -143,6 +143,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public void OnTestFixtureTearDown()
 		{
 			appHost.Dispose();
+		    EndpointHandlerBase.ServiceManager = null;
 		}
 
 		private static List<ResponseError> GetValidationFieldErrors(string httpMethod, Customers request)

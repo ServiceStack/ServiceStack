@@ -28,6 +28,12 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
 		protected override void Configure(Funq.Container container) { }
 
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            EndpointHandlerBase.ServiceManager = null;
+        }
+
 		[Test]
 		public void Does_Execute_ReverseService()
 		{

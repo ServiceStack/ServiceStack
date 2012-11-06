@@ -137,6 +137,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		public void OnTestFixtureTearDown()
 		{
 			appHost.Dispose();
+            EndpointHandlerBase.ServiceManager = null;
 		}
 
 		protected abstract IServiceClient CreateNewServiceClient();
