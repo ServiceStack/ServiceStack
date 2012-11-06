@@ -27,6 +27,7 @@ namespace ServiceStack.ServiceInterface.Validation
         /// <param name="appHost">The app host</param>
         public void Register(IAppHost appHost)
         {
+            if (Enabled) return;
             Enabled = true;
             var filter = new ValidationFilters();
             this.appHost = appHost;
