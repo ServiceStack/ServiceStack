@@ -40,7 +40,7 @@ namespace ServiceStack.ServiceInterface
         /// <param name="req">The http request wrapper</param>
         /// <param name="res">The http response wrapper</param>
         /// <param name="requestDto">The response DTO</param>
-        public abstract void Execute(IHttpRequest req, IHttpResponse res, object requestDto);
+        public abstract void Execute(IHttpRequest req, IHttpResponse res, object responseDto);
         
         /// <summary>
         /// Create a ShallowCopy of this instance.
