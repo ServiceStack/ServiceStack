@@ -6,7 +6,7 @@ using ServiceStack.Common.Extensions;
 namespace ServiceStack.Validation
 {
     /// <summary>
-    /// The exception which is thrown when a validation error occured.
+    /// The exception which is thrown when a validation error occurred.
     /// This validation is serialized in a extra clean and human-readable way by ServiceStack.
     /// </summary>
     public class ValidationError : ArgumentException

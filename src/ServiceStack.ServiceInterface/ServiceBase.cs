@@ -124,7 +124,7 @@ namespace ServiceStack.ServiceInterface
                 }
             }
 
-            return response.IsErrorResponse() ? response : OnAfterExecute(response); //only call OnAfterExecute if no exception occured
+            return response.IsErrorResponse() ? response : OnAfterExecute(response); //only call OnAfterExecute if no exception occurred
         }
 
         /// <summary>
@@ -199,7 +199,7 @@ namespace ServiceStack.ServiceInterface
         
         /// <summary>
         /// Called after the request is Executed. Override to decorate the response dto.
-        /// This method is only called if no exception occured while executing the service.
+        /// This method is only called if no exception occurred while executing the service.
         /// </summary>
         /// <param name="response"></param>
         /// <returns></returns>

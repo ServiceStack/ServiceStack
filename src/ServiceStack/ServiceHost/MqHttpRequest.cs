@@ -58,7 +58,11 @@ namespace ServiceStack.ServiceHost
             set { requestContext.ResponseContentType = value; }
         }
 
-        public Dictionary<string, object> Items { get; set; }
+        private Dictionary<string, object> items;
+        public Dictionary<string, object> Items
+        {
+            get { return items ?? (items = new Dictionary<string, object>()); }
+        }
 
         private NameValueCollection headers;
         public NameValueCollection Headers
