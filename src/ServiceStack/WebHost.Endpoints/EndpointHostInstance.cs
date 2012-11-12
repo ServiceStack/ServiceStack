@@ -72,14 +72,10 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			AppHost = appHost;
 
-			var config = EndpointHostConfig.Instance;
-
-			config.ServiceName = serviceName;
-			config.ServiceManager = serviceManager;
-
-            EndpointHostConfig.Instance.ServiceName = serviceName;
+			EndpointHostConfig.Instance.ServiceName = serviceName;
 			EndpointHostConfig.Instance.ServiceManager = serviceManager;
 
+			var config = EndpointHostConfig.Instance;
 			Config = config; // avoid cross-dependency on Config setter
 			VirtualPathProvider = new FileSystemVirtualPathProvider(AppHost, Config.WebHostPhysicalPath);
 
@@ -242,7 +238,7 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
-		public ServiceManager ServiceManager
+		public  ServiceManager ServiceManager
 		{
 			get { return config.ServiceManager; }
 			set
@@ -254,6 +250,7 @@ namespace ServiceStack.WebHost.Endpoints
 		}
 
 		private  EndpointHostConfig config;
+
 		public  EndpointHostConfig Config
 		{
 			get
