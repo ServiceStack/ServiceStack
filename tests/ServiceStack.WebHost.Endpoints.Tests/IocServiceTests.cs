@@ -121,5 +121,33 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(FunqRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
             Assert.That(AltRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
         }
+
+	    [Test]
+	    public void Does_AutoWire_ActionLevel_RequestFilters()
+	    {
+            try
+            {
+                var client = new JsonServiceClient(ListeningOn);
+                var response = client.Get(new ActionAttr());
+
+                var expected = new List<string> {
+					typeof(FunqDepProperty).Name,
+					typeof(FunqDepDisposableProperty).Name,
+					typeof(AltDepProperty).Name,
+					typeof(AltDepDisposableProperty).Name,
+				};
+
+                response.Results.PrintDump();
+
+                Assert.That(expected.EquivalentTo(response.Results));
+
+            }
+            catch (Exception ex)
+            {
+                ex.Message.Print();
+                throw;
+            }
+        }
+
     }
 }

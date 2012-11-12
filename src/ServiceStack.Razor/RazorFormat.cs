@@ -357,6 +357,14 @@ namespace ServiceStack.Razor
             if (!string.IsNullOrEmpty(viewName))
                 return GetViewPage(viewName);
 
+            //Since the Request DTO Name should be unique, look for a viewName with that first
+            if (httpReq != null && httpReq.OperationName != null)
+            {
+                var pageRef = GetViewPage(httpReq.OperationName);
+                if (pageRef != null) 
+                    return pageRef;
+            }
+
             if (dto != null)
             {
                 var responseTypeName = dto.GetType().Name;
@@ -364,7 +372,7 @@ namespace ServiceStack.Razor
                 if (pageRef != null) return pageRef;
             }
 
-            return httpReq != null ? GetViewPage(httpReq.OperationName) : null;
+            return null;
         }
 
         public IViewPage GetView(string name)

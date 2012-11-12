@@ -19,28 +19,22 @@ namespace ServiceStack.WebHost.Endpoints
 	{
 		protected AppHostHttpListenerBase() {}
 
-		protected AppHostHttpListenerBase(string serviceName, bool runAsNamedInstance, params Assembly[] assembliesWithServices)
+		protected AppHostHttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
 			: base(serviceName, assembliesWithServices)
 		{
-			OurEndpointHost.Config.ServiceStackHandlerFactoryPath = null;
-			OurEndpointHost.Config.MetadataRedirectPath = "metadata";
+			EndpointHostConfig.Instance.ServiceStackHandlerFactoryPath = null;
+			EndpointHostConfig.Instance.MetadataRedirectPath = "metadata";
 		}
 
-		protected AppHostHttpListenerBase(string serviceName, string handlerPath, bool runAsNamedInstance, params Assembly[] assembliesWithServices)
+		protected AppHostHttpListenerBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
 			: base(serviceName, assembliesWithServices)
 		{
-			OurEndpointHost.Config.ServiceStackHandlerFactoryPath = string.IsNullOrEmpty(handlerPath)
-				? null : handlerPath;
-			OurEndpointHost.Config.MetadataRedirectPath = handlerPath == null 
+			EndpointHostConfig.Instance.ServiceStackHandlerFactoryPath = string.IsNullOrEmpty(handlerPath)
+				? null : handlerPath;			
+			EndpointHostConfig.Instance.MetadataRedirectPath = handlerPath == null 
 				? "metadata"
 				: PathUtils.CombinePaths(handlerPath, "metadata");
 		}
-
-		protected AppHostHttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
-			: this(serviceName, false, assembliesWithServices) { }
-
-		protected AppHostHttpListenerBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
-			: this(serviceName, handlerPath, false, assembliesWithServices) { }
 
 		protected override void ProcessRequest(HttpListenerContext context)
 		{
