@@ -29,92 +29,33 @@ namespace ServiceStack.WebHost.Endpoints.Support
 	/// </summary>
 	public abstract class HttpListenerBase : IDisposable, IAppHost
 	{
-		private static readonly ILog _log = LogManager.GetLogger(typeof(HttpListenerBase));
+		private static readonly ILog Log = LogManager.GetLogger(typeof(HttpListenerBase));
 
 		private const int RequestThreadAbortedException = 995;
 
 		protected HttpListener Listener;
 		protected bool IsStarted = false;
 
-		private readonly DateTime _startTime;
-		private bool _runAsNamedInstance;
-		private string _serviceName; //also the name of this instance if running as named instance
+		private readonly DateTime startTime;
+
 		public static HttpListenerBase Instance { get; protected set; }
 
-		private readonly AutoResetEvent _listenForNextRequest = new AutoResetEvent(false);
+		private readonly AutoResetEvent ListenForNextRequest = new AutoResetEvent(false);
 
 		public event DelReceiveWebRequest ReceiveWebRequest;
 
 		protected HttpListenerBase()
 		{
-			_startTime = DateTime.Now;
-			_log.Info("Begin Initializing Application...");
-			_runAsNamedInstance = false;
+			this.startTime = DateTime.Now;
+			Log.Info("Begin Initializing Application...");
+
 			EndpointHostConfig.SkipPathValidation = true;
 		}
 
-		protected HttpListenerBase(string serviceName,  params Assembly[] assembliesWithServices)
+		protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
 			: this()
 		{
-			_runAsNamedInstance = false;
-			_serviceName = serviceName;
-			OurEndpointHost.ConfigureHost(this, serviceName, CreateServiceManager(assembliesWithServices));
-		}
-
-		protected HttpListenerBase(string serviceName, bool runAsNamedInstance, params Assembly[] assembliesWithServices)
-			: this()
-		{
-			if (runAsNamedInstance && string.IsNullOrEmpty(serviceName)) throw new ArgumentException("Must provide a service name of named instances.", "serviceName");
-			_runAsNamedInstance = runAsNamedInstance;
-			_serviceName = serviceName;
-			OurEndpointHost.ConfigureHost(this, serviceName, CreateServiceManager(assembliesWithServices));
-		}
-
-		protected EndpointHostInstance OurEndpointHost
-		{
-			get
-			{
-				if (_runAsNamedInstance)
-				{
-					return EndpointHost.GetNamedHost(_serviceName);
-				}
-				else
-				{
-					return EndpointHost.Instance;
-				}
-			}
-
-		}
-
-		private static Dictionary<string, HttpListenerBase> _namedListener = new Dictionary<string, HttpListenerBase>();
-		private readonly static object _syncRoot = new object();
-
-		/// <summary>
-		/// Gets a <see cref="EndpointHostConfig"/> by name, and creates a new one if one doesn't exist by that name.
-		/// </summary>
-		/// <param name="name">The name of the config to return or create.</param>
-		/// <returns>Returns the instance.</returns>
-		/// <remarks>This method is thread safe.</remarks>
-		internal static HttpListenerBase GetNamedConfig(string name)
-		{
-			HttpListenerBase listener;
-			if (_namedListener.TryGetValue(name, out listener))
-			{
-				return listener;
-			}
-
-			lock (_syncRoot)
-			{
-				if (_namedListener.TryGetValue(name, out listener)) //double checked locking works in .Net 
-				{
-					return listener;
-				}
-
-				var namedListener = new Dictionary<string, HttpListenerBase>(_namedListener);
-				namedListener.Add(name, listener);
-				_namedListener = namedListener;
-				return listener;
-			}
+			EndpointHost.ConfigureHost(this, serviceName, CreateServiceManager(assembliesWithServices));
 		}
 
 		protected virtual ServiceManager CreateServiceManager(params Assembly[] assembliesWithServices)
@@ -124,21 +65,18 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public void Init()
 		{
-			if (_runAsNamedInstance == false)
+			if (Instance != null)
 			{
-				if (Instance != null)
-				{
-					throw new InvalidDataException("HttpListenerBase.Instance has already been set");
-				}
-
-				Instance = this;
+				throw new InvalidDataException("HttpListenerBase.Instance has already been set");
 			}
 
-			var serviceManager = OurEndpointHost.Config.ServiceManager;
+			Instance = this;
+
+			var serviceManager = EndpointHost.Config.ServiceManager;
 			if (serviceManager != null)
 			{
 				serviceManager.Init();
-				Configure(OurEndpointHost.Config.ServiceManager.Container);
+				Configure(EndpointHost.Config.ServiceManager.Container);
 			}
 			else
 			{
@@ -148,16 +86,16 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			{
 				//Required for adhoc services added in Configure()
 				serviceManager.ReloadServiceOperations();
-				OurEndpointHost.SetOperationTypes(
+				EndpointHost.SetOperationTypes(
 					serviceManager.ServiceOperations,
 					serviceManager.AllServiceOperations
 				);
 			}
 
-			OurEndpointHost.AfterInit();
+			EndpointHost.AfterInit();
 
-			var elapsed = DateTime.Now - _startTime;
-			_log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
+			var elapsed = DateTime.Now - this.startTime;
+			Log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
 		}
 
 		public abstract void Configure(Container container);
@@ -182,7 +120,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				this.Listener = new HttpListener();
 			}
 
-            OurEndpointHost.Config.ServiceStackHandlerFactoryPath = HttpListenerRequestWrapper.GetHandlerPathIfAny(urlBase);
+            EndpointHost.Config.ServiceStackHandlerFactoryPath = HttpListenerRequestWrapper.GetHandlerPathIfAny(urlBase);
 
 			this.Listener.Prefixes.Add(urlBase);
 
@@ -202,11 +140,11 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				try
 				{
 					this.Listener.BeginGetContext(ListenerCallback, this.Listener);
-					_listenForNextRequest.WaitOne();
+					ListenForNextRequest.WaitOne();
 				}
 				catch (Exception ex)
 				{
-					_log.Error("Listen()", ex);
+					Log.Error("Listen()", ex);
 					return;
 				}
 				if (this.Listener == null) return;
@@ -226,7 +164,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			{
 				if (!isListening)
 				{
-					_log.DebugFormat("Ignoring ListenerCallback() as HttpListener is no longer listening");
+					Log.DebugFormat("Ignoring ListenerCallback() as HttpListener is no longer listening");
 					return;
 				}
 				// The EndGetContext() method, as with all Begin/End asynchronous methods in the .NET Framework,
@@ -240,7 +178,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				// method, and again, that is just the way most Begin/End asynchronous
 				// methods of the .NET Framework work.
 				var errMsg = ex + ": " + isListening;
-				_log.Warn(errMsg);
+				Log.Warn(errMsg);
 				return;
 			}
 			finally
@@ -249,12 +187,12 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				// so that it calls the BeginGetContext() (or possibly exits if we're not
 				// listening any more) method to start handling the next incoming request
 				// while we continue to process this request on a different thread.
-				_listenForNextRequest.Set();
+				ListenForNextRequest.Set();
 			}
 
 			if (context == null) return;
 
-            _log.InfoFormat("{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
+            Log.InfoFormat("{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
 
 			//System.Diagnostics.Debug.WriteLine("Start: " + requestNumber + " at " + DateTime.Now);
 			//var request = context.Request;
@@ -270,7 +208,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			catch (Exception ex)
 			{
 				var error = string.Format("Error this.ProcessRequest(context): [{0}]: {1}", ex.GetType().Name, ex.Message);
-				_log.ErrorFormat(error);
+				Log.ErrorFormat(error);
 
 				try
 				{
@@ -292,7 +230,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				catch (Exception errorEx)
 				{
 					error = string.Format("Error this.ProcessRequest(context)(Exception while writing error to the response): [{0}]: {1}", errorEx.GetType().Name, errorEx.Message);
-					_log.ErrorFormat(error);
+					Log.ErrorFormat(error);
 
 				}
 			}			
@@ -322,7 +260,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			{
 				if (ex.ErrorCode != RequestThreadAbortedException) throw;
 
-				_log.ErrorFormat("Swallowing HttpListenerException({0}) Thread exit or aborted request", RequestThreadAbortedException);
+				Log.ErrorFormat("Swallowing HttpListenerException({0}) Thread exit or aborted request", RequestThreadAbortedException);
 			}
 			this.Listener = null;
 			this.IsStarted = false;
@@ -337,16 +275,15 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		protected void SetConfig(EndpointHostConfig config)
 		{
 			if (config.ServiceName == null)
-				config.ServiceName = OurEndpointHost.Config.ServiceName;
+				config.ServiceName = EndpointHost.Config.ServiceName;
 
 			if (config.ServiceManager == null)
-				config.ServiceManager = OurEndpointHost.Config.ServiceManager;
+				config.ServiceManager = EndpointHost.Config.ServiceManager;
 
 			config.ServiceManager.ServiceController.EnableAccessRestrictions = config.EnableAccessRestrictions;
 
-			OurEndpointHost.Config = config;
+			EndpointHost.Config = config;
 
-			//only one serializer perr app domain, so these values will get overwritten for all
 			JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
 			JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;
 		}
@@ -355,7 +292,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			get
 			{
-				return OurEndpointHost.Config.ServiceManager.Container;
+				return EndpointHost.Config.ServiceManager.Container;
 			}
 		}
 
@@ -407,25 +344,25 @@ namespace ServiceStack.WebHost.Endpoints.Support
         {
             get
             {
-                return OurEndpointHost.Config.ServiceController;
+                return EndpointHost.Config.ServiceController;
             }
         }
 
 		public IServiceRoutes Routes
 		{
-			get { return OurEndpointHost.Config.ServiceController.Routes; }
+			get { return EndpointHost.Config.ServiceController.Routes; }
 		}
 
 		public Dictionary<Type, Func<IHttpRequest, object>> RequestBinders
 		{
-			get { return OurEndpointHost.ServiceManager.ServiceController.RequestTypeFactoryMap; }
+			get { return EndpointHost.ServiceManager.ServiceController.RequestTypeFactoryMap; }
 		}
 
 		public IContentTypeFilter ContentTypeFilters
 		{
 			get
 			{
-				return OurEndpointHost.ContentTypeFilter;
+				return EndpointHost.ContentTypeFilter;
 			}
 		}
 
@@ -433,7 +370,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			get
 			{
-				return OurEndpointHost.RawRequestFilters;
+				return EndpointHost.RawRequestFilters;
 			}
 		}
 
@@ -441,7 +378,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			get
 			{
-				return OurEndpointHost.RequestFilters;
+				return EndpointHost.RequestFilters;
 			}
 		}
 
@@ -449,7 +386,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			get
 			{
-				return OurEndpointHost.ResponseFilters;
+				return EndpointHost.ResponseFilters;
 			}
 		}
 
@@ -457,42 +394,42 @@ namespace ServiceStack.WebHost.Endpoints.Support
         {
             get
             {
-                return OurEndpointHost.ViewEngines;
+                return EndpointHost.ViewEngines;
             }
         }
 
         public HandleUncaughtExceptionDelegate ExceptionHandler
         {
-            get { return OurEndpointHost.ExceptionHandler; }
-            set { OurEndpointHost.ExceptionHandler = value; }
+            get { return EndpointHost.ExceptionHandler; }
+            set { EndpointHost.ExceptionHandler = value; }
         }
 
         public HandleServiceExceptionDelegate ServiceExceptionHandler
         {
-            get { return OurEndpointHost.ServiceExceptionHandler; }
-            set { OurEndpointHost.ServiceExceptionHandler = value; }
+            get { return EndpointHost.ServiceExceptionHandler; }
+            set { EndpointHost.ServiceExceptionHandler = value; }
         }
 
         public List<HttpHandlerResolverDelegate> CatchAllHandlers
 		{
-			get { return OurEndpointHost.CatchAllHandlers; }
+			get { return EndpointHost.CatchAllHandlers; }
 		}
 
 		public EndpointHostConfig Config
 		{
-			get { return OurEndpointHost.Config; }
+			get { return EndpointHost.Config; }
 		}
 
         ///TODO: plugin added with .Add method after host initialization won't be configured. Each plugin should have state so we can invoke Register method if host was already started.  
 		public List<IPlugin> Plugins
 		{
-			get { return OurEndpointHost.Plugins; }
+			get { return EndpointHost.Plugins; }
 		}
 		
 		public IVirtualPathProvider VirtualPathProvider
 		{
-			get { return OurEndpointHost.VirtualPathProvider; }
-			set { OurEndpointHost.VirtualPathProvider = value; }
+			get { return EndpointHost.VirtualPathProvider; }
+			set { EndpointHost.VirtualPathProvider = value; }
 		}
 
         public virtual IServiceRunner<TRequest> CreateServiceRunner<TRequest>(ActionContext actionContext)
@@ -510,14 +447,14 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				}
 				catch (Exception ex)
 				{
-					_log.Warn("Error loading plugin " + plugin.GetType().Name, ex);
+					Log.Warn("Error loading plugin " + plugin.GetType().Name, ex);
 				}
 			}
 		}
 
 		public void RegisterService(Type serviceType, params string[] atRestPaths)
 		{
-            var genericService = OurEndpointHost.Config.ServiceManager.RegisterService(serviceType);
+            var genericService = EndpointHost.Config.ServiceManager.RegisterService(serviceType);
             if (genericService != null)
             {
                 var requestType = genericService.GetGenericArguments()[0];
@@ -539,44 +476,38 @@ namespace ServiceStack.WebHost.Endpoints.Support
             }
         }
 
-		protected virtual void Dispose(bool disposing)
-		{
-			if (!_disposed)
-			{
-				if (disposing)
-				{
-					// Dispose managed resources.
-					this.Stop();
+        private bool disposed;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed) return;
 
-					if (OurEndpointHost.Config.ServiceManager != null)
-					{
-						OurEndpointHost.Config.ServiceManager.Dispose();
-					}
+            lock (this)
+            {
+                if (disposed) return;
 
-					if (_runAsNamedInstance)
-					{
-						//remove named instances
-						EndpointHostConfig.RemoveNamedConfig(_serviceName);
-						EndpointHost.RemoveNamedHost(_serviceName);
-					}
-					else
-					{
-						Instance = null;
-					}
-				}
+                if (disposing)
+                {
+                    this.Stop();
 
-				// There are no unmanaged resources to release, but
-				// if we add them, they need to be released here.
-			}
-			_disposed = true;
+                    if (EndpointHost.Config.ServiceManager != null)
+                    {
+                        EndpointHost.Config.ServiceManager.Dispose();
+                    }
 
-		}
-		private bool _disposed;
+                    Instance = null;
+                }
 
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}	
-	}
+                //release unmanaged resources here...
+
+                disposed = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+    }
 }

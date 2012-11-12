@@ -50,15 +50,10 @@ namespace ServiceStack.WebHost.Endpoints
 
         public  DateTime ReadyAt { get; set; }
 
-		private bool _runAsNamedInstance = false;
-
-		public EndpointHostInstance(): this(false) { }
-
-		public EndpointHostInstance(bool runAsNamedInstance)
+		public EndpointHostInstance()
 		{
-			_runAsNamedInstance = runAsNamedInstance;
 			ContentTypeFilter = HttpResponseFilter.Instance;
-			RawRequestFilters = new List<Action<IHttpRequest, IHttpResponse>>();
+            RawRequestFilters = new List<Action<IHttpRequest, IHttpResponse>>();
 			RequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
 			ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
 			ViewEngines = new List<IViewEngine>();
@@ -71,8 +66,7 @@ namespace ServiceStack.WebHost.Endpoints
                 new MetadataFeature(),
 			};
 		}
-
-
+		
 		// Pre user config
 		public  void ConfigureHost(IAppHost appHost, string serviceName, ServiceManager serviceManager)
 		{
@@ -83,7 +77,10 @@ namespace ServiceStack.WebHost.Endpoints
 			config.ServiceName = serviceName;
 			config.ServiceManager = serviceManager;
 
-			Config = config; 
+            EndpointHostConfig.Instance.ServiceName = serviceName;
+			EndpointHostConfig.Instance.ServiceManager = serviceManager;
+
+			Config = config; // avoid cross-dependency on Config setter
 			VirtualPathProvider = new FileSystemVirtualPathProvider(AppHost, Config.WebHostPhysicalPath);
 
 		    Config.DebugMode = appHost.GetType().Assembly.IsDebugBuild();             
@@ -96,11 +93,10 @@ namespace ServiceStack.WebHost.Endpoints
 		// Config has changed
 		private  void ApplyConfigChanges()
 		{
-			_config.ServiceEndpointsMetadataConfig = ServiceEndpointsMetadataConfig.Create(_config.ServiceStackHandlerFactoryPath);
+			config.ServiceEndpointsMetadataConfig = ServiceEndpointsMetadataConfig.Create(config.ServiceStackHandlerFactoryPath);
 
-			//will overwrite for whole app domain.
-			JsonDataContractSerializer.Instance.UseBcl = _config.UseBclJsonSerializers;
-			JsonDataContractDeserializer.Instance.UseBcl = _config.UseBclJsonSerializers;
+			JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
+			JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;
 		}
 
 		//After configure called
@@ -108,49 +104,49 @@ namespace ServiceStack.WebHost.Endpoints
 		{
             StartedAt = DateTime.Now;
 
-			if (_config.EnableFeatures != Feature.All)
+			if (config.EnableFeatures != Feature.All)
 			{
-				if ((Feature.Xml & _config.EnableFeatures) != Feature.Xml)
-					_config.IgnoreFormatsInMetadata.Add("xml");
-				if ((Feature.Json & _config.EnableFeatures) != Feature.Json)
-					_config.IgnoreFormatsInMetadata.Add("json");
-				if ((Feature.Jsv & _config.EnableFeatures) != Feature.Jsv)
-					_config.IgnoreFormatsInMetadata.Add("jsv");
-				if ((Feature.Csv & _config.EnableFeatures) != Feature.Csv)
-					_config.IgnoreFormatsInMetadata.Add("csv");
-				if ((Feature.Html & _config.EnableFeatures) != Feature.Html)
-					_config.IgnoreFormatsInMetadata.Add("html");
-				if ((Feature.Soap11 & _config.EnableFeatures) != Feature.Soap11)
-					_config.IgnoreFormatsInMetadata.Add("soap11");
-				if ((Feature.Soap12 & _config.EnableFeatures) != Feature.Soap12)
-					_config.IgnoreFormatsInMetadata.Add("soap12");
+				if ((Feature.Xml & config.EnableFeatures) != Feature.Xml)
+					config.IgnoreFormatsInMetadata.Add("xml");
+				if ((Feature.Json & config.EnableFeatures) != Feature.Json)
+					config.IgnoreFormatsInMetadata.Add("json");
+				if ((Feature.Jsv & config.EnableFeatures) != Feature.Jsv)
+					config.IgnoreFormatsInMetadata.Add("jsv");
+				if ((Feature.Csv & config.EnableFeatures) != Feature.Csv)
+					config.IgnoreFormatsInMetadata.Add("csv");
+				if ((Feature.Html & config.EnableFeatures) != Feature.Html)
+					config.IgnoreFormatsInMetadata.Add("html");
+				if ((Feature.Soap11 & config.EnableFeatures) != Feature.Soap11)
+					config.IgnoreFormatsInMetadata.Add("soap11");
+				if ((Feature.Soap12 & config.EnableFeatures) != Feature.Soap12)
+					config.IgnoreFormatsInMetadata.Add("soap12");
 			}
 
-			if ((Feature.Html & _config.EnableFeatures) != Feature.Html)
+			if ((Feature.Html & config.EnableFeatures) != Feature.Html)
 				Plugins.RemoveAll(x => x is HtmlFormat);
 
-			if ((Feature.Csv & _config.EnableFeatures) != Feature.Csv)
+			if ((Feature.Csv & config.EnableFeatures) != Feature.Csv)
 				Plugins.RemoveAll(x => x is CsvFormat);
 
-            if ((Feature.Markdown & _config.EnableFeatures) != Feature.Markdown)
+            if ((Feature.Markdown & config.EnableFeatures) != Feature.Markdown)
                 Plugins.RemoveAll(x => x is MarkdownFormat);
 
-            if ((Feature.PredefinedRoutes & _config.EnableFeatures) != Feature.PredefinedRoutes)
+            if ((Feature.PredefinedRoutes & config.EnableFeatures) != Feature.PredefinedRoutes)
                 Plugins.RemoveAll(x => x is PredefinedRoutesFeature);
 
-            if ((Feature.Metadata & _config.EnableFeatures) != Feature.Metadata)
+            if ((Feature.Metadata & config.EnableFeatures) != Feature.Metadata)
                 Plugins.RemoveAll(x => x is MetadataFeature);
 
-            if ((Feature.RequestInfo & _config.EnableFeatures) != Feature.RequestInfo)
+            if ((Feature.RequestInfo & config.EnableFeatures) != Feature.RequestInfo)
                 Plugins.RemoveAll(x => x is RequestInfoFeature);
 
-			if ((Feature.Razor & _config.EnableFeatures) != Feature.Razor)
+			if ((Feature.Razor & config.EnableFeatures) != Feature.Razor)
 				Plugins.RemoveAll(x => x is IRazorPlugin);    //external
 
-            if ((Feature.ProtoBuf & _config.EnableFeatures) != Feature.ProtoBuf)
+            if ((Feature.ProtoBuf & config.EnableFeatures) != Feature.ProtoBuf)
                 Plugins.RemoveAll(x => x is IProtoBufPlugin); //external
 
-            if ((Feature.MsgPack & _config.EnableFeatures) != Feature.MsgPack)
+            if ((Feature.MsgPack & config.EnableFeatures) != Feature.MsgPack)
                 Plugins.RemoveAll(x => x is IMsgPackPlugin);  //external
 
             if (ExceptionHandler == null) {
@@ -165,7 +161,7 @@ namespace ServiceStack.WebHost.Endpoints
                 };
             }
 
-			var specifiedContentType = _config.DefaultContentType; //Before plugins loaded
+			var specifiedContentType = config.DefaultContentType; //Before plugins loaded
 
             ConfigurePlugins();
 
@@ -222,12 +218,12 @@ namespace ServiceStack.WebHost.Endpoints
 	    private  void AfterPluginsLoaded(string specifiedContentType)
 		{
 			if (!string.IsNullOrEmpty(specifiedContentType))
-				_config.DefaultContentType = specifiedContentType;
-			else if (string.IsNullOrEmpty(_config.DefaultContentType))
-				_config.DefaultContentType = ContentType.Json;
+				config.DefaultContentType = specifiedContentType;
+			else if (string.IsNullOrEmpty(config.DefaultContentType))
+				config.DefaultContentType = ContentType.Json;
 
-			_config.ServiceManager.AfterInit();
-			ServiceManager = _config.ServiceManager; //reset operations
+			config.ServiceManager.AfterInit();
+			ServiceManager = config.ServiceManager; //reset operations
 		}
 
 		public  void AddPlugin(params IPlugin[] plugins)
@@ -248,22 +244,21 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public ServiceManager ServiceManager
 		{
-			get { return _config.ServiceManager; }
+			get { return config.ServiceManager; }
 			set
 			{
-				_config.ServiceManager = value;
+				config.ServiceManager = value;
 				ServiceOperations = value.ServiceOperations;
 				AllServiceOperations = value.AllServiceOperations;
 			}
 		}
 
-		private  EndpointHostConfig _config;
+		private  EndpointHostConfig config;
 		public  EndpointHostConfig Config
 		{
 			get
 			{
-				//Q: should we instead retrieve this from EndPointHostConfig for named configs?
-				return _config;
+				return config;
 			}
 			set
 			{
@@ -273,7 +268,7 @@ namespace ServiceStack.WebHost.Endpoints
 				if (value.ServiceController == null)
 					throw new ArgumentNullException("ServiceController");
 
-				_config = value;
+				config = value;
 				ApplyConfigChanges();
 			}
 		}
@@ -408,7 +403,7 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			using (Profiler.Current.Step("Execute Service"))
 			{
-                return _config.ServiceController.Execute(request,
+                return config.ServiceController.Execute(request,
                     new HttpRequestContext(httpReq, httpRes, request, endpointAttributes));
             }
 		}

@@ -280,7 +280,7 @@
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj">
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
-      <Name>ServiceStack %28ServiceStack\ServiceStack%29</Name>
+      <Name>ServiceStack</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />
