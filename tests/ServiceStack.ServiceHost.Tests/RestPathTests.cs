@@ -32,9 +32,19 @@ namespace ServiceStack.ServiceHost.Tests
 			Assert.That(request.Name, Is.EqualTo("HelloWorld!"));
 		}
 
+		private class AppHost : AppHostBase {
+			public AppHost() : base("test", typeof(AppHost).Assembly) { }
+			public override void Configure(Funq.Container container)
+			{
+				
+			}
+		}
+
 		[Test]
 		public void ShowAllow()
 		{
+			var appHost = new AppHost(); //need an apphost to access the config.
+
 			var config = EndpointHostConfig.Instance;
 
 			const string fileName = "/path/to/image.GIF";

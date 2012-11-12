@@ -48,9 +48,9 @@ namespace ServiceStack.ServiceInterface.Validation
                 return DtoUtils.CreateErrorResponse(typeof(ValidationException).Name, validationException.Message, errors);
             }
 
-            return existingHandler != null
-                ? existingHandler(request, ex)
-                : DtoUtils.HandleException(appHost, request, ex);
+            return// existingHandler != null
+				//  ? existingHandler(request, ex) :
+                 DtoUtils.HandleException(appHost, request, ex);
         }
 
         public static object HandleException(IResolver resolver, object request, Exception ex)

@@ -38,7 +38,6 @@ namespace ServiceStack.WebHost.Endpoints
 		private const string DefaultUsageExamplesBaseUri =
 			"https://github.com/ServiceStack/ServiceStack.Extras/blob/master/doc/UsageExamples";
 
-		private static Dictionary<string, EndpointHostConfig> _namedConfigs = new Dictionary<string, EndpointHostConfig>();
 		private readonly static object _syncRoot = new object();
 
 		/// <summary>
@@ -47,67 +46,45 @@ namespace ServiceStack.WebHost.Endpoints
 		/// <param name="name">The name of the config to return or create.</param>
 		/// <returns>Returns the instance.</returns>
 		/// <remarks>This method is thread safe.</remarks>
-		internal static EndpointHostConfig GetNamedConfig(string name)
+		internal static EndpointHostConfig Create()
 		{
-			EndpointHostConfig config;
-			if (_namedConfigs.TryGetValue(name, out config))
-			{
-				return config;
-			}
+			EndpointHostConfig config = CreateDefaultConfig();
+			return config;
+		}
 
-			lock (_syncRoot) 
+		internal static EndpointHostConfig CreateSingleton(IAppHost appHost)
+		{
+			if (_singleton != null) return _singleton;
+			//the following code uses appHost, it would be better to pass it in, but this is how it works for now, by 
+			//accessing the static singleton
+
+			lock (_syncRoot)
 			{
-				if (_namedConfigs.TryGetValue(name, out config)) //double checked locking works in .Net unlike Java
+				if (_singleton != null) return _singleton;
+				//in order for the default config to be created, we need to know
+				//our app host
+				var config = new EndpointHostConfig();
+
+				if (config.ServiceStackHandlerFactoryPath == null)
 				{
-					return config;
+					InferHttpHandlerPath(config);
 				}
-
-				config = CreateDefaultConfig();
-				//Question: do we use InferHttpHandlerPath here? or some analagous setup here? 
-
-				var namedConfigs = new Dictionary<string, EndpointHostConfig>(_namedConfigs);
-				namedConfigs.Add(name, config);
-				_namedConfigs = namedConfigs;
+				_singleton = config;
 				return config;
 			}
 		}
 
-		internal static void RemoveNamedConfig(string name)
-		{
-			if (string.IsNullOrEmpty(name)) return;
+		private static EndpointHostConfig _singleton;
 
-			lock(_syncRoot)
-			{
-				var namedConfigs = new Dictionary<string, EndpointHostConfig>(_namedConfigs);
-				namedConfigs.Remove(name);
-				_namedConfigs = namedConfigs;
-			}
-		}
-
-		private static EndpointHostConfig _instance;
 		/// <summary>
-		/// Gets the default instance of the config.
+		/// Gets the default singleton instance of the config.
 		/// </summary>
 		/// <remarks>This method is thread safe.</remarks>
 		public static EndpointHostConfig Instance
 		{
 			get
 			{
-				if (_instance != null) return _instance;
-
-				lock (_syncRoot)
-				{
-					if (_instance != null) return _instance;
-				
-					var instance = CreateDefaultConfig();
-
-					if (instance.ServiceStackHandlerFactoryPath == null)
-					{
-						InferHttpHandlerPath(instance);
-					}
-					_instance = instance;
-				}
-				return _instance;
+				return EndpointHost.Instance.Config;
 			}
 		}
 
@@ -120,9 +97,20 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public EndpointHostConfig()
 		{
-			EndpointHostConfig instance = _instance;
 			//copy the default singleton already partially configured
-			ExtractExistingValues(instance);
+			var singleton = _singleton;
+			if (singleton != null)
+			{
+				ExtractExistingValues(singleton);
+			}
+			else
+			{
+				ExtractExistingValues(CreateDefaultConfig());
+			}
+		}
+
+		private EndpointHostConfig(bool lame)
+		{
 		}
 
 		private void ExtractExistingValues(EndpointHostConfig existing)
@@ -163,7 +151,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 		private static EndpointHostConfig CreateDefaultConfig()
 		{
-			return new EndpointHostConfig
+			return new EndpointHostConfig(false)
 			{
                 MetadataTypesConfig = new MetadataTypesConfig(
                     addDefaultXmlNamespace: "http://schemas.servicestack.net/types"),
@@ -303,16 +291,28 @@ namespace ServiceStack.WebHost.Endpoints
 
 	    private static System.Configuration.Configuration GetAppConfig()
         {
-            Assembly entryAssembly;
-            
-            //Read the user-defined path in the Web.Config
-            if (EndpointHost.AppHost is AppHostBase)
-                return WebConfigurationManager.OpenWebConfiguration("~/");
-            
-            if ((entryAssembly = Assembly.GetEntryAssembly()) != null)
-                return ConfigurationManager.OpenExeConfiguration(entryAssembly.Location);
-            
-            return null;
+			try
+			{
+				//Read the user-defined path in the Web.Config
+				if (EndpointHost.AppHost is AppHostBase)
+					return WebConfigurationManager.OpenWebConfiguration("~/");
+			}
+			catch(Exception exc)
+			{
+				_log.Error("Can't load Web.config, trying other locations.", exc);
+				return WebConfigurationManager.OpenWebConfiguration(Environment.CurrentDirectory);
+			}
+
+			string lookInLocation = null;
+			Assembly lookInAssembly = Assembly.GetEntryAssembly();
+			if (lookInAssembly != null) lookInLocation = lookInAssembly.Location;
+
+			if (string.IsNullOrEmpty(lookInLocation))
+			{
+				lookInLocation = Assembly.GetExecutingAssembly().Location;
+			}
+
+			return ConfigurationManager.OpenExeConfiguration(lookInLocation);
         }
 
 		private static void InferHttpHandlerPath(EndpointHostConfig instance)
@@ -337,6 +337,7 @@ namespace ServiceStack.WebHost.Endpoints
 			catch (Exception exc)
 			{
 				_log.Error("Bad Config", exc);
+				throw;
 			}
 			
 			if (!SkipPathValidation && instance.MetadataRedirectPath == null)

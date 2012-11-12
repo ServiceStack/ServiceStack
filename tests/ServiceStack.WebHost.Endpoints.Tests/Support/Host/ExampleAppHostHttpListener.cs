@@ -427,18 +427,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		public override void Configure(Container container)
 		{
 			EndpointHostConfig.Instance.GlobalResponseHeaders.Clear();
+			var config = EndpointHostConfig.Instance;
 
 			//Signal advanced web browsers what HTTP Methods you accept
-			base.SetConfig(new EndpointHostConfig {
-				GlobalResponseHeaders =
-				{
-					{ "Access-Control-Allow-Origin", "*" },
-					{ "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS" },
-				},
-				WsdlServiceNamespace = "http://www.servicestack.net/types",
-				LogFactory = new ConsoleLogFactory(),
-				DebugMode = true,
-			});
+			config.GlobalResponseHeaders.Add( "Access-Control-Allow-Origin", "*" );
+			config.GlobalResponseHeaders.Add( "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS" );
+			config.WsdlServiceNamespace = "http://www.servicestack.net/types";
+			config.LogFactory = new ConsoleLogFactory();
+			config.DebugMode = true;
 
 			this.RegisterRequestBinder<CustomRequestBinder>(
 				httpReq => new CustomRequestBinder { IsFromBinder = true });
@@ -500,17 +496,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
             EndpointHostConfig.Instance.GlobalResponseHeaders.Clear();
 
             //Signal advanced web browsers what HTTP Methods you accept
-            base.SetConfig(new EndpointHostConfig
-            {
-                GlobalResponseHeaders =
-				{
-					{ "Access-Control-Allow-Origin", "*" },
-					{ "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS" },
-				},
-                WsdlServiceNamespace = "http://www.servicestack.net/types",
-                LogFactory = new ConsoleLogFactory(),
-                DebugMode = true,
-            });
+			EndpointHostConfig config = EndpointHostConfig.Instance;
+            config.GlobalResponseHeaders.Add(  "Access-Control-Allow-Origin", "*" );
+			config.GlobalResponseHeaders.Add( "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS" );
+			config.WsdlServiceNamespace = "http://www.servicestack.net/types";
+            config.LogFactory = new ConsoleLogFactory();
+            config.DebugMode = true;
+            
 
             this.RegisterRequestBinder<CustomRequestBinder>(
                 httpReq => new CustomRequestBinder { IsFromBinder = true });

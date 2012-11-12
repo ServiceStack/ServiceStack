@@ -19,14 +19,14 @@ namespace ServiceStack.WebHost.Endpoints
 	{
 		protected AppHostHttpListenerBase() {}
 
-		protected AppHostHttpListenerBase(string serviceName, bool runAsNamedInstance, params Assembly[] assembliesWithServices)
+		protected AppHostHttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
 			: base(serviceName, assembliesWithServices)
 		{
 			OurEndpointHost.Config.ServiceStackHandlerFactoryPath = null;
 			OurEndpointHost.Config.MetadataRedirectPath = "metadata";
 		}
 
-		protected AppHostHttpListenerBase(string serviceName, string handlerPath, bool runAsNamedInstance, params Assembly[] assembliesWithServices)
+		protected AppHostHttpListenerBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
 			: base(serviceName, assembliesWithServices)
 		{
 			OurEndpointHost.Config.ServiceStackHandlerFactoryPath = string.IsNullOrEmpty(handlerPath)
@@ -36,37 +36,38 @@ namespace ServiceStack.WebHost.Endpoints
 				: PathUtils.CombinePaths(handlerPath, "metadata");
 		}
 
-		protected AppHostHttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
-			: this(serviceName, false, assembliesWithServices) { }
-
-		protected AppHostHttpListenerBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
-			: this(serviceName, handlerPath, false, assembliesWithServices) { }
-
 		protected override void ProcessRequest(HttpListenerContext context)
 		{
 			if (string.IsNullOrEmpty(context.Request.RawUrl)) return;
-
-			var operationName = context.Request.GetOperationName();
-
-			var httpReq = new HttpListenerRequestWrapper(operationName, context.Request);
-			var httpRes = new HttpListenerResponseWrapper(context.Response);
-			var handler = ServiceStackHttpHandlerFactory.GetHandler(httpReq);
-
-			var serviceStackHandler = handler as IServiceStackHttpHandler;
-			if (serviceStackHandler != null)
+			using (EndpointHost.SetThreadSpecificHost(OurEndpointHost))
 			{
-				var restHandler = serviceStackHandler as RestHandler;
-				if (restHandler != null)
+				using (ServiceStackHttpHandlerFactory.SetThreadSpecificHost(OurEndpointHost))
 				{
-					httpReq.OperationName = operationName = restHandler.RestPath.RequestType.Name;
+					var operationName = context.Request.GetOperationName();
+
+					var httpReq = new HttpListenerRequestWrapper(operationName, context.Request);
+					var httpRes = new HttpListenerResponseWrapper(context.Response);
+					//set thread specific app host
+
+					var handler = ServiceStackHttpHandlerFactory.GetHandler(httpReq);
+
+					var serviceStackHandler = handler as IServiceStackHttpHandler;
+					if (serviceStackHandler != null)
+					{
+						var restHandler = serviceStackHandler as RestHandler;
+						if (restHandler != null)
+						{
+							httpReq.OperationName = operationName = restHandler.RestPath.RequestType.Name;
+						}
+
+						serviceStackHandler.ProcessRequest(httpReq, httpRes, operationName);
+
+						httpRes.Close();
+						return;
+					}
+					throw new NotImplementedException("Cannot execute handler: " + handler + " at PathInfo: " + httpReq.PathInfo);
 				}
-				serviceStackHandler.ProcessRequest(httpReq, httpRes, operationName);
-				httpRes.Close();
-				return;
 			}
-
-			throw new NotImplementedException("Cannot execute handler: " + handler + " at PathInfo: " + httpReq.PathInfo);
 		}
-
 	}
 }

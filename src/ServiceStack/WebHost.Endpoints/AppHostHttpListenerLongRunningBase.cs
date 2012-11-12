@@ -89,15 +89,13 @@ namespace ServiceStack.WebHost.Endpoints
         private bool _isDisposed = false;
         protected override void Dispose(bool disposing)
         {
-            if (!_isDisposed)
-            {
-                if (disposing)
-                {
-                    //Investigate: Causes cyclical StackOverflow Exception by re-calling HttpListenerBase.Dispose()
-                    //base.Dispose(); 
-
-                    _threadPoolManager.Dispose();
-                }
+			//if (!_isDisposed)
+			{
+				if (disposing)
+				{
+					base.Dispose(disposing);
+					_threadPoolManager.Dispose();
+				}
 
                 // new shared cleanup logic
                 _isDisposed = true;
@@ -114,7 +112,7 @@ namespace ServiceStack.WebHost.Endpoints
         /// <param name="urlBase">
         /// A Uri that acts as the base that the server is listening on.
         /// Format should be: http://127.0.0.1:8080/ or http://127.0.0.1:8080/somevirtual/
-        /// Note: the trailing slash is required! For more info see the
+        /// Note: the trailing backslash is required! For more info see the
         /// HttpListener.Prefixes property on MSDN.
         /// </param>
         public override void Start(string urlBase)
