@@ -257,8 +257,8 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
-        private EndpointHostConfig _config;
-        public EndpointHostConfig Config
+		private  EndpointHostConfig _config;
+		public  EndpointHostConfig Config
 		{
 			get
 			{
