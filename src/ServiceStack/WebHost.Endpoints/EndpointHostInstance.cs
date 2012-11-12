@@ -78,7 +78,7 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			AppHost = appHost;
 
-			var config = _runAsNamedInstance ? EndpointHostConfig.GetNamedConfig(serviceName) : EndpointHostConfig.Instance;
+			var config = EndpointHostConfig.Instance;
 
 			config.ServiceName = serviceName;
 			config.ServiceManager = serviceManager;
@@ -257,8 +257,8 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
-		private EndpointHostConfig _config;
-		public  EndpointHostConfig Config
+        private EndpointHostConfig _config;
+        public EndpointHostConfig Config
 		{
 			get
 			{

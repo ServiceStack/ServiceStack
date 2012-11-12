@@ -26,6 +26,8 @@ namespace ServiceStack.ServiceHost
 					+ "To register your services, please provide the assemblies where your web services are defined.");
 
 			this.Container = new Container();
+			//			this.ServiceController = new ServiceController(
+			//				() => assembliesWithServices.ToList().SelectMany(x => x.GetTypes()));
 			this.ServiceController = new ServiceController(() => GetAssemblyTypes(assembliesWithServices));
 		}
 
