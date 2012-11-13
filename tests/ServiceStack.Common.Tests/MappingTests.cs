@@ -26,12 +26,19 @@ namespace ServiceStack.Common.Tests
 		public string Car { get; set; }
 	}
 
-    public enum Color
-    {
-        Red,
-        Green,
-        Blue
-    }
+	public enum Color
+	{
+		Red,
+		Green,
+		Blue
+	}
+
+	public enum OtherColor
+	{
+		Red,
+		Green,
+		Blue
+	}
 
 
 	public class IntNullableIDObj
@@ -44,32 +51,47 @@ namespace ServiceStack.Common.Tests
 		public int Id { get; set; }
 	}
 
-    public class NullableConversion
-    {
-        public decimal Amount { get; set; }
-    }
+	public class NullableConversion
+	{
+		public decimal Amount { get; set; }
+	}
 
-    public class NullableConversionDto
-    {
-        public decimal? Amount { get; set; }
-    }
+	public class NullableConversionDto
+	{
+		public decimal? Amount { get; set; }
+	}
 
-    public class EnumConversion
-    {
-        public Color Color { get; set; }
-    }
+	public class NullableEnumConversion
+	{
+		public Color Color { get; set; }
+	}
 
-    public class EnumConversionStringDto
-    {
-        public string Color { get; set; }
-    }
+	public class EnumConversion
+	{
+		public Color Color { get; set; }
+	}
 
-    public class EnumConversionIntDto
-    {
-        public int Color { get; set; }
-    }
+	public class NullableEnumConversionDto
+	{
+		public OtherColor? Color { get; set; }
+	}
 
-    [TestFixture]
+	public class EnumConversionDto
+	{
+		public OtherColor Color { get; set; }
+	}
+
+	public class EnumConversionStringDto
+	{
+		public string Color { get; set; }
+	}
+
+	public class EnumConversionIntDto
+	{
+		public int Color { get; set; }
+	}
+
+	[TestFixture]
 	public class MappingTests
 	{
 		[Test]
@@ -106,32 +128,52 @@ namespace ServiceStack.Common.Tests
 			Assert.That(userDto.Car, Is.EqualTo("{Name:BMW X6,Age:3}"));
 		}
 
-        [Test]
-        public void Does_enumstringconversion_translate()
-        {
-            var conversion = new EnumConversion { Color = Color.Blue };
-            var conversionDto = conversion.TranslateTo<EnumConversionStringDto>();
+		[Test]
+		public void Does_enumstringconversion_translate()
+		{
+			var conversion = new EnumConversion { Color = Color.Blue };
+			var conversionDto = conversion.TranslateTo<EnumConversionStringDto>();
 
-            Assert.That(conversionDto.Color, Is.EqualTo("Blue"));
-        }
+			Assert.That(conversionDto.Color, Is.EqualTo("Blue"));
+		}
 
-        [Test]
-        public void Does_enumintconversion_translate()
-        {
-            var conversion = new EnumConversion { Color = Color.Green };
-            var conversionDto = conversion.TranslateTo<EnumConversionIntDto>();
+		[Test]
+		public void Does_enumintconversion_translate()
+		{
+			var conversion = new EnumConversion { Color = Color.Green };
+			var conversionDto = conversion.TranslateTo<EnumConversionIntDto>();
 
-            Assert.That(conversionDto.Color, Is.EqualTo(1));
-        }
+			Assert.That(conversionDto.Color, Is.EqualTo(1));
+		}
 
-        [Test]
-        public void Does_nullableconversion_translate()
-        {
-            var conversion = new NullableConversion { Amount = 123.45m };
-            var conversionDto = conversion.TranslateTo<NullableConversionDto>();
+		[Test]
+		public void Does_nullableconversion_translate()
+		{
+			var conversion = new NullableConversion { Amount = 123.45m };
+			var conversionDto = conversion.TranslateTo<NullableConversionDto>();
 
-            Assert.That(conversionDto.Amount, Is.EqualTo(123.45m));
-        }
+			Assert.That(conversionDto.Amount, Is.EqualTo(123.45m));
+		}
+
+		[Test]
+		public void Does_Enumnullableconversion_translate()
+		{
+			var conversion = new NullableEnumConversion { Color = Color.Green };
+			var conversionDto = conversion.TranslateTo<NullableEnumConversionDto>();
+
+			Assert.That(conversionDto.Color, Is.EqualTo(OtherColor.Green));
+
+		}
+
+		[Test]
+		public void Does_Enumconversion_translate()
+		{
+			var conversion = new NullableEnumConversion { Color = Color.Green };
+			var conversionDto = conversion.TranslateTo<EnumConversionDto>();
+
+			Assert.That(conversionDto.Color, Is.EqualTo(OtherColor.Green));
+
+		}
 
 		[Test]
 		public void Does_translate_nullableInt_to_and_from()
