@@ -151,15 +151,16 @@ namespace ServiceStack.ServiceInterface.Auth
                 return oAuthConfig.Logout(this, request);
 
             var session = this.GetSession();
-            var referrerUrl = request.Continue
-                ?? session.ReferrerUrl
-                ?? this.RequestContext.GetHeader("Referer")
-                ?? oAuthConfig.CallbackUrl;
 
             var isHtml = base.RequestContext.ResponseContentType.MatchesContentType(ContentType.Html);
             try
             {
                 var response = Authenticate(request, provider, session, oAuthConfig);
+
+                var referrerUrl = request.Continue
+                    ?? session.ReferrerUrl
+                    ?? this.RequestContext.GetHeader("Referer")
+                    ?? oAuthConfig.CallbackUrl;
 
                 var alreadyAuthenticated = response == null;
                 response = response ?? new AuthResponse {
@@ -185,11 +186,11 @@ namespace ServiceStack.ServiceInterface.Auth
             }
             catch (HttpError ex)
             {
-                referrerUrl = this.RequestContext.GetHeader("Referer");
-                if (isHtml && referrerUrl != null)
+                var errorReferrerUrl = this.RequestContext.GetHeader("Referer");
+                if (isHtml && errorReferrerUrl != null)
                 {
-                    referrerUrl = referrerUrl.SetQueryParam("error", ex.Message);
-                    return HttpResult.Redirect(referrerUrl);
+                    errorReferrerUrl = errorReferrerUrl.SetQueryParam("error", ex.Message);
+                    return HttpResult.Redirect(errorReferrerUrl);
                 }
 
                 throw;
