@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using ServiceStack.CacheAccess;
+using ServiceStack.Common.Web;
 using ServiceStack.Html;
 using ServiceStack.Messaging;
 using ServiceStack.OrmLite;
@@ -10,6 +11,7 @@ using ServiceStack.Redis;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
+using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Razor
@@ -41,6 +43,13 @@ namespace ServiceStack.Razor
         public IHttpRequest Request { get; set; }
 
         public IHttpResponse Response { get; set; }
+
+        public object ModelError { get; set; } 
+
+        public ResponseStatus ResponseStatus
+        {
+            get { return ModelError.ToResponseStatus(); }
+        }
 
         private ICacheClient cache;
         public ICacheClient Cache
