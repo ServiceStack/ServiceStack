@@ -347,9 +347,9 @@ namespace RazorRockstars.Console.Files
 
         [Explicit("Concurrent Run")]
         [Test]
-        public void ConcurrentFor10Mins()
+        public void Concurrent_GetReqstar_JSON()
         {
-            const int NoOfThreads = 10;
+            const int NoOfThreads = 100;
 
             var client = new JsonServiceClient(BaseUri);
 
@@ -373,6 +373,40 @@ namespace RazorRockstars.Console.Files
 
             while (completed < NoOfThreads)
                 Thread.Sleep(100);
+
+            if (lastEx != null)
+                throw lastEx;
+        }
+
+
+        [Explicit("Concurrent Run")]
+        [Test]
+        public void Concurrent_GetReqstar_Razor()
+        {
+            const int NoOfThreads = 100;
+
+            int completed = 0;
+            Exception lastEx = null;
+            string lastText = null;
+            NoOfThreads.TimesAsync(i => {
+                try
+                {
+                    lastText = "{0}/reqstars/1".Fmt(Host).GetStringFromUrl();
+                }
+                catch (Exception ex)
+                {
+                    lastEx = ex;
+                }
+                finally
+                {
+                    Interlocked.Increment(ref completed);
+                }
+            });
+
+            while (completed < NoOfThreads)
+                Thread.Sleep(100);
+
+            lastText.Print();
 
             if (lastEx != null)
                 throw lastEx;
