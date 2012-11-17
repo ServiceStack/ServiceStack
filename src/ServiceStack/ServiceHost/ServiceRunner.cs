@@ -97,7 +97,7 @@ namespace ServiceStack.ServiceHost
                 BeforeEachRequest(requestContext, request);
 
                 var appHost = GetAppHost();
-                var container = appHost.Config.ServiceManager.Container;
+                var container = appHost != null ? appHost.Config.ServiceManager.Container : null;
                 var httpReq = requestContext != null ? requestContext.Get<IHttpRequest>() : null;
                 var httpRes = requestContext != null ? requestContext.Get<IHttpResponse>() : null;
 
@@ -106,9 +106,11 @@ namespace ServiceStack.ServiceHost
                     foreach (var requestFilter in RequestFilters)
                     {
                         var attrInstance = requestFilter.Copy();
-                        container.AutoWire(attrInstance);
+                        if (container != null)
+                            container.AutoWire(attrInstance);
                         attrInstance.RequestFilter(httpReq, httpRes, request);
-                        appHost.Release(attrInstance);
+                        if (appHost != null)
+                            appHost.Release(attrInstance);
                         if (httpRes != null && httpRes.IsClosed) return null;
                     }
                 }
@@ -120,9 +122,11 @@ namespace ServiceStack.ServiceHost
                     foreach (var responseFilter in ResponseFilters)
                     {
                         var attrInstance = responseFilter.Copy();
-                        container.AutoWire(attrInstance);
+                        if (container != null)
+                            container.AutoWire(attrInstance);
                         attrInstance.ResponseFilter(httpReq, httpRes, response);
-                        appHost.Release(attrInstance);
+                        if (appHost != null)
+                            appHost.Release(attrInstance);
                         if (httpRes != null && httpRes.IsClosed) return null;
                     }
                 }
