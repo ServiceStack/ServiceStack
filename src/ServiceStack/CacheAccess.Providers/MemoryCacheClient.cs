@@ -20,13 +20,19 @@ namespace ServiceStack.CacheAccess.Providers
 		{
 			private object cacheValue;
 
+			/// <summary>
+			/// Create new instance of CacheEntry.
+			/// </summary>
+			/// <param name="value">The value being cached.</param>
+			/// <param name="expiresAt">The UTC time at which CacheEntry expires.</param>
 			public CacheEntry(object value, DateTime expiresAt)
 			{
 				Value = value;
 				ExpiresAt = expiresAt;
-				LastModifiedTicks = DateTime.Now.Ticks;
+				LastModifiedTicks = DateTime.UtcNow.Ticks;
 			}
 
+			/// <summary>UTC time at which CacheEntry expires.</summary>
 			internal DateTime ExpiresAt { get; set; }
 			
 			internal object Value
@@ -35,7 +41,7 @@ namespace ServiceStack.CacheAccess.Providers
 				set
 				{
 					cacheValue = value;
-					LastModifiedTicks = DateTime.Now.Ticks;
+					LastModifiedTicks = DateTime.UtcNow.Ticks;
 				}
 			}
 
@@ -48,6 +54,12 @@ namespace ServiceStack.CacheAccess.Providers
 			this.counters = new ConcurrentDictionary<string, int>();
 		}
 
+		/// <summary>
+		/// Add value with specified key to the cache, and set the cache entry to never expire.
+		/// </summary>
+		/// <param name="key">Key associated with value.</param>
+		/// <param name="value">Value being cached.</param>
+		/// <returns></returns>
 		private bool CacheAdd(string key, object value)
 		{
 			return CacheAdd(key, value, DateTime.MaxValue);
@@ -68,7 +80,7 @@ namespace ServiceStack.CacheAccess.Providers
 		/// </summary>
 		/// <param name="key">The key.</param>
 		/// <param name="value">The value.</param>
-		/// <param name="expiresAt">The expires at.</param>
+		/// <param name="expiresAt">The UTC DateTime at which the cache entry expires.</param>
 		/// <returns></returns>
 		private bool CacheAdd(string key, object value, DateTime expiresAt)
 		{
@@ -81,11 +93,24 @@ namespace ServiceStack.CacheAccess.Providers
 			return true;
 		}
 
+		/// <summary>
+		/// Adds or replaces the value with key, and sets the cache entry to never expire.
+		/// </summary>
+		/// <param name="key">The key.</param>
+		/// <param name="value">The value.</param>
+		/// <returns></returns>
 		private bool CacheSet(string key, object value)
 		{
 			return CacheSet(key, value, DateTime.MaxValue);
 		}
 
+		/// <summary>
+		/// Adds or replaces the value with key.
+		/// </summary>
+		/// <param name="key">The key.</param>
+		/// <param name="value">The value.</param>
+		/// <param name="expiresAt">The UTC DateTime at which the cache entry expires.</param>
+		/// <returns></returns>
 		private bool CacheSet(string key, object value, DateTime expiresAt)
 		{
 			return CacheSet(key, value, expiresAt, null);
@@ -96,7 +121,7 @@ namespace ServiceStack.CacheAccess.Providers
 		/// </summary>
 		/// <param name="key">The key.</param>
 		/// <param name="value">The value.</param>
-		/// <param name="expiresAt">The expires at.</param>
+		/// <param name="expiresAt">The UTC DateTime at which the cache entry expires.</param>
 		/// <param name="checkLastModified">The check last modified.</param>
 		/// <returns>True; if it succeeded</returns>
 		private bool CacheSet(string key, object value, DateTime expiresAt, long? checkLastModified)
@@ -118,11 +143,24 @@ namespace ServiceStack.CacheAccess.Providers
 			return true;
 		}
 
+		/// <summary>
+		/// Replace the value with specified key if it exists, and set the cache entry to never expire.
+		/// </summary>
+		/// <param name="key">The key of the cache entry.</param>
+		/// <param name="value">The value to be cached.</param>
+		/// <returns></returns>
 		private bool CacheReplace(string key, object value)
 		{
 			return CacheReplace(key, value, DateTime.MaxValue);
 		}
 
+		/// <summary>
+		/// Replace the value with specified key if it exists.
+		/// </summary>
+		/// <param name="key">The key of the cache entry.</param>
+		/// <param name="value">The value to be cached.</param>
+		/// <param name="expiresAt">The UTC DateTime at which the cache entry expires.</param>
+		/// <returns></returns>
 		private bool CacheReplace(string key, object value, DateTime expiresAt)
 		{
 			return !CacheSet(key, value, expiresAt);
@@ -170,7 +208,7 @@ namespace ServiceStack.CacheAccess.Providers
 			CacheEntry cacheEntry;
 			if (this.memory.TryGetValue(key, out cacheEntry))
 			{
-				if (cacheEntry.ExpiresAt < DateTime.Now)
+				if (cacheEntry.ExpiresAt < DateTime.UtcNow)
 				{
 					this.memory.TryRemove(key, out cacheEntry);
 					return null;
@@ -208,49 +246,115 @@ namespace ServiceStack.CacheAccess.Providers
 			return UpdateCounter(key, -1);
 		}
 
+		/// <summary>
+		/// Add the value with key to the cache, set to never expire.
+		/// </summary>
+		/// <param name="key">The key of the cache entry.</param>
+		/// <param name="value">The value being cached.</param>
+		/// <returns>True if Add succeeds, otherwise false.</returns>
 		public bool Add<T>(string key, T value)
 		{
 			return CacheAdd(key, value);
 		}
 
+		/// <summary>
+		/// Add or replace the value with key to the cache, set to never expire.
+		/// </summary>
+		/// <param name="key">The key of the cache entry.</param>
+		/// <param name="value">The value being cached.</param>
+		/// <returns>True if Set succeeds, otherwise false.</returns>
 		public bool Set<T>(string key, T value)
 		{
 			return CacheSet(key, value);
 		}
 
+		/// <summary>
+		/// Replace the value with key in the cache, set to never expire.
+		/// </summary>
+		/// <param name="key">The key of the cache entry.</param>
+		/// <param name="value">The value being cached.</param>
+		/// <returns>True if Replace succeeds, otherwise false.</returns>
 		public bool Replace<T>(string key, T value)
 		{
 			return CacheReplace(key, value);
 		}
 
+		/// <summary>
+		/// Add the value with key to the cache, set to expire at specified Local DateTime.
+		/// </summary>
+		/// <remarks>The version of Add that takes a TimeSpan expiration is faster, and not affected
+		/// by ambiguous local time during daylight savings/standard time transition.</remarks>
+		/// <param name="key">The key of the cache entry.</param>
+		/// <param name="value">The value being cached.</param>
+		/// <param name="expiresAt">The local DateTime at which the cache entry expires.</param>
+		/// <returns>True if Add succeeds, otherwise false.</returns>
 		public bool Add<T>(string key, T value, DateTime expiresAt)
 		{
-			return CacheAdd(key, value, expiresAt);
+			return CacheAdd(key, value, expiresAt.ToUniversalTime());
 		}
 
+		/// <summary>
+		/// Add or replace the value with key to the cache, set to expire at specified Local DateTime.
+		/// </summary>
+		/// <remarks>The version of Add that takes a TimeSpan expiration is faster, and not affected
+		/// by ambiguous local time during daylight savings/standard time transition.</remarks>
+		/// <param name="key">The key of the cache entry.</param>
+		/// <param name="value">The value being cached.</param>
+		/// <param name="expiresAt">The local DateTime at which the cache entry expires.</param>
+		/// <returns>True if Set succeeds, otherwise false.</returns>
 		public bool Set<T>(string key, T value, DateTime expiresAt)
 		{
-			return CacheSet(key, value, expiresAt);
+			return CacheSet(key, value, expiresAt.ToUniversalTime());
 		}
 
+		/// <summary>
+		/// Replace the value with key in the cache, set to expire at specified Local DateTime.
+		/// </summary>
+		/// <remarks>The version of Add that takes a TimeSpan expiration is faster, and not affected
+		/// by ambiguous local time during daylight savings/standard time transition.</remarks>
+		/// <param name="key">The key of the cache entry.</param>
+		/// <param name="value">The value being cached.</param>
+		/// <param name="expiresAt">The local DateTime at which the cache entry expires.</param>
+		/// <returns>True if Replace succeeds, otherwise false.</returns>
 		public bool Replace<T>(string key, T value, DateTime expiresAt)
 		{
-			return CacheReplace(key, value, expiresAt);
+			return CacheReplace(key, value, expiresAt.ToUniversalTime());
 		}
 
+		/// <summary>
+		/// Add the value with key to the cache, set to expire after specified TimeSpan.
+		/// </summary>
+		/// <param name="key">The key of the cache entry.</param>
+		/// <param name="value">The value being cached.</param>
+		/// <param name="expiresIn">The TimeSpan at which the cache entry expires.</param>
+		/// <returns>True if Add succeeds, otherwise false.</returns>
 		public bool Add<T>(string key, T value, TimeSpan expiresIn)
 		{
-			return CacheAdd(key, value, DateTime.Now.Add(expiresIn));
+			return CacheAdd(key, value, DateTime.UtcNow.Add(expiresIn));
 		}
 
+		/// <summary>
+		/// Add or replace the value with key to the cache, set to expire after specified TimeSpan.
+		/// </summary>
+		/// <param name="key">The key of the cache entry.</param>
+		/// <param name="value">The value being cached.</param>
+		/// <param name="expiresIn">The TimeSpan at which the cache entry expires.</param>
+		/// <returns>True if Set succeeds, otherwise false.</returns>
 		public bool Set<T>(string key, T value, TimeSpan expiresIn)
 		{
-			return CacheSet(key, value, DateTime.Now.Add(expiresIn));
+			return CacheSet(key, value, DateTime.UtcNow.Add(expiresIn));
 		}
 
+		/// <summary>
+		/// Replace the value with key in the cache, set to expire after specified TimeSpan.
+		/// </summary>
+		/// <param name="key">The key of the cache entry.</param>
+		/// <param name="value">The value being cached.</param>
+		/// <param name="expiresIn">The TimeSpan at which the cache entry expires.</param>
+		/// <returns>True if Replace succeeds, otherwise false.</returns>
 		public bool Replace<T>(string key, T value, TimeSpan expiresIn)
 		{
-			return CacheReplace(key, value, DateTime.Now.Add(expiresIn));
+			return CacheReplace(key, value, DateTime.UtcNow.Add(expiresIn));
 		}
 
 		public void FlushAll()
