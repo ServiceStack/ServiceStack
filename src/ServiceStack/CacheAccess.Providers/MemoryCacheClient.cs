@@ -280,45 +280,54 @@ namespace ServiceStack.CacheAccess.Providers
 		}
 
 		/// <summary>
-		/// Add the value with key to the cache, set to expire at specified Local DateTime.
+		/// Add the value with key to the cache, set to expire at specified DateTime.
 		/// </summary>
-		/// <remarks>The version of Add that takes a TimeSpan expiration is faster, and not affected
-		/// by ambiguous local time during daylight savings/standard time transition.</remarks>
+		/// <remarks>This method examines the DateTimeKind of expiresAt to determine if conversion to
+		/// universal time is needed. The version of Add that takes a TimeSpan expiration is faster 
+		/// than using this method with a DateTime of Kind other than Utc, and is not affected by 
+		/// ambiguous local time during daylight savings/standard time transition.</remarks>
 		/// <param name="key">The key of the cache entry.</param>
 		/// <param name="value">The value being cached.</param>
-		/// <param name="expiresAt">The local DateTime at which the cache entry expires.</param>
+		/// <param name="expiresAt">The DateTime at which the cache entry expires.</param>
 		/// <returns>True if Add succeeds, otherwise false.</returns>
 		public bool Add<T>(string key, T value, DateTime expiresAt)
 		{
-			return CacheAdd(key, value, expiresAt.ToUniversalTime());
+			if (expiresAt.Kind != DateTimeKind.Utc) expiresAt = expiresAt.ToUniversalTime();
+			return CacheAdd(key, value, expiresAt);
 		}
 
 		/// <summary>
-		/// Add or replace the value with key to the cache, set to expire at specified Local DateTime.
+		/// Add or replace the value with key to the cache, set to expire at specified DateTime.
 		/// </summary>
-		/// <remarks>The version of Add that takes a TimeSpan expiration is faster, and not affected
-		/// by ambiguous local time during daylight savings/standard time transition.</remarks>
+		/// <remarks>This method examines the DateTimeKind of expiresAt to determine if conversion to
+		/// universal time is needed. The version of Set that takes a TimeSpan expiration is faster 
+		/// than using this method with a DateTime of Kind other than Utc, and is not affected by 
+		/// ambiguous local time during daylight savings/standard time transition.</remarks>
 		/// <param name="key">The key of the cache entry.</param>
 		/// <param name="value">The value being cached.</param>
-		/// <param name="expiresAt">The local DateTime at which the cache entry expires.</param>
+		/// <param name="expiresAt">The DateTime at which the cache entry expires.</param>
 		/// <returns>True if Set succeeds, otherwise false.</returns>
 		public bool Set<T>(string key, T value, DateTime expiresAt)
 		{
-			return CacheSet(key, value, expiresAt.ToUniversalTime());
+			if (expiresAt.Kind != DateTimeKind.Utc) expiresAt = expiresAt.ToUniversalTime();
+			return CacheSet(key, value, expiresAt);
 		}
 
 		/// <summary>
-		/// Replace the value with key in the cache, set to expire at specified Local DateTime.
+		/// Replace the value with key in the cache, set to expire at specified DateTime.
 		/// </summary>
-		/// <remarks>The version of Add that takes a TimeSpan expiration is faster, and not affected
-		/// by ambiguous local time during daylight savings/standard time transition.</remarks>
+		/// <remarks>This method examines the DateTimeKind of expiresAt to determine if conversion to
+		/// universal time is needed. The version of Replace that takes a TimeSpan expiration is faster 
+		/// than using this method with a DateTime of Kind other than Utc, and is not affected by 
+		/// ambiguous local time during daylight savings/standard time transition.</remarks>
 		/// <param name="key">The key of the cache entry.</param>
 		/// <param name="value">The value being cached.</param>
-		/// <param name="expiresAt">The local DateTime at which the cache entry expires.</param>
+		/// <param name="expiresAt">The DateTime at which the cache entry expires.</param>
 		/// <returns>True if Replace succeeds, otherwise false.</returns>
 		public bool Replace<T>(string key, T value, DateTime expiresAt)
 		{
-			return CacheReplace(key, value, expiresAt.ToUniversalTime());
+			if (expiresAt.Kind != DateTimeKind.Utc) expiresAt = expiresAt.ToUniversalTime();
+			return CacheReplace(key, value, expiresAt);
 		}
 
 		/// <summary>
