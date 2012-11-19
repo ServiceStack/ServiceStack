@@ -410,6 +410,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [driis](https://github.com/driis) (Dennis Riis)
  - [gshackles](https://github.com/gshackles) (Greg Shackles)
  - [jsonmez](https://github.com/jsonmez) (John Sonmez)
+ - [dchurchland](https://github.com/dchurchland) (David Churchland)
  
 ***
 
