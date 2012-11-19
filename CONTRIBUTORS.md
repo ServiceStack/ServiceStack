@@ -117,3 +117,5 @@
  - [jgeurts](https://github.com/jgeurts) (Jim Geurts)
  - [driis](https://github.com/driis) (Dennis Riis)
  - [gshackles](https://github.com/gshackles) (Greg Shackles)
+ - [jsonmez](https://github.com/jsonmez) (John Sonmez)
+ 
