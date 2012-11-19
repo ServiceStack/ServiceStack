@@ -125,3 +125,4 @@
  - [jjavery](https://github.com/jjavery) (James Javery)
  - [suremaker](https://github.com/suremaker) (Wojtek)
  - [cheesebaron](https://github.com/cheesebaron) (Tomasz Cielecki)
+ - [mikkelfish](https://github.com/mikkelfish) (Mikkel Fishman)
