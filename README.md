@@ -408,6 +408,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [babcca](https://github.com/babcca) (Petr Babicka)
  - [jgeurts](https://github.com/jgeurts) (Jim Geurts)
  - [driis](https://github.com/driis) (Dennis Riis)
+ - [gshackles](https://github.com/gshackles) (Greg Shackles)
  
 ***
 
