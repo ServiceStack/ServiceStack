@@ -411,7 +411,8 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [gshackles](https://github.com/gshackles) (Greg Shackles)
  - [jsonmez](https://github.com/jsonmez) (John Sonmez)
  - [dchurchland](https://github.com/dchurchland) (David Churchland)
- 
+ - [softwx](https://github.com/softwx) (Steve Hatchett)
+
 ***
 
 Runs on both Mono and .NET 3.5. _(Live preview hosted on Mono / CentOS)_
