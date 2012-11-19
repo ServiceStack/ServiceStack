@@ -416,6 +416,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [andrewrissing](https://github.com/AndrewRissing) (Andrew Rissing)
  - [jjavery](https://github.com/jjavery) (James Javery)
  - [suremaker](https://github.com/suremaker) (Wojtek)
+ - [cheesebaron](https://github.com/cheesebaron) (Tomasz Cielecki)
 
 ***
 
