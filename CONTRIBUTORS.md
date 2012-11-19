@@ -120,3 +120,4 @@
  - [jsonmez](https://github.com/jsonmez) (John Sonmez)
  - [dchurchland](https://github.com/dchurchland) (David Churchland)
  - [softwx](https://github.com/softwx) (Steve Hatchett)
+ - [ggeurts](https://github.com/ggeurts) (Gerke Geurts)
