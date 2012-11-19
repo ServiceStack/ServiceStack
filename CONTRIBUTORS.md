@@ -122,3 +122,4 @@
  - [softwx](https://github.com/softwx) (Steve Hatchett)
  - [ggeurts](https://github.com/ggeurts) (Gerke Geurts)
  - [andrewrissing](https://github.com/AndrewRissing) (Andrew Rissing)
+ - [jjavery](https://github.com/jjavery) (James Javery)
