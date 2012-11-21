@@ -4,7 +4,7 @@ namespace ServiceStack.Service
 {
 	public interface IServiceClient : IServiceClientAsync, IOneWayClient
 #if !(SILVERLIGHT || MONOTOUCH)
-		, IReplyClient
+		, IReplyClient, IRestClient
 #endif
 	{
 	}
