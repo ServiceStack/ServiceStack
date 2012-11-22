@@ -30,6 +30,7 @@ namespace ServiceStack.ServiceClient.Web
 #else
         : IServiceClient
 #endif
+        , IDisposable
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(ServiceClientBase));
 

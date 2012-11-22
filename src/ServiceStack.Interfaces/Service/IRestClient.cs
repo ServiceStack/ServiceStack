@@ -3,7 +3,7 @@ using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Service
 {
-	public interface IRestClient 
+	public interface IRestClient : IMayRequireCredentials
 	{
 	    TResponse Get<TResponse>(IReturn<TResponse> request);
         void Get(IReturnVoid request);

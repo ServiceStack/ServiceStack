@@ -95,7 +95,7 @@ namespace ServiceStack.ServiceInterface.Testing
             return new DirectServiceClient(this, EndpointHost.ServiceManager);
         }
 
-        public class DirectServiceClient : IServiceClient, IRestClient
+        public class DirectServiceClient : IServiceClient, IRestClient, IRestClientAsync
         {
             private readonly TestBase parent;
             ServiceManager ServiceManager { get; set; }

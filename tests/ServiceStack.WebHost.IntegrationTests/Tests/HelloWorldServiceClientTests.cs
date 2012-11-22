@@ -66,7 +66,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		}
 
 		[Test, TestCaseSource("RestClients")]
-		public void Async_Call_HelloWorld_with_Async_ServiceClients_on_UserDefined_Routes(IServiceClient client)
+		public void Async_Call_HelloWorld_with_Async_ServiceClients_on_UserDefined_Routes(IRestClientAsync client)
 		{
 			HelloResponse response = null;
 			client.GetAsync<HelloResponse>("/hello/World!",

@@ -623,6 +623,7 @@
     <Compile Include="Service\IServiceClientAsync.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Service\IMayRequireCredentials.cs" />
     <Compile Include="Service\IStreamWriter.cs">
       <SubType>Code</SubType>
     </Compile>
