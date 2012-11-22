@@ -1,6 +1,6 @@
 namespace ServiceStack.Service
 {
-	public interface IOneWayClient
+	public interface IOneWayClient : IMayRequireCredentials
 	{
         void SendOneWay(object request);
         

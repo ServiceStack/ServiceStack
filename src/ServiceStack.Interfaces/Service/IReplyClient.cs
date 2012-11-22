@@ -3,7 +3,7 @@ using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Service
 {
-	public interface IReplyClient
+	public interface IReplyClient : IMayRequireCredentials
 	{
 		/// <summary>
 		/// Sends the specified request.
