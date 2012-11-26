@@ -239,7 +239,6 @@
     <Compile Include="ServiceHost\ServiceRoutes.cs" />
     <Compile Include="WebHost.Endpoints\AppHostBase.cs" />
     <Compile Include="WebHost.Endpoints\AppHostHttpListenerLongRunningBase.cs" />
-    <Compile Include="WebHost.Endpoints\EndpointHostInstance.cs" />
     <Compile Include="WebHost.Endpoints\Extensions\HttpResponseStreamExtensions.cs" />
     <Compile Include="WebHost.Endpoints\Formats\CsvFormat.cs" />
     <Compile Include="WebHost.Endpoints\Extensions\HttpListenerRequestWrapper.cs" />

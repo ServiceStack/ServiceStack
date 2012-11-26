@@ -10,7 +10,6 @@ using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints
 {
-
     public abstract class AppHostHttpListenerLongRunningBase : AppHostHttpListenerBase
     {
         private class ThreadPoolManager : IDisposable
@@ -85,28 +84,26 @@ namespace ServiceStack.WebHost.Endpoints
             : base(serviceName, handlerPath, assembliesWithServices) { _threadPoolManager = new ThreadPoolManager(poolSize); }
 
 
-        #region IDisposable Members
-        private bool _isDisposed = false;
+        private bool disposed = false;
         protected override void Dispose(bool disposing)
         {
-            if (!_isDisposed)
+            if (disposed) return;
+
+            lock (this)
             {
+                if (disposed) return;
+
                 if (disposing)
                 {
-                    //Investigate: Causes cyclical StackOverflow Exception by re-calling HttpListenerBase.Dispose()
-                    //base.Dispose(); 
-
                     _threadPoolManager.Dispose();
                 }
 
                 // new shared cleanup logic
-                _isDisposed = true;
+                disposed = true;
+
+                base.Dispose(disposing);
             }
-
-            base.Dispose(disposing);
         }
-
-        #endregion
 
         /// <summary>
         /// Starts the Web Service

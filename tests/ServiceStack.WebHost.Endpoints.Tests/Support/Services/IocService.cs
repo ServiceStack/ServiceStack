@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost;
+using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
@@ -64,7 +66,39 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         public ResponseStatus ResponseStatus { get; set; }
     }
 
-    public class IocService : IService<Ioc>, IDisposable, IRequiresRequestContext
+
+    [Route("/action-attr")]
+    public class ActionAttr : IReturn<IocResponse> {}
+
+    public class ActionLevelAttribute : RequestFilterAttribute
+    {
+        public IRequestContext RequestContext { get; set; }
+        public FunqDepProperty FunqDepProperty { get; set; }
+        public FunqDepDisposableProperty FunqDepDisposableProperty { get; set; }
+        public AltDepProperty AltDepProperty { get; set; }
+        public AltDepDisposableProperty AltDepDisposableProperty { get; set; }
+
+        public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+        {
+            var response = new IocResponse();
+
+            var deps = new object[] {
+				FunqDepProperty, FunqDepDisposableProperty, 
+				AltDepProperty, AltDepDisposableProperty
+			};
+
+            foreach (var dep in deps)
+            {
+                if (dep != null)
+                    response.Results.Add(dep.GetType().Name);
+            }
+
+            req.Items["action-attr"] = response;
+        }
+    }
+
+
+    public class IocService : IService, IDisposable, IRequiresRequestContext
     {
         private readonly FunqDepCtor funqDepCtor;
         private readonly AltDepCtor altDepCtor;
@@ -81,7 +115,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         public AltDepProperty AltDepProperty { get; set; }
         public AltDepDisposableProperty AltDepDisposableProperty { get; set; }
 
-        public object Execute(Ioc request)
+        public object Any(Ioc request)
         {
             var response = new IocResponse();
 
@@ -102,6 +136,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
             return response;
         }
 
+        [ActionLevel]
+        public IocResponse Any(ActionAttr request)
+        {
+            return RequestContext.Get<IHttpRequest>().Items["action-attr"] as IocResponse;
+        }
+        
         public static int DisposedCount = 0;
         public static bool ThrowErrors = false;
 

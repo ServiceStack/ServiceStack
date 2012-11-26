@@ -15,6 +15,7 @@ using ServiceStack.WebHost.Endpoints.Utils;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
+
     //Always executed
     public class FilterTestAttribute : Attribute, IHasRequestFilter
     {
@@ -26,7 +27,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public void RequestFilter(IHttpRequest req, IHttpResponse res, object requestDto)
         {
-            var dto = requestDto as AttributeFiltered;
+            var dto = (AttributeFiltered)requestDto;
+            dto.AttrsExecuted.Add(GetType().Name);
             dto.RequestFilterExecuted = true;
 
             //Check for equality to previous cache to ensure a filter attribute is no singleton
@@ -51,7 +53,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
         {
-            var dto = requestDto as AttributeFiltered;
+            var dto = (AttributeFiltered)requestDto;
+            dto.AttrsExecuted.Add(GetType().Name);
             dto.ContextualRequestFilterExecuted = true;
         }
     }
@@ -61,9 +64,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [ContextualFilterTest(ApplyTo.Delete | ApplyTo.Put)]
     public class AttributeFiltered
     {
+        public AttributeFiltered()
+        {
+            this.AttrsExecuted = new List<string>();
+        }
+
         public bool RequestFilterExecuted { get; set; }
         public bool ContextualRequestFilterExecuted { get; set; }
         public bool RequestFilterDependenyIsResolved { get; set; }
+        public List<string> AttrsExecuted { get; set; }
     }
 
     //Always executed
@@ -236,6 +245,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.IsTrue(response.ResponseFilterDependencyIsResolved);
         }
 
+        public class ExecutedFirstAttribute : RequestFilterAttribute
+        {
+            public ExecutedFirstAttribute()
+            {
+                Priority = int.MinValue;
+            }
+
+            public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+            {
+                var dto = (AttributeFiltered)requestDto;
+                dto.AttrsExecuted.Add(GetType().Name);
+            }
+        }
+
+        [ExecutedFirst]
         [FilterTest]
         [RequiredRole("test")]
         [Authenticate]
@@ -251,7 +275,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var attributes = FilterAttributeCache.GetRequestFilterAttributes(typeof(DummyHolder));
             var attrPriorities = attributes.ToList().ConvertAll(x => x.Priority);
-            Assert.That(attrPriorities, Is.EquivalentTo(new[] { -100, -90, -80, 0 }));
+            Assert.That(attrPriorities, Is.EquivalentTo(new[] { int.MinValue, -100, -90, -80, 0 }));
 
             var execOrder = new IHasRequestFilter[attributes.Length];
             var i = 0;
@@ -271,7 +295,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var execOrderPriorities = execOrder.ToList().ConvertAll(x => x.Priority);
             Console.WriteLine(execOrderPriorities.Dump());
-            Assert.That(execOrderPriorities, Is.EquivalentTo(new[] { -100, -90, -80, 0 }));
+            Assert.That(execOrderPriorities, Is.EquivalentTo(new[] { int.MinValue, -100, -90, -80, 0 }));
         }
     }
 }

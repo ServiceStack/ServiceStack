@@ -305,8 +305,7 @@ namespace RazorRockstars.Console.Files
         {
             LogManager.LogFactory = new ConsoleLogFactory();
             startedAt = Stopwatch.StartNew();
-            appHost = new AppHost
-            {
+            appHost = new AppHost {
                 EnableRazor = true, //Uncomment for faster tests!
             };
             appHost.Plugins.Add(new MsgPackFormat());
@@ -344,6 +343,73 @@ namespace RazorRockstars.Console.Files
         public void RunFor10Mins()
         {
             Thread.Sleep(TimeSpan.FromMinutes(10));
+        }
+
+        [Explicit("Concurrent Run")]
+        [Test]
+        public void Concurrent_GetReqstar_JSON()
+        {
+            const int NoOfThreads = 100;
+
+            var client = new JsonServiceClient(BaseUri);
+
+            int completed = 0;
+            Exception lastEx = null;
+            NoOfThreads.TimesAsync(i => {
+                try
+                {
+                    var response = client.Get(new GetReqstar { Id = 1 });
+                    Assert.That(response.Id, Is.EqualTo(1));
+                }
+                catch (Exception ex)
+                {
+                    lastEx = ex;
+                }
+                finally
+                {
+                    Interlocked.Increment(ref completed);
+                }
+            });
+
+            while (completed < NoOfThreads)
+                Thread.Sleep(100);
+
+            if (lastEx != null)
+                throw lastEx;
+        }
+
+
+        [Explicit("Concurrent Run")]
+        [Test]
+        public void Concurrent_GetReqstar_Razor()
+        {
+            const int NoOfThreads = 100;
+
+            int completed = 0;
+            Exception lastEx = null;
+            string lastText = null;
+            NoOfThreads.TimesAsync(i => {
+                try
+                {
+                    lastText = "{0}/reqstars/1".Fmt(Host).GetStringFromUrl();
+                }
+                catch (Exception ex)
+                {
+                    lastEx = ex;
+                }
+                finally
+                {
+                    Interlocked.Increment(ref completed);
+                }
+            });
+
+            while (completed < NoOfThreads)
+                Thread.Sleep(100);
+
+            lastText.Print();
+
+            if (lastEx != null)
+                throw lastEx;
         }
 
         protected static IRestClient[] RestClients = 
@@ -697,8 +763,7 @@ namespace RazorRockstars.Console.Files
         [Test, TestCaseSource("RestClients")]
         public void Can_GET_RoutelessReqstar_PrettyRestApi(IRestClient client)
         {
-            var request = new RoutelessReqstar
-            {
+            var request = new RoutelessReqstar {
                 Id = 1,
                 FirstName = "Foo",
                 LastName = "Bar",
@@ -717,8 +782,7 @@ namespace RazorRockstars.Console.Files
         [Test, TestCaseSource("RestClients")]
         public void Can_POST_RoutelessReqstar_PrettyRestApi(IRestClient client)
         {
-            var request = new RoutelessReqstar
-            {
+            var request = new RoutelessReqstar {
                 Id = 1,
                 FirstName = "Foo",
                 LastName = "Bar",
@@ -737,8 +801,7 @@ namespace RazorRockstars.Console.Files
         [Test, TestCaseSource("RestClients")]
         public void Can_GET_RichRequest_PrettyRestApi(IRestClient client)
         {
-            var request = new RichRequest
-            {
+            var request = new RichRequest {
                 StringArray = new[] { "a", "b", "c" },
                 StringList = new List<string> { "d", "e", "f" },
                 StringSet = new HashSet<string> { "g", "h", "i" },
