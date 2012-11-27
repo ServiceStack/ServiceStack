@@ -32,10 +32,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 	}
 
 	[DataContract]
-	public class GetFactorialResponse
+	public class GetFactorialResponse : IHasResponseStatus
 	{
 		[DataMember]
 		public long Result { get; set; }
+	    public ResponseStatus ResponseStatus { get; set; }
 	}
 
 	public class GetFactorialService
