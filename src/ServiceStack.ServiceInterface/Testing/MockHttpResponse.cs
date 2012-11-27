@@ -13,8 +13,8 @@ namespace ServiceStack.ServiceInterface.Testing
         }
 
         public object OriginalResponse { get; private set; }
-        public int StatusCode { set; private get; }
-        public string StatusDescription { set; private get; }
+        public int StatusCode { set; get; }
+        public string StatusDescription { set; get; }
         public string ContentType { get; set; }
 
         public ICookies Cookies { get; set; }
@@ -28,7 +28,7 @@ namespace ServiceStack.ServiceInterface.Testing
         }
 
         public Stream OutputStream { get; private set; }
-        
+
         public void Write(string text)
         {
         }
