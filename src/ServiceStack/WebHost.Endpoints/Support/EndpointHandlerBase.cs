@@ -206,6 +206,11 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public EndpointAttributes GetEndpointAttributes(IHttpRequest request)
 		{
+		    return GetEndpointAttributesFromRequest(request);
+		}
+
+        public static EndpointAttributes GetEndpointAttributesFromRequest(IHttpRequest request)
+        {
 			var portRestrictions = EndpointAttributes.None;
 
 			portRestrictions |= HttpMethods.GetEndpointAttribute(request.HttpMethod);
@@ -238,7 +243,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 
 			return portRestrictions;
-		}
+        }
 
 		private static EndpointAttributes GetIpAddressEndpointAttributes(IPAddress ipAddress)
 		{

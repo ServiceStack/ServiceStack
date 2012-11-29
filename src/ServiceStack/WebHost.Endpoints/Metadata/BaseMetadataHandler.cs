@@ -47,6 +47,14 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 		{
 			EndpointHost.Config.AssertFeatures(Feature.Metadata);
 
+            if (EndpointHost.Config.MetadataAttributes != EndpointAttributes.All)
+            {
+                var actualAttributes = EndpointHandlerBase.GetEndpointAttributesFromRequest(httpReq);
+                if ((actualAttributes & EndpointHost.Config.MetadataAttributes) != EndpointHost.Config.MetadataAttributes)
+                    throw new UnauthorizedAccessException("Access to metadata is unauthorized.");
+
+            }
+
 			var operations = EndpointHost.ServiceOperations;
 			var operationName = httpReq.QueryString["op"];
 			if (operationName != null)
