@@ -256,7 +256,19 @@ namespace ServiceStack.Authentication.OpenId
 
             return ret;
         }
+
+        public override bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Auth request = null)
+        {
+            if (request != null)
+            {
+                if (!LoginMatchesSession(session, request.UserName)) return false;
+            }
+
+            // For OpenId, AccessTokenSecret is null/empty, but UserId is populated w/ authenticated url from openId providers            
+            return tokens != null && !string.IsNullOrEmpty(tokens.UserId);
+        }
     }
+
 
     public static class OpenIdExtensions
     {
