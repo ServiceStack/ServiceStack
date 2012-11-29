@@ -47,10 +47,10 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 		{
 			EndpointHost.Config.AssertFeatures(Feature.Metadata);
 
-            if (EndpointHost.Config.MetadataAttributes != EndpointAttributes.All)
+            if (EndpointHost.Config.MetadataVisibility != EndpointAttributes.All)
             {
                 var actualAttributes = EndpointHandlerBase.GetEndpointAttributesFromRequest(httpReq);
-                if ((actualAttributes & EndpointHost.Config.MetadataAttributes) != EndpointHost.Config.MetadataAttributes)
+                if ((actualAttributes & EndpointHost.Config.MetadataVisibility) != EndpointHost.Config.MetadataVisibility)
                     throw new UnauthorizedAccessException("Access to metadata is unauthorized.");
 
             }

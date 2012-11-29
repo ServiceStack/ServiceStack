@@ -111,7 +111,7 @@ namespace ServiceStack.WebHost.Endpoints
                         RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>>(),
                         CustomHttpHandlers = new Dictionary<HttpStatusCode, IHttpHandler>(),
                         DefaultJsonpCacheExpiration = new TimeSpan(0, 20, 0),
-                        MetadataAttributes = EndpointAttributes.All
+                        MetadataVisibility = EndpointAttributes.All
                     };
 
                     if (instance.ServiceStackHandlerFactoryPath == null)
@@ -166,7 +166,7 @@ namespace ServiceStack.WebHost.Endpoints
             this.RawHttpHandlers = instance.RawHttpHandlers;
             this.CustomHttpHandlers = instance.CustomHttpHandlers;
             this.DefaultJsonpCacheExpiration = instance.DefaultJsonpCacheExpiration;
-            this.MetadataAttributes = instance.MetadataAttributes;
+            this.MetadataVisibility = instance.MetadataVisibility;
         }
 
         public static string GetAppConfigPath()
@@ -334,7 +334,7 @@ namespace ServiceStack.WebHost.Endpoints
         public MetadataTypesConfig MetadataTypesConfig { get; set; }
         public string WsdlServiceNamespace { get; set; }
 
-        public EndpointAttributes MetadataAttributes { get; set; }
+        public EndpointAttributes MetadataVisibility { get; set; }
         public string MetadataPageBodyHtml { get; set; }
         public string MetadataOperationPageBodyHtml { get; set; }
 
