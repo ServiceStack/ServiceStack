@@ -90,9 +90,19 @@ namespace ServiceStack.Html
 
 	    public MarkdownPage MarkdownPage { get; protected set; }
 		public Dictionary<string, object> ScopeArgs { get; protected set; }
-		public virtual ViewDataDictionary ViewData { get; protected set; }
+	    private ViewDataDictionary viewData;
 
-        private static int counter = 0;
+	    public virtual ViewDataDictionary ViewData
+	    {
+	        get
+	        {
+	            return viewData ??
+	                   (viewData = new ViewDataDictionary());
+	        }
+	        protected set { viewData = value; }
+	    }
+
+	    private static int counter = 0;
         private int id = 0;
 
 	    public HtmlHelper()
@@ -185,7 +195,7 @@ namespace ServiceStack.Html
 
 		internal object GetModelStateValue(string key, Type destinationType)
 		{
-			ModelState modelState;
+            ModelState modelState;
 			if (ViewData.ModelState.TryGetValue(key, out modelState))
 			{
 				if (modelState.Value != null)
