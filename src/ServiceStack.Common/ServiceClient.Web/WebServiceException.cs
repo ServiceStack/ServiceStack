@@ -1,17 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using ServiceStack.Common.Utils;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceClient.Web
 {
+    [Serializable]
     public class WebServiceException
         : Exception
     {
         public WebServiceException() { }
         public WebServiceException(string message) : base(message) { }
         public WebServiceException(string message, Exception innerException) : base(message, innerException) { }
+        public WebServiceException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 
         public int StatusCode { get; set; }
 
