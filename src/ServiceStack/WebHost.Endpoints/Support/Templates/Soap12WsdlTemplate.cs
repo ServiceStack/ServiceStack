@@ -12,8 +12,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
 			get
 			{
 				return
-	@"<wsdl:operation name=""{0}"">
-      <soap:operation soapAction=""http://schemas.servicestack.net/types/{0}"" style=""document"" />
+	@"<wsdl:operation name=""{1}"">
+      <soap:operation soapAction=""{0}{1}"" style=""document"" />
       <wsdl:input>
         <soap:body use=""literal"" />
       </wsdl:input>
@@ -29,8 +29,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
 			get
 			{
 				return
-	@"<wsdl:operation name=""{0}"">
-      <soap:operation soapAction=""http://schemas.servicestack.net/types/{0}"" style=""document"" />
+    @"<wsdl:operation name=""{1}"">
+      <soap:operation soapAction=""{0}{1}"" style=""document"" />
       <wsdl:input>
         <soap:body use=""literal"" />
       </wsdl:input>
