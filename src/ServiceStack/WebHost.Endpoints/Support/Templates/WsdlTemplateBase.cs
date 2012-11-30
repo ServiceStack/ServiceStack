@@ -67,8 +67,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
 			get
 			{
 				return
-	@"<wsdl:operation name=""{0}"">
-      <soap:operation soapAction=""http://schemas.servicestack.net/types/{0}"" style=""document"" />
+	@"<wsdl:operation name=""{1}"">
+      <soap:operation soapAction=""{0}{1}"" style=""document"" />
       <wsdl:input>
         <soap:body use=""literal"" />
       </wsdl:input>
@@ -84,8 +84,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
 			get
 			{
 				return
-	@"<wsdl:operation name=""{0}"">
-      <soap:operation soapAction=""http://schemas.servicestack.net/types/{0}"" style=""document"" />
+	@"<wsdl:operation name=""{1}"">
+      <soap:operation soapAction=""{0}{1}"" style=""document"" />
       <wsdl:input>
         <soap:body use=""literal"" />
       </wsdl:input>
@@ -156,6 +156,16 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
 			return sb.ToString();
 		}
 
+		public string RepeaterTemplate(string template, object arg0, IEnumerable<string> dataSource)
+		{
+			var sb = new StringBuilder();
+			foreach (var item in dataSource)
+			{
+				sb.AppendFormat(template, arg0, item);
+			}
+			return sb.ToString();
+		}
+
 		public override string ToString()
 		{
 			var replyMessages    = RepeaterTemplate(this.ReplyMessagesTemplate, this.ReplyOperationNames);
@@ -163,11 +173,14 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
 			var replyOperations  = RepeaterTemplate(this.ReplyOperationsTemplate, this.ReplyOperationNames);
 			var oneWayOperations = RepeaterTemplate(this.OneWayOperationsTemplate, this.OneWayOperationNames);
 
-			var replyActions     = RepeaterTemplate(this.ReplyActionsTemplate, this.ReplyOperationNames);
-			var oneWayActions    = RepeaterTemplate(this.OneWayActionsTemplate, this.OneWayOperationNames);
-			var replyBindings    = string.Format(this.ReplyBindingContainerTemplate, replyActions);
-			var oneWayBindings   = string.Format(this.OneWayBindingContainerTemplate, oneWayActions);
-
+			var wsdlSoapActionNamespace = EndpointHost.Config.WsdlSoapActionNamespace;
+			if (!wsdlSoapActionNamespace.EndsWith("/"))
+				wsdlSoapActionNamespace += '/';
+			var replyActions   = RepeaterTemplate(this.ReplyActionsTemplate, wsdlSoapActionNamespace, this.ReplyOperationNames);
+			var oneWayActions  = RepeaterTemplate(this.OneWayActionsTemplate, wsdlSoapActionNamespace, this.OneWayOperationNames);
+			var replyBindings  = string.Format(this.ReplyBindingContainerTemplate, replyActions);
+			var oneWayBindings = string.Format(this.OneWayBindingContainerTemplate, oneWayActions);
+			
 			var replyEndpointUri = string.Format(this.ReplyEndpointUriTemplate, ServiceName, this.ReplyEndpointUri);
 			var oneWayEndpointUri = string.Format(this.OneWayEndpointUriTemplate, ServiceName, this.OneWayEndpointUri);
 

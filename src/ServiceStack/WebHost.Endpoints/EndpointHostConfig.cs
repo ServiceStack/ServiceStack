@@ -47,6 +47,7 @@ namespace ServiceStack.WebHost.Endpoints
                         MetadataTypesConfig = new MetadataTypesConfig(
                             addDefaultXmlNamespace: "http://schemas.servicestack.net/types"),
                         WsdlServiceNamespace = "http://schemas.servicestack.net/types",
+                        WsdlSoapActionNamespace = "http://schemas.servicestack.net/types",
                         MetadataPageBodyHtml = @"
     <br />
     <h3>Client Usage Examples:</h3>
@@ -137,6 +138,7 @@ namespace ServiceStack.WebHost.Endpoints
             //Get a copy of the singleton already partially configured
             this.MetadataTypesConfig = instance.MetadataTypesConfig;
             this.WsdlServiceNamespace = instance.WsdlServiceNamespace;
+            this.WsdlSoapActionNamespace = instance.WsdlSoapActionNamespace;
             this.MetadataPageBodyHtml = instance.MetadataPageBodyHtml;
             this.MetadataOperationPageBodyHtml = instance.MetadataOperationPageBodyHtml;
             this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
@@ -333,6 +335,7 @@ namespace ServiceStack.WebHost.Endpoints
 
         public MetadataTypesConfig MetadataTypesConfig { get; set; }
         public string WsdlServiceNamespace { get; set; }
+        public string WsdlSoapActionNamespace { get; set; }
 
         public EndpointAttributes MetadataVisibility { get; set; }
         public string MetadataPageBodyHtml { get; set; }
