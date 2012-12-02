@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints.Extensions;
-using System.Net;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceHost.Tests
@@ -108,6 +106,9 @@ namespace ServiceStack.ServiceHost.Tests
 			string root = "c:/MyWebRoot";
 			HttpRequestMock mock = new HttpRequestMock();
 
+			// Note: due to the static nature of EndpointHostConfig.Instance, running this
+			// test twice withing NUnit fails the test. You'll need to reload betwen each
+			// run.
 			Assert.AreNotEqual( EndpointHostConfig.Instance.WebHostPhysicalPath, root );
 
 			string originalPath = EndpointHostConfig.Instance.WebHostPhysicalPath;
