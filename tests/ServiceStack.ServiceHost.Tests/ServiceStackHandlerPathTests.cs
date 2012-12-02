@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Extensions;
+using System.Net;
+using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceHost.Tests
 {
@@ -97,6 +100,23 @@ namespace ServiceStack.ServiceHost.Tests
 			Console.WriteLine(results.Dump());
 
 			Assert.That(results.All(x => x == "/metadata"));
+		}
+
+		[Test]
+		public void GetPhysicalPath_Honours_WebHostPhysicalPath()
+		{
+			string root = "c:/MyWebRoot";
+			HttpRequestMock mock = new HttpRequestMock();
+
+			Assert.AreNotEqual( EndpointHostConfig.Instance.WebHostPhysicalPath, root );
+
+			string originalPath = EndpointHostConfig.Instance.WebHostPhysicalPath;
+			string path = mock.GetPhysicalPath();
+			Assert.AreEqual( string.Format( "{0}/{1}", originalPath, mock.PathInfo ), path );
+
+			EndpointHostConfig.Instance.WebHostPhysicalPath = root;
+			path = mock.GetPhysicalPath();
+			Assert.AreEqual( string.Format( "{0}/{1}", root, mock.PathInfo ), path );
 		}
 	}
 

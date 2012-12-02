@@ -108,16 +108,20 @@ namespace ServiceStack.ServiceHost
 			return hostName;
 		}
 
-		public static string GetPhysicalPath(this IHttpRequest httpReq)
+		public static string GetPhysicalPath( this IHttpRequest httpReq )
 		{
+			string res;
+
 			var aspNetReq = httpReq as HttpRequestWrapper;
-			if (aspNetReq != null)
-			{
-				return aspNetReq.Request.PhysicalPath;
+			if( aspNetReq != null ) {
+				res = aspNetReq.Request.PhysicalPath;
+			}
+			else {
+
+				res = EndpointHostConfig.Instance.WebHostPhysicalPath.CombineWith( httpReq.PathInfo );
 			}
 
-			var filePath = httpReq.ApplicationFilePath.CombineWith(httpReq.PathInfo);
-			return filePath;
+			return res;
 		}
 
         public static string GetApplicationUrl(this HttpRequest httpReq)
