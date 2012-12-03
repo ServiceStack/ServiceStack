@@ -102,7 +102,7 @@ namespace ServiceStack.Common.Support
         {
             try
             {
-                DateTime before = DateTime.Now;
+                DateTime before = DateTime.UtcNow;
 
                 this.log.DebugFormat("Executing action '{0}'", action.GetType().Name);
 
@@ -122,7 +122,7 @@ namespace ServiceStack.Common.Support
                 {
                     T result = action.Execute();
 
-                    TimeSpan timeTaken = DateTime.Now - before;
+                    TimeSpan timeTaken = DateTime.UtcNow - before;
                     this.log.DebugFormat("Action '{0}' executed. Took {1} ms.", action.GetType().Name, timeTaken.TotalMilliseconds);
 
                     return result;

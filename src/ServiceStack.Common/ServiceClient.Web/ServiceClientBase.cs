@@ -893,7 +893,7 @@ namespace ServiceStack.ServiceClient.Web
 #if !MONOTOUCH
                 var nameValueCollection = HttpUtility.ParseQueryString(queryString);
 #endif
-                var boundary = DateTime.Now.Ticks.ToString(CultureInfo.InvariantCulture);
+                var boundary = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
                 webRequest.ContentType = "multipart/form-data; boundary=" + boundary;
                 boundary = "--" + boundary;
                 var newLine = Environment.NewLine;

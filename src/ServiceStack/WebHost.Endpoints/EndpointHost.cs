@@ -98,7 +98,7 @@ namespace ServiceStack.WebHost.Endpoints
 		//After configure called
 		public static void AfterInit()
 		{
-            StartedAt = DateTime.Now;
+            StartedAt = DateTime.UtcNow;
 
 			if (config.EnableFeatures != Feature.All)
 			{
@@ -175,7 +175,7 @@ namespace ServiceStack.WebHost.Endpoints
                 }
             }
 
-		    ReadyAt = DateTime.Now;
+		    ReadyAt = DateTime.UtcNow;
 		}
 
         public static T TryResolve<T>()

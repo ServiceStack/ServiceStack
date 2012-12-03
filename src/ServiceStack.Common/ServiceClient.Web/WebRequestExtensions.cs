@@ -173,7 +173,7 @@ namespace ServiceStack.ServiceClient.Web
             httpReq.AllowAutoRedirect = false;
             httpReq.KeepAlive = false;
 
-            var boundary = "----------------------------" + DateTime.Now.Ticks.ToString("x");
+            var boundary = "----------------------------" + DateTime.UtcNow.Ticks.ToString("x");
 
             httpReq.ContentType = "multipart/form-data; boundary=" + boundary;
 
