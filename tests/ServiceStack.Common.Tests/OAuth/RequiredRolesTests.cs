@@ -35,7 +35,7 @@ namespace ServiceStack.Common.Tests.OAuth
 		{
 			var registrationService = RegistrationServiceTests.GetRegistrationService(authRepo: userAuthMock.Object);
 			var request = RegistrationServiceTests.GetValidRegistration(autoLogin: true);
-			registrationService.Execute(request);
+			registrationService.Post(request);
 			return registrationService;
 		}
 

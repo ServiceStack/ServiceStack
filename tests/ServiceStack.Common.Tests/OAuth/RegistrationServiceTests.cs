@@ -2,9 +2,9 @@
 using NUnit.Framework;
 using ServiceStack.Common.Web;
 using ServiceStack.FluentValidation;
+using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.Testing;
-using ServiceStack.ServiceInterface.Validation;
 
 namespace ServiceStack.Common.Tests.OAuth
 {
@@ -38,8 +38,6 @@ namespace ServiceStack.Common.Tests.OAuth
 				RegistrationValidator = validator ?? new RegistrationValidator { UserAuthRepo = GetStubRepo() },
 				UserAuthRepo = authRepo ?? GetStubRepo(),
 				RequestContext = requestContext,
-                ServiceExceptionHandler = (req, ex) =>
-                    ValidationFeature.HandleException(new BasicResolver(), req, ex)
 			};
 
             return service;
@@ -50,7 +48,7 @@ namespace ServiceStack.Common.Tests.OAuth
 		{
 			var service = GetRegistrationService();
 
-			var response = (HttpError)service.Post(new Registration());
+	        var response = PostRegistrationError(service, new Registration());
 			var errors = response.GetFieldErrors();
 
 			Assert.That(errors.Count, Is.EqualTo(3));
@@ -62,13 +60,19 @@ namespace ServiceStack.Common.Tests.OAuth
 			Assert.That(errors[2].FieldName, Is.EqualTo("Email"));
 		}
 
-		[Test]
+	    private static HttpError PostRegistrationError(RegistrationService service, Registration registration)
+	    {
+	        var response = (HttpError) service.RunAction(registration, (svc, req) => svc.Post(req));
+	        return response;
+	    }
+
+	    [Test]
 		public void Empty_Registration_is_invalid_with_FullRegistrationValidator()
 		{
 			var service = GetRegistrationService(new FullRegistrationValidator());
 
-			var response = (HttpError)service.Post(new Registration());
-			var errors = response.GetFieldErrors();
+            var response = PostRegistrationError(service, new Registration());
+            var errors = response.GetFieldErrors();
 
 			Assert.That(errors.Count, Is.EqualTo(4));
 			Assert.That(errors[0].ErrorCode, Is.EqualTo("NotEmpty"));
@@ -118,8 +122,6 @@ namespace ServiceStack.Common.Tests.OAuth
 			var service = new RegistrationService {
 				RegistrationValidator = new RegistrationValidator { UserAuthRepo = mock.Object },
 				UserAuthRepo = mock.Object,
-                ServiceExceptionHandler = (req, ex) =>
-                    ValidationFeature.HandleException(new BasicResolver(), req, ex)
             };
 
 			var request = new Registration {
@@ -131,8 +133,8 @@ namespace ServiceStack.Common.Tests.OAuth
 				UserName = "UserName",
 			};
 
-			var response = (HttpError)service.Post(request);
-			var errors = response.GetFieldErrors();
+            var response = PostRegistrationError(service, request);
+            var errors = response.GetFieldErrors();
 
 			Assert.That(errors.Count, Is.EqualTo(2));
 			Assert.That(errors[0].ErrorCode, Is.EqualTo("AlreadyExists"));

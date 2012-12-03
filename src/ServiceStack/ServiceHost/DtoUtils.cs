@@ -25,10 +25,10 @@ namespace ServiceStack.ServiceHost
 
         public static ResponseStatus ToResponseStatus(this Exception exception)
         {
-            var validationError = exception as ValidationError;
-            if (validationError != null)
+            var responseStatusConverter = exception as IResponseStatusConvertible;
+            if (responseStatusConverter != null)
             {
-                return validationError.ToResponseStatus();
+                return responseStatusConverter.ToResponseStatus();
             }
 
             var httpError = exception as IHttpError;
@@ -39,14 +39,14 @@ namespace ServiceStack.ServiceHost
 
         public static ResponseStatus ToResponseStatus(this ValidationError validationException)
         {
-            return CreateResponseStatus(validationException.ErrorCode, validationException.Message, validationException.Violations);
+            return ResponseStatusUtils.CreateResponseStatus(validationException.ErrorCode, validationException.Message, validationException.Violations);
         }
 
         public static ResponseStatus ToResponseStatus(this ValidationErrorResult validationResult)
         {
             return validationResult.IsValid
                 ? CreateSuccessResponse(validationResult.SuccessMessage)
-                : CreateResponseStatus(validationResult.ErrorCode, validationResult.ErrorMessage, validationResult.Errors);
+                : ResponseStatusUtils.CreateResponseStatus(validationResult.ErrorCode, validationResult.ErrorMessage, validationResult.Errors);
         }
 
         public static ResponseStatus CreateSuccessResponse(string message)
@@ -57,17 +57,17 @@ namespace ServiceStack.ServiceHost
         public static ResponseStatus CreateResponseStatus(string errorCode)
         {
             var errorMessage = errorCode.SplitCamelCase();
-            return CreateResponseStatus(errorCode, errorMessage, null);
+            return ResponseStatusUtils.CreateResponseStatus(errorCode, errorMessage, null);
         }
 
         public static ResponseStatus CreateResponseStatus(string errorCode, string errorMessage)
         {
-            return CreateResponseStatus(errorCode, errorMessage, null);
+            return ResponseStatusUtils.CreateResponseStatus(errorCode, errorMessage, null);
         }
 
         public static object CreateErrorResponse(string errorCode, string errorMessage, IEnumerable<ValidationErrorField> validationErrors)
         {
-            var responseStatus = CreateResponseStatus(errorCode, errorMessage, validationErrors);
+            var responseStatus = ResponseStatusUtils.CreateResponseStatus(errorCode, errorMessage, validationErrors);
             var responseDto = CreateResponseDto(null, responseStatus);
             return new HttpError(responseDto, HttpStatusCode.BadRequest, errorCode, errorMessage);
         }
@@ -143,53 +143,12 @@ namespace ServiceStack.ServiceHost
         }
 
         /// <summary>
-        /// Creates the error response from the values provided.
         /// 
-        /// If the errorCode is empty it will use the first validation error code, 
-        /// if there is none it will throw an error.
         /// </summary>
-        /// <param name="errorCode">The error code.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <param name="validationErrors">The validation errors.</param>
+        /// <param name="iocResolver"></param>
+        /// <param name="request"></param>
+        /// <param name="ex"></param>
         /// <returns></returns>
-        public static ResponseStatus CreateResponseStatus(string errorCode, string errorMessage, IEnumerable<ValidationErrorField> validationErrors)
-        {
-            var to = new ResponseStatus {
-                ErrorCode = errorCode,
-                Message = errorMessage,
-                Errors = new List<ResponseError>(),
-            };
-            if (validationErrors != null)
-            {
-                foreach (var validationError in validationErrors)
-                {
-                    var error = new ResponseError {
-                        ErrorCode = validationError.ErrorCode,
-                        FieldName = validationError.FieldName,
-                        Message = validationError.ErrorMessage,
-                    };
-                    to.Errors.Add(error);
-
-                    if (String.IsNullOrEmpty(to.ErrorCode))
-                    {
-                        to.ErrorCode = validationError.ErrorCode;
-                    }
-                    if (String.IsNullOrEmpty(to.Message))
-                    {
-                        to.Message = validationError.ErrorMessage;
-                    }
-                }
-            }
-            if (String.IsNullOrEmpty(errorCode))
-            {
-                if (String.IsNullOrEmpty(to.ErrorCode))
-                {
-                    throw new ArgumentException("Cannot create a valid error response with a en empty errorCode and an empty validationError list");
-                }
-            }
-            return to;
-        }
-        
         public static object HandleException(IResolver iocResolver, object request, Exception ex)
         {
             if (ex.InnerException != null && !(ex is IHttpError))

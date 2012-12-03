@@ -405,6 +405,7 @@
     <Compile Include="Utils\CommandsUtils.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Utils\ResponseStatusUtils.cs" />
     <Compile Include="Utils\FuncUtils.cs">
       <SubType>Code</SubType>
     </Compile>

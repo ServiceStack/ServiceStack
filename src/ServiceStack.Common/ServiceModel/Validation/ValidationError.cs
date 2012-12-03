@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using ServiceStack.Common.Extensions;
+using ServiceStack.Common.Utils;
+using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.Validation
 {
@@ -9,7 +11,7 @@ namespace ServiceStack.Validation
     /// The exception which is thrown when a validation error occurred.
     /// This validation is serialized in a extra clean and human-readable way by ServiceStack.
     /// </summary>
-    public class ValidationError : ArgumentException
+    public class ValidationError : ArgumentException, IResponseStatusConvertible
     {
         private readonly string errorCode;
         public string ErrorMessage { get; private set; }
@@ -146,6 +148,11 @@ namespace ServiceStack.Validation
             {
                 throw new ValidationError(validationResult);
             }
+        }
+
+        public ResponseStatus ToResponseStatus()
+        {
+            return ResponseStatusUtils.CreateResponseStatus(ErrorCode, Message, Violations);
         }
     }
 }
