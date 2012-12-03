@@ -420,6 +420,12 @@
     <Compile Include="..\ServiceStack.Common\ServiceClient.Web\UrlExtensions.cs">
       <Link>ServiceClient.Web\UrlExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\IResponseStatusConvertible.cs">
+      <Link>IResponseStatusConvertible.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Common\Utils\ResponseStatusUtils.cs">
+      <Link>ResponseStatusUtils.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\ServiceStack.Common\README.md">
