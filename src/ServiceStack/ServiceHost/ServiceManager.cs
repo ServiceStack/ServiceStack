@@ -40,6 +40,12 @@ namespace ServiceStack.ServiceHost
 			}
 		}
 
+        public ServiceManager(Container container, params Assembly[] assembliesWithServices)
+            : this(assembliesWithServices)
+        {
+            this.Container = container ?? new Container();
+        }
+
 		private List<Type> GetAssemblyTypes(Assembly[] assembliesWithServices)
 		{
 			var results = new List<Type>();

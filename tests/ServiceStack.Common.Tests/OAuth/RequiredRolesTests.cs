@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using Moq;
 using NUnit.Framework;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
@@ -8,76 +7,94 @@ using ServiceStack.ServiceInterface.Testing;
 
 namespace ServiceStack.Common.Tests.OAuth
 {
-	[TestFixture]
-	public class RequiredRolesTests
-	{
-		Mock<IUserAuthRepository> userAuthMock;
+    [TestFixture]
+    public class RequiredRolesTests
+    {
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
+        {
+            AuthService.Init(() => new AuthUserSession(), new CredentialsAuthProvider());
+        }
 
-		[TestFixtureSetUp]
-		public void TestFixtureSetUp()
-		{
-			AuthService.Init(() => new AuthUserSession(), new CredentialsAuthProvider());
-		}
+        public class MockUserAuthRepository : InMemoryAuthRepository
+        {
+            private UserAuth userAuth;
+            public MockUserAuthRepository(UserAuth userAuth)
+            {
+                this.userAuth = userAuth;
+            }
 
-		[SetUp]
-		public void SetUp()
-		{
-			userAuthMock = new Mock<IUserAuthRepository>();
+            public override UserAuth GetUserAuthByUserName(string userNameOrEmail)
+            {
+                return null;
+            }
 
-			userAuthMock.Expect(x => x.GetUserAuthByUserName(It.IsAny<string>()))
-				.Returns((UserAuth)null);
+            public override UserAuth CreateUserAuth(UserAuth newUser, string password)
+            {
+                return userAuth;
+            }
 
-			userAuthMock.Expect(x => x.CreateUserAuth(It.IsAny<UserAuth>(), It.IsAny<string>()))
-				.Returns(new UserAuth { Id = 1 });
-		}
+            public override UserAuth GetUserAuth(IAuthSession authSession, IOAuthTokens tokens)
+            {
+                return userAuth;
+            }
 
-		private RegistrationService GetRegistrationService()
-		{
-			var registrationService = RegistrationServiceTests.GetRegistrationService(authRepo: userAuthMock.Object);
-			var request = RegistrationServiceTests.GetValidRegistration(autoLogin: true);
-			registrationService.Post(request);
-			return registrationService;
-		}
+            public override bool TryAuthenticate(string userName, string password, out UserAuth userAuth)
+            {
+                userAuth = this.userAuth;
+                return true;
+            }
+        }
 
-		[Test]
-		public void Does_validate_RequiredRoles_with_UserAuthRepo_When_Role_not_in_Session()
-		{
-			var userWithAdminRole = new UserAuth { Id = 1, Roles = new[] { RoleNames.Admin }.ToList() };
-			userAuthMock.Expect(x => x.GetUserAuth(It.IsAny<IAuthSession>(), It.IsAny<IOAuthTokens>()))
-				.Returns(userWithAdminRole);
+        private MockUserAuthRepository userAuth;
 
-			var registrationService = GetRegistrationService();
+        [SetUp]
+        public void SetUp()
+        {
+            var userWithAdminRole = new UserAuth { Id = 1, Roles = new[] { RoleNames.Admin }.ToList() };
+            userAuth = new MockUserAuthRepository(userWithAdminRole);
+        }
 
-			var requiredRole = new RequiredRoleAttribute(RoleNames.Admin);
+        private RegistrationService GetRegistrationService()
+        {
+            var registrationService = RegistrationServiceTests.GetRegistrationService(authRepo: userAuth);
+            var request = RegistrationServiceTests.GetValidRegistration(autoLogin: true);
 
-			var requestContext = (MockRequestContext)registrationService.RequestContext;
-			requestContext.Container.Register(userAuthMock.Object);
-			var httpRes = requestContext.Get<IHttpResponse>();
+            registrationService.Post(request);
+            return registrationService;
+        }
 
-			requiredRole.Execute(
-				requestContext.Get<IHttpRequest>(),
-				httpRes,
-				null);
+        [Test]
+        public void Does_validate_RequiredRoles_with_UserAuthRepo_When_Role_not_in_Session()
+        {
+            var registrationService = GetRegistrationService();
 
-			Assert.That(!httpRes.IsClosed);
-		}
+            var requiredRole = new RequiredRoleAttribute(RoleNames.Admin);
 
-		[Test]
-		public void Does_validate_AssertRequiredRoles_with_UserAuthRepo_When_Role_not_in_Session()
-		{
-			var userWithAdminRole = new UserAuth { Id = 1, Roles = new[] { RoleNames.Admin }.ToList() };
-			userAuthMock.Expect(x => x.GetUserAuth(It.IsAny<IAuthSession>(), It.IsAny<IOAuthTokens>()))
-				.Returns(userWithAdminRole);
+            var requestContext = (MockRequestContext)registrationService.RequestContext;
+            requestContext.Container.Register(userAuth);
+            var httpRes = requestContext.Get<IHttpResponse>();
 
-			var registrationService = GetRegistrationService();
+            requiredRole.Execute(
+                requestContext.Get<IHttpRequest>(),
+                httpRes,
+                null);
 
-			var requestContext = (MockRequestContext)registrationService.RequestContext;
-			requestContext.Container.Register(userAuthMock.Object);
-			var httpRes = requestContext.Get<IHttpResponse>();
+            Assert.That(!httpRes.IsClosed);
+        }
 
-			RequiredRoleAttribute.AssertRequiredRoles(requestContext, RoleNames.Admin);
+        [Test]
+        public void Does_validate_AssertRequiredRoles_with_UserAuthRepo_When_Role_not_in_Session()
+        {
+            var registrationService = GetRegistrationService();
 
-			Assert.That(!httpRes.IsClosed);
-		}
-	}
+            var requestContext = (MockRequestContext)registrationService.RequestContext;
+            requestContext.Container.Register(userAuth);
+            var httpRes = requestContext.Get<IHttpResponse>();
+
+            RequiredRoleAttribute.AssertRequiredRoles(requestContext, RoleNames.Admin);
+
+            Assert.That(!httpRes.IsClosed);
+        }
+    }
 }

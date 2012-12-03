@@ -5,17 +5,33 @@ using ServiceStack.FluentValidation;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Common.Tests.OAuth
 {
 	[TestFixture]
 	public class RegistrationServiceTests
 	{
-		[TestFixtureSetUp]
+        static BasicAppHost _appHost = null;
+        static readonly AuthUserSession authUserSession = new AuthUserSession();
+
+        static IAppHost GetAppHost()
+        {
+            if (_appHost == null)
+            {
+                _appHost = new BasicAppHost();
+                var authService = new AuthService();
+                authService.SetAppHost(_appHost);
+                _appHost.Container.Register(authService);
+                _appHost.Container.Register<IAuthSession>(authUserSession);
+            }
+            return _appHost;
+        }
+        
+        [TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			AuthService.Init(() => new AuthUserSession(),
-				new CredentialsAuthProvider());            
+            AuthService.Init(() => authUserSession, new CredentialsAuthProvider());            
 		}
 
 		public static IUserAuthRepository GetStubRepo()
@@ -34,11 +50,16 @@ namespace ServiceStack.Common.Tests.OAuth
 			IUserAuthRepository authRepo=null)
 		{
 			var requestContext = new MockRequestContext();
-			var service = new RegistrationService {
-				RegistrationValidator = validator ?? new RegistrationValidator { UserAuthRepo = GetStubRepo() },
-				UserAuthRepo = authRepo ?? GetStubRepo(),
+		    var userAuthRepository = authRepo ?? GetStubRepo();
+		    var service = new RegistrationService {
+                RegistrationValidator = validator ?? new RegistrationValidator { UserAuthRepo = userAuthRepository },
+				UserAuthRepo = userAuthRepository,
 				RequestContext = requestContext,
 			};
+
+		    var appHost = GetAppHost();
+            appHost.Register(userAuthRepository);
+		    service.SetAppHost(appHost);
 
             return service;
 		}
