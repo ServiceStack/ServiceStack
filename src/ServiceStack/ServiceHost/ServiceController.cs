@@ -116,15 +116,8 @@ namespace ServiceStack.ServiceHost
 
             if (typeof(IService).IsAssignableFrom(serviceType))
             {
-                foreach (var mi in serviceType.GetMethods(BindingFlags.Public | BindingFlags.Instance))
+                foreach (var mi in serviceType.GetActions())
                 {
-                    if (mi.GetParameters().Length != 1)
-                        continue;
-
-                    var actionName = mi.Name.ToUpper();
-                    if (!HttpMethod.AllVerbs.Contains(actionName) && actionName != ActionContext.AnyAction)
-                        continue;
-
                     var requestType = mi.GetParameters()[0].ParameterType;
                     if (processedReqs.Contains(requestType)) continue;
                     processedReqs.Add(requestType);
@@ -159,7 +152,7 @@ namespace ServiceStack.ServiceHost
             }
 
             Log.DebugFormat("Registering {0} service '{1}' with request '{2}'",
-                (responseType != null ? "SyncReply" : "OneWay"), serviceType.Name, requestType.Name);
+                (responseType != null ? "Reply" : "OneWay"), serviceType.Name, requestType.Name);
         }
 
         public readonly Dictionary<string, List<RestPath>> RestPathMap = new Dictionary<string, List<RestPath>>();

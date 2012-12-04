@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace ServiceStack.ServiceHost
 {
@@ -43,6 +44,7 @@ namespace ServiceStack.ServiceHost
                 RequestType = requestType, 
                 ResponseType = responseType,
                 RestrictTo = restrictTo,
+                Actions = GetImplementedActions(serviceType, requestType),
             };
 
             this.OperationsMap[requestType] = operation;
@@ -52,6 +54,46 @@ namespace ServiceStack.ServiceHost
             {
                 this.ResponseTypes.Add(responseType);
                 this.OperationsResponseMap[responseType] = operation;
+            }
+        }
+
+        public List<string> GetImplementedActions(Type serviceType, Type requestType)
+        {
+            if (typeof(IService).IsAssignableFrom(serviceType))
+            {
+                return serviceType.GetActions().Select(x => x.Name.ToUpper()).ToList();
+            }
+
+            var oldApiActions = serviceType
+                .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .Select(x => ToNewApiAction(x.Name))
+                .Where(x => x != null)
+                .ToList();
+            return oldApiActions;
+        }
+
+        public static string ToNewApiAction(string oldApiAction)
+        {
+            switch (oldApiAction)
+            {
+                case "Get":
+                case "OnGet":
+                    return "GET";
+                case "Put":
+                case "OnPut":
+                    return "PUT";
+                case "Post":
+                case "OnPost":
+                    return "POST";
+                case "Delete":
+                case "OnDelete":
+                    return "DELETE";
+                case "Patch":
+                case "OnPatch":
+                    return "PATCH";
+                case "Execute":
+                case "Run":
+                    return "ANY";
             }
         }
 
@@ -102,6 +144,7 @@ namespace ServiceStack.ServiceHost
         public Type ServiceType { get; set; }
         public Type ResponseType { get; set; }
         public RestrictAttribute RestrictTo { get; set; }
+        public List<string> Actions { get; set; }
         public bool IsOneWay { get { return ResponseType == null; } }
     }
 
