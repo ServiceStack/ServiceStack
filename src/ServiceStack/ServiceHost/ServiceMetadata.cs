@@ -95,6 +95,7 @@ namespace ServiceStack.ServiceHost
                 case "Run":
                     return "ANY";
             }
+            return null;
         }
 
         public Type GetOperationType(string operationTypeName)
