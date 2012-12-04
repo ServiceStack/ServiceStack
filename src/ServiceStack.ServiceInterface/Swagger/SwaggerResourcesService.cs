@@ -9,7 +9,7 @@ using ServiceStack.WebHost.Endpoints.Metadata;
 
 namespace ServiceStack.ServiceInterface.Swagger
 {
-    public class ResourcesRequest
+    public class Resources
     {
         public string ApiKey { get; set; }
     }
@@ -28,12 +28,13 @@ namespace ServiceStack.ServiceInterface.Swagger
         public string Description { get; set; }
     }
 
-    public class SwaggerResourcesService : RestServiceBase<ResourcesRequest>
+    [DefaultRequest(typeof(Resources))] 
+    public class SwaggerResourcesService : Service
     {
         private readonly Regex resourcePathCleanerRegex = new Regex(@"/[^\/\{]*", RegexOptions.Compiled);
         internal static Regex resourceFilterRegex;
 
-        public override object OnGet(ResourcesRequest request)
+        public object Get(Resources request)
         {
             var httpReq = RequestContext.Get<IHttpRequest>();
             var result = new ResourcesResponse {
@@ -50,7 +51,7 @@ namespace ServiceStack.ServiceInterface.Swagger
                 if (resourceFilterRegex != null && !resourceFilterRegex.IsMatch(operationName)) continue;
                 var operationType = allTypes.FirstOrDefault(x => x.Name == operationName);
                 if (operationType == null) continue;
-                if (operationType == typeof(ResourcesRequest) || operationType == typeof(ResourceRequest))
+                if (operationType == typeof(Resources) || operationType == typeof(ResourceRequest))
                     continue;
                 CreateRestPaths(result.Apis, operationType, operationName);
             }
