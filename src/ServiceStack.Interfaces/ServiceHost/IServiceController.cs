@@ -11,18 +11,6 @@ namespace ServiceStack.ServiceHost
 	public interface IServiceController
 	{
 		/// <summary>
-		/// Returns a list of operation types available in this service
-		/// </summary>
-		/// <value>The operation types.</value>
-		IList<Type> OperationTypes { get; }
-
-		/// <summary>
-		/// Returns a list of ALL operation types available in this service
-		/// </summary>
-		/// <value>The operation types.</value>
-		IList<Type> AllOperationTypes { get; }
-
-		/// <summary>
 		/// Returns the first matching RestPath
 		/// </summary>
 		/// <param name="httpMethod"></param>

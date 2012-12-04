@@ -14,9 +14,10 @@ namespace ServiceStack.ServiceHost
 
 		public Container Container { get; private set; }
 		public ServiceController ServiceController { get; private set; }
+        public ServiceMetadata Metadata { get; internal set; }
 
-		public ServiceOperations ServiceOperations { get; set; }
-		public ServiceOperations AllServiceOperations { get; set; }
+        //public ServiceOperations ServiceOperations { get; set; }
+        //public ServiceOperations AllServiceOperations { get; set; }
 
 		public ServiceManager(params Assembly[] assembliesWithServices)
 		{
@@ -26,9 +27,8 @@ namespace ServiceStack.ServiceHost
 					+ "To register your services, please provide the assemblies where your web services are defined.");
 
 			this.Container = new Container();
-			//			this.ServiceController = new ServiceController(
-			//				() => assembliesWithServices.ToList().SelectMany(x => x.GetTypes()));
-			this.ServiceController = new ServiceController(() => GetAssemblyTypes(assembliesWithServices));
+            this.Metadata = new ServiceMetadata();
+            this.ServiceController = new ServiceController(() => GetAssemblyTypes(assembliesWithServices), this.Metadata);
 		}
 
 		public ServiceManager(bool autoInitialize, params Assembly[] assembliesWithServices)
@@ -93,19 +93,7 @@ namespace ServiceStack.ServiceHost
 
 			this.ServiceController.Register(typeFactory);
 
-			ReloadServiceOperations();
-
-			this.Container.RegisterAutoWiredTypes(this.ServiceController.ServiceTypes);
-		}
-
-		public void ReloadServiceOperations()
-		{
-			this.ServiceOperations = new ServiceOperations(this.ServiceController.OperationTypes) {
-                OperationResponseTypesMap = this.ServiceController.OperationResponseTypesMap
-            };
-            this.AllServiceOperations = new ServiceOperations(this.ServiceController.AllOperationTypes) {
-                OperationResponseTypesMap = this.ServiceController.OperationResponseTypesMap
-            };
+			this.Container.RegisterAutoWiredTypes(this.Metadata.ServiceTypes);
 		}
 
 		public void RegisterService<T>()
@@ -163,7 +151,6 @@ namespace ServiceStack.ServiceHost
 		public void AfterInit()
 		{
 			this.ServiceController.AfterInit();
-			ReloadServiceOperations();
 		}
 	}
 

@@ -36,19 +36,19 @@ namespace ServiceStack.ServiceInterface.Swagger
         public override object OnGet(ResourcesRequest request)
         {
             var httpReq = RequestContext.Get<IHttpRequest>();
-            var result = new ResourcesResponse
-                             {
-                                 SwaggerVersion = "1.1",
-                                 BasePath = httpReq.GetApplicationUrl(), 
-                                 Apis = new List<RestService>()
-                             };
-            var operations = EndpointHost.ServiceOperations;
-            var allTypes = operations.AllOperations.Types;
-            for (var i = 0; i < operations.AllOperations.Names.Count; i++)
+            var result = new ResourcesResponse {
+                SwaggerVersion = "1.1",
+                BasePath = httpReq.GetApplicationUrl(),
+                Apis = new List<RestService>()
+            };
+            var operations = EndpointHost.Metadata;
+            var allTypes = operations.GetAllTypes();
+            var allOperationNames = operations.GetAllOperationNames();
+            for (var i = 0; i < allOperationNames.Count; i++)
             {
-                var operationName = operations.AllOperations.Names[i];
+                var operationName = allOperationNames[i];
                 if (resourceFilterRegex != null && !resourceFilterRegex.IsMatch(operationName)) continue;
-				var operationType = allTypes.FirstOrDefault(x => x.Name == operationName);
+                var operationType = allTypes.FirstOrDefault(x => x.Name == operationName);
                 if (operationType == null) continue;
                 if (operationType == typeof(ResourcesRequest) || operationType == typeof(ResourceRequest))
                     continue;
@@ -71,8 +71,7 @@ namespace ServiceStack.ServiceInterface.Swagger
             var minPath = paths.Min();
             if (string.IsNullOrEmpty(minPath) || minPath == "/") return;
 
-            apis.Add(new RestService
-            {
+            apis.Add(new RestService {
                 Path = string.Concat("/resource", minPath),
                 Description = BaseMetadataHandler.GetDescriptionFromOperationType(operationType)
             });

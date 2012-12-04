@@ -64,11 +64,11 @@ namespace ServiceStack
                         if (feature == Feature.None) feature = Feature.CustomFormat;
 
                         if (pathAction == "syncreply")
-                            return new GenericHandler(contentType, EndpointAttributes.SyncReply, feature) {
+                            return new GenericHandler(contentType, EndpointAttributes.Reply, feature) {
                                 RequestName = requestName
                             };
                         if (pathAction == "asynconeway")
-                            return new GenericHandler(contentType, EndpointAttributes.AsyncOneWay, feature) {
+                            return new GenericHandler(contentType, EndpointAttributes.OneWay, feature) {
                                 RequestName = requestName
                             };
                     }

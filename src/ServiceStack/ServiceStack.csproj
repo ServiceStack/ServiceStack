@@ -226,7 +226,6 @@
     <Compile Include="ServiceHost\HttpRequestContext.cs" />
     <Compile Include="ServiceHost\HttpRequestExtensions.cs" />
     <Compile Include="ServiceHost\HttpResponseExtensions.cs" />
-    <Compile Include="ServiceHost\Operations.cs" />
     <Compile Include="ServiceHost\RequestAttributes.cs" />
     <Compile Include="ServiceHost\RequestContextExtensions.cs" />
     <Compile Include="ServiceHost\RestPath.cs" />
@@ -235,7 +234,7 @@
     <Compile Include="ServiceHost\GServiceExec.cs" />
     <Compile Include="ServiceHost\ServiceExecOperations.cs" />
     <Compile Include="ServiceHost\ServiceManager.cs" />
-    <Compile Include="ServiceHost\ServiceOperations.cs" />
+    <Compile Include="ServiceHost\ServiceMetadata.cs" />
     <Compile Include="ServiceHost\ServiceRoutes.cs" />
     <Compile Include="WebHost.Endpoints\AppHostBase.cs" />
     <Compile Include="WebHost.Endpoints\AppHostHttpListenerLongRunningBase.cs" />

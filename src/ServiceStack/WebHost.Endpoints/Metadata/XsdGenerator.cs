@@ -34,7 +34,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 					{
 						if (assemblyType.GetCustomAttributes(typeof(DataContractAttribute), false).Length > 0)
 						{
-							var baseTypeWithSameName = ServiceOperations.GetBaseTypeWithTheSameName(assemblyType);
+							var baseTypeWithSameName = XsdMetadata.GetBaseTypeWithTheSameName(assemblyType);
 							if (uniqueTypeNames.Contains(baseTypeWithSameName.Name))
 							{
 								log.WarnFormat("Skipping duplicate type with existing name '{0}'", baseTypeWithSameName.Name);

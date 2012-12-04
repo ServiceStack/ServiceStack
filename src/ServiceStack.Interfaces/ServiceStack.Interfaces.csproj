@@ -573,7 +573,7 @@
     <Compile Include="ServiceHost\RestServiceAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\ServiceAttribute.cs">
+    <Compile Include="ServiceHost\RestrictAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ServiceInterface.ServiceModel\CollectionTypes.cs">

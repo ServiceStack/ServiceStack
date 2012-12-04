@@ -1,7 +1,6 @@
 using System.Web;
 using System.Web.UI;
 using ServiceStack.Common;
-using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
@@ -10,7 +9,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 	{
 		public ServiceEndpointsMetadataConfig MetadataConfig { get; set; }
 		
-		public EndpointType EndpointType
+		public Format Format
 		{
 			set
 			{

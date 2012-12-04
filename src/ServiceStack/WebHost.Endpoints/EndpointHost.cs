@@ -19,9 +19,6 @@ namespace ServiceStack.WebHost.Endpoints
 {
 	public class EndpointHost
 	{
-		public static ServiceOperations ServiceOperations { get; private set; }
-		public static ServiceOperations AllServiceOperations { get; private set; }
-
 		public static IAppHost AppHost { get; internal set; }
 
 		public static IContentTypeFilter ContentTypeFilter { get; set; }
@@ -227,7 +224,6 @@ namespace ServiceStack.WebHost.Endpoints
 			if (pluginsLoaded)
 			{
 				AppHost.LoadPlugin(plugins);
-				ServiceManager.ReloadServiceOperations();
 			}
 			else
 			{
@@ -241,12 +237,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public static ServiceManager ServiceManager
 		{
 			get { return config.ServiceManager; }
-			set
-			{
-				config.ServiceManager = value;
-				ServiceOperations = value.ServiceOperations;
-				AllServiceOperations = value.AllServiceOperations;
-			}
+			set { config.ServiceManager = value; }
 		}
 
 		public static class UserConfig
@@ -277,6 +268,8 @@ namespace ServiceStack.WebHost.Endpoints
 				ApplyConfigChanges();
 			}
 		}
+
+        public static ServiceMetadata Metadata { get { return Config.Metadata; } }
 
 		/// <summary>
 		/// Applies the raw request filters. Returns whether or not the request has been handled 
@@ -396,12 +389,6 @@ namespace ServiceStack.WebHost.Endpoints
 
 				return httpRes.IsClosed;
 			}
-		}
-
-		public static void SetOperationTypes(ServiceOperations operationTypes, ServiceOperations allOperationTypes)
-		{
-			ServiceOperations = operationTypes;
-			AllServiceOperations = allOperationTypes;
 		}
 
 		internal static object ExecuteService(object request, EndpointAttributes endpointAttributes, IHttpRequest httpReq, IHttpResponse httpRes)

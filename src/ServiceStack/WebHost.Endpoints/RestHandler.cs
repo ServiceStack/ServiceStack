@@ -14,7 +14,7 @@ namespace ServiceStack.WebHost.Endpoints
 	{
 		public RestHandler()
 		{
-			this.HandlerAttributes = EndpointAttributes.SyncReply;
+			this.HandlerAttributes = EndpointAttributes.Reply;
 		}
 
 		private static readonly ILog Log = LogManager.GetLogger(typeof(RestHandler));

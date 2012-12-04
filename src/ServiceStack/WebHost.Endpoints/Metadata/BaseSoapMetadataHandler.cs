@@ -33,12 +33,12 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
     	{
 			EndpointHost.Config.AssertFeatures(Feature.Metadata);
 
-			var operations = EndpointHost.ServiceOperations;
+			var operationTypes = EndpointHost.Metadata.GetAllTypes();
 
     		if (httpReq.QueryString["xsd"] != null)
     		{
 				var xsdNo = Convert.ToInt32(httpReq.QueryString["xsd"]);
-    			var schemaSet = XsdUtils.GetXmlSchemaSet(operations.AllOperations.Types);
+                var schemaSet = XsdUtils.GetXmlSchemaSet(operationTypes);
     			var schemas = schemaSet.Schemas();
     			var i = 0;
     			if (xsdNo >= schemas.Count)
@@ -63,7 +63,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 			}
     	}
 
-    	protected override void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, Operations allOperations)
+    	protected override void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, ServiceMetadata metadata)
     	{
 			var defaultPage = new IndexOperationsControl {
 				HttpRequest = httpReq,
@@ -71,7 +71,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 				Title = EndpointHost.Config.ServiceName,
 				Xsds = XsdTypes.Xsds,
 				XsdServiceTypesIndex = 1,
-				OperationNames = allOperations.Names,
+				OperationNames = metadata.GetAllOperationNames(),
 				MetadataPageBodyHtml = EndpointHost.Config.MetadataPageBodyHtml,
 			};
 

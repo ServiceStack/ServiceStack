@@ -21,9 +21,9 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 			base.ContentFormat = format;
 		}
 
-		public override EndpointType EndpointType
+        public override Format Format
 		{
-			get { return EndpointType.None; }
+            get { return Format.Other; }
 		}
 
 		protected override string CreateMessage(Type dtoType)
@@ -51,12 +51,12 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 			}
 		}
 
-		protected override void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, Operations allOperations)
+        protected override void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, ServiceMetadata metadata)
 		{
 			var defaultPage = new OperationsControl
 			{
 				Title = EndpointHost.Config.ServiceName,
-				OperationNames = allOperations.Names,
+                OperationNames = metadata.GetAllOperationNames(),
 				MetadataOperationPageBodyHtml = EndpointHost.Config.MetadataOperationPageBodyHtml,
 			};
 

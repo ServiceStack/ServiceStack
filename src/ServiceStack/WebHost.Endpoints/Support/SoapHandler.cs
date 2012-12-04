@@ -29,7 +29,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
         protected void SendOneWay(Message requestMsg, IHttpRequest httpRequest, IHttpResponse httpResponse)
         {
-            var endpointAttributes = EndpointAttributes.AsyncOneWay | this.HandlerAttributes;
+            var endpointAttributes = EndpointAttributes.OneWay | this.HandlerAttributes;
 
             ExecuteMessage(requestMsg, endpointAttributes, httpRequest, httpResponse);
         }
@@ -40,7 +40,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
         protected Message Send(Message requestMsg, IHttpRequest httpRequest, IHttpResponse httpResponse)
         {
-            var endpointAttributes = EndpointAttributes.SyncReply | this.HandlerAttributes;
+            var endpointAttributes = EndpointAttributes.Reply | this.HandlerAttributes;
 
             return ExecuteMessage(requestMsg, endpointAttributes, httpRequest, httpResponse);
         }
@@ -148,7 +148,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			var action = GetAction(requestMsg, xml);
 
-			var operationType = EndpointHost.ServiceOperations.GetOperationType(action);
+			var operationType = EndpointHost.Metadata.GetOperationType(action);
 			AssertOperationExists(action, operationType);
 
 			return operationType;

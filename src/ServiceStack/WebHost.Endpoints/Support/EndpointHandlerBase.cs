@@ -162,8 +162,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		public static Type GetOperationType(string operationName)
 		{
 			return ServiceManager != null
-				? ServiceManager.ServiceOperations.GetOperationType(operationName)
-				: EndpointHost.ServiceOperations.GetOperationType(operationName);
+				? ServiceManager.Metadata.GetOperationType(operationName)
+                : EndpointHost.Metadata.GetOperationType(operationName);
 		}
 
 		protected static object ExecuteService(object request, EndpointAttributes endpointAttributes,

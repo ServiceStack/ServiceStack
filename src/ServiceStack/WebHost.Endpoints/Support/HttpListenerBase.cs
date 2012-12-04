@@ -82,15 +82,6 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			{
 				Configure(null);
 			}
-			if (serviceManager != null)
-			{
-				//Required for adhoc services added in Configure()
-				serviceManager.ReloadServiceOperations();
-				EndpointHost.SetOperationTypes(
-					serviceManager.ServiceOperations,
-					serviceManager.AllServiceOperations
-				);
-			}
 
 			EndpointHost.AfterInit();
 

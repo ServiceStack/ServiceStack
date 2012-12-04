@@ -6,7 +6,7 @@ namespace ServiceStack.WebHost.Endpoints
 	public class JsonAsyncOneWayHandler : GenericHandler
 	{
 		public JsonAsyncOneWayHandler()
-			: base(ContentType.Json, EndpointAttributes.AsyncOneWay | EndpointAttributes.Json, Feature.Json)
+			: base(ContentType.Json, EndpointAttributes.OneWay | EndpointAttributes.Json, Feature.Json)
 		{
 		}
 	}
@@ -14,7 +14,7 @@ namespace ServiceStack.WebHost.Endpoints
 	public class JsonSyncReplyHandler : GenericHandler
 	{
 		public JsonSyncReplyHandler()
-			: base(ContentType.Json, EndpointAttributes.SyncReply | EndpointAttributes.Json, Feature.Json)
+			: base(ContentType.Json, EndpointAttributes.Reply | EndpointAttributes.Json, Feature.Json)
 		{
 		}
 	}

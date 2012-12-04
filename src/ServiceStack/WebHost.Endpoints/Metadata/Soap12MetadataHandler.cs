@@ -1,13 +1,13 @@
 using System;
 using ServiceStack.Common.Utils;
-using ServiceStack.Common.Web;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 
 namespace ServiceStack.WebHost.Endpoints.Metadata
 {
 	public class Soap12MetadataHandler : BaseSoapMetadataHandler
 	{
-		public override EndpointType EndpointType { get { return EndpointType.Soap12; } }
+        public override Format Format { get { return Format.Soap12; } }
 
 		protected override string CreateMessage(Type dtoType)
 		{

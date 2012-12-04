@@ -213,7 +213,6 @@
     <Compile Include="WsdlMetadataTests.cs" />
     <Compile Include="OperationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServiceOperationsTests.cs" />
     <Compile Include="Support\Operations\GetCustomer.cs" />
     <Compile Include="Support\Types\Customer.cs" />
   </ItemGroup>

@@ -98,7 +98,7 @@ namespace ServiceStack.Common.Web
 
             }
 
-            return EndpointAttributes.None;
+            return EndpointAttributes.FormatOther;
         }
 
         public static string GetRealContentType(string contentType)
@@ -179,9 +179,9 @@ namespace ServiceStack.Common.Web
             return Feature.None;
         }
 
-        public static string GetContentFormat(EndpointType endpointType)
+        public static string GetContentFormat(Format formats)
         {
-            return endpointType.ToString().ToLower();
+            return formats.ToString().ToLower();
         }
 
         public static string GetContentFormat(string contentType)
@@ -196,28 +196,28 @@ namespace ServiceStack.Common.Web
             return GetContentFormat(contentType);
         }
 
-        public static string GetContentType(EndpointType endpointType)
+        public static string GetContentType(Format formats)
         {
-            switch (endpointType)
+            switch (formats)
             {
-                case EndpointType.Soap11:
-                case EndpointType.Soap12:
-                case EndpointType.Xml:
+                case Format.Soap11:
+                case Format.Soap12:
+                case Format.Xml:
                     return Xml;
 
-                case EndpointType.Json:
+                case Format.Json:
                     return Json;
-
-                case EndpointType.Jsv:
+                    
+                case Format.Jsv:
                     return JsvText;
 
-                case EndpointType.Csv:
+                case Format.Csv:
                     return Csv;
 
-                case EndpointType.ProtoBuf:
+                case Format.ProtoBuf:
                     return ProtoBuf;
 
-                case EndpointType.MsgPack:
+                case Format.MsgPack:
                     return MsgPack;
                 
                 default:

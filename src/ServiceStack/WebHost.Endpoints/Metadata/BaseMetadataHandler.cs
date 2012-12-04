@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 	{
 		const string ResponseSuffix = "Response";
 
-		public abstract EndpointType EndpointType { get; }
+		public abstract Format Format { get; }
 
 		public string ContentType { get; set; }
 		public string ContentFormat { get; set; }
@@ -47,7 +47,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 		{
 			EndpointHost.Config.AssertFeatures(Feature.Metadata);
 
-            if (EndpointHost.Config.MetadataVisibility != EndpointAttributes.All)
+            if (EndpointHost.Config.MetadataVisibility != EndpointAttributes.Any)
             {
                 var actualAttributes = EndpointHandlerBase.GetEndpointAttributesFromRequest(httpReq);
                 if ((actualAttributes & EndpointHost.Config.MetadataVisibility) != EndpointHost.Config.MetadataVisibility)
@@ -55,39 +55,32 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
             }
 
-			var operations = EndpointHost.ServiceOperations;
+			var metadata = EndpointHost.Metadata;
 			var operationName = httpReq.QueryString["op"];
 			if (operationName != null)
 			{
-				var allTypes = operations.AllOperations.Types;
+				var allTypes = metadata.GetAllTypes();
 				var operationType = allTypes.Single(x => x.Name == operationName);
 				var requestMessage = CreateMessage(operationType);
 				var restPaths = CreateRestPaths(operationType);
 				string responseMessage = null;
 
-			    Type operationResponseType = null;
-                if (!operations.OperationResponseTypesMap.TryGetValue(operationType, out operationResponseType))
-			    {
-                    if (allTypes.Any(x => x.Name == operationName + ResponseSuffix))
-                    {
-                        operationResponseType = allTypes.Single(x => x.Name == operationName + ResponseSuffix);
-                    }
-                }
-                if (operationResponseType != null)
+			    var responseType = metadata.GetResponseTypeByRequest(operationType);
+                if (responseType != null)
                 {
-                    responseMessage = CreateMessage(operationResponseType);                    
+                    responseMessage = CreateMessage(responseType);                    
                 }
 				
                 var description = GetDescriptionFromOperationType(operationType);
                 if (!description.IsNullOrEmpty())
                 {
                     description = "<div id='desc'>"
-                                  + "<p>" + description
-                                                .Replace("<", "&lt;")
-                                                .Replace(">", "&gt;")
-                                                .Replace("\n", "<br />\n")
-                                  + "</p>"
-                                  + "</div>";
+                        + "<p>" + description
+                            .Replace("<", "&lt;")
+                            .Replace(">", "&gt;")
+                            .Replace("\n", "<br />\n")
+                        + "</p>"
+                        + "</div>";
                 }
 
 
@@ -95,7 +88,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 				return;
 			}
 
-			RenderOperations(writer, httpReq, operations.AllOperations);
+			RenderOperations(writer, httpReq, metadata);
 		}
 
 	    public static string GetDescriptionFromOperationType(Type operationType)
@@ -120,7 +113,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 				HttpRequest = httpReq,
 				MetadataConfig = EndpointHost.Config.ServiceEndpointsMetadataConfig,
 				Title = EndpointHost.Config.ServiceName,
-				EndpointType = this.EndpointType,
+				Format = this.Format,
 				OperationName = operationName,
 				HostName = httpReq.GetUrlHostName(),
 				RequestMessage = requestMessage,
@@ -140,7 +133,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 			operationControl.Render(writer);
 		}
 
-		protected abstract void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, Operations allOperations);
+		protected abstract void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, ServiceMetadata metadata);
 
 		protected virtual string CreateRestPaths(Type operationType)
 		{

@@ -24,7 +24,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 			var baseUri = context.Request.GetParentBaseUrl();
 			var optimizeForFlash = context.Request.QueryString["flash"] != null;
 			var includeAllTypesInAssembly = context.Request.QueryString["includeAllTypes"] != null;
-			var operations = includeAllTypesInAssembly ? EndpointHost.AllServiceOperations : EndpointHost.ServiceOperations;
+            var operations = new XsdMetadata(
+                EndpointHost.Metadata, flash: optimizeForFlash, includeAllTypes: includeAllTypesInAssembly);
 
 			try
 			{
@@ -49,7 +50,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 			var baseUri = httpReq.GetParentBaseUrl();
 			var optimizeForFlash = httpReq.QueryString["flash"] != null;
 			var includeAllTypesInAssembly = httpReq.QueryString["includeAllTypes"] != null;
-			var operations = includeAllTypesInAssembly ? EndpointHost.AllServiceOperations : EndpointHost.ServiceOperations;
+		    var operations = new XsdMetadata(
+                EndpointHost.Metadata, flash: optimizeForFlash, includeAllTypes: includeAllTypesInAssembly);
 
 			try
 			{
@@ -65,18 +67,18 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 			}
 		}
 
-		public WsdlTemplateBase GetWsdlTemplate(ServiceOperations operations, string baseUri, bool optimizeForFlash, bool includeAllTypesInAssembly, string rawUrl)
+        public WsdlTemplateBase GetWsdlTemplate(XsdMetadata operations, string baseUri, bool optimizeForFlash, bool includeAllTypesInAssembly, string rawUrl)
 		{
 			var xsd = new XsdGenerator {
-				OperationTypes = operations.AllOperations.Types,
+                OperationTypes = operations.GetAllTypes(),
 				OptimizeForFlash = optimizeForFlash,
 				IncludeAllTypesInAssembly = includeAllTypesInAssembly,
 			}.ToString();
 
 			var wsdlTemplate = GetWsdlTemplate();
 			wsdlTemplate.Xsd = xsd;
-			wsdlTemplate.ReplyOperationNames = operations.ReplyOperations.Names;
-			wsdlTemplate.OneWayOperationNames = operations.OneWayOperations.Names;
+            wsdlTemplate.ReplyOperationNames = operations.GetReplyOperationNames();
+            wsdlTemplate.OneWayOperationNames = operations.GetOneWayOperationNames();
 
 			if (rawUrl.ToLower().StartsWith(baseUri))
 			{

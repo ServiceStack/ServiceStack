@@ -112,7 +112,7 @@ namespace ServiceStack.WebHost.Endpoints
                         RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>>(),
                         CustomHttpHandlers = new Dictionary<HttpStatusCode, IHttpHandler>(),
                         DefaultJsonpCacheExpiration = new TimeSpan(0, 20, 0),
-                        MetadataVisibility = EndpointAttributes.All
+                        MetadataVisibility = EndpointAttributes.Any
                     };
 
                     if (instance.ServiceStackHandlerFactoryPath == null)
@@ -331,6 +331,7 @@ namespace ServiceStack.WebHost.Endpoints
         }
 
         public ServiceManager ServiceManager { get; internal set; }
+        public ServiceMetadata Metadata { get { return ServiceManager.Metadata; } }
         public IServiceController ServiceController { get { return ServiceManager.ServiceController; } }
 
         public MetadataTypesConfig MetadataTypesConfig { get; set; }
@@ -405,7 +406,7 @@ namespace ServiceStack.WebHost.Endpoints
             if (!String.IsNullOrEmpty(this.defaultOperationNamespace)
                 || this.ServiceController == null) return null;
 
-            foreach (var operationType in this.ServiceController.OperationTypes)
+            foreach (var operationType in this.Metadata.RequestTypes)
             {
                 var attrs = operationType.GetCustomAttributes(
                     typeof(DataContractAttribute), false);

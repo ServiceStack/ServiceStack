@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
@@ -24,15 +25,11 @@ namespace ServiceStack.ServiceHost
 		private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceController));
 		private const string ResponseDtoSuffix = "Response";
 
-		public ServiceController(Func<IEnumerable<Type>> resolveServicesFn)
+		public ServiceController(Func<IEnumerable<Type>> resolveServicesFn, ServiceMetadata metadata=null)
 		{
-			this.RequestServiceTypeMap = new Dictionary<Type, Type>();
-			this.ResponseServiceTypeMap = new Dictionary<Type, Type>();
-			this.AllOperationTypes = new List<Type>();
-            this.OperationTypes = new List<Type>();
-            this.OperationResponseTypesMap = new Dictionary<Type, Type>();
+            this.Metadata = metadata ?? new ServiceMetadata();
+
 			this.RequestTypeFactoryMap = new Dictionary<Type, Func<IHttpRequest, object>>();
-			this.ServiceTypes = new HashSet<Type>();
 			this.EnableAccessRestrictions = true;
 			this.routes = new ServiceRoutes();
 			this.ResolveServicesFn = resolveServicesFn;
@@ -41,26 +38,16 @@ namespace ServiceStack.ServiceHost
         readonly Dictionary<Type, ServiceExecFn> requestExecMap
 			= new Dictionary<Type, ServiceExecFn>();
 
-		readonly Dictionary<Type, ServiceAttribute> requestServiceAttrs
-			= new Dictionary<Type, ServiceAttribute>();
+		readonly Dictionary<Type, RestrictAttribute> requestServiceAttrs
+			= new Dictionary<Type, RestrictAttribute>();
 
 		private readonly ServiceRoutes routes;
 
 		public bool EnableAccessRestrictions { get; set; }
 
-		public Dictionary<Type, Type> ResponseServiceTypeMap { get; set; }
-
-		public Dictionary<Type, Type> RequestServiceTypeMap { get; set; }
-
-		public IList<Type> AllOperationTypes { get; protected set; }
-
-        public IList<Type> OperationTypes { get; protected set; }
-
-        public Dictionary<Type, Type> OperationResponseTypesMap { get; protected set; }
+        public ServiceMetadata Metadata { get; internal set; }
 
 		public Dictionary<Type, Func<IHttpRequest, object>> RequestTypeFactoryMap { get; set; }
-
-		public HashSet<Type> ServiceTypes { get; protected set; }
 
 		public string DefaultOperationsNamespace { get; set; }
 
@@ -160,18 +147,7 @@ namespace ServiceStack.ServiceHost
         {
             RegisterRestPaths(requestType);
 
-            this.ServiceTypes.Add(serviceType);
-
-            this.RequestServiceTypeMap[requestType] = serviceType;
-            this.AllOperationTypes.Add(requestType);
-            this.OperationTypes.Add(requestType);
-
-            if (responseType != null)
-            {
-                this.ResponseServiceTypeMap[responseType] = serviceType;
-                this.AllOperationTypes.Add(responseType);
-                this.OperationResponseTypesMap[requestType] = responseType;
-            }
+            Metadata.Add(serviceType, requestType, responseType);
 
             if (typeof (IRequiresRequestStream).IsAssignableFrom(requestType))
             {
@@ -353,10 +329,10 @@ namespace ServiceStack.ServiceHost
 
             requestExecMap.Add(requestType, handlerFn);
 
-            var serviceAttrs = requestType.GetCustomAttributes(typeof(ServiceAttribute), false);
+            var serviceAttrs = requestType.GetCustomAttributes(typeof(RestrictAttribute), false);
             if (serviceAttrs.Length > 0)
             {
-                requestServiceAttrs.Add(requestType, (ServiceAttribute)serviceAttrs[0]);
+                requestServiceAttrs.Add(requestType, (RestrictAttribute)serviceAttrs[0]);
             }
         }
 
@@ -493,9 +469,9 @@ namespace ServiceStack.ServiceHost
 
 		public void AssertServiceRestrictions(Type requestType, EndpointAttributes actualAttributes)
 		{
-			ServiceAttribute serviceAttr;
-			var hasNoAccessRestrictions = !requestServiceAttrs.TryGetValue(requestType, out serviceAttr)
-				|| serviceAttr.HasNoAccessRestrictions;
+			RestrictAttribute restrictAttr;
+			var hasNoAccessRestrictions = !requestServiceAttrs.TryGetValue(requestType, out restrictAttr)
+				|| restrictAttr.HasNoAccessRestrictions;
 
 			if (hasNoAccessRestrictions)
 			{
@@ -503,7 +479,7 @@ namespace ServiceStack.ServiceHost
 			}
 
 			var failedScenarios = new StringBuilder();
-			foreach (var requiredScenario in serviceAttr.RestrictAccessToScenarios)
+			foreach (var requiredScenario in restrictAttr.AccessibleToAny)
 			{
 				var allServiceRestrictionsMet = (requiredScenario & actualAttributes) == actualAttributes;
 				if (allServiceRestrictionsMet)

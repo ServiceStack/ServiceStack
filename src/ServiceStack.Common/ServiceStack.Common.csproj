@@ -436,9 +436,6 @@
     <Compile Include="Web\EndPoint.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Web\EndpointType.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Web\HttpError.cs">
       <SubType>Code</SubType>
     </Compile>

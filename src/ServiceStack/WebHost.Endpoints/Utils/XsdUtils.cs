@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Xml.Schema;
 
 namespace ServiceStack.WebHost.Endpoints.Utils
