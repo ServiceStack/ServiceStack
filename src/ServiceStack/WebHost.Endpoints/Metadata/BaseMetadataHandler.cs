@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Web;
 using System.Web.UI;
 using ServiceStack.Common.Extensions;
@@ -18,8 +19,6 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
 	public abstract class BaseMetadataHandler : HttpHandlerBase, IServiceStackHttpHandler
 	{
-		const string ResponseSuffix = "Response";
-
 		public abstract Format Format { get; }
 
 		public string ContentType { get; set; }
@@ -27,6 +26,15 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
 		public override void Execute(HttpContext context)
 		{
+            var httpReq = new HttpRequestWrapper(context.Request);
+            var httpRes = new HttpResponseWrapper(context.Response);
+            var operationName = httpReq.QueryString["op"];
+            if (!EndpointHost.Metadata.IsVisible(httpReq, Format, operationName))
+            {
+                EndpointHost.Config.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Service Not Available");
+                return;
+            }
+
 			var writer = new HtmlTextWriter(context.Response.Output);
 			context.Response.ContentType = "text/html";
 
@@ -35,7 +43,14 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
 		public virtual void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{
-			using (var sw = new StreamWriter(httpRes.OutputStream))
+            operationName = httpReq.QueryString["op"];
+            if (!EndpointHost.Metadata.IsVisible(httpReq, Format, operationName))
+            {
+                EndpointHost.Config.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Service Not Available");
+                return;
+            }
+
+            using (var sw = new StreamWriter(httpRes.OutputStream))
 			{
 				var writer = new HtmlTextWriter(sw);
 				httpRes.ContentType = "text/html";
@@ -49,7 +64,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
             if (EndpointHost.Config.MetadataVisibility != EndpointAttributes.Any)
             {
-                var actualAttributes = EndpointHandlerBase.GetEndpointAttributesFromRequest(httpReq);
+                var actualAttributes = Extensions.HttpRequestExtensions.GetAttributes(httpReq);
                 if ((actualAttributes & EndpointHost.Config.MetadataVisibility) != EndpointHost.Config.MetadataVisibility)
                     throw new UnauthorizedAccessException("Access to metadata is unauthorized.");
 
