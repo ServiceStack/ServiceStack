@@ -118,4 +118,33 @@ namespace ServiceStack.ServiceHost
         Other = 1 << 29,
     }
 
+    public static class EndpointAttributesExtensions
+    {
+        public static bool IsLocalhost(this EndpointAttributes attrs)
+        {
+            return (EndpointAttributes.Localhost & attrs) == EndpointAttributes.Localhost;
+        }
+
+        public static bool IsLocalSubnet(this EndpointAttributes attrs)
+        {
+            return (EndpointAttributes.LocalSubnet & attrs) == EndpointAttributes.LocalSubnet;
+        }
+
+        public static bool IsExternal(this EndpointAttributes attrs)
+        {
+            return (EndpointAttributes.External & attrs) == EndpointAttributes.External;
+        }
+
+        public static Format ToFormat(this string format)
+        {
+            try
+            {
+                return (Format)Enum.Parse(typeof(Format), format.ToUpper().Replace("X-", ""), true);
+            }
+            catch (Exception)
+            {
+                return Format.Other;
+            }
+        }
+    }
 }

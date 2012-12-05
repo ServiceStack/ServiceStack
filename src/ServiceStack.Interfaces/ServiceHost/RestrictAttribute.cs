@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ServiceStack.ServiceHost
 {
@@ -10,6 +11,68 @@ namespace ServiceStack.ServiceHost
 	public class RestrictAttribute
 		: Attribute
 	{
+        /// <summary>
+        /// Allow access but hide from metadata to requests from Localhost only
+        /// </summary>
+        public bool VisibleInternalOnly
+        {
+            get { return CanShowTo(EndpointAttributes.InternalNetworkAccess); }
+            set
+            {
+                if (value == false)
+                    throw new Exception("Only true allowed");
+
+                VisibilityTo = ToAllowedFlagsSet(EndpointAttributes.InternalNetworkAccess);
+            }
+        }
+
+        /// <summary>
+        /// Allow access but hide from metadata to requests from Localhost and Local Intranet only
+        /// </summary>
+        public bool VisibleLocalhostOnly
+        {
+            get { return CanShowTo(EndpointAttributes.Localhost); }
+            set
+            {
+                if (value == false)
+                    throw new Exception("Only true allowed");
+
+                VisibilityTo = ToAllowedFlagsSet(EndpointAttributes.Localhost); 
+            }
+        }
+
+        /// <summary>
+        /// Restrict access and hide from metadata to requests from Localhost and Local Intranet only
+        /// </summary>
+        public bool InternalOnly
+        {
+            get { return HasAccessTo(EndpointAttributes.InternalNetworkAccess) && CanShowTo(EndpointAttributes.InternalNetworkAccess); }
+            set
+            {
+                if (value == false)
+                    throw new Exception("Only true allowed");
+
+                AccessTo = ToAllowedFlagsSet(EndpointAttributes.InternalNetworkAccess);
+                VisibilityTo = ToAllowedFlagsSet(EndpointAttributes.InternalNetworkAccess);
+            }
+        }
+
+        /// <summary>
+        /// Restrict access and hide from metadata to requests from Localhost only
+        /// </summary>
+        public bool LocalhostOnly
+        {
+            get { return HasAccessTo(EndpointAttributes.Localhost) && CanShowTo(EndpointAttributes.Localhost); }
+            set
+            {
+                if (value == false)
+                    throw new Exception("Only true allowed");
+
+                AccessTo = ToAllowedFlagsSet(EndpointAttributes.Localhost);
+                VisibilityTo = ToAllowedFlagsSet(EndpointAttributes.Localhost); 
+            }
+        }
+
         /// <summary>
         /// Sets a single access restriction
         /// </summary>
@@ -57,6 +120,12 @@ namespace ServiceStack.ServiceHost
         /// </summary>
         /// <value>Visibility restrictions</value>
         public EndpointAttributes[] VisibleToAny { get; private set; }
+
+        public RestrictAttribute()
+        {
+            this.AccessTo = EndpointAttributes.Any;
+            this.VisibilityTo = EndpointAttributes.Any;
+        }
 
         /// <summary>
         /// Restrict access and metadata visibility to any of the specified access scenarios
@@ -156,10 +225,20 @@ namespace ServiceStack.ServiceHost
 	        return allowedAttrs;
 	    }
 
+        public bool CanShowTo(EndpointAttributes restrictions)
+        {
+            return this.VisibleToAny.Any(scenario => (scenario & restrictions) != 0);
+        }
+
+        public bool HasAccessTo(EndpointAttributes restrictions)
+        {
+            return this.AccessibleToAny.Any(scenario => (scenario & restrictions) != 0);
+        }
+
 	    static bool HasAnyRestrictionsOf(EndpointAttributes allRestrictions, EndpointAttributes restrictions)
-		{
-			return (allRestrictions & restrictions) != 0;
-		}
+        {
+            return (allRestrictions & restrictions) != 0;
+        }
 
         public bool HasNoAccessRestrictions
         {
