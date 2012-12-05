@@ -20,6 +20,7 @@ using ServiceStack.Markdown;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -111,6 +112,7 @@ namespace ServiceStack.WebHost.Endpoints
                         AppendUtf8CharsetOnContentTypes = new HashSet<string> { ContentType.Json, },
                         RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>>(),
                         CustomHttpHandlers = new Dictionary<HttpStatusCode, IHttpHandler>(),
+                        MapExceptionToStatusCode = new Dictionary<Type, int>(),
                         DefaultJsonpCacheExpiration = new TimeSpan(0, 20, 0),
                         MetadataVisibility = EndpointAttributes.Any
                     };
@@ -167,6 +169,7 @@ namespace ServiceStack.WebHost.Endpoints
             this.AppendUtf8CharsetOnContentTypes = instance.AppendUtf8CharsetOnContentTypes;
             this.RawHttpHandlers = instance.RawHttpHandlers;
             this.CustomHttpHandlers = instance.CustomHttpHandlers;
+            this.MapExceptionToStatusCode = instance.MapExceptionToStatusCode;
             this.DefaultJsonpCacheExpiration = instance.DefaultJsonpCacheExpiration;
             this.MetadataVisibility = instance.MetadataVisibility;
         }
@@ -381,6 +384,7 @@ namespace ServiceStack.WebHost.Endpoints
         public List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers { get; set; }
 
         public Dictionary<HttpStatusCode, IHttpHandler> CustomHttpHandlers { get; set; }
+        public Dictionary<Type, int> MapExceptionToStatusCode { get; set; }
 
         public TimeSpan DefaultJsonpCacheExpiration { get; set; }
 
@@ -445,6 +449,46 @@ namespace ServiceStack.WebHost.Endpoints
 
             var contentTypeFeature = ContentType.GetFeature(contentType);
             AssertFeatures(contentTypeFeature);
+        }
+
+        public void HandleErrorResponse(IHttpRequest httpReq, IHttpResponse httpRes, HttpStatusCode errorStatus, string errorStatusDescription=null)
+        {
+            httpRes.StatusDescription = errorStatusDescription;
+
+            var handler = GetHandlerForErrorStatus(errorStatus);
+            var ssHandler = handler as IServiceStackHttpHandler;
+            if (ssHandler != null)
+            {
+                ssHandler.ProcessRequest(httpReq, httpRes, null);
+                return;
+            }
+
+            handler.ProcessRequest(new HttpContext(
+                (HttpRequest)httpReq.OriginalRequest,
+                (HttpResponse)httpRes.OriginalResponse));
+        }
+
+        public IHttpHandler GetHandlerForErrorStatus(HttpStatusCode errorStatus)
+        {
+            IHttpHandler httpHandler = null;
+            if (CustomHttpHandlers != null)
+            {
+                CustomHttpHandlers.TryGetValue(errorStatus, out httpHandler);
+            }
+
+            switch (errorStatus)
+            {
+                case HttpStatusCode.Forbidden:
+                    return httpHandler ?? new ForbiddenHttpHandler();
+                case HttpStatusCode.NotFound:
+                    return httpHandler ?? new NotFoundHttpHandler();
+            }
+
+            if (CustomHttpHandlers != null)
+            {
+                CustomHttpHandlers.TryGetValue(HttpStatusCode.NotFound, out httpHandler);
+            }
+            return httpHandler ?? new NotFoundHttpHandler();
         }
     }
 
