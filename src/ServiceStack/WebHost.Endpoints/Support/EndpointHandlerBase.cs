@@ -11,15 +11,16 @@ using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
+using HttpRequestExtensions = ServiceStack.WebHost.Endpoints.Extensions.HttpRequestExtensions;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
 	public abstract class EndpointHandlerBase
 		: IServiceStackHttpHandler, IHttpHandler
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof(EndpointHandlerBase));
-		private static readonly Dictionary<byte[], byte[]> NetworkInterfaceIpv4Addresses = new Dictionary<byte[], byte[]>();
-		private static readonly byte[][] NetworkInterfaceIpv6Addresses = new byte[0][];
+	    internal static readonly ILog Log = LogManager.GetLogger(typeof(EndpointHandlerBase));
+	    internal static readonly Dictionary<byte[], byte[]> NetworkInterfaceIpv4Addresses = new Dictionary<byte[], byte[]>();
+	    internal static readonly byte[][] NetworkInterfaceIpv6Addresses = new byte[0][];
 
 		public string RequestName { get; set; }
 
@@ -179,7 +180,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			var portRestrictions = default(EndpointAttributes);
 			var ipAddress = GetIpAddress(operationContext);
 
-			portRestrictions |= GetIpAddressEndpointAttributes(ipAddress);
+			portRestrictions |= HttpRequestExtensions.GetAttributes(ipAddress);
 
 			//TODO: work out if the request was over a secure channel			
 			//portRestrictions |= request.IsSecureConnection ? PortRestriction.Secure : PortRestriction.InSecure;
@@ -206,82 +207,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public EndpointAttributes GetEndpointAttributes(IHttpRequest request)
 		{
-		    return GetEndpointAttributesFromRequest(request);
-		}
-
-        public static EndpointAttributes GetEndpointAttributesFromRequest(IHttpRequest request)
-        {
-			var portRestrictions = EndpointAttributes.None;
-
-			portRestrictions |= HttpMethods.GetEndpointAttribute(request.HttpMethod);
-			portRestrictions |= request.IsSecureConnection ? EndpointAttributes.Secure : EndpointAttributes.InSecure;
-
-			if (request.UserHostAddress != null)
-			{
-				var isIpv4Address = request.UserHostAddress.IndexOf('.') != -1 &&
-					request.UserHostAddress.IndexOf("::", StringComparison.InvariantCulture) == -1;
-				var pieces = request.UserHostAddress.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
-				var ipAddressNumber = isIpv4Address
-					? pieces[0]
-					: (request.UserHostAddress.Contains("]:")
-						? request.UserHostAddress.Substring(0, request.UserHostAddress.LastIndexOf(':'))
-						: request.UserHostAddress);
-
-                try
-                {
-                    ipAddressNumber = ipAddressNumber.SplitOnFirst(',')[0];
-                    var ipAddress = ipAddressNumber.StartsWith("::1")
-                        ? IPAddress.IPv6Loopback
-                        : IPAddress.Parse(ipAddressNumber);
-                    portRestrictions |= GetIpAddressEndpointAttributes(ipAddress);
-                }
-                catch (Exception ex)
-                {
-                    throw new ArgumentException("Could not parse Ipv{0} Address: {1} / {2}"
-                        .Fmt((isIpv4Address ? 4 : 6), request.UserHostAddress, ipAddressNumber), ex);
-                }
-			}
-
-			return portRestrictions;
-        }
-
-		private static EndpointAttributes GetIpAddressEndpointAttributes(IPAddress ipAddress)
-		{
-			if (IPAddress.IsLoopback(ipAddress))
-				return EndpointAttributes.Localhost;
-
-			return IsInLocalSubnet(ipAddress)
-				? EndpointAttributes.LocalSubnet
-				: EndpointAttributes.External;
-		}
-
-		private static bool IsInLocalSubnet(IPAddress ipAddress)
-		{
-			var ipAddressBytes = ipAddress.GetAddressBytes();
-			switch (ipAddress.AddressFamily)
-			{
-				case AddressFamily.InterNetwork:
-					foreach (var localIpv4AddressAndMask in NetworkInterfaceIpv4Addresses)
-					{
-						if (ipAddressBytes.IsInSameIpv4Subnet(localIpv4AddressAndMask.Key, localIpv4AddressAndMask.Value))
-						{
-							return true;
-						}
-					}
-					break;
-
-				case AddressFamily.InterNetworkV6:
-					foreach (var localIpv6Address in NetworkInterfaceIpv6Addresses)
-					{
-						if (ipAddressBytes.IsInSameIpv6Subnet(localIpv6Address))
-						{
-							return true;
-						}
-					}
-					break;
-			}
-
-			return false;
+		    return HttpRequestExtensions.GetAttributes(request);
 		}
 
 		protected static void AssertOperationExists(string operationName, Type type)
@@ -309,6 +235,5 @@ namespace ServiceStack.WebHost.Endpoints.Support
                 httpRes.EndServiceStackRequest(skipHeaders: true);
             }
 		}
-
 	}
 }
