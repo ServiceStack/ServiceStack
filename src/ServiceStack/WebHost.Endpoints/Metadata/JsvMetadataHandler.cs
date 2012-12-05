@@ -22,8 +22,8 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
             var defaultPage = new OperationsControl
             {
 				Title = EndpointHost.Config.ServiceName,
-                OperationNames = metadata.GetAllOperationNames(),
-				MetadataOperationPageBodyHtml = EndpointHost.Config.MetadataOperationPageBodyHtml,
+                OperationNames = metadata.GetOperationNamesForMetadata(httpReq, Format),
+                MetadataOperationPageBodyHtml = EndpointHost.Config.MetadataOperationPageBodyHtml,
             };
 
             defaultPage.RenderControl(writer);

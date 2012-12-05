@@ -23,7 +23,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
         public override Format Format
 		{
-            get { return Format.Other; }
+            get { return base.ContentFormat.ToFormat(); }
 		}
 
 		protected override string CreateMessage(Type dtoType)
@@ -56,8 +56,8 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 			var defaultPage = new OperationsControl
 			{
 				Title = EndpointHost.Config.ServiceName,
-                OperationNames = metadata.GetAllOperationNames(),
-				MetadataOperationPageBodyHtml = EndpointHost.Config.MetadataOperationPageBodyHtml,
+                OperationNames = metadata.GetOperationNamesForMetadata(httpReq, Format),
+                MetadataOperationPageBodyHtml = EndpointHost.Config.MetadataOperationPageBodyHtml,
 			};
 
 			defaultPage.RenderControl(writer);

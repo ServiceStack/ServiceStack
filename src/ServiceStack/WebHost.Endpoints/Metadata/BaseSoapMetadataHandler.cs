@@ -71,7 +71,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 				Title = EndpointHost.Config.ServiceName,
 				Xsds = XsdTypes.Xsds,
 				XsdServiceTypesIndex = 1,
-				OperationNames = metadata.GetAllOperationNames(),
+                OperationNames = metadata.GetOperationNamesForMetadata(httpReq),
 				MetadataPageBodyHtml = EndpointHost.Config.MetadataPageBodyHtml,
 			};
 
