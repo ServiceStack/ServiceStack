@@ -286,6 +286,7 @@
     <Compile Include="WebHost.Endpoints\Support\IndexPageHttpHandler.cs" />
     <Compile Include="WebHost.Endpoints\Support\RequestInfoHandler.cs" />
     <Compile Include="WebHost.Endpoints\Support\StaticFileHandler.cs" />
+    <Compile Include="WebHost.Endpoints\Support\Templates\TableTemplate.cs" />
     <Compile Include="WebHost.Endpoints\Support\Templates\Soap12WsdlTemplate.cs" />
     <Compile Include="WebHost.Endpoints\Metadata\Soap11WsdlMetadataHandler.cs" />
     <Compile Include="WebHost.Endpoints\Support\Templates\Soap11WsdlTemplate.cs" />
