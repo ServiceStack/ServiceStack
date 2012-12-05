@@ -417,6 +417,9 @@
     <Compile Include="..\..\ServiceStack.Common\ServiceClient.Web\Soap12ServiceClient.cs">
       <Link>ServiceClient.Web\Soap12ServiceClient.cs</Link>
     </Compile>
+    <Compile Include="..\..\ServiceStack.Common\Utils\ResponseStatusUtils.cs">
+      <Link>Utils\ResponseStatusUtils.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\ServiceStack.Text\src\ServiceStack.Text.MonoTouch\ServiceStack.Text.MonoTouch\ServiceStack.Text.MonoTouch.csproj">
