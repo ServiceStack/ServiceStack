@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.ServiceHost
 {
@@ -61,7 +63,10 @@ namespace ServiceStack.ServiceHost
         {
             if (typeof(IService).IsAssignableFrom(serviceType))
             {
-                return serviceType.GetActions().Select(x => x.Name.ToUpper()).ToList();
+                return serviceType.GetActions()
+                    .Where(x => x.GetParameters()[0].ParameterType == requestType)
+                    .Select(x => x.Name.ToUpper())
+                    .ToList();
             }
 
             var oldApiActions = serviceType
@@ -137,6 +142,61 @@ namespace ServiceStack.ServiceHost
         {
             return Operations.Select(x => x.RequestType.Name).ToList();
         }
+
+        public List<string> GetOperationNamesForMetadata(IHttpRequest httpReq)
+        {
+            return Operations.Select(x => x.RequestType.Name).ToList();
+        }
+
+        public List<string> GetOperationNamesForMetadata(IHttpRequest httpReq, Format format)
+        {
+            return Operations.Select(x => x.RequestType.Name).ToList();
+        }
+
+        public bool IsVisible(IHttpRequest httpReq, Format format, string operationName)
+        {
+            Operation operation;
+            OperationNamesMap.TryGetValue(operationName.ToLower(), out operation);
+            if (operation == null) return false;
+
+            var reqAttrs = httpReq.GetAttributes();
+
+            var canCall = HasImplementation(operation, format);
+            if (!canCall) return false;
+
+            if (operation.RestrictTo == null) return true;
+
+            var visbleToNetwork = CanShowToNetwork(operation, reqAttrs);
+            if (!visbleToNetwork) return false;
+            
+            var allowsFormat = operation.RestrictTo.CanShowTo((EndpointAttributes)(long)format);
+            return allowsFormat;
+        }
+
+        public bool HasImplementation(Operation operation, Format format)
+        {
+            if (format == Format.Soap11 || format == Format.Soap12)
+            {
+                if (operation.Actions == null) return false;
+
+                return operation.Actions.Contains("POST")
+                    || operation.Actions.Contains("ANY");
+            }
+            return true;
+        }
+
+        private static bool CanShowToNetwork(Operation operation, EndpointAttributes reqAttrs)
+        {
+            if (reqAttrs.IsLocalhost())
+                return operation.RestrictTo.CanShowTo(EndpointAttributes.Localhost)
+                       || operation.RestrictTo.CanShowTo(EndpointAttributes.LocalSubnet);
+
+            return operation.RestrictTo.CanShowTo(
+                reqAttrs.IsLocalSubnet()
+                    ? EndpointAttributes.LocalSubnet
+                    : EndpointAttributes.External);
+        }
+
     }
 
     public class Operation
