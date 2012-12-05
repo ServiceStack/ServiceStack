@@ -17,40 +17,99 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 		public int XsdServiceTypesIndex { get; set; }
 		public ServiceEndpointsMetadataConfig MetadataConfig { get; set; }
 
+        public string RenderRow(string operation)
+        {
+            var parentPath = HttpRequest.GetParentAbsolutePath();
+            var ignoreFormats = EndpointHost.Config.IgnoreFormatsInMetadata;
+            var metadata = EndpointHost.Metadata;
+
+            var show = EndpointHost.Config.DebugMode;
+            var opTemplate = new StringBuilder("<tr><th>{0}</th>");
+            
+            if (MetadataConfig.Xml != null && !ignoreFormats.Contains("xml"))
+            {
+                if (metadata.IsVisible(HttpRequest, Format.Xml, operation))
+                {
+                    show = true;
+                    opTemplate.AppendFormat(@"<td><a href=""{0}?op={{0}}"">XML</a></td>", parentPath + MetadataConfig.Xml.DefaultMetadataUri);
+                }
+                else
+                    opTemplate.AppendFormat("<td>XML</td>");
+            }
+
+            if (MetadataConfig.Json != null && !ignoreFormats.Contains("json"))
+            {
+                if (metadata.IsVisible(HttpRequest, Format.Json, operation))
+                {
+                    show = true;
+                    opTemplate.AppendFormat(@"<td><a href=""{0}?op={{0}}"">JSON</a></td>", parentPath + MetadataConfig.Json.DefaultMetadataUri);
+                }
+                else
+                    opTemplate.AppendFormat("<td>JSON</td>");
+            }
+
+            if (MetadataConfig.Jsv != null && !ignoreFormats.Contains("jsv"))
+            {
+                if (metadata.IsVisible(HttpRequest, Format.Jsv, operation))
+                {
+                    show = true;
+                    opTemplate.AppendFormat(@"<td><a href=""{0}?op={{0}}"">JSV</a></td>", parentPath + MetadataConfig.Jsv.DefaultMetadataUri);
+                }
+                else
+                    opTemplate.AppendFormat("<td>JSV</td>");
+            }
+            
+            if (MetadataConfig.Custom != null)
+            {
+                foreach (var format in EndpointHost.ContentTypeFilter.ContentTypeFormats.Keys)
+                {
+                    if (ignoreFormats.Contains(format)) continue;
+
+                    var uri = parentPath + string.Format(MetadataConfig.Custom.DefaultMetadataUri, format);
+                    if (metadata.IsVisible(HttpRequest, format.ToFormat(), operation))
+                    {
+                        show = true;
+                        opTemplate.AppendFormat(@"<td><a href=""{0}?op={{0}}"">{1}</a></td>", uri, format.ToUpper());
+                    }
+                    else
+                        opTemplate.AppendFormat("<td>{0}</td>", format.ToUpper());
+                }
+            }
+
+            if (MetadataConfig.Soap11 != null && !ignoreFormats.Contains("soap11"))
+            {
+                if (metadata.IsVisible(HttpRequest, Format.Soap11, operation))
+                {
+                    show = true;
+                    opTemplate.AppendFormat(@"<td><a href=""{0}?op={{0}}"">SOAP 1.1</a></td>", parentPath + MetadataConfig.Soap11.DefaultMetadataUri);
+                }
+                else
+                    opTemplate.AppendFormat("<td>SOAP 1.1</td>");                
+            }
+
+            if (MetadataConfig.Soap12 != null && !ignoreFormats.Contains("soap12"))
+            {
+                if (metadata.IsVisible(HttpRequest, Format.Soap12, operation))
+                {
+                    show = true;
+                    opTemplate.AppendFormat(@"<td><a class=""last"" href=""{0}?op={{0}}"">SOAP 1.2</a></td>", parentPath + MetadataConfig.Soap12.DefaultMetadataUri);
+                }
+                else
+                    opTemplate.AppendFormat("<td>SOAP 1.2</td>");
+            }
+            
+            opTemplate.Append("</tr>");
+
+            return show ? string.Format(opTemplate.ToString(), operation) : "";
+        }
+
 		protected override void Render(HtmlTextWriter output)
 		{
-			var parentPath = HttpRequest.GetParentAbsolutePath();
-			var ignoreFormats = EndpointHost.Config.IgnoreFormatsInMetadata;
-			var opTemplate = new StringBuilder("<li><span>{0}</span>");
-			if (MetadataConfig.Xml != null && !ignoreFormats.Contains("xml"))
-				opTemplate.AppendFormat(@"<a href=""{0}?op={{0}}"">XML</a>", parentPath + MetadataConfig.Xml.DefaultMetadataUri);
-			if (MetadataConfig.Json != null && !ignoreFormats.Contains("json"))
-				opTemplate.AppendFormat(@"<a href=""{0}?op={{0}}"">JSON</a>", parentPath + MetadataConfig.Json.DefaultMetadataUri);
-			if (MetadataConfig.Jsv != null && !ignoreFormats.Contains("jsv"))
-				opTemplate.AppendFormat(@"<a href=""{0}?op={{0}}"">JSV</a>", parentPath + MetadataConfig.Jsv.DefaultMetadataUri);
 
-			if (MetadataConfig.Custom != null)
-			{
-				foreach (var format in EndpointHost.ContentTypeFilter.ContentTypeFormats.Keys)
-				{
-					if (ignoreFormats.Contains(format)) continue;
-
-					var uri = parentPath + string.Format(MetadataConfig.Custom.DefaultMetadataUri, format);
-					opTemplate.AppendFormat(@"<a href=""{0}?op={{0}}"">{1}</a>", uri, format.ToUpper());
-				}
-			}
-
-			if (MetadataConfig.Soap11 != null && !ignoreFormats.Contains("soap11"))
-				opTemplate.AppendFormat(@"<a href=""{0}?op={{0}}"">SOAP 1.1</a>", parentPath + MetadataConfig.Soap11.DefaultMetadataUri);
-			if (MetadataConfig.Soap12 != null && !ignoreFormats.Contains("soap12"))
-				opTemplate.AppendFormat(@"<a class=""last"" href=""{0}?op={{0}}"">SOAP 1.2</a>", parentPath + MetadataConfig.Soap12.DefaultMetadataUri);
-
-			opTemplate.Append("</li>");
-
-			var operationsPart = new ListTemplate {
+            var operationsPart = new TableTemplate {
 				Title = "Operations:",
-				ListItems = this.OperationNames,
-				ForEachListItem = operation => string.Format(opTemplate.ToString(), operation)
+				Items = this.OperationNames,
+                ForEachItem = RenderRow
 			}.ToString();
 
 			var xsdsPart = new ListTemplate {
@@ -97,8 +156,9 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
         BODY  {{
             background-color:white;
             color:#000000;
-            font-family:Verdana;
+            font-family: Verdana, Helvetica, Arial, ""Lucida Grande"", sans-serif; 
             margin: 0;
+            font-size: 13px;
         }}
         H1 {{
             background-color: #036;
@@ -110,7 +170,6 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
             padding: 10px 0 3px 15px;
         }}
         FORM {{
-            font-size: 0.7em;
             margin-left: 20px;
             padding-bottom: 2em;
         }}
@@ -122,29 +181,33 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 			clear: left;
             margin-top: 10px;
         }}
-        LI A {{
+        LI A, TD A {{
             color: #369;
             font-weight: bold;
             text-decoration: underline;
         }}
-        LI A:hover {{
+        LI A:hover, TD A:hover {{
             color: #C30;
         }}
-		.operations UL {{
-			list-style: none;
+		.operations TABLE {{
+			margin-left: 1.5em;
+            border-collapse: collapse;
 		}}
-		.operations SPAN {{
-			float: left;
-			display: block;
-			width: 27em;
+		TABLE, TR, TH, TD {{
+            border: none;
 		}}
-		.operations A {{
-			border-right: 1px solid #CCC;
-			margin-right: 1em;
-			padding-right: 1em;
+		.operations TH {{
+            font-size: 13px;
+            text-align: left;
+            font-weight: normal;
+			min-width: 27em;
+            white-space: nowrap;
 		}}
-		.operations A.last {{
-			border:none;
+		.operations TD {{
+            font-size: 12px;
+            font-weight: bold;
+            color: #999;
+			padding-left: 1em;
 		}}
         </style>
 </head>

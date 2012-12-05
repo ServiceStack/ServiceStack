@@ -131,6 +131,7 @@
     <Compile Include="CompressionTests.cs" />
     <Compile Include="IntegrationTests\MovieSoap11Tests.cs" />
     <Compile Include="SendOneWayTests.cs" />
+    <Compile Include="Support\Services\EndpointAccessService.cs" />
     <Compile Include="SwaggerFeatureTests.cs" />
     <Compile Include="CorsFeatureTest.cs" />
     <Compile Include="IntegrationTests\CachedMoviesService.cs" />
