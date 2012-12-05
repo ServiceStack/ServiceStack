@@ -68,6 +68,8 @@ namespace ServiceStack.Authentication.OpenId
                         {
                             httpResult.Headers[header] = openIdResponse.Headers[header];
                         }
+                        // Save the current session to keep the ReferrerUrl available (similar to Facebook provider)
+                        authService.SaveSession(session, SessionExpiry);
                         return httpResult;
                     }
                 }
