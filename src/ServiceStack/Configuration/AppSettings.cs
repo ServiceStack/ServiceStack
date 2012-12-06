@@ -1,35 +1,26 @@
-using System.Collections.Generic;
-using ServiceStack.Text;
+using System.Configuration;
 
 namespace ServiceStack.Configuration
 {
-	/// <summary>
+    /// <summary>
 	/// More familiar name for the new crowd.
 	/// </summary>
-	public class AppSettings : IResourceManager
+	public class AppSettings : AppSettingsParser
 	{
-		public string GetString(string name)
-		{
-			return ConfigUtils.GetNullableAppSetting(name);
-		}
+        private class ConfigurationManagerWrapper : ISettings
+        {
+            public string Get(string key)
+            {
+                return ConfigurationManager.AppSettings[key];
+            }
+        }
 
-		public IList<string> GetList(string key)
-		{
-			return ConfigUtils.GetListFromAppSetting(key);
-		}
-
-		public IDictionary<string, string> GetDictionary(string key)
-		{
-			return ConfigUtils.GetDictionaryFromAppSetting(key);
-		}
-
-		public T Get<T>(string name, T defaultValue)
-		{
-			var stringValue = ConfigUtils.GetNullableAppSetting(name);
-
-			return stringValue != null
-				   ? TypeSerializer.DeserializeFromString<T>(stringValue)
-				   : defaultValue;
-		}
+        public AppSettings() : base(new ConfigurationManagerWrapper())
+        {
+        }
 	}
+
+    public class ConfigurationResourceManager : AppSettings
+    {
+    }
 }
