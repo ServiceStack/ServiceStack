@@ -11,19 +11,20 @@ namespace ServiceStack.WebHost.Endpoints
 		/// <returns></returns>
 		public static ServiceEndpointsMetadataConfig Create(string serviceStackHandlerPrefix)
 		{
-			return new ServiceEndpointsMetadataConfig
+            var config = new MetadataConfig("{0}", "{0}", "/{0}/syncreply", "/{0}/asynconeway", "/{0}/metadata");
+		    return new ServiceEndpointsMetadataConfig
 			{
 				DefaultMetadataUri = "/metadata",
-				Soap11 = new SoapMetadataConfig("/soap11", "/soap11", "/soap11/metadata", "soap11"),
-				Soap12 = new SoapMetadataConfig("/soap12", "/soap12", "/soap12/metadata", "soap12"),
-				Xml = new MetadataConfig("/xml/syncreply", "/xml/asynconeway", "/xml/metadata"),
-				Json = new MetadataConfig("/json/syncreply", "/json/asynconeway", "/json/metadata"),
-				Jsv = new MetadataConfig("/jsv/syncreply", "/jsv/asynconeway", "/jsv/metadata"),
-				Custom = new MetadataConfig("/{0}/syncreply", "/{0}/asynconeway", "/{0}/metadata")
+                Soap11 = new SoapMetadataConfig("soap11", "SOAP 1.1", "/soap11", "/soap11", "/soap11/metadata", "soap11"),
+                Soap12 = new SoapMetadataConfig("soap12", "SOAP 1.2", "/soap12", "/soap12", "/soap12/metadata", "soap12"),
+				Xml = config.Create("xml"),
+                Json = config.Create("json"),
+                Jsv = config.Create("jsv"),
+                Custom = config
 			};
 		}
 
-		public string DefaultMetadataUri { get; set; }
+	    public string DefaultMetadataUri { get; set; }
 		public SoapMetadataConfig Soap11 { get; set; }
 		public SoapMetadataConfig Soap12 { get; set; }
 		public MetadataConfig Xml { get; set; }
@@ -48,12 +49,7 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 
 			var format = ContentType.GetContentFormat(contentType);
-			return new MetadataConfig
-				(
-					string.Format(Custom.SyncReplyUri, format),
-					string.Format(Custom.AsyncOneWayUri, format),
-					string.Format(Custom.DefaultMetadataUri, format)
-				);
+		    return Custom.Create(format);
 		}
 	}
 }

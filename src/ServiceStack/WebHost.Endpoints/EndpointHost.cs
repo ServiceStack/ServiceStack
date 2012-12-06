@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Funq;
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
@@ -270,8 +271,8 @@ namespace ServiceStack.WebHost.Endpoints
 		}
 
         public static ServiceMetadata Metadata { get { return Config.Metadata; } }
-
-		/// <summary>
+       
+        /// <summary>
 		/// Applies the raw request filters. Returns whether or not the request has been handled 
 		/// and no more processing should be done.
 		/// </summary>

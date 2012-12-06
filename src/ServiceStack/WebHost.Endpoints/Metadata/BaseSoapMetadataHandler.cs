@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Xml.Schema;
@@ -31,7 +32,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
 		public new void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
     	{
-			EndpointHost.Config.AssertFeatures(Feature.Metadata);
+            if (!AssertAccess(httpReq, httpRes, httpReq.QueryString["op"])) return;
 
 			var operationTypes = EndpointHost.Metadata.GetAllTypes();
 
@@ -59,7 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 			{
 				var writer = new HtmlTextWriter(sw);
 				httpRes.ContentType = "text/html";
-				ProcessOperations(writer, httpReq);
+				ProcessOperations(writer, httpReq, httpRes);
 			}
     	}
 
@@ -67,7 +68,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
     	{
 			var defaultPage = new IndexOperationsControl {
 				HttpRequest = httpReq,
-				MetadataConfig = EndpointHost.Config.ServiceEndpointsMetadataConfig,
+                MetadataConfig = EndpointHost.Config.MetadataPagesConfig,                
 				Title = EndpointHost.Config.ServiceName,
 				Xsds = XsdTypes.Xsds,
 				XsdServiceTypesIndex = 1,

@@ -443,6 +443,18 @@ namespace ServiceStack.WebHost.Endpoints
             }
         }
 
+        public MetadataPagesConfig MetadataPagesConfig
+        {
+            get
+            {
+                return new MetadataPagesConfig(
+                    Metadata,
+                    ServiceEndpointsMetadataConfig,
+                    IgnoreFormatsInMetadata,
+                    EndpointHost.ContentTypeFilter.ContentTypeFormats.Keys.ToList());
+            }
+        }
+
         public void AssertContentType(string contentType)
         {
             if (EndpointHost.Config.EnableFeatures == Feature.All) return;
@@ -453,6 +465,8 @@ namespace ServiceStack.WebHost.Endpoints
 
         public void HandleErrorResponse(IHttpRequest httpReq, IHttpResponse httpRes, HttpStatusCode errorStatus, string errorStatusDescription=null)
         {
+            if (httpRes.IsClosed) return;
+
             httpRes.StatusDescription = errorStatusDescription;
 
             var handler = GetHandlerForErrorStatus(errorStatus);

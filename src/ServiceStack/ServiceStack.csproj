@@ -185,6 +185,7 @@
     <Compile Include="ServiceHost\DefaultRequestAttribute.cs" />
     <Compile Include="ServiceHost\DtoUtils.cs" />
     <Compile Include="ServiceHost\IRequiresSoapMessage.cs" />
+    <Compile Include="ServiceHost\MetadataPagesConfig.cs" />
     <Compile Include="ServiceHost\MqHttpRequest.cs" />
     <Compile Include="ServiceHost\MqHttpResponse.cs" />
     <Compile Include="ServiceHost\MqRequestContext.cs" />

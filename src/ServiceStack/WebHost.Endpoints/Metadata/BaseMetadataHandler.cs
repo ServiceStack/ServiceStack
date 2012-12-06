@@ -6,7 +6,6 @@ using System.Net;
 using System.Web;
 using System.Web.UI;
 using ServiceStack.Common.Extensions;
-using ServiceStack.Common.Web;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Support.Metadata.Controls;
@@ -26,52 +25,29 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
 		public override void Execute(HttpContext context)
 		{
-            var httpReq = new HttpRequestWrapper(context.Request);
-            var httpRes = new HttpResponseWrapper(context.Response);
-            var operationName = httpReq.QueryString["op"];
-            if (!EndpointHost.Metadata.IsVisible(httpReq, Format, operationName))
-            {
-                EndpointHost.Config.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Service Not Available");
-                return;
-            }
-
 			var writer = new HtmlTextWriter(context.Response.Output);
 			context.Response.ContentType = "text/html";
 
-			ProcessOperations(writer, new HttpRequestWrapper(GetType().Name, context.Request));
+			ProcessOperations(writer, new HttpRequestWrapper(GetType().Name, context.Request), new HttpResponseWrapper(context.Response));
 		}
 
 		public virtual void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{
-            operationName = httpReq.QueryString["op"];
-            if (!EndpointHost.Metadata.IsVisible(httpReq, Format, operationName))
-            {
-                EndpointHost.Config.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Service Not Available");
-                return;
-            }
-
             using (var sw = new StreamWriter(httpRes.OutputStream))
 			{
 				var writer = new HtmlTextWriter(sw);
 				httpRes.ContentType = "text/html";
-				ProcessOperations(writer, httpReq);
+                ProcessOperations(writer, httpReq, httpRes);
 			}
 		}
 
-		protected virtual void ProcessOperations(HtmlTextWriter writer, IHttpRequest httpReq)
+        protected virtual void ProcessOperations(HtmlTextWriter writer, IHttpRequest httpReq, IHttpResponse httpRes)
 		{
-			EndpointHost.Config.AssertFeatures(Feature.Metadata);
+            var operationName = httpReq.QueryString["op"];
 
-            if (EndpointHost.Config.MetadataVisibility != EndpointAttributes.Any)
-            {
-                var actualAttributes = Extensions.HttpRequestExtensions.GetAttributes(httpReq);
-                if ((actualAttributes & EndpointHost.Config.MetadataVisibility) != EndpointHost.Config.MetadataVisibility)
-                    throw new UnauthorizedAccessException("Access to metadata is unauthorized.");
+            if (!AssertAccess(httpReq, httpRes, operationName)) return;
 
-            }
-
-			var metadata = EndpointHost.Metadata;
-			var operationName = httpReq.QueryString["op"];
+            var metadata = EndpointHost.Metadata;
 			if (operationName != null)
 			{
 				var allTypes = metadata.GetAllTypes();
@@ -105,6 +81,30 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
 			RenderOperations(writer, httpReq, metadata);
 		}
+
+	    protected bool AssertAccess(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+	    {
+	        EndpointHost.Config.AssertFeatures(Feature.Metadata);
+
+	        if (EndpointHost.Config.MetadataVisibility != EndpointAttributes.Any)
+	        {
+	            var actualAttributes = httpReq.GetAttributes();
+	            if ((actualAttributes & EndpointHost.Config.MetadataVisibility) != EndpointHost.Config.MetadataVisibility)
+	            {
+	                EndpointHost.Config.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Metadata Not Available");
+	                return false;
+	            }
+	        }
+
+            if (operationName == null) return true; //For non-operation pages we don't need to check further permissions
+	        if (!EndpointHost.Config.MetadataPagesConfig.IsVisible(httpReq, Format, operationName))
+	        {
+	            EndpointHost.Config.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Service Not Available");
+	            return false;
+	        }
+
+	        return true;
+	    }
 
 	    public static string GetDescriptionFromOperationType(Type operationType)
 	    {
