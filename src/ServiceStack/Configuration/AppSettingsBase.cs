@@ -5,12 +5,12 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Configuration
 {
-    public class AppSettingsParser : IResourceManager
+    public class AppSettingsBase : IResourceManager
     {
         private readonly ISettings _settings;
         const string ErrorAppsettingNotFound = "Unable to find App Setting: {0}";
 
-        public AppSettingsParser(ISettings settings)
+        public AppSettingsBase(ISettings settings)
         {
             _settings = settings;
         }

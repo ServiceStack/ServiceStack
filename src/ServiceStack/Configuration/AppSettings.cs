@@ -3,10 +3,10 @@ using System.Configuration;
 namespace ServiceStack.Configuration
 {
     /// <summary>
-	/// More familiar name for the new crowd.
-	/// </summary>
-	public class AppSettings : AppSettingsParser
-	{
+    /// More familiar name for the new crowd.
+    /// </summary>
+    public class AppSettings : AppSettingsBase
+    {
         private class ConfigurationManagerWrapper : ISettings
         {
             public string Get(string key)
@@ -15,12 +15,8 @@ namespace ServiceStack.Configuration
             }
         }
 
-        public AppSettings() : base(new ConfigurationManagerWrapper())
-        {
-        }
-	}
-
-    public class ConfigurationResourceManager : AppSettings
-    {
+        public AppSettings() : base(new ConfigurationManagerWrapper()) {}
     }
+
+    public class ConfigurationResourceManager : AppSettings {}
 }
