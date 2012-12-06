@@ -20,6 +20,7 @@ using ServiceStack.Markdown;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -111,8 +112,9 @@ namespace ServiceStack.WebHost.Endpoints
                         AppendUtf8CharsetOnContentTypes = new HashSet<string> { ContentType.Json, },
                         RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>>(),
                         CustomHttpHandlers = new Dictionary<HttpStatusCode, IHttpHandler>(),
+                        MapExceptionToStatusCode = new Dictionary<Type, int>(),
                         DefaultJsonpCacheExpiration = new TimeSpan(0, 20, 0),
-                        MetadataVisibility = EndpointAttributes.All
+                        MetadataVisibility = EndpointAttributes.Any
                     };
 
                     if (instance.ServiceStackHandlerFactoryPath == null)
@@ -167,6 +169,7 @@ namespace ServiceStack.WebHost.Endpoints
             this.AppendUtf8CharsetOnContentTypes = instance.AppendUtf8CharsetOnContentTypes;
             this.RawHttpHandlers = instance.RawHttpHandlers;
             this.CustomHttpHandlers = instance.CustomHttpHandlers;
+            this.MapExceptionToStatusCode = instance.MapExceptionToStatusCode;
             this.DefaultJsonpCacheExpiration = instance.DefaultJsonpCacheExpiration;
             this.MetadataVisibility = instance.MetadataVisibility;
         }
@@ -331,6 +334,7 @@ namespace ServiceStack.WebHost.Endpoints
         }
 
         public ServiceManager ServiceManager { get; internal set; }
+        public ServiceMetadata Metadata { get { return ServiceManager.Metadata; } }
         public IServiceController ServiceController { get { return ServiceManager.ServiceController; } }
 
         public MetadataTypesConfig MetadataTypesConfig { get; set; }
@@ -380,6 +384,7 @@ namespace ServiceStack.WebHost.Endpoints
         public List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers { get; set; }
 
         public Dictionary<HttpStatusCode, IHttpHandler> CustomHttpHandlers { get; set; }
+        public Dictionary<Type, int> MapExceptionToStatusCode { get; set; }
 
         public TimeSpan DefaultJsonpCacheExpiration { get; set; }
 
@@ -405,7 +410,7 @@ namespace ServiceStack.WebHost.Endpoints
             if (!String.IsNullOrEmpty(this.defaultOperationNamespace)
                 || this.ServiceController == null) return null;
 
-            foreach (var operationType in this.ServiceController.OperationTypes)
+            foreach (var operationType in this.Metadata.RequestTypes)
             {
                 var attrs = operationType.GetCustomAttributes(
                     typeof(DataContractAttribute), false);
@@ -433,17 +438,77 @@ namespace ServiceStack.WebHost.Endpoints
 
             if (!HasFeature(usesFeatures))
             {
-                throw new NotSupportedException(
-                    String.Format("'{0}' Features have been disabled by your administrator", usesFeatures));
+                throw new UnauthorizedAccessException(
+                    string.Format("'{0}' Features have been disabled by your administrator", usesFeatures));
             }
+        }
+
+        public UnauthorizedAccessException UnauthorizedAccess(EndpointAttributes requestAttrs)
+        {
+            return new UnauthorizedAccessException(
+                string.Format("Request with '{0}' is not allowed", requestAttrs));
         }
 
         public void AssertContentType(string contentType)
         {
             if (EndpointHost.Config.EnableFeatures == Feature.All) return;
 
-            var contentTypeFeature = ContentType.GetFeature(contentType);
+            var contentTypeFeature = ContentType.ToFeature(contentType);
             AssertFeatures(contentTypeFeature);
+        }
+        
+        public MetadataPagesConfig MetadataPagesConfig
+        {
+            get
+            {
+                return new MetadataPagesConfig(
+                    Metadata,
+                    ServiceEndpointsMetadataConfig,
+                    IgnoreFormatsInMetadata,
+                    EndpointHost.ContentTypeFilter.ContentTypeFormats.Keys.ToList());
+            }
+        }
+
+        public void HandleErrorResponse(IHttpRequest httpReq, IHttpResponse httpRes, HttpStatusCode errorStatus, string errorStatusDescription=null)
+        {
+            if (httpRes.IsClosed) return;
+
+            httpRes.StatusDescription = errorStatusDescription;
+
+            var handler = GetHandlerForErrorStatus(errorStatus);
+            var ssHandler = handler as IServiceStackHttpHandler;
+            if (ssHandler != null)
+            {
+                ssHandler.ProcessRequest(httpReq, httpRes, null);
+                return;
+            }
+
+            handler.ProcessRequest(new HttpContext(
+                (HttpRequest)httpReq.OriginalRequest,
+                (HttpResponse)httpRes.OriginalResponse));
+        }
+
+        public IHttpHandler GetHandlerForErrorStatus(HttpStatusCode errorStatus)
+        {
+            IHttpHandler httpHandler = null;
+            if (CustomHttpHandlers != null)
+            {
+                CustomHttpHandlers.TryGetValue(errorStatus, out httpHandler);
+            }
+
+            switch (errorStatus)
+            {
+                case HttpStatusCode.Forbidden:
+                    return httpHandler ?? new ForbiddenHttpHandler();
+                case HttpStatusCode.NotFound:
+                    return httpHandler ?? new NotFoundHttpHandler();
+            }
+
+            if (CustomHttpHandlers != null)
+            {
+                CustomHttpHandlers.TryGetValue(HttpStatusCode.NotFound, out httpHandler);
+            }
+            return httpHandler ?? new NotFoundHttpHandler();
         }
     }
 

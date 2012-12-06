@@ -37,17 +37,20 @@ namespace ServiceStack
                 typeof(ResponseStatus),
                 typeof(ErrorResponse),
             };
-            foreach (var entry in EndpointHost.ServiceOperations.OperationResponseTypesMap)
+
+            var meta = EndpointHost.Metadata;
+            foreach (var operation in meta.Operations)
             {
                 metadata.Operations.Add(new MetadataOperationType {
-                    Request = entry.Key.ToType(),
-                    Response = entry.Value.ToType(),
+                    Request = operation.RequestType.ToType(),
+                    Response = operation.ResponseType.ToType(),
                 });
-                existingTypes.Add(entry.Key);
-                existingTypes.Add(entry.Value);
+
+                existingTypes.Add(operation.RequestType);
+                existingTypes.Add(operation.ResponseType);
             }
 
-            foreach (var type in EndpointHost.ServiceOperations.AllOperations.Types)
+            foreach (var type in meta.GetAllTypes())
             {
                 if (existingTypes.Contains(type))
                     continue;

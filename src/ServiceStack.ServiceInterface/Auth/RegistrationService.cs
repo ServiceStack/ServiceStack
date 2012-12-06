@@ -79,7 +79,8 @@ namespace ServiceStack.ServiceInterface.Auth
         }
     }
 
-    public class RegistrationService : RestServiceBase<Registration>
+    [DefaultRequest(typeof(Registration))]
+    public class RegistrationService : Service
     {
         public IUserAuthRepository UserAuthRepo { get; set; }
         public static ValidateFn ValidateFn { get; set; }
@@ -95,7 +96,7 @@ namespace ServiceStack.ServiceInterface.Auth
         /// <summary>
         /// Create new Registration
         /// </summary>
-        public override object OnPost(Registration request)
+        public object Post(Registration request)
         {
             if (!ValidationFeature.Enabled) //Already gets run
                 RegistrationValidator.ValidateAndThrow(request, ApplyTo.Post);

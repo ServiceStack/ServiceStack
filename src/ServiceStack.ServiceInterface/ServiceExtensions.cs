@@ -6,6 +6,7 @@ using ServiceStack.Common.Web;
 using ServiceStack.Redis;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Auth;
+using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 
@@ -112,7 +113,7 @@ namespace ServiceStack.ServiceInterface
                 ?? DefaultCache;
         }
 
-        public static void SaveSession(this IServiceBase service, IAuthSession session, TimeSpan? expiresIn=null)
+        public static void SaveSession(this IServiceBase service, IAuthSession session, TimeSpan? expiresIn = null)
         {
             if (service == null) return;
 
@@ -141,7 +142,7 @@ namespace ServiceStack.ServiceInterface
                 cache.Set(key, value);
         }
 
-        public static void SaveSession(this IHttpRequest httpReq, IAuthSession session, TimeSpan? expiresIn=null)
+        public static void SaveSession(this IHttpRequest httpReq, IAuthSession session, TimeSpan? expiresIn = null)
         {
             if (httpReq == null) return;
 
@@ -210,5 +211,22 @@ namespace ServiceStack.ServiceInterface
             return session;
         }
 
+        public static object RunAction<TService,TRequest>(
+            this TService service, TRequest request, Func<TService, TRequest, object> invokeAction,
+            IRequestContext requestContext=null)
+            where TService : IService
+        {
+            var actionCtx = new ActionContext {
+                RequestFilters = new IHasRequestFilter[0],
+                ResponseFilters = new IHasResponseFilter[0],
+                RequestType = service.GetType(),
+                ServiceAction = (instance, req) => invokeAction(service, request)
+            };
+
+            requestContext = requestContext ?? new MockRequestContext();
+            var runner = new ServiceRunner<TRequest>(EndpointHost.AppHost, actionCtx);
+            var response = runner.Execute(requestContext, service, request);
+            return response;
+        }
     }
 }

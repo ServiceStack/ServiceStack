@@ -118,26 +118,39 @@ namespace ServiceStack.Configuration
 		/// <returns></returns>
 		public static List<string> GetListFromAppSetting(string key)
 		{
-			return new List<string>(GetAppSetting(key).Split(ItemSeperator));
+		    var appSettingValue = GetAppSetting(key);
+		    return GetListFromAppSettingValue(appSettingValue);
 		}
 
-		/// <summary>
+        public static List<string> GetListFromAppSettingValue(string appSettingValue)
+	    {
+	        return new List<string>(appSettingValue.Split(ItemSeperator));
+	    }
+
+	    /// <summary>
 		/// Gets the dictionary from app setting.
 		/// </summary>
 		/// <param name="key">The key.</param>
 		/// <returns></returns>
 		public static Dictionary<string, string> GetDictionaryFromAppSetting(string key)
-		{
-			var dictionary = new Dictionary<string, string>();
-			foreach (var item in GetAppSetting(key).Split(ItemSeperator))
-			{
-				var keyValuePair = item.Split(KeyValueSeperator);
-				dictionary.Add(keyValuePair[KeyIndex], keyValuePair[ValueIndex]);
-			}
-			return dictionary;
-		}
+	    {
+	        var appSettingValue = GetAppSetting(key);
+	        return GetDictionaryFromAppSettingValue(appSettingValue);
+	    }
 
-		#region Private Methods
+        public static Dictionary<string, string> GetDictionaryFromAppSettingValue(string appSettingValue)
+	    {
+	        var dictionary = new Dictionary<string, string>();
+
+	        foreach (var item in appSettingValue.Split(ItemSeperator))
+	        {
+	            var keyValuePair = item.Split(KeyValueSeperator);
+	            dictionary.Add(keyValuePair[KeyIndex], keyValuePair[ValueIndex]);
+	        }
+	        return dictionary;
+	    }
+
+	    #region Private Methods
 		/// <summary>
 		/// Get the static Parse(string) method on the type supplied
 		/// </summary>

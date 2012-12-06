@@ -18,12 +18,12 @@ namespace ServiceStack.Common.Support
         /// <returns></returns>
         protected T Execute<T>(Func<T> action)
         {
-            DateTime before = DateTime.Now;
+            DateTime before = DateTime.UtcNow;
             this.Log.DebugFormat("Executing action '{0}'", action.Method.Name);
             try
             {
                 T result = action();
-                TimeSpan timeTaken = DateTime.Now - before;
+                TimeSpan timeTaken = DateTime.UtcNow - before;
                 this.Log.DebugFormat("Action '{0}' executed. Took {1} ms.", action.Method.Name, timeTaken.TotalMilliseconds);
                 return result;
             }
@@ -40,12 +40,12 @@ namespace ServiceStack.Common.Support
         /// <param name="action">The action.</param>
         protected void Execute(Action action)
         {
-            DateTime before = DateTime.Now;
+            DateTime before = DateTime.UtcNow;
             this.Log.DebugFormat("Executing action '{0}'", action.Method.Name);
             try
             {
                 action();
-                TimeSpan timeTaken = DateTime.Now - before;
+                TimeSpan timeTaken = DateTime.UtcNow - before;
                 this.Log.DebugFormat("Action '{0}' executed. Took {1} ms.", action.Method.Name, timeTaken.TotalMilliseconds);
             }
             catch (Exception ex)

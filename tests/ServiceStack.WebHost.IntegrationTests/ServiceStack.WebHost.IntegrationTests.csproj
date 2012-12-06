@@ -172,6 +172,7 @@
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="Services\CachedProtoBufEmailService.cs" />
+    <Compile Include="Services\EndpointAccessService.cs" />
     <Compile Include="Services\HelloImage.cs" />
     <Compile Include="Services\IocServiceTests.cs" />
     <Compile Include="Tests\BinarySerializedTests.cs" />

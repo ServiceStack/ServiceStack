@@ -1,8 +1,6 @@
 using System;
-using System.Globalization;
 using System.Web.UI;
 using ServiceStack.Common.Utils;
-using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
@@ -12,7 +10,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 {
     public class JsonMetadataHandler : BaseMetadataHandler
     {
-		public override EndpointType EndpointType { get { return EndpointType.Json; } }
+        public override Format Format { get { return Format.Json; } }
 		
 		protected override string CreateMessage(Type dtoType)
         {
@@ -20,13 +18,13 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
             return JsonDataContractSerializer.Instance.SerializeToString(requestObj);
         }
 
-        protected override void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, Operations allOperations)
+        protected override void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, ServiceMetadata metadata)
         {
             var defaultPage = new OperationsControl
             {
 				Title = EndpointHost.Config.ServiceName,
-                OperationNames = allOperations.Names,
-				MetadataOperationPageBodyHtml = EndpointHost.Config.MetadataOperationPageBodyHtml,
+                OperationNames = metadata.GetOperationNamesForMetadata(httpReq, Format),
+                MetadataOperationPageBodyHtml = EndpointHost.Config.MetadataOperationPageBodyHtml,
             };
 
             defaultPage.RenderControl(writer);

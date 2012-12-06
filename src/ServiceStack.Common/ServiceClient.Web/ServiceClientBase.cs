@@ -33,6 +33,20 @@ namespace ServiceStack.ServiceClient.Web
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(ServiceClientBase));
 
+        private string replyPath = "/syncreply/";
+        private string oneWayPath = "/asynconeway/";
+
+        public bool UseNewPredefinedRoutes
+        {
+            set
+            {
+                replyPath = value ? "/reply/" : "/syncreply/";
+                oneWayPath = value ? "/oneway/" : "/asynconeway/";
+                this.SyncReplyBaseUri = BaseUri.WithTrailingSlash() + Format + replyPath;
+                this.AsyncOneWayBaseUri = BaseUri.WithTrailingSlash() + Format + oneWayPath;
+            }
+        }
+
         /// <summary>
         /// The request filter is called before any request.
         /// This request filter is executed globally.
@@ -113,8 +127,8 @@ namespace ServiceStack.ServiceClient.Web
         {
             this.BaseUri = baseUri;
             this.asyncClient.BaseUri = baseUri;
-            this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + Format + "/syncreply/";
-            this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + Format + "/asynconeway/";
+            this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + Format + replyPath;
+            this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + Format + oneWayPath;
         }
 
         /// <summary>
@@ -893,7 +907,7 @@ namespace ServiceStack.ServiceClient.Web
 #if !MONOTOUCH
                 var nameValueCollection = HttpUtility.ParseQueryString(queryString);
 #endif
-                var boundary = DateTime.Now.Ticks.ToString(CultureInfo.InvariantCulture);
+                var boundary = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
                 webRequest.ContentType = "multipart/form-data; boundary=" + boundary;
                 boundary = "--" + boundary;
                 var newLine = Environment.NewLine;

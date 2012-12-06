@@ -33,42 +33,44 @@ namespace ServiceStack
 
             var pathAction = string.Intern(pathParts[1].ToLower());
             var requestName = pathParts.Length > 2 ? pathParts[2] : null;
+            var isReply = pathAction == "syncreply" || pathAction == "reply";
+            var isOneWay = pathAction == "asynconeway" || pathAction == "oneway";
             switch (pathController)
             {
                 case "json":
-                    if (pathAction == "syncreply")
-                        return new JsonSyncReplyHandler {RequestName = requestName};
-                    if (pathAction == "asynconeway")
-                        return new JsonAsyncOneWayHandler {RequestName = requestName};
+                    if (isReply)
+                        return new JsonSyncReplyHandler { RequestName = requestName };
+                    if (isOneWay)
+                        return new JsonAsyncOneWayHandler { RequestName = requestName };
                     break;
 
                 case "xml":
-                    if (pathAction == "syncreply")
-                        return new XmlSyncReplyHandler {RequestName = requestName};
-                    if (pathAction == "asynconeway")
-                        return new XmlAsyncOneWayHandler {RequestName = requestName};
+                    if (isReply)
+                        return new XmlSyncReplyHandler { RequestName = requestName };
+                    if (isOneWay)
+                        return new XmlAsyncOneWayHandler { RequestName = requestName };
                     break;
 
                 case "jsv":
-                    if (pathAction == "syncreply")
-                        return new JsvSyncReplyHandler {RequestName = requestName};
-                    if (pathAction == "asynconeway")
-                        return new JsvAsyncOneWayHandler {RequestName = requestName};
+                    if (isReply)
+                        return new JsvSyncReplyHandler { RequestName = requestName };
+                    if (isOneWay)
+                        return new JsvAsyncOneWayHandler { RequestName = requestName };
                     break;
 
                 default:
                     string contentType;
                     if (EndpointHost.ContentTypeFilter.ContentTypeFormats.TryGetValue(pathController, out contentType))
                     {
-                        var feature = Common.Web.ContentType.GetFeature(contentType);
+                        var feature = Common.Web.ContentType.ToFeature(contentType);
                         if (feature == Feature.None) feature = Feature.CustomFormat;
 
-                        if (pathAction == "syncreply")
-                            return new GenericHandler(contentType, EndpointAttributes.SyncReply, feature) {
+                        if (isReply)
+                            return new GenericHandler(contentType, EndpointAttributes.Reply, feature) {
                                 RequestName = requestName
                             };
-                        if (pathAction == "asynconeway")
-                            return new GenericHandler(contentType, EndpointAttributes.AsyncOneWay, feature) {
+                        if (isOneWay)
+                            return new GenericHandler(contentType, EndpointAttributes.OneWay, feature) {
                                 RequestName = requestName
                             };
                     }

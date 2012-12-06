@@ -2,20 +2,36 @@
 using NUnit.Framework;
 using ServiceStack.Common.Web;
 using ServiceStack.FluentValidation;
+using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.Testing;
-using ServiceStack.ServiceInterface.Validation;
+using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Common.Tests.OAuth
 {
 	[TestFixture]
 	public class RegistrationServiceTests
 	{
-		[TestFixtureSetUp]
+        static BasicAppHost _appHost = null;
+        static readonly AuthUserSession authUserSession = new AuthUserSession();
+
+        static IAppHost GetAppHost()
+        {
+            if (_appHost == null)
+            {
+                _appHost = new BasicAppHost();
+                var authService = new AuthService();
+                authService.SetAppHost(_appHost);
+                _appHost.Container.Register(authService);
+                _appHost.Container.Register<IAuthSession>(authUserSession);
+            }
+            return _appHost;
+        }
+        
+        [TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			AuthService.Init(() => new AuthUserSession(),
-				new CredentialsAuthProvider());            
+            AuthService.Init(() => authUserSession, new CredentialsAuthProvider());            
 		}
 
 		public static IUserAuthRepository GetStubRepo()
@@ -34,13 +50,16 @@ namespace ServiceStack.Common.Tests.OAuth
 			IUserAuthRepository authRepo=null)
 		{
 			var requestContext = new MockRequestContext();
-			var service = new RegistrationService {
-				RegistrationValidator = validator ?? new RegistrationValidator { UserAuthRepo = GetStubRepo() },
-				UserAuthRepo = authRepo ?? GetStubRepo(),
+		    var userAuthRepository = authRepo ?? GetStubRepo();
+		    var service = new RegistrationService {
+                RegistrationValidator = validator ?? new RegistrationValidator { UserAuthRepo = userAuthRepository },
+				UserAuthRepo = userAuthRepository,
 				RequestContext = requestContext,
-                ServiceExceptionHandler = (req, ex) =>
-                    ValidationFeature.HandleException(new BasicResolver(), req, ex)
 			};
+
+		    var appHost = GetAppHost();
+            appHost.Register(userAuthRepository);
+		    service.SetAppHost(appHost);
 
             return service;
 		}
@@ -50,7 +69,7 @@ namespace ServiceStack.Common.Tests.OAuth
 		{
 			var service = GetRegistrationService();
 
-			var response = (HttpError)service.Post(new Registration());
+	        var response = PostRegistrationError(service, new Registration());
 			var errors = response.GetFieldErrors();
 
 			Assert.That(errors.Count, Is.EqualTo(3));
@@ -62,13 +81,19 @@ namespace ServiceStack.Common.Tests.OAuth
 			Assert.That(errors[2].FieldName, Is.EqualTo("Email"));
 		}
 
-		[Test]
+	    private static HttpError PostRegistrationError(RegistrationService service, Registration registration)
+	    {
+	        var response = (HttpError) service.RunAction(registration, (svc, req) => svc.Post(req));
+	        return response;
+	    }
+
+	    [Test]
 		public void Empty_Registration_is_invalid_with_FullRegistrationValidator()
 		{
 			var service = GetRegistrationService(new FullRegistrationValidator());
 
-			var response = (HttpError)service.Post(new Registration());
-			var errors = response.GetFieldErrors();
+            var response = PostRegistrationError(service, new Registration());
+            var errors = response.GetFieldErrors();
 
 			Assert.That(errors.Count, Is.EqualTo(4));
 			Assert.That(errors[0].ErrorCode, Is.EqualTo("NotEmpty"));
@@ -118,8 +143,6 @@ namespace ServiceStack.Common.Tests.OAuth
 			var service = new RegistrationService {
 				RegistrationValidator = new RegistrationValidator { UserAuthRepo = mock.Object },
 				UserAuthRepo = mock.Object,
-                ServiceExceptionHandler = (req, ex) =>
-                    ValidationFeature.HandleException(new BasicResolver(), req, ex)
             };
 
 			var request = new Registration {
@@ -131,8 +154,8 @@ namespace ServiceStack.Common.Tests.OAuth
 				UserName = "UserName",
 			};
 
-			var response = (HttpError)service.Post(request);
-			var errors = response.GetFieldErrors();
+            var response = PostRegistrationError(service, request);
+            var errors = response.GetFieldErrors();
 
 			Assert.That(errors.Count, Is.EqualTo(2));
 			Assert.That(errors[0].ErrorCode, Is.EqualTo("AlreadyExists"));

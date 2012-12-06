@@ -4,7 +4,7 @@ using ServiceStack.ServiceHost;
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 {
 
-	[Service(EndpointAttributes.InternalNetworkAccess | EndpointAttributes.Secure | EndpointAttributes.HttpPost | EndpointAttributes.Xml)]
+	[Restrict(EndpointAttributes.InternalNetworkAccess | EndpointAttributes.Secure | EndpointAttributes.HttpPost | EndpointAttributes.Xml)]
 	[DataContract]
 	public class SecureDevEnvironmentRestriction { }
 

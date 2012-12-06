@@ -2,13 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Web;
+using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints.Extensions
 {
@@ -59,7 +62,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 		public static string GetOperationNameFromLastPathInfo(string lastPathInfo)
 		{
-			if (string.IsNullOrEmpty(lastPathInfo)) return null;
+			if (String.IsNullOrEmpty(lastPathInfo)) return null;
 
 			var operationName = lastPathInfo.Substring("/".Length);
 
@@ -80,7 +83,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		public static string GetLastPathInfo(this HttpRequest request)
 		{
 			var pathInfo = request.PathInfo;
-			if (string.IsNullOrEmpty(pathInfo))
+			if (String.IsNullOrEmpty(pathInfo))
 			{
 				pathInfo = GetLastPathInfoFromRawUrl(request.RawUrl);
 			}
@@ -152,10 +155,10 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 		public static string GetPathInfo(this HttpRequest request)
 		{
-			if (!string.IsNullOrEmpty(request.PathInfo)) return request.PathInfo.TrimEnd('/');
+			if (!String.IsNullOrEmpty(request.PathInfo)) return request.PathInfo.TrimEnd('/');
 
 			var mode = EndpointHost.Config.ServiceStackHandlerFactoryPath;
-			var appPath = string.IsNullOrEmpty(request.ApplicationPath)
+			var appPath = String.IsNullOrEmpty(request.ApplicationPath)
 			              ? WebHostDirectoryName
 			              : request.ApplicationPath.TrimStart('/');
 
@@ -167,11 +170,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		public static string GetPathInfo(string fullPath, string mode, string appPath)
 		{
 			var pathInfo = ResolvePathInfoFromMappedPath(fullPath, mode);
-			if (!string.IsNullOrEmpty(pathInfo)) return pathInfo;
+			if (!String.IsNullOrEmpty(pathInfo)) return pathInfo;
 			
 			//Wildcard mode relies on this to find work out the handlerPath
 			pathInfo = ResolvePathInfoFromMappedPath(fullPath, appPath);
-			if (!string.IsNullOrEmpty(pathInfo)) return pathInfo;
+			if (!String.IsNullOrEmpty(pathInfo)) return pathInfo;
 			
 			return fullPath;
 		}
@@ -192,7 +195,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
                 } else if (fullPathIndex - fullPathIndexOffset >= 0) {
                     pathRootFound = true;
                     for (var mappedPathRootIndex = 0; mappedPathRootIndex < mappedPathRootParts.Length; mappedPathRootIndex++) {
-                        if (!string.Equals(fullPathParts[fullPathIndex - fullPathIndexOffset + mappedPathRootIndex], mappedPathRootParts[mappedPathRootIndex], StringComparison.InvariantCultureIgnoreCase)) {
+                        if (!String.Equals(fullPathParts[fullPathIndex - fullPathIndexOffset + mappedPathRootIndex], mappedPathRootParts[mappedPathRootIndex], StringComparison.InvariantCultureIgnoreCase)) {
                             pathRootFound = false;
                             break;
                         }
@@ -256,7 +259,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		public static string GetQueryStringContentType(this IHttpRequest httpReq)
 		{
 			var callback = httpReq.QueryString["callback"];
-			if (!string.IsNullOrEmpty(callback)) return ContentType.Json;
+			if (!String.IsNullOrEmpty(callback)) return ContentType.Json;
 
 			var format = httpReq.QueryString["format"];
 			if (format == null)
@@ -304,7 +307,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		public static string GetResponseContentType(this IHttpRequest httpReq)
 		{
 			var specifiedContentType = GetQueryStringContentType(httpReq);
-			if (!string.IsNullOrEmpty(specifiedContentType)) return specifiedContentType;
+			if (!String.IsNullOrEmpty(specifiedContentType)) return specifiedContentType;
 
 			var acceptContentTypes = httpReq.AcceptTypes;
 			var defaultContentType = httpReq.ContentType;
@@ -316,7 +319,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			var customContentTypes = EndpointHost.ContentTypeFilter.ContentTypeFormats.Values;
 
 			var acceptsAnything = false;
-			var hasDefaultContentType = !string.IsNullOrEmpty(defaultContentType);
+			var hasDefaultContentType = !String.IsNullOrEmpty(defaultContentType);
 			if (acceptContentTypes != null)
 			{
 				var hasPreferredContentTypes = new bool[PreferredContentTypes.Length];
@@ -414,7 +417,102 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
             return "/"; //Can't infer Absolute Uri, fallback to root relative path
         }
-    }
+
+        public static EndpointAttributes ToEndpointAttributes(string[] attrNames)
+        {
+            var attrs = EndpointAttributes.None;
+            foreach (var simulatedAttr in attrNames)
+            {
+                var attr = (EndpointAttributes)Enum.Parse(typeof(EndpointAttributes), simulatedAttr, true);
+                attrs |= attr;
+            }
+            return attrs;
+        }
+
+	    public static EndpointAttributes GetAttributes(this IHttpRequest request)
+	    {
+	        if (EndpointHost.Config.DebugMode)
+	        {
+                var simulate = request.QueryString["simulate"];
+                if (simulate != null)
+                {
+                    return ToEndpointAttributes(simulate.Split(','));
+                }
+	        }
+
+	        var portRestrictions = EndpointAttributes.None;
+
+	        portRestrictions |= HttpMethods.GetEndpointAttribute(request.HttpMethod);
+	        portRestrictions |= request.IsSecureConnection ? EndpointAttributes.Secure : EndpointAttributes.InSecure;
+
+	        if (request.UserHostAddress != null)
+	        {
+	            var isIpv4Address = request.UserHostAddress.IndexOf('.') != -1 
+                    && request.UserHostAddress.IndexOf("::", StringComparison.InvariantCulture) == -1;
+	            var pieces = request.UserHostAddress.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+	            var ipAddressNumber = isIpv4Address
+                    ? pieces[0]
+                    : (request.UserHostAddress.Contains("]:")
+                        ? request.UserHostAddress.Substring(0, request.UserHostAddress.LastIndexOf(':'))
+                        : request.UserHostAddress);
+
+	            try
+	            {
+	                ipAddressNumber = ipAddressNumber.SplitOnFirst(',')[0];
+	                var ipAddress = ipAddressNumber.StartsWith("::1")
+                        ? IPAddress.IPv6Loopback
+                        : IPAddress.Parse(ipAddressNumber);
+	                portRestrictions |= GetAttributes(ipAddress);
+	            }
+	            catch (Exception ex)
+	            {
+	                throw new ArgumentException("Could not parse Ipv{0} Address: {1} / {2}"
+                        .Fmt((isIpv4Address ? 4 : 6), request.UserHostAddress, ipAddressNumber), ex);
+	            }
+	        }
+
+	        return portRestrictions;
+	    }
+
+	    public static EndpointAttributes GetAttributes(IPAddress ipAddress)
+	    {
+	        if (IPAddress.IsLoopback(ipAddress))
+	            return EndpointAttributes.Localhost;
+
+	        return IsInLocalSubnet(ipAddress)
+	               ? EndpointAttributes.LocalSubnet
+	               : EndpointAttributes.External;
+	    }
+
+	    public static bool IsInLocalSubnet(IPAddress ipAddress)
+	    {
+	        var ipAddressBytes = ipAddress.GetAddressBytes();
+	        switch (ipAddress.AddressFamily)
+	        {
+	            case AddressFamily.InterNetwork:
+	                foreach (var localIpv4AddressAndMask in EndpointHandlerBase.NetworkInterfaceIpv4Addresses)
+	                {
+	                    if (ipAddressBytes.IsInSameIpv4Subnet(localIpv4AddressAndMask.Key, localIpv4AddressAndMask.Value))
+	                    {
+	                        return true;
+	                    }
+	                }
+	                break;
+
+	            case AddressFamily.InterNetworkV6:
+	                foreach (var localIpv6Address in EndpointHandlerBase.NetworkInterfaceIpv6Addresses)
+	                {
+	                    if (ipAddressBytes.IsInSameIpv6Subnet(localIpv6Address))
+	                    {
+	                        return true;
+	                    }
+	                }
+	                break;
+	        }
+
+	        return false;
+	    }
+	}
 
 
 }

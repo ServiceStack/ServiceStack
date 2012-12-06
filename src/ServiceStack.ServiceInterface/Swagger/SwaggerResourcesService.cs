@@ -9,7 +9,7 @@ using ServiceStack.WebHost.Endpoints.Metadata;
 
 namespace ServiceStack.ServiceInterface.Swagger
 {
-    public class ResourcesRequest
+    public class Resources
     {
         public string ApiKey { get; set; }
     }
@@ -28,29 +28,30 @@ namespace ServiceStack.ServiceInterface.Swagger
         public string Description { get; set; }
     }
 
-    public class SwaggerResourcesService : RestServiceBase<ResourcesRequest>
+    [DefaultRequest(typeof(Resources))] 
+    public class SwaggerResourcesService : Service
     {
         private readonly Regex resourcePathCleanerRegex = new Regex(@"/[^\/\{]*", RegexOptions.Compiled);
         internal static Regex resourceFilterRegex;
 
-        public override object OnGet(ResourcesRequest request)
+        public object Get(Resources request)
         {
             var httpReq = RequestContext.Get<IHttpRequest>();
-            var result = new ResourcesResponse
-                             {
-                                 SwaggerVersion = "1.1",
-                                 BasePath = httpReq.GetApplicationUrl(), 
-                                 Apis = new List<RestService>()
-                             };
-            var operations = EndpointHost.ServiceOperations;
-            var allTypes = operations.AllOperations.Types;
-            for (var i = 0; i < operations.AllOperations.Names.Count; i++)
+            var result = new ResourcesResponse {
+                SwaggerVersion = "1.1",
+                BasePath = httpReq.GetApplicationUrl(),
+                Apis = new List<RestService>()
+            };
+            var operations = EndpointHost.Metadata;
+            var allTypes = operations.GetAllTypes();
+            var allOperationNames = operations.GetAllOperationNames();
+            for (var i = 0; i < allOperationNames.Count; i++)
             {
-                var operationName = operations.AllOperations.Names[i];
+                var operationName = allOperationNames[i];
                 if (resourceFilterRegex != null && !resourceFilterRegex.IsMatch(operationName)) continue;
-				var operationType = allTypes.FirstOrDefault(x => x.Name == operationName);
+                var operationType = allTypes.FirstOrDefault(x => x.Name == operationName);
                 if (operationType == null) continue;
-                if (operationType == typeof(ResourcesRequest) || operationType == typeof(ResourceRequest))
+                if (operationType == typeof(Resources) || operationType == typeof(ResourceRequest))
                     continue;
                 CreateRestPaths(result.Apis, operationType, operationName);
             }
@@ -71,8 +72,7 @@ namespace ServiceStack.ServiceInterface.Swagger
             var minPath = paths.Min();
             if (string.IsNullOrEmpty(minPath) || minPath == "/") return;
 
-            apis.Add(new RestService
-            {
+            apis.Add(new RestService {
                 Path = string.Concat("/resource", minPath),
                 Description = BaseMetadataHandler.GetDescriptionFromOperationType(operationType)
             });

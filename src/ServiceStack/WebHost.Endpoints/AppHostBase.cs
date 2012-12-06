@@ -80,15 +80,6 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 
 			EndpointHost.AfterInit();
-
-			if (serviceManager != null)
-			{
-				//Required for adhoc services added in Configure()
-				EndpointHost.SetOperationTypes(
-					serviceManager.ServiceOperations,
-					serviceManager.AllServiceOperations
-				);
-			}
 		}
 
 		public abstract void Configure(Container container);

@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Metadata;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
@@ -15,12 +14,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Wsdl_state_is_correct()
 		{
-			var serviceOperations = new ServiceOperations(base.AllOperations);
 			var wsdlGenerator = new Soap11WsdlMetadataHandler();
-			var wsdlTemplate = wsdlGenerator.GetWsdlTemplate(serviceOperations, "http://w3c.org/types", false, false, "http://w3c.org/types");
+		    var xsdMetadata = new XsdMetadata(Metadata);
+		    var wsdlTemplate = wsdlGenerator.GetWsdlTemplate(xsdMetadata, "http://w3c.org/types", false, false, "http://w3c.org/types");
 
-			Assert.That(wsdlTemplate.ReplyOperationNames, Is.EquivalentTo(serviceOperations.ReplyOperations.Names));
-			Assert.That(wsdlTemplate.OneWayOperationNames, Is.EquivalentTo(serviceOperations.OneWayOperations.Names));
+            Assert.That(wsdlTemplate.ReplyOperationNames, Is.EquivalentTo(xsdMetadata.GetReplyOperationNames()));
+            Assert.That(wsdlTemplate.OneWayOperationNames, Is.EquivalentTo(xsdMetadata.GetOneWayOperationNames()));
 		}
 
 		[Test]

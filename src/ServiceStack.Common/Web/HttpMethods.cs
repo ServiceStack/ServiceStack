@@ -33,7 +33,7 @@ namespace ServiceStack.Common.Web
                     return EndpointAttributes.HttpOptions;
             }
 
-            return EndpointAttributes.None;
+            return EndpointAttributes.HttpOther;
         }
     }
 }

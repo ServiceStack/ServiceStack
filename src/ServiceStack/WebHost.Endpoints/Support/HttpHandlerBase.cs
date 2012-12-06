@@ -15,9 +15,9 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public void ProcessRequest(HttpContext context)
 		{
-			var before = DateTime.Now;
+			var before = DateTime.UtcNow;
 			Execute(context);
-			var elapsed = DateTime.Now - before;
+            var elapsed = DateTime.UtcNow - before;
 			log.DebugFormat("'{0}' was completed in {1}ms", this.GetType().Name, elapsed.TotalMilliseconds);
 		}
 

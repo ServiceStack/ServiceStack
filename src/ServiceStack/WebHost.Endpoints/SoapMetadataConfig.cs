@@ -2,8 +2,8 @@ namespace ServiceStack.WebHost.Endpoints
 {
 	public class SoapMetadataConfig : MetadataConfig
 	{
-		public SoapMetadataConfig(string syncReplyUri, string asyncOneWayUri, string defaultMetadataUri, string wsdlMetadataUri)
-			: base(syncReplyUri, asyncOneWayUri, defaultMetadataUri)
+        public SoapMetadataConfig(string format, string name, string syncReplyUri, string asyncOneWayUri, string defaultMetadataUri, string wsdlMetadataUri)
+            : base(format, name, syncReplyUri, asyncOneWayUri, defaultMetadataUri)
 		{
 			WsdlMetadataUri = wsdlMetadataUri;
 		}

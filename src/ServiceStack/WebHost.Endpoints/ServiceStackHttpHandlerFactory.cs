@@ -273,19 +273,20 @@ namespace ServiceStack.WebHost.Endpoints
 		/// </summary>
 		/// <param name="context"></param>
 		/// <returns></returns>
-		private static IHttpHandler ReturnRequestInfo(HttpRequest request)
+		private static IHttpHandler ReturnRequestInfo(HttpRequest httpReq)
 		{
-			if (EndpointHost.Config.DebugOnlyReturnRequestInfo)
-			{
+            if (EndpointHost.Config.DebugOnlyReturnRequestInfo
+                || (EndpointHost.Config.DebugMode && httpReq.PathInfo.EndsWith("__requestinfo")))
+            {
 				var reqInfo = RequestInfoHandler.GetRequestInfo(
-					new HttpRequestWrapper(typeof(RequestInfo).Name, request));
+					new HttpRequestWrapper(typeof(RequestInfo).Name, httpReq));
 
 				reqInfo.Host = EndpointHost.Config.DebugAspNetHostEnvironment + "_v" + Env.ServiceStackVersion + "_" + EndpointHost.Config.ServiceName;
 				//reqInfo.FactoryUrl = url; //Just RawUrl without QueryString 
 				//reqInfo.FactoryPathTranslated = pathTranslated; //Local path on filesystem
-				reqInfo.PathInfo = request.PathInfo;
-				reqInfo.Path = request.Path;
-				reqInfo.ApplicationPath = request.ApplicationPath;
+				reqInfo.PathInfo = httpReq.PathInfo;
+				reqInfo.Path = httpReq.Path;
+				reqInfo.ApplicationPath = httpReq.ApplicationPath;
 
 				return new RequestInfoHandler { RequestInfo = reqInfo };
 			}
@@ -295,7 +296,8 @@ namespace ServiceStack.WebHost.Endpoints
 
 		private static IHttpHandler ReturnRequestInfo(IHttpRequest httpReq)
 		{
-			if (EndpointHost.Config.DebugOnlyReturnRequestInfo)
+			if (EndpointHost.Config.DebugOnlyReturnRequestInfo
+                || (EndpointHost.Config.DebugMode && httpReq.PathInfo.EndsWith("__requestinfo")))
 			{
 				var reqInfo = RequestInfoHandler.GetRequestInfo(httpReq);
 

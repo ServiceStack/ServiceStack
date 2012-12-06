@@ -83,7 +83,7 @@ namespace ServiceStack.ServiceInterface.Auth
             }
         }
 
-        public UserAuth CreateUserAuth(UserAuth newUser, string password)
+        public virtual UserAuth CreateUserAuth(UserAuth newUser, string password)
         {
             ValidateNewUser(newUser, password);
 
@@ -166,7 +166,7 @@ namespace ServiceStack.ServiceInterface.Auth
             }
         }
         
-        public UserAuth GetUserAuthByUserName(string userNameOrEmail)
+        public virtual UserAuth GetUserAuthByUserName(string userNameOrEmail)
         {
             using (var redis = factory.GetClient())
             {
@@ -184,7 +184,7 @@ namespace ServiceStack.ServiceInterface.Auth
             return userId == null ? null : redis.As<UserAuth>().GetById(userId);
         }
 
-        public bool TryAuthenticate(string userName, string password, out UserAuth userAuth)
+        public virtual bool TryAuthenticate(string userName, string password, out UserAuth userAuth)
         {
             //userId = null;
             userAuth = GetUserAuthByUserName(userName);
@@ -287,7 +287,7 @@ namespace ServiceStack.ServiceInterface.Auth
             }
         }
 
-        public UserAuth GetUserAuth(IAuthSession authSession, IOAuthTokens tokens)
+        public virtual UserAuth GetUserAuth(IAuthSession authSession, IOAuthTokens tokens)
         {
             using (var redis = factory.GetClient())
                 return GetUserAuth(redis, authSession, tokens);

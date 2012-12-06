@@ -1,7 +1,4 @@
-using System.Collections.Generic;
 using System.Web;
-using System.Web.UI;
-using ServiceStack.Common.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 {
@@ -9,7 +6,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
     {
 		public Soap11OperationControl()
 		{
-			EndpointType = EndpointType.Soap11;
+			Format = ServiceHost.Format.Soap11;
 		}
 
 		public override string RequestUri
