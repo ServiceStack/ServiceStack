@@ -378,9 +378,6 @@
     <Compile Include="..\..\ServiceStack.Common\Web\EndPoint.cs">
       <Link>Web\EndPoint.cs</Link>
     </Compile>
-    <Compile Include="..\..\ServiceStack.Common\Web\EndpointType.cs">
-      <Link>Web\EndpointType.cs</Link>
-    </Compile>
     <Compile Include="..\..\ServiceStack.Common\Web\HttpError.cs">
       <Link>Web\HttpError.cs</Link>
     </Compile>
