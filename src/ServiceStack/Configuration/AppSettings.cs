@@ -16,6 +16,16 @@ namespace ServiceStack.Configuration
         }
 
         public AppSettings() : base(new ConfigurationManagerWrapper()) {}
+
+        /// <summary>
+        /// Returns string if exists, otherwise null
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public override string GetString(string name) //Keeping backwards compatible
+        {
+            return base.GetNullableString(name); 
+        }
     }
 
     public class ConfigurationResourceManager : AppSettings {}

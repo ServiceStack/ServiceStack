@@ -15,15 +15,14 @@ namespace ServiceStack.Configuration
             _settings = settings;
         }
 
-        public string GetNullableString(string name)
+        public virtual string GetNullableString(string name)
         {
             return _settings.Get(name);
         }
 
-        public string GetString(string name)
+        public virtual string GetString(string name)
         {
             var value = GetNullableString(name);
-
             if (value == null)
             {
                 throw new ConfigurationErrorsException(String.Format(ErrorAppsettingNotFound, name));
@@ -32,13 +31,13 @@ namespace ServiceStack.Configuration
             return value;
         }
 
-        public IList<string> GetList(string key)
+        public virtual IList<string> GetList(string key)
         {
             var value = GetString(key);
             return ConfigUtils.GetListFromAppSettingValue(value);
         }
 
-        public IDictionary<string, string> GetDictionary(string key)
+        public virtual IDictionary<string, string> GetDictionary(string key)
         {
             var value = GetString(key);
             try
@@ -55,7 +54,7 @@ namespace ServiceStack.Configuration
             }
         }
 
-        public T Get<T>(string name, T defaultValue)
+        public virtual T Get<T>(string name, T defaultValue)
         {
             var stringValue = GetNullableString(name);
 
