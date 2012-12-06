@@ -87,6 +87,7 @@
     <Reference Include="System.ComponentModel.DataAnnotations">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -126,6 +127,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration\AppSettingsTests.cs" />
     <Compile Include="EndpointHandlerBaseTests.cs" />
     <Compile Include="FluentValidation\ErrorCodeTests.cs" />
     <Compile Include="MappingTests.cs" />
