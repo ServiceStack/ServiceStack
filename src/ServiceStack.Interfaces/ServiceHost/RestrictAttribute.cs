@@ -22,7 +22,7 @@ namespace ServiceStack.ServiceHost
                 if (value == false)
                     throw new Exception("Only true allowed");
 
-                VisibilityTo = ToAllowedFlagsSet(EndpointAttributes.InternalNetworkAccess);
+                VisibilityTo = EndpointAttributes.InternalNetworkAccess.ToAllowedFlagsSet();
             }
         }
 
@@ -37,7 +37,7 @@ namespace ServiceStack.ServiceHost
                 if (value == false)
                     throw new Exception("Only true allowed");
 
-                VisibilityTo = ToAllowedFlagsSet(EndpointAttributes.Localhost); 
+                VisibilityTo = EndpointAttributes.Localhost.ToAllowedFlagsSet(); 
             }
         }
 
@@ -52,8 +52,8 @@ namespace ServiceStack.ServiceHost
                 if (value == false)
                     throw new Exception("Only true allowed");
 
-                AccessTo = ToAllowedFlagsSet(EndpointAttributes.InternalNetworkAccess);
-                VisibilityTo = ToAllowedFlagsSet(EndpointAttributes.InternalNetworkAccess);
+                AccessTo = EndpointAttributes.InternalNetworkAccess.ToAllowedFlagsSet();
+                VisibilityTo = EndpointAttributes.InternalNetworkAccess.ToAllowedFlagsSet();
             }
         }
 
@@ -68,8 +68,8 @@ namespace ServiceStack.ServiceHost
                 if (value == false)
                     throw new Exception("Only true allowed");
 
-                AccessTo = ToAllowedFlagsSet(EndpointAttributes.Localhost);
-                VisibilityTo = ToAllowedFlagsSet(EndpointAttributes.Localhost); 
+                AccessTo = EndpointAttributes.Localhost.ToAllowedFlagsSet();
+                VisibilityTo = EndpointAttributes.Localhost.ToAllowedFlagsSet(); 
             }
         }
 
@@ -161,7 +161,7 @@ namespace ServiceStack.ServiceHost
 	        var scenarios = new List<EndpointAttributes>();
 	        foreach (var restrictToScenario in restrictToAny)
 	        {
-	            var restrictTo = ToAllowedFlagsSet(restrictToScenario);
+	            var restrictTo = restrictToScenario.ToAllowedFlagsSet();
 
 	            scenarios.Add(restrictTo);
 	        }
@@ -169,20 +169,49 @@ namespace ServiceStack.ServiceHost
             return scenarios.ToArray();
 	    }
 
-        /// <summary>
-        /// Converts from a User intended restriction to a flag with all the allowed attribute flags set, e.g:
-        /// 
-        /// If No Network restrictions were specified all Network access types are allowed, e.g:
-        ///     restrict EndpointAttributes.None => ... 111
-        /// 
-        /// If a Network restriction was specified, only it will be allowed, e.g:
-        ///     restrict EndpointAttributes.LocalSubnet => ... 010
-        /// 
-        /// The returned Enum will have a flag with all the allowed attributes set
-        /// </summary>
-        /// <param name="restrictTo"></param>
-        /// <returns></returns>
-	    public static EndpointAttributes ToAllowedFlagsSet(EndpointAttributes restrictTo)
+        public bool CanShowTo(EndpointAttributes restrictions)
+        {
+            return this.VisibleToAny.Any(scenario => (scenario & restrictions) != 0);
+        }
+
+        public bool HasAccessTo(EndpointAttributes restrictions)
+        {
+            return this.AccessibleToAny.Any(scenario => (scenario & restrictions) != 0);
+        }
+
+        public bool HasNoAccessRestrictions
+        {
+            get
+            {
+                return this.AccessTo == EndpointAttributes.Any;
+            }
+        }
+
+        public bool HasNoVisibilityRestrictions
+        {
+            get
+            {
+                return this.VisibilityTo == EndpointAttributes.Any;
+            }
+        }
+	}
+
+	public static class RestrictExtensions
+	{
+	    /// <summary>
+	    /// Converts from a User intended restriction to a flag with all the allowed attribute flags set, e.g:
+	    /// 
+	    /// If No Network restrictions were specified all Network access types are allowed, e.g:
+	    ///     restrict EndpointAttributes.None => ... 111
+	    /// 
+	    /// If a Network restriction was specified, only it will be allowed, e.g:
+	    ///     restrict EndpointAttributes.LocalSubnet => ... 010
+	    /// 
+	    /// The returned Enum will have a flag with all the allowed attributes set
+	    /// </summary>
+	    /// <param name="restrictTo"></param>
+	    /// <returns></returns>
+	    public static EndpointAttributes ToAllowedFlagsSet(this EndpointAttributes restrictTo)
 	    {
 	        var allowedAttrs = EndpointAttributes.None;
 
@@ -225,35 +254,9 @@ namespace ServiceStack.ServiceHost
 	        return allowedAttrs;
 	    }
 
-        public bool CanShowTo(EndpointAttributes restrictions)
-        {
-            return this.VisibleToAny.Any(scenario => (scenario & restrictions) != 0);
-        }
-
-        public bool HasAccessTo(EndpointAttributes restrictions)
-        {
-            return this.AccessibleToAny.Any(scenario => (scenario & restrictions) != 0);
-        }
-
-	    static bool HasAnyRestrictionsOf(EndpointAttributes allRestrictions, EndpointAttributes restrictions)
+        public static bool HasAnyRestrictionsOf(EndpointAttributes allRestrictions, EndpointAttributes restrictions)
         {
             return (allRestrictions & restrictions) != 0;
-        }
-
-        public bool HasNoAccessRestrictions
-        {
-            get
-            {
-                return this.AccessTo == EndpointAttributes.Any;
-            }
-        }
-
-        public bool HasNoVisibilityRestrictions
-        {
-            get
-            {
-                return this.VisibilityTo == EndpointAttributes.Any;
-            }
         }
     }
 }

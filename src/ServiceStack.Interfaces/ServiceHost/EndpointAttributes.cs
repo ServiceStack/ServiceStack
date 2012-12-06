@@ -146,5 +146,14 @@ namespace ServiceStack.ServiceHost
                 return Format.Other;
             }
         }
+
+        public static string FromFormat(this Format format)
+        {
+            var formatStr = format.ToString().ToLower();
+            if (format == Format.ProtoBuf || format == Format.MsgPack)
+                return "x-" + formatStr;
+            return formatStr;
+        }
+
     }
 }
