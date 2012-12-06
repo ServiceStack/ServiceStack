@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.ServiceHost
@@ -154,19 +155,22 @@ namespace ServiceStack.ServiceHost
 
         public bool IsVisible(IHttpRequest httpReq, Format format, string operationName)
         {
+            if (EndpointHost.Config != null && !EndpointHost.Config.EnableAccessRestrictions)
+                return true;
+
             Operation operation;
             OperationNamesMap.TryGetValue(operationName.ToLower(), out operation);
             if (operation == null) return false;
-
-            var reqAttrs = httpReq.GetAttributes();
 
             var canCall = HasImplementation(operation, format);
             if (!canCall) return false;
 
             if (operation.RestrictTo == null) return true;
 
-            var visbleToNetwork = CanShowToNetwork(operation, reqAttrs);
-            if (!visbleToNetwork) return false;
+            //Less fine-grained on /metadata pages. Only check Network and Format
+            var reqAttrs = httpReq.GetAttributes();
+            var showToNetwork = CanShowToNetwork(operation, reqAttrs);
+            if (!showToNetwork) return false;
 
             var allowsFormat = operation.RestrictTo.CanShowTo((EndpointAttributes)(long)format);
             return allowsFormat;
@@ -174,21 +178,28 @@ namespace ServiceStack.ServiceHost
 
         public bool CanAccess(IHttpRequest httpReq, Format format, string operationName)
         {
+            var reqAttrs = httpReq.GetAttributes();
+            return CanAccess(reqAttrs, format, operationName);
+        }
+
+        public bool CanAccess(EndpointAttributes reqAttrs, Format format, string operationName)
+        {
+            if (EndpointHost.Config != null && !EndpointHost.Config.EnableAccessRestrictions)
+                return true;
+
             Operation operation;
             OperationNamesMap.TryGetValue(operationName.ToLower(), out operation);
             if (operation == null) return false;
-
-            var reqAttrs = httpReq.GetAttributes();
 
             var canCall = HasImplementation(operation, format);
             if (!canCall) return false;
 
             if (operation.RestrictTo == null) return true;
 
-            var visbleToNetwork = CanAccessFromNetwork(operation, reqAttrs);
-            if (!visbleToNetwork) return false;
+            var allow = operation.RestrictTo.HasAccessTo(reqAttrs);
+            if (!allow) return false;
 
-            var allowsFormat = operation.RestrictTo.HasAccessTo((EndpointAttributes)(long)format);
+            var allowsFormat = operation.RestrictTo.HasAccessTo((EndpointAttributes) (long) format);
             return allowsFormat;
         }
 
@@ -216,17 +227,6 @@ namespace ServiceStack.ServiceHost
                     : EndpointAttributes.External);
         }
 
-        private static bool CanAccessFromNetwork(Operation operation, EndpointAttributes reqAttrs)
-        {
-            if (reqAttrs.IsLocalhost())
-                return operation.RestrictTo.HasAccessTo(EndpointAttributes.Localhost)
-                       || operation.RestrictTo.HasAccessTo(EndpointAttributes.LocalSubnet);
-
-            return operation.RestrictTo.HasAccessTo(
-                reqAttrs.IsLocalSubnet()
-                    ? EndpointAttributes.LocalSubnet
-                    : EndpointAttributes.External);
-        }
     }
 
     public class Operation

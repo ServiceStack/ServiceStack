@@ -438,11 +438,25 @@ namespace ServiceStack.WebHost.Endpoints
 
             if (!HasFeature(usesFeatures))
             {
-                throw new NotSupportedException(
-                    String.Format("'{0}' Features have been disabled by your administrator", usesFeatures));
+                throw new UnauthorizedAccessException(
+                    string.Format("'{0}' Features have been disabled by your administrator", usesFeatures));
             }
         }
 
+        public UnauthorizedAccessException UnauthorizedAccess(EndpointAttributes requestAttrs)
+        {
+            return new UnauthorizedAccessException(
+                string.Format("Request with '{0}' is not allowed", requestAttrs));
+        }
+
+        public void AssertContentType(string contentType)
+        {
+            if (EndpointHost.Config.EnableFeatures == Feature.All) return;
+
+            var contentTypeFeature = ContentType.ToFeature(contentType);
+            AssertFeatures(contentTypeFeature);
+        }
+        
         public MetadataPagesConfig MetadataPagesConfig
         {
             get
@@ -453,14 +467,6 @@ namespace ServiceStack.WebHost.Endpoints
                     IgnoreFormatsInMetadata,
                     EndpointHost.ContentTypeFilter.ContentTypeFormats.Keys.ToList());
             }
-        }
-
-        public void AssertContentType(string contentType)
-        {
-            if (EndpointHost.Config.EnableFeatures == Feature.All) return;
-
-            var contentTypeFeature = ContentType.GetFeature(contentType);
-            AssertFeatures(contentTypeFeature);
         }
 
         public void HandleErrorResponse(IHttpRequest httpReq, IHttpResponse httpRes, HttpStatusCode errorStatus, string errorStatusDescription=null)

@@ -137,7 +137,7 @@ namespace ServiceStack.Common.Web
             return false;
         }
 
-        public static Feature GetFeature(string contentType)
+        public static Feature ToFeature(this string contentType)
         {
             if (contentType == null)
                 return Feature.None;
@@ -176,12 +176,12 @@ namespace ServiceStack.Common.Web
                     return Feature.MsgPack;
             }
 
-            return Feature.None;
+            return Feature.CustomFormat;
         }
 
-        public static string GetContentFormat(Format formats)
+        public static string GetContentFormat(Format format)
         {
-            return formats.ToString().ToLower();
+            return format.ToString().ToLower();
         }
 
         public static string GetContentFormat(string contentType)
@@ -196,7 +196,7 @@ namespace ServiceStack.Common.Web
             return GetContentFormat(contentType);
         }
 
-        public static string GetContentType(Format formats)
+        public static string ToContentType(this Format formats)
         {
             switch (formats)
             {
@@ -219,6 +219,12 @@ namespace ServiceStack.Common.Web
 
                 case Format.MsgPack:
                     return MsgPack;
+
+                case Format.Html:
+                    return Html;
+
+                case Format.Yaml:
+                    return Yaml;
                 
                 default:
                     return null;

@@ -12,56 +12,56 @@ using ServiceStack.WebHost.Endpoints.Support.Metadata.Controls;
 
 namespace ServiceStack.WebHost.Endpoints.Metadata
 {
-	using System.Collections.Generic;
-	using System.Text;
-	using ServiceHost;
+    using System.Collections.Generic;
+    using System.Text;
+    using ServiceHost;
 
-	public abstract class BaseMetadataHandler : HttpHandlerBase, IServiceStackHttpHandler
-	{
-		public abstract Format Format { get; }
+    public abstract class BaseMetadataHandler : HttpHandlerBase, IServiceStackHttpHandler
+    {
+        public abstract Format Format { get; }
 
-		public string ContentType { get; set; }
-		public string ContentFormat { get; set; }
+        public string ContentType { get; set; }
+        public string ContentFormat { get; set; }
 
-		public override void Execute(HttpContext context)
-		{
-			var writer = new HtmlTextWriter(context.Response.Output);
-			context.Response.ContentType = "text/html";
+        public override void Execute(HttpContext context)
+        {
+            var writer = new HtmlTextWriter(context.Response.Output);
+            context.Response.ContentType = "text/html";
 
-			ProcessOperations(writer, new HttpRequestWrapper(GetType().Name, context.Request), new HttpResponseWrapper(context.Response));
-		}
+            ProcessOperations(writer, new HttpRequestWrapper(GetType().Name, context.Request), new HttpResponseWrapper(context.Response));
+        }
 
-		public virtual void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
-		{
+        public virtual void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        {
             using (var sw = new StreamWriter(httpRes.OutputStream))
-			{
-				var writer = new HtmlTextWriter(sw);
-				httpRes.ContentType = "text/html";
+            {
+                var writer = new HtmlTextWriter(sw);
+                httpRes.ContentType = "text/html";
                 ProcessOperations(writer, httpReq, httpRes);
-			}
-		}
+            }
+        }
 
         protected virtual void ProcessOperations(HtmlTextWriter writer, IHttpRequest httpReq, IHttpResponse httpRes)
-		{
+        {
             var operationName = httpReq.QueryString["op"];
 
             if (!AssertAccess(httpReq, httpRes, operationName)) return;
 
             var metadata = EndpointHost.Metadata;
-			if (operationName != null)
-			{
-				var allTypes = metadata.GetAllTypes();
-				var operationType = allTypes.Single(x => x.Name == operationName);
-				var requestMessage = CreateMessage(operationType);
-				var restPaths = CreateRestPaths(operationType);
-				string responseMessage = null;
+            if (operationName != null)
+            {
+                var allTypes = metadata.GetAllTypes();
+                var operationType = allTypes.Single(x => x.Name == operationName);
+                var requestMessage = CreateMessage(operationType);
+                var restPaths = CreateRestPaths(operationType);
+                string responseMessage = null;
 
-			    var responseType = metadata.GetResponseTypeByRequest(operationType);
+                var responseType = metadata.GetResponseTypeByRequest(operationType);
                 if (responseType != null)
                 {
-                    responseMessage = CreateMessage(responseType);                    
+                    responseMessage = CreateMessage(responseType);
                 }
-				
+
                 var description = GetDescriptionFromOperationType(operationType);
                 if (!description.IsNullOrEmpty())
                 {
@@ -75,97 +75,101 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
                 }
 
 
-			    RenderOperation(writer, httpReq, operationName, requestMessage, responseMessage, restPaths, description);
-				return;
-			}
+                RenderOperation(writer, httpReq, operationName, requestMessage, responseMessage, restPaths, description);
+                return;
+            }
 
-			RenderOperations(writer, httpReq, metadata);
-		}
+            RenderOperations(writer, httpReq, metadata);
+        }
 
-	    protected bool AssertAccess(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
-	    {
-	        EndpointHost.Config.AssertFeatures(Feature.Metadata);
+        protected bool AssertAccess(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        {
+            if (!EndpointHost.Config.HasFeature(Feature.Metadata))
+            {
+                EndpointHost.Config.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Metadata Not Available");
+                return false;
+            }
 
-	        if (EndpointHost.Config.MetadataVisibility != EndpointAttributes.Any)
-	        {
-	            var actualAttributes = httpReq.GetAttributes();
-	            if ((actualAttributes & EndpointHost.Config.MetadataVisibility) != EndpointHost.Config.MetadataVisibility)
-	            {
-	                EndpointHost.Config.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Metadata Not Available");
-	                return false;
-	            }
-	        }
+            if (EndpointHost.Config.MetadataVisibility != EndpointAttributes.Any)
+            {
+                var actualAttributes = httpReq.GetAttributes();
+                if ((actualAttributes & EndpointHost.Config.MetadataVisibility) != EndpointHost.Config.MetadataVisibility)
+                {
+                    EndpointHost.Config.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Metadata Not Visible");
+                    return false;
+                }
+            }
 
             if (operationName == null) return true; //For non-operation pages we don't need to check further permissions
-	        if (!EndpointHost.Config.MetadataPagesConfig.IsVisible(httpReq, Format, operationName))
-	        {
-	            EndpointHost.Config.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Service Not Available");
-	            return false;
-	        }
+            if (!EndpointHost.Config.EnableAccessRestrictions) return true;
+            if (!EndpointHost.Config.MetadataPagesConfig.IsVisible(httpReq, Format, operationName))
+            {
+                EndpointHost.Config.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Service Not Available");
+                return false;
+            }
 
-	        return true;
-	    }
+            return true;
+        }
 
-	    public static string GetDescriptionFromOperationType(Type operationType)
-	    {
-	        var description = "";
-	        var descAttrs = operationType.GetCustomAttributes(typeof(DescriptionAttribute), true);
-	        if (descAttrs.Length > 0)
-	        {
-	            var descAttr = (DescriptionAttribute) descAttrs[0];
-	            return descAttr.Description;
-	        }
-	        return description;
-	    }
+        public static string GetDescriptionFromOperationType(Type operationType)
+        {
+            var description = "";
+            var descAttrs = operationType.GetCustomAttributes(typeof(DescriptionAttribute), true);
+            if (descAttrs.Length > 0)
+            {
+                var descAttr = (DescriptionAttribute)descAttrs[0];
+                return descAttr.Description;
+            }
+            return description;
+        }
 
-	    protected abstract string CreateMessage(Type dtoType);
+        protected abstract string CreateMessage(Type dtoType);
 
-		protected virtual void RenderOperation(HtmlTextWriter writer, IHttpRequest httpReq, string operationName, 
-			string requestMessage, string responseMessage, string restPaths, string descriptionHtml)
-		{
-			var operationControl = new OperationControl
-			{
-				HttpRequest = httpReq,
-				MetadataConfig = EndpointHost.Config.ServiceEndpointsMetadataConfig,
-				Title = EndpointHost.Config.ServiceName,
-				Format = this.Format,
-				OperationName = operationName,
-				HostName = httpReq.GetUrlHostName(),
-				RequestMessage = requestMessage,
-				ResponseMessage = responseMessage,
-				RestPaths = restPaths,
-				DescriptionHtml = descriptionHtml,
-			};
-			if (!this.ContentType.IsNullOrEmpty())
-			{
-				operationControl.ContentType = this.ContentType;
-			}
-			if (!this.ContentFormat.IsNullOrEmpty())
-			{
-				operationControl.ContentFormat = this.ContentFormat;
-			}
+        protected virtual void RenderOperation(HtmlTextWriter writer, IHttpRequest httpReq, string operationName,
+            string requestMessage, string responseMessage, string restPaths, string descriptionHtml)
+        {
+            var operationControl = new OperationControl {
+                HttpRequest = httpReq,
+                MetadataConfig = EndpointHost.Config.ServiceEndpointsMetadataConfig,
+                Title = EndpointHost.Config.ServiceName,
+                Format = this.Format,
+                OperationName = operationName,
+                HostName = httpReq.GetUrlHostName(),
+                RequestMessage = requestMessage,
+                ResponseMessage = responseMessage,
+                RestPaths = restPaths,
+                DescriptionHtml = descriptionHtml,
+            };
+            if (!this.ContentType.IsNullOrEmpty())
+            {
+                operationControl.ContentType = this.ContentType;
+            }
+            if (!this.ContentFormat.IsNullOrEmpty())
+            {
+                operationControl.ContentFormat = this.ContentFormat;
+            }
 
-			operationControl.Render(writer);
-		}
+            operationControl.Render(writer);
+        }
 
-		protected abstract void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, ServiceMetadata metadata);
+        protected abstract void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, ServiceMetadata metadata);
 
-		protected virtual string CreateRestPaths(Type operationType)
-		{
-			var map = EndpointHost.ServiceManager.ServiceController.RestPathMap;
-			var paths = new List<RestPath>();
-			foreach (var key in map.Keys)
-			{
-				paths.AddRange(map[key].Where(x => x.RequestType == operationType));
-			}
-			var restPaths = new StringBuilder();
-			foreach (var restPath in paths)
-			{
-				var verbs = restPath.AllowsAllVerbs ? "All Verbs" : restPath.AllowedVerbs;
-				restPaths.AppendLine(verbs + " " + restPath.Path);
-			}
-			return restPaths.ToString();
-		}
+        protected virtual string CreateRestPaths(Type operationType)
+        {
+            var map = EndpointHost.ServiceManager.ServiceController.RestPathMap;
+            var paths = new List<RestPath>();
+            foreach (var key in map.Keys)
+            {
+                paths.AddRange(map[key].Where(x => x.RequestType == operationType));
+            }
+            var restPaths = new StringBuilder();
+            foreach (var restPath in paths)
+            {
+                var verbs = restPath.AllowsAllVerbs ? "All Verbs" : restPath.AllowedVerbs;
+                restPaths.AppendLine(verbs + " " + restPath.Path);
+            }
+            return restPaths.ToString();
+        }
 
-	}
+    }
 }

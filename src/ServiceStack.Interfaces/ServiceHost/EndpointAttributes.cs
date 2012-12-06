@@ -2,58 +2,58 @@ using System;
 
 namespace ServiceStack.ServiceHost
 {
-	[Flags]
-	public enum EndpointAttributes : long
-	{
-		None = 0,
+    [Flags]
+    public enum EndpointAttributes : long
+    {
+        None = 0,
 
-		Any = AnyNetworkAccessType | AnySecurityMode | AnyHttpMethod | AnyCallStyle | AnyFormat,
-		AnyNetworkAccessType = External | Localhost | LocalSubnet,
-		AnySecurityMode = Secure | InSecure,
-		AnyHttpMethod = HttpHead | HttpGet | HttpPost | HttpPut | HttpDelete | HttpOther,
-		AnyCallStyle = OneWay | Reply,
+        Any = AnyNetworkAccessType | AnySecurityMode | AnyHttpMethod | AnyCallStyle | AnyFormat,
+        AnyNetworkAccessType = External | Localhost | LocalSubnet,
+        AnySecurityMode = Secure | InSecure,
+        AnyHttpMethod = HttpHead | HttpGet | HttpPost | HttpPut | HttpDelete | HttpOther,
+        AnyCallStyle = OneWay | Reply,
         AnyFormat = Soap11 | Soap12 | Xml | Json | Jsv | Html | ProtoBuf | Csv | MsgPack | Yaml | FormatOther,
-		AnyEndpoint = Http | MessageQueue | Tcp | EndpointOther,
-		InternalNetworkAccess = Localhost | LocalSubnet,
+        AnyEndpoint = Http | MessageQueue | Tcp | EndpointOther,
+        InternalNetworkAccess = Localhost | LocalSubnet,
 
-		//Whether it came from an Internal or External address
-		Localhost = 1 << 0,
-		LocalSubnet = 1 << 1,
-		External = 1 << 2,
+        //Whether it came from an Internal or External address
+        Localhost = 1 << 0,
+        LocalSubnet = 1 << 1,
+        External = 1 << 2,
 
-		//Called over a secure or insecure channel
-		Secure = 1 << 3,
-		InSecure = 1 << 4,
+        //Called over a secure or insecure channel
+        Secure = 1 << 3,
+        InSecure = 1 << 4,
 
-		//HTTP request type
-		HttpHead = 1 << 5,
-		HttpGet = 1 << 6,
-		HttpPost = 1 << 7,
-		HttpPut = 1 << 8,
-		HttpDelete = 1 << 9,
-		HttpPatch = 1 << 10,
+        //HTTP request type
+        HttpHead = 1 << 5,
+        HttpGet = 1 << 6,
+        HttpPost = 1 << 7,
+        HttpPut = 1 << 8,
+        HttpDelete = 1 << 9,
+        HttpPatch = 1 << 10,
         HttpOptions = 1 << 11,
         HttpOther = 1 << 12,
 
-		//Call Styles
-		OneWay = 1 << 13,
-		Reply = 1 << 14,
+        //Call Styles
+        OneWay = 1 << 13,
+        Reply = 1 << 14,
 
-		//Different formats
-		Soap11 = 1 << 15,
-		Soap12 = 1 << 16,
-		//POX
-		Xml = 1 << 17,
-		//Javascript
-		Json = 1 << 18,
-		//Jsv i.e. TypeSerializer
-		Jsv = 1 << 19,
-		//e.g. protobuf-net
-		ProtoBuf = 1 << 20,
-		//e.g. text/csv
-		Csv = 1 << 21,
-		Html = 1 << 22,
-		Yaml = 1 << 23,
+        //Different formats
+        Soap11 = 1 << 15,
+        Soap12 = 1 << 16,
+        //POX
+        Xml = 1 << 17,
+        //Javascript
+        Json = 1 << 18,
+        //Jsv i.e. TypeSerializer
+        Jsv = 1 << 19,
+        //e.g. protobuf-net
+        ProtoBuf = 1 << 20,
+        //e.g. text/csv
+        Csv = 1 << 21,
+        Html = 1 << 22,
+        Yaml = 1 << 23,
         MsgPack = 1 << 24,
         FormatOther = 1 << 25,
 
@@ -155,5 +155,65 @@ namespace ServiceStack.ServiceHost
             return formatStr;
         }
 
+        public static Format ToFormat(this Feature feature)
+        {
+            switch (feature)
+            {
+                case Feature.Xml:
+                    return Format.Xml;
+                case Feature.Json:
+                    return Format.Json;
+                case Feature.Jsv:
+                    return Format.Jsv;
+                case Feature.Csv:
+                    return Format.Csv;
+                case Feature.Html:
+                    return Format.Html;
+                case Feature.MsgPack:
+                    return Format.MsgPack;
+                case Feature.ProtoBuf:
+                    return Format.ProtoBuf;
+                case Feature.Soap11:
+                    return Format.Soap11;
+                case Feature.Soap12:
+                    return Format.Soap12;
+            }
+            return Format.Other;
+        }
+
+        public static Feature ToFeature(this Format format)
+        {
+            switch (format)
+            {
+                case Format.Xml:
+                    return Feature.Xml;
+                case Format.Json:
+                    return Feature.Json;
+                case Format.Jsv:
+                    return Feature.Jsv;
+                case Format.Csv:
+                    return Feature.Csv;
+                case Format.Html:
+                    return Feature.Html;
+                case Format.MsgPack:
+                    return Feature.MsgPack;
+                case Format.ProtoBuf:
+                    return Feature.ProtoBuf;
+                case Format.Soap11:
+                    return Feature.Soap11;
+                case Format.Soap12:
+                    return Feature.Soap12;
+            }
+            return Feature.CustomFormat;
+        }
+
+        public static Feature ToSoapFeature(this EndpointAttributes attributes)
+        {
+            if ((EndpointAttributes.Soap11 & attributes) == EndpointAttributes.Soap11)
+                return Feature.Soap11;
+            if ((EndpointAttributes.Soap12 & attributes) == EndpointAttributes.Soap12)
+                return Feature.Soap12;            
+            return Feature.None;
+        }
     }
 }

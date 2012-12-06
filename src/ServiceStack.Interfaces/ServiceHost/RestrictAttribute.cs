@@ -171,12 +171,12 @@ namespace ServiceStack.ServiceHost
 
         public bool CanShowTo(EndpointAttributes restrictions)
         {
-            return this.VisibleToAny.Any(scenario => (scenario & restrictions) != 0);
+            return this.VisibleToAny.Any(scenario => (restrictions & scenario) == restrictions);
         }
 
         public bool HasAccessTo(EndpointAttributes restrictions)
         {
-            return this.AccessibleToAny.Any(scenario => (scenario & restrictions) != 0);
+            return this.AccessibleToAny.Any(scenario => (restrictions & scenario) == restrictions);
         }
 
         public bool HasNoAccessRestrictions

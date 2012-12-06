@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.Serialization;
 using System.ServiceModel.Channels;
 using System.Web;
@@ -15,12 +16,12 @@ using ServiceStack.WebHost.Endpoints.Utils;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
-	public class SoapHandler : EndpointHandlerBase, IOneWay, ISyncReply
-	{
-		public SoapHandler(EndpointAttributes soapType)
-		{
-			this.HandlerAttributes = soapType;
-		}
+    public class SoapHandler : EndpointHandlerBase, IOneWay, ISyncReply
+    {
+        public SoapHandler(EndpointAttributes soapType)
+        {
+            this.HandlerAttributes = soapType;
+        }
 
         public void SendOneWay(Message requestMsg)
         {
@@ -34,9 +35,10 @@ namespace ServiceStack.WebHost.Endpoints.Support
             ExecuteMessage(requestMsg, endpointAttributes, httpRequest, httpResponse);
         }
 
-		public Message Send(Message requestMsg){
-		    return Send(requestMsg, null, null);
-		}
+        public Message Send(Message requestMsg)
+        {
+            return Send(requestMsg, null, null);
+        }
 
         protected Message Send(Message requestMsg, IHttpRequest httpRequest, IHttpResponse httpResponse)
         {
@@ -55,170 +57,171 @@ namespace ServiceStack.WebHost.Endpoints.Support
                 : Message.CreateMessage(requestMsg.Version, requestType.Name + "Response", response);
         }
 
-		protected Message ExecuteMessage(Message requestMsg, EndpointAttributes endpointAttributes, IHttpRequest httpRequest, IHttpResponse httpResponse)
-		{
-			if ((EndpointAttributes.Soap11 & this.HandlerAttributes) == EndpointAttributes.Soap11)
-				EndpointHost.Config.AssertFeatures(Feature.Soap11);
-			else if ((EndpointAttributes.Soap12 & this.HandlerAttributes) == EndpointAttributes.Soap12)
-				EndpointHost.Config.AssertFeatures(Feature.Soap12);
+        protected Message ExecuteMessage(Message requestMsg, EndpointAttributes endpointAttributes, IHttpRequest httpRequest, IHttpResponse httpResponse)
+        {
+            var soapFeatue = endpointAttributes.ToSoapFeature();
+            EndpointHost.Config.AssertFeatures(soapFeatue);
 
-			string requestXml;
-			using (var reader = requestMsg.GetReaderAtBodyContents())
-			{
-				requestXml = reader.ReadOuterXml();
-			}
+            string requestXml;
+            using (var reader = requestMsg.GetReaderAtBodyContents())
+            {
+                requestXml = reader.ReadOuterXml();
+            }
 
-			var requestType = GetRequestType(requestMsg, requestXml);
-		    try
-			{
-				var request = DataContractDeserializer.Instance.Parse(requestXml, requestType);
-			    var requiresSoapMessage = request as IRequiresSoapMessage;
+            var requestType = GetRequestType(requestMsg, requestXml);
+            if (EndpointHost.Metadata.CanAccess(endpointAttributes, soapFeatue.ToFormat(), requestType.Name))
+                throw EndpointHost.Config.UnauthorizedAccess(endpointAttributes);
+
+            try
+            {
+                var request = DataContractDeserializer.Instance.Parse(requestXml, requestType);
+                var requiresSoapMessage = request as IRequiresSoapMessage;
                 if (requiresSoapMessage != null)
                 {
                     requiresSoapMessage.Message = requestMsg;
                 }
 
-			    var httpReq = HttpContext.Current != null 
+                var httpReq = HttpContext.Current != null
                     ? new HttpRequestWrapper(requestType.Name, HttpContext.Current.Request)
                     : httpRequest;
-				var httpRes = HttpContext.Current != null 
+                var httpRes = HttpContext.Current != null
                     ? new HttpResponseWrapper(HttpContext.Current.Response)
                     : httpResponse;
 
                 if (EndpointHost.ApplyPreRequestFilters(httpReq, httpRes))
                     return EmptyResponse(requestMsg, requestType);
 
-				var hasRequestFilters = EndpointHost.RequestFilters.Count > 0 
+                var hasRequestFilters = EndpointHost.RequestFilters.Count > 0
                     || FilterAttributeCache.GetRequestFilterAttributes(request.GetType()).Any();
 
-				if (hasRequestFilters && EndpointHost.ApplyRequestFilters(httpReq, httpRes, request)) 
+                if (hasRequestFilters && EndpointHost.ApplyRequestFilters(httpReq, httpRes, request))
                     return EmptyResponse(requestMsg, requestType);
 
-				var response = ExecuteService(request, endpointAttributes, httpReq, httpRes);
+                var response = ExecuteService(request, endpointAttributes, httpReq, httpRes);
 
-				var hasResponseFilters = EndpointHost.ResponseFilters.Count > 0
-				   || FilterAttributeCache.GetResponseFilterAttributes(response.GetType()).Any();
+                var hasResponseFilters = EndpointHost.ResponseFilters.Count > 0
+                   || FilterAttributeCache.GetResponseFilterAttributes(response.GetType()).Any();
 
-				if (hasResponseFilters && EndpointHost.ApplyResponseFilters(httpReq, httpRes, response))
+                if (hasResponseFilters && EndpointHost.ApplyResponseFilters(httpReq, httpRes, response))
                     return EmptyResponse(requestMsg, requestType);
 
-				var httpResult = response as IHttpResult;
-				if (httpResult != null)
-					response = httpResult.Response;
+                var httpResult = response as IHttpResult;
+                if (httpResult != null)
+                    response = httpResult.Response;
 
-				return requestMsg.Headers.Action == null
-					? Message.CreateMessage(requestMsg.Version, null, response)
-					: Message.CreateMessage(requestMsg.Version, requestType.Name + "Response", response);
-			}
-			catch (Exception ex)
-			{
-				throw new SerializationException("3) Error trying to deserialize requestType: "
-					+ requestType
-					+ ", xml body: " + requestXml, ex);
-			}
-		}
+                return requestMsg.Headers.Action == null
+                    ? Message.CreateMessage(requestMsg.Version, null, response)
+                    : Message.CreateMessage(requestMsg.Version, requestType.Name + "Response", response);
+            }
+            catch (Exception ex)
+            {
+                throw new SerializationException("3) Error trying to deserialize requestType: "
+                    + requestType
+                    + ", xml body: " + requestXml, ex);
+            }
+        }
 
         protected static Message GetSoap12RequestMessage(Stream inputStream)
-		{
+        {
             return GetRequestMessage(inputStream, MessageVersion.Soap12WSAddressingAugust2004);
-		}
+        }
 
-		protected static Message GetSoap11RequestMessage(Stream inputStream)
-		{
+        protected static Message GetSoap11RequestMessage(Stream inputStream)
+        {
             return GetRequestMessage(inputStream, MessageVersion.Soap11WSAddressingAugust2004);
-		}
+        }
 
         protected static Message GetRequestMessage(Stream inputStream, MessageVersion msgVersion)
-		{
-			using (var sr = new StreamReader(inputStream))
-			{
-				var requestXml = sr.ReadToEnd();
+        {
+            using (var sr = new StreamReader(inputStream))
+            {
+                var requestXml = sr.ReadToEnd();
 
-				var doc = new XmlDocument();
-				doc.LoadXml(requestXml);
+                var doc = new XmlDocument();
+                doc.LoadXml(requestXml);
 
-				var msg = Message.CreateMessage(new XmlNodeReader(doc), int.MaxValue,
-					msgVersion);
+                var msg = Message.CreateMessage(new XmlNodeReader(doc), int.MaxValue,
+                    msgVersion);
 
-				return msg;
-			}
-		}
+                return msg;
+            }
+        }
 
-		protected Type GetRequestType(Message requestMsg, string xml)
-		{
-			var action = GetAction(requestMsg, xml);
+        protected Type GetRequestType(Message requestMsg, string xml)
+        {
+            var action = GetAction(requestMsg, xml);
 
-			var operationType = EndpointHost.Metadata.GetOperationType(action);
-			AssertOperationExists(action, operationType);
+            var operationType = EndpointHost.Metadata.GetOperationType(action);
+            AssertOperationExists(action, operationType);
 
-			return operationType;
-		}
+            return operationType;
+        }
 
-		protected string GetAction(Message requestMsg, string xml)
-		{
-			var action = GetActionFromHttpContext();
-			if (action != null) return action;
+        protected string GetAction(Message requestMsg, string xml)
+        {
+            var action = GetActionFromHttpContext();
+            if (action != null) return action;
 
-			if (requestMsg.Headers.Action != null)
-			{
-				return requestMsg.Headers.Action;
-			}
+            if (requestMsg.Headers.Action != null)
+            {
+                return requestMsg.Headers.Action;
+            }
 
-			return xml.StartsWith("<") 
-				? xml.Substring(1, xml.IndexOf(" ") - 1).SplitOnFirst(':').Last()
-				: null;
-		}
+            return xml.StartsWith("<")
+                ? xml.Substring(1, xml.IndexOf(" ") - 1).SplitOnFirst(':').Last()
+                : null;
+        }
 
-		protected static string GetActionFromHttpContext()
-		{
-			var context = HttpContext.Current;
-			return context == null ? null : GetAction(context.Request.ContentType);
-		}
+        protected static string GetActionFromHttpContext()
+        {
+            var context = HttpContext.Current;
+            return context == null ? null : GetAction(context.Request.ContentType);
+        }
 
-		private static string GetAction(string contentType)
-		{
+        private static string GetAction(string contentType)
+        {
             if (contentType != null)
-			{
-				return GetOperationName(contentType);
-			}
+            {
+                return GetOperationName(contentType);
+            }
 
-			return null;
-		}
+            return null;
+        }
 
-		private static string GetOperationName(string contentType)
-		{
-			var urlActionPos = contentType.IndexOf("action=\"");
-			if (urlActionPos != -1)
-			{
-				var startIndex = urlActionPos + "action=\"".Length;
-				var urlAction = contentType.Substring(
-					startIndex,
-					contentType.IndexOf('"', startIndex) - startIndex);
+        private static string GetOperationName(string contentType)
+        {
+            var urlActionPos = contentType.IndexOf("action=\"");
+            if (urlActionPos != -1)
+            {
+                var startIndex = urlActionPos + "action=\"".Length;
+                var urlAction = contentType.Substring(
+                    startIndex,
+                    contentType.IndexOf('"', startIndex) - startIndex);
 
-				var parts = urlAction.Split('/');
-				var operationName = parts.Last();
-				return operationName;
-			}
+                var parts = urlAction.Split('/');
+                var operationName = parts.Last();
+                return operationName;
+            }
 
-			return null;
-		}
+            return null;
+        }
 
-		public string GetSoapContentType(string contentType)
-		{
+        public string GetSoapContentType(string contentType)
+        {
             var requestOperationName = GetAction(contentType);
-			return requestOperationName != null
+            return requestOperationName != null
                     ? contentType.Replace(requestOperationName, requestOperationName + "Response")
-					: (this.HandlerAttributes == EndpointAttributes.Soap11 ? ContentType.Soap11 : ContentType.Soap12);
-		}
+                    : (this.HandlerAttributes == EndpointAttributes.Soap11 ? ContentType.Soap11 : ContentType.Soap12);
+        }
 
-		public override object CreateRequest(IHttpRequest request, string operationName)
-		{
-			throw new NotImplementedException();
-		}
+        public override object CreateRequest(IHttpRequest request, string operationName)
+        {
+            throw new NotImplementedException();
+        }
 
-		public override object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request)
-		{
-			throw new NotImplementedException();
-		}
-	}
+        public override object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

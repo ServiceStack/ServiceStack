@@ -96,7 +96,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
             color:#000000;
             font-family: Verdana, Helvetica, Arial, ""Lucida Grande"", sans-serif; 
             margin: 0;
-            font-size: 13px;
+            font-size: 12px;
         }}
         a#logo {{
             position: absolute;
@@ -144,17 +144,17 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
             border: none;
 		}}
 		.operations TH {{
-            font-size: 13px;
             text-align: left;
             font-weight: normal;
 			min-width: 27em;
             white-space: nowrap;
 		}}
 		.operations TD {{
-            font-size: 12px;
+            font-size: 11px;
+            line-height: 16px;
             font-weight: bold;
             color: #CCC;
-			padding-left: 1em;
+			padding-left: 1.5em;
 		}}
         </style>
 </head>

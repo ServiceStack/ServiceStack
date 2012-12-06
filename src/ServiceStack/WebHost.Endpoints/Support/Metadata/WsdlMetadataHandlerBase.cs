@@ -43,6 +43,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 
 		public void Execute(IHttpRequest httpReq, IHttpResponse httpRes)
 		{
+            
 			EndpointHost.Config.AssertFeatures(Feature.Metadata);
 
 			httpRes.ContentType = "text/xml";

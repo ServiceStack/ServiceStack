@@ -36,6 +36,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
     [Restrict(EndpointAttributes.FormatOther)]
     public class OtherFormatOnly { }
 
+    [Restrict(
+        EndpointAttributes.InternalNetworkAccess | EndpointAttributes.Json,
+        EndpointAttributes.External | EndpointAttributes.Xml)]
+    public class JsonInternalXmlExternal { }
+
     public class EndpointAccessService : ServiceInterface.Service
     {
         public Response Get(GetsOnly request)
@@ -119,6 +124,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         }
 
         public Response Any(OtherFormatOnly request)
+        {
+            return new Response();
+        }
+
+        public Response Any(JsonInternalXmlExternal request)
         {
             return new Response();
         }
