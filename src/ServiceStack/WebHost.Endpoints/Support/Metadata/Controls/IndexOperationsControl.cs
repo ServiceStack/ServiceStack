@@ -146,12 +146,13 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 		.operations TH {{
             text-align: left;
             font-weight: normal;
+            line-height: 18px;
 			min-width: 27em;
             white-space: nowrap;
 		}}
 		.operations TD {{
             font-size: 11px;
-            line-height: 16px;
+            line-height: 18px;
             font-weight: bold;
             color: #CCC;
 			padding-left: 1.5em;

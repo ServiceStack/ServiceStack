@@ -76,6 +76,8 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 
         readonly TemplateProvider templateProvider = new TemplateProvider(DefaultTemplateName);
 
+        public List<string> SkipPaths { get; set; }
+
         public MarkdownFormat()
         {
             markdown = new MarkdownSharp.Markdown(); //Note: by default MarkdownDeep is used
@@ -84,6 +86,11 @@ namespace ServiceStack.WebHost.Endpoints.Formats
             this.MarkdownGlobalHelpers = new Dictionary<string, Type>();
             this.FindMarkdownPagesFn = FindMarkdownPages;
             this.ReplaceTokens = new Dictionary<string, string>();
+            //Skip scanning common VS.NET extensions
+            this.SkipPaths = new List<string> {
+                "/obj/", 
+                "/bin/",
+            };
         }
 
         internal static readonly char[] DirSeps = new[] { '\\', '/' };
@@ -421,6 +428,8 @@ namespace ServiceStack.WebHost.Endpoints.Formats
             var markDownFiles = VirtualPathProvider.GetAllMatchingFiles("*." + MarkdownExt);
             foreach (var markDownFile in markDownFiles)
             {
+                if (ShouldSkipPath(markDownFile)) continue;
+
                 if (markDownFile.GetType().Name != "ResourceVirtualFile")
                     hasReloadableWebPages = true;
 
@@ -451,6 +460,16 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 		public void RegisterMarkdownPage(MarkdownPage markdownPage)
         {
             AddPage(markdownPage);
+        }
+
+        private bool ShouldSkipPath(IVirtualFile csHtmlFile)
+        {
+            foreach (var skipPath in SkipPaths)
+            {
+                if (csHtmlFile.VirtualPath.StartsWith(skipPath, StringComparison.InvariantCultureIgnoreCase))
+                    return true;
+            }
+            return false;
         }
 
         public void AddPage(MarkdownPage page)
