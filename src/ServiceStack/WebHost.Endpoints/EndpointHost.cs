@@ -145,7 +145,7 @@ namespace ServiceStack.WebHost.Endpoints
 
             if (ExceptionHandler == null) {
                 ExceptionHandler = (httpReq, httpRes, operationName, ex) => {
-                    var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
+                    var errorMessage = String.Format("Error occured while Processing Request: {0}", ex.Message);
                     var statusCode = ex.ToStatusCode();
                     //httpRes.WriteToResponse always calls .Close in it's finally statement so 
                     //if there is a problem writing to response, by now it will be closed
@@ -211,9 +211,9 @@ namespace ServiceStack.WebHost.Endpoints
 
 	    private static void AfterPluginsLoaded(string specifiedContentType)
 		{
-			if (!string.IsNullOrEmpty(specifiedContentType))
+			if (!String.IsNullOrEmpty(specifiedContentType))
 				config.DefaultContentType = specifiedContentType;
-			else if (string.IsNullOrEmpty(config.DefaultContentType))
+			else if (String.IsNullOrEmpty(config.DefaultContentType))
 				config.DefaultContentType = ContentType.Json;
 
 			config.ServiceManager.AfterInit();
@@ -270,7 +270,12 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
-        public static ServiceMetadata Metadata { get { return Config.Metadata; } }
+	    public static bool DebugMode
+	    {
+	        get { return Config != null && Config.DebugMode; }
+	    }
+
+	    public static ServiceMetadata Metadata { get { return Config.Metadata; } }
        
         /// <summary>
 		/// Applies the raw request filters. Returns whether or not the request has been handled 

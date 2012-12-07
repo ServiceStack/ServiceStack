@@ -431,7 +431,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 	    public static EndpointAttributes GetAttributes(this IHttpRequest request)
 	    {
-	        if (EndpointHost.Config.DebugMode)
+	        if (EndpointHost.DebugMode)
 	        {
                 var simulate = request.QueryString["simulate"];
                 if (simulate != null)
