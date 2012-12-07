@@ -129,6 +129,7 @@
     <Compile Include="AuthTests.cs" />
     <Compile Include="CachedServiceTests.cs" />
     <Compile Include="CompressionTests.cs" />
+    <Compile Include="ExceptionHandling2Tests.cs" />
     <Compile Include="IntegrationTests\MovieSoap11Tests.cs" />
     <Compile Include="SendOneWayTests.cs" />
     <Compile Include="Support\Services\EndpointAccessService.cs" />

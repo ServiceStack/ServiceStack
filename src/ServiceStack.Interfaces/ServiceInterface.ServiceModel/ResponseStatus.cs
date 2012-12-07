@@ -55,26 +55,26 @@ namespace ServiceStack.ServiceInterface.ServiceModel
 		/// 
 		/// A value of non-null means the service encountered an error while processing the request.
 		/// </summary>
-		[DataMember]
+		[DataMember(Order = 1)]
 		public string ErrorCode { get; set; }
 
 		/// <summary>
 		/// A human friendly error message
 		/// </summary>
-		[DataMember]
+        [DataMember(Order = 2)]
 		public string Message { get; set; }
 
 		/// <summary>
 		/// 
 		/// </summary>
-		[DataMember]
+        [DataMember(Order = 3)]
 		public string StackTrace { get; set; }
 
 		/// <summary>
 		/// For multiple detailed validation errors.
 		/// Can hold a specific error message for each named field.
 		/// </summary>
-		[DataMember]
+        [DataMember(Order = 4)]
 		public List<ResponseError> Errors { get; set; }
 	}
 }
