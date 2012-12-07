@@ -311,7 +311,7 @@ namespace RazorRockstars.Console.Files
             appHost.Plugins.Add(new MsgPackFormat());
             //Fast
             appHost.Init();
-            EndpointHost.DebugMode = true;
+            EndpointHost.Config.DebugMode = true;
             appHost.Start(ListeningOn);
         }
 
