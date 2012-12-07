@@ -46,6 +46,19 @@ namespace ServiceStack.ServiceHost
             this.Container = container ?? new Container();
         }
 
+        /// <summary>
+        /// Inject alternative container and strategy for resolving Service Types
+        /// </summary>
+        public ServiceManager(Container container, ServiceController serviceController)
+        {
+            if (serviceController == null)
+                throw new ArgumentNullException("serviceController");
+
+            this.Container = container ?? new Container();
+            this.Metadata = serviceController.Metadata; //always share the same metadata
+            this.ServiceController = serviceController;
+        }
+
 		private List<Type> GetAssemblyTypes(Assembly[] assembliesWithServices)
 		{
 			var results = new List<Type>();
@@ -71,18 +84,6 @@ namespace ServiceStack.ServiceHost
 				Log.Error(msg, ex);
 				throw new Exception(msg, ex);
 			}
-		}
-
-		/// <summary>
-		/// Inject alternative container and strategy for resolving Service Types
-		/// </summary>
-		public ServiceManager(Container container, ServiceController serviceController)
-		{
-			if (serviceController == null)
-				throw new ArgumentNullException("serviceController");
-
-			this.Container = container ?? new Container();
-			this.ServiceController = serviceController;
 		}
 
 		private ContainerResolveCache typeFactory;
