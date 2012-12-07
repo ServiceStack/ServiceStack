@@ -34,9 +34,6 @@ namespace ServiceStack.WebHost.Endpoints
         public static bool SkipPathValidation = false;
         public static string ServiceStackPath = null;
 
-        private const string DefaultUsageExamplesBaseUri =
-			"https://github.com/ServiceStack/ServiceStack.Extras/blob/master/doc/UsageExamples";
-
         private static EndpointHostConfig instance;
         public static EndpointHostConfig Instance
         {
@@ -49,26 +46,10 @@ namespace ServiceStack.WebHost.Endpoints
                             addDefaultXmlNamespace: "http://schemas.servicestack.net/types"),
                         WsdlServiceNamespace = "http://schemas.servicestack.net/types",
                         WsdlSoapActionNamespace = "http://schemas.servicestack.net/types",
-                        MetadataPageBodyHtml = @"
-    <br />
-    <h3>Client Usage Examples:</h3>
-    <ul>
-        <li><a href=""{0}/UsingServiceClients.cs"">Using Service Clients</a></li>
-        <li><a href=""{0}/UsingDtoFromAssembly.cs"">Using Dto From Assembly</a></li>
-        <li><a href=""{0}/UsingDtoFromXsd.cs"">Using Dto From Xsd</a></li>
-        <li><a href=""{0}/UsingServiceReferenceClient.cs"">Using Service Reference Client</a></li>
-        <li><a href=""{0}/UsingSvcutilGeneratedClient.cs"">Using SvcUtil Generated Client</a></li>
-        <li><a href=""{0}/UsingRawHttpClient.cs"">Using Raw Http Client</a></li>
-        <li><a href=""{0}/UsingRestAndJson.cs"">Using Rest and Json</a></li>
-        <li><a href=""{0}/UsingRestAndXml.cs"">Using Rest and Xml</a></li>
-    </ul>".Fmt(DefaultUsageExamplesBaseUri),
-                        MetadataOperationPageBodyHtml = @"
-    <br />
-    <h3>Usage Examples:</h3>
-    <ul>
-        <li><a href=""{0}/UsingRestAndJson.cs"">Using Rest and JSON</a></li>
-        <li><a href=""{0}/UsingRestAndXml.cs"">Using Rest and XML</a></li>
-    </ul>".Fmt(DefaultUsageExamplesBaseUri),
+                        MetadataPageBodyHtml = @"<br />
+                            <h3><a href=""https://github.com/ServiceStack/ServiceStack/wiki/Clients-overview"">Clients Overview</a></h3>",
+                        MetadataOperationPageBodyHtml = @"<br />
+                            <h3><a href=""https://github.com/ServiceStack/ServiceStack/wiki/Clients-overview"">Clients Overview</a></h3>",
                         LogFactory = new NullLogFactory(),
                         EnableAccessRestrictions = true,
                         WebHostPhysicalPath = "~".MapServerPath(),
