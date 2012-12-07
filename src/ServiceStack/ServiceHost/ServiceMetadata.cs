@@ -153,6 +153,19 @@ namespace ServiceStack.ServiceHost
             return Operations.Select(x => x.RequestType.Name).ToList();
         }
 
+        public bool IsVisible(IHttpRequest httpReq, Operation operation)
+        {
+            if (EndpointHost.Config != null && !EndpointHost.Config.EnableAccessRestrictions)
+                return true;
+
+            if (operation.RestrictTo == null) return true;
+
+            //Less fine-grained on /metadata pages. Only check Network and Format
+            var reqAttrs = httpReq.GetAttributes();
+            var showToNetwork = CanShowToNetwork(operation, reqAttrs);
+            return showToNetwork;
+        }
+
         public bool IsVisible(IHttpRequest httpReq, Format format, string operationName)
         {
             if (EndpointHost.Config != null && !EndpointHost.Config.EnableAccessRestrictions)
@@ -165,13 +178,10 @@ namespace ServiceStack.ServiceHost
             var canCall = HasImplementation(operation, format);
             if (!canCall) return false;
 
+            var isVisible = IsVisible(httpReq, operation);
+            if (!isVisible) return false;
+
             if (operation.RestrictTo == null) return true;
-
-            //Less fine-grained on /metadata pages. Only check Network and Format
-            var reqAttrs = httpReq.GetAttributes();
-            var showToNetwork = CanShowToNetwork(operation, reqAttrs);
-            if (!showToNetwork) return false;
-
             var allowsFormat = operation.RestrictTo.CanShowTo((EndpointAttributes)(long)format);
             return allowsFormat;
         }
@@ -199,7 +209,7 @@ namespace ServiceStack.ServiceHost
             var allow = operation.RestrictTo.HasAccessTo(reqAttrs);
             if (!allow) return false;
 
-            var allowsFormat = operation.RestrictTo.HasAccessTo((EndpointAttributes) (long) format);
+            var allowsFormat = operation.RestrictTo.HasAccessTo((EndpointAttributes)(long)format);
             return allowsFormat;
         }
 
@@ -231,6 +241,7 @@ namespace ServiceStack.ServiceHost
 
     public class Operation
     {
+        public string Name { get { return RequestType.Name; } }
         public Type RequestType { get; set; }
         public Type ServiceType { get; set; }
         public Type ResponseType { get; set; }

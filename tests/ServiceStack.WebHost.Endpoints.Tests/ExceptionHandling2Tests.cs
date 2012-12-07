@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using NUnit.Framework;
 using ProtoBuf;
 using ServiceStack.Plugins.ProtoBuf;
@@ -11,22 +12,20 @@ using ServiceStack.ServiceInterface.ServiceModel;
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
 
-    #region ServiceModel
-
     [Route("/reqstars")]
-    [ProtoContract]
+    [DataContract]
     public class Reqstar //: IReturn<List<Reqstar>>
     {
-        [ProtoMember(1)]
+        [DataMember(Order = 1)]
         public int Id { get; set; }
 
-        [ProtoMember(2)]
+        [DataMember(Order = 2)]
         public string FirstName { get; set; }
 
-        [ProtoMember(3)]
+        [DataMember(Order = 3)]
         public string LastName { get; set; }
 
-        [ProtoMember(4)]
+        [DataMember(Order = 4)]
         public int? Age { get; set; }
     }
 
@@ -34,58 +33,56 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     [Route("/reqstars2/search")]
     [Route("/reqstars2/aged/{Age}")]
-    [ProtoContract]
+    [DataContract]
     public class SearchReqstars2 : IReturn<ReqstarsResponse>
     {
-        [ProtoMember(1)]
+        [DataMember(Order = 1)]
         public int? Age { get; set; }
     }
 
-    [ProtoContract]
+    [DataContract]
     public class ReqstarsResponse
     {
-        [ProtoMember(1)]
+        [DataMember(Order = 1)]
         public int Total { get; set; }
 
-        [ProtoMember(2)]
+        [DataMember(Order = 2)]
         public int? Aged { get; set; }
 
-        [ProtoMember(3)]
+        [DataMember(Order = 3)]
         public List<Reqstar> Results { get; set; }
+
+        [DataMember(Order = 4)]
+        public ResponseStatus ResponseStatus { get; set; }
     }
 
     //Naming convention:{Request DTO}Response
 
     [Route("/reqstars/search")]
     [Route("/reqstars/aged/{Age}")]
-    [ProtoContract]
+    [DataContract]
     public class SearchReqstars : IReturn<SearchReqstarsResponse>
     {
-        [ProtoMember(1)]
+        [DataMember(Order = 1)]
         public int? Age { get; set; }
     }
 
 
-    [ProtoContract]
+    [DataContract]
     public class SearchReqstarsResponse
     {
-        [ProtoMember(1)]
+        [DataMember(Order = 1)]
         public int Total { get; set; }
 
-        [ProtoMember(2)]
+        [DataMember(Order = 2)]
         public int? Aged { get; set; }
 
-        [ProtoMember(3)]
+        [DataMember(Order = 3)]
         public List<Reqstar> Results { get; set; }
 
-        [ProtoMember(4)]
+        [DataMember(Order = 4)]
         public ResponseStatus ResponseStatus { get; set; }
     }
-
-
-    #endregion
-
-    #region Service
 
     public class ReqstarsService : IService
     {
@@ -97,15 +94,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             if (request.Age.HasValue && request.Age <= 0)
                 throw new ArgumentException("Invalid Age");
 
-            var response = new SearchReqstarsResponse()
-            {
+            var response = new SearchReqstarsResponse {
                 Total = 2,
                 Aged = 10,
-                Results = new List<Reqstar>()
-                                {
-                                    new Reqstar() { Id = 1, FirstName = "Max", LastName = "Meier", Age = 10 },
-                                    new Reqstar() { Id = 2, FirstName = "Susan", LastName = "Stark", Age = 10 }
-                                }
+                Results = new List<Reqstar> {
+                    new Reqstar { Id = 1, FirstName = "Max", LastName = "Meier", Age = 10 },
+                    new Reqstar { Id = 2, FirstName = "Susan", LastName = "Stark", Age = 10 }
+                }
             };
 
             return response;
@@ -119,25 +114,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             if (request.Age.HasValue && request.Age <= 0)
                 throw new ArgumentException("Invalid Age");
 
-            var response = new ReqstarsResponse()
-            {
+            var response = new ReqstarsResponse() {
                 Total = 2,
                 Aged = 10,
-                Results = new List<Reqstar>()
-                                {
-                                    new Reqstar() { Id = 1, FirstName = "Max", LastName = "Meier", Age = 10 },
-                                    new Reqstar() { Id = 2, FirstName = "Susan", LastName = "Stark", Age = 10 }
-                                }
+                Results = new List<Reqstar> {
+                    new Reqstar { Id = 1, FirstName = "Max", LastName = "Meier", Age = 10 },
+                    new Reqstar { Id = 2, FirstName = "Susan", LastName = "Stark", Age = 10 }
+                }
             };
 
             return response;
         }
     }
-
-    #endregion
-
-    #region AppHost
-
+    
     public class AppHost : AppHostHttpListenerBase
     {
         public AppHost()
@@ -151,21 +140,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    #endregion
-
     [TestFixture]
     public class ExceptionHandling2Tests
     {
-        private static string _testUri = "http://localhost:1337/";
+        private static string testUri = "http://localhost:1337/";
 
-        #region Setup
+        AppHost appHost;
 
         [TestFixtureSetUp]
-        public static void Init()
+        public void Init()
         {
             try
             {
-                var appHost = new AppHost();
+                appHost = new AppHost();
                 appHost.Init();
                 EndpointHost.Config.DebugMode = true;
                 appHost.Start("http://*:1337/");
@@ -176,18 +163,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
-        #endregion
+        [TestFixtureTearDown]
+        public void TearDown()
+        {
+            appHost.Dispose();
+            appHost = null;
+        }
 
         static IRestClient[] ServiceClients = 
 		{
-			new JsonServiceClient(_testUri),
-			new XmlServiceClient(_testUri),
-			new JsvServiceClient(_testUri),
-			new ProtoBufServiceClient(_testUri)
+			new JsonServiceClient(testUri),
+			new XmlServiceClient(testUri),
+			new JsvServiceClient(testUri),
+			new ProtoBufServiceClient(testUri)
 		};
 
-
-        #region Tests with old naming convention
 
         /// <summary>
         ///A test for a good response
@@ -249,9 +239,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
-        #endregion
-
-        #region Tests with no special naming convention
 
         /// <summary>
         ///A test for a good response
@@ -313,7 +300,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
-        #endregion
 
     }
 

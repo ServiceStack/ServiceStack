@@ -73,7 +73,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="App.config" />
-    <Content Include="default.cshtml" />
+    <Content Include="default.cshtml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="MRootPage.md" />
     <Content Include="Global.asax" />
     <Content Include="NoModelNoController.cshtml" />

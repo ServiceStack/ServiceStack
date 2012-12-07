@@ -75,6 +75,8 @@ namespace ServiceStack.Razor
 
         public TemplateProvider TemplateProvider { get; set; }
 
+        public List<string> SkipPaths { get; set; }
+
         public Type DefaultBaseType
         {
             get
@@ -114,7 +116,12 @@ namespace ServiceStack.Razor
 			};
             this.TemplateProvider = new TemplateProvider(DefaultTemplateName) {
                 CompileInParallelWithNoOfThreads = 0,
-            };            
+            };
+            //Skip scanning common VS.NET extensions
+            this.SkipPaths = new List<string> {
+                "/obj/", 
+                "/bin/",
+            };
         }
 
         public void Register(IAppHost appHost)
@@ -436,6 +443,8 @@ namespace ServiceStack.Razor
                 var csHtmlFiles = VirtualPathProvider.GetAllMatchingFiles("*." + ext).ToList();
                 foreach (var csHtmlFile in csHtmlFiles)
                 {
+                    if (ShouldSkipPath(csHtmlFile)) continue;
+
 					if (csHtmlFile.GetType().Name != "ResourceVirtualFile")
                         hasReloadableWebPages = true;
 
@@ -465,6 +474,16 @@ namespace ServiceStack.Razor
 
             if (!hasReloadableWebPages)
                 WatchForModifiedPages = false;
+        }
+
+        private bool ShouldSkipPath(IVirtualFile csHtmlFile)
+        {
+            foreach (var skipPath in SkipPaths)
+            {
+                if (csHtmlFile.VirtualPath.StartsWith(skipPath, StringComparison.InvariantCultureIgnoreCase))
+                    return true;
+            }
+            return false;
         }
 
         public void AddPage(ViewPageRef page)

@@ -1,4 +1,5 @@
-﻿using ServiceStack.ServiceHost;
+﻿using ServiceStack.Common.Web;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 {
@@ -18,6 +19,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
     public class LocalhostOnly { }
     [Restrict(InternalOnly = true)]
     public class InternalOnly { }
+
+    public class ReturnsHttpResult { }
 
     public class EndpointAccessService : ServiceInterface.Service
     {
@@ -65,5 +68,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         {
             return new Response();
         }
+
+        public HttpResult Any(ReturnsHttpResult request)
+        {
+            return new HttpResult();
+        }
     }
+
+
 }
