@@ -213,6 +213,9 @@ namespace ServiceStack.ServiceHost
 	    /// <returns></returns>
 	    public static EndpointAttributes ToAllowedFlagsSet(this EndpointAttributes restrictTo)
 	    {
+            if (restrictTo == EndpointAttributes.Any)
+                return EndpointAttributes.Any;
+
 	        var allowedAttrs = EndpointAttributes.None;
 
 	        //Network access

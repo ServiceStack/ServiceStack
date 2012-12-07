@@ -114,7 +114,8 @@ namespace ServiceStack.WebHost.Endpoints
                         CustomHttpHandlers = new Dictionary<HttpStatusCode, IHttpHandler>(),
                         MapExceptionToStatusCode = new Dictionary<Type, int>(),
                         DefaultJsonpCacheExpiration = new TimeSpan(0, 20, 0),
-                        MetadataVisibility = EndpointAttributes.Any
+                        MetadataVisibility = EndpointAttributes.Any,
+                        Return204NoContentForEmptyResponse = true,
                     };
 
                     if (instance.ServiceStackHandlerFactoryPath == null)
@@ -172,6 +173,7 @@ namespace ServiceStack.WebHost.Endpoints
             this.MapExceptionToStatusCode = instance.MapExceptionToStatusCode;
             this.DefaultJsonpCacheExpiration = instance.DefaultJsonpCacheExpiration;
             this.MetadataVisibility = instance.MetadataVisibility;
+            this.Return204NoContentForEmptyResponse = Return204NoContentForEmptyResponse;
         }
 
         public static string GetAppConfigPath()
@@ -341,7 +343,13 @@ namespace ServiceStack.WebHost.Endpoints
         public string WsdlServiceNamespace { get; set; }
         public string WsdlSoapActionNamespace { get; set; }
 
-        public EndpointAttributes MetadataVisibility { get; set; }
+        private EndpointAttributes metadataVisibility;
+        public EndpointAttributes MetadataVisibility
+        {
+            get { return metadataVisibility; }
+            set { metadataVisibility = value.ToAllowedFlagsSet(); }
+        }
+
         public string MetadataPageBodyHtml { get; set; }
         public string MetadataOperationPageBodyHtml { get; set; }
 
@@ -387,6 +395,7 @@ namespace ServiceStack.WebHost.Endpoints
         public Dictionary<Type, int> MapExceptionToStatusCode { get; set; }
 
         public TimeSpan DefaultJsonpCacheExpiration { get; set; }
+        public bool Return204NoContentForEmptyResponse { get; set; }
 
         private string defaultOperationNamespace;
         public string DefaultOperationNamespace

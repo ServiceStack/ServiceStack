@@ -132,14 +132,7 @@ namespace ServiceStack.ServiceHost
                 (callExecute, serviceParam, requestDtoParam).Compile();
 
                 return (service, request) => {
-
-                    //Change the default status code to 204 for void actions
-                    var hasReqCtx = service as IRequiresRequestContext;
-                    if (hasReqCtx != null)
-                    {
-                        hasReqCtx.RequestContext.Get<IHttpResponse>().StatusCode = (int) HttpStatusCode.NoContent;
-                    }
-
+                  
                     executeFunc(service, request);
                     return null;
                 };

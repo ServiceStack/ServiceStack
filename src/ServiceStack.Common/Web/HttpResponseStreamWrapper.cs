@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using ServiceStack.Common.Utils;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Common.Web
@@ -23,8 +22,8 @@ namespace ServiceStack.Common.Web
             get { return null; }
         }
 
-        public int StatusCode { set; private get; }
-        public string StatusDescription { set; private get; }
+        public int StatusCode { set; get; }
+        public string StatusDescription { set; get; }
         public string ContentType { get; set; }
 
         public ICookies Cookies { get; set; }
