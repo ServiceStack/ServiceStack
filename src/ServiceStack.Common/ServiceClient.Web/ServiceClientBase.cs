@@ -146,44 +146,44 @@ namespace ServiceStack.ServiceClient.Web
             this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + format + "/asynconeway/";
         }
 
-        private bool _disableAutoCompression;
         /// <summary>
         /// Whether to Accept Gzip,Deflate Content-Encoding and to auto decompress responses
         /// </summary>
+        private bool disableAutoCompression;
         public bool DisableAutoCompression
         {
-            get { return _disableAutoCompression; }
+            get { return disableAutoCompression; }
             set
             {
-                _disableAutoCompression = value;
+                disableAutoCompression = value;
                 asyncClient.DisableAutoCompression = value;
             }
         }
 
-        private string _username;
         /// <summary>
         /// The user name for basic authentication
         /// </summary>
+        private string username;
         public string UserName
         {
-            get { return _username; }
+            get { return username; }
             set
             {
-                _username = value;
+                username = value;
                 asyncClient.UserName = value;
             }
         }
 
-        private string _password;
         /// <summary>
         /// The password for basic authentication
         /// </summary>
+        private string password;
         public string Password
         {
-            get { return _password; }
+            get { return password; }
             set
             {
-                _password = value;
+                password = value;
                 asyncClient.Password = value;
             }
         }

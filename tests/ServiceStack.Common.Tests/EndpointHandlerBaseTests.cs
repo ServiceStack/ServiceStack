@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Testing;
@@ -25,6 +26,17 @@ namespace ServiceStack.Common.Tests
             Assert.That(result.Has(EndpointAttributes.External));
             Assert.That(result.Has(EndpointAttributes.HttpGet));
             Assert.That(result.Has(EndpointAttributes.InSecure));
+        }
+
+        [Flags]
+        enum A : int { B = 0, C = 2, D = 4 }
+
+        [Test]
+        public void Can_parse_int_enums()
+        {
+            var result = A.B | A.C;
+            Assert.That(result.Has(A.C));
+            Assert.That(!result.Has(A.D));
         }
     }
 }

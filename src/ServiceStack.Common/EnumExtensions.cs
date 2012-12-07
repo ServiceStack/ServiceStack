@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common
 {
@@ -47,62 +48,58 @@ namespace ServiceStack.Common
             return @enum.GetType().GetFields(BindingFlags.Static | BindingFlags.Public).Select(fi => fi.Name).ToList();
 #endif
         }
-
-        public static bool Has<T>(this Enum type, T value)
+        
+        public static bool Has<T>(this Enum @enum, T value)
         {
-            try
-            {
-                return (((int)(object)type & (int)(object)value) == (int)(object)value);
-            }
-            catch
-            {
-                return false;
-            }
+            var enumType = Enum.GetUnderlyingType(@enum.GetType());
+            if (enumType == typeof(int))
+                return (((int)(object)@enum & (int)(object)value) == (int)(object)value);
+            if (enumType == typeof(long))
+                return (((long)(object)@enum & (long)(object)value) == (long)(object)value);
+            if (enumType == typeof(byte))
+                return (((byte)(object)@enum & (byte)(object)value) == (byte)(object)value);
+
+            throw new NotSupportedException("Enums of type {0}".Fmt(enumType.Name));
         }
 
-        public static bool Is<T>(this Enum type, T value)
+        public static bool Is<T>(this Enum @enum, T value)
         {
-            try
-            {
-                return (int)(object)type == (int)(object)value;
-            }
-            catch
-            {
-                return false;
-            }
+            var enumType = Enum.GetUnderlyingType(@enum.GetType());
+            if (enumType == typeof(int))
+                return (int)(object)@enum == (int)(object)value;
+            if (enumType == typeof(long))
+                return (long)(object)@enum == (long)(object)value;
+            if (enumType == typeof(byte))
+                return (byte)(object)@enum == (byte)(object)value;
+
+            throw new NotSupportedException("Enums of type {0}".Fmt(enumType.Name));
         }
 
 
-        public static T Add<T>(this Enum type, T value)
+        public static T Add<T>(this Enum @enum, T value)
         {
-            try
-            {
-                return (T)(object)(((int)(object)type | (int)(object)value));
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException(
-                    string.Format(
-                        "Could not append value from enumerated type '{0}'.",
-                        typeof(T).Name
-                        ), ex);
-            }
+            var enumType = Enum.GetUnderlyingType(@enum.GetType());
+            if (enumType == typeof(int))
+                return (T)(object)(((int)(object)@enum | (int)(object)value));
+            if (enumType == typeof(long))
+                return (T)(object)(((long)(object)@enum | (long)(object)value));
+            if (enumType == typeof(byte))
+                return (T)(object)(((byte)(object)@enum | (byte)(object)value));
+
+            throw new NotSupportedException("Enums of type {0}".Fmt(enumType.Name));
         }
 
-        public static T Remove<T>(this Enum type, T value)
+        public static T Remove<T>(this Enum @enum, T value)
         {
-            try
-            {
-                return (T)(object)(((int)(object)type & ~(int)(object)value));
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException(
-                    string.Format(
-                        "Could not remove value from enumerated type '{0}'.",
-                        typeof(T).Name
-                        ), ex);
-            }
+            var enumType = Enum.GetUnderlyingType(@enum.GetType());
+            if (enumType == typeof(int))
+                return (T)(object)(((int)(object)@enum & ~(int)(object)value));
+            if (enumType == typeof(long))
+                return (T)(object)(((long)(object)@enum & ~(long)(object)value));
+            if (enumType == typeof(byte))
+                return (T)(object)(((byte)(object)@enum & ~(byte)(object)value));
+
+            throw new NotSupportedException("Enums of type {0}".Fmt(enumType.Name));
         }
 
     }

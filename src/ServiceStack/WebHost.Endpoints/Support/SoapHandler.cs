@@ -69,7 +69,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
             }
 
             var requestType = GetRequestType(requestMsg, requestXml);
-            if (EndpointHost.Metadata.CanAccess(endpointAttributes, soapFeatue.ToFormat(), requestType.Name))
+            if (!EndpointHost.Metadata.CanAccess(endpointAttributes, soapFeatue.ToFormat(), requestType.Name))
                 throw EndpointHost.Config.UnauthorizedAccess(endpointAttributes);
 
             try
