@@ -70,7 +70,7 @@ namespace ServiceStack.ServiceHost
             }
 
             var oldApiActions = serviceType
-                .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly)
                 .Select(x => ToNewApiAction(x.Name))
                 .Where(x => x != null)
                 .ToList();

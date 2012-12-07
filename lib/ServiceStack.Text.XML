@@ -203,6 +203,11 @@
             will throw; otherwise, it will parse as many fields as possible. The default is <see langword="false"/>.
             </summary>
         </member>
+        <member name="F:ServiceStack.Text.JsConfig.tsAlwaysUseUtc">
+            <summary>
+            Gets or sets a value indicating if the framework should always convert <see cref="T:System.DateTime"/> to UTC format instead of local time. 
+            </summary>
+        </member>
         <member name="P:ServiceStack.Text.JsConfig.TimeSpanHandler">
             <summary>
             Sets which format to use when serializing TimeSpans
@@ -363,7 +368,8 @@
         </member>
         <member name="M:ServiceStack.Text.Json.JsonTypeSerializer.ConvertFromUtf32(System.Int32)">
             <summary>
-            Since Silverlight doesn't have char.ConvertFromUtf32() so putting Mono's implemenation inline.
+            Given a character as utf32, returns the equivalent string provided that the character
+            is legal json.
             </summary>
             <param name="utf32"></param>
             <returns></returns>
@@ -562,6 +568,13 @@
             Parses the specified value.
             </summary>
             <param name="value">The value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Text.Common.DateTimeSerializer.Prepare(System.DateTime)">
+            <summary>
+            If AlwaysUseUtc is set to true then convert all DateTime to UTC.
+            </summary>
+            <param name="dateTime"></param>
             <returns></returns>
         </member>
         <member name="M:ServiceStack.Text.Common.DateTimeSerializer.ParseWcfJsonDateOffset(System.String)">

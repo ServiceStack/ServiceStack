@@ -276,7 +276,7 @@ namespace ServiceStack.WebHost.Endpoints
 		private static IHttpHandler ReturnRequestInfo(HttpRequest httpReq)
 		{
             if (EndpointHost.Config.DebugOnlyReturnRequestInfo
-                || (EndpointHost.Config.DebugMode && httpReq.PathInfo.EndsWith("__requestinfo")))
+                || (EndpointHost.DebugMode && httpReq.PathInfo.EndsWith("__requestinfo")))
             {
 				var reqInfo = RequestInfoHandler.GetRequestInfo(
 					new HttpRequestWrapper(typeof(RequestInfo).Name, httpReq));
@@ -297,7 +297,7 @@ namespace ServiceStack.WebHost.Endpoints
 		private static IHttpHandler ReturnRequestInfo(IHttpRequest httpReq)
 		{
 			if (EndpointHost.Config.DebugOnlyReturnRequestInfo
-                || (EndpointHost.Config.DebugMode && httpReq.PathInfo.EndsWith("__requestinfo")))
+                || (EndpointHost.DebugMode && httpReq.PathInfo.EndsWith("__requestinfo")))
 			{
 				var reqInfo = RequestInfoHandler.GetRequestInfo(httpReq);
 

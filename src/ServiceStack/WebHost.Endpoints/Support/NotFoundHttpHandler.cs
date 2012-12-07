@@ -29,7 +29,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		    var text = new StringBuilder();
 
-            if (EndpointHost.Config.DebugMode)
+            if (EndpointHost.DebugMode)
             {
                 text.AppendLine("Handler for Request not found: \n\n")
                     .AppendLine("Request.HttpMethod: " + request.HttpMethod)
