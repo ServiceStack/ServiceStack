@@ -41,7 +41,11 @@ namespace ServiceStack
             var meta = EndpointHost.Metadata;
             foreach (var operation in meta.Operations)
             {
+                if (!meta.IsVisible(httpReq, operation))
+                    continue;
+
                 metadata.Operations.Add(new MetadataOperationType {
+                    Actions = operation.Actions,
                     Request = operation.RequestType.ToType(),
                     Response = operation.ResponseType.ToType(),
                 });

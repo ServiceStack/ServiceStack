@@ -75,6 +75,7 @@ namespace ServiceStack.Common.ServiceModel
 
     public class MetadataOperationType
     {
+        public List<string> Actions { get; set; }
         public MetadataType Request { get; set; }
         public MetadataType Response { get; set; }
     }

@@ -144,13 +144,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class ExceptionHandling2Tests
     {
         private static string testUri = "http://localhost:1337/";
-        
+
+        AppHost appHost;
+
         [TestFixtureSetUp]
-        public static void Init()
+        public void Init()
         {
             try
             {
-                var appHost = new AppHost();
+                appHost = new AppHost();
                 appHost.Init();
                 EndpointHost.Config.DebugMode = true;
                 appHost.Start("http://*:1337/");
@@ -159,6 +161,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Console.WriteLine(ex.ToString());
             }
+        }
+
+        [TestFixtureTearDown]
+        public void TearDown()
+        {
+            appHost.Dispose();
+            appHost = null;
         }
 
         static IRestClient[] ServiceClients = 
