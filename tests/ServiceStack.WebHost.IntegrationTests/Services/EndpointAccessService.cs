@@ -1,4 +1,5 @@
-﻿using ServiceStack.ServiceHost;
+﻿using ServiceStack.Common.Web;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -40,6 +41,22 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         EndpointAttributes.InternalNetworkAccess | EndpointAttributes.Json,
         EndpointAttributes.External | EndpointAttributes.Xml)]
     public class JsonInternalXmlExternal { }
+
+    public class ReturnsHttpResult
+    {
+        public int Id { get; set; }
+    }
+
+    public class ReturnsHttpResultWithMarkerResult{}
+    public class ReturnsHttpResultWithMarker : IReturn<ReturnsHttpResultWithMarkerResult>
+    {
+        public int Id { get; set; }
+    }
+    public class ReturnsHttpResultWithResponseResponse { }
+    public class ReturnsHttpResultWithResponse 
+    {
+        public int Id { get; set; }
+    }
 
     public class EndpointAccessService : ServiceInterface.Service
     {
@@ -131,6 +148,21 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public Response Any(JsonInternalXmlExternal request)
         {
             return new Response();
+        }
+
+        public HttpResult Any(ReturnsHttpResult request)
+        {
+            return new HttpResult();
+        }
+
+        public HttpResult Any(ReturnsHttpResultWithMarker request)
+        {
+            return new HttpResult();
+        }
+
+        public HttpResult Any(ReturnsHttpResultWithResponse request)
+        {
+            return new HttpResult();
         }
     }
 }
