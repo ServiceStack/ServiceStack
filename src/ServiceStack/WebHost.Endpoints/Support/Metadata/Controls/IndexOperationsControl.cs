@@ -77,8 +77,13 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 			}
 
 			var renderedTemplate = string.Format(
-				PageTemplate, this.Title, this.MetadataPageBodyHtml, this.XsdServiceTypesIndex,
-				operationsPart, xsdsPart, wsdlTemplate);
+				PageTemplate, 
+                this.Title, 
+                this.MetadataPageBodyHtml, 
+                this.XsdServiceTypesIndex,
+				operationsPart, 
+                xsdsPart, 
+                wsdlTemplate);
 
 			output.Write(renderedTemplate);
 		}
@@ -128,13 +133,14 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 			clear: left;
             margin-top: 10px;
         }}
-        LI A, TD A {{
+        A {{
             color: #369;
             font-weight: bold;
-            text-decoration: underline;
+            text-decoration: none;
         }}
-        LI A:hover, TD A:hover {{
+        A:hover {{
             color: #C30;
+            text-decoration: underline;
         }}
 		.operations TABLE {{
 			margin-left: 1.5em;
@@ -164,20 +170,22 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
     <h1>{0}</h1>
     
     <form id=""form1"">
-    <p>The following operations are supported. For a formal definition, please review the Service <a href=""?xsd={2}"">XSD</a>.
-    </p>
+        <p>
+            The following operations are supported. For a formal definition, please review the Service <a href=""?xsd={2}"">XSD</a>.
+        </p>
 
-	<div class=""operations"">
-	  {3}
-	</div>
+	    <div class=""operations"">
+	      {3}
+	    </div>
 
-    {1}    
+        {1}    
     
-    {4}
+        {4}
 
-	{5}
+	    {5}
  
     </form>
+
 </body>
 </html>";
 		#endregion
