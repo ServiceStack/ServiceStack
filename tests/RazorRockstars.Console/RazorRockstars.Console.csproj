@@ -36,6 +36,10 @@
     <Reference Include="Mono.Data.Sqlite">
       <HintPath>..\..\lib\tests\Mono.Data.Sqlite.dll</HintPath>
     </Reference>
+    <Reference Include="ServiceStack.Ultimate, Version=1.0.4620.6821, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\ServiceStack.Ultimate.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
@@ -58,9 +62,6 @@
     <Reference Include="System.Configuration" />
     <Reference Include="nunit.framework">
       <HintPath>..\..\lib\tests\nunit.framework.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Ultimate">
-      <HintPath>..\..\lib\ServiceStack.Ultimate.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
