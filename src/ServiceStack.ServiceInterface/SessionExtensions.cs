@@ -143,30 +143,6 @@ namespace ServiceStack.ServiceInterface
                 requestDto);
         }
 
-        public static IHttpRequest ToRequest(this HttpRequest aspnetHttpReq)
-        {
-            return new HttpRequestWrapper(aspnetHttpReq) {
-                Container = AppHostBase.Instance != null ? AppHostBase.Instance.Container : null
-            };
-        }
-
-        public static IHttpRequest ToRequest(this HttpListenerRequest listenerHttpReq)
-        {
-            return new HttpListenerRequestWrapper(listenerHttpReq) {
-                Container = AppHostBase.Instance != null ? AppHostBase.Instance.Container : null
-            };
-        }
-
-        public static IHttpResponse ToResponse(this HttpResponse aspnetHttpRes)
-        {
-            return new HttpResponseWrapper(aspnetHttpRes);
-        }
-
-        public static IHttpResponse ToResponse(this HttpListenerResponse listenerHttpRes)
-        {
-            return new HttpListenerResponseWrapper(listenerHttpRes);
-        }
-
         public static string GetSessionKey(IHttpRequest httpReq = null)
         {
             var sessionId = SessionFeature.GetSessionId(httpReq);
@@ -196,6 +172,5 @@ namespace ServiceStack.ServiceInterface
         {
             cache.Remove(GetSessionKey(httpReq));
         }
-
     }
 }
