@@ -254,20 +254,17 @@ namespace ServiceStack.ServiceHost
     {
         public ServiceMetadata Metadata { get; set; }
         public bool Flash { get; set; }
-        public bool IncludeAllTypes { get; set; }
-
-        public XsdMetadata(ServiceMetadata metadata, bool flash = false, bool includeAllTypes = true)
+        
+        public XsdMetadata(ServiceMetadata metadata, bool flash = false)
         {
             Metadata = metadata;
             Flash = flash;
-            IncludeAllTypes = includeAllTypes;
         }
 
         public List<Type> GetAllTypes()
         {
             var allTypes = new List<Type>(Metadata.RequestTypes);
-            if (IncludeAllTypes)
-                allTypes.AddRange(Metadata.ResponseTypes);
+            allTypes.AddRange(Metadata.ResponseTypes);
             return allTypes;
         }
 

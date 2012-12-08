@@ -16,7 +16,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			var wsdlGenerator = new Soap11WsdlMetadataHandler();
 		    var xsdMetadata = new XsdMetadata(Metadata);
-		    var wsdlTemplate = wsdlGenerator.GetWsdlTemplate(xsdMetadata, "http://w3c.org/types", false, false, "http://w3c.org/types");
+		    var wsdlTemplate = wsdlGenerator.GetWsdlTemplate(xsdMetadata, "http://w3c.org/types", false, "http://w3c.org/types");
 
             Assert.That(wsdlTemplate.ReplyOperationNames, Is.EquivalentTo(xsdMetadata.GetReplyOperationNames()));
             Assert.That(wsdlTemplate.OneWayOperationNames, Is.EquivalentTo(xsdMetadata.GetOneWayOperationNames()));
@@ -28,7 +28,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			var xsd = new XsdGenerator {
 				OperationTypes = new[] { typeof(GetCustomer), typeof(GetCustomerResponse), typeof(GetCustomers), typeof(GetCustomersResponse), typeof(StoreCustomer) },
 				OptimizeForFlash = false,
-				IncludeAllTypesInAssembly = false,
 			}.ToString();
 
 			Assert.That(!xsd.StartsWith("<?"));
