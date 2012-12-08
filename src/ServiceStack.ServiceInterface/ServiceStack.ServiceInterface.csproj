@@ -224,7 +224,6 @@
     <Compile Include="SessionExtensions.cs" />
     <Compile Include="SessionFeature.cs" />
     <Compile Include="SetStatusAttribute.cs" />
-    <Compile Include="Swagger\SwaggerParameterAttribute.cs" />
     <Compile Include="Swagger\SwaggerApiService.cs" />
     <Compile Include="Swagger\SwaggerFeature.cs" />
     <Compile Include="Swagger\SwaggerAllowableValuesAttribute.cs" />

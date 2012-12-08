@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
     public class Hello
 	{
         [DataMember]
-        [SwaggerParameter(Name = "Name", Description = "Name Description", ParameterType = "path", 
+        [ApiMember(Name = "Name", Description = "Name Description", ParameterType = "path", 
             DataType = "string", IsRequired = true)]
 		public string Name { get; set; }
 	}

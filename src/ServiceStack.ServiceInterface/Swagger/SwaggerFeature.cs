@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Linq;
+using System.Text.RegularExpressions;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface.Swagger
@@ -18,5 +19,10 @@ namespace ServiceStack.ServiceInterface.Swagger
             appHost.RegisterService(typeof (SwaggerResourcesService), new[] {"/resources"});
             appHost.RegisterService(typeof(SwaggerApiService), new[] { "/resource/{Name*}" });
         }
+
+	    public static bool IsEnabled
+	    {
+	        get { return EndpointHost.Plugins.Any(x => x is SwaggerFeature); }
+	    }
     }
 }

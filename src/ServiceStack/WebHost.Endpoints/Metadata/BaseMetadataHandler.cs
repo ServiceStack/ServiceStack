@@ -113,14 +113,8 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
         public static string GetDescriptionFromOperationType(Type operationType)
         {
-            var description = "";
-            var descAttrs = operationType.GetCustomAttributes(typeof(DescriptionAttribute), true);
-            if (descAttrs.Length > 0)
-            {
-                var descAttr = (DescriptionAttribute)descAttrs[0];
-                return descAttr.Description;
-            }
-            return description;
+            var apiAttr = operationType.GetCustomAttributes(typeof(Api), true).OfType<Api>().FirstOrDefault();            
+            return apiAttr != null ? apiAttr.Description : "";
         }
 
         protected abstract string CreateMessage(Type dtoType);
