@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Support.Templates;
 
 namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
@@ -73,8 +74,17 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 						@"<li><a href=""{0}"">{0}</a></li>",
                         soap12Config.WsdlMetadataUri);
 				}
-				wsdlTemplate.AppendLine("<ul>");
+				wsdlTemplate.AppendLine("</ul>");
 			}
+
+		    var debugOnlyInfo = new StringBuilder();
+            if (EndpointHost.DebugMode)
+            {
+                debugOnlyInfo.Append("<h3>Debug Info:</h3>");
+                debugOnlyInfo.AppendLine("<ul>");
+                debugOnlyInfo.AppendLine("<li><a href=\"operations/metadata\">Operations Metadata</a></li>");
+                debugOnlyInfo.AppendLine("</ul>");
+            }
 
 			var renderedTemplate = string.Format(
 				PageTemplate, 
@@ -83,7 +93,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
                 this.XsdServiceTypesIndex,
 				operationsPart, 
                 xsdsPart, 
-                wsdlTemplate);
+                wsdlTemplate,
+                debugOnlyInfo);
 
 			output.Write(renderedTemplate);
 		}
@@ -184,6 +195,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 
 	    {5}
  
+	    {6}
     </form>
 
 </body>

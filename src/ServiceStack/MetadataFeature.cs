@@ -59,15 +59,17 @@ namespace ServiceStack
 
                 case "types":
                     
-                    if (EndpointHost.AppHost == null
-                        || EndpointHost.AppHost.Config == null
-                        || EndpointHost.AppHost.Config.MetadataTypesConfig == null)                        
+                    if (EndpointHost.Config == null
+                        || EndpointHost.Config.MetadataTypesConfig == null)
                         return null;
 
                     if (EndpointHost.AppHost.Config.MetadataTypesConfig.BaseUrl == null)
                         EndpointHost.AppHost.Config.MetadataTypesConfig.BaseUrl = ServiceStackHttpHandlerFactory.GetBaseUrl();
 
                     return new MetadataTypesHandler { Config = EndpointHost.AppHost.Config.MetadataTypesConfig };
+
+                case "operations":
+                    return new ActionHandler((httpReq, httpRes) => EndpointHost.Metadata.GetOperationDtos(), "Operations");
 
                 default:
                     string contentType;

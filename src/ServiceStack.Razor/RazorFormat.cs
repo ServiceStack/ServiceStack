@@ -394,6 +394,8 @@ namespace ServiceStack.Razor
 
         public ViewPageRef GetViewPage(string pageName)
         {
+            if (pageName == null) return null;
+
             ViewPageRef razorPage;
 
             ViewPages.TryGetValue(pageName, out razorPage);
