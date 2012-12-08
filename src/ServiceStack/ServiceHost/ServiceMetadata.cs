@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ServiceStack.Common;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
 
@@ -17,6 +19,7 @@ namespace ServiceStack.ServiceHost
             this.OperationsMap = new Dictionary<Type, Operation>();
             this.OperationsResponseMap = new Dictionary<Type, Operation>();
             this.OperationNamesMap = new Dictionary<string, Operation>();
+            this.Routes = new ServiceRoutes();
         }
 
         public Dictionary<Type, Operation> OperationsMap { get; protected set; }
@@ -25,6 +28,7 @@ namespace ServiceStack.ServiceHost
         public HashSet<Type> RequestTypes { get; protected set; }
         public HashSet<Type> ServiceTypes { get; protected set; }
         public HashSet<Type> ResponseTypes { get; protected set; }
+        public ServiceRoutes Routes { get; set; }
 
         public IEnumerable<Operation> Operations
         {
@@ -47,6 +51,7 @@ namespace ServiceStack.ServiceHost
                 ResponseType = responseType,
                 RestrictTo = restrictTo,
                 Actions = GetImplementedActions(serviceType, requestType),
+                Routes = new List<RestPath>(),
             };
 
             this.OperationsMap[requestType] = operation;
@@ -57,6 +62,26 @@ namespace ServiceStack.ServiceHost
                 this.ResponseTypes.Add(responseType);
                 this.OperationsResponseMap[responseType] = operation;
             }
+        }
+
+        public void AfterInit()
+        {
+            foreach (var restPath in Routes.RestPaths)
+            {
+                Operation operation;
+                if (!OperationsMap.TryGetValue(restPath.RequestType, out operation))
+                    continue;
+
+                operation.Routes.Add(restPath);
+            }
+        }
+
+        public List<OperationDto> GetOperationDtos()
+        {
+            return OperationsMap.Values
+                .SafeConvertAll(x => x.ToOperationDto())
+                .OrderBy(x => x.Name)
+                .ToList();
         }
 
         public List<string> GetImplementedActions(Type serviceType, Type requestType)
@@ -247,14 +272,26 @@ namespace ServiceStack.ServiceHost
         public Type ResponseType { get; set; }
         public RestrictAttribute RestrictTo { get; set; }
         public List<string> Actions { get; set; }
+        public List<RestPath> Routes { get; set; }
         public bool IsOneWay { get { return ResponseType == null; } }
+    }
+
+    public class OperationDto
+    {
+        public string Name { get; set; }
+        public string ResponseName { get; set; }
+        public string ServiceName { get; set; }
+        public List<string> RestrictTo { get; set; }
+        public List<string> VisibleTo { get; set; }
+        public List<string> Actions { get; set; }
+        public Dictionary<string, string> Routes { get; set; }
     }
 
     public class XsdMetadata
     {
         public ServiceMetadata Metadata { get; set; }
         public bool Flash { get; set; }
-        
+
         public XsdMetadata(ServiceMetadata metadata, bool flash = false)
         {
             Metadata = metadata;
@@ -304,6 +341,28 @@ namespace ServiceStack.ServiceHost
             while ((baseType = baseType.BaseType) != null);
 
             return typesWithSameName.Pop();
+        }
+    }
+
+    public static class ServiceMetadataExtensions
+    {
+        public static OperationDto ToOperationDto(this Operation operation)
+        {
+            var to = new OperationDto {
+                Name = operation.Name,
+                ResponseName = operation.IsOneWay ? null : operation.ResponseType.Name,
+                ServiceName = operation.ServiceType.Name,
+                Actions = operation.Actions,
+                Routes = operation.Routes.ToDictionary(x => x.Path.PairWith(x.AllowedVerbs)),
+            };
+            
+            if (operation.RestrictTo != null)
+            {
+                to.RestrictTo = operation.RestrictTo.AccessibleToAny.ToList().ConvertAll(x => x.ToString());
+                to.VisibleTo = operation.RestrictTo.VisibleToAny.ToList().ConvertAll(x => x.ToString());
+            }
+
+            return to;
         }
     }
 
