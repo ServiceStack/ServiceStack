@@ -136,30 +136,38 @@ namespace ServiceStack.ServiceInterface.Auth
             var newUserAuth = ToUserAuth(request);
             var existingUser = UserAuthRepo.GetUserAuth(session, null);
 
-            var user = existingUser != null
-                ? this.UserAuthRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password)
-                : this.UserAuthRepo.CreateUserAuth(newUserAuth, request.Password);
+            var registerNewUser = existingUser == null;
+            var user = registerNewUser
+                ? this.UserAuthRepo.CreateUserAuth(newUserAuth, request.Password)
+                : this.UserAuthRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);
+
+            if (registerNewUser)
+            {
+                session.OnRegistered(this);
+            }
 
             if (request.AutoLogin.GetValueOrDefault())
             {
-                var authService = base.ResolveService<AuthService>();
-                var authResponse = authService.Post(new Auth {
-                    UserName = request.UserName ?? request.Email,
-                    Password = request.Password
-                });
-
-                if (authResponse is IHttpError)
-                    throw (Exception)authResponse;
-
-                var typedResponse = authResponse as AuthResponse;
-                if (typedResponse != null)
+                using (var authService = base.ResolveService<AuthService>())
                 {
-                    response = new RegistrationResponse {
-                        SessionId = typedResponse.SessionId,
-                        UserName = typedResponse.UserName,
-                        ReferrerUrl = typedResponse.ReferrerUrl,
-                        UserId = user.Id.ToString(CultureInfo.InvariantCulture),
-                    };
+                    var authResponse = authService.Post(new Auth {
+                        UserName = request.UserName ?? request.Email,
+                        Password = request.Password
+                    });
+
+                    if (authResponse is IHttpError)
+                        throw (Exception)authResponse;
+
+                    var typedResponse = authResponse as AuthResponse;
+                    if (typedResponse != null)
+                    {
+                        response = new RegistrationResponse {
+                            SessionId = typedResponse.SessionId,
+                            UserName = typedResponse.UserName,
+                            ReferrerUrl = typedResponse.ReferrerUrl,
+                            UserId = user.Id.ToString(CultureInfo.InvariantCulture),
+                        };
+                    }
                 }
             }
 

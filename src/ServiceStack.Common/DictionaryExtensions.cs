@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.Common.Extensions;
 
 namespace ServiceStack.Common
@@ -40,8 +41,8 @@ namespace ServiceStack.Common
             map.ForEach((kvp) => list.Add(createFn(kvp.Key, kvp.Value)));
             return list;
         }
-        
-        public static V GetOrAdd<K, V>(this Dictionary<K, V> map, K key, Func<K,V> createFn)
+
+        public static V GetOrAdd<K, V>(this Dictionary<K, V> map, K key, Func<K, V> createFn)
         {
             //simulate ConcurrentDictionary.GetOrAdd
             lock (map)
@@ -54,5 +55,9 @@ namespace ServiceStack.Common
             }
         }
 
+        public static KeyValuePair<TKey, TValue> PairWith<TKey, TValue>(this TKey key, TValue value)
+        {
+            return new KeyValuePair<TKey, TValue>(key, value);
+        }
     }
 }

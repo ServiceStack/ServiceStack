@@ -48,6 +48,8 @@ namespace ServiceStack.ServiceInterface.Auth
                 ?? service.RequestContext.GetHeader("Referer")
                 ?? this.CallbackUrl;
 
+            session.OnLogout(service);
+
             service.RemoveSession();
 
             if (service.RequestContext.ResponseContentType == ContentType.Html)

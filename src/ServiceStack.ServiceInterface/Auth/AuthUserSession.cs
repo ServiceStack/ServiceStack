@@ -96,6 +96,10 @@ namespace ServiceStack.ServiceInterface.Auth
         public virtual void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, Dictionary<string, string> authInfo)
         {			
         }
+
+        public virtual void OnLogout(IServiceBase authService) 
+        {
+        }
     }
 
     public static class AuthSessionExtensions

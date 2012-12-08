@@ -1,15 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Configuration;
-using System.Linq;
 using System.Runtime.Serialization;
-using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
-using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
@@ -36,6 +31,7 @@ namespace ServiceStack.ServiceInterface.Auth
         [DataMember(Order=6)] public string Password { get; set; }
         [DataMember(Order=7)] public bool? RememberMe { get; set; }
         [DataMember(Order=8)] public string Continue { get; set; }
+
         // Thise are used for digest auth
         [DataMember(Order=9)] public string nonce { get; set; }
         [DataMember(Order=10)] public string uri { get; set; }
@@ -54,11 +50,8 @@ namespace ServiceStack.ServiceInterface.Auth
         }
 
         [DataMember(Order=1)] public string SessionId { get; set; }
-
         [DataMember(Order=2)] public string UserName { get; set; }
-
         [DataMember(Order=3)] public string ReferrerUrl { get; set; }
-
         [DataMember(Order=4)] public ResponseStatus ResponseStatus { get; set; }
     }
 
