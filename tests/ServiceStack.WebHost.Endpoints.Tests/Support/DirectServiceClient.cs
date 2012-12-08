@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using ServiceStack.Common.Web;
 using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
@@ -76,7 +77,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 
 		public TResponse Send<TResponse>(object request)
 		{
-			httpReq.HttpMethod = HttpMethod.Post;			
+			httpReq.HttpMethod = HttpMethods.Post;			
 
 			if (ApplyRequestFilters<TResponse>(request)) return default(TResponse);
 
@@ -110,7 +111,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 
 	    public TResponse Get<TResponse>(string relativeOrAbsoluteUrl)
 		{
-			httpReq.HttpMethod = HttpMethod.Get;
+			httpReq.HttpMethod = HttpMethods.Get;
 
 			var requestTypeName = typeof(TResponse).Namespace + "." + relativeOrAbsoluteUrl;
 			var requestType = typeof (TResponse).Assembly.GetType(requestTypeName);

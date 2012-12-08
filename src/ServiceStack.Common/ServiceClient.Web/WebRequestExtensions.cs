@@ -50,32 +50,32 @@ namespace ServiceStack.ServiceClient.Web
 
         public static string PostJsonToUrl(this string url, string data)
         {
-            return SendToUrl(url, HttpMethod.Post, Encoding.UTF8.GetBytes(data), ContentType.Json, ContentType.Json);
+            return SendToUrl(url, HttpMethods.Post, Encoding.UTF8.GetBytes(data), ContentType.Json, ContentType.Json);
         }
 
         public static string PostJsonToUrl(this string url, object data)
         {
-            return SendToUrl(url, HttpMethod.Post, Encoding.UTF8.GetBytes(data.ToJson()), ContentType.Json, ContentType.Json);
+            return SendToUrl(url, HttpMethods.Post, Encoding.UTF8.GetBytes(data.ToJson()), ContentType.Json, ContentType.Json);
         }
 
         public static string PostToUrl(this string url, string data, string requestContentType = null, string acceptContentType = null)
         {
-            return SendToUrl(url, HttpMethod.Post, Encoding.UTF8.GetBytes(data), requestContentType, acceptContentType);
+            return SendToUrl(url, HttpMethods.Post, Encoding.UTF8.GetBytes(data), requestContentType, acceptContentType);
         }
 
         public static string PutToUrl(this string url, string data, string requestContentType = null, string acceptContentType = null)
         {
-            return SendToUrl(url, HttpMethod.Put, Encoding.UTF8.GetBytes(data), requestContentType, acceptContentType);
+            return SendToUrl(url, HttpMethods.Put, Encoding.UTF8.GetBytes(data), requestContentType, acceptContentType);
         }
 
         public static string PostToUrl(this string url, byte[] data, string requestContentType = null, string acceptContentType = null)
         {
-            return SendToUrl(url, HttpMethod.Post, data, requestContentType, acceptContentType);
+            return SendToUrl(url, HttpMethods.Post, data, requestContentType, acceptContentType);
         }
 
         public static string PutToUrl(this string url, byte[] data, string requestContentType = null, string acceptContentType = null)
         {
-            return SendToUrl(url, HttpMethod.Put, data, requestContentType, acceptContentType);
+            return SendToUrl(url, HttpMethods.Put, data, requestContentType, acceptContentType);
         }
 
         private static string SendToUrl(string url, string httpMethod, byte[] data, string requestContentType = null, string acceptContentType = null)
