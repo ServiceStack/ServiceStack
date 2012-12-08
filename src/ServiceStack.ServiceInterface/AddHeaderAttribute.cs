@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 
@@ -9,7 +10,16 @@ namespace ServiceStack.ServiceInterface
     {
         public string Name { get; set; }
         public string Value { get; set; }
-        
+
+        public HttpStatusCode Status
+        {
+            get { return (HttpStatusCode) StatusCode.GetValueOrDefault(200); }
+            set { StatusCode = (int) value; }
+        }
+
+        public int? StatusCode { get; set; }
+        public string StatusDescription { get; set; }
+
         public AddHeaderAttribute() { }
 
         public AddHeaderAttribute(string name, string value)
@@ -18,17 +28,34 @@ namespace ServiceStack.ServiceInterface
             Value = value;
         }
 
+        public AddHeaderAttribute(HttpStatusCode status, string statusDescription=null)
+        {
+            Status = status;
+            StatusDescription = statusDescription;
+        }
+
         public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
         {
-            if (string.IsNullOrEmpty(Name) || string.IsNullOrEmpty(Value)) return;
-
-            if (Name.Equals(HttpHeaders.ContentType, StringComparison.InvariantCultureIgnoreCase))
+            if (StatusCode != null)
             {
-                res.ContentType = Value;
+                res.StatusCode = StatusCode.Value;
             }
-            else
+
+            if (StatusDescription != null)
             {
-                res.AddHeader(Name, Value);
+                res.StatusDescription = StatusDescription;
+            }
+
+            if (!string.IsNullOrEmpty(Name) && !string.IsNullOrEmpty(Value))
+            {
+                if (Name.Equals(HttpHeaders.ContentType, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    res.ContentType = Value;
+                }
+                else
+                {
+                    res.AddHeader(Name, Value);
+                }
             }
         }
 
