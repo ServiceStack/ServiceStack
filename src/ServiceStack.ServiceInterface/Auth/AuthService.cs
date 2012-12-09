@@ -31,7 +31,6 @@ namespace ServiceStack.ServiceInterface.Auth
         [DataMember(Order=6)] public string Password { get; set; }
         [DataMember(Order=7)] public bool? RememberMe { get; set; }
         [DataMember(Order=8)] public string Continue { get; set; }
-
         // Thise are used for digest auth
         [DataMember(Order=9)] public string nonce { get; set; }
         [DataMember(Order=10)] public string uri { get; set; }

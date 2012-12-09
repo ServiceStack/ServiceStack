@@ -159,6 +159,7 @@ namespace ServiceStack.ServiceInterface.Auth
         }
 
         public abstract bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Auth request = null);
+
         public abstract object Authenticate(IServiceBase authService, IAuthSession session, Auth request);
 
         public virtual void OnFailedAuthentication(IAuthSession session, IHttpRequest httpReq, IHttpResponse httpRes)

@@ -110,7 +110,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="README.txt" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="TypedModelNoController.cshtml" />
     <Content Include="Views\Rockstars.cshtml" />
     <Content Include="Views\Rockstars2.cshtml" />

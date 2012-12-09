@@ -38,3 +38,6 @@ using System.Runtime.Serialization;
 // CCB Custom
 [assembly: ContractNamespace("http://schemas.servicestack.net/types",
  ClrNamespace = "ServiceStack.Common.ServiceClient.Web")]
+
+[assembly: ContractNamespace("http://schemas.servicestack.net/types",
+ ClrNamespace = "ServiceStack.Common.ServiceModel")]
