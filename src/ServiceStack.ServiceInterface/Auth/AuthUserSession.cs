@@ -93,13 +93,9 @@ namespace ServiceStack.ServiceInterface.Auth
             return this.Roles != null && this.Roles.Contains(role);
         }
 
-        public virtual void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, Dictionary<string, string> authInfo)
-        {			
-        }
-
-        public virtual void OnLogout(IServiceBase authService) 
-        {
-        }
+        public virtual void OnRegistered(IServiceBase registrationService) {}
+        public virtual void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, Dictionary<string, string> authInfo) {}
+        public virtual void OnLogout(IServiceBase authService) {}
     }
 
     public static class AuthSessionExtensions

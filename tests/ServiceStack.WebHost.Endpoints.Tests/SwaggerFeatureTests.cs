@@ -1,29 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using NUnit.Framework;
-using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.Service;
-using ServiceStack.ServiceInterface;
-using ServiceStack.CacheAccess;
-using ServiceStack.CacheAccess.Providers;
-using ServiceStack.ServiceInterface.Cors;
 using ServiceStack.ServiceInterface.Swagger;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints.Utils;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    [System.ComponentModel.Description("Service Description")]
+    [Api("Service Description")]
     [Route("/swagger/{Name}", "GET", Summary = @"GET Summary", Notes = "GET Notes")]
     [Route("/swagger/{Name}", "POST", Summary = @"POST Summary", Notes = "POST Notes")]
     public class SwaggerFeatureRequest
     {
-        [SwaggerParameter(Name="Name", Description = "Name Description", 
+        [ApiMember(Name="Name", Description = "Name Description", 
             ParameterType = "path", DataType = "string", IsRequired = true)]
         public string Name { get; set; }
     }
