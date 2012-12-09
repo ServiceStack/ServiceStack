@@ -424,12 +424,20 @@ namespace ServiceStack.Html
 			}
 		}
 
-		#region IEnumerable Members
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return ((IEnumerable)innerDictionary).GetEnumerator();
 		}
-		#endregion
+
+        public MvcHtmlString AsRawJson()
+        {
+            return MvcHtmlString.Create(Model.ToJson());
+        }
+
+        public MvcHtmlString AsRaw()
+        {
+            return MvcHtmlString.Create((Model ?? "").ToString());
+        }
 
 	}
 }

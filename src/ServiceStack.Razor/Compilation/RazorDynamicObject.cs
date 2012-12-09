@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Dynamic;
+using ServiceStack.Html;
+using ServiceStack.Text;
 
 namespace ServiceStack.Razor.Compilation
 {
-	/// <summary>
+    /// <summary>
     /// Defines a dynamic object.
     /// </summary>
     internal class RazorDynamicObject : DynamicObject
@@ -58,5 +60,21 @@ namespace ServiceStack.Razor.Compilation
             }
             return base.TryConvert(binder, out result);
         }
+
+        public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
+        {
+            if (binder.Name == "AsRawJson")
+            {
+                result = MvcHtmlString.Create(Model.ToJson());
+                return true;
+            }
+            if (binder.Name == "AsRaw")
+            {
+                result = MvcHtmlString.Create((Model ?? "").ToString());
+                return true;
+            }
+            return base.TryInvokeMember(binder, args, out result);
+        }
+        
     }
 }

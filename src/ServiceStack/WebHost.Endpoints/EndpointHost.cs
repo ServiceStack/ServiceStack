@@ -150,7 +150,7 @@ namespace ServiceStack.WebHost.Endpoints
                     //httpRes.WriteToResponse always calls .Close in it's finally statement so 
                     //if there is a problem writing to response, by now it will be closed
                     if (!httpRes.IsClosed) {
-                        httpRes.WriteErrorToResponse(httpReq.ResponseContentType, operationName, errorMessage, ex, statusCode);
+                        httpRes.WriteErrorToResponse(httpReq, httpReq.ResponseContentType, operationName, errorMessage, ex, statusCode);
                     }
                 };
             }
@@ -239,14 +239,6 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			get { return config.ServiceManager; }
 			set { config.ServiceManager = value; }
-		}
-
-		public static class UserConfig
-		{
-			public static bool DebugMode
-			{
-				get { return Config != null && Config.DebugMode; }
-			}
 		}
 
 		private static EndpointHostConfig config;

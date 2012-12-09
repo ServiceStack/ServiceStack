@@ -15,14 +15,14 @@ namespace ServiceStack.ServiceInterface.Swagger
         {
             if (ResourceFilterPattern != null)
                 SwaggerResourcesService.resourceFilterRegex = new Regex(ResourceFilterPattern, RegexOptions.Compiled);
-            
-            appHost.RegisterService(typeof (SwaggerResourcesService), new[] {"/resources"});
+
+            appHost.RegisterService(typeof(SwaggerResourcesService), new[] { "/resources" });
             appHost.RegisterService(typeof(SwaggerApiService), new[] { "/resource/{Name*}" });
         }
 
-	    public static bool IsEnabled
-	    {
-	        get { return EndpointHost.Plugins.Any(x => x is SwaggerFeature); }
-	    }
+        public static bool IsEnabled
+        {
+            get { return EndpointHost.Plugins.Any(x => x is SwaggerFeature); }
+        }
     }
 }

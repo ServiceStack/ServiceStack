@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Dynamic;
 using ServiceStack.CacheAccess;
 using ServiceStack.Common.Web;
 using ServiceStack.Html;
@@ -48,7 +49,24 @@ namespace ServiceStack.Razor
 
         public ResponseStatus ResponseStatus
         {
-            get { return ModelError.ToResponseStatus(); }
+            get
+            {
+                return ToResponseStatus(ModelError) ?? ToResponseStatus(Model);
+            }
+        }
+
+        private ResponseStatus ToResponseStatus<T>(T modelError)
+        {
+            var ret = modelError.ToResponseStatus();
+            if (ret != null) return ret;
+
+            if (modelError is DynamicObject)
+            {
+                var dynError = modelError as dynamic;
+                return (ResponseStatus)dynError.ResponseStatus;
+            }
+
+            return null;
         }
 
         private ICacheClient cache;

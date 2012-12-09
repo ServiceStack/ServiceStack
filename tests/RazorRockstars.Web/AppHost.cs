@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net;
 using System.Runtime.Serialization;
 using Funq;
 using ServiceStack.Common;
@@ -9,11 +10,12 @@ using ServiceStack.Razor;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.WebHost.Endpoints;
+using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
 //The entire C# code for the stand-alone RazorRockstars demo.
 namespace RazorRockstars.Web
 {
-    public class AppHost : AppHostBase 
+    public class AppHost : AppHostBase
     {
         public AppHost() : base("Test Razor", typeof(AppHost).Assembly) { }
 
@@ -35,7 +37,13 @@ namespace RazorRockstars.Web
                 db.DropAndCreateTable<Reqstar>();
                 db.Insert(ReqstarsService.SeedData);
             }
-		}
+
+            SetConfig(new EndpointHostConfig {
+                CustomHttpHandlers = {
+                  { HttpStatusCode.ExpectationFailed, new RazorHandler("/expectationfailed") }
+                }
+            });
+        }
     }
 
     public class Rockstar
@@ -64,7 +72,7 @@ namespace RazorRockstars.Web
             Age = age;
         }
     }
-    
+
     [Route("/rockstars")]
     [Route("/rockstars/aged/{Age}")]
     [Route("/rockstars/delete/{Delete}")]
@@ -83,9 +91,12 @@ namespace RazorRockstars.Web
     [DataContract] //Attrs for CSV Format to recognize it's a DTO and serialize the Enumerable property
     public class RockstarsResponse
     {
-        [DataMember] public int Total { get; set; }
-        [DataMember] public int? Aged { get; set; }
-        [DataMember] public List<Rockstar> Results { get; set; }
+        [DataMember]
+        public int Total { get; set; }
+        [DataMember]
+        public int? Aged { get; set; }
+        [DataMember]
+        public List<Rockstar> Results { get; set; }
     }
 
     public class RockstarsService : RestServiceBase<Rockstars>
@@ -121,7 +132,7 @@ namespace RazorRockstars.Web
                         View = request.View,
                         Template = request.Template,
                     };
-                
+
                 return response;
             }
         }

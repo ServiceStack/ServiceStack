@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using Funq;
 using ServiceStack.Authentication.OpenId;
 using ServiceStack.CacheAccess;
@@ -21,6 +22,7 @@ using ServiceStack.ServiceInterface.Swagger;
 using ServiceStack.ServiceInterface.Validation;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
+using ServiceStack.WebHost.Endpoints.Support.Markdown;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests
