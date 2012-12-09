@@ -77,7 +77,7 @@ namespace ServiceStack.Common.Web
                 return hasResponseStatus.ResponseStatus;
 
             var propertyInfo = response.GetType().GetProperty("ResponseStatus");
-            if (propertyInfo != null)
+            if (propertyInfo == null)
                 return null;
 
             return ReflectionUtils.GetProperty(response, propertyInfo) as ResponseStatus;

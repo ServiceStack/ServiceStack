@@ -245,7 +245,7 @@ namespace ServiceStack.ServiceHost
         public static int ToStatusCode(this Exception ex)
         {
             int errorStatus;
-            if (EndpointHost.Config.MapExceptionToStatusCode.TryGetValue(ex.GetType(), out errorStatus))
+            if (EndpointHost.Config != null && EndpointHost.Config.MapExceptionToStatusCode.TryGetValue(ex.GetType(), out errorStatus))
             {
                 return errorStatus;
             }
