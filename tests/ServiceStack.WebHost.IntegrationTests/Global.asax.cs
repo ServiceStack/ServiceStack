@@ -18,7 +18,7 @@ using ServiceStack.Redis.Messaging;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
-using ServiceStack.ServiceInterface.Swagger;
+using ServiceStack.Swagger;
 using ServiceStack.ServiceInterface.Validation;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;

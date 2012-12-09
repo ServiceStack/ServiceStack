@@ -272,6 +272,10 @@
       <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>
       <Name>ServiceStack.ServiceInterface</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.Swagger\ServiceStack.Swagger.csproj">
+      <Project>{01D3F057-7984-498F-8B0A-EB375701E204}</Project>
+      <Name>ServiceStack.Swagger</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
       <Name>ServiceStack</Name>
