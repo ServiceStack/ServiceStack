@@ -4,12 +4,12 @@ using ServiceStack.Text;
 
 namespace ServiceStack.ServiceHost
 {
-    public class MqHttpResponse : IHttpResponse
+    public class MqResponse : IHttpResponse
     {
         private readonly MqRequestContext requestContext;
         private Dictionary<string, string> Headers { get; set; }
 
-        public MqHttpResponse(MqRequestContext requestContext)
+        public MqResponse(MqRequestContext requestContext)
         {
             this.requestContext = requestContext;
             this.Headers = new Dictionary<string, string>();

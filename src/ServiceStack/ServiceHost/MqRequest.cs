@@ -8,11 +8,11 @@ using ServiceStack.Text;
 
 namespace ServiceStack.ServiceHost
 {
-    public class MqHttpRequest : IHttpRequest
+    public class MqRequest : IHttpRequest
     {
         private readonly MqRequestContext requestContext;
 
-        public MqHttpRequest(MqRequestContext requestContext)
+        public MqRequest(MqRequestContext requestContext)
         {
             this.requestContext = requestContext;
         }
