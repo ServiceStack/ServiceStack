@@ -11,8 +11,8 @@ namespace ServiceStack.ServiceHost
     {
         public IResolver Resolver { get; set; }
         public IMessage Message { get; set; }
-        public MqHttpRequest Request { get; set; }
-        public MqHttpResponse Response { get; set; }
+        public MqRequest Request { get; set; }
+        public MqResponse Response { get; set; }
 
         public MqRequestContext(IResolver resolver, IMessage message)
         {
@@ -22,8 +22,8 @@ namespace ServiceStack.ServiceHost
             if (message.Body != null)
                 this.PathInfo = "/json/asynconeway/" + OperationName;
             
-            this.Request = new MqHttpRequest(this);
-            this.Response = new MqHttpResponse(this);
+            this.Request = new MqRequest(this);
+            this.Response = new MqResponse(this);
         }
 
         public string OperationName

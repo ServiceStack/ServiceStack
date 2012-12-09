@@ -4,8 +4,10 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Runtime.Serialization;
 using NUnit.Framework;
 using ServiceStack.Common;
+using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.OrmLite;
@@ -106,6 +108,21 @@ namespace RazorRockstars.Web
         public string LastName { get; set; }
     }
 
+    [Route("/throw")]
+    [Route("/throw/{StatusCode}")]
+    [Route("/throw/{StatusCode}/{Message}")]
+    public class Throw
+    {
+        public int? StatusCode { get; set; }
+        public string Message { get; set; }
+    }
+
+    public class ThrowResponse 
+    {
+        public string Result { get; set; }
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+    
     public class ReqstarsService : Service
     {
         public static Reqstar[] SeedData = new[] {
@@ -172,6 +189,18 @@ namespace RazorRockstars.Web
         public object Any(RoutelessReqstar request)
         {
             return request;
+        }
+
+        public object Any(Throw request)
+        {
+            if (request.StatusCode.HasValue)
+            {
+                throw new HttpError(
+                    request.StatusCode.Value,
+                    typeof(NotImplementedException).Name,
+                    request.Message);
+            }
+            throw new NotImplementedException(request.Message + " is not implemented");
         }
     }
 

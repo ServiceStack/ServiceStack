@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
+using ServiceStack.Common.Web;
 using ServiceStack.Net30.Collections.Concurrent;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -73,7 +74,7 @@ namespace ServiceStack.ServiceClient.Web
             }
             
             var url = matchingRoute.Uri;
-            if (httpMethod == HttpMethod.Get || httpMethod == HttpMethod.Delete)
+            if (httpMethod == HttpMethods.Get || httpMethod == HttpMethods.Delete)
             {
                 var queryParams = matchingRoute.Route.FormatQueryParameters(request);
                 if (!String.IsNullOrEmpty(queryParams))

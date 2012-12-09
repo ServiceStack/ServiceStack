@@ -29,7 +29,6 @@ namespace ServiceStack.ServiceHost
 
             this.RequestTypeFactoryMap = new Dictionary<Type, Func<IHttpRequest, object>>();
             this.EnableAccessRestrictions = true;
-            this.routes = new ServiceRoutes();
             this.ResolveServicesFn = resolveServicesFn;
         }
 
@@ -39,8 +38,6 @@ namespace ServiceStack.ServiceHost
         readonly Dictionary<Type, RestrictAttribute> requestServiceAttrs
 			= new Dictionary<Type, RestrictAttribute>();
 
-        private readonly ServiceRoutes routes;
-
         public bool EnableAccessRestrictions { get; set; }
 
         public ServiceMetadata Metadata { get; internal set; }
@@ -49,7 +46,7 @@ namespace ServiceStack.ServiceHost
 
         public string DefaultOperationsNamespace { get; set; }
 
-        public IServiceRoutes Routes { get { return routes; } }
+        public IServiceRoutes Routes { get { return Metadata.Routes; } }
 
         private IResolver resolver;
         public IResolver Resolver
@@ -181,10 +178,11 @@ namespace ServiceStack.ServiceHost
 
         public void AfterInit()
         {
-            foreach (var restPath in this.routes.RestPaths)
+            foreach (var restPath in this.Metadata.Routes.RestPaths)
             {
                 RegisterRestPath(restPath);
             }
+            Metadata.AfterInit();
         }
 
         public IRestPath GetRestPathForRequest(string httpMethod, string pathInfo)

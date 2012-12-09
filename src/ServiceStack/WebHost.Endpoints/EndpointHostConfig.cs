@@ -480,11 +480,7 @@ namespace ServiceStack.WebHost.Endpoints
 
         public IHttpHandler GetHandlerForErrorStatus(HttpStatusCode errorStatus)
         {
-            IHttpHandler httpHandler = null;
-            if (CustomHttpHandlers != null)
-            {
-                CustomHttpHandlers.TryGetValue(errorStatus, out httpHandler);
-            }
+            var httpHandler = GetCustomErrorHandler(errorStatus);
 
             switch (errorStatus)
             {
@@ -499,6 +495,33 @@ namespace ServiceStack.WebHost.Endpoints
                 CustomHttpHandlers.TryGetValue(HttpStatusCode.NotFound, out httpHandler);
             }
             return httpHandler ?? new NotFoundHttpHandler();
+        }
+
+        public IServiceStackHttpHandler GetCustomErrorServiceStackHandler(int errorStatusCode)
+        {
+            return GetCustomErrorHandler(errorStatusCode) as IServiceStackHttpHandler;
+        }
+
+        public IHttpHandler GetCustomErrorHandler(int errorStatusCode)
+        {
+            try
+            {
+                return GetCustomErrorHandler((HttpStatusCode) errorStatusCode);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public IHttpHandler GetCustomErrorHandler(HttpStatusCode errorStatus)
+        {
+            IHttpHandler httpHandler = null;
+            if (CustomHttpHandlers != null)
+            {
+                CustomHttpHandlers.TryGetValue(errorStatus, out httpHandler);
+            }
+            return httpHandler;
         }
     }
 

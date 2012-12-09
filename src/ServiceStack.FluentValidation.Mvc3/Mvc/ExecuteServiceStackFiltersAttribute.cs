@@ -7,6 +7,7 @@ using System.Web.Routing;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.Mvc
 {

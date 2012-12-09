@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Net;
 using System.Reflection;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Common.Web;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 
@@ -38,7 +37,7 @@ namespace ServiceStack.ServiceHost
                     continue;
 
                 var actionName = mi.Name.ToUpper();
-                if (!HttpMethod.AllVerbs.Contains(actionName) && actionName != ActionContext.AnyAction)
+                if (!HttpMethods.AllVerbs.Contains(actionName) && actionName != ActionContext.AnyAction)
                     continue;
 
                 yield return mi;
@@ -163,7 +162,7 @@ namespace ServiceStack.ServiceHost
         {
             var actionName = requestContext != null
                 ? requestContext.Get<IHttpRequest>().HttpMethod
-                : HttpMethod.Post; //MQ Services
+                : HttpMethods.Post; //MQ Services
 
             InstanceExecFn action;
             if (execMap.TryGetValue(ActionContext.Key(actionName, requestName), out action)

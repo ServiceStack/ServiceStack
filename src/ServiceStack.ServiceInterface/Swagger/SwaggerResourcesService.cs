@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
@@ -53,6 +52,7 @@ namespace ServiceStack.ServiceInterface.Swagger
                 if (operationType == null) continue;
                 if (operationType == typeof(Resources) || operationType == typeof(ResourceRequest))
                     continue;
+
                 CreateRestPaths(result.Apis, operationType, operationName);
             }
             return result;

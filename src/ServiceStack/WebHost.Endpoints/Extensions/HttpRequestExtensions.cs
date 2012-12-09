@@ -512,7 +512,52 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 	        return false;
 	    }
+        
+	    public static IHttpRequest ToRequest(this HttpRequest aspnetHttpReq, string operationName=null)
+	    {
+	        return new HttpRequestWrapper(aspnetHttpReq) {
+                OperationName = operationName,
+                Container = AppHostBase.Instance != null ? AppHostBase.Instance.Container : null
+            };
+	    }
+
+        public static IHttpRequest ToRequest(this HttpListenerRequest listenerHttpReq, string operationName = null)
+	    {
+	        return new HttpListenerRequestWrapper(listenerHttpReq) {
+                OperationName = operationName,
+                Container = AppHostBase.Instance != null ? AppHostBase.Instance.Container : null
+            };
+	    }
+
+	    public static IHttpResponse ToResponse(this HttpResponse aspnetHttpRes)
+	    {
+	        return new HttpResponseWrapper(aspnetHttpRes);
+	    }
+
+	    public static IHttpResponse ToResponse(this HttpListenerResponse listenerHttpRes)
+	    {
+	        return new HttpListenerResponseWrapper(listenerHttpRes);
+	    }
+
+        public static void SetOperationName(this IHttpRequest httpReq, string operationName)
+        {
+            if (httpReq.OperationName == null)
+            {
+                var aspReq = httpReq as HttpRequestWrapper;
+                if (aspReq != null)
+                {
+                    aspReq.OperationName = operationName;
+                    return;
+                }
+
+                var listenerReq = httpReq as HttpListenerRequestWrapper;
+                if (listenerReq != null)
+                {
+                    listenerReq.OperationName = operationName;
+                }
+            }
+        }
+
 	}
-
-
+    
 }

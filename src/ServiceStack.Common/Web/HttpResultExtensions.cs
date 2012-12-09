@@ -47,6 +47,22 @@ namespace ServiceStack.Common.Web
             return ToDto<TResponse>(response);
         }
 
+        public static object ToErrorResponse(this IHttpError httpError)
+        {
+            if (httpError == null) return null;
+            var errorDto = httpError.ToDto();
+            if (errorDto != null) return errorDto;
+
+            var error = httpError as HttpError;
+            return new ErrorResponse {
+                ResponseStatus = new ResponseStatus {
+                    ErrorCode = httpError.ErrorCode,
+                    Message = httpError.Message,
+                    StackTrace = error != null ? error.StackTrace : null,
+                }
+            };
+        }
+
         /// <summary>
         /// Shortcut to get the ResponseStatus whether it's bare or inside a IHttpResult
         /// </summary>

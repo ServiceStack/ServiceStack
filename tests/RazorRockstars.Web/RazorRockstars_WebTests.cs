@@ -32,6 +32,30 @@ namespace RazorRockstars.Web
 	        Thread.Sleep(TimeSpan.FromMinutes(10));
 	    }
 
+        public void AssertStatus(string url, HttpStatusCode statusCode)
+        {
+            url.Print();
+            try
+            {
+                var text = url.GetStringFromUrl(AcceptContentType, r => {
+                    if (r.StatusCode != statusCode)
+                        Assert.Fail("'{0}' returned {1} expected {2}".Fmt(url, r.StatusCode, statusCode));
+                });
+            }
+            catch (WebException webEx)
+            {
+                if (webEx != null && webEx.Status == WebExceptionStatus.ProtocolError)
+                {
+                    var errorResponse = ((HttpWebResponse) webEx.Response);
+                    if (errorResponse.StatusCode != statusCode)
+                        Assert.Fail("'{0}' returned {1} expected {2}".Fmt(url, errorResponse.StatusCode, statusCode));
+                    return;
+                }
+
+                throw;
+            }
+        }
+        
 		public static string AcceptContentType = "*/*";
 		public void Assert200(string url, params string[] containsItems)
 		{
@@ -199,6 +223,27 @@ namespace RazorRockstars.Web
         public void Can_get_last_view_template_compiled()
         {
             Assert200(Host + "/rockstars?View=Rockstars3", ViewRockstars3, Template_SimpleLayout2);
+        }
+
+        [Test]
+        public void Does_return_custom_user_defined_error_pages()
+        {
+            Assert200(Host + "/throw/417/CustomErrorMessage",
+                "<!--view:ExpectationFailed.cshtml-->",
+                "ErrorCode: NotImplementedException",
+                "Message: CustomErrorMessage");
+        }
+
+        [Test]
+        public void Does_not_return_custom_user_defined_error_page_for_json()
+        {
+            AssertStatus(Host + "/throw/417/CustomErrorMessage?format=json", HttpStatusCode.ExpectationFailed);
+        }
+
+        [Test]
+        public void Does_not_return_custom_user_defined_error_page_for_unregistered_statuses()
+        {
+            AssertStatus(Host + "/throw/404/CustomErrorMessage", HttpStatusCode.NotFound);
         }
 
 	    [Test]

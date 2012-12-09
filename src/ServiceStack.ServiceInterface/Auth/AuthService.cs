@@ -1,15 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Configuration;
-using System.Linq;
 using System.Runtime.Serialization;
-using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
-using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
@@ -54,11 +49,8 @@ namespace ServiceStack.ServiceInterface.Auth
         }
 
         [DataMember(Order=1)] public string SessionId { get; set; }
-
         [DataMember(Order=2)] public string UserName { get; set; }
-
         [DataMember(Order=3)] public string ReferrerUrl { get; set; }
-
         [DataMember(Order=4)] public ResponseStatus ResponseStatus { get; set; }
     }
 

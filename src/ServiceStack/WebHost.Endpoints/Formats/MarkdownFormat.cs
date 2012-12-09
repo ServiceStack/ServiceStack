@@ -371,6 +371,8 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 
         public MarkdownPage GetViewPage(string pageName)
         {
+            if (pageName == null) return null;
+
             MarkdownPage markdownPage;
 
             ViewPages.TryGetValue(pageName, out markdownPage);

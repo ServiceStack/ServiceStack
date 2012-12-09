@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace ServiceStack.ServiceInterface.Swagger
+namespace ServiceStack.ServiceHost
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
-    public class SwaggerParameterAttribute : Attribute
+    public class ApiMemberAttribute : Attribute
     {
-        public SwaggerParameterAttribute()
+        public ApiMemberAttribute()
         {
             ParameterType = "path";
             DataType = "string";
