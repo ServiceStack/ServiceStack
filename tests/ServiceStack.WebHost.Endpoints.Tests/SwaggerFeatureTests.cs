@@ -6,7 +6,7 @@ using NUnit.Framework;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.Service;
-using ServiceStack.ServiceInterface.Swagger;
+using ServiceStack.Swagger;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests

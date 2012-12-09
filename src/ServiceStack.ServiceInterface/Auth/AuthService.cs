@@ -21,7 +21,7 @@ namespace ServiceStack.ServiceInterface.Auth
     public delegate object ValidateFn(IServiceBase service, string httpMethod, object requestDto);
 
     [DataContract]
-    public class Auth
+    public class Auth : IReturn<AuthResponse>
     {
         [DataMember(Order=1)] public string provider { get; set; }
         [DataMember(Order=2)] public string State { get; set; }

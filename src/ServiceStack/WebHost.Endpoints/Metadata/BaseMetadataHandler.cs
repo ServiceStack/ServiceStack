@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -62,7 +61,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
                     responseMessage = CreateMessage(responseType);
                 }
 
-                var description = GetDescriptionFromOperationType(operationType);
+                var description = operationType.GetDescription();
                 if (!description.IsNullOrEmpty())
                 {
                     description = "<div id='desc'>"
@@ -84,21 +83,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
         protected bool AssertAccess(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
         {
-            if (!EndpointHost.Config.HasFeature(Feature.Metadata))
-            {
-                EndpointHost.Config.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Metadata Not Available");
-                return false;
-            }
-
-            if (EndpointHost.Config.MetadataVisibility != EndpointAttributes.Any)
-            {
-                var actualAttributes = httpReq.GetAttributes();
-                if ((actualAttributes & EndpointHost.Config.MetadataVisibility) != EndpointHost.Config.MetadataVisibility)
-                {
-                    EndpointHost.Config.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Metadata Not Visible");
-                    return false;
-                }
-            }
+            if (!EndpointHost.Config.HasAccessToMetadata(httpReq, httpRes)) return false;
 
             if (operationName == null) return true; //For non-operation pages we don't need to check further permissions
             if (!EndpointHost.Config.EnableAccessRestrictions) return true;
@@ -109,12 +94,6 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
             }
 
             return true;
-        }
-
-        public static string GetDescriptionFromOperationType(Type operationType)
-        {
-            var apiAttr = operationType.GetCustomAttributes(typeof(Api), true).OfType<Api>().FirstOrDefault();            
-            return apiAttr != null ? apiAttr.Description : "";
         }
 
         protected abstract string CreateMessage(Type dtoType);
@@ -164,6 +143,5 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
             }
             return restPaths.ToString();
         }
-
     }
 }

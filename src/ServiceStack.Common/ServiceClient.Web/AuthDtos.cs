@@ -1,11 +1,12 @@
 ﻿using System.Runtime.Serialization;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.Common.ServiceClient.Web
 {
     //Copy from ServiceStack.ServiceInterface.Auth to avoid deps
     [DataContract]
-    public class Auth
+    public class Auth : IReturn<AuthResponse>
     {
         [DataMember(Order=1)] public string provider { get; set; }
         [DataMember(Order=2)] public string State { get; set; }
@@ -39,8 +40,8 @@ namespace ServiceStack.Common.ServiceClient.Web
     }
 
 
-    [DataContract] 
-    public class Registration
+    [DataContract]
+    public class Registration : IReturn<RegistrationResponse>
     {
         [DataMember(Order = 1)] public string UserName { get; set; }
         [DataMember(Order = 2)] public string FirstName { get; set; }

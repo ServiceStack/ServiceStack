@@ -364,6 +364,13 @@ namespace ServiceStack.ServiceHost
 
             return to;
         }
+
+        public static string GetDescription(this Type operationType)
+        {
+            var apiAttr = operationType.GetCustomAttributes(typeof(Api), true).OfType<Api>().FirstOrDefault();
+            return apiAttr != null ? apiAttr.Description : "";
+        }
     }
+
 
 }

@@ -20,6 +20,7 @@ using ServiceStack.Markdown;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints
@@ -429,14 +430,14 @@ namespace ServiceStack.WebHost.Endpoints
             if (!HasFeature(usesFeatures))
             {
                 throw new UnauthorizedAccessException(
-                    string.Format("'{0}' Features have been disabled by your administrator", usesFeatures));
+                    String.Format("'{0}' Features have been disabled by your administrator", usesFeatures));
             }
         }
 
         public UnauthorizedAccessException UnauthorizedAccess(EndpointAttributes requestAttrs)
         {
             return new UnauthorizedAccessException(
-                string.Format("Request with '{0}' is not allowed", requestAttrs));
+                String.Format("Request with '{0}' is not allowed", requestAttrs));
         }
 
         public void AssertContentType(string contentType)
@@ -457,6 +458,26 @@ namespace ServiceStack.WebHost.Endpoints
                     IgnoreFormatsInMetadata,
                     EndpointHost.ContentTypeFilter.ContentTypeFormats.Keys.ToList());
             }
+        }
+
+        public bool HasAccessToMetadata(IHttpRequest httpReq, IHttpResponse httpRes)
+        {
+            if (!HasFeature(Feature.Metadata))
+            {
+                EndpointHost.Config.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Metadata Not Available");
+                return false;
+            }
+
+            if (MetadataVisibility != EndpointAttributes.Any)
+            {
+                var actualAttributes = httpReq.GetAttributes();
+                if ((actualAttributes & MetadataVisibility) != MetadataVisibility)
+                {
+                    HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Metadata Not Visible");
+                    return false;
+                }
+            }
+            return true;
         }
 
         public void HandleErrorResponse(IHttpRequest httpReq, IHttpResponse httpRes, HttpStatusCode errorStatus, string errorStatusDescription=null)

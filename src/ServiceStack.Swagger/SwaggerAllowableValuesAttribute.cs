@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ServiceStack.ServiceInterface.Swagger
+namespace ServiceStack.Swagger
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class SwaggerAllowableValuesAttribute : Attribute

@@ -224,10 +224,6 @@
     <Compile Include="SessionExtensions.cs" />
     <Compile Include="SessionFeature.cs" />
     <Compile Include="SetStatusAttribute.cs" />
-    <Compile Include="Swagger\SwaggerApiService.cs" />
-    <Compile Include="Swagger\SwaggerFeature.cs" />
-    <Compile Include="Swagger\SwaggerAllowableValuesAttribute.cs" />
-    <Compile Include="Swagger\SwaggerResourcesService.cs" />
     <Compile Include="Testing\BasicAppHost.cs" />
     <Compile Include="Testing\BasicResolver.cs" />
     <Compile Include="Testing\MockHttpRequest.cs">
@@ -282,7 +278,9 @@
       <Name>ServiceStack</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Swagger\" />
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FluentValidation\Resources\Messages.resx" />
   </ItemGroup>

@@ -2,7 +2,7 @@
 using System.Text.RegularExpressions;
 using ServiceStack.WebHost.Endpoints;
 
-namespace ServiceStack.ServiceInterface.Swagger
+namespace ServiceStack.Swagger
 {
     public class SwaggerFeature : IPlugin
     {

@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
 
-namespace ServiceStack.ServiceInterface.Swagger
+namespace ServiceStack.Swagger
 {
     public class ResourceRequest
     {
@@ -48,7 +48,7 @@ namespace ServiceStack.ServiceInterface.Swagger
     }
 
     [DefaultRequest(typeof(ResourceRequest))]
-    public class SwaggerApiService : Service
+    public class SwaggerApiService : ServiceInterface.Service
     {
         private readonly Regex nicknameCleanerRegex = new Regex(@"[\{\}\*\-_/]*", RegexOptions.Compiled);
 

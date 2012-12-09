@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 
         public string RenderRow(string operation)
         {
-            var show = EndpointHost.DebugMode;
+            var show = EndpointHost.DebugMode; //Always show in DebugMode
 
             var parentPath = HttpRequest.GetParentAbsolutePath();
             var opTemplate = new StringBuilder("<tr><th>{0}</th>");

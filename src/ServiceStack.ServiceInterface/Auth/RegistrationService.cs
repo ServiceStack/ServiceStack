@@ -11,8 +11,8 @@ using ServiceStack.ServiceInterface.Validation;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
-    [DataContract] 
-    public class Registration
+    [DataContract]
+    public class Registration : IReturn<RegistrationResponse>
     {
         [DataMember(Order = 1)] public string UserName { get; set; }
         [DataMember(Order = 2)] public string FirstName { get; set; }
