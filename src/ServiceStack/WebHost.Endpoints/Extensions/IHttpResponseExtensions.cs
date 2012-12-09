@@ -63,11 +63,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
         public static bool WriteToResponse(this IHttpResponse httpRes, IHttpRequest httpReq, object result, byte[] bodyPrefix, byte[] bodySuffix)
         {
-            if (result == null)
-            {
-                httpRes.EndHttpRequestWithNoContent();
-                return true;
-            }
+            if (result == null) return true;
 
             var serializationContext = new HttpRequestContext(httpReq, httpRes, result);
             var httpResult = result as IHttpResult;
@@ -80,7 +76,6 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
                 httpResult.RequestContext = serializationContext;
                 serializationContext.ResponseContentType = httpResult.ContentType ?? httpReq.ResponseContentType;
                 var httpResSerializer = httpResult.ResponseFilter.GetResponseSerializer(serializationContext.ResponseContentType);
-
                 return httpRes.WriteToResponse(httpResult, httpResSerializer, serializationContext, bodyPrefix, bodySuffix);
             }
 
@@ -120,13 +115,17 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
                     ApplyGlobalResponseHeaders(response);
 
                     var httpResult = result as IHttpResult;
-                    var disposableResult = result as IDisposable;
                     if (httpResult != null)
                     {
+                        if (httpResult.RequestContext == null)
+                        {
+                            httpResult.RequestContext = serializerCtx;
+                        }
+
                         var httpError = httpResult as IHttpError;
                         if (httpError != null)
                         {
-                            if (response.HandleCustomErrorHandler(serializerCtx.Get<IHttpRequest>(), 
+                            if (response.HandleCustomErrorHandler(serializerCtx.Get<IHttpRequest>(),
                                 defaultContentType, httpError.Status, httpError.ToErrorResponse()))
                             {
                                 return true;
@@ -158,6 +157,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
                         }
                     }
 
+                    var disposableResult = result as IDisposable;
                     if (WriteToOutputStream(response, result, bodyPrefix, bodySuffix))
                     {
                         response.Flush(); //required for Compression
@@ -232,10 +232,10 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
                         {
                             response.WriteErrorToResponse(
                                 serializerCtx.Get<IHttpRequest>(),
-                                defaultContentType, 
-                                operationName, 
-                                errorMessage, 
-                                originalEx, 
+                                defaultContentType,
+                                operationName,
+                                errorMessage,
+                                originalEx,
                                 (int)HttpStatusCode.InternalServerError);
                         }
                     }
@@ -295,16 +295,22 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
                 httpRes.ContentType += ContentType.Utf8Suffix;
             }
 
-            var serializationCtx = new HttpRequestContext(httpReq, httpRes, errorDto);
+            httpRes.StatusCode = statusCode;
+            var serializationCtx = new SerializationContext(contentType);
+
             var serializer = EndpointHost.AppHost.ContentTypeFilters.GetResponseSerializer(contentType);
-            serializer(serializationCtx, errorDto, httpRes);
-            httpRes.EndHttpRequest(skipHeaders:true);
+            if (serializer != null)
+            {
+                serializer(serializationCtx, errorDto, httpRes);
+            }
+            
+            httpRes.EndHttpRequest(skipHeaders: true);
         }
 
         private static bool HandleCustomErrorHandler(this IHttpResponse httpRes, IHttpRequest httpReq,
             string contentType, int statusCode, object errorDto)
         {
-            if (ContentType.Html.MatchesContentType(contentType))
+            if (httpReq != null && ContentType.Html.MatchesContentType(contentType))
             {
                 var errorHandler = EndpointHost.Config.GetCustomErrorServiceStackHandler(statusCode);
                 if (errorHandler != null)

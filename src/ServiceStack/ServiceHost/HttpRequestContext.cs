@@ -37,7 +37,7 @@ namespace ServiceStack.ServiceHost
 			{
 				this.Files = httpReq.Files;
 			}
-			if (HttpContext.Current == null)
+			if (HttpContext.Current == null && httpReq != null)
 			{
 				this.RequestAttributes = new RequestAttributes(httpReq);
 			}
