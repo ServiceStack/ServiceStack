@@ -419,6 +419,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [cheesebaron](https://github.com/cheesebaron) (Tomasz Cielecki)
  - [mikkelfish](https://github.com/mikkelfish) (Mikkel Fishman)
  - [johngibb](https://github.com/johngibb) (John Gibb)
+ - [gixug](https://github.com/gixug) (David Stone)
 
 ***
 
