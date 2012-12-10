@@ -135,3 +135,4 @@
  - [peterlazzarino](https://github.com/peterlazzarino) (Peter Lazzarino)
  - [kevin-montrose](https://github.com/kevin-montrose) (Kevin Montrose)
  - [msarchet](https://github.com/msarchet) (Michael Sarchet)
+ - [jeffgabhart](https://github.com/jeffgabhart) (Jeff Gabhart)
