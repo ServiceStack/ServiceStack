@@ -134,3 +134,4 @@
  - [shamsulamry](https://github.com/shamsulamry) (Shamsul Amry)
  - [peterlazzarino](https://github.com/peterlazzarino) (Peter Lazzarino)
  - [kevin-montrose](https://github.com/kevin-montrose) (Kevin Montrose)
+ - [msarchet](https://github.com/msarchet) (Michael Sarchet)
