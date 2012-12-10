@@ -420,6 +420,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [mikkelfish](https://github.com/mikkelfish) (Mikkel Fishman)
  - [johngibb](https://github.com/johngibb) (John Gibb)
  - [gixug](https://github.com/gixug) (David Stone)
+ - [mikepugh](https://github.com/mikepugh) (Mike Pugh)
 
 ***
 
