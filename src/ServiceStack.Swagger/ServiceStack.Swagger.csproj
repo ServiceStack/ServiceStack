@@ -49,7 +49,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="swagger-ui\css\screen.css" />
-    <Content Include="swagger-ui\default.aspx" />
+    <Content Include="swagger-ui\default.aspx">
+      <SubType>ASPXCodeBehind</SubType>
+    </Content>
     <Content Include="swagger-ui\images\pet_store_api.png" />
     <Content Include="swagger-ui\images\wordnik_api.png" />
     <Content Include="swagger-ui\lib\backbone-min.js" />
