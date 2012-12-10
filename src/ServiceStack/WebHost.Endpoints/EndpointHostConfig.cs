@@ -314,9 +314,17 @@ namespace ServiceStack.WebHost.Endpoints
         {
             return XDocument.Parse(rawXml).Root.Element("handlers")
                 .Descendants("add")
-                .Where(handler => (handler.Attribute("type").Value ?? String.Empty).StartsWith("ServiceStack"))
+                .Where(handler => EndpointHostConfig.EnsureHandlerTypeAttribute(handler).StartsWith("ServiceStack"))
                 .Select(handler => handler.Attribute("path").Value)
                 .FirstOrDefault();
+        }
+        private static string EnsureHandlerTypeAttribute(XElement handler)
+        {
+          if (handler.Attribute("type") != null && !string.IsNullOrEmpty(handler.Attribute("type").Value))
+          {
+            return handler.Attribute("type").Value;
+          }
+          return string.Empty;
         }
 
         public ServiceManager ServiceManager { get; internal set; }
