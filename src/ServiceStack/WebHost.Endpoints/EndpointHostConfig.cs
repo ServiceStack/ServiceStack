@@ -93,7 +93,8 @@ namespace ServiceStack.WebHost.Endpoints
 						},
                         AppendUtf8CharsetOnContentTypes = new HashSet<string> { ContentType.Json, },
                         RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>>(),
-                        CustomHttpHandlers = new Dictionary<HttpStatusCode, IHttpHandler>(),
+                        CustomHttpHandlers = new Dictionary<HttpStatusCode, IServiceStackHttpHandler>(),
+                        GlobalHtmlErrorHttpHandler = null,
                         MapExceptionToStatusCode = new Dictionary<Type, int>(),
                         DefaultJsonpCacheExpiration = new TimeSpan(0, 20, 0),
                         MetadataVisibility = EndpointAttributes.Any,
@@ -152,6 +153,7 @@ namespace ServiceStack.WebHost.Endpoints
             this.AppendUtf8CharsetOnContentTypes = instance.AppendUtf8CharsetOnContentTypes;
             this.RawHttpHandlers = instance.RawHttpHandlers;
             this.CustomHttpHandlers = instance.CustomHttpHandlers;
+            this.GlobalHtmlErrorHttpHandler = instance.GlobalHtmlErrorHttpHandler;
             this.MapExceptionToStatusCode = instance.MapExceptionToStatusCode;
             this.DefaultJsonpCacheExpiration = instance.DefaultJsonpCacheExpiration;
             this.MetadataVisibility = instance.MetadataVisibility;
@@ -373,7 +375,8 @@ namespace ServiceStack.WebHost.Endpoints
 
         public List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers { get; set; }
 
-        public Dictionary<HttpStatusCode, IHttpHandler> CustomHttpHandlers { get; set; }
+        public Dictionary<HttpStatusCode, IServiceStackHttpHandler> CustomHttpHandlers { get; set; }
+        public IServiceStackHttpHandler GlobalHtmlErrorHttpHandler { get; set; }
         public Dictionary<Type, int> MapExceptionToStatusCode { get; set; }
 
         public TimeSpan DefaultJsonpCacheExpiration { get; set; }
@@ -487,19 +490,11 @@ namespace ServiceStack.WebHost.Endpoints
             httpRes.StatusDescription = errorStatusDescription;
 
             var handler = GetHandlerForErrorStatus(errorStatus);
-            var ssHandler = handler as IServiceStackHttpHandler;
-            if (ssHandler != null)
-            {
-                ssHandler.ProcessRequest(httpReq, httpRes, null);
-                return;
-            }
 
-            handler.ProcessRequest(new HttpContext(
-                (HttpRequest)httpReq.OriginalRequest,
-                (HttpResponse)httpRes.OriginalResponse));
+            handler.ProcessRequest(httpReq, httpRes, httpReq.OperationName);
         }
 
-        public IHttpHandler GetHandlerForErrorStatus(HttpStatusCode errorStatus)
+        public IServiceStackHttpHandler GetHandlerForErrorStatus(HttpStatusCode errorStatus)
         {
             var httpHandler = GetCustomErrorHandler(errorStatus);
 
@@ -515,15 +510,11 @@ namespace ServiceStack.WebHost.Endpoints
             {
                 CustomHttpHandlers.TryGetValue(HttpStatusCode.NotFound, out httpHandler);
             }
+
             return httpHandler ?? new NotFoundHttpHandler();
         }
 
-        public IServiceStackHttpHandler GetCustomErrorServiceStackHandler(int errorStatusCode)
-        {
-            return GetCustomErrorHandler(errorStatusCode) as IServiceStackHttpHandler;
-        }
-
-        public IHttpHandler GetCustomErrorHandler(int errorStatusCode)
+        public IServiceStackHttpHandler GetCustomErrorHandler(int errorStatusCode)
         {
             try
             {
@@ -535,14 +526,22 @@ namespace ServiceStack.WebHost.Endpoints
             }
         }
 
-        public IHttpHandler GetCustomErrorHandler(HttpStatusCode errorStatus)
+        public IServiceStackHttpHandler GetCustomErrorHandler(HttpStatusCode errorStatus)
         {
-            IHttpHandler httpHandler = null;
+            IServiceStackHttpHandler httpHandler = null;
             if (CustomHttpHandlers != null)
             {
                 CustomHttpHandlers.TryGetValue(errorStatus, out httpHandler);
             }
-            return httpHandler;
+            return GlobalHtmlErrorHttpHandler ?? httpHandler;
+        }
+
+        public IHttpHandler GetCustomErrorHttpHandler(HttpStatusCode errorStatus)
+        {
+            var ssHandler = GetCustomErrorHandler(errorStatus);
+            if (ssHandler == null) return null;
+            var httpHandler = ssHandler as IHttpHandler;
+            return httpHandler ?? new ServiceStackHttpHandler(ssHandler);
         }
     }
 

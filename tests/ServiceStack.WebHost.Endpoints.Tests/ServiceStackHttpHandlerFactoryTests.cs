@@ -5,6 +5,7 @@ using System.Web;
 using NUnit.Framework;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Metadata;
+using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -63,7 +64,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             EndpointHost.Config = new EndpointHostConfig("ServiceName", new ServiceManager(GetType().Assembly)) {
                 RawHttpHandlers = new List<Func<IHttpRequest,IHttpHandler>>(),
-                CustomHttpHandlers = new Dictionary<HttpStatusCode, IHttpHandler>(),
+                CustomHttpHandlers = new Dictionary<HttpStatusCode, IServiceStackHttpHandler>(),
                 WebHostPhysicalPath = "~/".MapServerPath()
             };
             EndpointHost.CatchAllHandlers.Add(new PredefinedRoutesFeature().ProcessRequest);

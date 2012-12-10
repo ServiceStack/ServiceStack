@@ -191,6 +191,7 @@
     <Compile Include="ServiceHost\MqRequestContext.cs" />
     <Compile Include="ServiceHost\NServiceExec.cs" />
     <Compile Include="ServiceHost\ServiceRunner.cs" />
+    <Compile Include="ServiceStackHttpHandler.cs" />
     <Compile Include="VirtualPath\AbstractVirtualDirectoryBase.cs" />
     <Compile Include="VirtualPath\AbstractVirtualFileBase.cs" />
     <Compile Include="VirtualPath\AbstractVirtualPathProviderBase.cs" />

@@ -312,7 +312,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
         {
             if (httpReq != null && ContentType.Html.MatchesContentType(contentType))
             {
-                var errorHandler = EndpointHost.Config.GetCustomErrorServiceStackHandler(statusCode);
+                var errorHandler = EndpointHost.Config.GetCustomErrorHandler(statusCode);
                 if (errorHandler != null)
                 {
                     httpReq.Items["Model"] = errorDto;

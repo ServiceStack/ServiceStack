@@ -9,7 +9,6 @@ using ServiceStack.MiniProfiler.UI;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
-using ServiceStack.WebHost.Endpoints.Metadata;
 using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints
@@ -43,7 +42,8 @@ namespace ServiceStack.WebHost.Endpoints
 				IsIntegratedPipeline = (bool)pi.GetGetMethod().Invoke(null, new object[0]);
 			}
 
-			if (EndpointHost.Config == null)
+		    var config = EndpointHost.Config;
+		    if (config == null)
 			{
 				throw new ConfigurationErrorsException(
 					"ServiceStack: AppHost does not exist or has not been initialized. "
@@ -52,11 +52,11 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 
 			var isAspNetHost = HttpListenerBase.Instance == null || HttpContext.Current != null;
-			WebHostPhysicalPath = EndpointHost.Config.WebHostPhysicalPath;
+			WebHostPhysicalPath = config.WebHostPhysicalPath;
             AutoRedirectsDirs = isAspNetHost && !Env.IsMono;
 
 			//Apache+mod_mono treats path="servicestack*" as path="*" so takes over root path, so we need to serve matching resources
-			var hostedAtRootPath = EndpointHost.Config.ServiceStackHandlerFactoryPath == null;
+			var hostedAtRootPath = config.ServiceStackHandlerFactoryPath == null;
 
 			//DefaultHttpHandler not supported in IntegratedPipeline mode
 			if (!IsIntegratedPipeline && isAspNetHost && !hostedAtRootPath && !Env.IsMono)
@@ -68,7 +68,7 @@ namespace ServiceStack.WebHost.Endpoints
 				foreach (var filePath in Directory.GetFiles(WebHostPhysicalPath))
 				{
 					var fileNameLower = Path.GetFileName(filePath).ToLower();
-					if (DefaultRootFileName == null && EndpointHost.Config.DefaultDocuments.Contains(fileNameLower))
+					if (DefaultRootFileName == null && config.DefaultDocuments.Contains(fileNameLower))
 					{
 						//Can't serve Default.aspx pages when hostedAtRootPath so ignore and allow for next default document
 						if (!(hostedAtRootPath && fileNameLower.EndsWith(".aspx")))
@@ -89,14 +89,14 @@ namespace ServiceStack.WebHost.Endpoints
 				}
 			}
 
-			if (!string.IsNullOrEmpty(EndpointHost.Config.DefaultRedirectPath))
-				DefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = EndpointHost.Config.DefaultRedirectPath };
+			if (!string.IsNullOrEmpty(config.DefaultRedirectPath))
+				DefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = config.DefaultRedirectPath };
 
-			if (DefaultHttpHandler == null && !string.IsNullOrEmpty(EndpointHost.Config.MetadataRedirectPath))
-				DefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = EndpointHost.Config.MetadataRedirectPath };
+			if (DefaultHttpHandler == null && !string.IsNullOrEmpty(config.MetadataRedirectPath))
+				DefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = config.MetadataRedirectPath };
 
-			if (!string.IsNullOrEmpty(EndpointHost.Config.MetadataRedirectPath))
-				NonRootModeDefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = EndpointHost.Config.MetadataRedirectPath };
+			if (!string.IsNullOrEmpty(config.MetadataRedirectPath))
+				NonRootModeDefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = config.MetadataRedirectPath };
 
 			if (DefaultHttpHandler == null)
 				DefaultHttpHandler = NotFoundHttpHandler;
@@ -106,11 +106,9 @@ namespace ServiceStack.WebHost.Endpoints
 				? defaultRedirectHanlder.RelativeUrl
 				: typeof(DefaultHttpHandler).Name;
 
-			SetApplicationBaseUrl(EndpointHost.Config.WebHostUrl);
+			SetApplicationBaseUrl(config.WebHostUrl);
 
-			var httpHandlers = EndpointHost.Config.CustomHttpHandlers;
-
-			httpHandlers.TryGetValue(HttpStatusCode.Forbidden, out ForbiddenHttpHandler);
+            ForbiddenHttpHandler = config.GetCustomErrorHttpHandler(HttpStatusCode.Forbidden);
 			if (ForbiddenHttpHandler == null)
 			{
 				ForbiddenHttpHandler = new ForbiddenHttpHandler {
@@ -123,7 +121,7 @@ namespace ServiceStack.WebHost.Endpoints
 				};
 			}
 
-			httpHandlers.TryGetValue(HttpStatusCode.NotFound, out NotFoundHttpHandler);
+            NotFoundHttpHandler = config.GetCustomErrorHttpHandler(HttpStatusCode.NotFound);
 			if (NotFoundHttpHandler == null)
 			{
 				NotFoundHttpHandler = new NotFoundHttpHandler {
@@ -136,7 +134,7 @@ namespace ServiceStack.WebHost.Endpoints
 				};
 			}
 
-			var rawHandlers = EndpointHost.Config.RawHttpHandlers;
+			var rawHandlers = config.RawHttpHandlers;
 			rawHandlers.Add(ReturnRequestInfo);
 			rawHandlers.Add(MiniProfilerHandler.MatchesRequest);
 			RawHttpHandlers = rawHandlers.ToArray();
