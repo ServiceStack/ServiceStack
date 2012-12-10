@@ -132,3 +132,4 @@
  - [permalmberg](https://github.com/permalmberg) (Per Malmberg)
  - [adamralph](https://github.com/adamralph) (Adam Ralph)
  - [shamsulamry](https://github.com/shamsulamry) (Shamsul Amry)
+ - [peterlazzarino](https://github.com/peterlazzarino) (Peter Lazzarino)
