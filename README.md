@@ -421,6 +421,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [johngibb](https://github.com/johngibb) (John Gibb)
  - [gixug](https://github.com/gixug) (David Stone)
  - [mikepugh](https://github.com/mikepugh) (Mike Pugh)
+ - [permalmberg](https://github.com/permalmberg) (Per Malmberg)
 
 ***
 
