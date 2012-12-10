@@ -272,7 +272,15 @@ namespace ServiceStack.ServiceInterface.Auth
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
             using (var redis = factory.GetClient())
+            {
                 redis.Store(userAuth);
+
+                var userId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
+                if (!userAuth.UserName.IsNullOrEmpty())
+                    redis.SetEntryInHash(IndexUserNameToUserId, userAuth.UserName, userId);
+                if (!userAuth.Email.IsNullOrEmpty())
+                    redis.SetEntryInHash(IndexEmailToUserId, userAuth.Email, userId);
+            }
         }
 
         public List<UserOAuthProvider> GetUserOAuthProviders(string userAuthId)
