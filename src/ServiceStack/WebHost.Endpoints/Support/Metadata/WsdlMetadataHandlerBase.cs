@@ -6,6 +6,7 @@ using ServiceStack.Logging;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Metadata;
 using ServiceStack.WebHost.Endpoints.Support.Templates;
+using ServiceStack.WebHost.Endpoints.Utils;
 
 namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 {
@@ -67,11 +68,9 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 
         public WsdlTemplateBase GetWsdlTemplate(XsdMetadata operations, string baseUri, bool optimizeForFlash, string rawUrl)
 		{
-			var xsd = new XsdGenerator {
-                OperationTypes = operations.GetAllTypes(),
-				OptimizeForFlash = optimizeForFlash,
-			}.ToString();
-
+            var xsd = XsdUtils.GetXsd(XsdUtils.GetXmlSchemaSet(operations.GetAllTypes()));
+            if (optimizeForFlash)
+                xsd = xsd.Replace("ser:guid", "xs:string");
 			var wsdlTemplate = GetWsdlTemplate();
 			wsdlTemplate.Xsd = xsd;
             wsdlTemplate.ReplyOperationNames = operations.GetReplyOperationNames();
