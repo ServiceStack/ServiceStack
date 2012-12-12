@@ -162,6 +162,7 @@
     <Content Include="Content\swagger-ui\swagger-ui.js" />
     <Content Include="Content\swagger-ui\swagger-ui.min.js" />
     <Content Include="Default.aspx" />
+    <Content Include="Subpages\Test.aspx" />
     <Content Include="user-notfound.htm" />
     <Content Include="user-default.htm" />
     <Content Include="Global.asax" />
@@ -189,6 +190,13 @@
     <Compile Include="Services\EndpointAccessService.cs" />
     <Compile Include="Services\HelloImage.cs" />
     <Compile Include="Services\IocServiceTests.cs" />
+    <Compile Include="Subpages\Test.aspx.cs">
+      <DependentUpon>Test.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Subpages\Test.aspx.designer.cs">
+      <DependentUpon>Test.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Tests\BinarySerializedTests.cs" />
     <Compile Include="Tests\ExceptionHandlingTests.cs" />
     <Compile Include="Tests\ProtoBufServiceTests.cs" />
