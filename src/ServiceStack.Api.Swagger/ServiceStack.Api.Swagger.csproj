@@ -8,8 +8,8 @@
     <ProjectGuid>{01D3F057-7984-498F-8B0A-EB375701E204}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceStack.Swagger</RootNamespace>
-    <AssemblyName>ServiceStack.Swagger</AssemblyName>
+    <RootNamespace>ServiceStack.Api.Swagger</RootNamespace>
+    <AssemblyName>ServiceStack.Api.Swagger</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
 
-namespace ServiceStack.Swagger
+namespace ServiceStack.Api.Swagger
 {
     public class Resources
     {

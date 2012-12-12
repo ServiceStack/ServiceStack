@@ -2,7 +2,6 @@ using System.ComponentModel;
 using System.Runtime.Serialization;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
-using ServiceStack.Swagger;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {

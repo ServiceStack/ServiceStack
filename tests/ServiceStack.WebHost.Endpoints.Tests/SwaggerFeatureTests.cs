@@ -6,12 +6,12 @@ using NUnit.Framework;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.Service;
-using ServiceStack.Swagger;
+using ServiceStack.Api.Swagger;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    [Api("Service Description")]
+    [ServiceHost.Api("Service Description")]
     [Route("/swagger/{Name}", "GET", Summary = @"GET Summary", Notes = "GET Notes")]
     [Route("/swagger/{Name}", "POST", Summary = @"POST Summary", Notes = "POST Notes")]
     public class SwaggerFeatureRequest
