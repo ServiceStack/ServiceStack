@@ -50,11 +50,15 @@ namespace ServiceStack.ServiceHost
 
 		public HttpCookie ToHttpCookie(Cookie cookie)
 		{
-			return new HttpCookie(cookie.Name, cookie.Value) {
+			var httpCookie = new HttpCookie(cookie.Name, cookie.Value) {
 				Path = cookie.Path,
 				Expires = cookie.Expires,
-				Domain = (string.IsNullOrEmpty(cookie.Domain)) ? null : cookie.Domain,
 			};
+			if (string.IsNullOrEmpty(httpCookie.Domain))
+			{
+				httpCookie.Domain = (string.IsNullOrEmpty(cookie.Domain) ? null : cookie.Domain);
+			}
+			return httpCookie;
 		}
 
 		public string GetHeaderValue(Cookie cookie)
