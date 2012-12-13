@@ -404,6 +404,11 @@ namespace ServiceStack.ServiceClient.Web
                     {
                         requestState.WebRequest = (HttpWebRequest)WebRequest.Create(requestState.Url);
 
+                        if (StoreCookies)
+                        {
+                            requestState.WebRequest.CookieContainer = CookieContainer;
+                        }
+
                         requestState.WebRequest.AddBasicAuth(this.UserName, this.Password);
 
                         if (OnAuthenticationRequired != null)
