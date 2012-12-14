@@ -329,7 +329,32 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		public T TryResolve<T>()
 		{
 			return this.Container.TryResolve<T>();
-		}
+        }
+
+        /// <summary>
+        /// Resolves from IoC container a specified type instance.
+        /// </summary>
+        /// <typeparam name="T">Type to be resolved.</typeparam>
+        /// <returns>Instance of <typeparamref name="T"/>.</returns>
+        public static T Resolve<T>()
+        {
+            if (Instance == null) throw new InvalidOperationException("AppHostBase is not initialized.");
+            return Instance.Container.Resolve<T>();
+        }
+
+        /// <summary>
+        /// Resolves and auto-wires a ServiceStack Service
+        /// </summary>
+        /// <typeparam name="T">Type to be resolved.</typeparam>
+        /// <returns>Instance of <typeparamref name="T"/>.</returns>
+        public static T ResolveService<T>(HttpListenerContext httpCtx) where T : class, IRequiresRequestContext
+        {
+            if (Instance == null) throw new InvalidOperationException("AppHostBase is not initialized.");
+            var service = Instance.Container.Resolve<T>();
+            if (service == null) return null;
+            service.RequestContext = httpCtx.ToRequestContext();
+            return service;
+        }
 
         protected IServiceController ServiceController
         {

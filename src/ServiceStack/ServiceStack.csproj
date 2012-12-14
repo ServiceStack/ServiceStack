@@ -117,6 +117,7 @@
     <Compile Include="Configuration\AppSettingsBase.cs" />
     <Compile Include="Configuration\ConfigUtils.cs" />
     <Compile Include="Configuration\ISettings.cs" />
+    <Compile Include="HttpExtensions.cs" />
     <Compile Include="MetadataTypesHandler.cs" />
     <Compile Include="PredefinedRoutesFeature.cs" />
     <Compile Include="Funq\Action.cs" />

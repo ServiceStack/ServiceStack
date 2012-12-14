@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Web;
 using Funq;
 using ServiceStack.Common;
 using ServiceStack.Configuration;
@@ -10,6 +11,7 @@ using ServiceStack.Html;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.VirtualPath;
+using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -151,8 +153,22 @@ namespace ServiceStack.WebHost.Endpoints
             if (Instance == null) throw new InvalidOperationException("AppHostBase is not initialized.");
             return Instance.Container.Resolve<T>();
         }
-        
-		public Dictionary<Type, Func<IHttpRequest, object>> RequestBinders
+
+        /// <summary>
+        /// Resolves and auto-wires a ServiceStack Service
+        /// </summary>
+        /// <typeparam name="T">Type to be resolved.</typeparam>
+        /// <returns>Instance of <typeparamref name="T"/>.</returns>
+        public static T ResolveService<T>(HttpContext httpCtx) where T : class, IRequiresRequestContext
+        {
+            if (Instance == null) throw new InvalidOperationException("AppHostBase is not initialized.");
+            var service = Instance.Container.Resolve<T>();
+            if (service == null) return null;
+            service.RequestContext = httpCtx.ToRequestContext();
+            return service;
+        }
+
+        public Dictionary<Type, Func<IHttpRequest, object>> RequestBinders
 		{
 			get { return EndpointHost.ServiceManager.ServiceController.RequestTypeFactoryMap; }
 		}
