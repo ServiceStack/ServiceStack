@@ -1,3 +1,5 @@
+using System;
+
 namespace ServiceStack.ServiceHost
 {
 	/// <summary>
@@ -5,7 +7,8 @@ namespace ServiceStack.ServiceHost
 	/// For simplicity this is the only interface you need to implement
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public interface IService<T> 
+    [Obsolete("Use IService - ServiceStack's New API for future services")]
+    public interface IService<T> 
 	{
 		object Execute(T request);
 	}

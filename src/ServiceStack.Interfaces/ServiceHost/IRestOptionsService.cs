@@ -1,3 +1,5 @@
+using System;
+
 namespace ServiceStack.ServiceHost
 {
 	/// <summary>
@@ -6,6 +8,7 @@ namespace ServiceStack.ServiceHost
 	/// EndpointAttributes.HttpPut requests
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
+    [Obsolete("Use IService - ServiceStack's New API for future services")]
     public interface IRestOptionsService<T>
 	{
 		object Options(T request);
