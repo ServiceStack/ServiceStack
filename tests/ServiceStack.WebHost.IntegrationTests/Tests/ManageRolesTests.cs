@@ -67,7 +67,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			}
 			catch (WebServiceException webEx)
 			{
-				Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+				Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Forbidden));
 				//StatusDescription is ignored in WebDevServer
 				//Assert.That(webEx.StatusDescription, Is.EqualTo("Invalid Role"));
 			}
@@ -132,7 +132,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			}
 			catch (WebServiceException webEx)
 			{
-				Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+				Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Forbidden));
 				//StatusDescription is ignored in WebDevServer
 				//Assert.That(webEx.StatusDescription, Is.EqualTo("Invalid Role"));
 			}
@@ -154,7 +154,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			}
 			catch (WebServiceException webEx)
 			{
-				Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+				Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Forbidden));
 				//StatusDescription is ignored in WebDevServer
 				//Assert.That(webEx.StatusDescription, Is.EqualTo("Invalid Role"));
 			}
@@ -184,7 +184,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			}
 			catch (WebServiceException webEx)
 			{
-				Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+				Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Forbidden));
 				//StatusDescription is ignored in WebDevServer
 				//Assert.That(webEx.StatusDescription, Is.EqualTo("Invalid Permissions"));
 			}
@@ -206,7 +206,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			}
 			catch (WebServiceException webEx)
 			{
-				Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+				Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Forbidden));
 				//StatusDescription is ignored in WebDevServer
 				//Assert.That(webEx.StatusDescription, Is.EqualTo("Invalid Permissions"));
 			}
