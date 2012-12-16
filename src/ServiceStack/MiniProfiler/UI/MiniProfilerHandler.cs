@@ -21,7 +21,7 @@ namespace ServiceStack.MiniProfiler.UI
 		public static IHttpHandler MatchesRequest(IHttpRequest request)
 		{
 			var file = Path.GetFileNameWithoutExtension(request.PathInfo);
-			return file != null && file.StartsWith("ss-")
+			return file != null && file.StartsWith("ssr-")
 				? new MiniProfilerHandler()
 				: null;
 		}
@@ -29,11 +29,11 @@ namespace ServiceStack.MiniProfiler.UI
 		public static HtmlString RenderIncludes(Profiler profiler, RenderPosition? position = null, bool? showTrivial = null, bool? showTimeWithChildren = null, int? maxTracesToShow = null, bool xhtml = false, bool? showControls = null, string path = null)
 		{
 			const string format =
-@"<link rel=""stylesheet"" type=""text/css"" href=""{path}ss-includes.css?v={version}""{closeXHTML}>
+@"<link rel=""stylesheet"" type=""text/css"" href=""{path}ssr-includes.css?v={version}""{closeXHTML}>
 <script type=""text/javascript"">
-    if (!window.jquip) document.write(unescape(""%3Cscript src='{path}ss-jquip.all.js?v={version}' type='text/javascript'%3E%3C/script%3E""));
+    if (!window.jquip) document.write(unescape(""%3Cscript src='{path}ssr-jquip.all.js?v={version}' type='text/javascript'%3E%3C/script%3E""));
 </script>
-<script type=""text/javascript"" src=""{path}ss-includes.js?v={version}""></script>
+<script type=""text/javascript"" src=""{path}ssr-includes.js?v={version}""></script>
 <script type=""text/javascript"">
     jQuery(function() {{
         MiniProfiler.init({{
@@ -146,12 +146,12 @@ namespace ServiceStack.MiniProfiler.UI
 			{
 				//case "mini-profiler-jquery.1.6.2":
 				//case "mini-profiler-jquery.tmpl.beta1":
-				case "ss-jquip.all":
-				case "ss-includes":
+				case "ssr-jquip.all":
+				case "ssr-includes":
 					output = Includes(httpReq, httpRes, path);
 					break;
 
-				case "ss-results":
+				case "ssr-results":
 					output = Results(httpReq, httpRes);
 					break;
 
@@ -190,7 +190,7 @@ namespace ServiceStack.MiniProfiler.UI
 			//cache.SetExpires(DateTime.Now.AddDays(7));
 			//cache.SetValidUntilExpires(true);
 
-			var embeddedFile = Path.GetFileName(path).Replace("ss-", "");
+			var embeddedFile = Path.GetFileName(path).Replace("ssr-", "");
 			return GetResource(embeddedFile);
 		}
 

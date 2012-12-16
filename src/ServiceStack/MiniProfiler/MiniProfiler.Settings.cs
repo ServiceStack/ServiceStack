@@ -185,14 +185,14 @@ namespace ServiceStack.MiniProfiler
             /// <summary>
             /// When <see cref="Profiler.Start"/> is called, if the current request url contains any items in this property,
             /// no profiler will be instantiated and no results will be displayed.
-			/// Default value is { "/ss-", "/content/", "/scripts/", "/favicon.ico" }.
+			/// Default value is { "/ssr-", "/content/", "/scripts/", "/favicon.ico" }.
             /// </summary>
-            [DefaultValue(new string[] { "/ss-", "/content/", "/scripts/", "/favicon.ico" })]
+            [DefaultValue(new string[] { "/ssr-", "/content/", "/scripts/", "/favicon.ico" })]
             public static string[] IgnoredPaths { get; set; }
 
             /// <summary>
             /// The path under which ALL routes are registered in, defaults to the application root.  For example, "~/myDirectory/" would yield
-			/// "/myDirectory/ss-includes.js" rather than just "/mini-profiler-includes.js"
+			/// "/myDirectory/ssr-includes.js" rather than just "/mini-profiler-includes.js"
             /// Any setting here should be in APP RELATIVE FORM, e.g. "~/myDirectory/"
             /// </summary>
             [DefaultValue("~/")]

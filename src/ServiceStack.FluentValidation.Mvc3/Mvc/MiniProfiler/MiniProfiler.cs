@@ -28,11 +28,11 @@ namespace ServiceStack.Mvc.MiniProfiler
 		{
 			var urls = new[] 
 		    { 
-		        "ss-jquip.all", 
-		        "ss-includes.js", 
-		        "ss-includes.css", 
-		        "ss-includes.tmpl", 
-		        "ss-results"
+		        "ssr-jquip.all", 
+		        "ssr-includes.js", 
+		        "ssr-includes.css", 
+		        "ssr-includes.tmpl", 
+		        "ssr-results"
 		    };
 			var routes = RouteTable.Routes;
 			var handler = new MiniProfilerRouteHandler(new MiniProfilerHandler());
