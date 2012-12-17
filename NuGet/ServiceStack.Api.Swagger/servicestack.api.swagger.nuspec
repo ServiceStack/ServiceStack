@@ -14,7 +14,7 @@
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/LICENSE</licenseUrl>
     <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
-    <tags>Swagger StackExpress API REST</tags>
+    <tags>Swagger API REST ServiceStack</tags>
     <language>en-US</language>
     <copyright>StackExpress.net 2012 and contributors</copyright>
     <dependencies>
