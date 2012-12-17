@@ -25,7 +25,7 @@ namespace $rootnamespace$.App_Start
         private object userSession;
         protected virtual TUserSession SessionAs<TUserSession>()
         {
-            return (TUserSession)(userSession ?? (userSession = Cache.SessionAs<TUserSession>(Request, Response)));
+            return (TUserSession)(userSession ?? (userSession = Cache.SessionAs<TUserSession>()));
         }
 
         protected CustomUserSession UserSession
