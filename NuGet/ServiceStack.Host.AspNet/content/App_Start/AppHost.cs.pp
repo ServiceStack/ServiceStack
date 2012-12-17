@@ -36,13 +36,10 @@ namespace $rootnamespace$.App_Start
 			//Configure User Defined REST Paths
 			Routes
 			  .Add<Hello>("/hello")
-			  .Add<Hello>("/hello/{Name*}")
-			  .Add<Todo>("/todos")
-			  .Add<Todo>("/todos/{Id}");
+			  .Add<Hello>("/hello/{Name*}");
 
 			//Uncomment to change the default ServiceStack configuration
 			//SetConfig(new EndpointHostConfig {
-			//    DebugMode = true, //Show StackTraces when developing
 			//});
 
 			//Enable Authentication

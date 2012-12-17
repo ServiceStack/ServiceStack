@@ -45,30 +45,21 @@ namespace $rootnamespace$.App_Start
 		{
 			//Set JSON web services to return idiomatic JSON camelCase properties
 			ServiceStack.Text.JsConfig.EmitCamelCaseNames = true;
-
+		
 			//Configure User Defined REST Paths
 			Routes
-				.Add<Hello>("/hello")
-				.Add<Hello>("/hello/{Name*}")
-				.Add<Todo>("/todos")
-				.Add<Todo>("/todos/{Id}");
+			  .Add<Hello>("/hello")
+			  .Add<Hello>("/hello/{Name*}");
 
-			//Change the default ServiceStack configuration
+			//Uncomment to change the default ServiceStack configuration
 			//SetConfig(new EndpointHostConfig {
-			//    DebugMode = true, //Show StackTraces in responses in development
 			//});
 
 			//Enable Authentication
 			//ConfigureAuth(container);
 
 			//Register all your dependencies
-			container.Register(new TodoRepository());
-			
-			//Register In-Memory Cache provider. 
-			//For Distributed Cache Providers Use: PooledRedisClientManager, BasicRedisClientManager or see: https://github.com/ServiceStack/ServiceStack/wiki/Caching
-			container.Register<ICacheClient>(new MemoryCacheClient());
-			container.Register<ISessionFactory>(c => 
-				new SessionFactory(c.Resolve<ICacheClient>()));
+			container.Register(new TodoRepository());			
 
 			//Set MVC to use the same Funq IOC as ServiceStack
 			ControllerBuilder.Current.SetControllerFactory(new FunqControllerFactory(container));
