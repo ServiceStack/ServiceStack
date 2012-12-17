@@ -33,20 +33,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	[Authenticate]
-	public class SecuredService : RestServiceBase<Secured>
-	{
-		public override object OnPost(Secured request)
-		{
-			return new SecuredResponse { Result = request.Name };
-		}
-
-        public override object OnGet(Secured request)
-        {
-            throw new ArgumentException("unicorn nuggets");
-        }
-	}
-
     [Route("/securedfileupload")]
     public class SecuredFileUpload
     {
@@ -54,14 +40,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string CustomerName { get; set; }
     }
 
-    [Authenticate]
-    public class SecuredFileUploadService : RestServiceBase<SecuredFileUpload>
-    {
-        public override object OnPost(SecuredFileUpload request)
+	[Authenticate]
+    public class SecuredService : ServiceInterface.Service
+	{
+		public object Post(Secured request)
+		{
+			return new SecuredResponse { Result = request.Name };
+		}
+
+        public object Get(Secured request)
+        {
+            throw new ArgumentException("unicorn nuggets");
+        }
+    
+        public object Post(SecuredFileUpload request)
         {
             var file = this.RequestContext.Files[0];
-            return new FileUploadResponse
-            {
+            return new FileUploadResponse {
                 FileName = file.FileName,
                 ContentLength = file.ContentLength,
                 ContentType = file.ContentType,
@@ -71,7 +66,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
         }
     }
-
 
 	public class RequiresRole
 	{
