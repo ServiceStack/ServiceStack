@@ -154,7 +154,7 @@ namespace ServiceStack.ServiceInterface.Auth
                 };
             }
 
-            if (request.Continue == null)
+            if (string.IsNullOrEmpty(request.Continue))
                 return response;
             
             return new HttpResult(response) {

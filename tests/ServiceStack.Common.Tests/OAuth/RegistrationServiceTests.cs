@@ -164,6 +164,33 @@ namespace ServiceStack.Common.Tests.OAuth
 			Assert.That(errors[1].FieldName, Is.EqualTo("Email"));
 		}
 
+		[Test]
+		public void Registration_with_Continue_returns_302_with_Location()
+		{
+			var service = GetRegistrationService();
 
+			var request = GetValidRegistration();
+			request.Continue = "http://localhost/home";
+
+			var response = service.Post(request) as HttpResult;
+
+			Assert.That(response, Is.Not.Null);
+			Assert.That(response.Status, Is.EqualTo(302));
+			Assert.That(response.Headers[HttpHeaders.Location], Is.EqualTo("http://localhost/home"));
+		}
+
+		[Test]
+		public void Registration_with_EmptyString_Continue_returns_RegistrationResponse()
+		{
+			var service = GetRegistrationService();
+
+			var request = GetValidRegistration();
+			request.Continue = string.Empty;
+
+			var response = service.Post(request);
+
+			Assert.That(response as HttpResult, Is.Null);
+			Assert.That(response as RegistrationResponse, Is.Not.Null);
+		}
 	}
 }
