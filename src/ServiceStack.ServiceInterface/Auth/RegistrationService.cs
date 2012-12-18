@@ -128,7 +128,8 @@ namespace ServiceStack.ServiceInterface.Auth
                 {
                     var authResponse = authService.Post(new Auth {
                         UserName = request.UserName ?? request.Email,
-                        Password = request.Password
+                        Password = request.Password,
+                        Continue = request.Continue
                     });
 
                     if (authResponse is IHttpError)
