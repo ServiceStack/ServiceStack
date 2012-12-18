@@ -30,7 +30,9 @@ namespace ServiceStack.ServiceInterface.Auth
             var userName = basicAuth.Value.Key;
             var password = basicAuth.Value.Value;
 
-            return Authenticate(authService, session, userName, password);
+            return Authenticate(authService, session, userName, password, request.Continue);
         }
+
+        
     }
 }
