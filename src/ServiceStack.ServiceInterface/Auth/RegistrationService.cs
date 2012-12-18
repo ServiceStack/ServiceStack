@@ -152,6 +152,7 @@ namespace ServiceStack.ServiceInterface.Auth
             {
                 response = new RegistrationResponse {
                     UserId = user.Id.ToString(CultureInfo.InvariantCulture),
+                    ReferrerUrl = request.Continue
                 };
             }
 
