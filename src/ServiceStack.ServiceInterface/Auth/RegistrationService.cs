@@ -156,12 +156,19 @@ namespace ServiceStack.ServiceInterface.Auth
                 };
             }
 
-            if (string.IsNullOrEmpty(request.Continue))
-                return response;
-            
-            return new HttpResult(response) {
-                Location = request.Continue
-            };
+            var isHtml = base.RequestContext.ResponseContentType.MatchesContentType(ContentType.Html);
+            if (isHtml)
+            {
+                if (string.IsNullOrEmpty(request.Continue))
+                    return response;
+
+                return new HttpResult(response)
+                {
+                    Location = request.Continue
+                };
+            }
+
+            return response;
         }
 
         public UserAuth ToUserAuth(Registration request)
