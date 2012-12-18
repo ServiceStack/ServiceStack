@@ -47,9 +47,14 @@ namespace ServiceStack.Common.Tests.OAuth
 
 		public static RegistrationService GetRegistrationService(
 			AbstractValidator<Registration> validator = null, 
-			IUserAuthRepository authRepo=null)
+			IUserAuthRepository authRepo=null,
+			string contentType=null)
 		{
 			var requestContext = new MockRequestContext();
+			if (contentType != null)
+			{
+				requestContext.ResponseContentType = contentType;
+			}
 		    var userAuthRepository = authRepo ?? GetStubRepo();
 		    var service = new RegistrationService {
                 RegistrationValidator = validator ?? new RegistrationValidator { UserAuthRepo = userAuthRepository },
