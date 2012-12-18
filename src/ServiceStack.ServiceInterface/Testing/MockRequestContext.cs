@@ -40,7 +40,7 @@ namespace ServiceStack.ServiceInterface.Testing
         public EndpointAttributes EndpointAttributes { get; private set; }
         public IRequestAttributes RequestAttributes { get; private set; }
         public string ContentType { get; private set; }
-        public string ResponseContentType { get; private set; }
+        public string ResponseContentType { get; set; }
         public string CompressionType { get; private set; }
         public string AbsoluteUri { get; private set; }
         public string PathInfo { get; private set; }
