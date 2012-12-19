@@ -6,6 +6,8 @@ namespace ServiceStack.ServiceInterface.Validation
 {
     public class ValidationFilters
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(ValidationFilters));
+        
         public void RequestFilter(IHttpRequest req, IHttpResponse res, object requestDto)
         {
             var validator = ValidatorCache.GetValidator(req, requestDto.GetType());
@@ -23,6 +25,10 @@ namespace ServiceStack.ServiceInterface.Validation
 
             var errorResponse = DtoUtils.CreateErrorResponse(
                 requestDto, validationResult.ToErrorResult());
+                
+            string errorMessage = string.Format("Error occurred while Validating Request: [{0}]", requestDto);
+
+            Log.Error(errorMessage, validationResult.ToException());
 
             res.WriteToResponse(req, errorResponse);
         }
