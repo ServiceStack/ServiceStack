@@ -47,9 +47,14 @@ namespace ServiceStack.Common.Tests.OAuth
 
 		public static RegistrationService GetRegistrationService(
 			AbstractValidator<Registration> validator = null, 
-			IUserAuthRepository authRepo=null)
+			IUserAuthRepository authRepo=null,
+			string contentType=null)
 		{
 			var requestContext = new MockRequestContext();
+			if (contentType != null)
+			{
+				requestContext.ResponseContentType = contentType;
+			}
 		    var userAuthRepository = authRepo ?? GetStubRepo();
 		    var service = new RegistrationService {
                 RegistrationValidator = validator ?? new RegistrationValidator { UserAuthRepo = userAuthRepository },
@@ -165,9 +170,9 @@ namespace ServiceStack.Common.Tests.OAuth
 		}
 
 		[Test]
-		public void Registration_with_Continue_returns_302_with_Location()
+		public void Registration_with_Html_ContentType_And_Continue_returns_302_with_Location()
 		{
-			var service = GetRegistrationService();
+			var service = GetRegistrationService(null, null, ContentType.Html);
 
 			var request = GetValidRegistration();
 			request.Continue = "http://localhost/home";
@@ -182,7 +187,7 @@ namespace ServiceStack.Common.Tests.OAuth
 		[Test]
 		public void Registration_with_EmptyString_Continue_returns_RegistrationResponse()
 		{
-			var service = GetRegistrationService();
+			var service = GetRegistrationService(null, null, ContentType.Html);
 
 			var request = GetValidRegistration();
 			request.Continue = string.Empty;
@@ -191,6 +196,21 @@ namespace ServiceStack.Common.Tests.OAuth
 
 			Assert.That(response as HttpResult, Is.Null);
 			Assert.That(response as RegistrationResponse, Is.Not.Null);
+		}
+
+		[Test]
+		public void Registration_with_Json_ContentType_And_Continue_returns_RegistrationResponse_with_ReferrerUrl()
+		{
+			var service = GetRegistrationService(null, null, ContentType.Json);
+
+			var request = GetValidRegistration();
+			request.Continue = "http://localhost/home";
+
+			var response = service.Post(request);
+
+			Assert.That(response as HttpResult, Is.Null);
+			Assert.That(response as RegistrationResponse, Is.Not.Null);
+			Assert.That(((RegistrationResponse)response).ReferrerUrl, Is.EqualTo("http://localhost/home"));
 		}
 	}
 }

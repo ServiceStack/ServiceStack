@@ -71,10 +71,15 @@ namespace ServiceStack.ServiceInterface.Auth
         public override object Authenticate(IServiceBase authService, IAuthSession session, Auth request)
         {
             new CredentialsAuthValidator().ValidateAndThrow(request);
-            return Authenticate(authService, session, request.UserName, request.Password);
+            return Authenticate(authService, session, request.UserName, request.Password, request.Continue);
         }
 
         protected object Authenticate(IServiceBase authService, IAuthSession session, string userName, string password)
+        {
+            return Authenticate(authService, session, userName, password, string.Empty);
+        }
+
+        protected object Authenticate(IServiceBase authService, IAuthSession session, string userName, string password, string referrerUrl)
         {
             if (!LoginMatchesSession(session, userName))
             {
@@ -92,6 +97,7 @@ namespace ServiceStack.ServiceInterface.Auth
                 return new AuthResponse {
                     UserName = userName,
                     SessionId = session.Id,
+                    ReferrerUrl = referrerUrl
                 };
             }
 

@@ -128,7 +128,8 @@ namespace ServiceStack.ServiceInterface.Auth
                 {
                     var authResponse = authService.Post(new Auth {
                         UserName = request.UserName ?? request.Email,
-                        Password = request.Password
+                        Password = request.Password,
+                        Continue = request.Continue
                     });
 
                     if (authResponse is IHttpError)
@@ -151,15 +152,23 @@ namespace ServiceStack.ServiceInterface.Auth
             {
                 response = new RegistrationResponse {
                     UserId = user.Id.ToString(CultureInfo.InvariantCulture),
+                    ReferrerUrl = request.Continue
                 };
             }
 
-            if (string.IsNullOrEmpty(request.Continue))
-                return response;
-            
-            return new HttpResult(response) {
-                Location = request.Continue
-            };
+            var isHtml = base.RequestContext.ResponseContentType.MatchesContentType(ContentType.Html);
+            if (isHtml)
+            {
+                if (string.IsNullOrEmpty(request.Continue))
+                    return response;
+
+                return new HttpResult(response)
+                {
+                    Location = request.Continue
+                };
+            }
+
+            return response;
         }
 
         public UserAuth ToUserAuth(Registration request)
