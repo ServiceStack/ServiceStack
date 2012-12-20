@@ -1,5 +1,7 @@
-﻿using ServiceStack.ServiceHost;
+﻿using ServiceStack.Logging;
+using ServiceStack.ServiceHost;
 using ServiceStack.FluentValidation;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.ServiceInterface.Validation

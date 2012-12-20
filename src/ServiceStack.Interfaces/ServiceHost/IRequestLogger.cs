@@ -25,9 +25,9 @@ namespace ServiceStack.ServiceHost
 		bool EnableErrorTracking { get; set; }
 
 		/// <summary>
-		/// Limit access to /requestlogs service to role
+        /// Access to /requestlogs requires this password
 		/// </summary>
-		string[] RequiredRoles { get; set; }
+		string AdminPassword { get; set; }
 
 		/// <summary>
 		/// Don't log requests of these types.

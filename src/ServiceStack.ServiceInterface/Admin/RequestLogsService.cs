@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Common;
+using ServiceStack.Common.Web;
 using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.ServiceInterface.Admin
 {
     public class RequestLogs
     {
-        public string AdminPassword { get; set; }
+        public string Password { get; set; }
         public int? BeforeSecs { get; set; }
         public int? AfterSecs { get; set; }
         public string IpAddress { get; set; }
@@ -71,8 +72,8 @@ namespace ServiceStack.ServiceInterface.Admin
             if (RequestLogger == null)
                 throw new Exception("No IRequestLogger is registered");
             
-            if (request.AdminPassword != RequestLogger.AdminPassword)
-                throw new HttpError(HttpStatusCode.Unauthorized, "Invalid Admin Password Provided");
+            if (request.Password != RequestLogger.AdminPassword)
+                throw new HttpError(System.Net.HttpStatusCode.Unauthorized, "Invalid Admin Password Provided");
 
             if (request.EnableSessionTracking.HasValue)
                 RequestLogger.EnableSessionTracking = request.EnableSessionTracking.Value;

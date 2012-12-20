@@ -37,7 +37,7 @@ namespace ServiceStack.ServiceInterface.Admin
         /// <summary>
         /// Access to /requestlogs requires this password
         /// </summary>
-        public string AdminPasswrod { get; set; }
+        public string AdminPassword { get; set; }
 
         /// <summary>
         /// Change the RequestLogger provider. Default is InMemoryRollingRequestLogger
@@ -55,10 +55,10 @@ namespace ServiceStack.ServiceInterface.Admin
         /// </summary>
         public Type[] HideRequestBodyForRequestDtoTypes { get; set; }
 
-        public RequestLogsFeature(string AdminPassword, int? capacity = null)
+        public RequestLogsFeature(string adminPassword, int? capacity = null)
         {
             this.AtRestPath = "/requestlogs";
-            this.AdminPassword = AdminPassword;
+            this.AdminPassword = adminPassword;
             this.Capacity = capacity;
             this.EnableErrorTracking = true;
             this.ExcludeRequestDtoTypes = new[] { typeof(RequestLogs) };

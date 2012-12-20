@@ -24,14 +24,15 @@ namespace ServiceStack.ServiceInterface.Providers
 
         public bool EnableErrorTracking { get; set; }
 
-        public string[] RequiredRoles { get; set; }
+        public string AdminPassword { get; set; }
 
         public Type[] ExcludeRequestDtoTypes { get; set; }
 
         public Type[] HideRequestBodyForRequestDtoTypes { get; set; }
 
-        public InMemoryRollingRequestLogger(int? capacity = DefaultCapacity)
+        public InMemoryRollingRequestLogger(string adminPassword, int? capacity = DefaultCapacity)
         {
+            this.AdminPassword = adminPassword;
             this.capacity = capacity.GetValueOrDefault(DefaultCapacity);
         }
 
