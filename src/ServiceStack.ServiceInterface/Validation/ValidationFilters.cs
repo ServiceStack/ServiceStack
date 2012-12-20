@@ -1,11 +1,15 @@
-﻿using ServiceStack.ServiceHost;
+﻿using ServiceStack.Logging;
+using ServiceStack.ServiceHost;
 using ServiceStack.FluentValidation;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.ServiceInterface.Validation
 {
     public class ValidationFilters
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(ValidationFilters));
+        
         public void RequestFilter(IHttpRequest req, IHttpResponse res, object requestDto)
         {
             var validator = ValidatorCache.GetValidator(req, requestDto.GetType());
@@ -23,6 +27,8 @@ namespace ServiceStack.ServiceInterface.Validation
 
             var errorResponse = DtoUtils.CreateErrorResponse(
                 requestDto, validationResult.ToErrorResult());
+                
+            Log.Error("Validation Error: {0}".Fmt(requestDto.Dump()), validationResult.ToException());
 
             res.WriteToResponse(req, errorResponse);
         }
