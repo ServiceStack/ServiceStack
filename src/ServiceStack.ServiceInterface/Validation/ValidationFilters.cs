@@ -26,9 +26,7 @@ namespace ServiceStack.ServiceInterface.Validation
             var errorResponse = DtoUtils.CreateErrorResponse(
                 requestDto, validationResult.ToErrorResult());
                 
-            string errorMessage = string.Format("Error occurred while Validating Request: [{0}]", requestDto);
-
-            Log.Error(errorMessage, validationResult.ToException());
+            Log.Error("Validation Error: {0}".Fmt(requestDto.Dump()), validationResult.ToException());
 
             res.WriteToResponse(req, errorResponse);
         }
