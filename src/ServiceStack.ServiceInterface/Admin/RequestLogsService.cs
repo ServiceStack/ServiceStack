@@ -8,6 +8,7 @@ namespace ServiceStack.ServiceInterface.Admin
 {
     public class RequestLogs
     {
+        public string AdminPassword { get; set; }
         public int? BeforeSecs { get; set; }
         public int? AfterSecs { get; set; }
         public string IpAddress { get; set; }
@@ -69,8 +70,9 @@ namespace ServiceStack.ServiceInterface.Admin
         {
             if (RequestLogger == null)
                 throw new Exception("No IRequestLogger is registered");
-
-            RequiredRoleAttribute.AssertRequiredRoles(RequestContext, RequestLogger.RequiredRoles);
+            
+            if (request.AdminPassword != RequestLogger.AdminPassword)
+                throw new HttpError(HttpStatusCode.Unauthorized, "Invalid Admin Password Provided");
 
             if (request.EnableSessionTracking.HasValue)
                 RequestLogger.EnableSessionTracking = request.EnableSessionTracking.Value;
