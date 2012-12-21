@@ -140,3 +140,4 @@
  - [permalmberg](https://github.com/permalmberg) (Per Malmberg)
  - [namman](https://github.com/namman) (Nick Miller)
  - [leon-andria](https://github.com/leon-andria) (Leon Andria)
+ - [kkolstad](https://github.com/kkolstad) (Kenneth Kolstad)
