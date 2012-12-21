@@ -430,6 +430,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [jeffgabhart](https://github.com/jeffgabhart) (Jeff Gabhart)
  - [pkudinov](https://github.com/pkudinov) (Pavel Kudinov)
  - [permalmberg](https://github.com/permalmberg) (Per Malmberg)
+ - [namman](https://github.com/namman) (Nick Miller)
 
 ***
 
