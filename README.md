@@ -428,6 +428,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [kevin-montrose](https://github.com/kevin-montrose) (Kevin Montrose)
  - [msarchet](https://github.com/msarchet) (Michael Sarchet)
  - [jeffgabhart](https://github.com/jeffgabhart) (Jeff Gabhart)
+ - [pkudinov](https://github.com/pkudinov) (Pavel Kudinov)
 
 ***
 
