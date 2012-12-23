@@ -108,7 +108,8 @@ namespace ServiceStack.ServiceHost
         {
             var processedReqs = new HashSet<Type>();
 
-            if (typeof(IService).IsAssignableFrom(serviceType))
+            if (typeof(IService).IsAssignableFrom(serviceType)
+                && !serviceType.IsAbstract && !serviceType.IsGenericTypeDefinition)
             {
                 foreach (var mi in serviceType.GetActions())
                 {
