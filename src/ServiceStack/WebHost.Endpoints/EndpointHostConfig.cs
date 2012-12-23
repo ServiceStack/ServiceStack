@@ -279,15 +279,27 @@ namespace ServiceStack.WebHost.Endpoints
             }
 
             //IIS7+ integrated mode system.webServer/handlers
-            if (instance.MetadataRedirectPath == null)
+            var pathsNotSet = instance.MetadataRedirectPath == null;
+            if (pathsNotSet)
             {
                 var webServerSection = config.GetSection("system.webServer");
                 if (webServerSection != null)
                 {
                     var rawXml = webServerSection.SectionInformation.GetRawXml();
-                    if (!String.IsNullOrEmpty(rawXml))
+                    if (!string.IsNullOrEmpty(rawXml))
                     {
                         SetPaths(ExtractHandlerPathFromWebServerConfigurationXml(rawXml), locationPath);
+                    }
+                }
+
+                //In some MVC Hosts auto-inferencing doesn't work, in these cases assume the most likely default of "/api" path
+                pathsNotSet = instance.MetadataRedirectPath == null;
+                if (pathsNotSet)
+                {
+                    var isMvcHost = Type.GetType("System.Web.Mvc.Controller") != null;
+                    if (isMvcHost)
+                    {
+                        SetPaths("api", null);
                     }
                 }
             }
@@ -295,15 +307,15 @@ namespace ServiceStack.WebHost.Endpoints
 
         private static void SetPaths(string handlerPath, string locationPath)
         {
-            if (null == handlerPath) { return; }
+            if (handlerPath == null) return;
 
-            if (null == locationPath)
+            if (locationPath == null)
             {
                 handlerPath = handlerPath.Replace("*", String.Empty);
             }
 
             instance.ServiceStackHandlerFactoryPath = locationPath ??
-                (String.IsNullOrEmpty(handlerPath) ? null : handlerPath);
+                (string.IsNullOrEmpty(handlerPath) ? null : handlerPath);
 
             instance.MetadataRedirectPath = PathUtils.CombinePaths(
                 null != locationPath ? instance.ServiceStackHandlerFactoryPath : handlerPath
