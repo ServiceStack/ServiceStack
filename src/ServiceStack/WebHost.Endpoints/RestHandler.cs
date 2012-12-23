@@ -41,7 +41,6 @@ namespace ServiceStack.WebHost.Endpoints
 
         public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
         {
-            var responseContentType = EndpointHost.Config.DefaultContentType;
             try
             {
                 if (EndpointHost.ApplyPreRequestFilters(httpReq, httpRes)) return;
@@ -56,7 +55,7 @@ namespace ServiceStack.WebHost.Endpoints
                 var doJsonp = EndpointHost.Config.AllowJsonpRequests
                               && !string.IsNullOrEmpty(callback);
 
-                responseContentType = httpReq.ResponseContentType;
+                var responseContentType = httpReq.ResponseContentType;
                 EndpointHost.Config.AssertContentType(responseContentType);
 
                 var request = GetRequest(httpReq, restPath);
