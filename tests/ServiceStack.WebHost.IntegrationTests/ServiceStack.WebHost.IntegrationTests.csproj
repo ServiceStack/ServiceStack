@@ -18,6 +18,10 @@
     <OldToolsVersion>4.0</OldToolsVersion>
     <UpgradeBackupLocation />
     <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -257,6 +261,7 @@
     <Compile Include="Tests\RestsTestBase.cs" />
     <Compile Include="Tests\RestWebServiceTests.cs" />
     <Compile Include="Tests\SessionTests.cs" />
+    <Compile Include="Tests\UniqueRequestTests.cs" />
     <Compile Include="Tests\WebServicesTests.cs" />
   </ItemGroup>
   <ItemGroup>
