@@ -159,7 +159,10 @@ namespace ServiceStack.ServiceHost
         public List<Type> GetAllTypes()
         {
             var allTypes = new List<Type>(RequestTypes);
-            allTypes.AddRange(ResponseTypes);
+            foreach (var responseType in ResponseTypes)
+            {
+                allTypes.AddIfNotExists(responseType);
+            }
             return allTypes;
         }
 
