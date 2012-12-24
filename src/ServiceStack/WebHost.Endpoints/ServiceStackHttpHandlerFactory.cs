@@ -325,6 +325,10 @@ namespace ServiceStack.WebHost.Endpoints
             var pathParts = pathInfo.TrimStart('/').Split('/');
             if (pathParts.Length == 0) return NotFoundHttpHandler;
 
+            var restPath = RestHandler.FindMatchingRestPath(httpMethod, pathInfo);
+            if (restPath != null)
+                return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.Name };
+
             var existingFile = pathParts[0].ToLower();
             if (WebHostRootFileNames.Contains(existingFile))
             {
@@ -356,10 +360,6 @@ namespace ServiceStack.WebHost.Endpoints
 
                 return ShouldAllow(requestPath) ? StaticFileHandler : ForbiddenHttpHandler;
             }
-
-            var restPath = RestHandler.FindMatchingRestPath(httpMethod, pathInfo);
-            if (restPath != null)
-                return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.Name };
 
             return GetCatchAllHandlerIfAny(httpMethod, pathInfo, filePath);
         }
