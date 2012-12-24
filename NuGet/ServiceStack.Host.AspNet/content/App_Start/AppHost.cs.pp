@@ -4,7 +4,6 @@ using System.Configuration;
 using System.Collections.Generic;
 using ServiceStack.Configuration;
 using ServiceStack.OrmLite;
-using ServiceStack.OrmLite.SqlServer;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.ServiceModel;
@@ -69,7 +68,7 @@ namespace $rootnamespace$.App_Start
 			//Requires ConnectionString configured in Web.Config
 			var connectionString = ConfigurationManager.ConnectionStrings["AppDb"].ConnectionString;
 			container.Register<IDbConnectionFactory>(c =>
-				new OrmLiteConnectionFactory(connectionString, SqlServerOrmLiteDialectProvider.Instance));
+				new OrmLiteConnectionFactory(connectionString, SqlServerDialect.Provider));
 
 			container.Register<IUserAuthRepository>(c =>
 				new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()));

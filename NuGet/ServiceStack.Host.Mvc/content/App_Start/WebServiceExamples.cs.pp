@@ -4,7 +4,6 @@ using System.Configuration;
 using System.Collections.Generic;
 using ServiceStack.Configuration;
 using ServiceStack.OrmLite;
-using ServiceStack.OrmLite.SqlServer;
 using ServiceStack.Common;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
