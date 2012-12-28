@@ -144,6 +144,7 @@ namespace ServiceStack.ServiceClient.Web
                 acceptContentType: acceptContentType);
 
             var text = responseBytes.FromUtf8Bytes();
+            return text;
         }
 
         public static string DownloadAsString(this string url)
