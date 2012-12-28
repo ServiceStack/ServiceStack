@@ -63,7 +63,7 @@ namespace ServiceStack.MiniProfiler.UI
 
 				result = format.Format(new {
 					//path = VirtualPathUtility.ToAbsolute(MiniProfiler.Settings.RouteBasePath).EnsureTrailingSlash(),
-					path = !string.IsNullOrEmpty(path) ? path + "/" : "",
+                    path = !string.IsNullOrEmpty(path) ? path.EnsureTrailingSlash() : "",
 					version = Profiler.Settings.Version,
 					ids = ids.ToJson(),
 					position = (position ?? Profiler.Settings.PopupRenderPosition).ToString().ToLower(),
