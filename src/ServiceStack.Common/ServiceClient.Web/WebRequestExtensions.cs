@@ -5,47 +5,104 @@ using System.Net;
 using System.Text;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceClient.Web
 {
     public static class WebRequestExtensions
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof (WebRequestExtensions));
+
         public static string DownloadJsonFromUrl(this string url)
         {
-            return url.DownloadUrl(ContentType.Json);
+            return url.DownloadUrl(acceptContentType: ContentType.Json);
         }
 
         public static string DownloadXmlFromUrl(this string url)
         {
-            return url.DownloadUrl(ContentType.Xml);
+            return url.DownloadUrl(acceptContentType: ContentType.Xml);
         }
 
         public static string DownloadCsvFromUrl(this string url)
         {
-            return url.DownloadUrl(ContentType.Csv);
+            return url.DownloadUrl(acceptContentType: ContentType.Csv);
         }
 
-        public static string DownloadUrl(this string url, string acceptContentType)
+        public static string DownloadUrl(this string url, 
+            string httpMethod = null,
+            string postData = null,
+            string contentType = null,
+            string acceptContentType = null,
+            Action<HttpWebResponse> responseFilter = null)
+        {
+            var bytesRequest = postData != null ? postData.ToUtf8Bytes() : null;
+            
+            var bytesResponse = DownloadBytesFromUrl(url, httpMethod,
+                bytesRequest, contentType, acceptContentType, responseFilter);
+
+            var text = bytesResponse.FromUtf8Bytes();
+            return text;
+        }
+
+        public static string DownloadUrl(this string url, Encoding encoding,
+            string httpMethod = null,
+            string postData = null,
+            string contentType = null,
+            string acceptContentType = null,
+            Action<HttpWebResponse> responseFilter = null)
+        {
+            if (encoding == null)
+                encoding = Encoding.UTF8;
+
+            var bytesRequest = postData != null ? encoding.GetBytes(postData) : null;
+
+            var bytesResponse = DownloadBytesFromUrl(url, httpMethod,
+                bytesRequest, contentType, acceptContentType, responseFilter);
+
+            var text = encoding.GetString(bytesResponse);
+            return text;
+        }
+
+        public static byte[] DownloadBytesFromUrl(this string url, 
+            string httpMethod = null,
+            byte[] postData = null,
+            string contentType = null,
+            string acceptContentType = null,
+            Action<HttpWebResponse> responseFilter = null)
         {
             var webReq = (HttpWebRequest)WebRequest.Create(url);
-            webReq.Accept = acceptContentType;
-            using (var webRes = webReq.GetResponse())
-                return DownloadText(webRes);
-        }
+            if (httpMethod != null)
+                webReq.Method = httpMethod;
+            if (contentType != null)
+                webReq.ContentType = contentType;
+            if (acceptContentType != null)
+                webReq.Accept = acceptContentType;
 
-        public static string DownloadUrl(this string url)
-        {
-            var webReq = WebRequest.Create(url);
-            using (var webRes = webReq.GetResponse())
-                return DownloadText(webRes);
-        }
+            try
+            {
+                if (postData != null)
+                {
+                    using (var req = webReq.GetRequestStream())
+                        req.Write(postData, 0, postData.Length);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Error sending Request: " + ex.Message, ex);
+                throw;
+            }
 
-        public static byte[] DownloadBinaryFromUrl(this string url)
-        {
-            var webReq = WebRequest.Create(url);
             using (var webRes = webReq.GetResponse())
-                return DownloadBinary(webRes);
+            {
+                if (responseFilter != null)
+                    responseFilter((HttpWebResponse)webRes);
+
+                using (var stream = webRes.GetResponseStream())
+                {
+                    return stream.ReadFully();
+                }
+            }
         }
 
         public static string PostJsonToUrl(this string url, string data)
@@ -78,38 +135,15 @@ namespace ServiceStack.ServiceClient.Web
             return SendToUrl(url, HttpMethods.Put, data, requestContentType, acceptContentType);
         }
 
-        private static string SendToUrl(string url, string httpMethod, byte[] data, string requestContentType = null, string acceptContentType = null)
+        public static string SendToUrl(this string url, string httpMethod, byte[] data, string requestContentType = null, string acceptContentType = null)
         {
-            var webReq = (HttpWebRequest) WebRequest.Create(url);
-            webReq.Method = httpMethod;
+            var responseBytes = url.DownloadBytesFromUrl(
+                httpMethod: httpMethod,
+                postData: data,
+                contentType: requestContentType,
+                acceptContentType: acceptContentType);
 
-            if (requestContentType != null)
-                webReq.ContentType = requestContentType;
-
-            if (acceptContentType != null)
-                webReq.Accept = acceptContentType;
-
-            try
-            {
-                using (var req = webReq.GetRequestStream())
-                    req.Write(data, 0, data.Length);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error sending Request: " + ex);
-                throw;
-            }
-
-            try
-            {
-                using (var webRes = webReq.GetResponse())
-                    return DownloadText(webRes);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error reading Response: " + ex);
-                throw;
-            }
+            var text = responseBytes.FromUtf8Bytes();
         }
 
         public static string DownloadAsString(this string url)
