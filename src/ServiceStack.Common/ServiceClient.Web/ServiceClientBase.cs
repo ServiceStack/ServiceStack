@@ -758,7 +758,7 @@ namespace ServiceStack.ServiceClient.Web
 
         public virtual void CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
-            if (HttpMethods.AllVerbs.Contains(httpVerb.ToUpper()))
+            if (!HttpMethods.AllVerbs.Contains(httpVerb.ToUpper()))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
             asyncClient.SendAsync(httpVerb, GetUrl(request.ToUrl(httpVerb, Format)), request, onSuccess, onError);
@@ -876,7 +876,7 @@ namespace ServiceStack.ServiceClient.Web
 
         public virtual void CustomMethod(string httpVerb, IReturnVoid request)
         {
-            if (HttpMethods.AllVerbs.Contains(httpVerb.ToUpper()))
+            if (!HttpMethods.AllVerbs.Contains(httpVerb.ToUpper()))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
             SendOneWay(httpVerb, request.ToUrl(httpVerb, Format), request);
@@ -884,7 +884,7 @@ namespace ServiceStack.ServiceClient.Web
 
         public virtual TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> request)
         {
-            if (HttpMethods.AllVerbs.Contains(httpVerb.ToUpper()))
+            if (!HttpMethods.AllVerbs.Contains(httpVerb.ToUpper()))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
             return Send<TResponse>(httpVerb, request.ToUrl(httpVerb, Format), request);
