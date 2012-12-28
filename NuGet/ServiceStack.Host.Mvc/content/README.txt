@@ -5,8 +5,12 @@ You *MUST* register ServiceStacks '/api' path by adding the lines below to MvcAp
 
 Place them before the current entries the method.
 
-To enable the Mini Profiler add the following lines in to MvcApplication in Global.asax.cs:
+For MVC4 applications you also need to unregister WebApi, by commenting out this line:
 
+        //WebApiConfig.Register(GlobalConfiguration.Configuration);
+
+
+To enable the Mini Profiler add the following lines in to MvcApplication in Global.asax.cs:
 
 	protected void Application_BeginRequest(object src, EventArgs e)
 	{
