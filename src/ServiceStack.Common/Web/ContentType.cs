@@ -186,7 +186,9 @@ namespace ServiceStack.Common.Web
 
         public static string GetContentFormat(string contentType)
         {
-            if (contentType == null) return contentType;
+            if (contentType == null) 
+                return null;
+
             var parts = contentType.Split('/');
             return parts[parts.Length - 1];
         }
