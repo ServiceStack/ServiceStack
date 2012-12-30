@@ -13,9 +13,9 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 		{
 			get
 			{
-				var endpointConfig = MetadataConfig.GetEndpointConfig(this.ContentType);
+                var endpointConfig = MetadataConfig.Soap11;
 				var endpontPath = ResponseMessage != null ? endpointConfig.SyncReplyUri : endpointConfig.AsyncOneWayUri;
-				return string.Format("/{0}", endpontPath);
+				return string.Format("{0}", endpontPath);
 			}
 		}
 
