@@ -1,7 +1,9 @@
 using System;
 using ServiceStack.Common.Utils;
+using ServiceStack.Common.Extensions;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.WebHost.Endpoints.Support.Metadata.Controls;
 
 namespace ServiceStack.WebHost.Endpoints.Metadata
 {
@@ -23,5 +25,32 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 </soap12:Envelope>", xml);
 			return soapEnvelope;
 		}
+
+        protected override void RenderOperation(System.Web.UI.HtmlTextWriter writer, IHttpRequest httpReq, string operationName, string requestMessage, string responseMessage, string restPaths, string descriptionHtml)
+        {
+            var operationControl = new Soap12OperationControl
+            {
+                HttpRequest = httpReq,
+                MetadataConfig = EndpointHost.Config.ServiceEndpointsMetadataConfig,
+                Title = EndpointHost.Config.ServiceName,
+                Format = this.Format,
+                OperationName = operationName,
+                HostName = httpReq.GetUrlHostName(),
+                RequestMessage = requestMessage,
+                ResponseMessage = responseMessage,
+                RestPaths = restPaths,
+                DescriptionHtml = descriptionHtml,
+            };
+            if (!this.ContentType.IsNullOrEmpty())
+            {
+                operationControl.ContentType = this.ContentType;
+            }
+            if (!this.ContentFormat.IsNullOrEmpty())
+            {
+                operationControl.ContentFormat = this.ContentFormat;
+            }
+
+            operationControl.Render(writer);
+        }
 	}
 }
