@@ -17,6 +17,8 @@ namespace ServiceStack.Razor
 
         public override void SetState(HtmlHelper htmlHelper)
         {
+            if (htmlHelper == null) return;
+
             Html.HttpRequest = htmlHelper.HttpRequest;
         }
 

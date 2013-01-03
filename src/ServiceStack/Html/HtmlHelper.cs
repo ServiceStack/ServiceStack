@@ -102,6 +102,15 @@ namespace ServiceStack.Html
 	        protected set { viewData = value; }
 	    }
 
+        public void SetState(HtmlHelper htmlHelper)
+        {
+            if (htmlHelper == null) return;
+
+            HttpRequest = htmlHelper.HttpRequest;
+            ScopeArgs = htmlHelper.ScopeArgs;
+            viewData = htmlHelper.ViewData;
+        }
+
 	    private static int counter = 0;
         private int id = 0;
 
