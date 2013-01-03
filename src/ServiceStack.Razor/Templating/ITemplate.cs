@@ -1,10 +1,20 @@
-﻿namespace ServiceStack.Razor.Templating
+﻿using ServiceStack.Html;
+
+namespace ServiceStack.Razor.Templating
 {
     /// <summary>
     /// Defines the required contract for implementing a template.
     /// </summary>
     public interface ITemplate
     {
+        /// <summary>
+        /// Copy page state
+        /// </summary>
+        /// <param name="htmlHelper"></param>
+        void SetState(HtmlHelper htmlHelper);
+
+        HtmlHelper HtmlHelper { get; }
+
         void SetModel(object model);
 
         /// <summary>

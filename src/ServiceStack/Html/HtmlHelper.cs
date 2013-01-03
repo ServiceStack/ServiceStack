@@ -111,20 +111,20 @@ namespace ServiceStack.Html
             id = counter++;
 	    }
 
-        public void Init(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs, 
-			bool renderHtml, ViewDataDictionary viewData)
+        public void Init(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs,
+            bool renderHtml, ViewDataDictionary viewData, HtmlHelper htmlHelper)
 		{
-            Init(null, markdownPage.Markdown, viewData);
+            Init(null, markdownPage.Markdown, viewData, htmlHelper);
 
             this.RenderHtml = renderHtml;
 			this.MarkdownPage = markdownPage;
 			this.ScopeArgs = scopeArgs;
 		}
 
-		public void Init(IHttpRequest httpReq, IViewEngine viewEngine, ViewDataDictionary viewData)
+		public void Init(IHttpRequest httpReq, IViewEngine viewEngine, ViewDataDictionary viewData, HtmlHelper htmlHelper)
 		{
             this.RenderHtml = true;
-            this.HttpRequest = httpReq;
+            this.HttpRequest = httpReq ?? (htmlHelper != null ? htmlHelper.HttpRequest : null);
             this.ViewEngine = viewEngine;
 			this.ViewData = viewData;
 			this.ViewData.PopulateModelState();
@@ -137,7 +137,7 @@ namespace ServiceStack.Html
 		
 		public MvcHtmlString Partial(string viewName, object model)
 		{
-			var result = ViewEngine.RenderPartial(viewName, model, this.RenderHtml, this.HttpRequest);
+			var result = ViewEngine.RenderPartial(viewName, model, this.RenderHtml, this);
 			return MvcHtmlString.Create(result);
 		}
 
@@ -289,6 +289,14 @@ namespace ServiceStack.Html
 
 			return tagBuilder.ToMvcHtmlString(TagRenderMode.SelfClosing);
 		}
+	}
+
+	public static class HtmlHelperExtensions
+	{
+	    public static IHttpRequest GetHttpRequest(this HtmlHelper html)
+	    {
+	        return html != null ? html.HttpRequest : null;
+	    }
 	}
 
 }

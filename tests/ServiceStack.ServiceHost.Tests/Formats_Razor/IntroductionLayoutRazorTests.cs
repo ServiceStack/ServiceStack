@@ -4,6 +4,7 @@ using System.Text;
 using NUnit.Framework;
 using ServiceStack.Html;
 using ServiceStack.Razor;
+using ServiceStack.Razor.Templating;
 using ServiceStack.ServiceHost.Tests.Formats;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.VirtualPath;
