@@ -3,7 +3,7 @@
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Common</id>
     <title>Service Clients and Common libs for ServiceStack projects</title>
-    <version>3.9.32</version>
+    <version>3.9.33</version>
     <authors>Demis Bellot</authors>
     <owners>Demis Bellot</owners>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>
@@ -19,7 +19,7 @@
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/LICENSE</licenseUrl>
     <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
-    <tags>ServiceStack Common Framework</tags>
+    <tags>ServiceStack Common Framework Clients ServiceClients Gateway</tags>
     <language>en-US</language>
     <copyright>servicestack.net 2012 and contributors</copyright>
     <dependencies>
