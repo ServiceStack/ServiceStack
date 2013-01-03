@@ -19,7 +19,7 @@ namespace ServiceStack.Razor
         {
             if (htmlHelper == null) return;
 
-            Html.HttpRequest = htmlHelper.HttpRequest;
+            Html.SetState(htmlHelper);
         }
 
         private IViewEngine viewEngine;
