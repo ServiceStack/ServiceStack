@@ -184,6 +184,7 @@
     <Compile Include="Perf\ToStringPerf.cs" />
     <Compile Include="PerfTestBase.cs" />
     <Compile Include="Perf\StringParsePerf.cs" />
+    <Compile Include="ServiceClient.Web\HtmlServiceClient.cs" />
     <Compile Include="ServiceClient.Web\ServiceClientBaseTester.cs" />
     <Compile Include="ServiceClient.Web\ServiceClientBaseTests.cs" />
     <Compile Include="StreamExtensionsTests.cs" />
@@ -256,6 +257,7 @@
       <Link>sqlite3.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="ServiceClient.Web\request_samples.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

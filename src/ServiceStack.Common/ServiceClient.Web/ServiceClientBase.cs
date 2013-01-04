@@ -216,6 +216,11 @@ namespace ServiceStack.ServiceClient.Web
             }
         }
 
+        public virtual string Accept
+        {
+            get { return ContentType; }
+        }
+
         public abstract string ContentType { get; }
 
         public string HttpMethod { get; set; }
@@ -533,7 +538,7 @@ namespace ServiceStack.ServiceClient.Web
             var client = (HttpWebRequest)WebRequest.Create(requestUri);
             try
             {
-                client.Accept = ContentType;
+                client.Accept = Accept;
                 client.Method = httpMethod;
 
                 if (Proxy != null) client.Proxy = Proxy;
