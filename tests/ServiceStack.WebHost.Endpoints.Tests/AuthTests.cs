@@ -6,6 +6,7 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
+using ServiceStack.Common.Tests.ServiceClient.Web;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.Service;
@@ -166,6 +167,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			return new JsonServiceClient(ListeningOn);
 		}
+
+        IServiceClient GetHtmlClient()
+        {
+            return new HtmlServiceClient(ListeningOn);
+        }
 
 		IServiceClient GetClientWithUserPassword()
 		{
@@ -410,6 +416,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Assert.That(webEx.ErrorMessage, Is.EqualTo("unicorn nuggets"));
             }
+        }
+
+        [Test]
+        public void Session_specified_ReferrerUrl_is_obeyed_by_AuthService()
+        {
+            var client = (ServiceClientBase) GetHtmlClient();
+            string locationHeader = null;
+            client.LocalHttpWebRequestFilter = req =>
+            {
+                locationHeader = req.Headers["Location"];
+            };
+
+            var response = client.Send(new Auth()
+            {
+                UserName = UserName,
+                Password = Password,
+            });
+
+            Assert.Fail("TODO");
         }
 	}
 }
