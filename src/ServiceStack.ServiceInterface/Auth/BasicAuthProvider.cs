@@ -20,7 +20,7 @@ namespace ServiceStack.ServiceInterface.Auth
         {
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Auth request)
+        public override object Authenticate(IServiceBase authService, ref IAuthSession session, Auth request)
         {
             var httpReq = authService.RequestContext.Get<IHttpRequest>();
             var basicAuth = httpReq.GetBasicAuthUserAndPassword();
@@ -30,7 +30,7 @@ namespace ServiceStack.ServiceInterface.Auth
             var userName = basicAuth.Value.Key;
             var password = basicAuth.Value.Value;
 
-            return Authenticate(authService, session, userName, password, request.Continue);
+            return Authenticate(authService, ref session, userName, password, request.Continue);
         }
 
         

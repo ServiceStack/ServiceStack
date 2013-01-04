@@ -20,7 +20,7 @@ namespace ServiceStack.ServiceInterface.Auth
         /// The entry point for all AuthProvider providers. Runs inside the AuthService so exceptions are treated normally.
         /// Overridable so you can provide your own Auth implementation.
         /// </summary>
-        object Authenticate(IServiceBase authService, IAuthSession session, Auth request);
+        object Authenticate(IServiceBase authService, ref IAuthSession session, Auth request);
 
         /// <summary>
         /// Determine if the current session is already authenticated with this AuthProvider
