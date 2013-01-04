@@ -10,6 +10,18 @@ namespace ServiceStack.Razor
     {
         public HtmlHelper<TModel> Html = new HtmlHelper<TModel>();
 
+        public override HtmlHelper HtmlHelper
+        {
+            get { return Html; }
+        }
+
+        public override void SetState(HtmlHelper htmlHelper)
+        {
+            if (htmlHelper == null) return;
+
+            Html.SetState(htmlHelper);
+        }
+
         private IViewEngine viewEngine;
         public override IViewEngine ViewEngine
         {
@@ -34,7 +46,7 @@ namespace ServiceStack.Razor
         {
             this.Request = httpReq;
             this.Response = httpRes;
-            Html.Init(httpReq, viewEngine, viewData);
+            Html.Init(httpReq, viewEngine, viewData, null);
             if (viewData.Model is TModel)
                 this.Model = (TModel)viewData.Model;
             else

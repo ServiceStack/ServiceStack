@@ -198,9 +198,9 @@ namespace ServiceStack.WebHost.Endpoints.Formats
             return GetViewPage(viewName, httpReq) != null;
         }
 
-        public string RenderPartial(string pageName, object model, bool renderHtml, IHttpRequest httpReq = null)
+        public string RenderPartial(string pageName, object model, bool renderHtml, HtmlHelper htmlHelper = null)
         {
-            var markdownPage = ReloadIfNeeded(GetViewPage(pageName, httpReq));
+            var markdownPage = ReloadIfNeeded(GetViewPage(pageName, htmlHelper.GetHttpRequest()));
             return RenderDynamicPage(markdownPage, pageName, model, renderHtml, false);
         }
 

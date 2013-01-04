@@ -57,6 +57,10 @@ namespace RazorRockstars.Web
     [Route("/reqstars/reset")]
     public class ResetReqstar : IReturnVoid { }
 
+    [Route("/viewstate")]
+    public class ViewState { }
+    public class ViewStateResponse { }
+
     [Route("/reqstars/{Id}", "GET")]
     public class GetReqstar : IReturn<Reqstar>
     {
@@ -201,6 +205,11 @@ namespace RazorRockstars.Web
                     request.Message);
             }
             throw new NotImplementedException(request.Message + " is not implemented");
+        }
+
+        public ViewStateResponse Get(ViewState request)
+        {
+            return new ViewStateResponse();
         }
     }
 

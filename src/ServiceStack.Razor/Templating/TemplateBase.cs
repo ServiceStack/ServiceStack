@@ -143,7 +143,9 @@ namespace ServiceStack.Razor.Templating
     /// </summary>
 	public abstract partial class TemplateBase : ITemplate
     {
-        public abstract void SetModel(object model);
+        public virtual HtmlHelper HtmlHelper { get { return null; } }
+        public virtual void SetState(HtmlHelper htmlHelper){}
+	    public abstract void SetModel(object model);
         
         [ThreadStatic]
         private static StringBuilder builder;
