@@ -150,6 +150,9 @@ namespace ServiceStack.ServiceInterface.Auth
             {
                 var response = Authenticate(request, provider, session, oAuthConfig);
 
+                // The above Authenticate call may end an existing session and create a new one.
+                session = this.GetSession();
+
                 var referrerUrl = request.Continue
                     ?? session.ReferrerUrl
                     ?? this.RequestContext.GetHeader("Referer")
