@@ -29,5 +29,8 @@ namespace ServiceStack.Service
 
 	    void CustomMethod(string httpVerb, IReturnVoid request);
 	    TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> request);
+
+        IHttpResult Head(IReturn<IHttpResult> request);
+        void Head(IReturnVoid request);
 	}
 }

@@ -236,6 +236,16 @@ namespace ServiceStack.ServiceInterface.Testing
                 throw new NotImplementedException();
             }
 
+            public IHttpResult Head(IReturn<IHttpResult> request)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Head(IReturnVoid request)
+            {
+                throw new NotImplementedException();
+            }
+
             public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
             {
                 throw new NotImplementedException();

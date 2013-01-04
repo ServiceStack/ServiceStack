@@ -37,7 +37,7 @@ namespace ServiceStack.ServiceClient.Web
                         + "not with routes registered in the IAppHost!)");
 
                 var predefinedRoute = "/{0}/syncreply/{1}".Fmt(formatFallbackToPredefinedRoute, requestType.Name);
-                if (httpMethod == "GET" || httpMethod == "DELETE" || httpMethod == "OPTIONS")
+                if (httpMethod == "GET" || httpMethod == "DELETE" || httpMethod == "OPTIONS" || httpMethod == "HEAD")
                 {
                     var queryProperties = RestRoute.GetQueryProperties(request.GetType());
                     predefinedRoute += "?" + RestRoute.GetQueryString(request, queryProperties);
@@ -74,7 +74,7 @@ namespace ServiceStack.ServiceClient.Web
             }
             
             var url = matchingRoute.Uri;
-            if (httpMethod == HttpMethods.Get || httpMethod == HttpMethods.Delete)
+            if (httpMethod == HttpMethods.Get || httpMethod == HttpMethods.Delete || httpMethod == HttpMethods.Head)
             {
                 var queryParams = matchingRoute.Route.FormatQueryParameters(request);
                 if (!String.IsNullOrEmpty(queryParams))

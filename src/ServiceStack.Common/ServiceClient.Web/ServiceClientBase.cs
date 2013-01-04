@@ -555,7 +555,8 @@ namespace ServiceStack.ServiceClient.Web
                 ApplyWebRequestFilters(client);
 
                 if (httpMethod != HttpMethods.Get
-                    && httpMethod != HttpMethods.Delete)
+                    && httpMethod != HttpMethods.Delete 
+                    && httpMethod != HttpMethods.Head)
                 {
                     client.ContentType = ContentType;
 
@@ -888,6 +889,16 @@ namespace ServiceStack.ServiceClient.Web
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
             return Send<TResponse>(httpVerb, request.ToUrl(httpVerb, Format), request);
+        }
+
+        public IHttpResult Head(IReturn<IHttpResult> request)
+        {
+            return CustomMethod(HttpMethods.Head, request);
+        }
+
+        public void Head(IReturnVoid request)
+        {
+            CustomMethod(HttpMethods.Head, request);
         }
 
         public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request)
