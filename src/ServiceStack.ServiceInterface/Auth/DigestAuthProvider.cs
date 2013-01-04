@@ -80,7 +80,7 @@ namespace ServiceStack.ServiceInterface.Auth
             //return !session.UserAuthName.IsNullOrEmpty();
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Auth request)
+        public override object Authenticate(IServiceBase authService, ref IAuthSession session, Auth request)
         {
             //new CredentialsAuthValidator().ValidateAndThrow(request);
             return Authenticate(authService, session, request.UserName, request.Password);
