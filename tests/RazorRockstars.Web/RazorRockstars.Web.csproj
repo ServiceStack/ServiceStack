@@ -19,6 +19,10 @@
     </FileUpgradeFlags>
     <OldToolsVersion>4.0</OldToolsVersion>
     <UpgradeBackupLocation />
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -98,6 +102,9 @@
     <Content Include="Views\Shared\HtmlReport.cshtml" />
     <Content Include="Views\Shared\Empty.cshtml" />
     <Content Include="Views\Json.cshtml" />
+    <Content Include="Views\ViewState.cshtml" />
+    <Content Include="Views\_RawUrlPartial.cshtml" />
+    <Content Include="Views\Shared\_ViewStateLayout.cshtml" />
     <None Include="Views\Shared\MarkdownPartial.md" />
     <Content Include="Views\Shared\RazorPartial.cshtml" />
     <Content Include="Views\Shared\RazorPartialModel.cshtml" />

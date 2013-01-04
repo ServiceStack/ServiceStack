@@ -43,6 +43,7 @@ namespace ServiceStack.Razor.Templating
                 if (layoutTemplate != null)
                 {
                     layoutTemplate.ChildTemplate = razorTemplate;
+                    layoutTemplate.SetState(instance.HtmlHelper);
                     SetService(layoutTemplate, this);
                     SetModel(layoutTemplate, model);
                     layoutTemplate.Execute();
@@ -126,13 +127,14 @@ namespace ServiceStack.Razor.Templating
             return instance as IRazorTemplate; //Cloned in GetAndCheckTemplate()
 		}
 
-		public IRazorTemplate RenderPartial<T>(T model, string name)
+        public IRazorTemplate RenderPartial<T>(T model, string name, HtmlHelper htmlHelper)
 		{
 			var template = GetTemplate(name);
             using (template as IDisposable)
             {
                 SetService(template, this);
                 SetModel(template, model);
+                template.SetState(htmlHelper);
 
                 //TODO: make less ugly, 
                 //since executing templates clears the buffer we need to capture 

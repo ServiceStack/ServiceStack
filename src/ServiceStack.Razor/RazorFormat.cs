@@ -237,8 +237,9 @@ namespace ServiceStack.Razor
             return GetTemplateService(viewName, httpReq) != null;
         }
 
-        public string RenderPartial(string pageName, object model, bool renderHtml, IHttpRequest httpReq = null)
+        public string RenderPartial(string pageName, object model, bool renderHtml, HtmlHelper htmlHelper = null)
         {
+            var httpReq = htmlHelper.GetHttpRequest();
             var template = GetTemplateService(pageName, httpReq);
             if (template == null)
             {
@@ -246,14 +247,14 @@ namespace ServiceStack.Razor
                 foreach (var viewEngine in AppHost.ViewEngines)
                 {
                     if (viewEngine == this || !viewEngine.HasView(pageName, httpReq)) continue;
-                    result = viewEngine.RenderPartial(pageName, model, renderHtml, httpReq);
+                    result = viewEngine.RenderPartial(pageName, model, renderHtml, htmlHelper);
                     if (result != null) break;
                 }
                 return result ?? "<!--{0} not found-->".Fmt(pageName);
             }
 
             //Razor writes partial to static StringBuilder so don't return or it will write zx2
-            template.RenderPartial(model, pageName);
+            template.RenderPartial(model, pageName, htmlHelper);
 
             //return template.Result;
             return null;
