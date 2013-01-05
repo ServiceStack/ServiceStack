@@ -200,7 +200,8 @@ namespace ServiceStack.Common.Tests.OAuth
             Console.WriteLine("UserId: " + oAuthUserSession.UserAuthId);
 
             var credentialsAuth = GetCredentialsAuthConfig();
-            var loginResponse = credentialsAuth.Authenticate(service, oAuthUserSession,
+            IAuthSession session = oAuthUserSession;
+            var loginResponse = credentialsAuth.Authenticate(service, ref session,
                 new Auth
                 {
                     provider = CredentialsAuthProvider.Name,

@@ -28,7 +28,7 @@ namespace ServiceStack.ServiceInterface.Auth
             this.Permissions = appSettings.Get("oauth.facebook.Permissions", new string[0]);
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Auth request)
+        public override object Authenticate(IServiceBase authService, ref IAuthSession session, Auth request)
         {
             var tokens = Init(authService, ref session, request);
 
