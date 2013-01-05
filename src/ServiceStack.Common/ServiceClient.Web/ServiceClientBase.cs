@@ -288,6 +288,18 @@ namespace ServiceStack.ServiceClient.Web
 
         public CookieContainer CookieContainer { get; set; }
 
+        private bool allowAutoRedirect = true;
+        public bool AllowAutoRedirect
+        {
+            get { return allowAutoRedirect; }
+            set
+            {
+                allowAutoRedirect = value;
+                // TODO: Implement for async client.
+                // asyncClient.AllowAutoRedirect = value;
+            }
+        }
+
         /// <summary>
         /// Called before request resend, when the initial request required authentication
         /// </summary>
@@ -556,6 +568,8 @@ namespace ServiceStack.ServiceClient.Web
                 {
                     client.CookieContainer = CookieContainer;
                 }
+
+                client.AllowAutoRedirect = AllowAutoRedirect;
 
                 ApplyWebRequestFilters(client);
 

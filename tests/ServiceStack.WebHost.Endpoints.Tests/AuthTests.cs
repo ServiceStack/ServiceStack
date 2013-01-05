@@ -443,6 +443,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void CredentailsAuth_can_login_a_new_session_with_active_previous_session()
         {
             var client = (ServiceClientBase)GetHtmlClient();
+            client.AllowAutoRedirect = false;
             string lastResponseLocationHeader = null;
             client.LocalHttpWebResponseFilter = response =>
             {
