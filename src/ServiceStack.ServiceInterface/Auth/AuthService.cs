@@ -148,7 +148,7 @@ namespace ServiceStack.ServiceInterface.Auth
             var isHtml = base.RequestContext.ResponseContentType.MatchesContentType(ContentType.Html);
             try
             {
-                var response = Authenticate(request, provider, session, oAuthConfig);
+                var response = Authenticate(request, provider, ref session, oAuthConfig);
 
                 var referrerUrl = request.Continue
                     ?? session.ReferrerUrl
@@ -167,7 +167,7 @@ namespace ServiceStack.ServiceInterface.Auth
                     if (alreadyAuthenticated)
                         return this.Redirect(referrerUrl.AddHashParam("s", "0"));
 
-                    if (!(response is IHttpResult))
+                    if (!(response is IHttpResult) && !String.IsNullOrEmpty(referrerUrl))
                     {
                         return new HttpResult(response) {
                             Location = referrerUrl
@@ -208,7 +208,8 @@ namespace ServiceStack.ServiceInterface.Auth
             if (request.provider == LogoutAction)
                 return oAuthConfig.Logout(this, request) as AuthResponse;
 
-            var result = Authenticate(request, provider, this.GetSession(), oAuthConfig);
+            var session = this.GetSession();
+            var result = Authenticate(request, provider, ref session, oAuthConfig);
             var httpError = result as HttpError;
             if (httpError != null)
                 throw httpError;
@@ -216,12 +217,12 @@ namespace ServiceStack.ServiceInterface.Auth
             return result as AuthResponse;
         }
 
-        private object Authenticate(Auth request, string provider, IAuthSession session, IAuthProvider oAuthConfig)
+        private object Authenticate(Auth request, string provider, ref IAuthSession session, IAuthProvider oAuthConfig)
         {
             object response = null;
             if (!oAuthConfig.IsAuthorized(session, session.GetOAuthTokens(provider), request))
             {
-                response = oAuthConfig.Authenticate(this, session, request);
+                response = oAuthConfig.Authenticate(this, ref session, request);
             }
             return response;
         }
