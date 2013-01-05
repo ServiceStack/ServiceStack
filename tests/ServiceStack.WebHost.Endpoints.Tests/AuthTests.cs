@@ -96,7 +96,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			if (!session.Roles.Contains("TheRole"))
 				session.Roles.Add("TheRole");
 
-            if (session.UserName == AuthTests.UserNameWithRedirect)
+            if (session.UserName == AuthTests.UserNameWithSessionRedirect)
                 session.ReferrerUrl = AuthTests.SessionReferrerUrl;
 
 			authService.RequestContext.Get<IHttpRequest>().SaveSession(session);
@@ -109,8 +109,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 		private const string UserName = "user";
 		private const string Password = "p@55word";
-        public const string UserNameWithRedirect = "user2";
-        public const string PasswordWithRedirect = "p@55word2";
+        public const string UserNameWithSessionRedirect = "user2";
+        public const string PasswordWithSessionRedirect = "p@55word2";
 	    public const string SessionReferrerUrl = "specialLandingPage.html";
 
 		public class AuthAppHostHttpListener
@@ -148,18 +148,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 string hash2;
                 string salt2;
-                new SaltedHash().GetHashAndSaltString(PasswordWithRedirect, out hash2, out salt2);
+                new SaltedHash().GetHashAndSaltString(PasswordWithSessionRedirect, out hash2, out salt2);
 			    userRep.CreateUserAuth(new UserAuth
 			    {
 			        Id = 2,
 			        DisplayName = "DisplayName2",
 			        Email = "as@if2.com",
-                    UserName = UserNameWithRedirect,
+                    UserName = UserNameWithSessionRedirect,
 			        FirstName = "FirstName2",
 			        LastName = "LastName2",
 			        PasswordHash = hash2,
 			        Salt = salt2,
-                }, PasswordWithRedirect);
+                }, PasswordWithSessionRedirect);
 			}
 		}
 
@@ -440,7 +440,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void CredentailsAuth_can_login_a_new_session_with_active_previous_session()
+        public void Html_clients_receive_session_ReferrerUrl_on_successful_authentication()
         {
             var client = (ServiceClientBase)GetHtmlClient();
             client.AllowAutoRedirect = false;
@@ -453,18 +453,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             client.Send(new Auth
             {
                 provider = CredentialsAuthProvider.Name,
-                UserName = UserName,
-                Password = Password,
-                RememberMe = true,
-            });
-
-            Assert.That(lastResponseLocationHeader, Is.Null);
-
-            client.Send(new Auth
-            {
-                provider = CredentialsAuthProvider.Name,
-                UserName = UserNameWithRedirect,
-                Password = PasswordWithRedirect,
+                UserName = UserNameWithSessionRedirect,
+                Password = PasswordWithSessionRedirect,
                 RememberMe = true,
             });
 
