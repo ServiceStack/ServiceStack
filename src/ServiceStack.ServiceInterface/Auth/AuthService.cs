@@ -167,7 +167,7 @@ namespace ServiceStack.ServiceInterface.Auth
                     if (alreadyAuthenticated)
                         return this.Redirect(referrerUrl.AddHashParam("s", "0"));
 
-                    if (!(response is IHttpResult))
+                    if (!(response is IHttpResult) && !String.IsNullOrEmpty(referrerUrl))
                     {
                         return new HttpResult(response) {
                             Location = referrerUrl

@@ -96,6 +96,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			if (!session.Roles.Contains("TheRole"))
 				session.Roles.Add("TheRole");
 
+            if (session.UserName == AuthTests.UserNameWithRedirect)
+                session.ReferrerUrl = AuthTests.SessionReferrerUrl;
+
 			authService.RequestContext.Get<IHttpRequest>().SaveSession(session);
 		}
 	}
@@ -106,6 +109,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 		private const string UserName = "user";
 		private const string Password = "p@55word";
+        public const string UserNameWithRedirect = "user2";
+        public const string PasswordWithRedirect = "p@55word2";
+	    public const string SessionReferrerUrl = "specialLandingPage.html";
 
 		public class AuthAppHostHttpListener
 			: AppHostHttpListenerBase
@@ -139,6 +145,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 					PasswordHash = hash,
 					Salt = salt,
 				}, Password);
+
+                string hash2;
+                string salt2;
+                new SaltedHash().GetHashAndSaltString(PasswordWithRedirect, out hash2, out salt2);
+			    userRep.CreateUserAuth(new UserAuth
+			    {
+			        Id = 2,
+			        DisplayName = "DisplayName2",
+			        Email = "as@if2.com",
+                    UserName = UserNameWithRedirect,
+			        FirstName = "FirstName2",
+			        LastName = "LastName2",
+			        PasswordHash = hash2,
+			        Salt = salt2,
+                }, PasswordWithRedirect);
 			}
 		}
 
@@ -419,22 +440,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Session_specified_ReferrerUrl_is_obeyed_by_AuthService()
+        public void CredentailsAuth_can_login_a_new_session_with_active_previous_session()
         {
-            var client = (ServiceClientBase) GetHtmlClient();
-            string locationHeader = null;
-            client.LocalHttpWebRequestFilter = req =>
+            var client = (ServiceClientBase)GetHtmlClient();
+            string lastResponseLocationHeader = null;
+            client.LocalHttpWebResponseFilter = response =>
             {
-                locationHeader = req.Headers["Location"];
+                lastResponseLocationHeader = response.Headers["Location"];
             };
 
-            var response = client.Send(new Auth()
+            client.Send(new Auth
             {
+                provider = CredentialsAuthProvider.Name,
                 UserName = UserName,
                 Password = Password,
+                RememberMe = true,
             });
 
-            Assert.Fail("TODO");
+            Assert.That(lastResponseLocationHeader, Is.Null);
+
+            client.Send(new Auth
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = UserNameWithRedirect,
+                Password = PasswordWithRedirect,
+                RememberMe = true,
+            });
+
+            Assert.That(lastResponseLocationHeader, Is.EqualTo(SessionReferrerUrl));
         }
 	}
 }

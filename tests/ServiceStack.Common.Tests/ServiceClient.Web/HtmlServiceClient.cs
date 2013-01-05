@@ -16,9 +16,10 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
         {
         }
 
-        public HtmlServiceClient(string baseUri) 
+        public HtmlServiceClient(string baseUri)
+            // Can't call SetBaseUri as that appends the format specific suffixes.
+            :base(baseUri, baseUri)
         {			
-            SetBaseUri(baseUri);
         }
 
         public override string Format
@@ -30,13 +31,13 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
 
         public override string Accept
         {
-            get { return "text/html,application/xhtml+xml,application/xml"; }
+            get { return Common.Web.ContentType.Html; }
         }
 
         public override string ContentType
         {
             // Only used by the base class when POST-ing.
-            get { return String.Format("application/x-www-form-urlencoded"); }
+            get { return Common.Web.ContentType.FormUrlEncoded; }
         }
 
         public override void SerializeToStream(IRequestContext requestContext, object request, Stream stream)
