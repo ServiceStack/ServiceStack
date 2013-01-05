@@ -61,7 +61,7 @@ namespace ServiceStack.ServiceInterface.Auth
         /// <param name="session"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Auth request)
+        public override object Authenticate(IServiceBase authService, ref IAuthSession session, Auth request)
         {
             var tokens = Init(authService, ref session, request);
 

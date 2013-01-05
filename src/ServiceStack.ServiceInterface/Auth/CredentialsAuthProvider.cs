@@ -68,18 +68,18 @@ namespace ServiceStack.ServiceInterface.Auth
             return !session.UserAuthName.IsNullOrEmpty();
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Auth request)
+        public override object Authenticate(IServiceBase authService, ref IAuthSession session, Auth request)
         {
             new CredentialsAuthValidator().ValidateAndThrow(request);
-            return Authenticate(authService, session, request.UserName, request.Password, request.Continue);
+            return Authenticate(authService, ref session, request.UserName, request.Password, request.Continue);
         }
 
-        protected object Authenticate(IServiceBase authService, IAuthSession session, string userName, string password)
+        protected object Authenticate(IServiceBase authService, ref IAuthSession session, string userName, string password)
         {
-            return Authenticate(authService, session, userName, password, string.Empty);
+            return Authenticate(authService, ref session, userName, password, string.Empty);
         }
 
-        protected object Authenticate(IServiceBase authService, IAuthSession session, string userName, string password, string referrerUrl)
+        protected object Authenticate(IServiceBase authService, ref IAuthSession session, string userName, string password, string referrerUrl)
         {
             if (!LoginMatchesSession(session, userName))
             {

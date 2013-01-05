@@ -214,7 +214,8 @@ namespace ServiceStack.Common.Tests.OAuth
 				oAuthUserSession = requestContext.ReloadSession();
 
 			var credentialsAuth = GetCredentialsAuthConfig();
-			return credentialsAuth.Authenticate(service, oAuthUserSession,
+		    IAuthSession session = oAuthUserSession;
+            return credentialsAuth.Authenticate(service, ref session,
 				new Auth {
 					provider = CredentialsAuthProvider.Name,
 					UserName = registrationDto.UserName,
