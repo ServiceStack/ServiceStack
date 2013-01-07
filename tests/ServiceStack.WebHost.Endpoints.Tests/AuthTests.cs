@@ -105,12 +105,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 		private const string UserName = "user";
 		private const string Password = "p@55word";
+        private const string EmailBasedUsername = "user@email.com";
+        private const string PasswordForEmailBasedAccount = "p@55word3";
 
 		public class AuthAppHostHttpListener
 			: AppHostHttpListenerBase
 		{
 			public AuthAppHostHttpListener()
 				: base("Validation Tests", typeof(CustomerService).Assembly) { }
+
+		    private InMemoryAuthRepository userRep;
 
 			public override void Configure(Container container)
 			{
@@ -121,24 +125,31 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 					}));
 
 				container.Register<ICacheClient>(new MemoryCacheClient());
-				var userRep = new InMemoryAuthRepository();
+				userRep = new InMemoryAuthRepository();
 				container.Register<IUserAuthRepository>(userRep);
 
-				string hash;
-				string salt;
-				new SaltedHash().GetHashAndSaltString(Password, out hash, out salt);
-
-				userRep.CreateUserAuth(new UserAuth {
-					Id = 1,
-					DisplayName = "DisplayName",
-					Email = "as@if.com",
-					UserName = UserName,
-					FirstName = "FirstName",
-					LastName = "LastName",
-					PasswordHash = hash,
-					Salt = salt,
-				}, Password);
+                CreateUser( 1, UserName, null, Password);
+                CreateUser( 2, null, EmailBasedUsername, PasswordForEmailBasedAccount);
 			}
+
+		    private void CreateUser(int id, string username, string email, string password)
+		    {
+                string hash;
+                string salt;
+                new SaltedHash().GetHashAndSaltString(password, out hash, out salt);
+
+                userRep.CreateUserAuth(new UserAuth
+                {
+                    Id = id,
+                    DisplayName = "DisplayName",
+                    Email = email ?? "as@if.com",
+                    UserName = username,
+                    FirstName = "FirstName",
+                    LastName = "LastName",
+                    PasswordHash = hash,
+                    Salt = salt,
+                }, password);
+		    }
 		}
 
 		AuthAppHostHttpListener appHost;
@@ -410,6 +421,60 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Assert.That(webEx.ErrorMessage, Is.EqualTo("unicorn nuggets"));
             }
+        }
+
+        [Test]
+        public void Already_authenticated_session_returns_correct_username()
+        {
+            var client = GetClient();
+
+            var authRequest = new Auth
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = UserName,
+                Password = Password,
+                RememberMe = true,
+            };
+            var initialLoginResponse = client.Send(authRequest);
+            var alreadyLogggedInResponse = client.Send(authRequest);
+
+            Assert.That(alreadyLogggedInResponse.UserName, Is.EqualTo(UserName));
+        }
+
+
+        [Test]
+        public void AuthResponse_returns_email_as_username_if_user_registered_with_email()
+        {
+            var client = GetClient();
+
+            var authRequest = new Auth
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = EmailBasedUsername,
+                Password = PasswordForEmailBasedAccount,
+                RememberMe = true,
+            };
+            var authResponse = client.Send(authRequest);
+
+            Assert.That(authResponse.UserName, Is.EqualTo(EmailBasedUsername));
+        }
+
+        [Test]
+        public void Already_authenticated_session_returns_correct_username_when_user_registered_with_email()
+        {
+            var client = GetClient();
+
+            var authRequest = new Auth
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = EmailBasedUsername,
+                Password = PasswordForEmailBasedAccount,
+                RememberMe = true,
+            };
+            var initialLoginResponse = client.Send(authRequest);
+            var alreadyLogggedInResponse = client.Send(authRequest);
+
+            Assert.That(alreadyLogggedInResponse.UserName, Is.EqualTo(EmailBasedUsername));
         }
 	}
 }
