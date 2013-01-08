@@ -97,7 +97,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				session.Roles.Add("TheRole");
 
             if (session.UserName == AuthTests.UserNameWithSessionRedirect)
-                session.ReferrerUrl = AuthTests.SessionReferrerUrl;
+                session.ReferrerUrl = AuthTests.SessionRedirectUrl;
 
 			authService.RequestContext.Get<IHttpRequest>().SaveSession(session);
 		}
@@ -110,14 +110,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		private const string UserName = "user";
 		private const string Password = "p@55word";
         public const string UserNameWithSessionRedirect = "user2";
-        public const string PasswordWithSessionRedirect = "p@55word2";
-	    public const string SessionReferrerUrl = "specialLandingPage.html";
+        public const string PasswordForSessionRedirect = "p@55word2";
+	    public const string SessionRedirectUrl = "specialLandingPage.html";
+        private const string EmailBasedUsername = "user@email.com";
+        private const string PasswordForEmailBasedAccount = "p@55word3";
 
 		public class AuthAppHostHttpListener
 			: AppHostHttpListenerBase
 		{
 			public AuthAppHostHttpListener()
 				: base("Validation Tests", typeof(CustomerService).Assembly) { }
+
+		    private InMemoryAuthRepository userRep;
 
 			public override void Configure(Container container)
 			{
@@ -128,39 +132,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 					}));
 
 				container.Register<ICacheClient>(new MemoryCacheClient());
-				var userRep = new InMemoryAuthRepository();
+				userRep = new InMemoryAuthRepository();
 				container.Register<IUserAuthRepository>(userRep);
 
-				string hash;
-				string salt;
-				new SaltedHash().GetHashAndSaltString(Password, out hash, out salt);
-
-				userRep.CreateUserAuth(new UserAuth {
-					Id = 1,
-					DisplayName = "DisplayName",
-					Email = "as@if.com",
-					UserName = UserName,
-					FirstName = "FirstName",
-					LastName = "LastName",
-					PasswordHash = hash,
-					Salt = salt,
-				}, Password);
-
-                string hash2;
-                string salt2;
-                new SaltedHash().GetHashAndSaltString(PasswordWithSessionRedirect, out hash2, out salt2);
-			    userRep.CreateUserAuth(new UserAuth
-			    {
-			        Id = 2,
-			        DisplayName = "DisplayName2",
-			        Email = "as@if2.com",
-                    UserName = UserNameWithSessionRedirect,
-			        FirstName = "FirstName2",
-			        LastName = "LastName2",
-			        PasswordHash = hash2,
-			        Salt = salt2,
-                }, PasswordWithSessionRedirect);
+                CreateUser( 1, UserName, null, Password);
+                CreateUser( 2, UserNameWithSessionRedirect, null, PasswordForSessionRedirect);
+                CreateUser( 3, null, EmailBasedUsername, PasswordForEmailBasedAccount);
 			}
+
+		    private void CreateUser(int id, string username, string email, string password)
+		    {
+                string hash;
+                string salt;
+                new SaltedHash().GetHashAndSaltString(password, out hash, out salt);
+
+                userRep.CreateUserAuth(new UserAuth
+                {
+                    Id = id,
+                    DisplayName = "DisplayName",
+                    Email = email ?? "as@if{0}.com".Fmt(id),
+                    UserName = username,
+                    FirstName = "FirstName",
+                    LastName = "LastName",
+                    PasswordHash = hash,
+                    Salt = salt,
+                }, password);
+		    }
 		}
 
 		AuthAppHostHttpListener appHost;
@@ -442,7 +439,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Html_clients_receive_session_ReferrerUrl_on_successful_authentication()
         {
-            var client = (ServiceClientBase)GetHtmlClient();
+            var client = (ServiceClientBase) GetHtmlClient();
             client.AllowAutoRedirect = false;
             string lastResponseLocationHeader = null;
             client.LocalHttpWebResponseFilter = response =>
@@ -454,11 +451,64 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 provider = CredentialsAuthProvider.Name,
                 UserName = UserNameWithSessionRedirect,
-                Password = PasswordWithSessionRedirect,
+                Password = PasswordForSessionRedirect,
                 RememberMe = true,
             });
 
-            Assert.That(lastResponseLocationHeader, Is.EqualTo(SessionReferrerUrl));
+            Assert.That(lastResponseLocationHeader, Is.EqualTo(SessionRedirectUrl));
+        }
+
+	    public void Already_authenticated_session_returns_correct_username()
+        {
+            var client = GetClient();
+
+            var authRequest = new Auth
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = UserName,
+                Password = Password,
+                RememberMe = true,
+            };
+            var initialLoginResponse = client.Send(authRequest);
+            var alreadyLogggedInResponse = client.Send(authRequest);
+
+            Assert.That(alreadyLogggedInResponse.UserName, Is.EqualTo(UserName));
+        }
+
+
+        [Test]
+        public void AuthResponse_returns_email_as_username_if_user_registered_with_email()
+        {
+            var client = GetClient();
+
+            var authRequest = new Auth
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = EmailBasedUsername,
+                Password = PasswordForEmailBasedAccount,
+                RememberMe = true,
+            };
+            var authResponse = client.Send(authRequest);
+
+            Assert.That(authResponse.UserName, Is.EqualTo(EmailBasedUsername));
+        }
+
+        [Test]
+        public void Already_authenticated_session_returns_correct_username_when_user_registered_with_email()
+        {
+            var client = GetClient();
+
+            var authRequest = new Auth
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = EmailBasedUsername,
+                Password = PasswordForEmailBasedAccount,
+                RememberMe = true,
+            };
+            var initialLoginResponse = client.Send(authRequest);
+            var alreadyLogggedInResponse = client.Send(authRequest);
+
+            Assert.That(alreadyLogggedInResponse.UserName, Is.EqualTo(EmailBasedUsername));
         }
 	}
 }
