@@ -150,7 +150,8 @@ namespace ServiceStack.ServiceInterface.Auth
             {
                 var response = Authenticate(request, provider, session, oAuthConfig);
 
-                // The above Authenticate call may end an existing session and create a new one.
+                // The above Authenticate call may end an existing session and create a new one so we need
+                // to refresh the current session reference.
                 session = this.GetSession();
 
                 var referrerUrl = request.Continue
@@ -219,6 +220,11 @@ namespace ServiceStack.ServiceInterface.Auth
             return result as AuthResponse;
         }
 
+        /// <summary>
+        /// The specified <paramref name="session"/> may change as a side-effect of this method. If
+        /// subsequent code relies on current <see cref="IAuthSession"/> data be sure to reload
+        /// the session istance via <see cref="ServiceExtensions.GetSession(ServiceStack.ServiceInterface.IServiceBase,bool)"/>.
+        /// </summary>
         private object Authenticate(Auth request, string provider, IAuthSession session, IAuthProvider oAuthConfig)
         {
             object response = null;
