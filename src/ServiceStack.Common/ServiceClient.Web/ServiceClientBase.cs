@@ -216,6 +216,11 @@ namespace ServiceStack.ServiceClient.Web
             }
         }
 
+        public virtual string Accept
+        {
+            get { return ContentType; }
+        }
+
         public abstract string ContentType { get; }
 
         public string HttpMethod { get; set; }
@@ -282,6 +287,18 @@ namespace ServiceStack.ServiceClient.Web
         }
 
         public CookieContainer CookieContainer { get; set; }
+
+        private bool allowAutoRedirect = true;
+        public bool AllowAutoRedirect
+        {
+            get { return allowAutoRedirect; }
+            set
+            {
+                allowAutoRedirect = value;
+                // TODO: Implement for async client.
+                // asyncClient.AllowAutoRedirect = value;
+            }
+        }
 
         /// <summary>
         /// Called before request resend, when the initial request required authentication
@@ -533,7 +550,7 @@ namespace ServiceStack.ServiceClient.Web
             var client = (HttpWebRequest)WebRequest.Create(requestUri);
             try
             {
-                client.Accept = ContentType;
+                client.Accept = Accept;
                 client.Method = httpMethod;
 
                 if (Proxy != null) client.Proxy = Proxy;
@@ -551,6 +568,8 @@ namespace ServiceStack.ServiceClient.Web
                 {
                     client.CookieContainer = CookieContainer;
                 }
+
+                client.AllowAutoRedirect = AllowAutoRedirect;
 
                 ApplyWebRequestFilters(client);
 

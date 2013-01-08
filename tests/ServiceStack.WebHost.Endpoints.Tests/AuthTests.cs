@@ -6,6 +6,7 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
+using ServiceStack.Common.Tests.ServiceClient.Web;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.Service;
@@ -95,6 +96,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			if (!session.Roles.Contains("TheRole"))
 				session.Roles.Add("TheRole");
 
+            if (session.UserName == AuthTests.UserNameWithSessionRedirect)
+                session.ReferrerUrl = AuthTests.SessionRedirectUrl;
+
 			authService.RequestContext.Get<IHttpRequest>().SaveSession(session);
 		}
 	}
@@ -105,6 +109,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 		private const string UserName = "user";
 		private const string Password = "p@55word";
+        public const string UserNameWithSessionRedirect = "user2";
+        public const string PasswordForSessionRedirect = "p@55word2";
+	    public const string SessionRedirectUrl = "specialLandingPage.html";
         private const string EmailBasedUsername = "user@email.com";
         private const string PasswordForEmailBasedAccount = "p@55word3";
 
@@ -129,7 +136,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				container.Register<IUserAuthRepository>(userRep);
 
                 CreateUser( 1, UserName, null, Password);
-                CreateUser( 2, null, EmailBasedUsername, PasswordForEmailBasedAccount);
+                CreateUser( 2, UserNameWithSessionRedirect, null, PasswordForSessionRedirect);
+                CreateUser( 3, null, EmailBasedUsername, PasswordForEmailBasedAccount);
 			}
 
 		    private void CreateUser(int id, string username, string email, string password)
@@ -142,7 +150,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 {
                     Id = id,
                     DisplayName = "DisplayName",
-                    Email = email ?? "as@if.com",
+                    Email = email ?? "as@if{0}.com".Fmt(id),
                     UserName = username,
                     FirstName = "FirstName",
                     LastName = "LastName",
@@ -177,6 +185,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			return new JsonServiceClient(ListeningOn);
 		}
+
+        IServiceClient GetHtmlClient()
+        {
+            return new HtmlServiceClient(ListeningOn);
+        }
 
 		IServiceClient GetClientWithUserPassword()
 		{
@@ -424,7 +437,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Already_authenticated_session_returns_correct_username()
+        public void Html_clients_receive_session_ReferrerUrl_on_successful_authentication()
+        {
+            var client = (ServiceClientBase) GetHtmlClient();
+            client.AllowAutoRedirect = false;
+            string lastResponseLocationHeader = null;
+            client.LocalHttpWebResponseFilter = response =>
+            {
+                lastResponseLocationHeader = response.Headers["Location"];
+            };
+
+            client.Send(new Auth
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = UserNameWithSessionRedirect,
+                Password = PasswordForSessionRedirect,
+                RememberMe = true,
+            });
+
+            Assert.That(lastResponseLocationHeader, Is.EqualTo(SessionRedirectUrl));
+        }
+
+	    public void Already_authenticated_session_returns_correct_username()
         {
             var client = GetClient();
 
