@@ -90,5 +90,10 @@ namespace ServiceStack.ServiceInterface.Testing
         {
             throw new NotImplementedException();
         }
+
+        public void Init()
+        {
+            EndpointHost.ConfigureHost(this, GetType().Name, Config.ServiceManager);
+        }
     }
 }
