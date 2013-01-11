@@ -4,7 +4,6 @@ using System.Configuration;
 using System.Collections.Generic;
 using ServiceStack.Configuration;
 using ServiceStack.OrmLite;
-using ServiceStack.OrmLite.SqlServer;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.ServiceModel;
@@ -36,13 +35,10 @@ namespace $rootnamespace$.App_Start
 			//Configure User Defined REST Paths
 			Routes
 			  .Add<Hello>("/hello")
-			  .Add<Hello>("/hello/{Name*}")
-			  .Add<Todo>("/todos")
-			  .Add<Todo>("/todos/{Id}");
+			  .Add<Hello>("/hello/{Name*}");
 
 			//Uncomment to change the default ServiceStack configuration
 			//SetConfig(new EndpointHostConfig {
-			//    DebugMode = true, //Show StackTraces when developing
 			//});
 
 			//Enable Authentication
@@ -72,7 +68,7 @@ namespace $rootnamespace$.App_Start
 			//Requires ConnectionString configured in Web.Config
 			var connectionString = ConfigurationManager.ConnectionStrings["AppDb"].ConnectionString;
 			container.Register<IDbConnectionFactory>(c =>
-				new OrmLiteConnectionFactory(connectionString, SqlServerOrmLiteDialectProvider.Instance));
+				new OrmLiteConnectionFactory(connectionString, SqlServerDialect.Provider));
 
 			container.Register<IUserAuthRepository>(c =>
 				new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()));

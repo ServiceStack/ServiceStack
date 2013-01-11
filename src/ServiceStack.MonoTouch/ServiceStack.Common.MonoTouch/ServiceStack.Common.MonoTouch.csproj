@@ -378,9 +378,6 @@
     <Compile Include="..\..\ServiceStack.Common\Web\EndPoint.cs">
       <Link>Web\EndPoint.cs</Link>
     </Compile>
-    <Compile Include="..\..\ServiceStack.Common\Web\EndpointType.cs">
-      <Link>Web\EndpointType.cs</Link>
-    </Compile>
     <Compile Include="..\..\ServiceStack.Common\Web\HttpError.cs">
       <Link>Web\HttpError.cs</Link>
     </Compile>
@@ -416,6 +413,9 @@
     </Compile>
     <Compile Include="..\..\ServiceStack.Common\ServiceClient.Web\Soap12ServiceClient.cs">
       <Link>ServiceClient.Web\Soap12ServiceClient.cs</Link>
+    </Compile>
+    <Compile Include="..\..\ServiceStack.Common\Utils\ResponseStatusUtils.cs">
+      <Link>Utils\ResponseStatusUtils.cs</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>

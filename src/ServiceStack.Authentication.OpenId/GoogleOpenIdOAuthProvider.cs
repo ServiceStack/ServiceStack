@@ -9,5 +9,7 @@ namespace ServiceStack.Authentication.OpenId
 
         public GoogleOpenIdOAuthProvider(IResourceManager appSettings)
             : base(appSettings, Name, Realm) { }
+
+
     }
 }

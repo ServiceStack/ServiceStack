@@ -77,7 +77,7 @@ var MiniProfiler = (function ($)
 
 	var fetchTemplates = function (success)
 	{
-		var key = 'ss-templates',
+		var key = 'ssr-templates',
             cached = load(key);
 
 		if (cached)
@@ -87,7 +87,7 @@ var MiniProfiler = (function ($)
 		}
 		else
 		{
-			$.get(options.path + 'ss-includes.tmpl?v=' + options.version, function (data)
+			$.get(options.path + 'ssr-includes.tmpl?v=' + options.version, function (data)
 			{
 				if (data)
 				{
@@ -109,7 +109,7 @@ var MiniProfiler = (function ($)
 				var idx = fetchingIds.push(id) - 1;
 
 				$.ajax({
-					url: options.path + 'ss-results?id=' + id + '&popup=1',
+					url: options.path + 'ssr-results?id=' + id + '&popup=1',
 					dataType: 'json',
 					success: function (json)
 					{
@@ -617,7 +617,7 @@ var MiniProfiler = (function ($)
 
 		shareUrl: function (id)
 		{
-			return options.path + 'ss-results?id=' + id;
+			return options.path + 'ssr-results?id=' + id;
 		},
 
 		getSqlTimings: function (root)

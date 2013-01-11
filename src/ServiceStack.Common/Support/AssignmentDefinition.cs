@@ -100,6 +100,15 @@ namespace ServiceStack.Common.Support
                         {
                             fromValue = TypeSerializer.SerializeToString(fromValue);
                         }
+						else if (toPropertyInfo.PropertyType.IsGenericType
+							&& toPropertyInfo.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+						{
+							Type genericArg = toPropertyInfo.PropertyType.GetGenericArguments()[0];
+							if (genericArg.IsEnum)
+							{
+								fromValue = Enum.ToObject(genericArg, fromValue);
+							}
+						}
                         else
                         {
                             var listResult = TranslateListWithElements.TryTranslateToGenericICollection(

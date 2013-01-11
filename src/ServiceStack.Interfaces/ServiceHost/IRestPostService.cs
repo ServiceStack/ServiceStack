@@ -1,3 +1,5 @@
+using System;
+
 namespace ServiceStack.ServiceHost
 {
 	/// <summary>
@@ -6,7 +8,8 @@ namespace ServiceStack.ServiceHost
 	/// EndpointAttributes.HttpPost requests
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public interface IRestPostService<T>
+    [Obsolete("Use IService - ServiceStack's New API for future services")]
+    public interface IRestPostService<T>
 	{
 		object Post(T request);
 	}

@@ -1,6 +1,5 @@
 using System;
 using ServiceStack.Common.Web;
-using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -11,17 +10,15 @@ namespace ServiceStack.WebHost.Endpoints
 {
 	public class GenericHandler : EndpointHandlerBase
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof (GenericHandler));
-
-		public GenericHandler(string contentType, EndpointAttributes handlerAttributes, Feature usesFeature)
+		public GenericHandler(string contentType, EndpointAttributes handlerAttributes, Feature format)
 		{
 			this.HandlerContentType = contentType;
 			this.ContentTypeAttribute = ContentType.GetEndpointAttributes(contentType);
 			this.HandlerAttributes = handlerAttributes;
-			this.usesFeature = usesFeature;
+			this.format = format;
 		}
 
-		private Feature usesFeature;
+        private Feature format;
 		public string HandlerContentType { get; set; }
 
 		public EndpointAttributes ContentTypeAttribute { get; set; }
@@ -34,7 +31,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public override object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request)
 		{
 			var response = ExecuteService(request,
-				HandlerAttributes | GetEndpointAttributes(httpReq), httpReq, httpRes);
+                HandlerAttributes | httpReq.GetAttributes(), httpReq, httpRes);
 			
 			return response;
 		}
@@ -55,9 +52,9 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			try
 			{
-                if (EndpointHost.ApplyPreRequestFilters(httpReq, httpRes)) return;
+                EndpointHost.Config.AssertFeatures(format);
 
-                EndpointHost.Config.AssertFeatures(usesFeature);
+                if (EndpointHost.ApplyPreRequestFilters(httpReq, httpRes)) return;
 
 				httpReq.ResponseContentType = httpReq.GetQueryStringContentType() ?? this.HandlerContentType;
 				var callback = httpReq.QueryString["callback"];

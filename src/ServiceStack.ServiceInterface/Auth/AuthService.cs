@@ -1,14 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Configuration;
-using System.Linq;
 using System.Runtime.Serialization;
-using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
@@ -25,7 +21,7 @@ namespace ServiceStack.ServiceInterface.Auth
     public delegate object ValidateFn(IServiceBase service, string httpMethod, object requestDto);
 
     [DataContract]
-    public class Auth
+    public class Auth : IReturn<AuthResponse>
     {
         [DataMember(Order=1)] public string provider { get; set; }
         [DataMember(Order=2)] public string State { get; set; }
@@ -53,11 +49,8 @@ namespace ServiceStack.ServiceInterface.Auth
         }
 
         [DataMember(Order=1)] public string SessionId { get; set; }
-
         [DataMember(Order=2)] public string UserName { get; set; }
-
         [DataMember(Order=3)] public string ReferrerUrl { get; set; }
-
         [DataMember(Order=4)] public ResponseStatus ResponseStatus { get; set; }
     }
 
@@ -151,15 +144,20 @@ namespace ServiceStack.ServiceInterface.Auth
                 return oAuthConfig.Logout(this, request);
 
             var session = this.GetSession();
-            var referrerUrl = request.Continue
-                ?? session.ReferrerUrl
-                ?? this.RequestContext.GetHeader("Referer")
-                ?? oAuthConfig.CallbackUrl;
 
             var isHtml = base.RequestContext.ResponseContentType.MatchesContentType(ContentType.Html);
             try
             {
                 var response = Authenticate(request, provider, session, oAuthConfig);
+
+                // The above Authenticate call may end an existing session and create a new one so we need
+                // to refresh the current session reference.
+                session = this.GetSession();
+
+                var referrerUrl = request.Continue
+                    ?? session.ReferrerUrl
+                    ?? this.RequestContext.GetHeader("Referer")
+                    ?? oAuthConfig.CallbackUrl;
 
                 var alreadyAuthenticated = response == null;
                 response = response ?? new AuthResponse {
@@ -173,7 +171,7 @@ namespace ServiceStack.ServiceInterface.Auth
                     if (alreadyAuthenticated)
                         return this.Redirect(referrerUrl.AddHashParam("s", "0"));
 
-                    if (!(response is IHttpResult))
+                    if (!(response is IHttpResult) && !String.IsNullOrEmpty(referrerUrl))
                     {
                         return new HttpResult(response) {
                             Location = referrerUrl
@@ -185,11 +183,11 @@ namespace ServiceStack.ServiceInterface.Auth
             }
             catch (HttpError ex)
             {
-                referrerUrl = this.RequestContext.GetHeader("Referer");
-                if (isHtml && referrerUrl != null)
+                var errorReferrerUrl = this.RequestContext.GetHeader("Referer");
+                if (isHtml && errorReferrerUrl != null)
                 {
-                    referrerUrl = referrerUrl.SetQueryParam("error", ex.Message);
-                    return HttpResult.Redirect(referrerUrl);
+                    errorReferrerUrl = errorReferrerUrl.SetQueryParam("error", ex.Message);
+                    return HttpResult.Redirect(errorReferrerUrl);
                 }
 
                 throw;
@@ -222,6 +220,11 @@ namespace ServiceStack.ServiceInterface.Auth
             return result as AuthResponse;
         }
 
+        /// <summary>
+        /// The specified <paramref name="session"/> may change as a side-effect of this method. If
+        /// subsequent code relies on current <see cref="IAuthSession"/> data be sure to reload
+        /// the session istance via <see cref="ServiceExtensions.GetSession(ServiceStack.ServiceInterface.IServiceBase,bool)"/>.
+        /// </summary>
         private object Authenticate(Auth request, string provider, IAuthSession session, IAuthProvider oAuthConfig)
         {
             object response = null;

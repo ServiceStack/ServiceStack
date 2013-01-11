@@ -23,12 +23,12 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 
 			var baseUri = context.Request.GetParentBaseUrl();
 			var optimizeForFlash = context.Request.QueryString["flash"] != null;
-			var includeAllTypesInAssembly = context.Request.QueryString["includeAllTypes"] != null;
-			var operations = includeAllTypesInAssembly ? EndpointHost.AllServiceOperations : EndpointHost.ServiceOperations;
+            var operations = new XsdMetadata(
+                EndpointHost.Metadata, flash: optimizeForFlash);
 
 			try
 			{
-				var wsdlTemplate = GetWsdlTemplate(operations, baseUri, optimizeForFlash, includeAllTypesInAssembly, context.Request.GetBaseUrl());
+				var wsdlTemplate = GetWsdlTemplate(operations, baseUri, optimizeForFlash, context.Request.GetBaseUrl());
 				context.Response.Write(wsdlTemplate.ToString());
 			}
 			catch (Exception ex)
@@ -42,18 +42,18 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 
 		public void Execute(IHttpRequest httpReq, IHttpResponse httpRes)
 		{
+            
 			EndpointHost.Config.AssertFeatures(Feature.Metadata);
 
 			httpRes.ContentType = "text/xml";
 
 			var baseUri = httpReq.GetParentBaseUrl();
 			var optimizeForFlash = httpReq.QueryString["flash"] != null;
-			var includeAllTypesInAssembly = httpReq.QueryString["includeAllTypes"] != null;
-			var operations = includeAllTypesInAssembly ? EndpointHost.AllServiceOperations : EndpointHost.ServiceOperations;
+		    var operations = new XsdMetadata(EndpointHost.Metadata, flash: optimizeForFlash);
 
 			try
 			{
-				var wsdlTemplate = GetWsdlTemplate(operations, baseUri, optimizeForFlash, includeAllTypesInAssembly, httpReq.GetBaseUrl());
+				var wsdlTemplate = GetWsdlTemplate(operations, baseUri, optimizeForFlash, httpReq.GetBaseUrl());
 				httpRes.Write(wsdlTemplate.ToString());
 			}
 			catch (Exception ex)
@@ -65,18 +65,17 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 			}
 		}
 
-		public WsdlTemplateBase GetWsdlTemplate(ServiceOperations operations, string baseUri, bool optimizeForFlash, bool includeAllTypesInAssembly, string rawUrl)
+        public WsdlTemplateBase GetWsdlTemplate(XsdMetadata operations, string baseUri, bool optimizeForFlash, string rawUrl)
 		{
 			var xsd = new XsdGenerator {
-				OperationTypes = operations.AllOperations.Types,
+                OperationTypes = operations.GetAllTypes(),
 				OptimizeForFlash = optimizeForFlash,
-				IncludeAllTypesInAssembly = includeAllTypesInAssembly,
 			}.ToString();
 
 			var wsdlTemplate = GetWsdlTemplate();
 			wsdlTemplate.Xsd = xsd;
-			wsdlTemplate.ReplyOperationNames = operations.ReplyOperations.Names;
-			wsdlTemplate.OneWayOperationNames = operations.OneWayOperations.Names;
+            wsdlTemplate.ReplyOperationNames = operations.GetReplyOperationNames();
+            wsdlTemplate.OneWayOperationNames = operations.GetOneWayOperationNames();
 
 			if (rawUrl.ToLower().StartsWith(baseUri))
 			{

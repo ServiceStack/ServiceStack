@@ -105,6 +105,17 @@ namespace ServiceStack.Common
             }
             return map;
         }
-        
+
+        public static Dictionary<TKey, TValue> ToDictionary<T, TKey, TValue>(this IEnumerable<T> list, Func<T, KeyValuePair<TKey, TValue>> map)
+        {
+            var to = new Dictionary<TKey, TValue>();
+            foreach (var item in list)
+            {
+                var entry = map(item);
+                to[entry.Key] = entry.Value;
+            }
+            return to;
+        }
+
     }
 }

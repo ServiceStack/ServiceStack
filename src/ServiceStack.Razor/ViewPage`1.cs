@@ -7,8 +7,20 @@ using ServiceStack.ServiceHost;
 namespace ServiceStack.Razor
 {
     public abstract class ViewPage<TModel> : ViewPageBase<TModel>
-	{
-		public HtmlHelper<TModel> Html = new HtmlHelper<TModel>();
+    {
+        public HtmlHelper<TModel> Html = new HtmlHelper<TModel>();
+
+        public override HtmlHelper HtmlHelper
+        {
+            get { return Html; }
+        }
+
+        public override void SetState(HtmlHelper htmlHelper)
+        {
+            if (htmlHelper == null) return;
+
+            Html.SetState(htmlHelper);
+        }
 
         private IViewEngine viewEngine;
         public override IViewEngine ViewEngine
@@ -30,18 +42,21 @@ namespace ServiceStack.Razor
             get { return typeof(TModel); }
         }
 
-		public override void Init(IRazorViewEngine viewEngine, ViewDataDictionary viewData, IHttpRequest httpReq, IHttpResponse httpRes)
-		{
-		    this.Request = httpReq;
-			this.Response = httpRes;
-            Html.Init(httpReq, viewEngine, viewData);
-		    this.Model = (TModel) viewData.Model;
-		}
+        public override void Init(IRazorViewEngine viewEngine, ViewDataDictionary viewData, IHttpRequest httpReq, IHttpResponse httpRes)
+        {
+            this.Request = httpReq;
+            this.Response = httpRes;
+            Html.Init(httpReq, viewEngine, viewData, null);
+            if (viewData.Model is TModel)
+                this.Model = (TModel)viewData.Model;
+            else
+                this.ModelError = viewData.Model;
+        }
 
         public virtual bool IsSectionDefined(string sectionName)
         {
             //return this.childSections.ContainsKey(sectionName);
             return false;
         }
-	}
+    }
 }

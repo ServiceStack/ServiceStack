@@ -3,7 +3,7 @@ using System;
 namespace ServiceStack.Logging.Support.Logging
 {
     /// <summary>
-    /// Creates a Debug Logger, that logs all messages to: System.Diagnostics.Debug
+    /// Creates a Console Logger, that logs all messages to: System.Console
     /// 
     /// Made public so its testable
     /// </summary>

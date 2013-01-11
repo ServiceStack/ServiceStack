@@ -72,7 +72,7 @@ namespace ServiceStack.ServiceInterface.Testing
         public void RegisterService(Type serviceType, params string[] atRestPaths)
         {
             if (Config == null)
-                Config = new EndpointHostConfig("BasicAppHost", new ServiceManager(Assembly.GetExecutingAssembly()));
+                Config = new EndpointHostConfig("BasicAppHost", new ServiceManager(Container, Assembly.GetExecutingAssembly()));
 
             Config.ServiceManager.RegisterService(serviceType);
         }
@@ -89,6 +89,11 @@ namespace ServiceStack.ServiceInterface.Testing
         public IServiceRunner<TRequest> CreateServiceRunner<TRequest>(ActionContext actionContext)
         {
             throw new NotImplementedException();
+        }
+
+        public void Init()
+        {
+            EndpointHost.ConfigureHost(this, GetType().Name, Config.ServiceManager);
         }
     }
 }

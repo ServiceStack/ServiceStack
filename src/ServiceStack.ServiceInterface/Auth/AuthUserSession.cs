@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
+    [DataContract]
     public class AuthUserSession : IAuthSession
     {
         public AuthUserSession()
@@ -11,71 +13,39 @@ namespace ServiceStack.ServiceInterface.Auth
             this.ProviderOAuthAccess = new List<IOAuthTokens>();
         }
 
-        public string ReferrerUrl { get; set; }
-
-        public string Id { get; set; }
-
-        public string UserAuthId { get; set; }
-
-        public string UserAuthName { get; set; }
-
-        public string UserName { get; set; }
-
-        public string TwitterUserId { get; set; }
-
-        public string TwitterScreenName { get; set; }
-
-        public string FacebookUserId { get; set; }
-        
-        public string FacebookUserName { get; set; }
-
-        public string FirstName { get; set; }
-
-        public string LastName { get; set; }
-
-        public string DisplayName { get; set; }
-
-        public string Email { get; set; }
-        
-        public string PrimaryEmail { get; set; }
-
-        public DateTime? BirthDate { get; set; }
-
-        public string BirthDateRaw { get; set; }
-
-        public string Country { get; set; }
-
-        public string Culture { get; set; }
-
-        public string FullName { get; set; }
-
-        public string Gender { get; set; }
-
-        public string Language { get; set; }
-
-        public string MailAddress { get; set; }
-
-        public string Nickname { get; set; }
-
-        public string PostalCode { get; set; }
-
-        public string TimeZone { get; set; }
-
-        public string RequestTokenSecret { get; set; }
-
-        public DateTime CreatedAt { get; set; }
-
-        public DateTime LastModified { get; set; }
-
-        public List<IOAuthTokens> ProviderOAuthAccess { get; set; }
-
-        public List<string> Roles { get; set; }
-
-        public List<string> Permissions { get; set; }
-
-        public virtual bool IsAuthenticated { get; set; }
-
-        public virtual string Sequence { get; set; }
+        [DataMember(Order = 01)] public string ReferrerUrl { get; set; }
+        [DataMember(Order = 02)] public string Id { get; set; }
+        [DataMember(Order = 03)] public string UserAuthId { get; set; }
+        [DataMember(Order = 04)] public string UserAuthName { get; set; }
+        [DataMember(Order = 05)] public string UserName { get; set; }
+        [DataMember(Order = 06)] public string TwitterUserId { get; set; }
+        [DataMember(Order = 07)] public string TwitterScreenName { get; set; }
+        [DataMember(Order = 08)] public string FacebookUserId { get; set; }
+        [DataMember(Order = 09)] public string FacebookUserName { get; set; }
+        [DataMember(Order = 10)] public string FirstName { get; set; }
+        [DataMember(Order = 11)] public string LastName { get; set; }
+        [DataMember(Order = 12)] public string DisplayName { get; set; }
+        [DataMember(Order = 13)] public string Email { get; set; }
+        [DataMember(Order = 14)] public string PrimaryEmail { get; set; }
+        [DataMember(Order = 15)] public DateTime? BirthDate { get; set; }
+        [DataMember(Order = 16)] public string BirthDateRaw { get; set; }
+        [DataMember(Order = 17)] public string Country { get; set; }
+        [DataMember(Order = 18)] public string Culture { get; set; }
+        [DataMember(Order = 19)] public string FullName { get; set; }
+        [DataMember(Order = 20)] public string Gender { get; set; }
+        [DataMember(Order = 21)] public string Language { get; set; }
+        [DataMember(Order = 22)] public string MailAddress { get; set; }
+        [DataMember(Order = 23)] public string Nickname { get; set; }
+        [DataMember(Order = 24)] public string PostalCode { get; set; }
+        [DataMember(Order = 25)] public string TimeZone { get; set; }
+        [DataMember(Order = 26)] public string RequestTokenSecret { get; set; }
+        [DataMember(Order = 27)] public DateTime CreatedAt { get; set; }
+        [DataMember(Order = 28)] public DateTime LastModified { get; set; }
+        [DataMember(Order = 29)] public List<IOAuthTokens> ProviderOAuthAccess { get; set; }
+        [DataMember(Order = 30)] public List<string> Roles { get; set; }
+        [DataMember(Order = 31)] public List<string> Permissions { get; set; }
+        [DataMember(Order = 32)] public virtual bool IsAuthenticated { get; set; }
+        [DataMember(Order = 33)] public virtual string Sequence { get; set; }
 
         public virtual bool IsAuthorized(string provider)
         {
@@ -93,9 +63,9 @@ namespace ServiceStack.ServiceInterface.Auth
             return this.Roles != null && this.Roles.Contains(role);
         }
 
-        public virtual void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, Dictionary<string, string> authInfo)
-        {			
-        }
+        public virtual void OnRegistered(IServiceBase registrationService) {}
+        public virtual void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, Dictionary<string, string> authInfo) {}
+        public virtual void OnLogout(IServiceBase authService) {}
     }
 
     public static class AuthSessionExtensions

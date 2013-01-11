@@ -2,7 +2,6 @@ using System.ComponentModel;
 using System.Runtime.Serialization;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceInterface.Swagger;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -20,7 +19,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
     public class Hello
 	{
         [DataMember]
-        [SwaggerParameter(Name = "Name", Description = "Name Description", ParameterType = "path", 
+        [ApiMember(Name = "Name", Description = "Name Description", ParameterType = "path", 
             DataType = "string", IsRequired = true)]
 		public string Name { get; set; }
 	}

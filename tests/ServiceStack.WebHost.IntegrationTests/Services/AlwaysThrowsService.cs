@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.Serialization;
+using ServiceStack.Common.Web;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.ServiceModel;
 
@@ -8,6 +9,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	[DataContract]
 	public class AlwaysThrows
 	{
+	    [DataMember]
+	    public int? StatusCode { get; set; }
 		[DataMember]
 		public string Value { get; set; }
 	}
@@ -33,6 +36,14 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	{
 		protected override object Run(AlwaysThrows request)
 		{
+            if (request.StatusCode.HasValue)
+            {
+                throw new HttpError(
+                    request.StatusCode.Value,
+                    typeof(NotImplementedException).Name,
+                    request.Value);
+            }
+
 			throw new NotImplementedException(GetErrorMessage(request.Value));
 		}
 

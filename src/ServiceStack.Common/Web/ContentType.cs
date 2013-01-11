@@ -98,7 +98,7 @@ namespace ServiceStack.Common.Web
 
             }
 
-            return EndpointAttributes.None;
+            return EndpointAttributes.FormatOther;
         }
 
         public static string GetRealContentType(string contentType)
@@ -137,7 +137,7 @@ namespace ServiceStack.Common.Web
             return false;
         }
 
-        public static Feature GetFeature(string contentType)
+        public static Feature ToFeature(this string contentType)
         {
             if (contentType == null)
                 return Feature.None;
@@ -176,17 +176,19 @@ namespace ServiceStack.Common.Web
                     return Feature.MsgPack;
             }
 
-            return Feature.None;
+            return Feature.CustomFormat;
         }
 
-        public static string GetContentFormat(EndpointType endpointType)
+        public static string GetContentFormat(Format format)
         {
-            return endpointType.ToString().ToLower();
+            return format.ToString().ToLower();
         }
 
         public static string GetContentFormat(string contentType)
         {
-            if (contentType == null) return contentType;
+            if (contentType == null) 
+                return null;
+
             var parts = contentType.Split('/');
             return parts[parts.Length - 1];
         }
@@ -196,29 +198,35 @@ namespace ServiceStack.Common.Web
             return GetContentFormat(contentType);
         }
 
-        public static string GetContentType(EndpointType endpointType)
+        public static string ToContentType(this Format formats)
         {
-            switch (endpointType)
+            switch (formats)
             {
-                case EndpointType.Soap11:
-                case EndpointType.Soap12:
-                case EndpointType.Xml:
+                case Format.Soap11:
+                case Format.Soap12:
+                case Format.Xml:
                     return Xml;
 
-                case EndpointType.Json:
+                case Format.Json:
                     return Json;
-
-                case EndpointType.Jsv:
+                    
+                case Format.Jsv:
                     return JsvText;
 
-                case EndpointType.Csv:
+                case Format.Csv:
                     return Csv;
 
-                case EndpointType.ProtoBuf:
+                case Format.ProtoBuf:
                     return ProtoBuf;
 
-                case EndpointType.MsgPack:
+                case Format.MsgPack:
                     return MsgPack;
+
+                case Format.Html:
+                    return Html;
+
+                case Format.Yaml:
+                    return Yaml;
                 
                 default:
                     return null;

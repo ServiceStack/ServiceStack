@@ -158,7 +158,7 @@ namespace ServiceStack.ServiceInterface.Testing
 
             public TResponse Get<TResponse>(string relativeOrAbsoluteUrl)
             {
-                return parent.ExecutePath<TResponse>(HttpMethod.Get, new UrlParts(relativeOrAbsoluteUrl), null);
+                return parent.ExecutePath<TResponse>(HttpMethods.Get, new UrlParts(relativeOrAbsoluteUrl), null);
             }
 
             public TResponse Delete<TResponse>(IReturn<TResponse> request)
@@ -173,7 +173,7 @@ namespace ServiceStack.ServiceInterface.Testing
 
             public TResponse Delete<TResponse>(string relativeOrAbsoluteUrl)
             {
-                return parent.ExecutePath<TResponse>(HttpMethod.Delete, new UrlParts(relativeOrAbsoluteUrl), null);
+                return parent.ExecutePath<TResponse>(HttpMethods.Delete, new UrlParts(relativeOrAbsoluteUrl), null);
             }
 
             public TResponse Post<TResponse>(IReturn<TResponse> request)
@@ -188,7 +188,7 @@ namespace ServiceStack.ServiceInterface.Testing
 
             public TResponse Post<TResponse>(string relativeOrAbsoluteUrl, object request)
             {
-                return parent.ExecutePath<TResponse>(HttpMethod.Post, new UrlParts(relativeOrAbsoluteUrl), request);
+                return parent.ExecutePath<TResponse>(HttpMethods.Post, new UrlParts(relativeOrAbsoluteUrl), request);
             }
 
             public TResponse Put<TResponse>(IReturn<TResponse> request)
@@ -203,7 +203,7 @@ namespace ServiceStack.ServiceInterface.Testing
 
             public TResponse Put<TResponse>(string relativeOrAbsoluteUrl, object request)
             {
-                return parent.ExecutePath<TResponse>(HttpMethod.Put, new UrlParts(relativeOrAbsoluteUrl), request);
+                return parent.ExecutePath<TResponse>(HttpMethods.Put, new UrlParts(relativeOrAbsoluteUrl), request);
             }
 
             public TResponse Patch<TResponse>(IReturn<TResponse> request)
@@ -218,7 +218,7 @@ namespace ServiceStack.ServiceInterface.Testing
 
             public TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object request)
             {
-                return parent.ExecutePath<TResponse>(HttpMethod.Patch, new UrlParts(relativeOrAbsoluteUrl), request);
+                return parent.ExecutePath<TResponse>(HttpMethods.Patch, new UrlParts(relativeOrAbsoluteUrl), request);
             }
 
             public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
@@ -281,7 +281,7 @@ namespace ServiceStack.ServiceInterface.Testing
             {
                 try
                 {
-                    var response = parent.ExecutePath<TResponse>(HttpMethod.Get, new UrlParts(relativeOrAbsoluteUrl), default(TResponse));
+                    var response = parent.ExecutePath<TResponse>(HttpMethods.Get, new UrlParts(relativeOrAbsoluteUrl), default(TResponse));
                     onSuccess(response);
                 }
                 catch (Exception ex)
@@ -294,7 +294,7 @@ namespace ServiceStack.ServiceInterface.Testing
             {
                 try
                 {
-                    var response = parent.ExecutePath<TResponse>(HttpMethod.Delete, new UrlParts(relativeOrAbsoluteUrl), default(TResponse));
+                    var response = parent.ExecutePath<TResponse>(HttpMethods.Delete, new UrlParts(relativeOrAbsoluteUrl), default(TResponse));
                     onSuccess(response);
                 }
                 catch (Exception ex)
@@ -307,7 +307,7 @@ namespace ServiceStack.ServiceInterface.Testing
             {
                 try
                 {
-                    var response = parent.ExecutePath<TResponse>(HttpMethod.Post, new UrlParts(relativeOrAbsoluteUrl), request);
+                    var response = parent.ExecutePath<TResponse>(HttpMethods.Post, new UrlParts(relativeOrAbsoluteUrl), request);
                     onSuccess(response);
                 }
                 catch (Exception ex)
@@ -320,7 +320,7 @@ namespace ServiceStack.ServiceInterface.Testing
             {
                 try
                 {
-                    var response = parent.ExecutePath<TResponse>(HttpMethod.Put, new UrlParts(relativeOrAbsoluteUrl), request);
+                    var response = parent.ExecutePath<TResponse>(HttpMethods.Put, new UrlParts(relativeOrAbsoluteUrl), request);
                     onSuccess(response);
                 }
                 catch (Exception ex)

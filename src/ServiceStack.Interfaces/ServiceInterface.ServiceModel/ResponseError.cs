@@ -19,13 +19,13 @@ namespace ServiceStack.ServiceInterface.ServiceModel
 	[DataContract]
 	public class ResponseError
 	{
-		[DataMember]
+        [DataMember(Order = 1)]
 		public string ErrorCode { get; set; }
 
-		[DataMember]
+        [DataMember(Order = 2)]
 		public string FieldName { get; set; }
-	
-		[DataMember]
+
+        [DataMember(Order = 3)]
 		public string Message { get; set; }
 	}
 }

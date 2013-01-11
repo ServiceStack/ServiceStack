@@ -33,6 +33,20 @@ namespace ServiceStack.ServiceClient.Web
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(ServiceClientBase));
 
+        private string replyPath = "/syncreply/";
+        private string oneWayPath = "/asynconeway/";
+
+        public bool UseNewPredefinedRoutes
+        {
+            set
+            {
+                replyPath = value ? "/reply/" : "/syncreply/";
+                oneWayPath = value ? "/oneway/" : "/asynconeway/";
+                this.SyncReplyBaseUri = BaseUri.WithTrailingSlash() + Format + replyPath;
+                this.AsyncOneWayBaseUri = BaseUri.WithTrailingSlash() + Format + oneWayPath;
+            }
+        }
+
         /// <summary>
         /// The request filter is called before any request.
         /// This request filter is executed globally.
@@ -113,8 +127,8 @@ namespace ServiceStack.ServiceClient.Web
         {
             this.BaseUri = baseUri;
             this.asyncClient.BaseUri = baseUri;
-            this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + Format + "/syncreply/";
-            this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + Format + "/asynconeway/";
+            this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + Format + replyPath;
+            this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + Format + oneWayPath;
         }
 
         /// <summary>
@@ -132,44 +146,44 @@ namespace ServiceStack.ServiceClient.Web
             this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + format + "/asynconeway/";
         }
 
-        private bool _disableAutoCompression;
         /// <summary>
         /// Whether to Accept Gzip,Deflate Content-Encoding and to auto decompress responses
         /// </summary>
+        private bool disableAutoCompression;
         public bool DisableAutoCompression
         {
-            get { return _disableAutoCompression; }
+            get { return disableAutoCompression; }
             set
             {
-                _disableAutoCompression = value;
+                disableAutoCompression = value;
                 asyncClient.DisableAutoCompression = value;
             }
         }
 
-        private string _username;
         /// <summary>
         /// The user name for basic authentication
         /// </summary>
+        private string username;
         public string UserName
         {
-            get { return _username; }
+            get { return username; }
             set
             {
-                _username = value;
+                username = value;
                 asyncClient.UserName = value;
             }
         }
 
-        private string _password;
         /// <summary>
         /// The password for basic authentication
         /// </summary>
+        private string password;
         public string Password
         {
-            get { return _password; }
+            get { return password; }
             set
             {
-                _password = value;
+                password = value;
                 asyncClient.Password = value;
             }
         }
@@ -200,6 +214,11 @@ namespace ServiceStack.ServiceClient.Web
                 this.timeout = value;
                 this.asyncClient.Timeout = value;
             }
+        }
+
+        public virtual string Accept
+        {
+            get { return ContentType; }
         }
 
         public abstract string ContentType { get; }
@@ -268,6 +287,18 @@ namespace ServiceStack.ServiceClient.Web
         }
 
         public CookieContainer CookieContainer { get; set; }
+
+        private bool allowAutoRedirect = true;
+        public bool AllowAutoRedirect
+        {
+            get { return allowAutoRedirect; }
+            set
+            {
+                allowAutoRedirect = value;
+                // TODO: Implement for async client.
+                // asyncClient.AllowAutoRedirect = value;
+            }
+        }
 
         /// <summary>
         /// Called before request resend, when the initial request required authentication
@@ -357,7 +388,7 @@ namespace ServiceStack.ServiceClient.Web
                 if (!HandleResponseException(ex, 
                     request, 
                     requestUri,
-                    () => SendRequest(Web.HttpMethod.Post, requestUri, request),
+                    () => SendRequest(HttpMethods.Post, requestUri, request),
                     c => c.GetResponse(),
                     out response))
                 {
@@ -507,7 +538,7 @@ namespace ServiceStack.ServiceClient.Web
             if (httpMethod == null)
                 throw new ArgumentNullException("httpMethod");
 
-            if (httpMethod == Web.HttpMethod.Get && request != null)
+            if (httpMethod == HttpMethods.Get && request != null)
             {
                 var queryString = QueryStringSerializer.SerializeToString(request);
                 if (!string.IsNullOrEmpty(queryString))
@@ -519,7 +550,7 @@ namespace ServiceStack.ServiceClient.Web
             var client = (HttpWebRequest)WebRequest.Create(requestUri);
             try
             {
-                client.Accept = ContentType;
+                client.Accept = Accept;
                 client.Method = httpMethod;
 
                 if (Proxy != null) client.Proxy = Proxy;
@@ -538,10 +569,12 @@ namespace ServiceStack.ServiceClient.Web
                     client.CookieContainer = CookieContainer;
                 }
 
+                client.AllowAutoRedirect = AllowAutoRedirect;
+
                 ApplyWebRequestFilters(client);
 
-                if (httpMethod != Web.HttpMethod.Get
-                    && httpMethod != Web.HttpMethod.Delete)
+                if (httpMethod != HttpMethods.Get
+                    && httpMethod != HttpMethods.Delete)
                 {
                     client.ContentType = ContentType;
 
@@ -699,52 +732,52 @@ namespace ServiceStack.ServiceClient.Web
         public virtual void SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
-            asyncClient.SendAsync(Web.HttpMethod.Post, requestUri, request, onSuccess, onError);
+            asyncClient.SendAsync(HttpMethods.Post, requestUri, request, onSuccess, onError);
         }
 
         public virtual void GetAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
-            GetAsync(request.ToUrl(Web.HttpMethod.Get, Format), onSuccess, onError);
+            GetAsync(request.ToUrl(HttpMethods.Get, Format), onSuccess, onError);
         }
 
         public virtual void GetAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
-            asyncClient.SendAsync(Web.HttpMethod.Get, GetUrl(relativeOrAbsoluteUrl), null, onSuccess, onError);
+            asyncClient.SendAsync(HttpMethods.Get, GetUrl(relativeOrAbsoluteUrl), null, onSuccess, onError);
         }
 
         public virtual void DeleteAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
-            DeleteAsync(request.ToUrl(Web.HttpMethod.Delete, Format), onSuccess, onError);
+            DeleteAsync(request.ToUrl(HttpMethods.Delete, Format), onSuccess, onError);
         }
 
         public virtual void DeleteAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
-            asyncClient.SendAsync(Web.HttpMethod.Delete, GetUrl(relativeOrAbsoluteUrl), null, onSuccess, onError);
+            asyncClient.SendAsync(HttpMethods.Delete, GetUrl(relativeOrAbsoluteUrl), null, onSuccess, onError);
         }
 
         public virtual void PostAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
-            PostAsync(request.ToUrl(Web.HttpMethod.Post, Format), request, onSuccess, onError);
+            PostAsync(request.ToUrl(HttpMethods.Post, Format), request, onSuccess, onError);
         }
 
         public virtual void PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
-            asyncClient.SendAsync(Web.HttpMethod.Post, GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
+            asyncClient.SendAsync(HttpMethods.Post, GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
         }
 
         public virtual void PutAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
-            PutAsync(request.ToUrl(Web.HttpMethod.Put, Format), request, onSuccess, onError);
+            PutAsync(request.ToUrl(HttpMethods.Put, Format), request, onSuccess, onError);
         }
 
         public virtual void PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
-            asyncClient.SendAsync(Web.HttpMethod.Put, GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
+            asyncClient.SendAsync(HttpMethods.Put, GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
         }
 
         public virtual void CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
-            if (Web.HttpMethod.AllVerbs.Contains(httpVerb.ToUpper()))
+            if (!HttpMethods.AllVerbs.Contains(httpVerb.ToUpper()))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
             asyncClient.SendAsync(httpVerb, GetUrl(request.ToUrl(httpVerb, Format)), request, onSuccess, onError);
@@ -787,82 +820,82 @@ namespace ServiceStack.ServiceClient.Web
 
         public virtual TResponse Get<TResponse>(IReturn<TResponse> request)
         {
-            return Send<TResponse>(Web.HttpMethod.Get, request.ToUrl(Web.HttpMethod.Get, Format), null);
+            return Send<TResponse>(HttpMethods.Get, request.ToUrl(HttpMethods.Get, Format), null);
         }
 
         public virtual void Get(IReturnVoid request)
         {
-            SendOneWay(Web.HttpMethod.Get, request.ToUrl(Web.HttpMethod.Get, Format), null);
+            SendOneWay(HttpMethods.Get, request.ToUrl(HttpMethods.Get, Format), null);
         }
 
         public virtual TResponse Get<TResponse>(string relativeOrAbsoluteUrl)
         {
-            return Send<TResponse>(Web.HttpMethod.Get, relativeOrAbsoluteUrl, null);
+            return Send<TResponse>(HttpMethods.Get, relativeOrAbsoluteUrl, null);
         }
 
         public virtual TResponse Delete<TResponse>(IReturn<TResponse> request)
         {
-            return Send<TResponse>(Web.HttpMethod.Delete, request.ToUrl(Web.HttpMethod.Delete, Format), null);
+            return Send<TResponse>(HttpMethods.Delete, request.ToUrl(HttpMethods.Delete, Format), null);
         }
 
         public virtual void Delete(IReturnVoid request)
         {
-            SendOneWay(Web.HttpMethod.Delete, request.ToUrl(Web.HttpMethod.Delete, Format), null);
+            SendOneWay(HttpMethods.Delete, request.ToUrl(HttpMethods.Delete, Format), null);
         }
 
         public virtual TResponse Delete<TResponse>(string relativeOrAbsoluteUrl)
         {
-            return Send<TResponse>(Web.HttpMethod.Delete, relativeOrAbsoluteUrl, null);
+            return Send<TResponse>(HttpMethods.Delete, relativeOrAbsoluteUrl, null);
         }
 
         public virtual TResponse Post<TResponse>(IReturn<TResponse> request)
         {
-            return Send<TResponse>(Web.HttpMethod.Post, request.ToUrl(Web.HttpMethod.Post, Format), request);
+            return Send<TResponse>(HttpMethods.Post, request.ToUrl(HttpMethods.Post, Format), request);
         }
 
         public virtual void Post(IReturnVoid request)
         {
-            SendOneWay(Web.HttpMethod.Post, request.ToUrl(Web.HttpMethod.Post, Format), request);
+            SendOneWay(HttpMethods.Post, request.ToUrl(HttpMethods.Post, Format), request);
         }
 
         public virtual TResponse Post<TResponse>(string relativeOrAbsoluteUrl, object request)
         {
-            return Send<TResponse>(Web.HttpMethod.Post, relativeOrAbsoluteUrl, request);
+            return Send<TResponse>(HttpMethods.Post, relativeOrAbsoluteUrl, request);
         }
 
         public virtual TResponse Put<TResponse>(IReturn<TResponse> request)
         {
-            return Send<TResponse>(Web.HttpMethod.Put, request.ToUrl(Web.HttpMethod.Put, Format), request);
+            return Send<TResponse>(HttpMethods.Put, request.ToUrl(HttpMethods.Put, Format), request);
         }
 
         public virtual void Put(IReturnVoid request)
         {
-            SendOneWay(Web.HttpMethod.Put, request.ToUrl(Web.HttpMethod.Put, Format), request);
+            SendOneWay(HttpMethods.Put, request.ToUrl(HttpMethods.Put, Format), request);
         }
 
         public virtual TResponse Put<TResponse>(string relativeOrAbsoluteUrl, object request)
         {
-            return Send<TResponse>(Web.HttpMethod.Put, relativeOrAbsoluteUrl, request);
+            return Send<TResponse>(HttpMethods.Put, relativeOrAbsoluteUrl, request);
         }
 
         public virtual TResponse Patch<TResponse>(IReturn<TResponse> request)
         {
-            return Send<TResponse>(Web.HttpMethod.Patch, request.ToUrl(Web.HttpMethod.Patch, Format), request);
+            return Send<TResponse>(HttpMethods.Patch, request.ToUrl(HttpMethods.Patch, Format), request);
         }
 
         public virtual void Patch(IReturnVoid request)
         {
-            SendOneWay(Web.HttpMethod.Patch, request.ToUrl(Web.HttpMethod.Patch, Format), request);
+            SendOneWay(HttpMethods.Patch, request.ToUrl(HttpMethods.Patch, Format), request);
         }
 
         public virtual TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object request)
         {
-            return Send<TResponse>(Web.HttpMethod.Patch, relativeOrAbsoluteUrl, request);
+            return Send<TResponse>(HttpMethods.Patch, relativeOrAbsoluteUrl, request);
         }
 
         public virtual void CustomMethod(string httpVerb, IReturnVoid request)
         {
-            if (Web.HttpMethod.AllVerbs.Contains(httpVerb.ToUpper()))
+            if (!HttpMethods.AllVerbs.Contains(httpVerb.ToUpper()))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
             SendOneWay(httpVerb, request.ToUrl(httpVerb, Format), request);
@@ -870,7 +903,7 @@ namespace ServiceStack.ServiceClient.Web
 
         public virtual TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> request)
         {
-            if (Web.HttpMethod.AllVerbs.Contains(httpVerb.ToUpper()))
+            if (!HttpMethods.AllVerbs.Contains(httpVerb.ToUpper()))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
             return Send<TResponse>(httpVerb, request.ToUrl(httpVerb, Format), request);
@@ -887,13 +920,13 @@ namespace ServiceStack.ServiceClient.Web
             var currentStreamPosition = fileToUpload.Position;
 
             Func<WebRequest> createWebRequest = () => {
-                var webRequest = PrepareWebRequest(Web.HttpMethod.Post, requestUri, null, null);
+                var webRequest = PrepareWebRequest(HttpMethods.Post, requestUri, null, null);
 
                 var queryString = QueryStringSerializer.SerializeToString(request);
 #if !MONOTOUCH
                 var nameValueCollection = HttpUtility.ParseQueryString(queryString);
 #endif
-                var boundary = DateTime.Now.Ticks.ToString(CultureInfo.InvariantCulture);
+                var boundary = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
                 webRequest.ContentType = "multipart/form-data; boundary=" + boundary;
                 boundary = "--" + boundary;
                 var newLine = Environment.NewLine;
@@ -955,7 +988,7 @@ namespace ServiceStack.ServiceClient.Web
         {
             var currentStreamPosition = fileToUpload.Position;
             var requestUri = GetUrl(relativeOrAbsoluteUrl);
-            Func<WebRequest> createWebRequest = () => PrepareWebRequest(Web.HttpMethod.Post, requestUri, null, null);
+            Func<WebRequest> createWebRequest = () => PrepareWebRequest(HttpMethods.Post, requestUri, null, null);
 
             try
             {

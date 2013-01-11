@@ -45,7 +45,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			TestService.ResetStats();
 
 			var request = new Test();
-			var response = host.ExecuteService(request, EndpointAttributes.AsyncOneWay) as TestResponse;
+			var response = host.ExecuteService(request, EndpointAttributes.OneWay) as TestResponse;
 
 			Assert.That(response, Is.Not.Null);
 			Assert.That(response.ExecuteTimes, Is.EqualTo(1));
@@ -61,7 +61,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			TestAsyncService.ResetStats();
 
 			var request = new TestAsync();
-			var response = host.ExecuteService(request, EndpointAttributes.AsyncOneWay) as TestAsyncResponse;
+			var response = host.ExecuteService(request, EndpointAttributes.OneWay) as TestAsyncResponse;
 
 			Assert.That(response, Is.Not.Null);
 			Assert.That(response.ExecuteTimes, Is.EqualTo(0));

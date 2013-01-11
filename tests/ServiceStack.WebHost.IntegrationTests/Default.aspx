@@ -1,4 +1,5 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="ServiceStack.WebHost.IntegrationTests.Default" %>
+<%@ Import Namespace="ServiceStack.Html" %>
 <%@ Import Namespace="ServiceStack.Text" %>
 <!DOCTYPE html>
 <html lang="en">
@@ -20,6 +21,7 @@
         padding-top: 60px;
       }
     </style>
+    <%=ServiceStack.MiniProfiler.Profiler.RenderIncludes(null, null, null, null, false, null).AsRaw() %>
   </head>
 
   <body>

@@ -36,7 +36,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
             public override object HandleException(IRequestContext requestContext, T request, System.Exception ex)
             {
-                return ValidationFeature.HandleException(new BasicResolver(), request, ex);
+                return DtoUtils.HandleException(new BasicResolver(), request, ex);
             }
         }
 

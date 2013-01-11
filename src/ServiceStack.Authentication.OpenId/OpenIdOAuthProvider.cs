@@ -39,7 +39,7 @@ namespace ServiceStack.Authentication.OpenId
 
             var httpReq = authService.RequestContext.Get<IHttpRequest>();
             var httpMethod = httpReq.HttpMethod;
-            if (httpMethod == HttpMethod.Post)
+            if (httpMethod == HttpMethods.Post)
             {
                 var openIdUrl = httpReq.GetParam("OpenIdUrl") ?? base.AuthRealm;
                 if (openIdUrl.IsNullOrEmpty())
@@ -68,6 +68,8 @@ namespace ServiceStack.Authentication.OpenId
                         {
                             httpResult.Headers[header] = openIdResponse.Headers[header];
                         }
+                        // Save the current session to keep the ReferrerUrl available (similar to Facebook provider)
+                        authService.SaveSession(session, SessionExpiry);
                         return httpResult;
                     }
                 }
@@ -78,7 +80,7 @@ namespace ServiceStack.Authentication.OpenId
                 }
             }
 
-            if (httpMethod == HttpMethod.Get)
+            if (httpMethod == HttpMethods.Get)
             {
                 using (var openid = new OpenIdRelyingParty())
                 {
@@ -256,7 +258,19 @@ namespace ServiceStack.Authentication.OpenId
 
             return ret;
         }
+
+        public override bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Auth request = null)
+        {
+            if (request != null)
+            {
+                if (!LoginMatchesSession(session, request.UserName)) return false;
+            }
+
+            // For OpenId, AccessTokenSecret is null/empty, but UserId is populated w/ authenticated url from openId providers            
+            return tokens != null && !string.IsNullOrEmpty(tokens.UserId);
+        }
     }
+
 
     public static class OpenIdExtensions
     {

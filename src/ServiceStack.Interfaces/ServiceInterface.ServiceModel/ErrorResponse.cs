@@ -10,7 +10,7 @@ namespace ServiceStack.ServiceInterface.ServiceModel
     [DataContract]
     public class ErrorResponse : IHasResponseStatus
     {
-        [DataMember]
+        [DataMember(Order = 1)]
         public ResponseStatus ResponseStatus { get; set; }
     }
 }

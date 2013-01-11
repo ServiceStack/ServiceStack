@@ -114,7 +114,14 @@ namespace ServiceStack.Common
         public static string CombineWith(this string path, params string[] thesePaths)
         {
             if (thesePaths.Length == 1 && thesePaths[0] == null) return path;
-            return PathUtils.CombinePaths(new StringBuilder(path.TrimEnd('/','\\')), thesePaths);
+            return PathUtils.CombinePaths(new StringBuilder(path.TrimEnd('/', '\\')), thesePaths);
+        }
+
+        public static string CombineWith(this string path, params object[] thesePaths)
+        {
+            if (thesePaths.Length == 1 && thesePaths[0] == null) return path;
+            return PathUtils.CombinePaths(new StringBuilder(path.TrimEnd('/', '\\')), 
+                thesePaths.SafeConvertAll(x => x.ToString()).ToArray());
         }
 
         public static string ToParentPath(this string path)

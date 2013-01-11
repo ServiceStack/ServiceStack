@@ -75,6 +75,8 @@ namespace ServiceStack.Razor
 
         public TemplateProvider TemplateProvider { get; set; }
 
+        public List<string> SkipPaths { get; set; }
+
         public Type DefaultBaseType
         {
             get
@@ -114,7 +116,12 @@ namespace ServiceStack.Razor
 			};
             this.TemplateProvider = new TemplateProvider(DefaultTemplateName) {
                 CompileInParallelWithNoOfThreads = 0,
-            };            
+            };
+            //Skip scanning common VS.NET extensions
+            this.SkipPaths = new List<string> {
+                "/obj/", 
+                "/bin/",
+            };
         }
 
         public void Register(IAppHost appHost)
@@ -230,8 +237,9 @@ namespace ServiceStack.Razor
             return GetTemplateService(viewName, httpReq) != null;
         }
 
-        public string RenderPartial(string pageName, object model, bool renderHtml, IHttpRequest httpReq = null)
+        public string RenderPartial(string pageName, object model, bool renderHtml, HtmlHelper htmlHelper = null)
         {
+            var httpReq = htmlHelper.GetHttpRequest();
             var template = GetTemplateService(pageName, httpReq);
             if (template == null)
             {
@@ -239,14 +247,14 @@ namespace ServiceStack.Razor
                 foreach (var viewEngine in AppHost.ViewEngines)
                 {
                     if (viewEngine == this || !viewEngine.HasView(pageName, httpReq)) continue;
-                    result = viewEngine.RenderPartial(pageName, model, renderHtml, httpReq);
+                    result = viewEngine.RenderPartial(pageName, model, renderHtml, htmlHelper);
                     if (result != null) break;
                 }
                 return result ?? "<!--{0} not found-->".Fmt(pageName);
             }
 
             //Razor writes partial to static StringBuilder so don't return or it will write zx2
-            template.RenderPartial(model, pageName);
+            template.RenderPartial(model, pageName, htmlHelper);
 
             //return template.Result;
             return null;
@@ -387,6 +395,8 @@ namespace ServiceStack.Razor
 
         public ViewPageRef GetViewPage(string pageName)
         {
+            if (pageName == null) return null;
+
             ViewPageRef razorPage;
 
             ViewPages.TryGetValue(pageName, out razorPage);
@@ -436,6 +446,8 @@ namespace ServiceStack.Razor
                 var csHtmlFiles = VirtualPathProvider.GetAllMatchingFiles("*." + ext).ToList();
                 foreach (var csHtmlFile in csHtmlFiles)
                 {
+                    if (ShouldSkipPath(csHtmlFile)) continue;
+
 					if (csHtmlFile.GetType().Name != "ResourceVirtualFile")
                         hasReloadableWebPages = true;
 
@@ -465,6 +477,16 @@ namespace ServiceStack.Razor
 
             if (!hasReloadableWebPages)
                 WatchForModifiedPages = false;
+        }
+
+        private bool ShouldSkipPath(IVirtualFile csHtmlFile)
+        {
+            foreach (var skipPath in SkipPaths)
+            {
+                if (csHtmlFile.VirtualPath.StartsWith(skipPath, StringComparison.InvariantCultureIgnoreCase))
+                    return true;
+            }
+            return false;
         }
 
         public void AddPage(ViewPageRef page)

@@ -7,7 +7,6 @@ using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.Logging;
-using HttpResponseExtensions = ServiceStack.WebHost.Endpoints.Extensions.HttpResponseExtensions;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
@@ -29,7 +28,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		    var text = new StringBuilder();
 
-            if (EndpointHost.Config.DebugMode)
+            if (EndpointHost.DebugMode)
             {
                 text.AppendLine("Handler for Request not found: \n\n")
                     .AppendLine("Request.HttpMethod: " + request.HttpMethod)

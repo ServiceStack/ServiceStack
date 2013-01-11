@@ -19,6 +19,10 @@
     </FileUpgradeFlags>
     <OldToolsVersion>4.0</OldToolsVersion>
     <UpgradeBackupLocation />
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -73,7 +77,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="App.config" />
-    <Content Include="default.cshtml" />
+    <Content Include="default.cshtml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ExpectationFailed.cshtml" />
     <None Include="MRootPage.md" />
     <Content Include="Global.asax" />
     <Content Include="NoModelNoController.cshtml" />
@@ -95,6 +102,9 @@
     <Content Include="Views\Shared\HtmlReport.cshtml" />
     <Content Include="Views\Shared\Empty.cshtml" />
     <Content Include="Views\Json.cshtml" />
+    <Content Include="Views\ViewState.cshtml" />
+    <Content Include="Views\_RawUrlPartial.cshtml" />
+    <Content Include="Views\Shared\_ViewStateLayout.cshtml" />
     <None Include="Views\Shared\MarkdownPartial.md" />
     <Content Include="Views\Shared\RazorPartial.cshtml" />
     <Content Include="Views\Shared\RazorPartialModel.cshtml" />
@@ -108,7 +118,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="README.txt" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="TypedModelNoController.cshtml" />
     <Content Include="Views\Rockstars.cshtml" />
     <Content Include="Views\Rockstars2.cshtml" />

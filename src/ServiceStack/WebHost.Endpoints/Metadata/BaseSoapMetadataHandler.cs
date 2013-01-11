@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Xml.Schema;
@@ -31,14 +32,14 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
 		public new void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
     	{
-			EndpointHost.Config.AssertFeatures(Feature.Metadata);
+            if (!AssertAccess(httpReq, httpRes, httpReq.QueryString["op"])) return;
 
-			var operations = EndpointHost.ServiceOperations;
+			var operationTypes = EndpointHost.Metadata.GetAllTypes();
 
     		if (httpReq.QueryString["xsd"] != null)
     		{
 				var xsdNo = Convert.ToInt32(httpReq.QueryString["xsd"]);
-    			var schemaSet = XsdUtils.GetXmlSchemaSet(operations.AllOperations.Types);
+                var schemaSet = XsdUtils.GetXmlSchemaSet(operationTypes);
     			var schemas = schemaSet.Schemas();
     			var i = 0;
     			if (xsdNo >= schemas.Count)
@@ -59,19 +60,19 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 			{
 				var writer = new HtmlTextWriter(sw);
 				httpRes.ContentType = "text/html";
-				ProcessOperations(writer, httpReq);
+				ProcessOperations(writer, httpReq, httpRes);
 			}
     	}
 
-    	protected override void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, Operations allOperations)
+    	protected override void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, ServiceMetadata metadata)
     	{
 			var defaultPage = new IndexOperationsControl {
 				HttpRequest = httpReq,
-				MetadataConfig = EndpointHost.Config.ServiceEndpointsMetadataConfig,
+                MetadataConfig = EndpointHost.Config.MetadataPagesConfig,                
 				Title = EndpointHost.Config.ServiceName,
 				Xsds = XsdTypes.Xsds,
 				XsdServiceTypesIndex = 1,
-				OperationNames = allOperations.Names,
+                OperationNames = metadata.GetOperationNamesForMetadata(httpReq),
 				MetadataPageBodyHtml = EndpointHost.Config.MetadataPageBodyHtml,
 			};
 

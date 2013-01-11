@@ -34,7 +34,9 @@ namespace ServiceStack.ServiceInterface
             var session = req.GetSession();
             if (HasAllPermissions(req, session)) return;
 
-            res.StatusCode = (int)HttpStatusCode.Unauthorized;
+            res.StatusCode = session != null && session.IsAuthenticated
+                ? (int)HttpStatusCode.Forbidden
+                : (int)HttpStatusCode.Unauthorized;
             res.StatusDescription = "Invalid Permissions";
             res.EndServiceStackRequest();
         }

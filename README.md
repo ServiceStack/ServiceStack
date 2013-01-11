@@ -408,7 +408,32 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [babcca](https://github.com/babcca) (Petr Babicka)
  - [jgeurts](https://github.com/jgeurts) (Jim Geurts)
  - [driis](https://github.com/driis) (Dennis Riis)
- 
+ - [gshackles](https://github.com/gshackles) (Greg Shackles)
+ - [jsonmez](https://github.com/jsonmez) (John Sonmez)
+ - [dchurchland](https://github.com/dchurchland) (David Churchland)
+ - [softwx](https://github.com/softwx) (Steve Hatchett)
+ - [ggeurts](https://github.com/ggeurts) (Gerke Geurts)
+ - [andrewrissing](https://github.com/AndrewRissing) (Andrew Rissing)
+ - [jjavery](https://github.com/jjavery) (James Javery)
+ - [suremaker](https://github.com/suremaker) (Wojtek)
+ - [cheesebaron](https://github.com/cheesebaron) (Tomasz Cielecki)
+ - [mikkelfish](https://github.com/mikkelfish) (Mikkel Fishman)
+ - [johngibb](https://github.com/johngibb) (John Gibb)
+ - [gixug](https://github.com/gixug) (David Stone)
+ - [mikepugh](https://github.com/mikepugh) (Mike Pugh)
+ - [permalmberg](https://github.com/permalmberg) (Per Malmberg)
+ - [adamralph](https://github.com/adamralph) (Adam Ralph)
+ - [shamsulamry](https://github.com/shamsulamry) (Shamsul Amry)
+ - [peterlazzarino](https://github.com/peterlazzarino) (Peter Lazzarino)
+ - [kevin-montrose](https://github.com/kevin-montrose) (Kevin Montrose)
+ - [msarchet](https://github.com/msarchet) (Michael Sarchet)
+ - [jeffgabhart](https://github.com/jeffgabhart) (Jeff Gabhart)
+ - [pkudinov](https://github.com/pkudinov) (Pavel Kudinov)
+ - [permalmberg](https://github.com/permalmberg) (Per Malmberg)
+ - [namman](https://github.com/namman) (Nick Miller)
+ - [leon-andria](https://github.com/leon-andria) (Leon Andria)
+ - [kkolstad](https://github.com/kkolstad) (Kenneth Kolstad)
+
 ***
 
 Runs on both Mono and .NET 3.5. _(Live preview hosted on Mono / CentOS)_

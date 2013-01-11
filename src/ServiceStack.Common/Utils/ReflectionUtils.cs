@@ -2,14 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
+using System.Runtime.Serialization;
 using ServiceStack.Common.Support;
 using ServiceStack.Logging;
 using ServiceStack.Net30.Collections.Concurrent;
+using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 
 namespace ServiceStack.Common.Utils
 {
+    [DataContract(Namespace = "http://schemas.servicestack.net/types")]
+    public class CustomHttpResult{}
+
     public class ReflectionUtils
     {
         public static readonly ILog Log = LogManager.GetLogger(typeof(ReflectionUtils));
@@ -22,6 +26,11 @@ namespace ServiceStack.Common.Utils
         public static object PopulateObject(object obj)
         {
             if (obj == null) return null;
+            var httpResult = obj as IHttpResult;
+            if (httpResult != null)
+            {
+                obj = new CustomHttpResult();
+            }
 
             var type = obj.GetType();
             if (type.IsArray || type.IsValueType || type.IsGenericType)

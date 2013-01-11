@@ -222,9 +222,9 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 				get { throw new NotImplementedException(); }
 			}
 
-			public int StatusCode { set; private get; }
+			public int StatusCode { set; get; }
 
-            public string StatusDescription { set; private get; }
+            public string StatusDescription { set; get; }
 
 			public string ContentType { get; set; }
 

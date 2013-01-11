@@ -1,5 +1,4 @@
 using System.Web.UI;
-using Funq;
 using ServiceStack.CacheAccess;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
@@ -20,60 +19,50 @@ namespace $rootnamespace$.App_Start
 
 	public class PageBase : Page
 	{
-		private Container container;
-		public Container Container
-		{
-			get { return container ?? (container = AppHostBase.Instance.Container); }
-		}
+        /// <summary>
+        /// Typed UserSession
+        /// </summary>
+        private object userSession;
+        protected virtual TUserSession SessionAs<TUserSession>()
+        {
+            return (TUserSession)(userSession ?? (userSession = Cache.SessionAs<TUserSession>()));
+        }
 
-		protected string SessionKey
-		{
-			get
-			{
-				var sessionId = SessionFeature.GetSessionId();
-				return sessionId == null ? null : SessionFeature.GetSessionKey(sessionId);
-			}
-		}
+        protected CustomUserSession UserSession
+        {
+            get
+            {
+                return SessionAs<CustomUserSession>();
+            }
+        }
 
-		private CustomUserSession userSession;
-		protected CustomUserSession UserSession
-		{
-			get
-			{
-				if (userSession != null) return userSession;
-				if (SessionKey != null)
-					userSession = this.Cache.Get<CustomUserSession>(SessionKey);
-				else
-					SessionFeature.CreateSessionIds();
+        public new ICacheClient Cache
+        {
+            get { return AppHostBase.Resolve<ICacheClient>(); }
+        }
 
-				var unAuthorizedSession = new CustomUserSession();
-				return userSession ?? (userSession = unAuthorizedSession);
-			}
-		}
+        private ISessionFactory sessionFactory;
+        public virtual ISessionFactory SessionFactory
+        {
+            get { return sessionFactory ?? (sessionFactory = AppHostBase.Resolve<ISessionFactory>()) ?? new SessionFactory(Cache); }
+        }
 
-		public void ClearSession()
-		{
-			userSession = null;
-			this.Cache.Remove(SessionKey);
-		}
+        /// <summary>
+        /// Dynamic Session Bag
+        /// </summary>
+        private ISession session;
+        public new ISession Session
+        {
+            get
+            {
+                return session ?? (session = SessionFactory.GetOrCreateSession());
+            }
+        }
 
-		public new ICacheClient Cache
-		{
-			get { return Container.Resolve<ICacheClient>(); }
-		}
-
-		public ISessionFactory SessionFactory
-		{
-			get { return Container.Resolve<ISessionFactory>(); }
-		}
-
-		private ISession session;
-		public new ISession Session
-		{
-			get
-			{
-				return session ?? (session = SessionFactory.GetOrCreateSession());
-			}
-		}
+        public void ClearSession()
+        {
+            userSession = null;
+            this.Cache.Remove(SessionFeature.GetSessionKey());
+        }
 	}
 }

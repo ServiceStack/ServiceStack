@@ -90,9 +90,28 @@ namespace ServiceStack.Html
 
 	    public MarkdownPage MarkdownPage { get; protected set; }
 		public Dictionary<string, object> ScopeArgs { get; protected set; }
-		public virtual ViewDataDictionary ViewData { get; protected set; }
+	    private ViewDataDictionary viewData;
 
-        private static int counter = 0;
+	    public virtual ViewDataDictionary ViewData
+	    {
+	        get
+	        {
+	            return viewData ??
+	                   (viewData = new ViewDataDictionary());
+	        }
+	        protected set { viewData = value; }
+	    }
+
+        public void SetState(HtmlHelper htmlHelper)
+        {
+            if (htmlHelper == null) return;
+
+            HttpRequest = htmlHelper.HttpRequest;
+            ScopeArgs = htmlHelper.ScopeArgs;
+            viewData = htmlHelper.ViewData;
+        }
+
+	    private static int counter = 0;
         private int id = 0;
 
 	    public HtmlHelper()
@@ -101,20 +120,20 @@ namespace ServiceStack.Html
             id = counter++;
 	    }
 
-        public void Init(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs, 
-			bool renderHtml, ViewDataDictionary viewData)
+        public void Init(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs,
+            bool renderHtml, ViewDataDictionary viewData, HtmlHelper htmlHelper)
 		{
-            Init(null, markdownPage.Markdown, viewData);
+            Init(null, markdownPage.Markdown, viewData, htmlHelper);
 
             this.RenderHtml = renderHtml;
 			this.MarkdownPage = markdownPage;
 			this.ScopeArgs = scopeArgs;
 		}
 
-		public void Init(IHttpRequest httpReq, IViewEngine viewEngine, ViewDataDictionary viewData)
+		public void Init(IHttpRequest httpReq, IViewEngine viewEngine, ViewDataDictionary viewData, HtmlHelper htmlHelper)
 		{
             this.RenderHtml = true;
-            this.HttpRequest = httpReq;
+            this.HttpRequest = httpReq ?? (htmlHelper != null ? htmlHelper.HttpRequest : null);
             this.ViewEngine = viewEngine;
 			this.ViewData = viewData;
 			this.ViewData.PopulateModelState();
@@ -127,7 +146,7 @@ namespace ServiceStack.Html
 		
 		public MvcHtmlString Partial(string viewName, object model)
 		{
-			var result = ViewEngine.RenderPartial(viewName, model, this.RenderHtml, this.HttpRequest);
+			var result = ViewEngine.RenderPartial(viewName, model, this.RenderHtml, this);
 			return MvcHtmlString.Create(result);
 		}
 
@@ -185,7 +204,7 @@ namespace ServiceStack.Html
 
 		internal object GetModelStateValue(string key, Type destinationType)
 		{
-			ModelState modelState;
+            ModelState modelState;
 			if (ViewData.ModelState.TryGetValue(key, out modelState))
 			{
 				if (modelState.Value != null)
@@ -279,6 +298,14 @@ namespace ServiceStack.Html
 
 			return tagBuilder.ToMvcHtmlString(TagRenderMode.SelfClosing);
 		}
+	}
+
+	public static class HtmlHelperExtensions
+	{
+	    public static IHttpRequest GetHttpRequest(this HtmlHelper html)
+	    {
+	        return html != null ? html.HttpRequest : null;
+	    }
 	}
 
 }

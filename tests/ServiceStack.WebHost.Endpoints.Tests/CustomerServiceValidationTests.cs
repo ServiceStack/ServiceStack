@@ -199,14 +199,14 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		[Test]
 		public void Validates_ValidRequest_request_on_Post()
 		{
-			var errorFields = GetValidationFieldErrors(HttpMethod.Post, validRequest);
+			var errorFields = GetValidationFieldErrors(HttpMethods.Post, validRequest);
 			Assert.That(errorFields.Count, Is.EqualTo(0));
 		}
 
 		[Test]
 		public void Validates_ValidRequest_request_on_Get()
 		{
-			var errorFields = GetValidationFieldErrors(HttpMethod.Get, validRequest);
+			var errorFields = GetValidationFieldErrors(HttpMethods.Get, validRequest);
 			Assert.That(errorFields.Count, Is.EqualTo(0));
 		}
 
@@ -216,7 +216,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 			validRequest.Discount = 0;
 			validRequest.HasDiscount = true;
 
-			var errorFields = GetValidationFieldErrors(HttpMethod.Post, validRequest);
+			var errorFields = GetValidationFieldErrors(HttpMethods.Post, validRequest);
 			Assert.That(errorFields.Count, Is.EqualTo(1));
 			Assert.That(errorFields[0].FieldName, Is.EqualTo("Discount"));
 		}
@@ -225,7 +225,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public void Validates_empty_request_on_Post()
 		{
 			var request = new Customers();
-			var errorFields = GetValidationFieldErrors(HttpMethod.Post, request);
+			var errorFields = GetValidationFieldErrors(HttpMethods.Post, request);
 
 			var fieldNames = errorFields.Select(x => x.FieldName).ToArray();
 			var fieldErrorCodes = errorFields.Select(x => x.ErrorCode).ToArray();
@@ -239,7 +239,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public void Validates_empty_request_on_Put()
 		{
 			var request = new Customers();
-			var errorFields = GetValidationFieldErrors(HttpMethod.Put, request);
+			var errorFields = GetValidationFieldErrors(HttpMethods.Put, request);
 
 			var fieldNames = errorFields.Select(x => x.FieldName).ToArray();
 			var fieldErrorCodes = errorFields.Select(x => x.ErrorCode).ToArray();
@@ -253,7 +253,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public void Validates_empty_request_on_Get()
 		{
 			var request = new Customers();
-			var errorFields = GetValidationFieldErrors(HttpMethod.Get, request);
+			var errorFields = GetValidationFieldErrors(HttpMethods.Get, request);
 
 			Assert.That(errorFields.Count, Is.EqualTo(1));
 			Assert.That(errorFields[0].ErrorCode, Is.EqualTo("NotEqual"));
@@ -264,7 +264,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public void Validates_empty_request_on_Delete()
 		{
 			var request = new Customers();
-			var errorFields = GetValidationFieldErrors(HttpMethod.Delete, request);
+			var errorFields = GetValidationFieldErrors(HttpMethods.Delete, request);
 
 			Assert.That(errorFields.Count, Is.EqualTo(1));
 			Assert.That(errorFields[0].ErrorCode, Is.EqualTo("NotEqual"));

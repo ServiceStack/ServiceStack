@@ -2,12 +2,10 @@ using System;
 using System.Linq;
 using System.Configuration;
 using System.Collections.Generic;
-using System.Web.Mvc;
 using ServiceStack.Configuration;
-using ServiceStack.CacheAccess;
-using ServiceStack.CacheAccess.Providers;
 using ServiceStack.OrmLite;
-using ServiceStack.OrmLite.SqlServer;
+using ServiceStack.Common;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.ServiceModel;
@@ -15,10 +13,6 @@ using ServiceStack.WebHost.Endpoints;
 
 namespace $rootnamespace$
 {
-	/*
-	 * ServiceStack's Hello World Web Service. 
-	 */
-
 	//Request DTO
 	public class Hello
 	{
@@ -26,107 +20,118 @@ namespace $rootnamespace$
 	}
 
 	//Response DTO
-	public class HelloResponse : IHasResponseStatus
+	public class HelloResponse
 	{
 		public string Result { get; set; }
 		public ResponseStatus ResponseStatus { get; set; } //Where Exceptions get auto-serialized
 	}
 
-	//Implementation. Can be called via any endpoint or format, see: http://servicestack.net/ServiceStack.Hello/
-	public class HelloService : ServiceBase<Hello>
+	//Can be called via any endpoint or format, see: http://servicestack.net/ServiceStack.Hello/
+	public class HelloService : Service
 	{
-		protected override object Run(Hello request)
+		public object Any(Hello request)
 		{
 			return new HelloResponse { Result = "Hello, " + request.Name };
 		}
 	}
 
-	/*
-	 * A Simple REST Web Service example
-	 */
+    //REST Resource DTO
+    [Route("/todos")]
+    [Route("/todos/{Ids}")]
+    public class Todos : IReturn<List<Todo>>
+    {
+        public long[] Ids { get; set; }
+        public Todos(params long[] ids)
+        {
+            this.Ids = ids;
+        }
+    }
 
-	//REST DTO
-	public class Todo 
-	{
-		public long Id { get; set; }
-		public string Content { get; set; }
-		public int Order { get; set; }
-		public bool Done { get; set; }
-	}
+    [Route("/todos", "POST")]
+    [Route("/todos/{Id}", "PUT")]
+    public class Todo : IReturn<Todo>
+    {
+        public long Id { get; set; }
+        public string Content { get; set; }
+        public int Order { get; set; }
+        public bool Done { get; set; }
+    }
 
-	//Todo REST Service implementation
-	public class TodoService : RestServiceBase<Todo>
-	{
-		public TodoRepository Repository { get; set; }  //Injected by IOC
+    public class TodosService : Service
+    {
+        public TodoRepository Repository { get; set; }  //Injected by IOC
 
-		public override object OnGet(Todo request)
-		{
-			if (request.Id == default(long))
-				return Repository.GetAll();
+        public object Get(Todos request)
+        {
+            return request.Ids.IsEmpty()
+                ? Repository.GetAll()
+                : Repository.GetByIds(request.Ids);
+        }
 
-			return Repository.GetById(request.Id);
-		}
+        public object Post(Todo todo)
+        {
+            return Repository.Store(todo);
+        }
 
-		public override object OnPost(Todo todo)
-		{
-			return Repository.Store(todo);
-		}
+        public object Put(Todo todo)
+        {
+            return Repository.Store(todo);
+        }
 
-		public override object OnPut(Todo todo)
-		{
-			return Repository.Store(todo);
-		}
+        public void Delete(Todos request)
+        {
+            Repository.DeleteByIds(request.Ids);
+        }
+    }
+    
+    public class TodoRepository
+    {
+        List<Todo> todos = new List<Todo>();
+        
+        public List<Todo> GetByIds(long[] ids)
+        {
+            return todos.Where(x => ids.Contains(x.Id)).ToList();
+        }
 
-		public override object OnDelete(Todo request)
-		{
-			Repository.DeleteById(request.Id);
-			return null;
-		}
-	}
+        public List<Todo> GetAll()
+        {
+            return todos;
+        }
+
+        public Todo Store(Todo todo)
+        {
+            var existing = todos.FirstOrDefault(x => x.Id == todo.Id);
+            if (existing == null)
+            {
+                var newId = todos.Count > 0 ? todos.Max(x => x.Id) + 1 : 1;
+                todo.Id = newId;
+            }
+            todos.Add(todo);
+            return todo;
+        }
+
+        public void DeleteByIds(params long[] ids)
+        {
+            todos.RemoveAll(x => ids.Contains(x.Id));
+        }
+    }
 
 
-	/// <summary>
-	/// In-memory repository, so we can run the TODO app without any external dependencies
-	/// Registered in Funq as a singleton, auto injected on every request
-	/// </summary>
-	public class TodoRepository
-	{
-		private readonly List<Todo> todos = new List<Todo>();
+/*  Example calling above Service with ServiceStack's C# clients:
 
-		public List<Todo> GetAll()
-		{
-			return todos;
-		}
+	var client = new JsonServiceClient(BaseUri);
+	List<Todo> all = client.Get(new Todos());           // Count = 0
 
-		public Todo GetById(long id)
-		{
-			return todos.FirstOrDefault(x => x.Id == id);
-		}
+	var todo = client.Post(
+	    new Todo { Content = "New TODO", Order = 1 });      // todo.Id = 1
+	all = client.Get(new Todos());                      // Count = 1
 
-		public Todo Store(Todo todo)
-		{
-			if (todo.Id == default(long))
-			{
-				todo.Id = todos.Count == 0 ? 1 : todos.Max(x => x.Id) + 1;
-			}
-			else
-			{
-				for (var i = 0; i < todos.Count; i++)
-				{
-					if (todos[i].Id != todo.Id) continue;
+	todo.Content = "Updated TODO";
+	todo = client.Put(todo);                            // todo.Content = Updated TODO
 
-					todos[i] = todo;
-					return todo;
-				}
-			}
+	client.Delete(new Todos(todo.Id));
+	all = client.Get(new Todos());                      // Count = 0
 
-			todos.Add(todo);
-			return todo;
-		}
+*/
 
-		public void DeleteById(long id)
-		{
-			todos.RemoveAll(x => x.Id == id);
-		}
-	}
 }

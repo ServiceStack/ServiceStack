@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Dynamic;
 using ServiceStack.CacheAccess;
+using ServiceStack.Common.Web;
 using ServiceStack.Html;
 using ServiceStack.Messaging;
 using ServiceStack.OrmLite;
@@ -10,6 +12,7 @@ using ServiceStack.Redis;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
+using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Razor
@@ -41,6 +44,30 @@ namespace ServiceStack.Razor
         public IHttpRequest Request { get; set; }
 
         public IHttpResponse Response { get; set; }
+
+        public object ModelError { get; set; } 
+
+        public ResponseStatus ResponseStatus
+        {
+            get
+            {
+                return ToResponseStatus(ModelError) ?? ToResponseStatus(Model);
+            }
+        }
+
+        private ResponseStatus ToResponseStatus<T>(T modelError)
+        {
+            var ret = modelError.ToResponseStatus();
+            if (ret != null) return ret;
+
+            if (modelError is DynamicObject)
+            {
+                var dynError = modelError as dynamic;
+                return (ResponseStatus)dynError.ResponseStatus;
+            }
+
+            return null;
+        }
 
         private ICacheClient cache;
         public ICacheClient Cache

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Net;
 using System.Runtime.Serialization;
 using System.Web;
 using ServiceStack.Common.Web;
@@ -92,9 +91,18 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		[DataMember]
 		public string ErrorMessage { get; set; }
 
-		[DataMember]
-		public string DebugString { get; set; }
-	}
+        [DataMember]
+        public string DebugString { get; set; }
+
+        [DataMember]
+        public List<string> OperationNames { get; set; }
+
+        [DataMember]
+        public List<string> AllOperationNames { get; set; }
+
+        [DataMember]
+        public Dictionary<string, string> RequestResponseMap { get; set; }
+    }
 
 	public class RequestInfoHandler
 		: IServiceStackHttpHandler, IHttpHandler

@@ -46,7 +46,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		protected HttpListenerBase()
 		{
-			this.startTime = DateTime.Now;
+            this.startTime = DateTime.UtcNow;
 			Log.Info("Begin Initializing Application...");
 
 			EndpointHostConfig.SkipPathValidation = true;
@@ -82,19 +82,10 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			{
 				Configure(null);
 			}
-			if (serviceManager != null)
-			{
-				//Required for adhoc services added in Configure()
-				serviceManager.ReloadServiceOperations();
-				EndpointHost.SetOperationTypes(
-					serviceManager.ServiceOperations,
-					serviceManager.AllServiceOperations
-				);
-			}
 
 			EndpointHost.AfterInit();
 
-			var elapsed = DateTime.Now - this.startTime;
+            var elapsed = DateTime.UtcNow - this.startTime;
 			Log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
 		}
 
@@ -194,7 +185,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
             Log.InfoFormat("{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
 
-			//System.Diagnostics.Debug.WriteLine("Start: " + requestNumber + " at " + DateTime.Now);
+            //System.Diagnostics.Debug.WriteLine("Start: " + requestNumber + " at " + DateTime.UtcNow);
 			//var request = context.Request;
 
 			//if (request.HasEntityBody)
@@ -233,9 +224,9 @@ namespace ServiceStack.WebHost.Endpoints.Support
 					Log.ErrorFormat(error);
 
 				}
-			}			
+			}
 
-			//System.Diagnostics.Debug.WriteLine("End: " + requestNumber + " at " + DateTime.Now);
+            //System.Diagnostics.Debug.WriteLine("End: " + requestNumber + " at " + DateTime.UtcNow);
 		}
 
 	    protected void RaiseReceiveWebRequest(HttpListenerContext context)
@@ -338,7 +329,32 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		public T TryResolve<T>()
 		{
 			return this.Container.TryResolve<T>();
-		}
+        }
+
+        /// <summary>
+        /// Resolves from IoC container a specified type instance.
+        /// </summary>
+        /// <typeparam name="T">Type to be resolved.</typeparam>
+        /// <returns>Instance of <typeparamref name="T"/>.</returns>
+        public static T Resolve<T>()
+        {
+            if (Instance == null) throw new InvalidOperationException("AppHostBase is not initialized.");
+            return Instance.Container.Resolve<T>();
+        }
+
+        /// <summary>
+        /// Resolves and auto-wires a ServiceStack Service
+        /// </summary>
+        /// <typeparam name="T">Type to be resolved.</typeparam>
+        /// <returns>Instance of <typeparamref name="T"/>.</returns>
+        public static T ResolveService<T>(HttpListenerContext httpCtx) where T : class, IRequiresRequestContext
+        {
+            if (Instance == null) throw new InvalidOperationException("AppHostBase is not initialized.");
+            var service = Instance.Container.Resolve<T>();
+            if (service == null) return null;
+            service.RequestContext = httpCtx.ToRequestContext();
+            return service;
+        }
 
         protected IServiceController ServiceController
         {

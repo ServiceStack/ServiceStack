@@ -9,16 +9,16 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
     {
 		public Soap12OperationControl()
 		{
-			EndpointType = EndpointType.Soap12;
+            Format = ServiceHost.Format.Soap12;
 		}
 
 		public override string RequestUri
 		{
 			get
 			{
-				var endpointConfig = MetadataConfig.GetEndpointConfig(this.ContentType);
+                var endpointConfig = MetadataConfig.Soap12;
 				var endpontPath = ResponseMessage != null ? endpointConfig.SyncReplyUri : endpointConfig.AsyncOneWayUri;
-				return string.Format("/{0}", endpontPath);
+				return string.Format("{0}", endpontPath);
 			}
 		}
 

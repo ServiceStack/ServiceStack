@@ -3,7 +3,7 @@ using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 {
-	[Service(EndpointAttributes.Secure | EndpointAttributes.LocalSubnet)]
+	[Restrict(EndpointAttributes.Secure | EndpointAttributes.LocalSubnet)]
 	[DataContract]
 	public class SecureLocalSubnetRestriction { }
 

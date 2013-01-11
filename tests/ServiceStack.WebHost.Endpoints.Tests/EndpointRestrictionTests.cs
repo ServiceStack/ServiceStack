@@ -169,8 +169,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			ShouldAllowAccessWhen<InSecureDevEnvironmentRestriction>(EndpointAttributes.Localhost | EndpointAttributes.InSecure | EndpointAttributes.HttpPost);
 			ShouldAllowAccessWhen<InSecureDevEnvironmentRestriction>(EndpointAttributes.LocalSubnet | EndpointAttributes.InSecure | EndpointAttributes.HttpPost);
-			ShouldAllowAccessWhen<InSecureDevEnvironmentRestriction>(EndpointAttributes.LocalSubnet | EndpointAttributes.InSecure | EndpointAttributes.HttpPost | EndpointAttributes.SyncReply);
-			ShouldAllowAccessWhen<InSecureDevEnvironmentRestriction>(EndpointAttributes.LocalSubnet | EndpointAttributes.InSecure | EndpointAttributes.HttpPost | EndpointAttributes.AsyncOneWay);
+			ShouldAllowAccessWhen<InSecureDevEnvironmentRestriction>(EndpointAttributes.LocalSubnet | EndpointAttributes.InSecure | EndpointAttributes.HttpPost | EndpointAttributes.Reply);
+			ShouldAllowAccessWhen<InSecureDevEnvironmentRestriction>(EndpointAttributes.LocalSubnet | EndpointAttributes.InSecure | EndpointAttributes.HttpPost | EndpointAttributes.OneWay);
 		}
 
 		[Test]
@@ -178,24 +178,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			ShouldAllowAccessWhen<SecureDevEnvironmentRestriction>(EndpointAttributes.Localhost | EndpointAttributes.Secure | EndpointAttributes.HttpPost);
 			ShouldAllowAccessWhen<SecureDevEnvironmentRestriction>(EndpointAttributes.LocalSubnet | EndpointAttributes.Secure | EndpointAttributes.HttpPost);
-			ShouldAllowAccessWhen<SecureDevEnvironmentRestriction>(EndpointAttributes.LocalSubnet | EndpointAttributes.Secure | EndpointAttributes.HttpPost | EndpointAttributes.SyncReply);
-			ShouldAllowAccessWhen<SecureDevEnvironmentRestriction>(EndpointAttributes.LocalSubnet | EndpointAttributes.Secure | EndpointAttributes.HttpPost | EndpointAttributes.AsyncOneWay);
+			ShouldAllowAccessWhen<SecureDevEnvironmentRestriction>(EndpointAttributes.LocalSubnet | EndpointAttributes.Secure | EndpointAttributes.HttpPost | EndpointAttributes.Reply);
+			ShouldAllowAccessWhen<SecureDevEnvironmentRestriction>(EndpointAttributes.LocalSubnet | EndpointAttributes.Secure | EndpointAttributes.HttpPost | EndpointAttributes.OneWay);
 		}
 
 		[Test]
 		public void Can_access_from_insecure_live_environment()
 		{
 			ShouldAllowAccessWhen<InSecureLiveEnvironmentRestriction>(EndpointAttributes.External | EndpointAttributes.InSecure | EndpointAttributes.HttpPost);
-			ShouldAllowAccessWhen<InSecureLiveEnvironmentRestriction>(EndpointAttributes.External | EndpointAttributes.InSecure | EndpointAttributes.HttpPost | EndpointAttributes.SyncReply);
-			ShouldAllowAccessWhen<InSecureLiveEnvironmentRestriction>(EndpointAttributes.External | EndpointAttributes.InSecure | EndpointAttributes.HttpPost | EndpointAttributes.AsyncOneWay);
+			ShouldAllowAccessWhen<InSecureLiveEnvironmentRestriction>(EndpointAttributes.External | EndpointAttributes.InSecure | EndpointAttributes.HttpPost | EndpointAttributes.Reply);
+			ShouldAllowAccessWhen<InSecureLiveEnvironmentRestriction>(EndpointAttributes.External | EndpointAttributes.InSecure | EndpointAttributes.HttpPost | EndpointAttributes.OneWay);
 		}
 
 		[Test]
 		public void Can_access_from_secure_live_environment()
 		{
 			ShouldAllowAccessWhen<SecureLiveEnvironmentRestriction>(EndpointAttributes.External | EndpointAttributes.Secure | EndpointAttributes.HttpPost);
-			ShouldAllowAccessWhen<SecureLiveEnvironmentRestriction>(EndpointAttributes.External | EndpointAttributes.Secure | EndpointAttributes.HttpPost | EndpointAttributes.SyncReply);
-			ShouldAllowAccessWhen<SecureLiveEnvironmentRestriction>(EndpointAttributes.External | EndpointAttributes.Secure | EndpointAttributes.HttpPost | EndpointAttributes.AsyncOneWay);
+			ShouldAllowAccessWhen<SecureLiveEnvironmentRestriction>(EndpointAttributes.External | EndpointAttributes.Secure | EndpointAttributes.HttpPost | EndpointAttributes.Reply);
+			ShouldAllowAccessWhen<SecureLiveEnvironmentRestriction>(EndpointAttributes.External | EndpointAttributes.Secure | EndpointAttributes.HttpPost | EndpointAttributes.OneWay);
 		}
 
 

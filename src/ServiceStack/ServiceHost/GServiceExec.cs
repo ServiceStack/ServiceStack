@@ -38,7 +38,7 @@ namespace ServiceStack.ServiceHost
 
         public static MethodInfo GetRunTimeExecMethod(Type serviceType, Type requestType, EndpointAttributes attrs)
         {
-            if ((attrs & EndpointAttributes.AsyncOneWay) == EndpointAttributes.AsyncOneWay)
+            if ((attrs & EndpointAttributes.OneWay) == EndpointAttributes.OneWay)
             {
                 var mi = serviceType.GetMethod(ExecuteAsync, new[] { requestType });
                 if (mi != null) return mi;
@@ -78,7 +78,7 @@ namespace ServiceStack.ServiceHost
 
         public static object Execute(IService<TReq> service, TReq request, EndpointAttributes attrs)
         {
-            if ((attrs & EndpointAttributes.AsyncOneWay) == EndpointAttributes.AsyncOneWay)
+            if ((attrs & EndpointAttributes.OneWay) == EndpointAttributes.OneWay)
             {
                 var asyncService = service as IAsyncService<TReq>;
                 if (asyncService != null) return asyncService.ExecuteAsync(request);

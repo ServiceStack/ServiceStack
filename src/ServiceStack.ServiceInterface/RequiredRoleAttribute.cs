@@ -36,7 +36,9 @@ namespace ServiceStack.ServiceInterface
             var session = req.GetSession();
             if (HasAllRoles(req, session)) return;
 
-            res.StatusCode = (int)HttpStatusCode.Unauthorized;
+            res.StatusCode = session != null && session.IsAuthenticated
+                ? (int)HttpStatusCode.Forbidden
+                : (int)HttpStatusCode.Unauthorized;
             res.StatusDescription = "Invalid Role";
             res.EndServiceStackRequest();
         }
@@ -82,7 +84,11 @@ namespace ServiceStack.ServiceInterface
             if (session != null && requiredRoles.All(session.HasRole))
                 return;
 
-            throw new HttpError(HttpStatusCode.Unauthorized, "Invalid Role");
+            var statusCode = session != null && session.IsAuthenticated
+                ? (int)HttpStatusCode.Forbidden
+                : (int)HttpStatusCode.Unauthorized;
+
+            throw new HttpError(statusCode, "Invalid Role");
         }
     }
 

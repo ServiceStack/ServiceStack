@@ -18,6 +18,10 @@
     <OldToolsVersion>4.0</OldToolsVersion>
     <UpgradeBackupLocation />
     <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -29,7 +33,7 @@
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <PlatformTarget>x86</PlatformTarget>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -147,7 +151,22 @@
     <Content Include="Content\js\underscore.min.js" />
     <Content Include="Content\js\userprofile.js" />
     <Content Include="Content\js\_blank.js" />
+    <Content Include="Content\swagger-ui\css\screen.css" />
+    <Content Include="Content\swagger-ui\images\pet_store_api.png" />
+    <Content Include="Content\swagger-ui\images\wordnik_api.png" />
+    <Content Include="Content\swagger-ui\default.aspx" />
+    <Content Include="Content\swagger-ui\lib\backbone-min.js" />
+    <Content Include="Content\swagger-ui\lib\handlebars.runtime-1.0.0.beta.6.js" />
+    <Content Include="Content\swagger-ui\lib\jquery.ba-bbq.min.js" />
+    <Content Include="Content\swagger-ui\lib\jquery.min.js" />
+    <Content Include="Content\swagger-ui\lib\jquery.slideto.min.js" />
+    <Content Include="Content\swagger-ui\lib\jquery.wiggle.min.js" />
+    <Content Include="Content\swagger-ui\lib\swagger.js" />
+    <Content Include="Content\swagger-ui\lib\underscore-min.js" />
+    <Content Include="Content\swagger-ui\swagger-ui.js" />
+    <Content Include="Content\swagger-ui\swagger-ui.min.js" />
     <Content Include="Default.aspx" />
+    <Content Include="Subpages\Test.aspx" />
     <Content Include="user-notfound.htm" />
     <Content Include="user-default.htm" />
     <Content Include="Global.asax" />
@@ -172,8 +191,16 @@
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="Services\CachedProtoBufEmailService.cs" />
+    <Compile Include="Services\EndpointAccessService.cs" />
     <Compile Include="Services\HelloImage.cs" />
     <Compile Include="Services\IocServiceTests.cs" />
+    <Compile Include="Subpages\Test.aspx.cs">
+      <DependentUpon>Test.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Subpages\Test.aspx.designer.cs">
+      <DependentUpon>Test.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Tests\BinarySerializedTests.cs" />
     <Compile Include="Tests\ExceptionHandlingTests.cs" />
     <Compile Include="Tests\ProtoBufServiceTests.cs" />
@@ -234,9 +261,14 @@
     <Compile Include="Tests\RestsTestBase.cs" />
     <Compile Include="Tests\RestWebServiceTests.cs" />
     <Compile Include="Tests\SessionTests.cs" />
+    <Compile Include="Tests\UniqueRequestTests.cs" />
     <Compile Include="Tests\WebServicesTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\ServiceStack.Api.Swagger\ServiceStack.Api.Swagger.csproj">
+      <Project>{01D3F057-7984-498F-8B0A-EB375701E204}</Project>
+      <Name>ServiceStack.Api.Swagger</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Authentication.OpenId\ServiceStack.Authentication.OpenId.csproj">
       <Project>{6E240294-9D93-4C09-9BB0-38D82A22DEEE}</Project>
       <Name>ServiceStack.Authentication.OpenId</Name>

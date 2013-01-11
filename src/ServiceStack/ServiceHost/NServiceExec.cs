@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Common.Web;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 
@@ -27,6 +27,24 @@ namespace ServiceStack.ServiceHost
         }
     }
 
+    public static class NServiceExecExtensions
+    {
+        public static IEnumerable<MethodInfo> GetActions(this Type serviceType)
+        {
+            foreach (var mi in serviceType.GetMethods(BindingFlags.Public | BindingFlags.Instance))
+            {
+                if (mi.GetParameters().Length != 1)
+                    continue;
+
+                var actionName = mi.Name.ToUpper();
+                if (!HttpMethods.AllVerbs.Contains(actionName) && actionName != ActionContext.AnyAction)
+                    continue;
+
+                yield return mi;
+            }
+        }
+    }
+
     public class NServiceExec<TService>
     {
         private static Dictionary<Type, List<ActionContext>> actionMap
@@ -37,15 +55,10 @@ namespace ServiceStack.ServiceHost
 
         static NServiceExec()
         {
-            var mis = typeof(TService).GetMethods(BindingFlags.Public | BindingFlags.Instance);
-            foreach (var methodInfo in mis)
+            foreach (var mi in typeof(TService).GetActions())
             {
-                var mi = methodInfo;
-                var args = mi.GetParameters();
-                if (args.Length != 1) continue;
                 var actionName = mi.Name.ToUpper();
-                if (!HttpMethod.AllVerbs.Contains(actionName) && actionName != ActionContext.AnyAction)
-                    continue;
+                var args = mi.GetParameters();
 
                 var requestType = args[0].ParameterType;
                 var actionCtx = new ActionContext {
@@ -118,6 +131,7 @@ namespace ServiceStack.ServiceHost
                 (callExecute, serviceParam, requestDtoParam).Compile();
 
                 return (service, request) => {
+                  
                     executeFunc(service, request);
                     return null;
                 };
@@ -148,7 +162,7 @@ namespace ServiceStack.ServiceHost
         {
             var actionName = requestContext != null
                 ? requestContext.Get<IHttpRequest>().HttpMethod
-                : HttpMethod.Post; //MQ Services
+                : HttpMethods.Post; //MQ Services
 
             InstanceExecFn action;
             if (execMap.TryGetValue(ActionContext.Key(actionName, requestName), out action)

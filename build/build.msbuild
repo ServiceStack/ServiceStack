@@ -92,6 +92,8 @@
       <StackExpressPluginsMsgPackFiles Include="$(BuildSolutionDir)/lib/MsgPack.dll"></StackExpressPluginsMsgPackFiles>
 
       <StackExpressClientSilverlightFiles Include="$(SrcDir)/ServiceStack.Client.Silverlight/bin/$(Configuration)/ServiceStack.Client.Silverlight.*"></StackExpressClientSilverlightFiles>
+
+      <StackExpressSwaggerFiles Include="$(SrcDir)/ServiceStack.Api.Swagger/bin/$(Configuration)/ServiceStack.Api.Swagger.*"></StackExpressSwaggerFiles>
     </ItemGroup>
 
 
@@ -174,6 +176,17 @@
     <Copy SourceFiles="%(StackExpressPluginsMsgPackFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Plugins.MsgPack/lib/net40" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Plugins.MsgPack/stackexpress.plugins.msgpack.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
+            LogStandardErrorAsError="true" />
+
+    <!-- StackExpress.Api.Swagger -->
+
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Api.Swagger/ServiceStack.Api.Swagger.csproj"
+             Targets="Build"
+             Properties="BuildPackage=true;Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <Copy SourceFiles="%(StackExpressSwaggerFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/net35" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.Swagger/stackexpress.api.swagger.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
             LogStandardErrorAsError="true" />
 
   </Target>

@@ -40,7 +40,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -121,6 +121,7 @@
     <Compile Include="Formats_Razor\IntroductionLayoutRazorTests.cs" />
     <Compile Include="Formats\MarkdownTestBase.cs" />
     <Compile Include="Formats_Razor\RazorEngineTests.cs" />
+    <Compile Include="Formats_Razor\StandAloneExampleTests.cs" />
     <Compile Include="Formats_Razor\TemplateTests.cs" />
     <Compile Include="Formats\IntroductionExampleTests.cs" />
     <Compile Include="Formats\IntroductionLayoutTests.cs" />
@@ -133,6 +134,7 @@
     <Compile Include="Formats\TextBlockUtils.cs" />
     <Compile Include="Formats\UseCaseTests.cs" />
     <Compile Include="Formats\ViewTests.cs" />
+    <Compile Include="HttpRequestMock.cs" />
     <Compile Include="IoCTests.cs" />
     <Compile Include="PerfTests.cs" />
     <Compile Include="RequestContextExtensionsTest.cs" />

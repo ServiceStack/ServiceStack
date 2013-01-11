@@ -2,11 +2,9 @@
 using System.Linq;
 using System.Reflection;
 using Funq;
-using ServiceStack.Common.Extensions;
 using ServiceStack.FluentValidation;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
-using ServiceStack.Validation;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.Text;
 
@@ -17,8 +15,6 @@ namespace ServiceStack.ServiceInterface.Validation
         private static readonly ILog Log = LogManager.GetLogger(typeof(ValidationFeature));
 
         public static bool Enabled { private set; get; }
-        private IAppHost appHost;
-        private HandleServiceExceptionDelegate existingHandler;
 
         /// <summary>
         /// Activate the validation mechanism, so every request DTO with an existing validator
@@ -30,43 +26,9 @@ namespace ServiceStack.ServiceInterface.Validation
             if (Enabled) return;
             Enabled = true;
             var filter = new ValidationFilters();
-            this.appHost = appHost;
             appHost.RequestFilters.Add(filter.RequestFilter);
-
-            existingHandler = appHost.ServiceExceptionHandler;
-            appHost.ServiceExceptionHandler = HandleException;
         }
-        
-        public object HandleException(object request, Exception ex)
-        {
-            var validationException = ex as ValidationException;
-            if (validationException != null)
-            {
-                var errors = validationException.Errors.ConvertAll(x =>
-                    new ValidationErrorField(x.ErrorCode, x.PropertyName, x.ErrorMessage));
-
-                return DtoUtils.CreateErrorResponse(typeof(ValidationException).Name, validationException.Message, errors);
-            }
-
-            return existingHandler != null
-                ? existingHandler(request, ex)
-                : DtoUtils.HandleException(appHost, request, ex);
-        }
-
-        public static object HandleException(IResolver resolver, object request, Exception ex)
-        {
-            var validationException = ex as ValidationException;
-            if (validationException != null)
-            {
-                var errors = validationException.Errors.ConvertAll(x =>
-                    new ValidationErrorField(x.ErrorCode, x.PropertyName, x.ErrorMessage));
-
-                return DtoUtils.CreateErrorResponse(typeof(ValidationException).Name, validationException.Message, errors);
-            }
-
-            return DtoUtils.HandleException(resolver, request, ex);
-        }
-
+       
         /// <summary>
         /// Override to provide additional/less context about the Service Exception. 
         /// By default the request is serialized and appended to the ResponseStatus StackTrace.
