@@ -36,9 +36,9 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 		public void SerializeToStream(IRequestContext requestContext, object response, IHttpResponse httpRes)
 		{
             var httpReq = requestContext.Get<IHttpRequest>();
-            if (AppHost.ViewEngines.Any(x => x.ProcessRequest(httpReq, httpRes, response))) return;
+            if (httpReq != null && AppHost.ViewEngines.Any(x => x.ProcessRequest(httpReq, httpRes, response))) return;
 
-			if (requestContext.ResponseContentType != ContentType.Html
+			if (requestContext.ResponseContentType != ContentType.Html && httpReq != null
 				&& httpReq.ResponseContentType != ContentType.JsonReport) return;
 
 		    var dto = response.ToDto();
@@ -49,22 +49,28 @@ namespace ServiceStack.WebHost.Endpoints.Formats
                 var json = JsonDataContractSerializer.Instance.SerializeToString(dto) ?? "null";
                 json = json.Replace("<", "&lt;").Replace(">", "&gt;");
 
-                var url = httpReq.AbsoluteUri
-                    .Replace("format=html", "")
-                    .Replace("format=shtm", "")
-                    .TrimEnd('?', '&');
+                string url = string.Empty;
+                if (httpReq != null)
+                {                    
+                    url = httpReq.AbsoluteUri
+                                 .Replace("format=html", "")
+                                 .Replace("format=shtm", "")
+                                 .TrimEnd('?', '&');
 
-                url += url.Contains("?") ? "&" : "?";
+                    url += url.Contains("?") ? "&" : "?";
+                }
 
                 var now = DateTime.UtcNow;
-                var requestName = httpReq.OperationName ?? dto.GetType().Name;
+                string requestName = string.Empty;
+                if (httpReq != null) requestName = httpReq.OperationName ?? dto.GetType().Name;
 
                 html = GetHtmlTemplate()
-                    .Replace("${Dto}", json)
-                    .Replace("${Title}", string.Format(TitleFormat, requestName, now))
-                    .Replace("${MvcIncludes}", MiniProfiler.Profiler.RenderIncludes().ToString())
-                    .Replace("${Header}", string.Format(HtmlTitleFormat, requestName, now))
-                    .Replace("${ServiceUrl}", url);
+                        .Replace("${Dto}", json)
+                        .Replace("${Title}", string.Format(TitleFormat, requestName, now))
+                        .Replace("${MvcIncludes}", MiniProfiler.Profiler.RenderIncludes().ToString())
+                        .Replace("${Header}", string.Format(HtmlTitleFormat, requestName, now))
+                        .Replace("${ServiceUrl}", url);
+
             }
 
 			var utf8Bytes = html.ToUtf8Bytes();
