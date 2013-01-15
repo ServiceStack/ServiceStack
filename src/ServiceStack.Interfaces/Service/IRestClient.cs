@@ -1,4 +1,5 @@
 using System.IO;
+using System.Net;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Service
@@ -30,7 +31,7 @@ namespace ServiceStack.Service
 	    void CustomMethod(string httpVerb, IReturnVoid request);
 	    TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> request);
 
-        IHttpResult Head(IReturn<IHttpResult> request);
-        void Head(IReturnVoid request);
+        HttpWebResponse Head(IReturn request);
+        HttpWebResponse Head(string relativeOrAbsoluteUrl);
 	}
 }

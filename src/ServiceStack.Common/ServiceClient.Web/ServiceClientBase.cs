@@ -93,7 +93,8 @@ namespace ServiceStack.ServiceClient.Web
         {
             this.HttpMethod = DefaultHttpMethod;
             this.CookieContainer = new CookieContainer();
-            asyncClient = new AsyncServiceClient {
+            asyncClient = new AsyncServiceClient
+            {
                 ContentType = ContentType,
                 StreamSerializer = SerializeToStream,
                 StreamDeserializer = StreamDeserializer,
@@ -368,8 +369,8 @@ namespace ServiceStack.ServiceClient.Web
             {
                 TResponse response;
 
-                if (!HandleResponseException(ex, 
-                    request, 
+                if (!HandleResponseException(ex,
+                    request,
                     requestUri,
                     () => SendRequest(HttpMethods.Post, requestUri, request),
                     c => c.GetResponse(),
@@ -382,7 +383,7 @@ namespace ServiceStack.ServiceClient.Web
             }
         }
 
-        private bool HandleResponseException<TResponse>(Exception ex, object request, string requestUri, 
+        private bool HandleResponseException<TResponse>(Exception ex, object request, string requestUri,
             Func<WebRequest> createWebRequest, Func<WebRequest, WebResponse> getResponse, out TResponse response)
         {
             try
@@ -422,7 +423,7 @@ namespace ServiceStack.ServiceClient.Web
             return false;
         }
 
-        readonly ConcurrentDictionary<Type,Action<Exception,string>> ResponseHandlers
+        readonly ConcurrentDictionary<Type, Action<Exception, string>> ResponseHandlers
             = new ConcurrentDictionary<Type, Action<Exception, string>>();
 
         private void ThrowResponseTypeException<TResponse>(object request, Exception ex, string requestUri)
@@ -437,7 +438,7 @@ namespace ServiceStack.ServiceClient.Web
             Action<Exception, string> responseHandler;
             if (!ResponseHandlers.TryGetValue(responseType, out responseHandler))
             {
-                var mi = GetType().GetMethod("ThrowWebServiceException", 
+                var mi = GetType().GetMethod("ThrowWebServiceException",
                         BindingFlags.Instance | BindingFlags.NonPublic)
                     .MakeGenericMethod(new[] { responseType });
 
@@ -459,7 +460,8 @@ namespace ServiceStack.ServiceClient.Web
                 log.DebugFormat("Status Code : {0}", errorResponse.StatusCode);
                 log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
 
-                var serviceEx = new WebServiceException(errorResponse.StatusDescription) {
+                var serviceEx = new WebServiceException(errorResponse.StatusDescription)
+                {
                     StatusCode = (int)errorResponse.StatusCode,
                     StatusDescription = errorResponse.StatusDescription,
                 };
@@ -483,7 +485,8 @@ namespace ServiceStack.ServiceClient.Web
                 catch (Exception innerEx)
                 {
                     // Oh, well, we tried
-                    throw new WebServiceException(errorResponse.StatusDescription, innerEx) {
+                    throw new WebServiceException(errorResponse.StatusDescription, innerEx)
+                    {
                         StatusCode = (int)errorResponse.StatusCode,
                         StatusDescription = errorResponse.StatusDescription,
                         ResponseBody = serviceEx.ResponseBody
@@ -508,7 +511,8 @@ namespace ServiceStack.ServiceClient.Web
 
         private WebRequest SendRequest(string httpMethod, string requestUri, object request)
         {
-            return PrepareWebRequest(httpMethod, requestUri, request, client => {
+            return PrepareWebRequest(httpMethod, requestUri, request, client =>
+                {
                     using (var requestStream = client.GetRequestStream())
                     {
                         SerializeToStream(null, request, requestStream);
@@ -521,7 +525,9 @@ namespace ServiceStack.ServiceClient.Web
             if (httpMethod == null)
                 throw new ArgumentNullException("httpMethod");
 
-            if (httpMethod == HttpMethods.Get && request != null)
+            var httpMethodGetOrHead = httpMethod == HttpMethods.Get || httpMethod == HttpMethods.Head;
+
+            if (httpMethodGetOrHead && request != null)
             {
                 var queryString = QueryStringSerializer.SerializeToString(request);
                 if (!string.IsNullOrEmpty(queryString))
@@ -531,6 +537,7 @@ namespace ServiceStack.ServiceClient.Web
             }
 
             var client = (HttpWebRequest)WebRequest.Create(requestUri);
+
             try
             {
                 client.Accept = ContentType;
@@ -555,7 +562,7 @@ namespace ServiceStack.ServiceClient.Web
                 ApplyWebRequestFilters(client);
 
                 if (httpMethod != HttpMethods.Get
-                    && httpMethod != HttpMethods.Delete 
+                    && httpMethod != HttpMethods.Delete
                     && httpMethod != HttpMethods.Head)
                 {
                     client.ContentType = ContentType;
@@ -786,11 +793,11 @@ namespace ServiceStack.ServiceClient.Web
                 TResponse response;
 
                 if (!HandleResponseException(
-                    ex, 
+                    ex,
                     request,
-                    requestUri, 
-                    () => SendRequest(httpMethod, requestUri, request), 
-                    c => c.GetResponse(), 
+                    requestUri,
+                    () => SendRequest(httpMethod, requestUri, request),
+                    c => c.GetResponse(),
                     out response))
                 {
                     throw;
@@ -891,14 +898,14 @@ namespace ServiceStack.ServiceClient.Web
             return Send<TResponse>(httpVerb, request.ToUrl(httpVerb, Format), request);
         }
 
-        public IHttpResult Head(IReturn<IHttpResult> request)
+        public virtual HttpWebResponse Head(IReturn request)
         {
-            return CustomMethod(HttpMethods.Head, request);
+            return Send<HttpWebResponse>(HttpMethods.Head, request.ToUrl(HttpMethods.Head), request);
         }
 
-        public void Head(IReturnVoid request)
+        public virtual HttpWebResponse Head(string relativeOrAbsoluteUrl)
         {
-            CustomMethod(HttpMethods.Head, request);
+            return Send<HttpWebResponse>(HttpMethods.Head, relativeOrAbsoluteUrl, null);
         }
 
         public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request)
@@ -911,7 +918,8 @@ namespace ServiceStack.ServiceClient.Web
             var requestUri = GetUrl(relativeOrAbsoluteUrl);
             var currentStreamPosition = fileToUpload.Position;
 
-            Func<WebRequest> createWebRequest = () => {
+            Func<WebRequest> createWebRequest = () =>
+            {
                 var webRequest = PrepareWebRequest(HttpMethods.Post, requestUri, null, null);
 
                 var queryString = QueryStringSerializer.SerializeToString(request);
@@ -996,11 +1004,11 @@ namespace ServiceStack.ServiceClient.Web
                 // restore original position before retry
                 fileToUpload.Seek(currentStreamPosition, SeekOrigin.Begin);
 
-                if (!HandleResponseException(ex, 
-                    null, 
-                    requestUri, 
-                    createWebRequest, 
-                    c => { c.UploadFile(fileToUpload, fileName, mimeType); return c.GetResponse(); }, 
+                if (!HandleResponseException(ex,
+                    null,
+                    requestUri,
+                    createWebRequest,
+                    c => { c.UploadFile(fileToUpload, fileName, mimeType); return c.GetResponse(); },
                     out response))
                 {
                     throw;
@@ -1013,12 +1021,19 @@ namespace ServiceStack.ServiceClient.Web
         private TResponse HandleResponse<TResponse>(WebResponse webResponse)
         {
             ApplyWebResponseFilters(webResponse);
+
+            if (typeof(TResponse) == typeof(HttpWebResponse) && (webResponse is HttpWebResponse))
+            {
+                return (TResponse)Convert.ChangeType(webResponse, typeof(TResponse));
+            }
+
             using (var responseStream = webResponse.GetResponseStream())
             {
                 var response = DeserializeFromStream<TResponse>(responseStream);
                 return response;
             }
         }
+
 #endif
 
         public void Dispose() { }

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Net;
 using ServiceStack.Common.Web;
 using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
@@ -205,12 +206,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 	        throw new NotImplementedException();
 	    }
 
-        public IHttpResult Head(IReturn<IHttpResult> request)
+	    public HttpWebResponse Head(IReturn request)
 	    {
 	        throw new NotImplementedException();
 	    }
 
-	    public void Head(IReturnVoid request)
+	    public HttpWebResponse Head(string relativeOrAbsoluteUrl)
 	    {
 	        throw new NotImplementedException();
 	    }
