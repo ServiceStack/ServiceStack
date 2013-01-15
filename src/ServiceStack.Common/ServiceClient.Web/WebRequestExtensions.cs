@@ -34,12 +34,13 @@ namespace ServiceStack.ServiceClient.Web
             string postData = null,
             string contentType = null,
             string acceptContentType = null,
+            Action<HttpWebRequest> requestFilter = null,
             Action<HttpWebResponse> responseFilter = null)
         {
             var bytesRequest = postData != null ? postData.ToUtf8Bytes() : null;
             
             var bytesResponse = DownloadBytesFromUrl(url, httpMethod,
-                bytesRequest, contentType, acceptContentType, responseFilter);
+                bytesRequest, contentType, acceptContentType, requestFilter, responseFilter);
 
             var text = bytesResponse.FromUtf8Bytes();
             return text;
@@ -50,6 +51,7 @@ namespace ServiceStack.ServiceClient.Web
             string postData = null,
             string contentType = null,
             string acceptContentType = null,
+            Action<HttpWebRequest> requestFilter = null,
             Action<HttpWebResponse> responseFilter = null)
         {
             if (encoding == null)
@@ -58,7 +60,7 @@ namespace ServiceStack.ServiceClient.Web
             var bytesRequest = postData != null ? encoding.GetBytes(postData) : null;
 
             var bytesResponse = DownloadBytesFromUrl(url, httpMethod,
-                bytesRequest, contentType, acceptContentType, responseFilter);
+                bytesRequest, contentType, acceptContentType, requestFilter, responseFilter);
 
             var text = encoding.GetString(bytesResponse);
             return text;
@@ -69,6 +71,7 @@ namespace ServiceStack.ServiceClient.Web
             byte[] postData = null,
             string contentType = null,
             string acceptContentType = null,
+            Action<HttpWebRequest> requestFilter = null,
             Action<HttpWebResponse> responseFilter = null)
         {
             var webReq = (HttpWebRequest)WebRequest.Create(url);
@@ -78,6 +81,8 @@ namespace ServiceStack.ServiceClient.Web
                 webReq.ContentType = contentType;
             if (acceptContentType != null)
                 webReq.Accept = acceptContentType;
+            if (requestFilter != null)
+                requestFilter(webReq);
 
             try
             {

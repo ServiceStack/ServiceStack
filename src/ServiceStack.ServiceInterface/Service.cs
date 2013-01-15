@@ -108,6 +108,15 @@ namespace ServiceStack.ServiceInterface
             return (TUserSession)(userSession ?? (userSession = Cache.SessionAs<TUserSession>(Request, Response)));
         }
 
+        public virtual void PublishMessage<T>(T message)
+        {
+            //TODO: Register In-Memory IMessageFactory by default
+            if (MessageProducer == null)
+                throw new NullReferenceException("No IMessageFactory was registered, cannot PublishMessage");
+
+            MessageProducer.Publish(message);
+        }
+
         public virtual void Dispose()
         {
             if (cache != null)
