@@ -77,6 +77,8 @@ namespace ServiceStack.ServiceInterface.Testing
 
         public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; private set; }
 
+        public Action<IHttpRequest> InterceptRequestHandler { get; set; }
+
         public Dictionary<Type, Func<IHttpRequest, object>> RequestBinders
         {
             get { throw new NotImplementedException(); }

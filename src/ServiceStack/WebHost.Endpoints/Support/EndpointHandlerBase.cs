@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.IO;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Web;
@@ -97,7 +99,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
                     var deserializer = EndpointHost.AppHost.ContentTypeFilters.GetStreamDeserializer(contentType);
                     if (deserializer != null)
                     {
-                        return deserializer(requestType, httpReq.InputStream);
+                        return deserializer(requestType, InterceptStream(httpReq));
                     }
                 }
             }
@@ -256,6 +258,94 @@ namespace ServiceStack.WebHost.Endpoints.Support
                 return false;
             }
             return true;
+        }
+
+        protected static Stream InterceptStream(IHttpRequest request)
+        {
+            return InterceptStream(request.InputStream, () => new InterceptedHttpRequest(request));
+        }
+
+        protected static Stream InterceptStream(HttpRequest request)
+        {
+            return InterceptStream(request.InputStream, () => new InterceptedHttpRequest(request));
+        }
+
+        private static Stream InterceptStream(Stream inputStream, Func<InterceptedHttpRequest> createInterceptedHttpRequest)
+        {
+            var interceptInputStreamCallback = EndpointHost.InterceptRequestHandler;
+
+            if (interceptInputStreamCallback == null)
+            {
+                return inputStream;
+            }
+
+            var interceptedHttpRequest = createInterceptedHttpRequest();
+
+            try
+            {
+                interceptInputStreamCallback(interceptedHttpRequest);
+            }
+            catch {} // We don't want to let an uncaught exception in the callback affect us, so eat the exception.
+
+            return interceptedHttpRequest.InputStream;
+        }
+
+        private class InterceptedHttpRequest : IHttpRequest
+        {
+            private readonly IHttpRequest _request;
+            private readonly Stream _stream;
+
+            public InterceptedHttpRequest(IHttpRequest request)
+            {
+                _request = request;
+                var data = request.InputStream.ReadFully();
+                _stream = new MemoryStream(data);
+            }
+
+            public InterceptedHttpRequest(HttpRequest request)
+                : this(new HttpRequestWrapper(request))
+            {
+            }
+
+            public string GetRawBody()
+            {
+                try
+                {
+                    return new StreamReader(_stream).ReadToEnd();
+                }
+                finally
+                {
+                    _stream.Position = 0;
+                }
+            }
+
+            public Stream InputStream
+            {
+                get { return _stream; }
+            }
+
+            public T TryResolve<T>() { return _request.TryResolve<T>(); }
+            public object OriginalRequest { get { return _request.OriginalRequest; } }
+            public string OperationName { get { return _request.OperationName; } }
+            public string ContentType { get { return _request.ContentType; } }
+            public string HttpMethod { get { return _request.HttpMethod; } }
+            public string UserAgent { get { return _request.UserAgent; } }
+            public IDictionary<string, Cookie> Cookies { get { return _request.Cookies; } }
+            public string ResponseContentType { get { return _request.ResponseContentType; } set { _request.ResponseContentType = value; } }
+            public Dictionary<string, object> Items { get { return _request.Items; } }
+            public NameValueCollection Headers { get { return _request.Headers; } }
+            public NameValueCollection QueryString { get { return _request.QueryString; } }
+            public NameValueCollection FormData { get { return _request.FormData; } }
+            public string RawUrl { get { return _request.RawUrl; } }
+            public string AbsoluteUri { get { return _request.AbsoluteUri; } }
+            public string UserHostAddress { get { return _request.UserHostAddress; } }
+            public string RemoteIp { get { return _request.RemoteIp; } }
+            public bool IsSecureConnection { get { return _request.IsSecureConnection; } }
+            public string[] AcceptTypes { get { return _request.AcceptTypes; } }
+            public string PathInfo { get { return _request.PathInfo; } }
+            public long ContentLength { get { return _request.ContentLength; } }
+            public IFile[] Files { get { return _request.Files; } }
+            public string ApplicationFilePath { get { return _request.ApplicationFilePath; } }
         }
 
     }

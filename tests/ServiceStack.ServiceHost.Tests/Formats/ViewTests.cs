@@ -94,7 +94,9 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 		    public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
 
-			public Dictionary<Type, Func<IHttpRequest, object>> RequestBinders
+            public Action<IHttpRequest> InterceptRequestHandler { get; set; }
+
+		    public Dictionary<Type, Func<IHttpRequest, object>> RequestBinders
 			{
 				get { throw new NotImplementedException(); }
 			}

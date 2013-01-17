@@ -82,6 +82,11 @@ namespace ServiceStack.WebHost.Endpoints
 		/// </summary>
 		List<HttpHandlerResolverDelegate> CatchAllHandlers { get; }
 
+        /// <summary>
+        /// Gets or sets a callback function that is invoked before each request.
+        /// </summary>
+        Action<IHttpRequest> InterceptRequestHandler { get; set; }
+
 		/// <summary>
 		/// Provide a custom model minder for a specific Request DTO
 		/// </summary>

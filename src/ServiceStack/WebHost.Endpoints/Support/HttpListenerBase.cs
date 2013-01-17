@@ -431,7 +431,13 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			get { return EndpointHost.CatchAllHandlers; }
 		}
 
-		public EndpointHostConfig Config
+        public Action<IHttpRequest> InterceptRequestHandler
+        {
+            get { return EndpointHost.InterceptRequestHandler; }
+            set { EndpointHost.InterceptRequestHandler = value; }
+        }
+
+	    public EndpointHostConfig Config
 		{
 			get { return EndpointHost.Config; }
 		}
