@@ -230,6 +230,15 @@ namespace ServiceStack.WebHost.Endpoints
 			get { return EndpointHost.CatchAllHandlers; }
 		}
 
+        /// <summary>
+        /// Gets or sets a callback function that is invoked before each request.
+        /// </summary>
+        public Action<IHttpRequest> InterceptRequestHandler
+        {
+            get { return EndpointHost.InterceptRequestHandler; }
+            set { EndpointHost.InterceptRequestHandler = value; }
+        }
+
 		public EndpointHostConfig Config
 		{
 			get { return EndpointHost.Config; }

@@ -25,7 +25,7 @@ namespace ServiceStack.WebHost.Endpoints
                 return;
             }
 
-            var requestMessage = GetSoap11RequestMessage(context.Request.InputStream);
+            var requestMessage = GetSoap11RequestMessage(InterceptStream(context.Request));
             SendOneWay(requestMessage);
         }
     }
@@ -43,7 +43,7 @@ namespace ServiceStack.WebHost.Endpoints
                 return;
             }
 
-            var requestMessage = GetSoap11RequestMessage(context.Request.InputStream);
+            var requestMessage = GetSoap11RequestMessage(InterceptStream(context.Request));
             var responseMessage = Send(requestMessage);
 
             context.Response.ContentType = GetSoapContentType(context.Request.ContentType);
@@ -62,7 +62,7 @@ namespace ServiceStack.WebHost.Endpoints
                 return;
             }
 
-            var requestMessage = GetSoap11RequestMessage(httpReq.InputStream);
+            var requestMessage = GetSoap11RequestMessage(InterceptStream(httpReq));
             var responseMessage = Send(requestMessage, httpReq, httpRes);
 
             httpRes.ContentType = GetSoapContentType(httpReq.ContentType);

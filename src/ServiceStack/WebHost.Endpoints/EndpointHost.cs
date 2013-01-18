@@ -268,7 +268,12 @@ namespace ServiceStack.WebHost.Endpoints
 	    }
 
 	    public static ServiceMetadata Metadata { get { return Config.Metadata; } }
-       
+
+        /// <summary>
+        /// Gets or sets a callback function that is invoked before each request.
+        /// </summary>
+        public static Action<IHttpRequest> InterceptRequestHandler { get; set; }
+        
         /// <summary>
 		/// Applies the raw request filters. Returns whether or not the request has been handled 
 		/// and no more processing should be done.
