@@ -12,7 +12,7 @@
 
 using System.Collections.Generic;
 using ServiceStack.DesignPatterns.Model;
-#if WINDOWS_PHONE
+#if WINDOWS_PHONE && !WP8
 using ServiceStack.Text.WP;
 #endif
 

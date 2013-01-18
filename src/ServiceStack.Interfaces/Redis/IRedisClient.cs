@@ -17,7 +17,7 @@ using ServiceStack.DataAccess;
 using ServiceStack.DesignPatterns.Model;
 using ServiceStack.Redis.Generic;
 using ServiceStack.Redis.Pipeline;
-#if WINDOWS_PHONE
+#if WINDOWS_PHONE && !WP8
 using ServiceStack.Text.WP;
 #endif
 

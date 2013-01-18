@@ -7,14 +7,18 @@ using ServiceStack.Text;
 
 namespace ServiceStack.ServiceClient.Web
 {
+#if !WP8
     [Serializable]
+#endif
     public class WebServiceException
         : Exception
     {
         public WebServiceException() { }
         public WebServiceException(string message) : base(message) { }
         public WebServiceException(string message, Exception innerException) : base(message, innerException) { }
+#if !WP8
         public WebServiceException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+#endif
 
         public int StatusCode { get; set; }
 
