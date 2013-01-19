@@ -37,41 +37,41 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void BufferredRequest_allows_rereading_of_Request_InputStream()
         {
-            BufferedRequestAppHost.UseBufferredStream = true;
+            appHost.UseBufferredStream = true;
 
             var client = new JsonServiceClient(Config.ServiceStackBaseUri);
             var request = new MyRequest { Data = "RequestData" };
             var response = client.Post(request);
 
             Assert.That(response.Data, Is.EqualTo(request.Data));
-            Assert.That(BufferedRequestAppHost.LastRequestBody, Is.EqualTo(request.ToJson()));
+            Assert.That(appHost.LastRequestBody, Is.EqualTo(request.ToJson()));
         }
 
         [Test]
         public void Cannot_reread_Request_InputStream_without_bufferring()
         {
-            BufferedRequestAppHost.UseBufferredStream = false;
+            appHost.UseBufferredStream = false;
 
             var client = new JsonServiceClient(Config.ServiceStackBaseUri);
             var request = new MyRequest { Data = "RequestData" };
 
             var response = client.Post(request);
 
-            Assert.That(BufferedRequestAppHost.LastRequestBody, Is.EqualTo(request.ToJson()));
+            Assert.That(appHost.LastRequestBody, Is.EqualTo(request.ToJson()));
             Assert.That(response.Data, Is.Null);
         }
 
         [Test]
         public void Cannot_see_RequestBody_in_RequestLogger_without_bufferring()
         {
-            BufferedRequestAppHost.UseBufferredStream = false;
+            appHost.UseBufferredStream = false;
 
             var client = new JsonServiceClient(Config.ServiceStackBaseUri);
             var request = new MyRequest { Data = "RequestData" };
 
             var response = client.Post(request);
 
-            Assert.That(BufferedRequestAppHost.LastRequestBody, Is.EqualTo(request.ToJson()));
+            Assert.That(appHost.LastRequestBody, Is.EqualTo(request.ToJson()));
             Assert.That(response.Data, Is.Null);
 
             var requestLogger = appHost.TryResolve<IRequestLogger>();
@@ -103,14 +103,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_see_RequestBody_in_RequestLogger_when_EnableRequestBodyTracking()
         {
-            BufferedRequestAppHost.UseBufferredStream = false;
+            appHost.UseBufferredStream = false;
 
             var client = new JsonServiceClient(Config.ServiceStackBaseUri);
             var request = new MyRequest { Data = "RequestData" };
 
             var response = client.Post(request);
 
-            Assert.That(BufferedRequestAppHost.LastRequestBody, Is.EqualTo(request.ToJson()));
+            Assert.That(appHost.LastRequestBody, Is.EqualTo(request.ToJson()));
             Assert.That(response.Data, Is.EqualTo(request.Data));
 
             var requestLogger = appHost.TryResolve<IRequestLogger>();
@@ -123,8 +123,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public BufferedRequestAppHost() : base(typeof(BufferedRequestTests).Name, typeof(MyService).Assembly) { }
 
-        public static string LastRequestBody { get; set; }
-        public static bool UseBufferredStream { get; set; }
+        public string LastRequestBody { get; set; }
+        public bool UseBufferredStream { get; set; }
         public bool EnableRequestBodyTracking { get; set; }
 
         public override void Configure(Container container)
