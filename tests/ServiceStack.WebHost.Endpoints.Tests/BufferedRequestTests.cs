@@ -103,6 +103,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_see_RequestBody_in_RequestLogger_when_EnableRequestBodyTracking()
         {
+            BufferedRequestAppHost.UseBufferredStream = false;
+
             var client = new JsonServiceClient(Config.ServiceStackBaseUri);
             var request = new MyRequest { Data = "RequestData" };
 
