@@ -70,7 +70,9 @@ namespace ServiceStack.ServiceHost.Tests
 			get { throw new NotImplementedException(); }
 		}
 
-		public string GetRawBody()
+	    public bool UseBufferedStream { get; set; }
+
+	    public string GetRawBody()
 		{
 			throw new NotImplementedException();
 		}

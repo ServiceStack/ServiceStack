@@ -50,8 +50,9 @@ namespace ServiceStack.ServiceHost.Tests
 			public NameValueCollection Headers { get; private set; }
 			public NameValueCollection QueryString { get; private set; }
 			public NameValueCollection FormData { get; private set; }
+		    public bool UseBufferedStream { get; set; }
 
-			public string GetRawBody()
+		    public string GetRawBody()
 			{
 				throw new NotImplementedException();
 			}
