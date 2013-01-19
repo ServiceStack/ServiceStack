@@ -62,7 +62,9 @@ namespace ServiceStack.WebHost.Endpoints.Support.Mocks
 
 		public NameValueCollection FormData { get; set; }
 
-		public Dictionary<string, object> Items
+        public bool UseBufferedStream { get; set; }
+
+	    public Dictionary<string, object> Items
 		{
 			get; private set;
 		}

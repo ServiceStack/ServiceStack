@@ -80,6 +80,8 @@ namespace ServiceStack.ServiceHost
             get { return new NameValueCollection(); }
         }
 
+        public bool UseBufferedStream { get; set; }
+
         private string body;
         public string GetRawBody()
         {

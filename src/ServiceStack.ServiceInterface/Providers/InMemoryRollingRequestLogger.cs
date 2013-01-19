@@ -20,6 +20,8 @@ namespace ServiceStack.ServiceInterface.Providers
 
         public bool EnableSessionTracking { get; set; }
 
+        public bool EnableRequestBodyTracking { get; set; }
+
         public bool EnableResponseTracking { get; set; }
 
         public bool EnableErrorTracking { get; set; }
@@ -71,7 +73,15 @@ namespace ServiceStack.ServiceInterface.Providers
                 && !HideRequestBodyForRequestDtoTypes.Contains(requestType)) 
             {
                 entry.RequestDto = requestDto;
-                if (httpReq != null) entry.FormData = httpReq.FormData.ToDictionary();
+                if (httpReq != null)
+                {
+                    entry.FormData = httpReq.FormData.ToDictionary();
+
+                    if (EnableRequestBodyTracking)
+                    {
+                        entry.RequestBody = httpReq.GetRawBody();
+                    }
+                }
             }
             if (!response.IsErrorResponse()) {
                 if (EnableResponseTracking)

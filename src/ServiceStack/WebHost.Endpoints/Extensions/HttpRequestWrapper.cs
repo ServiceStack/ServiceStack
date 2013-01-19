@@ -5,6 +5,7 @@ using System.IO;
 using System.Net;
 using System.Web;
 using Funq;
+using ServiceStack.Text;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
@@ -146,7 +147,12 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
         public string GetRawBody()
         {
-            using (var reader = new StreamReader(request.InputStream))
+            if (bufferedStream != null)
+            {
+                return bufferedStream.ToArray().FromUtf8Bytes();
+            }
+
+            using (var reader = new StreamReader(InputStream))
             {
                 return reader.ReadToEnd();
             }
@@ -207,9 +213,21 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
             get { return request.GetUrlHostName(); }
         }
 
+        public bool UseBufferedStream
+        {
+            get { return bufferedStream != null; }
+            set
+            {
+                bufferedStream = value
+                    ? bufferedStream ?? new MemoryStream(request.InputStream.ReadFully())
+                    : null;
+            }
+        }
+
+        private MemoryStream bufferedStream;
         public Stream InputStream
         {
-            get { return request.InputStream; }
+            get { return bufferedStream ?? request.InputStream; }
         }
 
         public long ContentLength

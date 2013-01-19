@@ -50,6 +50,11 @@ namespace ServiceStack.ServiceHost
         NameValueCollection FormData { get; }
 
         /// <summary>
+        /// Buffer the Request InputStream so it can be re-read
+        /// </summary>
+        bool UseBufferedStream { get; set; }
+
+        /// <summary>
         /// The entire string contents of Request.InputStream
         /// </summary>
         /// <returns></returns>

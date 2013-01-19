@@ -66,6 +66,8 @@ namespace ServiceStack.ServiceInterface.Testing
 
         public NameValueCollection FormData { get; set; }
 
+        public bool UseBufferedStream { get; set; }
+
         public Dictionary<string, object> Items
         {
             get;
