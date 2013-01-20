@@ -26,7 +26,7 @@ namespace ServiceStack.ServiceHost
 					"No Assemblies provided in your AppHost's base constructor.\n"
 					+ "To register your services, please provide the assemblies where your web services are defined.");
 
-			this.Container = new Container();
+			this.Container = new Container { DefaultOwner = Owner.External };
             this.Metadata = new ServiceMetadata();
             this.ServiceController = new ServiceController(() => GetAssemblyTypes(assembliesWithServices), this.Metadata);
 		}

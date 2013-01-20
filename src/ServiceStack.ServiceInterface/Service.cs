@@ -119,8 +119,6 @@ namespace ServiceStack.ServiceInterface
 
         public virtual void Dispose()
         {
-            if (cache != null)
-                cache.Dispose();
             if (db != null)
                 db.Dispose();
             if (redis != null)

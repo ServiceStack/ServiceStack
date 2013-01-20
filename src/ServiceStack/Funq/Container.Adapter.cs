@@ -6,7 +6,7 @@ namespace Funq
 {
 	public partial class Container
 	{
-		public IContainerAdapter Adapter { get; set; }
+        public IContainerAdapter Adapter { get; set; }
 
 		/// <summary>
 		/// Register an autowired dependency
