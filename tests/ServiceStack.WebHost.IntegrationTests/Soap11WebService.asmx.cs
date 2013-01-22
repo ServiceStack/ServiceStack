@@ -24,7 +24,7 @@ namespace ServiceStack.WebHost.IntegrationTests
 		[WebMethod]
 		public ReverseResponse Reverse(Reverse request)
 		{
-			return new ReverseService().Execute(request) as ReverseResponse;
+			return new ReverseService().Any(request) as ReverseResponse;
 		}
 	}
 }

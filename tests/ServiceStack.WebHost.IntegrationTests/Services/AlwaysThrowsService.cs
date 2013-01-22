@@ -32,9 +32,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	}
 
 	public class AlwaysThrowsService 
-		: ServiceBase<AlwaysThrows>
+		: ServiceInterface.Service
 	{
-		protected override object Run(AlwaysThrows request)
+		public object Any(AlwaysThrows request)
 		{
             if (request.StatusCode.HasValue)
             {
