@@ -19,9 +19,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	}
 
 	public class Rot13Service 
-		: ServiceBase<Rot13>
+		: ServiceInterface.Service
 	{
-		protected override object Run(Rot13 request)
+		public object Any(Rot13 request)
 		{
 			return new Rot13Response { Result = request.Value.ToRot13() };
 		}
