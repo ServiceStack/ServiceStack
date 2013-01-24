@@ -248,7 +248,7 @@ namespace ServiceStack.ServiceHost
                 if (operation.Actions == null) return false;
 
                 return operation.Actions.Contains("POST")
-                    || operation.Actions.Contains("ANY");
+                    || operation.Actions.Contains(ActionContext.AnyAction);
             }
             return true;
         }
