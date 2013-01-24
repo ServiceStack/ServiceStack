@@ -54,7 +54,13 @@ namespace ServiceStack.Mvc
         }
 
         public ICacheClient Cache { get; set; }
-        public ISessionFactory SessionFactory { get; set; }
+
+        private ISessionFactory sessionFactory;
+        public ISessionFactory SessionFactory
+        {
+            get { return sessionFactory ?? new SessionFactory(Cache); }
+            set { sessionFactory = value; }
+        }
 
         /// <summary>
         /// Typed UserSession
