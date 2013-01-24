@@ -53,6 +53,7 @@ namespace ServiceStack.ServiceHost
 			var httpCookie = new HttpCookie(cookie.Name, cookie.Value) {
 				Path = cookie.Path,
 				Expires = cookie.Expires,
+				HttpOnly = true
 			};
 			if (string.IsNullOrEmpty(httpCookie.Domain))
 			{
