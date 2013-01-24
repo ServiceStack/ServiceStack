@@ -76,7 +76,7 @@ namespace Funq
             if (!autoWireCache.TryGetValue(instanceType, out setters))
             {
                 setters = instanceType.GetPublicProperties()
-                    .Where(x => x.CanWrite && !x.PropertyType.IsValueType)
+                    .Where(x => x.CanWrite && !x.PropertyType.IsValueType && x.PropertyType != typeof(string))
                     .Select(x => GenerateAutoWireFnForProperty(container, propertyResolveFn, x, instanceType))
                     .ToArray();
 
