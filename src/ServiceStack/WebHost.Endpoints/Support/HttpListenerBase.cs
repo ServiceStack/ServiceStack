@@ -44,6 +44,9 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public event DelReceiveWebRequest ReceiveWebRequest;
 
+        private string serviceName;
+        private Assembly[] assembliesWithServices;
+
 		protected HttpListenerBase()
 		{
             this.startTime = DateTime.UtcNow;
@@ -55,7 +58,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
 			: this()
 		{
-			EndpointHost.ConfigureHost(this, serviceName, CreateServiceManager(assembliesWithServices));
+            this.serviceName = serviceName;
+            this.assembliesWithServices = assembliesWithServices;
 		}
 
 		protected virtual ServiceManager CreateServiceManager(params Assembly[] assembliesWithServices)
@@ -72,7 +76,9 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			Instance = this;
 
-			var serviceManager = EndpointHost.Config.ServiceManager;
+            EndpointHost.ConfigureHost(this, serviceName, CreateServiceManager(assembliesWithServices));
+            
+            var serviceManager = EndpointHost.Config.ServiceManager;
 			if (serviceManager != null)
 			{
 				serviceManager.Init();
