@@ -236,11 +236,20 @@ namespace ServiceStack.ServiceInterface.Testing
                 throw new NotImplementedException();
             }
 
-            public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
+            public HttpWebResponse Head(IReturn request)
             {
                 throw new NotImplementedException();
             }
 
+            public HttpWebResponse Head(string relativeOrAbsoluteUrl)
+            {
+                throw new NotImplementedException();
+            }
+
+            public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
+            {
+                throw new NotImplementedException();
+            }
 
             public void SendAsync<TResponse>(object request,
                 Action<TResponse> onSuccess, Action<TResponse, Exception> onError)

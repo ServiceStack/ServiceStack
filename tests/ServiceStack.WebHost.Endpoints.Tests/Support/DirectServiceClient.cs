@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Net;
 using ServiceStack.Common.Web;
 using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
@@ -201,6 +202,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 	    }
 
 	    public TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> request)
+	    {
+	        throw new NotImplementedException();
+	    }
+
+	    public HttpWebResponse Head(IReturn request)
+	    {
+	        throw new NotImplementedException();
+	    }
+
+	    public HttpWebResponse Head(string relativeOrAbsoluteUrl)
 	    {
 	        throw new NotImplementedException();
 	    }
