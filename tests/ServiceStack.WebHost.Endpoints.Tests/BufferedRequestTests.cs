@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using Funq;
+﻿using Funq;
 using NUnit.Framework;
 using ServiceStack.ServiceInterface.Admin;
 using ServiceStack.Text;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
-using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -133,8 +127,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public override void Configure(Container container)
         {
-            PreRequestFilters.Add((httpReq, httpRes) =>
-            {
+            PreRequestFilters.Add((httpReq, httpRes) => {
                 if (UseBufferredStream)
                     httpReq.UseBufferedStream = UseBufferredStream;
 
