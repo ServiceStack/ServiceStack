@@ -43,7 +43,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public IHasRequestFilter Copy()
         {
-            return (IHasRequestFilter) this.MemberwiseClone();
+            return (IHasRequestFilter)this.MemberwiseClone();
         }
     }
 
@@ -132,9 +132,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [ThrowingFilter]
-    public class ThrowingAttributeFilteredService : IService<ThrowingAttributeFiltered>
+    public class ThrowingAttributeFilteredService : IService
     {
-        public object Execute(ThrowingAttributeFiltered request)
+        public object Any(ThrowingAttributeFiltered request)
         {
             return "OK";
         }
@@ -185,6 +185,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public override void Configure(Funq.Container container)
             {
                 container.Register<ICacheClient>(c => new MemoryCacheClient()).ReusedWithin(Funq.ReuseScope.None);
+                SetConfig(new EndpointHostConfig { DebugMode = true }); //show stacktraces
             }
         }
 
@@ -312,7 +313,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void RequestFilters_are_prioritized()
         {
             EndpointHost.ServiceManager = new ServiceManager(typeof(DummyHolder).Assembly);
-            
+
             EndpointHost.ServiceManager.Metadata.Add(typeof(AttributeFilteredService), typeof(DummyHolder), null);
 
             var attributes = FilterAttributeCache.GetRequestFilterAttributes(typeof(DummyHolder));

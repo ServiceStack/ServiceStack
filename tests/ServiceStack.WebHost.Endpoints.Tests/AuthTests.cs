@@ -508,6 +508,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var initialLoginResponse = client.Send(authRequest);
             var alreadyLogggedInResponse = client.Send(authRequest);
 
+            Assert.That(initialLoginResponse.UserName, Is.EqualTo(EmailBasedUsername));
             Assert.That(alreadyLogggedInResponse.UserName, Is.EqualTo(EmailBasedUsername));
         }
 	}
