@@ -14,8 +14,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	public class IocServiceTests
 	{
 		private const string ListeningOn = "http://localhost:1082/";
-
-		IocAppHost appHost;
+        
+        private const int WaitForRequestCleanup = 100;
+        
+        IocAppHost appHost;
 
 		[TestFixtureSetUp]
 		public void OnTestFixtureSetUp()
@@ -118,6 +120,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 restClient.Get<IocScopeResponse>("iocscope?Throw=true");
             } catch { }
 
+            Thread.Sleep(WaitForRequestCleanup);
+
             Assert.That(FunqRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
             Assert.That(AltRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
         }
@@ -169,6 +173,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var restClient = new JsonServiceClient(ListeningOn);
             var response = restClient.Get(new IocDispose());
             response = restClient.Get(new IocDispose());
+            Thread.Sleep(WaitForRequestCleanup);
 
             Assert.That(appHost.Container.disposablesCount, Is.EqualTo(0));
             Assert.That(FunqSingletonScopeDisposable.DisposeCount, Is.EqualTo(0));
