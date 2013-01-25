@@ -38,8 +38,9 @@ namespace ServiceStack.Authentication.OpenId
             var tokens = Init(authService, ref session, request);
 
             var httpReq = authService.RequestContext.Get<IHttpRequest>();
-            var httpMethod = httpReq.HttpMethod;
-            if (httpMethod == HttpMethods.Post)
+            var isOpenIdRequest = !httpReq.GetParam("openid.mode").IsNullOrEmpty();
+
+            if (!isOpenIdRequest)
             {
                 var openIdUrl = httpReq.GetParam("OpenIdUrl") ?? base.AuthRealm;
                 if (openIdUrl.IsNullOrEmpty())
@@ -80,7 +81,7 @@ namespace ServiceStack.Authentication.OpenId
                 }
             }
 
-            if (httpMethod == HttpMethods.Get)
+            if (isOpenIdRequest)
             {
                 using (var openid = new OpenIdRelyingParty())
                 {
