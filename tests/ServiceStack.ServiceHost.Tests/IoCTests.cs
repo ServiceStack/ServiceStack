@@ -63,5 +63,39 @@ namespace ServiceStack.ServiceHost.Tests
 			Assert.That(test.Names, Is.Not.Null);
 			Assert.That(test.Age, Is.EqualTo(0));
 		}
+
+        public class DependencyWithBuiltInTypes
+        {
+            public DependencyWithBuiltInTypes()
+            {
+                this.String = "A String";
+                this.Age = 27;
+            }
+
+            public IFoo Foo { get; set; }
+            public IBar Bar { get; set; }
+            public string String { get; set; }
+            public int Age { get; set; }            
+        }
+
+	    [Test]
+	    public void Does_not_AutoWire_BuiltIn_BCL_and_ValueTypes()
+	    {
+            var container = new Container();
+            container.Register<IFoo>(c => new Foo());
+            container.Register<IBar>(c => new Bar());
+
+            //Should not be autowired
+            container.Register<string>(c => "Replaced String");
+            container.Register<int>(c => 99);
+
+            container.RegisterAutoWired<DependencyWithBuiltInTypes>();
+
+	        var test = container.Resolve<DependencyWithBuiltInTypes>();
+            Assert.That(test.Foo, Is.Not.Null);
+            Assert.That(test.Bar, Is.Not.Null);
+            Assert.That(test.String, Is.EqualTo("A String"));
+            Assert.That(test.Age, Is.EqualTo(27));
+	    }
 	}
 }
