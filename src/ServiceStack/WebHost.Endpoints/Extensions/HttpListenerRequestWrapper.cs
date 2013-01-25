@@ -298,8 +298,15 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			if (stream is MemoryStream)
 			{
 				var other = (MemoryStream)stream;
-				return new MemoryStream(other.GetBuffer(), 0, (int)other.Length, false, true);
-			}
+                try
+                {
+                    return new MemoryStream(other.GetBuffer(), 0, (int)other.Length, false, true);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    return new MemoryStream(other.ToArray(), 0, (int)other.Length, false, true);
+                }
+            }
 
 			return stream;
 		}
