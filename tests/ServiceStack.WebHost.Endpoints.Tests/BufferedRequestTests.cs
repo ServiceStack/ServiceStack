@@ -37,6 +37,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void BufferredRequest_allows_rereading_of_Request_InputStream()
         {
+            appHost.LastRequestBody = null;
             appHost.UseBufferredStream = true;
 
             var client = new JsonServiceClient(Config.ServiceStackBaseUri);
@@ -50,6 +51,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Cannot_reread_Request_InputStream_without_bufferring()
         {
+            appHost.LastRequestBody = null;
             appHost.UseBufferredStream = false;
 
             var client = new JsonServiceClient(Config.ServiceStackBaseUri);
@@ -64,6 +66,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Cannot_see_RequestBody_in_RequestLogger_without_bufferring()
         {
+            appHost.LastRequestBody = null;
             appHost.UseBufferredStream = false;
 
             var client = new JsonServiceClient(Config.ServiceStackBaseUri);
@@ -103,6 +106,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_see_RequestBody_in_RequestLogger_when_EnableRequestBodyTracking()
         {
+            appHost.LastRequestBody = null;
             appHost.UseBufferredStream = false;
 
             var client = new JsonServiceClient(Config.ServiceStackBaseUri);
