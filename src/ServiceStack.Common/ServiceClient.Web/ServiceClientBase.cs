@@ -400,7 +400,17 @@ namespace ServiceStack.ServiceClient.Web
             }
         }
 
-        private bool HandleResponseException<TResponse>(Exception ex, object request, string requestUri,
+        /// <summary>
+        /// Called by Send method if an exception occurs, for instance a System.Net.WebException because the server
+        /// returned an HTTP error code. Override if you want to handle specific exceptions or always want to parse the
+        /// response to a custom ErrorResponse DTO type instead of ServiceStack's ErrorResponse class. In case ex is a
+        /// <c>System.Net.WebException</c>, do not use
+        /// <c>createWebRequest</c>/<c>getResponse</c>/<c>HandleResponse&lt;TResponse&gt;</c> to parse the response
+        /// because that will result in the same exception again. Use
+        /// <c>ThrowWebServiceException&lt;YourErrorResponseType&gt;</c> to parse the response and to throw a
+        /// <c>WebServiceException</c> containing the parsed DTO. Then override Send to handle that exception.
+        /// </summary>
+        protected virtual bool HandleResponseException<TResponse>(Exception ex, object request, string requestUri,
             Func<WebRequest> createWebRequest, Func<WebRequest, WebResponse> getResponse, out TResponse response)
         {
             try
@@ -467,7 +477,7 @@ namespace ServiceStack.ServiceClient.Web
             responseHandler(ex, requestUri);
         }
 
-        internal void ThrowWebServiceException<TResponse>(Exception ex, string requestUri)
+        protected internal void ThrowWebServiceException<TResponse>(Exception ex, string requestUri)
         {
             var webEx = ex as WebException;
             if (webEx != null && webEx.Status == WebExceptionStatus.ProtocolError)
