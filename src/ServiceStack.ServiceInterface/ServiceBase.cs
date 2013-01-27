@@ -19,7 +19,7 @@ namespace ServiceStack.ServiceInterface
     /// also be maintained into a service specific and combined rolling error log.
     /// </summary>
     /// <typeparam name="TRequest"></typeparam>
-    [Obsolete("Use ServiceStack.ServiceInterface.Service - ServiceStack's New API for future services")]
+    [Obsolete("Use the New API (ServiceStack.ServiceInterface.Service) for future services. See: https://github.com/ServiceStack/ServiceStack/wiki/New-Api")]
     public abstract class ServiceBase<TRequest>
         : IService<TRequest>, IRequiresRequestContext, IServiceBase, IAsyncService<TRequest>, IRestOptionsService<TRequest>
     {
