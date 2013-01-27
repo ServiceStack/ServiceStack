@@ -24,7 +24,7 @@ namespace ServiceStack.Common.Support
             var instance = Expression.Parameter(typeof(object), "i");
             var argument = Expression.Parameter(typeof(object), "a");
 
-            var instanceParam = Expression.Convert(instance, propertyInfo.DeclaringType);
+            var instanceParam = Expression.Convert(instance, propertyInfo.ReflectedType);
             var valueParam = Expression.Convert(argument, propertyInfo.PropertyType);
 
             var setterCall = Expression.Call(instanceParam, propertyInfo.GetSetMethod(), valueParam);
@@ -44,7 +44,7 @@ namespace ServiceStack.Common.Support
             try
             {
                 var oInstanceParam = Expression.Parameter(typeof(object), "oInstanceParam");
-                var instanceParam = Expression.Convert(oInstanceParam, propertyInfo.DeclaringType);
+                var instanceParam = Expression.Convert(oInstanceParam, propertyInfo.ReflectedType); //propertyInfo.DeclaringType doesn't work on Proxy types
 
                 var exprCallPropertyGetFn = Expression.Call(instanceParam, getMethodInfo);
                 var oExprCallPropertyGetFn = Expression.Convert(exprCallPropertyGetFn, typeof(object));

@@ -12,7 +12,7 @@ using ServiceStack.Text;
 namespace ServiceStack.Common.Utils
 {
     [DataContract(Namespace = "http://schemas.servicestack.net/types")]
-    public class CustomHttpResult{}
+    public class CustomHttpResult { }
 
     public class ReflectionUtils
     {
@@ -48,7 +48,7 @@ namespace ServiceStack.Common.Utils
         /// <param name="obj"></param>
         /// <param name="recursionInfo">Tracks how deeply nested we are</param>
         /// <returns></returns>
-        private static object PopulateObjectInternal(object obj, Dictionary<Type,int> recursionInfo)
+        private static object PopulateObjectInternal(object obj, Dictionary<Type, int> recursionInfo)
         {
             if (obj == null) return null;
             if (obj is string) return obj; // prevents it from dropping into the char[] Chars property.  Sheesh
@@ -84,7 +84,7 @@ namespace ServiceStack.Common.Utils
                     defaultValue = Activator.CreateInstance(type);
                     DefaultValueTypes[type] = defaultValue;
                 }
-            } 
+            }
 
             return defaultValue;
         }
@@ -97,39 +97,98 @@ namespace ServiceStack.Common.Utils
             var cacheKey = toType.FullName + "<" + fromType.FullName;
 
             return AssignmentDefinitionCache.GetOrAdd(cacheKey, delegate {
-                
+
                 var definition = new AssignmentDefinition {
                     ToType = toType,
                     FromType = fromType,
                 };
 
-                var members = fromType.GetMembers(BindingFlags.Public | BindingFlags.Instance);
-                foreach (var info in members)
+                var readMap = GetMembers(fromType, isReadable: true);
+                var writeMap = GetMembers(toType, isReadable: false);
+
+                foreach (var assignmentMember in readMap)
                 {
-                    var fromPropertyInfo = info as PropertyInfo;
-                    if (fromPropertyInfo != null)
+                    AssignmentMember writeMember;
+                    if (writeMap.TryGetValue(assignmentMember.Key, out writeMember))
                     {
-                        var toPropertyInfo = GetPropertyInfo(toType, fromPropertyInfo.Name);
-                        if (toPropertyInfo == null) continue;
-
-                        if (!fromPropertyInfo.CanRead) continue;
-                        if (!toPropertyInfo.CanWrite) continue;
-
-                        definition.AddMatch(fromPropertyInfo, toPropertyInfo);
-                    }
-
-                    var fromFieldInfo = info as FieldInfo;
-                    if (fromFieldInfo != null)
-                    {
-                        var toFieldInfo = GetFieldInfo(toType, fromFieldInfo.Name);
-                        if (toFieldInfo == null) continue;
-
-                        definition.AddMatch(fromFieldInfo, toFieldInfo);
+                        definition.AddMatch(assignmentMember.Key, assignmentMember.Value, writeMember);
                     }
                 }
+
                 return definition;
             });
+        }
 
+        private static Dictionary<string, AssignmentMember> GetMembers(Type type, bool isReadable)
+        {
+            var map = new Dictionary<string, AssignmentMember>();
+
+            var members = type.GetMembers(
+                BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
+            foreach (var info in members)
+            {
+                if (info.DeclaringType == typeof(object)) continue;
+
+                var propertyInfo = info as PropertyInfo;
+                if (propertyInfo != null)
+                {
+                    if (isReadable)
+                    {
+                        if (propertyInfo.CanRead)
+                        {
+                            map[info.Name] = new AssignmentMember(propertyInfo.PropertyType, propertyInfo);
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        if (propertyInfo.CanWrite)
+                        {
+                            map[info.Name] = new AssignmentMember(propertyInfo.PropertyType, propertyInfo);
+                            continue;
+                        }
+                    }
+                }
+
+                var fieldInfo = info as FieldInfo;
+                if (fieldInfo != null)
+                {
+                    map[info.Name] = new AssignmentMember(fieldInfo.FieldType, fieldInfo);
+                    continue;
+                }
+
+                var methodInfo = info as MethodInfo;
+                if (methodInfo != null)
+                {
+                    var parameterInfos = methodInfo.GetParameters();
+                    if (isReadable)
+                    {
+                        if (parameterInfos.Length == 0)
+                        {
+                            var name = info.Name.StartsWith("get_") ? info.Name.Substring(4) : info.Name;
+                            if (!map.ContainsKey(name))
+                            {
+                                map[name] = new AssignmentMember(methodInfo.ReturnType, methodInfo);
+                                continue;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (parameterInfos.Length == 1 && methodInfo.ReturnType == typeof(void))
+                        {
+                            var name = info.Name.StartsWith("set_") ? info.Name.Substring(4) : info.Name;
+                            if (!map.ContainsKey(name))
+                            {
+                                map[name] = new AssignmentMember(parameterInfos[0].ParameterType, methodInfo);
+                                continue;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return map;
         }
 
         public static To PopulateObject<To, From>(To to, From from)
@@ -154,7 +213,7 @@ namespace ServiceStack.Common.Utils
             return to;
         }
 
-        public static To PopulateFromPropertiesWithAttribute<To, From>(To to, From from, 
+        public static To PopulateFromPropertiesWithAttribute<To, From>(To to, From from,
             Type attributeType)
         {
             if (Equals(to, default(To)) || Equals(from, default(From))) return default(To);
@@ -318,7 +377,7 @@ namespace ServiceStack.Common.Utils
 #else
             var genericCollectionType = type.FindInterfaces((t, critera) =>
                 t.IsGenericType
-                && t.GetGenericTypeDefinition() == typeof (ICollection<>), null).FirstOrDefault();
+                && t.GetGenericTypeDefinition() == typeof(ICollection<>), null).FirstOrDefault();
 #endif
 
             return genericCollectionType;
@@ -377,51 +436,6 @@ namespace ServiceStack.Common.Utils
             }
 
             return false;
-        }
-
-        public static MemberInfo GetMemberInfo(Type fromType, string memberName)
-        {
-            var baseType = fromType;
-            do
-            {
-                var members = baseType.GetMembers(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-                foreach (var memberInfo in members)
-                {
-                    if (memberInfo.Name == memberName) return memberInfo;
-                }
-            }
-            while ((baseType = baseType.BaseType) != null);
-            return null;
-        }
-
-        public static FieldInfo GetFieldInfo(Type fromType, string fieldName)
-        {
-            var baseType = fromType;
-            do
-            {
-                var fieldInfos = baseType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-                foreach (var fieldInfo in fieldInfos)
-                {
-                    if (fieldInfo.Name == fieldName) return fieldInfo;
-                }
-            }
-            while ((baseType = baseType.BaseType) != null);
-            return null;
-        }
-
-        public static PropertyInfo GetPropertyInfo(Type fromType, string propertyName)
-        {
-            var baseType = fromType;
-            do
-            {
-                var propertyInfos = baseType.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-                foreach (var propertyInfo in propertyInfos)
-                {
-                    if (propertyInfo.Name == propertyName) return propertyInfo;
-                }
-            }
-            while ((baseType = baseType.BaseType) != null);
-            return null;
         }
 
         public static IEnumerable<KeyValuePair<PropertyInfo, T>> GetPropertyAttributes<T>(Type fromType) where T : Attribute
