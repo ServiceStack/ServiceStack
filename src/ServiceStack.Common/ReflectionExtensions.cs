@@ -23,6 +23,11 @@ namespace ServiceStack.Common
             return ReflectionUtils.PopulateFromPropertiesWithAttribute(to, from, typeof(TAttr));
         }
 
+        public static To PopulateFromPropertiesWithAttribute<To, From>(this To to, From from, Type attrType)
+        {
+            return ReflectionUtils.PopulateFromPropertiesWithAttribute(to, from, attrType);
+        }
+
         public static T TranslateTo<T>(this object from)
             where T : new()
         {

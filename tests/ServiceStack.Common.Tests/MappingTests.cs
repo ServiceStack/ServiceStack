@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using NUnit.Framework;
 using ServiceStack.Text;
@@ -10,6 +11,7 @@ namespace ServiceStack.Common.Tests
     public class User
     {
         public string FirstName { get; set; }
+        [DataMember]
         public string LastName { get; set; }
         public Car Car { get; set; }
     }
@@ -285,7 +287,7 @@ namespace ServiceStack.Common.Tests
                 Int = 1,
                 Long = 2,
                 Double = 3.3,
-                Decimal = 4.4m,
+                Decimal = 4.4m,                
             };
 
             var to = from.TranslateTo<BclTypeStrings>();
@@ -312,5 +314,21 @@ namespace ServiceStack.Common.Tests
             Assert.That(to.Decimal, Is.EqualTo(4.4m));
         }
 
+        [Test]
+        public void Does_map_only_properties_with_specified_Attribute()
+        {
+            var user = new User {
+                FirstName = "Demis",
+                LastName = "Bellot",
+                Car = new Car { Name = "BMW X6", Age = 3 }
+            };
+
+            var to = new User();
+            to.PopulateFromPropertiesWithAttribute(user, typeof(DataMemberAttribute));
+
+            Assert.That(to.LastName, Is.EqualTo(user.LastName));
+            Assert.That(to.FirstName, Is.Null);
+            Assert.That(to.Car, Is.Null);
+        }
     }
 }
