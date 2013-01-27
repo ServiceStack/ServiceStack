@@ -1,0 +1,14 @@
+﻿@inherits ViewPage<SimpleModel> 
+
+﻿@{
+    Layout = "SimpleLayout";
+    ViewBag.Title = "Page with typed 'Rockstars' model and no C# controller";
+}
+
+<div id="content-page">
+    
+    @Html.TextBoxFor(x => x.Id)
+    @Html.TextBoxFor(x => x.Name)
+ 
+    @Html.TextBoxFor(x => x.Name, new { @id = "Name", @class="large"})
+</div>

@@ -83,6 +83,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="ExpectationFailed.cshtml" />
+    <Content Include="PageState.cshtml" />
     <None Include="MRootPage.md" />
     <Content Include="Global.asax" />
     <Content Include="NoModelNoController.cshtml" />
