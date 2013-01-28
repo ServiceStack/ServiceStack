@@ -142,7 +142,19 @@ namespace ServiceStack.ServiceInterface.Auth
                 { "oauth_timestamp", MakeTimestamp () },
                 { "oauth_version", "1.0" }};
 
-            string signature = MakeSignature("POST", provider.RequestTokenUrl, headers);
+            var uri = new Uri(provider.RequestTokenUrl);
+
+            var signatureHeaders = new Dictionary<string, string>(headers);
+
+            var nvc = HttpUtility.ParseQueryString(uri.Query);
+            foreach (string key in nvc)
+            {
+                if (key != null)
+                    signatureHeaders.Add(key, OAuthUtils.PercentEncode(nvc[key]));
+            }
+
+          
+            string signature = MakeSignature("POST", uri.GetLeftPart(UriPartial.Path), signatureHeaders);
             string compositeSigningKey = MakeSigningKey(provider.ConsumerSecret, null);
             string oauth_signature = MakeOAuthSignature(compositeSigningKey, signature);
 
