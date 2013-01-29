@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyCompany("ServiceStack")]
 [assembly: AssemblyProduct("ServiceStack")]
-[assembly: AssemblyCopyright("Copyright © ServiceStack 2012")]
+[assembly: AssemblyCopyright("Copyright © ServiceStack 2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -37,4 +37,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("Release")]
 #endif
 
-[assembly: AssemblyVersion("3.9.33.0")]
+[assembly: AssemblyVersion("3.9.35.0")]

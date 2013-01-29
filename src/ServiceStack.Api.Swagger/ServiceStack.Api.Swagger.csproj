@@ -49,11 +49,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="swagger-ui\css\screen.css" />
-    <Content Include="swagger-ui\default.aspx">
-      <SubType>ASPXCodeBehind</SubType>
-    </Content>
     <Content Include="swagger-ui\images\pet_store_api.png" />
     <Content Include="swagger-ui\images\wordnik_api.png" />
+    <Content Include="swagger-ui\index.html" />
     <Content Include="swagger-ui\lib\backbone-min.js" />
     <Content Include="swagger-ui\lib\handlebars.runtime-1.0.0.beta.6.js" />
     <Content Include="swagger-ui\lib\jquery.ba-bbq.min.js" />
@@ -82,6 +80,9 @@
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
       <Name>ServiceStack</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="swagger-ui\LICENSE" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
