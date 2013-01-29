@@ -52,6 +52,20 @@ namespace ServiceStack.ServiceModel.Serialization
                 }
                 propertySetterMap[propertyInfo.Name] = propertySerializer;
             }
+
+	        if (JsConfig.IncludePublicFields)
+	        {
+		        foreach (var fieldInfo in type.GetSerializableFields())
+		        {
+			        var fieldSetFn = JsvDeserializeType.GetSetFieldMethod(type, fieldInfo);
+			        var fieldType = fieldInfo.FieldType;
+			        var fieldParseStringFn = JsvReader.GetParseFn(fieldType);
+			        var fieldSerializer = new PropertySerializerEntry(fieldSetFn, fieldParseStringFn) {PropertyType = fieldType};
+
+			        propertySetterMap[fieldInfo.Name] = fieldSerializer;
+		        }
+	        }
+
         }
 
         public object PopulateFromMap(object instance, IDictionary<string, string> keyValuePairs)

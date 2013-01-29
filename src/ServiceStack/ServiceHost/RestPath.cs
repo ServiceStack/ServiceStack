@@ -190,6 +190,14 @@ namespace ServiceStack.ServiceHost
 					propertyName = propertyInfo.Name;
 					propertyNamesMap.Add(propertyName.ToLower(), propertyName);
 				}
+				if (JsConfig.IncludePublicFields)
+				{
+					foreach (var fieldInfo in this.RequestType.GetSerializableFields())
+					{
+						propertyName = fieldInfo.Name;
+						propertyNamesMap.Add(propertyName.ToLower(), propertyName);
+					}
+				}
 			}
 			catch (Exception)
 			{

@@ -563,6 +563,12 @@ namespace ServiceStack.WebHost.Endpoints
             var httpHandler = ssHandler as IHttpHandler;
             return httpHandler ?? new ServiceStackHttpHandler(ssHandler);
         }
-    }
+
+		public bool IncludePublicFields
+		{
+			get { return JsConfig.IncludePublicFields; }
+			set { JsConfig.IncludePublicFields = value; }
+		}
+	}
 
 }
