@@ -55,13 +55,40 @@ namespace ServiceStack.ServiceModel.Tests
             }
         }
 
-        [Test]
-        public void KVP_Serializer_ignores_readonly_properties()
+	    [Test]
+	    public void KVP_Serializer_ignores_readonly_properties()
+	    {
+		    var valueMap = new Dictionary<string, string> {{"FirstName", "james"}, {"LastName", "bond"}, {"FullName", "james bond"}};
+		    var result = (Customer2) KeyValueDataContractDeserializer.Instance.Parse(valueMap, typeof (Customer2));
+		    Assert.That(result.FirstName, Is.EqualTo("james"));
+		    Assert.That(result.LastName, Is.EqualTo("bond"));
+	    }
+
+	    public class CustomerWithFields
         {
-            var valueMap = new Dictionary<string, string> { { "FirstName", "james" }, { "LastName", "bond" }, { "FullName", "james bond" } };
-            var result = (Customer2)KeyValueDataContractDeserializer.Instance.Parse(valueMap, typeof(Customer2));
-            Assert.That(result.FirstName, Is.EqualTo("james"));
-            Assert.That(result.LastName, Is.EqualTo("bond"));
+            public readonly string FirstName;
+
+		    public readonly string LastName;
+
+            public string FullName
+            {
+                get { return FirstName + " " + LastName; }
+            }
+
+		    public CustomerWithFields(string firstName, string lastName)
+		    {
+			    FirstName = firstName;
+			    LastName = lastName;
+		    }
         }
-    }
+
+		[Test]
+		public void KVP_Serializer_fills_public_fields()
+		{
+			var valueMap = new Dictionary<string, string> { { "FirstName", "james" }, { "LastName", "bond" }, { "FullName", "james bond" } };
+			var result = (CustomerWithFields)KeyValueDataContractDeserializer.Instance.Parse(valueMap, typeof(CustomerWithFields));
+			Assert.That(result.FirstName, Is.EqualTo("james"));
+			Assert.That(result.LastName, Is.EqualTo("bond"));
+		}
+	}
 }
