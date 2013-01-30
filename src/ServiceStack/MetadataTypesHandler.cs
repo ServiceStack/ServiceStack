@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.Serialization;
-using System.Web;
 using ServiceStack.Common;
 using ServiceStack.Common.ServiceModel;
 using ServiceStack.ServiceHost;
@@ -13,6 +6,13 @@ using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Web;
 
 namespace ServiceStack
 {
@@ -30,7 +30,8 @@ namespace ServiceStack
 
         public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
         {
-            var metadata = new MetadataTypes {
+            var metadata = new MetadataTypes
+            {
                 Config = Config,
             };
             var existingTypes = new HashSet<Type> {
@@ -44,7 +45,8 @@ namespace ServiceStack
                 if (!meta.IsVisible(httpReq, operation))
                     continue;
 
-                metadata.Operations.Add(new MetadataOperationType {
+                metadata.Operations.Add(new MetadataOperationType
+                {
                     Actions = operation.Actions,
                     Request = operation.RequestType.ToType(),
                     Response = operation.ResponseType.ToType(),
@@ -62,7 +64,8 @@ namespace ServiceStack
                 if (existingTypes.Contains(type))
                     continue;
 
-                metadata.Operations.Add(new MetadataOperationType {
+                metadata.Operations.Add(new MetadataOperationType
+                {
                     Request = type.ToType(),
                 });
 
@@ -116,7 +119,8 @@ namespace ServiceStack
         {
             if (type == null) return null;
 
-            var metaType = new MetadataType {
+            var metaType = new MetadataType
+            {
                 Name = type.Name,
                 Namespace = type.Namespace,
                 GenericArgs = type.IsGenericType
@@ -147,12 +151,13 @@ namespace ServiceStack
                 }
             }
 
-            var typeAttrs = type.GetCustomAttributes(false);
+            var typeAttrs = TypeDescriptor.GetAttributes(type);
             var routeAttrs = typeAttrs.OfType<RouteAttribute>().ToList();
             if (routeAttrs.Count > 0)
             {
                 metaType.Routes = routeAttrs.ConvertAll(x =>
-                    new MetadataRoute {
+                    new MetadataRoute
+                    {
                         Path = x.Path,
                         Notes = x.Notes,
                         Summary = x.Summary,
@@ -169,7 +174,8 @@ namespace ServiceStack
             var dcAttr = type.GetDataContract();
             if (dcAttr != null)
             {
-                metaType.DataContract = new MetadataDataContract {
+                metaType.DataContract = new MetadataDataContract
+                {
                     Name = dcAttr.Name,
                     Namespace = dcAttr.Namespace,
                 };
@@ -223,7 +229,8 @@ namespace ServiceStack
         public static MetadataAttribute ToAttribute(this Attribute attr)
         {
             var firstCtor = attr.GetType().GetConstructors().OrderBy(x => x.GetParameters().Length).FirstOrDefault();
-            var metaAttr = new MetadataAttribute {
+            var metaAttr = new MetadataAttribute
+            {
                 Name = attr.GetType().Name,
                 ConstructorArgs = firstCtor != null
                     ? firstCtor.GetParameters().ToList().ConvertAll(x => x.ToProperty())
@@ -244,7 +251,8 @@ namespace ServiceStack
 
         public static MetadataPropertyType ToProperty(this PropertyInfo pi, object instance = null)
         {
-            var property = new MetadataPropertyType {
+            var property = new MetadataPropertyType
+            {
                 Name = pi.Name,
                 Attributes = pi.GetCustomAttributes(false).ToAttributes(),
                 Type = pi.PropertyType.Name,
@@ -267,7 +275,8 @@ namespace ServiceStack
         public static MetadataPropertyType ToProperty(this ParameterInfo pi)
         {
             var propertyAttrs = pi.GetCustomAttributes(false);
-            var property = new MetadataPropertyType {
+            var property = new MetadataPropertyType
+            {
                 Name = pi.Name,
                 Attributes = propertyAttrs.ToAttributes(),
                 Type = pi.ParameterType.Name,
@@ -286,7 +295,8 @@ namespace ServiceStack
         {
             if (attr == null) return null;
 
-            var metaAttr = new MetadataDataMember {
+            var metaAttr = new MetadataDataMember
+            {
                 Name = attr.Name,
                 EmitDefaultValue = attr.EmitDefaultValue != true ? attr.EmitDefaultValue : (bool?)null,
                 Order = attr.Order >= 0 ? attr.Order : (int?)null,
