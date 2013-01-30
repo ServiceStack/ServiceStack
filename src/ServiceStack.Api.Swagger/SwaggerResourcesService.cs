@@ -1,28 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Api.Swagger
 {
+    [DataContract]
     public class Resources
     {
+        [DataMember(Name = "apiKey")]
         public string ApiKey { get; set; }
     }
 
+    [DataContract]
     public class ResourcesResponse
     {
+        [DataMember(Name = "swaggerVersion")]
         public string SwaggerVersion { get; set; }
+        [DataMember(Name = "apiVersion")]
         public string ApiVersion { get; set; }
+        [DataMember(Name = "basePath")]
         public string BasePath { get; set; }
+        [DataMember(Name = "apis")]
         public List<RestService> Apis { get; set; }
     }
 
+    [DataContract]
     public class RestService
     {
+        [DataMember(Name = "path")]
         public string Path { get; set; }
+        [DataMember(Name = "description")]
         public string Description { get; set; }
     }
 
