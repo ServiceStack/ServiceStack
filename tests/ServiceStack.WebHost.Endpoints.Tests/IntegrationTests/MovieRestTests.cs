@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceClient.Web;
+using ServiceStack.ServiceInterface;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
@@ -12,6 +13,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 	public class MovieRestTests
 		: IntegrationTestBase
 	{
+        public override void Configure(Funq.Container container)
+        {
+            base.Configure(container);
+            RouteFor<RestMovies>.WithPath("/routeformovies").Create();
+        }
+
 		[SetUp]
 		public void OnBeforeEachTest()
 		{
@@ -26,6 +33,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 				Assert.That(response.Movies, Has.Count.EqualTo(ConfigureDatabase.Top5Movies.Count))
 			);
 		}
+
+        [Test]
+        public void Can_list_all_movies_on_routefor_route()
+        {
+            var restClient = new JsonServiceClient(BaseUrl);
+            var movies = restClient.Get<RestMoviesResponse>(RouteFor<RestMovies>.Path);
+            Assert.AreEqual(5, movies.Movies.Count);
+        }
 
 		[Test]
 		public void Can_add_movie()
