@@ -212,6 +212,7 @@
     <Compile Include="RequiredPermissionAttribute.cs" />
     <Compile Include="ResponseFilterAttribute.cs" />
     <Compile Include="RoleNames.cs" />
+    <Compile Include="RouteFor.cs" />
     <Compile Include="Service.cs" />
     <Compile Include="ServiceExtensions.cs" />
     <Compile Include="RestServiceBase.cs" />
