@@ -17,9 +17,7 @@ namespace ServiceStack.ServiceInterface
         {
             get
             {
-                var routeAttribute = TypeDescriptor.GetAttributes(typeof(T)).OfType<RouteAttribute>().SingleOrDefault();
-                ThrowRouteNotDefined(routeAttribute);
-                return routeAttribute.Path;
+                return GetRouteAttribute().Path;
             }
         }
 
@@ -27,16 +25,16 @@ namespace ServiceStack.ServiceInterface
         {
             get
             {
-                var routeAttribute = TypeDescriptor.GetAttributes(typeof(T)).OfType<RouteAttribute>().Single();
-                ThrowRouteNotDefined(routeAttribute);
-                return routeAttribute.Verbs;
+                return GetRouteAttribute().Verbs;
             }
         }
 
-        static void ThrowRouteNotDefined(RouteAttribute routeAttribute)
+        static RouteAttribute GetRouteAttribute()
         {
+            var routeAttribute = TypeDescriptor.GetAttributes(typeof(T)).OfType<RouteAttribute>().SingleOrDefault();
             if (routeAttribute == null)
                 throw new NullReferenceException(string.Format("Route not defined for {0}", typeof(T).Name));
+            return routeAttribute;
         }
 
         RouteFor(string path)
