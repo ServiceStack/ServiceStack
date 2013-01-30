@@ -124,6 +124,7 @@
     <Compile Include="Auth\OAuthProvider.cs" />
     <Compile Include="Auth\TwitterAuthProvider.cs" />
     <Compile Include="Auth\UnAssignRolesService.cs" />
+    <Compile Include="Cors\EnableCors.cs" />
     <Compile Include="Cors\EnableCorsAttribute.cs" />
     <Compile Include="Cors\CorsFeature.cs" />
     <Compile Include="Cors\CorsSupportAttribute.cs" />
