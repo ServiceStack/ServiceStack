@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ServiceStack.Common.Web;
 using ServiceStack.ServiceInterface.Auth;
-using ServiceStack.ServiceInterface.Cors;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface
@@ -22,8 +20,6 @@ namespace ServiceStack.ServiceInterface
         public List<IPlugin> RegisterPlugins { get; set; }
 
         public string HtmlRedirect { get; set; }
-
-        public EnableCors EnableCors { get; set; }
 
         public bool IncludeAssignRoleServices
         {
@@ -54,8 +50,6 @@ namespace ServiceStack.ServiceInterface
                 new SessionFeature()                          
             };
             this.HtmlRedirect = "~/login";
-            this.EnableCors = new EnableCors(applyWhere: (httpReq, dto) => 
-                dto is Auth.Auth && httpReq.HttpMethod == HttpMethods.Options);
         }
 
         public void Register(IAppHost appHost)
@@ -72,11 +66,6 @@ namespace ServiceStack.ServiceInterface
             }
 
             RegisterPlugins.ForEach(x => appHost.LoadPlugin(x));
-
-            if (EnableCors != null)
-            {
-                appHost.RequestFilters.Add(EnableCors.RequestFilter);
-            }
         }
 
         public static TimeSpan? GetDefaultSessionExpiry()

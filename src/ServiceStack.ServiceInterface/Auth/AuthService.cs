@@ -110,6 +110,8 @@ namespace ServiceStack.ServiceInterface.Auth
                 throw new ConfigurationException("No OAuth providers have been registered in your AppHost.");
         }
 
+        public void Options(Auth request) {}
+
         public object Get(Auth request)
         {
             return Post(request);
