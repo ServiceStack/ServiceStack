@@ -1,14 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Text;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Text;
 
 namespace ServiceStack.ServiceHost
 {
@@ -33,10 +35,10 @@ namespace ServiceStack.ServiceHost
         }
 
         readonly Dictionary<Type, ServiceExecFn> requestExecMap
-			= new Dictionary<Type, ServiceExecFn>();
+            = new Dictionary<Type, ServiceExecFn>();
 
         readonly Dictionary<Type, RestrictAttribute> requestServiceAttrs
-			= new Dictionary<Type, RestrictAttribute>();
+            = new Dictionary<Type, RestrictAttribute>();
 
         public bool EnableAccessRestrictions { get; set; }
 
@@ -60,7 +62,8 @@ namespace ServiceStack.ServiceHost
         public void Register<TReq>(Func<IService<TReq>> invoker)
         {
             var requestType = typeof(TReq);
-            ServiceExecFn handlerFn = (requestContext, dto) => {
+            ServiceExecFn handlerFn = (requestContext, dto) =>
+            {
                 var service = invoker();
 
                 InjectRequestContext(service, requestContext);
@@ -139,7 +142,8 @@ namespace ServiceStack.ServiceHost
 
             if (typeof(IRequiresRequestStream).IsAssignableFrom(requestType))
             {
-                this.RequestTypeFactoryMap[requestType] = httpReq => {
+                this.RequestTypeFactoryMap[requestType] = httpReq =>
+                {
                     var rawReq = (IRequiresRequestStream)requestType.CreateInstance();
                     rawReq.RequestStream = httpReq.InputStream;
                     return rawReq;
@@ -154,7 +158,7 @@ namespace ServiceStack.ServiceHost
 
         public void RegisterRestPaths(Type requestType)
         {
-            var attrs = requestType.GetCustomAttributes(typeof(RouteAttribute), true);
+            var attrs = TypeDescriptor.GetAttributes(requestType).OfType<RouteAttribute>();
             foreach (RouteAttribute attr in attrs)
             {
                 var restPath = new RestPath(requestType, attr.Path, attr.Verbs, attr.Summary, attr.Notes);
@@ -272,7 +276,8 @@ namespace ServiceStack.ServiceHost
         {
             var typeFactoryFn = CallServiceExecuteGeneric(requestType, serviceType);
 
-            ServiceExecFn handlerFn = (requestContext, dto) => {
+            ServiceExecFn handlerFn = (requestContext, dto) =>
+            {
                 var service = serviceFactoryFn.CreateInstance(serviceType);
 
                 var endpointAttrs = requestContext != null
@@ -293,7 +298,8 @@ namespace ServiceStack.ServiceHost
             var serviceExecDef = typeof(NServiceRequestExec<,>).MakeGenericType(serviceType, requestType);
             var iserviceExec = (INServiceExec)serviceExecDef.CreateInstance();
 
-            ServiceExecFn handlerFn = (requestContext, dto) => {
+            ServiceExecFn handlerFn = (requestContext, dto) =>
+            {
                 var service = serviceFactoryFn.CreateInstance(serviceType);
 
                 ServiceExecFn serviceExec = (reqCtx, req) =>

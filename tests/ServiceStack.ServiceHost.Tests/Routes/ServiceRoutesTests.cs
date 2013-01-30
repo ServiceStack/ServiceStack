@@ -1,6 +1,6 @@
-﻿using System.Linq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using ServiceStack.ServiceInterface;
+using System.Linq;
 
 namespace ServiceStack.ServiceHost.Tests.Routes
 {
@@ -61,26 +61,26 @@ namespace ServiceStack.ServiceHost.Tests.Routes
             Assert.That(route.AllowedVerbs, Is.Null);
         }
 
-		[Test]
-		public void Can_Register_NewApi_Routes_With_Field_Id_and_Any_Fallback_From_Assembly()
-		{
-			var routes = new ServiceRoutes();
-			routes.AddFromAssembly(typeof(NewApiRequestDtoWithFieldIdService).Assembly);
+        [Test]
+        public void Can_Register_NewApi_Routes_With_Field_Id_and_Any_Fallback_From_Assembly()
+        {
+            var routes = new ServiceRoutes();
+            routes.AddFromAssembly(typeof(NewApiRequestDtoWithFieldIdService).Assembly);
 
-			var route = (from r in routes.RestPaths
-						 where r.Path == "NewApiRequestDtoWithFieldId"
-						 select r).FirstOrDefault();
+            var route = (from r in routes.RestPaths
+                         where r.Path == "NewApiRequestDtoWithFieldId"
+                         select r).FirstOrDefault();
 
-			Assert.That(route, Is.Not.Null);
-			Assert.That(route.AllowedVerbs, Is.Null);
+            Assert.That(route, Is.Not.Null);
+            Assert.That(route.AllowedVerbs, Is.Null);
 
-			route = (from r in routes.RestPaths
-					 where r.Path == "NewApiRequestDtoWithFieldId/{Id}"
-					 select r).FirstOrDefault();
+            route = (from r in routes.RestPaths
+                     where r.Path == "NewApiRequestDtoWithFieldId/{Id}"
+                     select r).FirstOrDefault();
 
-			Assert.That(route, Is.Not.Null);
-			Assert.That(route.AllowedVerbs, Is.Null);
-		}
+            Assert.That(route, Is.Not.Null);
+            Assert.That(route.AllowedVerbs, Is.Null);
+        }
 
         [Test]
         public void Can_Register_OldApi_Routes_From_Assembly()
