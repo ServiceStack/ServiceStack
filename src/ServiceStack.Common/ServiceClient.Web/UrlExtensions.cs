@@ -1,14 +1,15 @@
-﻿using System;
+﻿using ServiceStack.Common.Web;
+using ServiceStack.Net30.Collections.Concurrent;
+using ServiceStack.ServiceHost;
+using ServiceStack.Text;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
-using ServiceStack.Common.Web;
-using ServiceStack.Net30.Collections.Concurrent;
-using ServiceStack.ServiceHost;
-using ServiceStack.Text;
 
 namespace ServiceStack.ServiceClient.Web
 {
@@ -23,7 +24,7 @@ namespace ServiceStack.ServiceClient.Web
         private static readonly ConcurrentDictionary<Type, List<RestRoute>> routesCache =
             new ConcurrentDictionary<Type, List<RestRoute>>();
 
-        public static string ToUrl(this IReturn request, string httpMethod, string formatFallbackToPredefinedRoute=null)
+        public static string ToUrl(this IReturn request, string httpMethod, string formatFallbackToPredefinedRoute = null)
         {
             httpMethod = httpMethod.ToUpper();
 
@@ -33,7 +34,7 @@ namespace ServiceStack.ServiceClient.Web
             {
                 if (formatFallbackToPredefinedRoute == null)
                     throw new InvalidOperationException("There are no rest routes mapped for '{0}' type. ".Fmt(requestType)
-                        + "(Note: The automatic route selection only works with [Route] attributes on the request DTO and" 
+                        + "(Note: The automatic route selection only works with [Route] attributes on the request DTO and"
                         + "not with routes registered in the IAppHost!)");
 
                 var predefinedRoute = "/{0}/syncreply/{1}".Fmt(formatFallbackToPredefinedRoute, requestType.Name);
@@ -72,7 +73,7 @@ namespace ServiceStack.ServiceClient.Web
             {
                 matchingRoute = matchingRoutes[0];
             }
-            
+
             var url = matchingRoute.Uri;
             if (httpMethod == HttpMethods.Get || httpMethod == HttpMethods.Delete || httpMethod == HttpMethods.Head)
             {
@@ -88,7 +89,7 @@ namespace ServiceStack.ServiceClient.Web
 
         private static List<RestRoute> GetRoutesForType(Type requestType)
         {
-            var restRoutes = requestType.GetCustomAttributes(false)
+            var restRoutes = TypeDescriptor.GetAttributes(requestType)
                 .OfType<RouteAttribute>()
                 .Select(attr => new RestRoute(requestType, attr.Path, attr.Verbs))
                 .ToList();
@@ -100,7 +101,7 @@ namespace ServiceStack.ServiceClient.Web
         {
             RouteResolutionResult bestMatch = default(RouteResolutionResult);
             var otherMatches = new List<RouteResolutionResult>();
-            
+
             foreach (var route in routes)
             {
                 if (bestMatch == null)
@@ -141,7 +142,7 @@ namespace ServiceStack.ServiceClient.Web
 
     public class RestRoute
     {
-        private static readonly char[] ArrayBrackets = new[]{ '[' , ']' };
+        private static readonly char[] ArrayBrackets = new[] { '[', ']' };
 
         private static string FormatValue(object value)
         {
@@ -150,13 +151,15 @@ namespace ServiceStack.ServiceClient.Web
         }
 
         [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:FieldsMustBePrivate", Justification = "Using field is just easier.")]
-        public static Func<object, string> FormatVariable = value => {
+        public static Func<object, string> FormatVariable = value =>
+        {
             var valueString = value as string;
             return valueString != null ? Uri.EscapeDataString(valueString) : FormatValue(value);
         };
 
         [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:FieldsMustBePrivate", Justification = "Using field is just easier.")]
-        public static Func<object, string> FormatQueryParameterValue = value => {
+        public static Func<object, string> FormatQueryParameterValue = value =>
+        {
             // Perhaps custom formatting needed for DateTimes, lists, etc.
             var valueString = value as string;
             return valueString != null ? Uri.EscapeDataString(valueString) : FormatValue(value);
