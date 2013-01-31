@@ -108,6 +108,17 @@ namespace ServiceStack.ServiceHost
             get { return null; }
         }
 
+        public string XForwardedFor
+        {
+            get { return null; }
+        }
+
+        public string XRealIp 
+        {
+            get { return null; }
+        }
+
+
         public bool IsSecureConnection
         {
             get { return false; }

@@ -75,6 +75,16 @@ namespace ServiceStack.ServiceHost
         string RemoteIp { get; }
 
         /// <summary>
+        /// The value of the X-Forwarded-For header, null if null or empty
+        /// </summary>
+        string XForwardedFor { get; }
+
+        /// <summary>
+        /// The value of the X-Real-IP header, null if null or empty
+        /// </summary>
+        string XRealIp { get; }
+
+        /// <summary>
         /// e.g. is https or not
         /// </summary>
         bool IsSecureConnection { get; }
