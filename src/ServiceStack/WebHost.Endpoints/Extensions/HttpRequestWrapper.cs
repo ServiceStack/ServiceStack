@@ -184,12 +184,28 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
             get { return request.UserHostAddress; }
         }
 
+        public string XForwardedFor
+        {
+            get
+            {
+                return string.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedFor]) ? null : request.Headers[HttpHeaders.XForwardedFor];
+            }
+        }
+
+        public string XRealIp
+        {
+            get
+            {
+                return string.IsNullOrEmpty(request.Headers[HttpHeaders.XRealIp]) ? null : request.Headers[HttpHeaders.XRealIp];
+            }
+        }
+
         private string remoteIp;
         public string RemoteIp
         {
             get
             {
-                return remoteIp ?? (remoteIp = request.Headers[HttpHeaders.XForwardedFor] ?? (request.Headers[HttpHeaders.XRealIp] ?? request.UserHostAddress));
+                return remoteIp ?? (remoteIp = XForwardedFor ?? (XRealIp ?? request.UserHostAddress));
             }
         }
 
