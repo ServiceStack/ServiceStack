@@ -62,6 +62,8 @@ namespace ServiceStack.ServiceHost.Tests
 			public string UserHostAddress { get; private set; }
 
             public string RemoteIp { get; set; }
+            public string XForwardedFor { get; set; }
+            public string XRealIp { get; set; }
 
 		    public bool IsSecureConnection { get; private set; }
 			public string[] AcceptTypes { get; private set; }

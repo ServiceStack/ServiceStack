@@ -97,6 +97,16 @@ namespace ServiceStack.ServiceHost.Tests
 			get { throw new NotImplementedException(); }
 		}
 
+        public string XForwardedFor
+        {
+            get { throw new NotImplementedException(); }
+        }
+        
+        public string XRealIp
+        {
+            get { throw new NotImplementedException(); }
+        }
+
 		public bool IsSecureConnection
 		{
 			get { throw new NotImplementedException(); }
