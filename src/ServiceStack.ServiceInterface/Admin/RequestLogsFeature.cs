@@ -20,6 +20,11 @@ namespace ServiceStack.ServiceInterface.Admin
         public bool EnableSessionTracking { get; set; }
 
         /// <summary>
+        /// Turn On/Off Logging of Raw Request Body, default is Off
+        /// </summary>
+        public bool EnableRequestBodyTracking { get; set; }
+
+        /// <summary>
         /// Turn On/Off Tracking of Responses
         /// </summary>
         public bool EnableResponseTracking { get; set; }
@@ -61,6 +66,7 @@ namespace ServiceStack.ServiceInterface.Admin
             this.Capacity = capacity;
             this.RequiredRoles = new [] { RoleNames.Admin };
             this.EnableErrorTracking = true;
+            this.EnableRequestBodyTracking = false;
             this.ExcludeRequestDtoTypes = new[] { typeof(RequestLogs) };
             this.HideRequestBodyForRequestDtoTypes = new[] {
                 typeof(Auth.Auth), typeof(Registration)
@@ -74,12 +80,20 @@ namespace ServiceStack.ServiceInterface.Admin
             var requestLogger = RequestLogger ?? new InMemoryRollingRequestLogger(Capacity);
             requestLogger.EnableSessionTracking = EnableSessionTracking;
             requestLogger.EnableResponseTracking = EnableResponseTracking;
+            requestLogger.EnableRequestBodyTracking = EnableRequestBodyTracking;
             requestLogger.EnableErrorTracking = EnableErrorTracking;
             requestLogger.RequiredRoles = RequiredRoles;
             requestLogger.ExcludeRequestDtoTypes = ExcludeRequestDtoTypes;
             requestLogger.HideRequestBodyForRequestDtoTypes = HideRequestBodyForRequestDtoTypes;
 
             appHost.Register(requestLogger);
+
+            if (EnableRequestBodyTracking)
+            {
+                appHost.PreRequestFilters.Insert(0, (httpReq, httpRes) => {
+                    httpReq.UseBufferedStream = EnableRequestBodyTracking;
+                });
+            }
         }
     }
 }

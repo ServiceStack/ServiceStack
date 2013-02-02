@@ -26,7 +26,9 @@ namespace Funq
 	        get
 	        {
                 if (Reuse == ReuseScope.Request)
-                    return HostContext.Instance.Items[this] is TService ? (TService) HostContext.Instance.Items[this] : default(TService);
+                    return HostContext.Instance.Items[this] is TService 
+                        ? (TService) HostContext.Instance.Items[this] 
+                        : default(TService);
 	            
                 return instance;
 	        }
@@ -49,7 +51,14 @@ namespace Funq
 		{
 			// Save instance if Hierarchy or Container Reuse 
             if (Reuse != ReuseScope.None)
+            {
                 Instance = instance;
+            }
+            else
+            {
+                //Keep track of ReuseScope.None IDisposable instances to dispose of end of the request
+                HostContext.Instance.TrackDisposable(instance as IDisposable);
+            }
 
 			// Track for disposal if necessary
 			if (Owner == Owner.Container && instance is IDisposable)

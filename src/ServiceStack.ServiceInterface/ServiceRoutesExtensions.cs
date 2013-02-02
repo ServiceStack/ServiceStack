@@ -6,7 +6,9 @@ using System.Reflection;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
+using ServiceStack.Text;
 using ServiceStack.ServiceHost;
+using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface
 {
@@ -26,71 +28,109 @@ namespace ServiceStack.ServiceInterface
         {
             foreach (Assembly assembly in assembliesWithServices)
             {
-                IEnumerable<Type> services = 
-                    from t in assembly.GetExportedTypes()
-                    where
-                        !t.IsAbstract &&
-                        t.IsSubclassOfRawGeneric(typeof(ServiceBase<>))
-                    select t;
+                AddOldApiRoutes(routes, assembly);
+                AddNewApiRoutes(routes, assembly);
+            }
 
-                foreach (Type service in services)
+            return routes;
+        }
+
+        private static void AddNewApiRoutes(IServiceRoutes routes, Assembly assembly)
+        {
+            var services = assembly.GetExportedTypes()
+                .Where(t => !t.IsAbstract
+                            && t.HasInterface(typeof(IService)));
+
+            foreach (Type service in services)
+            {
+                var allServiceActions = service.GetActions();
+                foreach (var requestDtoActions in allServiceActions.GroupBy(x => x.GetParameters()[0].ParameterType))
                 {
-                    Type baseType = service.BaseType;
-                    //go up the hierarchy to the first generic base type
-                    while (!baseType.IsGenericType)
-                    {
-                        baseType = baseType.BaseType;
-                    }
-
-                    Type requestType = baseType.GetGenericArguments()[0];
-
+                    var requestType = requestDtoActions.Key;
+                    var hasWildcard = requestDtoActions.Any(x => x.Name.EqualsIgnoreCase(ActionContext.AnyAction));
                     string allowedVerbs = null; //null == All Routes
-
-                    if (service.IsSubclassOfRawGeneric(typeof(RestServiceBase<>)))
+                    if (!hasWildcard)
                     {
-                        //find overriden REST methods
                         var allowedMethods = new List<string>();
-                        if (service.GetMethod("OnGet").DeclaringType == service)
+                        foreach (var action in requestDtoActions)
                         {
-                            allowedMethods.Add(HttpMethods.Get);
-                        }
-
-                        if (service.GetMethod("OnPost").DeclaringType == service)
-                        {
-                            allowedMethods.Add(HttpMethods.Post);
-                        }
-
-                        if (service.GetMethod("OnPut").DeclaringType == service)
-                        {
-                            allowedMethods.Add(HttpMethods.Put);
-                        }
-
-                        if (service.GetMethod("OnDelete").DeclaringType == service)
-                        {
-                            allowedMethods.Add(HttpMethods.Delete);
-                        }
-
-                        if (service.GetMethod("OnPatch").DeclaringType == service)
-                        {
-                            allowedMethods.Add(HttpMethods.Patch);
+                            allowedMethods.Add(action.Name.ToUpper());
                         }
 
                         if (allowedMethods.Count == 0) continue;
                         allowedVerbs = string.Join(" ", allowedMethods.ToArray());
                     }
 
-                    routes.Add(requestType, requestType.Name, allowedVerbs);
-
-                    var hasIdField = requestType.GetProperty(IdUtils.IdField) != null;
-                    if (hasIdField)
-                    {
-                        var routePath = requestType.Name + "/{" + IdUtils.IdField + "}";
-                        routes.Add(requestType, routePath, allowedVerbs);
-                    }
+                    routes.AddRoute(requestType, allowedVerbs);
                 }
             }
+        }
 
-            return routes;
+        private static void AddOldApiRoutes(IServiceRoutes routes, Assembly assembly)
+        {
+            var services = assembly.GetExportedTypes()
+                .Where(t => !t.IsAbstract
+                            && t.IsSubclassOfRawGeneric(typeof(ServiceBase<>)));
+
+            foreach (Type service in services)
+            {
+                Type baseType = service.BaseType;
+                //go up the hierarchy to the first generic base type
+                while (!baseType.IsGenericType)
+                {
+                    baseType = baseType.BaseType;
+                }
+
+                Type requestType = baseType.GetGenericArguments()[0];
+
+                string allowedVerbs = null; //null == All Routes
+
+                if (service.IsSubclassOfRawGeneric(typeof(RestServiceBase<>)))
+                {
+                    //find overriden REST methods
+                    var allowedMethods = new List<string>();
+                    if (service.GetMethod("OnGet").DeclaringType == service)
+                    {
+                        allowedMethods.Add(HttpMethods.Get);
+                    }
+
+                    if (service.GetMethod("OnPost").DeclaringType == service)
+                    {
+                        allowedMethods.Add(HttpMethods.Post);
+                    }
+
+                    if (service.GetMethod("OnPut").DeclaringType == service)
+                    {
+                        allowedMethods.Add(HttpMethods.Put);
+                    }
+
+                    if (service.GetMethod("OnDelete").DeclaringType == service)
+                    {
+                        allowedMethods.Add(HttpMethods.Delete);
+                    }
+
+                    if (service.GetMethod("OnPatch").DeclaringType == service)
+                    {
+                        allowedMethods.Add(HttpMethods.Patch);
+                    }
+
+                    if (allowedMethods.Count == 0) continue;
+                    allowedVerbs = string.Join(" ", allowedMethods.ToArray());
+                }
+
+                routes.AddRoute(requestType, allowedVerbs);
+            }
+        }
+
+        private static void AddRoute(this IServiceRoutes routes, Type requestType, string allowedVerbs)
+        {
+            routes.Add(requestType, requestType.Name, allowedVerbs);
+
+            var hasIdField = requestType.GetProperty(IdUtils.IdField) != null;
+            if (!hasIdField) return;
+
+            var routePath = requestType.Name + "/{" + IdUtils.IdField + "}";
+            routes.Add(requestType, routePath, allowedVerbs);
         }
 
         public static IServiceRoutes Add<TRequest>(this IServiceRoutes routes, string restPath, ApplyTo verbs)

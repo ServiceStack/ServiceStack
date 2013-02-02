@@ -99,6 +99,12 @@ namespace RazorRockstars.Web
         public List<Rockstar> Results { get; set; }
     }
 
+    public class SimpleModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+
     public class RockstarsService : RestServiceBase<Rockstars>
     {
         public IDbConnectionFactory DbFactory { get; set; }

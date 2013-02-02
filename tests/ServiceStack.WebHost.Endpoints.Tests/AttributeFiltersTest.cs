@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text;
+using ServiceStack.Common.Tests.ServiceClient.Web;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using NUnit.Framework;
@@ -10,6 +13,7 @@ using ServiceStack.Service;
 using ServiceStack.ServiceInterface;
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
+using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Utils;
 
@@ -39,7 +43,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public IHasRequestFilter Copy()
         {
-            return (IHasRequestFilter) this.MemberwiseClone();
+            return (IHasRequestFilter)this.MemberwiseClone();
         }
     }
 
@@ -114,6 +118,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class ThrowingFilterAttribute : RequestFilterAttribute
+    {
+        public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+        {
+            throw new ArgumentException("exception message");
+        }
+    }
+
+    [Route("/throwingattributefiltered")]
+    public class ThrowingAttributeFiltered : IReturn<string>
+    {
+    }
+
+    [ThrowingFilter]
+    public class ThrowingAttributeFilteredService : IService
+    {
+        public object Any(ThrowingAttributeFiltered request)
+        {
+            return "OK";
+        }
+    }
+
     [ResponseFilterTest]
     [ContextualResponseFilterTest(ApplyTo.Delete | ApplyTo.Put)]
     public class AttributeFilteredResponse
@@ -159,6 +185,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public override void Configure(Funq.Container container)
             {
                 container.Register<ICacheClient>(c => new MemoryCacheClient()).ReusedWithin(Funq.ReuseScope.None);
+                SetConfig(new EndpointHostConfig { DebugMode = true }); //show stacktraces
             }
         }
 
@@ -193,7 +220,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var response = client.Send<AttributeFilteredResponse>(
                 new AttributeFiltered { RequestFilterExecuted = false });
-
             Assert.IsTrue(response.RequestFilterExecuted);
             Assert.IsTrue(response.ResponseFilterExecuted);
             Assert.IsFalse(response.ContextualRequestFilterExecuted);
@@ -208,6 +234,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             new XmlServiceClient(ServiceClientBaseUri),
             new JsvServiceClient(ServiceClientBaseUri)
         };
+
+        [Test]
+        public void Proper_exception_is_serialized_to_client()
+        {
+            var client = new HtmlServiceClient(ServiceClientBaseUri);
+            client.SetBaseUri(ServiceClientBaseUri);
+
+            try
+            {
+                client.Get(new ThrowingAttributeFiltered());
+            }
+            catch (WebServiceException e)
+            {
+                //Ensure we have stack trace present
+                Assert.IsTrue(e.ResponseBody.Contains("ThrowingFilterAttribute"), "No stack trace in the response (it's probably empty)");
+            }
+        }
 
         [Test, TestCaseSource("RestClients")]
         public void Request_and_Response_Filters_are_executed_using_RestClient(IRestClient client)
@@ -270,7 +313,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void RequestFilters_are_prioritized()
         {
             EndpointHost.ServiceManager = new ServiceManager(typeof(DummyHolder).Assembly);
-            
+
             EndpointHost.ServiceManager.Metadata.Add(typeof(AttributeFilteredService), typeof(DummyHolder), null);
 
             var attributes = FilterAttributeCache.GetRequestFilterAttributes(typeof(DummyHolder));

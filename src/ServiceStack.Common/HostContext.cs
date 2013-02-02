@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Common
 {
@@ -41,6 +42,45 @@ namespace ServiceStack.Common
         public void EndRequest()
         {
             items = null;
+        }
+
+        /// <summary>
+        /// Track any IDisposable's to dispose of at the end of the request in IAppHost.OnEndRequest()
+        /// </summary>
+        /// <param name="instance"></param>
+        public void TrackDisposable(IDisposable instance)
+        {
+            if (instance == null) return;
+            if (instance is IService) return; //IService's are already disposed right after they've been executed
+
+            DispsableTracker dispsableTracker = null;
+            if (!Items.Contains(DispsableTracker.HashId))
+                Items[DispsableTracker.HashId] = dispsableTracker = new DispsableTracker();
+            if (dispsableTracker == null)
+                dispsableTracker = (DispsableTracker) Items[DispsableTracker.HashId];
+            dispsableTracker.Add(instance);
+        }
+    }
+
+    public class DispsableTracker : IDisposable
+    {
+        public const string HashId = "__disposables";
+
+        List<WeakReference> disposables = new List<WeakReference>();
+
+        public void Add(IDisposable instance)
+        {
+            disposables.Add(new WeakReference(instance));
+        }
+
+        public void Dispose()
+        {
+            foreach (var wr in disposables)
+            {
+                var disposable = (IDisposable)wr.Target;
+                if (wr.IsAlive)
+                    disposable.Dispose();
+            }
         }
     }
 }

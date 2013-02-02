@@ -194,6 +194,13 @@
 				<button class="btn" type="submit">Sign In with Google OpenId</button>
 			</p>
         </form>
+
+        <form action="api/auth/OpenId" method="POST">
+            <p>
+                <input type="text" name="OpenIdUrl" placeholder="e.g. http://{user}.myopenid.com"/>
+				<button class="btn" type="submit">Sign In with OpenId</button>
+			</p>
+        </form>
     
         <form action="api/auth/credentials" method="POST">
             <div>

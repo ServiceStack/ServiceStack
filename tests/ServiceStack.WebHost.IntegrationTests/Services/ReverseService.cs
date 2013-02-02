@@ -19,9 +19,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	}
 
 	public class ReverseService 
-		: ServiceBase<Reverse>
+		: ServiceInterface.Service
 	{
-		protected override object Run(Reverse request)
+		public object Any(Reverse request)
 		{
 			return new ReverseResponse { Result = Execute(request.Value) };
 		}

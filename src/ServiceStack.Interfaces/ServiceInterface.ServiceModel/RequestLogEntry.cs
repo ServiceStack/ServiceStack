@@ -13,8 +13,9 @@ namespace ServiceStack.ServiceInterface.ServiceModel
 		public string HttpMethod { get; set; }
 		public string AbsoluteUri { get; set; }
 		public string PathInfo { get; set; }
-		public object RequestDto { get; set; }
-		public string UserAuthId { get; set; }
+        public string RequestBody { get; set; }
+        public object RequestDto { get; set; }
+        public string UserAuthId { get; set; }
 		public string SessionId { get; set; }
 		public string IpAddress { get; set; }
 		public string ForwardedFor { get; set; }

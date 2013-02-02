@@ -138,6 +138,7 @@ namespace ServiceStack.WebHost.IntegrationTests
 						new FacebookAuthProvider(appSettings), 
 						new TwitterAuthProvider(appSettings), 
                         new GoogleOpenIdOAuthProvider(appSettings), 
+                        new OpenIdOAuthProvider(appSettings), 
                         new DigestAuthProvider(appSettings),
 						new BasicAuthProvider(appSettings), 
 					}));

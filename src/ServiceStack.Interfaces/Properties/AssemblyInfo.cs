@@ -11,7 +11,7 @@ using System.Runtime.Serialization;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("ServiceStack")]
 [assembly: AssemblyProduct("ServiceStack.Interfaces")]
-[assembly: AssemblyCopyright("Copyright © ServiceStack 2012")]
+[assembly: AssemblyCopyright("Copyright © ServiceStack 2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -33,7 +33,7 @@ using System.Runtime.Serialization;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("3.9.33.0")]
+[assembly: AssemblyVersion("3.9.35.0")]
 
 [assembly: ContractNamespace("http://schemas.servicestack.net/types", 
 	ClrNamespace = "ServiceStack.ServiceInterface.ServiceModel")]

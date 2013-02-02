@@ -69,7 +69,7 @@
             Class to hold  
             </summary>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:ServiceStack.Text.Controller.PathInfo.Parse(System.String)" -->
+        <!-- Commentaire XML incorrect ignoré pour le membre "M:ServiceStack.Text.Controller.PathInfo.Parse(System.String)" -->
         <member name="T:ServiceStack.Text.DateTimeExtensions">
             <summary>
             A fast, standards-based, serialization-issue free DateTime serailizer.
@@ -158,6 +158,11 @@
             If set to true, Interface types will be prefered over concrete types when serializing.
             </summary>
         </member>
+        <member name="P:ServiceStack.Text.JsConfig.IncludePublicFields">
+            <summary>
+            If set to true, Interface types will be prefered over concrete types when serializing.
+            </summary>
+        </member>
         <member name="P:ServiceStack.Text.JsConfig.ModelFactory">
             <summary>
             Set this to enable your own type construction provider.
@@ -213,7 +218,7 @@
             Exclude specific properties of this type from being serialized
             </summary>
         </member>
-        <member name="P:ServiceStack.Text.JsConfig`1.TreatValueAsRefTypes">
+        <member name="P:ServiceStack.Text.JsConfig`1.TreatValueAsRefType">
             <summary>
             Opt-in flag to set some Value Types to be treated as a Ref Type
             </summary>
@@ -495,9 +500,9 @@
             http://www.yoda.arachsys.com/csharp/DoubleConverter.cs
             </summary>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:ServiceStack.Text.Support.DoubleConverter.ToExactString(System.Double)" -->
-        <!-- Badly formed XML comment ignored for member "T:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal" -->
-        <!-- Badly formed XML comment ignored for member "F:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.digits" -->
+        <!-- Commentaire XML incorrect ignoré pour le membre "M:ServiceStack.Text.Support.DoubleConverter.ToExactString(System.Double)" -->
+        <!-- Commentaire XML incorrect ignoré pour le membre "T:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal" -->
+        <!-- Commentaire XML incorrect ignoré pour le membre "F:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.digits" -->
         <member name="F:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.decimalPoint">
             <summary> 
             How many digits are *after* the decimal point

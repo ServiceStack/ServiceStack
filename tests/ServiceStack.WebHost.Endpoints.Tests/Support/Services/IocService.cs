@@ -26,6 +26,42 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         public FunqNoneScope() { Count++; }
     }
 
+    public class FunqRequestScopeDisposable : IDisposable
+    {
+        public static int Count = 0;
+        public static int DisposeCount = 0;
+        public FunqRequestScopeDisposable() { Count++; }
+
+        public void Dispose()
+        {
+            DisposeCount++;
+        }
+    }
+
+    public class FunqSingletonScopeDisposable : IDisposable
+    {
+        public static int Count = 0;
+        public static int DisposeCount = 0;
+        public FunqSingletonScopeDisposable() { Count++; }
+
+        public void Dispose()
+        {
+            DisposeCount++;
+        }
+    }
+
+    public class FunqNoneScopeDisposable : IDisposable
+    {
+        public static int Count = 0;
+        public static int DisposeCount = 0;
+        public FunqNoneScopeDisposable() { Count++; }
+
+        public void Dispose()
+        {
+            DisposeCount++;
+        }
+    }
+
     public class FunqRequestScopeDepDisposableProperty : IDisposable
     {
         public static int Count = 0;
@@ -48,8 +84,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
     public class FunqDepProperty { }
     public class AltDepProperty { }
 
-    public class FunqDepDisposableProperty : IDisposable { public void Dispose() { } }
-    public class AltDepDisposableProperty : IDisposable { public void Dispose() { } }
+    public class FunqDepDisposableProperty : IDisposable
+    {
+        public static int DisposeCount = 0;
+        public void Dispose() { DisposeCount++; }
+    }
+    public class AltDepDisposableProperty : IDisposable
+    {
+        public static int DisposeCount = 0;
+        public void Dispose() { DisposeCount++; }
+    }
 
     public class Ioc { }
 
@@ -171,7 +215,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
     }
 
     [IocRequestFilter]
-    public class IocScopeService : IService<IocScope>, IDisposable
+    public class IocScopeService : IService, IDisposable
     {
         public FunqRequestScope FunqRequestScope { get; set; }
         public FunqSingletonScope FunqSingletonScope { get; set; }
@@ -179,7 +223,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         public FunqRequestScopeDepDisposableProperty FunqRequestScopeDepDisposableProperty { get; set; }
         public AltRequestScopeDepDisposableProperty AltRequestScopeDepDisposableProperty { get; set; }
 
-        public object Execute(IocScope request)
+        public object Any(IocScope request)
         {
             if (request.Throw)
                 throw new Exception("Exception requested by user");
@@ -202,6 +246,59 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         {
             DisposedCount++;
         }    
+    }
+
+    public class IocDispose : IReturn<IocDisposeResponse>
+    {
+        public bool Throw { get; set; }
+    }
+
+    public class IocDisposeResponse : IHasResponseStatus
+    {
+        public IocDisposeResponse()
+        {
+            this.ResponseStatus = new ResponseStatus();
+            this.Results = new Dictionary<string, int>();
+        }
+
+        public Dictionary<string, int> Results { get; set; }
+
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    public class IocDisposableService : IService, IDisposable
+    {
+        public FunqRequestScopeDisposable FunqRequestScopeDisposable { get; set; }
+        public FunqSingletonScopeDisposable FunqSingletonScopeDisposable { get; set; }
+        public FunqNoneScopeDisposable FunqNoneScopeDisposable { get; set; }
+        public FunqRequestScopeDepDisposableProperty FunqRequestScopeDepDisposableProperty { get; set; }
+        public AltRequestScopeDepDisposableProperty AltRequestScopeDepDisposableProperty { get; set; }
+
+        public object Any(IocDispose request)
+        {
+            if (request.Throw)
+                throw new Exception("Exception requested by user");
+
+            var response = new IocDisposeResponse
+            {
+                Results = {
+                    { typeof(FunqSingletonScopeDisposable).Name, FunqSingletonScopeDisposable.DisposeCount },
+                    { typeof(FunqRequestScopeDisposable).Name, FunqRequestScopeDisposable.DisposeCount },
+                    { typeof(FunqNoneScopeDisposable).Name, FunqNoneScopeDisposable.DisposeCount },
+                    { typeof(FunqRequestScopeDepDisposableProperty).Name, FunqRequestScopeDepDisposableProperty.DisposeCount },
+                    { typeof(AltRequestScopeDepDisposableProperty).Name, AltRequestScopeDepDisposableProperty.DisposeCount },
+                },
+            };
+
+            return response;
+        }
+
+        public static int DisposeCount = 0;
+
+        public void Dispose()
+        {
+            DisposeCount++;
+        }
     }
 
 }

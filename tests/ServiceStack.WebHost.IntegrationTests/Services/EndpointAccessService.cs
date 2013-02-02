@@ -42,6 +42,14 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         EndpointAttributes.External | EndpointAttributes.Xml)]
     public class JsonInternalXmlExternal { }
 
+    [Restrict(EndpointAttributes.Secure)]
+    public class SslOnly { }
+
+    [Restrict(EndpointAttributes.Secure   | EndpointAttributes.External,
+              EndpointAttributes.InSecure | EndpointAttributes.InternalNetworkAccess)]
+    public class SslExternalAndInsecureInternal { }
+
+
     public class ReturnsHttpResult
     {
         public int Id { get; set; }

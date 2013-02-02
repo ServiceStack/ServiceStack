@@ -68,6 +68,38 @@ namespace ServiceStack.ServiceHost.Tests
 			Assert.That(request.UniqueId, Is.EqualTo(new Guid("4583B364-BBDC-427F-A289-C2923DEBD547")));
 		}
 
+		public class ComplexTypeWithFields
+		{
+			public readonly int Id;
+
+			public readonly string Name;
+
+			public readonly Guid UniqueId;
+
+			public ComplexTypeWithFields(int id, string name, Guid uniqueId)
+			{
+				Id = id;
+				Name = name;
+				UniqueId = uniqueId;
+			}
+		}
+
+		[Test]
+		public void Can_deserialize_ComplexTypeWithFields_path()
+		{
+
+			var restPath = new RestPath(typeof(ComplexTypeWithFields),
+				"/Complex/{Id}/{Name}/Unique/{UniqueId}");
+			var request = restPath.CreateRequest(
+				"/complex/5/Is Alive/unique/4583B364-BBDC-427F-A289-C2923DEBD547") as ComplexTypeWithFields;
+
+			Assert.That(request, Is.Not.Null);
+			Assert.That(request.Id, Is.EqualTo(5));
+			Assert.That(request.Name, Is.EqualTo("Is Alive"));
+			Assert.That(request.UniqueId, Is.EqualTo(new Guid("4583B364-BBDC-427F-A289-C2923DEBD547")));
+		}
+
+
 		public class BbcMusicRequest
 		{
 			public Guid mbz_guid { get; set; }

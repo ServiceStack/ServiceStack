@@ -1,49 +1,75 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Api.Swagger
 {
+    [DataContract]
     public class ResourceRequest
     {
+        [DataMember(Name = "apiKey")]
         public string ApiKey { get; set; }
+        [DataMember(Name = "name")]
         public string Name { get; set; }
     }
 
+    [DataContract]
     public class ResourceResponse
     {
+        [DataMember(Name = "apiVersion")]
         public string ApiVersion { get; set; }
+        [DataMember(Name = "basePath")]
         public string BasePath { get; set; }
+        [DataMember(Name = "resourcePath")]
         public string ResourcePath { get; set; }
+        [DataMember(Name = "apis")]
         public List<MethodDescription> Apis { get; set; }
     }
 
+    [DataContract]
     public class MethodDescription
     {
+        [DataMember(Name = "path")]
         public string Path { get; set; }
+        [DataMember(Name = "description")]
         public string Description { get; set; }
+        [DataMember(Name = "operations")]
         public List<MethodOperation> Operations { get; set; }
     }
 
+    [DataContract]
     public class MethodOperation
     {
+        [DataMember(Name = "httpMethod")]
         public string HttpMethod { get; set; }
+        [DataMember(Name = "nickname")]
         public string Nickname { get; set; }
+        [DataMember(Name = "summary")]
         public string Summary { get; set; }
+        [DataMember(Name = "notes")]
         public string Notes { get; set; }
+        [DataMember(Name = "parameters")]
         public List<MethodOperationParameter> Parameters { get; set; }
     }
 
+    [DataContract]
     public class MethodOperationParameter
     {
+        [DataMember(Name = "name")]
         public string Name { get; set; }
+        [DataMember(Name = "description")]
         public string Description { get; set; }
+        [DataMember(Name = "paramType")]
         public string ParamType { get; set; }
+        [DataMember(Name = "allowMultiple")]
         public bool AllowMultiple { get; set; }
+        [DataMember(Name = "required")]
         public bool Required { get; set; }
+        [DataMember(Name = "dataType")]
         public string DataType { get; set; }
     }
 

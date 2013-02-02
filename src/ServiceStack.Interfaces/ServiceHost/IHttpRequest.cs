@@ -50,6 +50,11 @@ namespace ServiceStack.ServiceHost
         NameValueCollection FormData { get; }
 
         /// <summary>
+        /// Buffer the Request InputStream so it can be re-read
+        /// </summary>
+        bool UseBufferedStream { get; set; }
+
+        /// <summary>
         /// The entire string contents of Request.InputStream
         /// </summary>
         /// <returns></returns>
@@ -68,6 +73,16 @@ namespace ServiceStack.ServiceHost
         /// The Remote Ip as reported by X-Forwarded-For, X-Real-IP or Request.UserHostAddress
         /// </summary>
         string RemoteIp { get; }
+
+        /// <summary>
+        /// The value of the X-Forwarded-For header, null if null or empty
+        /// </summary>
+        string XForwardedFor { get; }
+
+        /// <summary>
+        /// The value of the X-Real-IP header, null if null or empty
+        /// </summary>
+        string XRealIp { get; }
 
         /// <summary>
         /// e.g. is https or not

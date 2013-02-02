@@ -235,8 +235,8 @@ namespace ServiceStack.ServiceClient.Web
             if (httpMethod == null) throw new ArgumentNullException("httpMethod");
 
             var requestUri = absoluteUrl;
-            var httpGetOrDelete = (httpMethod == "GET" || httpMethod == "DELETE");
-            var hasQueryString = request != null && httpGetOrDelete;
+            var httpGetOrDeleteOrHead = (httpMethod == "GET" || httpMethod == "DELETE" || httpMethod == "HEAD");
+            var hasQueryString = request != null && httpGetOrDeleteOrHead;
             if (hasQueryString)
             {
                 var queryString = QueryStringSerializer.SerializeToString(request);
@@ -313,7 +313,7 @@ namespace ServiceStack.ServiceClient.Web
         private void SendWebRequestAsync<TResponse>(string httpMethod, object request, 
             RequestState<TResponse> requestState, HttpWebRequest webRequest)
         {
-            var httpGetOrDelete = (httpMethod == "GET" || httpMethod == "DELETE");
+            var httpGetOrDeleteOrHead = (httpMethod == "GET" || httpMethod == "DELETE" || httpMethod == "HEAD");
             webRequest.Accept = string.Format("{0}, */*", ContentType);
 
 #if !SILVERLIGHT 
@@ -342,7 +342,7 @@ namespace ServiceStack.ServiceClient.Web
 
             try
             {
-                if (!httpGetOrDelete && request != null)
+                if (!httpGetOrDeleteOrHead && request != null)
                 {
                     webRequest.ContentType = ContentType;
                     webRequest.BeginGetRequestStream(RequestCallback<TResponse>, requestState);

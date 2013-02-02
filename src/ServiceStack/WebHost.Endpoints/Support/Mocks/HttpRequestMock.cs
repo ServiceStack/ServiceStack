@@ -62,7 +62,9 @@ namespace ServiceStack.WebHost.Endpoints.Support.Mocks
 
 		public NameValueCollection FormData { get; set; }
 
-		public Dictionary<string, object> Items
+        public bool UseBufferedStream { get; set; }
+
+	    public Dictionary<string, object> Items
 		{
 			get; private set;
 		}
@@ -89,6 +91,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Mocks
 		public string UserHostAddress { get; set; }
 
         public string RemoteIp { get; set; }
+        public string XForwardedFor { get; set; }
+        public string XRealIp { get; set; }
 
 	    public bool IsSecureConnection { get; set; }
 		public string[] AcceptTypes { get; set; }

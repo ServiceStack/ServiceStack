@@ -66,6 +66,8 @@ namespace ServiceStack.ServiceInterface.Testing
 
         public NameValueCollection FormData { get; set; }
 
+        public bool UseBufferedStream { get; set; }
+
         public Dictionary<string, object> Items
         {
             get;
@@ -94,6 +96,8 @@ namespace ServiceStack.ServiceInterface.Testing
         public string UserHostAddress { get; set; }
 
         public string RemoteIp { get; set; }
+        public string XForwardedFor { get; set; }
+        public string XRealIp { get; set; }
 
         public bool IsSecureConnection { get; set; }
         public string[] AcceptTypes { get; set; }

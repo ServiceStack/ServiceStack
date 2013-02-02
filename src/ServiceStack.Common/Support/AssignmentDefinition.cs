@@ -1,45 +1,98 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using ServiceStack.Common.Utils;
 using ServiceStack.Logging;
-using ServiceStack.Net30.Collections.Concurrent;
 using ServiceStack.Text;
 
 namespace ServiceStack.Common.Support
 {
+    public class AssignmentEntry
+    {
+        public string Name;
+        public AssignmentMember From;
+        public AssignmentMember To;
+        public PropertyGetterDelegate GetValueFn;
+        public PropertySetterDelegate SetValueFn;
+
+        public AssignmentEntry(string name, AssignmentMember @from, AssignmentMember to)
+        {
+            Name = name;
+            From = @from;
+            To = to;
+
+            GetValueFn = From.GetGetValueFn();
+            SetValueFn = To.GetSetValueFn();
+        }
+    }
+
+    public class AssignmentMember
+    {
+        public AssignmentMember(Type type, PropertyInfo propertyInfo)
+        {
+            Type = type;
+            PropertyInfo = propertyInfo;
+        }
+
+        public AssignmentMember(Type type, FieldInfo fieldInfo)
+        {
+            Type = type;
+            FieldInfo = fieldInfo;
+        }
+
+        public AssignmentMember(Type type, MethodInfo methodInfo)
+        {
+            Type = type;
+            MethodInfo = methodInfo;
+        }
+
+        public Type Type;
+        public PropertyInfo PropertyInfo;
+        public FieldInfo FieldInfo;
+        public MethodInfo MethodInfo;
+
+        public PropertyGetterDelegate GetGetValueFn()
+        {
+            if (PropertyInfo != null)
+                return PropertyInfo.GetPropertyGetterFn();
+            if (FieldInfo != null)
+                return o => FieldInfo.GetValue(o);
+            if (MethodInfo != null)
+                return (PropertyGetterDelegate)
+                    Delegate.CreateDelegate(typeof(PropertyGetterDelegate), MethodInfo);
+            return null;
+        }
+
+        public PropertySetterDelegate GetSetValueFn()
+        {
+            if (PropertyInfo != null)
+                return PropertyInfo.GetPropertySetterFn();
+            if (FieldInfo != null)
+                return (o, v) => FieldInfo.SetValue(o, v);
+            if (MethodInfo != null)
+                return (PropertySetterDelegate)
+                    Delegate.CreateDelegate(typeof(PropertySetterDelegate), MethodInfo);
+            return null;
+        }
+    }
+
     public class AssignmentDefinition
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(AssignmentDefinition));
 
-        private ConcurrentDictionary<string, PropertySetterDelegate> PropertySetters = 
-            new ConcurrentDictionary<string, PropertySetterDelegate>();
-
-        private ConcurrentDictionary<string, PropertyGetterDelegate> PropertyGetters = 
-            new ConcurrentDictionary<string, PropertyGetterDelegate>();
-
         public AssignmentDefinition()
         {
-            this.PropertyInfoMap = new Dictionary<PropertyInfo, PropertyInfo>();
-            this.FieldInfoMap = new Dictionary<FieldInfo, FieldInfo>();
+            this.AssignmentMemberMap = new Dictionary<string, AssignmentEntry>();
         }
 
         public Type FromType { get; set; }
         public Type ToType { get; set; }
 
-        //from => to
-        public Dictionary<PropertyInfo, PropertyInfo> PropertyInfoMap { get; set; }
-        public Dictionary<FieldInfo, FieldInfo> FieldInfoMap { get; set; }
+        public Dictionary<string, AssignmentEntry> AssignmentMemberMap { get; set; }
 
-        public void AddMatch(PropertyInfo fromPropertyInfo, PropertyInfo toPropertyInfo)
+        public void AddMatch(string name, AssignmentMember readMember, AssignmentMember writeMember)
         {
-            this.PropertyInfoMap[fromPropertyInfo] = toPropertyInfo;
-        }
-
-        public void AddMatch(FieldInfo fromFieldInfo, FieldInfo toFieldInfo)
-        {
-            this.FieldInfoMap[fromFieldInfo] = toFieldInfo;
+            this.AssignmentMemberMap[name] = new AssignmentEntry(name, readMember, writeMember);
         }
 
         public void PopulateFromPropertiesWithAttribute(object to, object from, Type attributeType)
@@ -68,42 +121,40 @@ namespace ServiceStack.Common.Support
             Func<PropertyInfo, bool> propertyInfoPredicate,
             Func<object, bool> valuePredicate)
         {
-            foreach (var propertyEntry in PropertyInfoMap)
+            foreach (var assignmentEntry in AssignmentMemberMap)
             {
-                var fromPropertyInfo = propertyEntry.Key;
-                var toPropertyInfo = propertyEntry.Value;
+                var assignmentMember = assignmentEntry.Value;
+                var fromMember = assignmentEntry.Value.From;
+                var toMember = assignmentEntry.Value.To;
 
-                if (propertyInfoPredicate != null)
+                if (fromMember.PropertyInfo != null && propertyInfoPredicate != null)
                 {
-                    if (!propertyInfoPredicate(fromPropertyInfo)) continue;
+                    if (!propertyInfoPredicate(fromMember.PropertyInfo)) continue;
                 }
 
                 try
                 {
-                    var getterFn = PropertyGetters.GetOrAdd(fromPropertyInfo.Name,
-                        fromPropertyInfo.GetPropertyGetterFn());
-                    var fromValue = getterFn(from);
+                    var fromValue = assignmentMember.GetValueFn(from);
 
                     if (valuePredicate != null)
                     {
                         if (!valuePredicate(fromValue)) continue;
                     }
 
-                    if (fromPropertyInfo.PropertyType != toPropertyInfo.PropertyType)
+                    if (fromMember.Type != toMember.Type)
                     {
-                        if (fromPropertyInfo.PropertyType == typeof(string))
+                        if (fromMember.Type == typeof(string))
                         {
-                            fromValue = TypeSerializer.DeserializeFromString((string)fromValue,
-                                toPropertyInfo.PropertyType);
+                            fromValue = TypeSerializer.DeserializeFromString((string)fromValue, toMember.Type);
                         }
-                        else if (toPropertyInfo.PropertyType == typeof(string))
+                        else if (toMember.Type == typeof(string))
                         {
                             fromValue = TypeSerializer.SerializeToString(fromValue);
                         }
-						else if (toPropertyInfo.PropertyType.IsGenericType
-							&& toPropertyInfo.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                        else if (toMember.Type.IsGenericType
+                            && toMember.Type.GetGenericTypeDefinition() == typeof(Nullable<>))
 						{
-							Type genericArg = toPropertyInfo.PropertyType.GetGenericArguments()[0];
+                            Type genericArg = toMember.Type.GetGenericArguments()[0];
 							if (genericArg.IsEnum)
 							{
 								fromValue = Enum.ToObject(genericArg, fromValue);
@@ -112,7 +163,7 @@ namespace ServiceStack.Common.Support
                         else
                         {
                             var listResult = TranslateListWithElements.TryTranslateToGenericICollection(
-                                fromPropertyInfo.PropertyType, toPropertyInfo.PropertyType, fromValue);
+                                fromMember.Type, toMember.Type, fromValue);
 
                             if (listResult != null)
                             {
@@ -121,34 +172,14 @@ namespace ServiceStack.Common.Support
                         }
                     }
 
-                    var setterFn = PropertySetters.GetOrAdd(toPropertyInfo.Name,
-                        toPropertyInfo.GetPropertySetterFn());
-
+                    var setterFn = assignmentMember.SetValueFn;
                     setterFn(to, fromValue);
                 }
                 catch (Exception ex)
                 {
                     Log.Warn(string.Format("Error trying to set properties {0}.{1} > {2}.{3}",
-                        FromType.FullName, fromPropertyInfo.Name,
-                        ToType.FullName, toPropertyInfo.Name), ex);
-                }
-            }
-
-            foreach (var fieldEntry in FieldInfoMap)
-            {
-                var fromFieldInfo = fieldEntry.Key;
-                var toFieldInfo = fieldEntry.Value;
-
-                try
-                {
-                    var fromValue = fromFieldInfo.GetValue(from);
-                    toFieldInfo.SetValue(to, fromValue);
-                }
-                catch (Exception ex)
-                {
-                    Log.Warn(string.Format("Error trying to set fields {0}.{1} > {2}.{3}",
-                        FromType.FullName, fromFieldInfo.Name,
-                        ToType.FullName, toFieldInfo.Name), ex);
+                        FromType.FullName, fromMember.Type.Name,
+                        ToType.FullName, toMember.Type.Name), ex);
                 }
             }
         }

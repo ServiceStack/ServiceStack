@@ -563,6 +563,6 @@ namespace ServiceStack.WebHost.Endpoints
             var httpHandler = ssHandler as IHttpHandler;
             return httpHandler ?? new ServiceStackHttpHandler(ssHandler);
         }
-    }
+	}
 
 }

@@ -33,7 +33,7 @@
  - [danielwertheim](https://github.com/danielwertheim) (Daniel Wertheim)
  - [greghroberts](https://github.com/greghroberts) (Gregh Roberts)
  - [int03](https://github.com/int03) (Selim Selçuk)
- - [andidog](https://github.com/AndiDog) (AndiDog)
+ - [andidog](https://github.com/AndiDog) (Andreas Sommer)
  - [chuckb](https://github.com/chuckb) (chuckb)
  - [niemyjski](https://github.com/niemyjski) (Blake Niemyjski)
  - [mj1856](https://github.com/mj1856) (Matt Johnson)

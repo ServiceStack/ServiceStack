@@ -14,8 +14,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	public class IocServiceTests
 	{
 		private const string ListeningOn = "http://localhost:1082/";
-
-		IocAppHost appHost;
+        
+        private const int WaitForRequestCleanup = 100;
+        
+        IocAppHost appHost;
 
 		[TestFixtureSetUp]
 		public void OnTestFixtureSetUp()
@@ -118,6 +120,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 restClient.Get<IocScopeResponse>("iocscope?Throw=true");
             } catch { }
 
+            Thread.Sleep(WaitForRequestCleanup);
+
             Assert.That(FunqRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
             Assert.That(AltRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
         }
@@ -147,6 +151,38 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 ex.Message.Print();
                 throw;
             }
+        }
+
+        private static void ResetDisposables()
+        {
+            IocService.DisposedCount =
+            IocDisposableService.DisposeCount =
+            FunqSingletonScopeDisposable.DisposeCount =
+            FunqRequestScopeDisposable.DisposeCount =
+            FunqNoneScopeDisposable.DisposeCount = 
+            FunqRequestScopeDepDisposableProperty.DisposeCount =
+            AltRequestScopeDepDisposableProperty.DisposeCount =
+                0;
+        }
+
+        [Test]
+        public void Does_dispose_service_and_Request_and_None_scope_but_not_singletons()
+        {
+            ResetDisposables();
+
+            var restClient = new JsonServiceClient(ListeningOn);
+            var response = restClient.Get(new IocDispose());
+            response = restClient.Get(new IocDispose());
+            Thread.Sleep(WaitForRequestCleanup);
+
+            Assert.That(appHost.Container.disposablesCount, Is.EqualTo(0));
+            Assert.That(FunqSingletonScopeDisposable.DisposeCount, Is.EqualTo(0));
+
+            Assert.That(IocDisposableService.DisposeCount, Is.EqualTo(2));
+            Assert.That(FunqRequestScopeDisposable.DisposeCount, Is.EqualTo(2));
+            Assert.That(FunqNoneScopeDisposable.DisposeCount, Is.EqualTo(2));
+            Assert.That(FunqRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
+            Assert.That(AltRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
         }
 
     }

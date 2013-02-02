@@ -9,7 +9,7 @@ namespace ServiceStack.ServiceInterface
     /// </summary>
     /// <typeparam name="TRequest">The request class that the descendent class
     ///	is responsible for processing.</typeparam>
-    [Obsolete("Use ServiceStack.ServiceInterface.Service - ServiceStack's New API for future services")]
+    [Obsolete("Use the New API (ServiceStack.ServiceInterface.Service) for future services. See: https://github.com/ServiceStack/ServiceStack/wiki/New-Api")]
     public abstract class RestServiceBase<TRequest>
         : ServiceBase<TRequest>,
         IRestGetService<TRequest>,

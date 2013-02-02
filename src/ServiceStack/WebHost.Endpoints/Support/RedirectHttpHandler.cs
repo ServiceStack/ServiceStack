@@ -89,7 +89,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public bool IsReusable
 		{
-			get { return true; }
+			get { return false; }
 		}
 	}
 }

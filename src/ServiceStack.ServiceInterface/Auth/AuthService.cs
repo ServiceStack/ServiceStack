@@ -110,6 +110,8 @@ namespace ServiceStack.ServiceInterface.Auth
                 throw new ConfigurationException("No OAuth providers have been registered in your AppHost.");
         }
 
+        public void Options(Auth request) {}
+
         public object Get(Auth request)
         {
             return Post(request);
@@ -150,6 +152,10 @@ namespace ServiceStack.ServiceInterface.Auth
             {
                 var response = Authenticate(request, provider, session, oAuthConfig);
 
+                // The above Authenticate call may end an existing session and create a new one so we need
+                // to refresh the current session reference.
+                session = this.GetSession();
+
                 var referrerUrl = request.Continue
                     ?? session.ReferrerUrl
                     ?? this.RequestContext.GetHeader("Referer")
@@ -157,7 +163,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
                 var alreadyAuthenticated = response == null;
                 response = response ?? new AuthResponse {
-                    UserName = session.UserName,
+                    UserName = session.UserAuthName,
                     SessionId = session.Id,
                     ReferrerUrl = referrerUrl,
                 };
@@ -167,7 +173,7 @@ namespace ServiceStack.ServiceInterface.Auth
                     if (alreadyAuthenticated)
                         return this.Redirect(referrerUrl.AddHashParam("s", "0"));
 
-                    if (!(response is IHttpResult))
+                    if (!(response is IHttpResult) && !String.IsNullOrEmpty(referrerUrl))
                     {
                         return new HttpResult(response) {
                             Location = referrerUrl
@@ -216,6 +222,11 @@ namespace ServiceStack.ServiceInterface.Auth
             return result as AuthResponse;
         }
 
+        /// <summary>
+        /// The specified <paramref name="session"/> may change as a side-effect of this method. If
+        /// subsequent code relies on current <see cref="IAuthSession"/> data be sure to reload
+        /// the session istance via <see cref="ServiceExtensions.GetSession(ServiceStack.ServiceInterface.IServiceBase,bool)"/>.
+        /// </summary>
         private object Authenticate(Auth request, string provider, IAuthSession session, IAuthProvider oAuthConfig)
         {
             object response = null;

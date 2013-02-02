@@ -40,7 +40,7 @@ namespace Funq
             var lambdaParam = Expression.Parameter(typeof(Container), "container");
             var propertyResolveFn = typeof(Container).GetMethod("TryResolve", new Type[0]);
             var memberBindings = typeof(TService).GetPublicProperties()
-                .Where(x => x.CanWrite && !x.PropertyType.IsValueType)
+                .Where(x => x.CanWrite && !x.PropertyType.IsValueType && x.PropertyType != typeof(string))
                 .Select(x =>
                     Expression.Bind
                     (
@@ -76,7 +76,7 @@ namespace Funq
             if (!autoWireCache.TryGetValue(instanceType, out setters))
             {
                 setters = instanceType.GetPublicProperties()
-                    .Where(x => x.CanWrite && !x.PropertyType.IsValueType)
+                    .Where(x => x.CanWrite && !x.PropertyType.IsValueType && x.PropertyType != typeof(string))
                     .Select(x => GenerateAutoWireFnForProperty(container, propertyResolveFn, x, instanceType))
                     .ToArray();
 

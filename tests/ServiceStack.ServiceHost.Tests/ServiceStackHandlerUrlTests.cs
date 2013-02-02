@@ -50,8 +50,9 @@ namespace ServiceStack.ServiceHost.Tests
 			public NameValueCollection Headers { get; private set; }
 			public NameValueCollection QueryString { get; private set; }
 			public NameValueCollection FormData { get; private set; }
+		    public bool UseBufferedStream { get; set; }
 
-			public string GetRawBody()
+		    public string GetRawBody()
 			{
 				throw new NotImplementedException();
 			}
@@ -61,6 +62,8 @@ namespace ServiceStack.ServiceHost.Tests
 			public string UserHostAddress { get; private set; }
 
             public string RemoteIp { get; set; }
+            public string XForwardedFor { get; set; }
+            public string XRealIp { get; set; }
 
 		    public bool IsSecureConnection { get; private set; }
 			public string[] AcceptTypes { get; private set; }

@@ -515,9 +515,6 @@
     <Compile Include="..\ServiceStack.Interfaces\ServiceHost\RestServiceAttribute.cs">
       <Link>ServiceHost\RestServiceAttribute.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\ServiceAttribute.cs">
-      <Link>ServiceHost\ServiceAttribute.cs</Link>
-    </Compile>
     <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\CollectionTypes.cs">
       <Link>ServiceInterface.ServiceModel\CollectionTypes.cs</Link>
     </Compile>

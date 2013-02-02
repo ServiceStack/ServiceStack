@@ -46,6 +46,7 @@ namespace ServiceStack.Razor
         {
             this.Request = httpReq;
             this.Response = httpRes;
+            Html = new HtmlHelper<TModel>();
             Html.Init(httpReq, viewEngine, viewData, null);
             if (viewData.Model is TModel)
                 this.Model = (TModel)viewData.Model;

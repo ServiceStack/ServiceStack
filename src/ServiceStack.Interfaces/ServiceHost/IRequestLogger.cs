@@ -14,6 +14,11 @@ namespace ServiceStack.ServiceHost
 		/// </summary>
 		bool EnableSessionTracking { get; set; }
 
+        /// <summary>
+        /// Turn On/Off Raw Request Body Tracking
+        /// </summary>
+        bool EnableRequestBodyTracking { get; set; }
+
 		/// <summary>
 		/// Turn On/Off Tracking of Responses
 		/// </summary>
