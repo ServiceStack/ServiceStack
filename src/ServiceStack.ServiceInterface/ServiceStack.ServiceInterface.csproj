@@ -107,6 +107,7 @@
     <Compile Include="AsyncServiceBase.cs" />
     <Compile Include="AuthenticateAttribute.cs" />
     <Compile Include="AuthFeature.cs" />
+    <Compile Include="AuthorizeAttribute.cs" />
     <Compile Include="Auth\AssignRolesService.cs" />
     <Compile Include="Auth\AuthService.cs" />
     <Compile Include="Auth\BasicAuthProvider.cs" />
