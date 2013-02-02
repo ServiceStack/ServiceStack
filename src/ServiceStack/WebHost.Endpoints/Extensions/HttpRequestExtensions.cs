@@ -449,12 +449,32 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 	        {
 	            var isIpv4Address = request.UserHostAddress.IndexOf('.') != -1 
                     && request.UserHostAddress.IndexOf("::", StringComparison.InvariantCulture) == -1;
-	            var pieces = request.UserHostAddress.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
-	            var ipAddressNumber = isIpv4Address
-                    ? pieces[0]
-                    : (request.UserHostAddress.Contains("]:")
-                        ? request.UserHostAddress.Substring(0, request.UserHostAddress.LastIndexOf(':'))
-                        : request.UserHostAddress);
+
+                string ipAddressNumber = null;
+                if (isIpv4Address)
+                {
+                    ipAddressNumber = request.UserHostAddress.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries)[0];
+                }
+                else
+                {
+                    if (request.UserHostAddress.Contains("]:"))
+                    {
+                        ipAddressNumber = request.UserHostAddress.Substring(0, request.UserHostAddress.LastIndexOf(':'));
+                    }
+                    else
+                    {
+                        ipAddressNumber = request.UserHostAddress;
+                        var zoneIndex = ipAddressNumber.LastIndexOf("%", StringComparison.InvariantCulture);
+                        if (zoneIndex > 0)
+                        {
+                            var portIndex = ipAddressNumber.IndexOf(":", zoneIndex, StringComparison.InvariantCulture);
+                            if (portIndex > 0)
+                            {
+                                ipAddressNumber = ipAddressNumber.Substring(0, portIndex);
+                            }
+                        }
+                    }
+                }
 
 	            try
 	            {
