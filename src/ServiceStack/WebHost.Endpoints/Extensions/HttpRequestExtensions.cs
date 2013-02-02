@@ -453,26 +453,19 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
                 string ipAddressNumber = null;
                 if (isIpv4Address)
                 {
-                    ipAddressNumber = request.UserHostAddress.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries)[0];
+                    ipAddressNumber = request.UserHostAddress.SplitOnFirst(":")[0];
                 }
                 else
                 {
                     if (request.UserHostAddress.Contains("]:"))
                     {
-                        ipAddressNumber = request.UserHostAddress.Substring(0, request.UserHostAddress.LastIndexOf(':'));
+                        ipAddressNumber = request.UserHostAddress.SplitOnLast(":")[0];
                     }
                     else
                     {
-                        ipAddressNumber = request.UserHostAddress;
-                        var zoneIndex = ipAddressNumber.LastIndexOf("%", StringComparison.InvariantCulture);
-                        if (zoneIndex > 0)
-                        {
-                            var portIndex = ipAddressNumber.IndexOf(":", zoneIndex, StringComparison.InvariantCulture);
-                            if (portIndex > 0)
-                            {
-                                ipAddressNumber = ipAddressNumber.Substring(0, portIndex);
-                            }
-                        }
+                        ipAddressNumber = request.UserHostAddress.LastIndexOf("%", StringComparison.InvariantCulture) > 0 ?
+                            request.UserHostAddress.SplitOnLast(":")[0] :
+                            request.UserHostAddress;
                     }
                 }
 
