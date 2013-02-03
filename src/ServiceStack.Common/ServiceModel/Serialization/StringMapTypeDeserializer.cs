@@ -7,6 +7,7 @@ using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Text.Common;
 using ServiceStack.Text.Jsv;
+using System.Linq;
 
 namespace ServiceStack.ServiceModel.Serialization
 {
@@ -78,7 +79,7 @@ namespace ServiceStack.ServiceModel.Serialization
             {
                 if (instance == null) instance = type.CreateInstance();
 
-                foreach (var pair in keyValuePairs)
+                foreach (var pair in keyValuePairs.Where(x => !string.IsNullOrEmpty(x.Value)))
                 {
                     propertyName = pair.Key;
                     propertyTextValue = pair.Value;
