@@ -14,21 +14,21 @@ namespace ServiceStack.ServiceInterface
 {
     public static class ServiceExtensions
     {
-        public static string AddQueryParam(this string url, string key, object val)
+        public static string AddQueryParam(this string url, string key, object val, bool encode = true)
         {
-            return url.AddQueryParam(key, val.ToString());
+            return url.AddQueryParam(key, val.ToString(), encode);
         }
 
-        public static string AddQueryParam(this string url, object key, string val)
+        public static string AddQueryParam(this string url, object key, string val, bool encode = true)
         {
-            return AddQueryParam(url, (key ?? "").ToString(), val);
+            return AddQueryParam(url, (key ?? "").ToString(), val, encode);
         }
 
-        public static string AddQueryParam(this string url, string key, string val)
+        public static string AddQueryParam(this string url, string key, string val, bool encode = true)
         {
             if (string.IsNullOrEmpty(url)) return null;
             var prefix = url.IndexOf('?') == -1 ? "?" : "&";
-            return url + prefix + key + "=" + val.UrlEncode();
+            return url + prefix + key + "=" + (encode ? val.UrlEncode() : val);
         }
 
         public static string SetQueryParam(this string url, string key, string val)
@@ -72,7 +72,8 @@ namespace ServiceStack.ServiceInterface
 
         public static IHttpResult Redirect(this IServiceBase service, string url, string message)
         {
-            return new HttpResult(HttpStatusCode.Redirect, message) {
+            return new HttpResult(HttpStatusCode.Redirect, message)
+            {
                 ContentType = service.RequestContext.ResponseContentType,
                 Headers = {
                     { HttpHeaders.Location, url }
@@ -82,7 +83,8 @@ namespace ServiceStack.ServiceInterface
 
         public static IHttpResult AuthenticationRequired(this IServiceBase service)
         {
-            return new HttpResult {
+            return new HttpResult
+            {
                 StatusCode = HttpStatusCode.Unauthorized,
                 ContentType = service.RequestContext.ResponseContentType,
                 Headers = {
@@ -211,12 +213,13 @@ namespace ServiceStack.ServiceInterface
             return session;
         }
 
-        public static object RunAction<TService,TRequest>(
+        public static object RunAction<TService, TRequest>(
             this TService service, TRequest request, Func<TService, TRequest, object> invokeAction,
-            IRequestContext requestContext=null)
+            IRequestContext requestContext = null)
             where TService : IService
         {
-            var actionCtx = new ActionContext {
+            var actionCtx = new ActionContext
+            {
                 RequestFilters = new IHasRequestFilter[0],
                 ResponseFilters = new IHasResponseFilter[0],
                 RequestType = service.GetType(),
