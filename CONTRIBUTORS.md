@@ -141,3 +141,4 @@
  - [namman](https://github.com/namman) (Nick Miller)
  - [leon-andria](https://github.com/leon-andria) (Leon Andria)
  - [kkolstad](https://github.com/kkolstad) (Kenneth Kolstad)
+ - [electricshaman](https://github.com/electricshaman) (Jeff Smith)
