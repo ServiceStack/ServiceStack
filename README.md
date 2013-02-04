@@ -434,6 +434,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [leon-andria](https://github.com/leon-andria) (Leon Andria)
  - [kkolstad](https://github.com/kkolstad) (Kenneth Kolstad)
  - [electricshaman](https://github.com/electricshaman) (Jeff Smith)
+ - [ecgan](https://github.com/ecgan) (Gan Eng Chin)
 
 ***
 
