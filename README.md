@@ -442,6 +442,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [jfoshee](https://github.com/jfoshee) (Jacob Foshee)
  - [nardin](https://github.com/nardin) (Mamaev Michail)
  - [cliffstill](https://github.com/cliffstill)
+ - [somya](https://github.com/somya) (Somya Jain)
 
 ***
 

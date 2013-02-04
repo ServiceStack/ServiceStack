@@ -150,3 +150,4 @@
  - [jfoshee](https://github.com/jfoshee) (Jacob Foshee)
  - [nardin](https://github.com/nardin) (Mamaev Michail)
  - [cliffstill](https://github.com/cliffstill)
+ - [somya](https://github.com/somya) (Somya Jain)
