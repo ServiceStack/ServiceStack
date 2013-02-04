@@ -443,6 +443,8 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [nardin](https://github.com/nardin) (Mamaev Michail)
  - [cliffstill](https://github.com/cliffstill)
  - [somya](https://github.com/somya) (Somya Jain)
+ - [thinkbeforecoding](https://github.com/thinkbeforecoding) (Jérémie Chassaing)
+ - [paksys](https://github.com/paksys) (Khalil Ahmad)
 
 ***
 

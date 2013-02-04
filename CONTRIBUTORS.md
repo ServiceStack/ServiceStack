@@ -152,3 +152,4 @@
  - [cliffstill](https://github.com/cliffstill)
  - [somya](https://github.com/somya) (Somya Jain)
  - [thinkbeforecoding](https://github.com/thinkbeforecoding) (Jérémie Chassaing)
+ - [paksys](https://github.com/paksys) (Khalil Ahmad)
