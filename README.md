@@ -457,6 +457,8 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [arhoads76](https://github.com/arhoads76)
  - [dylanvdmerwe](https://github.com/dylanvdmerwe) (Dylan v.d Merwe)
  - [mattiasw2](https://github.com/mattiasw2) (Mattias)
+ - [paultyng](https://github.com/paultyng) (Paul Tyng)
+ - [h2oman](https://github.com/h2oman) (Jason Waterman)
 
 ***
 
