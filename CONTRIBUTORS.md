@@ -156,3 +156,4 @@
  - [mcguinness](https://github.com/mcguinness) (Karl McGuinness)
  - [jpasichnyk](https://github.com/jpasichnyk) (Jesse Pasichnyk)
  - [waynebrantley](https://github.com/waynebrantley) (Wayne Brantley)
+ - [dcartoon](https://github.com/dcartoon) (Dan Cartoon)
