@@ -450,6 +450,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [waynebrantley](https://github.com/waynebrantley) (Wayne Brantley)
  - [dcartoon](https://github.com/dcartoon) (Dan Cartoon)
  - [alexvodovoz](https://github.com/alexvodovoz) (Alex Vodovoz)
+ - [jluchiji](https://github.com/jluchiji) (Denis Luchkin-Zhou)
 
 ***
 
