@@ -145,3 +145,4 @@
  - [ecgan](https://github.com/ecgan) (Gan Eng Chin)
  - [its-tyson](https://github.com/its-tyson) (Tyson Stolarski)
  - [tischlda](https://github.com/tischlda) (David Tischler)
+ - [connectassist](https://github.com/connectassist) (Carl Healy)
