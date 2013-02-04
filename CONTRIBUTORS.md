@@ -157,3 +157,4 @@
  - [jpasichnyk](https://github.com/jpasichnyk) (Jesse Pasichnyk)
  - [waynebrantley](https://github.com/waynebrantley) (Wayne Brantley)
  - [dcartoon](https://github.com/dcartoon) (Dan Cartoon)
+ - [alexvodovoz](https://github.com/alexvodovoz) (Alex Vodovoz)
