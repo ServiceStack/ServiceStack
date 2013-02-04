@@ -147,3 +147,4 @@
  - [tischlda](https://github.com/tischlda) (David Tischler)
  - [connectassist](https://github.com/connectassist) (Carl Healy)
  - [starteleport](https://github.com/starteleport)
+ - [jfoshee](https://github.com/jfoshee) (Jacob Foshee)
