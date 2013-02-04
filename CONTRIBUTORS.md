@@ -167,3 +167,4 @@
  - [mattiasw2](https://github.com/mattiasw2) (Mattias)
  - [paultyng](https://github.com/paultyng) (Paul Tyng)
  - [h2oman](https://github.com/h2oman) (Jason Waterman)
+ - [anewton](https://github.com/anewton) (Allen Newton)
