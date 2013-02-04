@@ -13,7 +13,7 @@
       Contains:
       - ServiceStack.Interfaces
       - ServiceStack.Common
-      Dependenies:
+      Dependencies:
       - ServiceStack.Text
     </description>
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
