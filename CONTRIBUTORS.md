@@ -163,3 +163,4 @@
  - [akoslukacs](https://github.com/akoslukacs) (Ákos Lukács)
  - [medianick](https://github.com/medianick) (Nick Jones)
  - [arhoads76](https://github.com/arhoads76)
+ - [dylanvdmerwe](https://github.com/dylanvdmerwe) (Dylan v.d Merwe)
