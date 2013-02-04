@@ -447,6 +447,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [paksys](https://github.com/paksys) (Khalil Ahmad)
  - [mcguinness](https://github.com/mcguinness) (Karl McGuinness)
  - [jpasichnyk](https://github.com/jpasichnyk) (Jesse Pasichnyk)
+ - [waynebrantley](https://github.com/waynebrantley) (Wayne Brantley)
 
 ***
 
