@@ -168,3 +168,4 @@
  - [paultyng](https://github.com/paultyng) (Paul Tyng)
  - [h2oman](https://github.com/h2oman) (Jason Waterman)
  - [anewton](https://github.com/anewton) (Allen Newton)
+ - [sami1971](https://github.com/sami1971)
