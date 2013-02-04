@@ -1,5 +1,6 @@
 using System;
 using NUnit.Framework;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceHost.Tests
@@ -87,16 +88,18 @@ namespace ServiceStack.ServiceHost.Tests
 		[Test]
 		public void Can_deserialize_ComplexTypeWithFields_path()
 		{
+            using (JsConfig.With(includePublicFields:true))
+            {
+                var restPath = new RestPath(typeof(ComplexTypeWithFields),
+                    "/Complex/{Id}/{Name}/Unique/{UniqueId}");
+                var request = restPath.CreateRequest(
+                    "/complex/5/Is Alive/unique/4583B364-BBDC-427F-A289-C2923DEBD547") as ComplexTypeWithFields;
 
-			var restPath = new RestPath(typeof(ComplexTypeWithFields),
-				"/Complex/{Id}/{Name}/Unique/{UniqueId}");
-			var request = restPath.CreateRequest(
-				"/complex/5/Is Alive/unique/4583B364-BBDC-427F-A289-C2923DEBD547") as ComplexTypeWithFields;
-
-			Assert.That(request, Is.Not.Null);
-			Assert.That(request.Id, Is.EqualTo(5));
-			Assert.That(request.Name, Is.EqualTo("Is Alive"));
-			Assert.That(request.UniqueId, Is.EqualTo(new Guid("4583B364-BBDC-427F-A289-C2923DEBD547")));
+                Assert.That(request, Is.Not.Null);
+                Assert.That(request.Id, Is.EqualTo(5));
+                Assert.That(request.Name, Is.EqualTo("Is Alive"));
+                Assert.That(request.UniqueId, Is.EqualTo(new Guid("4583B364-BBDC-427F-A289-C2923DEBD547")));
+            }
 		}
 
 

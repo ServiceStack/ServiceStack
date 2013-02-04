@@ -43,15 +43,17 @@ namespace ServiceStack.Common.Tests.Text
 		[Test]
 		public void Can_Serialize_Array_with_nulls()
 		{
-			var t = new {
-				Name = "MyName",
-				Number = (int?)null,
-				Data = new object[] { 5, null, "text" }
-			};
+            using (JsConfig.With(includeNullValues:true))
+            {
+                var t = new {
+                    Name = "MyName",
+                    Number = (int?)null,
+                    Data = new object[] { 5, null, "text" }
+                };
 
-			ServiceStack.Text.JsConfig.IncludeNullValues = true;
-			var json = ServiceStack.Text.JsonSerializer.SerializeToString(t);
-			Assert.That(json, Is.EqualTo("{\"Name\":\"MyName\",\"Number\":null,\"Data\":[5,null,\"text\"]}"));
+                var json = JsonSerializer.SerializeToString(t);
+                Assert.That(json, Is.EqualTo("{\"Name\":\"MyName\",\"Number\":null,\"Data\":[5,null,\"text\"]}"));
+            }
 		}
 
 		class A
