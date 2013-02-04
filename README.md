@@ -445,6 +445,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [somya](https://github.com/somya) (Somya Jain)
  - [thinkbeforecoding](https://github.com/thinkbeforecoding) (Jérémie Chassaing)
  - [paksys](https://github.com/paksys) (Khalil Ahmad)
+ - [mcguinness](https://github.com/mcguinness) (Karl McGuinness)
 
 ***
 
