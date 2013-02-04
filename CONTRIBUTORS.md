@@ -165,3 +165,4 @@
  - [arhoads76](https://github.com/arhoads76)
  - [dylanvdmerwe](https://github.com/dylanvdmerwe) (Dylan v.d Merwe)
  - [mattiasw2](https://github.com/mattiasw2) (Mattias)
+ - [paultyng](https://github.com/paultyng) (Paul Tyng)
