@@ -454,6 +454,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [grexican](https://github.com/grexican)
  - [akoslukacs](https://github.com/akoslukacs) (Ákos Lukács)
  - [medianick](https://github.com/medianick) (Nick Jones)
+ - [arhoads76](https://github.com/arhoads76)
 
 ***
 
