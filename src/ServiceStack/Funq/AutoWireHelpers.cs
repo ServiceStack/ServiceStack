@@ -26,7 +26,7 @@ namespace Funq
         {
             return type.GetConstructors()
                 .OrderByDescending(x => x.GetParameters().Length)
-                .First(ctor => !ctor.IsStatic);
+                .FirstOrDefault(ctor => !ctor.IsStatic);
         }
 
         /// <summary>
