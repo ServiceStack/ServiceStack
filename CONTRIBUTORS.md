@@ -143,3 +143,4 @@
  - [kkolstad](https://github.com/kkolstad) (Kenneth Kolstad)
  - [electricshaman](https://github.com/electricshaman) (Jeff Smith)
  - [ecgan](https://github.com/ecgan) (Gan Eng Chin)
+ - [its-tyson](https://github.com/its-tyson) (Tyson Stolarski)
