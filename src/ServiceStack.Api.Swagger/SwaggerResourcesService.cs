@@ -47,7 +47,7 @@ namespace ServiceStack.Api.Swagger
         {
             var result = new ResourcesResponse {
                 SwaggerVersion = "1.1",
-                BasePath = Request.GetApplicationUrl(),
+				BasePath = Request.GetParentPathUrl(),
                 Apis = new List<RestService>()
             };
             var operations = EndpointHost.Metadata;
