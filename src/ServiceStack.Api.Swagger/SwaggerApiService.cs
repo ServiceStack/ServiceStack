@@ -84,7 +84,7 @@ namespace ServiceStack.Api.Swagger
             var path = "/" + request.Name;
             var map = EndpointHost.ServiceManager.ServiceController.RestPathMap;
             var paths = new List<RestPath>();
-            var basePath = httpReq.GetApplicationUrl();
+			var basePath = httpReq.GetParentPathUrl();
             foreach (var key in map.Keys)
             {
                 paths.AddRange(map[key].Where(x => x.Path == path || x.Path.StartsWith(path + "/")));
