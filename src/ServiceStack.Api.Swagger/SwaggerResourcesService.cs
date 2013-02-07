@@ -42,9 +42,12 @@ namespace ServiceStack.Api.Swagger
     {
         private readonly Regex resourcePathCleanerRegex = new Regex(@"/[^\/\{]*", RegexOptions.Compiled);
         internal static Regex resourceFilterRegex;
+		internal const string RESOURCE_PATH = "/resource";
 
         public object Get(Resources request)
         {
+
+
             var result = new ResourcesResponse {
                 SwaggerVersion = "1.1",
 				BasePath = Request.GetParentPathUrl(),
@@ -82,7 +85,7 @@ namespace ServiceStack.Api.Swagger
             if (string.IsNullOrEmpty(minPath) || minPath == "/") return;
 
             apis.Add(new RestService {
-                Path = string.Concat("/resource", minPath),
+				Path = string.Concat(RESOURCE_PATH, minPath),
                 Description = operationType.GetDescription()
             });
         }
