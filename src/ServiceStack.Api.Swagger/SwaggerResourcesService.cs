@@ -42,6 +42,7 @@ namespace ServiceStack.Api.Swagger
     {
         private readonly Regex resourcePathCleanerRegex = new Regex(@"/[^\/\{]*", RegexOptions.Compiled);
         internal static Regex resourceFilterRegex;
+		
 		internal const string RESOURCE_PATH = "/resource";
 
         public object Get(Resources request)
@@ -55,7 +56,7 @@ namespace ServiceStack.Api.Swagger
             };
             var operations = EndpointHost.Metadata;
             var allTypes = operations.GetAllTypes();
-            var allOperationNames = operations.GetAllOperationNames();
+			var allOperationNames = operations.OperationsResponseMap.Select(op => op.Value.Name).ToList();
             for (var i = 0; i < allOperationNames.Count; i++)
             {
                 var operationName = allOperationNames[i];
