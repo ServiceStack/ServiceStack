@@ -111,6 +111,7 @@ namespace ServiceStack.Api.Swagger
 				basePath = basePath.Substring(0, basePath.ToLower().LastIndexOf(SwaggerResourcesService.RESOURCE_PATH));
 			}
 
+
             foreach (var key in map.Keys)
             {
                 paths.AddRange(map[key].Where(x => x.Path == path || x.Path.StartsWith(path + "/")));
