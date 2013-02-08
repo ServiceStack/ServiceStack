@@ -42,21 +42,19 @@ namespace ServiceStack.Api.Swagger
     {
         private readonly Regex resourcePathCleanerRegex = new Regex(@"/[^\/\{]*", RegexOptions.Compiled);
         internal static Regex resourceFilterRegex;
-		
+
 		internal const string RESOURCE_PATH = "/resource";
 
         public object Get(Resources request)
         {
-
-
             var result = new ResourcesResponse {
                 SwaggerVersion = "1.1",
-				BasePath = Request.GetParentPathUrl(),
+                BasePath = Request.GetParentPathUrl(),
                 Apis = new List<RestService>()
             };
             var operations = EndpointHost.Metadata;
             var allTypes = operations.GetAllTypes();
-			var allOperationNames = operations.OperationsResponseMap.Select(op => op.Value.Name).ToList();
+            var allOperationNames = operations.GetAllOperationNames();
             for (var i = 0; i < allOperationNames.Count; i++)
             {
                 var operationName = allOperationNames[i];
@@ -84,11 +82,13 @@ namespace ServiceStack.Api.Swagger
 
             var minPath = paths.Min();
             if (string.IsNullOrEmpty(minPath) || minPath == "/") return;
-
+						if (apis.Find(a => { return a.Path == string.Concat(RESOURCE_PATH, minPath); }) == null)
+			{
             apis.Add(new RestService {
-				Path = string.Concat(RESOURCE_PATH, minPath),
+                Path = string.Concat(RESOURCE_PATH, minPath),
                 Description = operationType.GetDescription()
             });
+						}
         }
     }
 }
