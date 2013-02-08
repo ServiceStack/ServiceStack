@@ -83,7 +83,7 @@ namespace ServiceStack.Api.Swagger
 
 			var minPath = paths.Min();
 			if (string.IsNullOrEmpty(minPath) || minPath == "/") return;
-			if (apis.Find(a => { return a.Path == string.Concat(RESOURCE_PATH, minPath); }) == null)
+			if (!apis.Any(a => a.Path == string.Concat(RESOURCE_PATH, minPath)))
 			{
 				apis.Add(new RestService
 				{
