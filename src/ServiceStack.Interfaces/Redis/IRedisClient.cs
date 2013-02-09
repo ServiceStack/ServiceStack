@@ -179,6 +179,7 @@ namespace ServiceStack.Redis
 		string BlockingPopItemFromList(string listId, TimeSpan? timeOut);
         ItemRef BlockingPopItemFromLists(string []listIds, TimeSpan? timeOut);
 		string PopAndPushItemBetweenLists(string fromListId, string toListId);
+        string BlockingPopAndPushItemBetweenLists(string fromListId, string toListId, TimeSpan? timeOut);
 
 		#endregion
 
