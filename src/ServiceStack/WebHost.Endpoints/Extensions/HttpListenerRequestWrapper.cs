@@ -189,6 +189,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 						this.pathInfo = request.RawUrl;
 					}
 
+                    this.pathInfo = this.pathInfo.UrlDecode();
                     this.pathInfo = NormalizePathInfo(pathInfo, mode);
 				}
 				return this.pathInfo;

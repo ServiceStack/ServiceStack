@@ -16,12 +16,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public AppHost()
                 : base("Echo AppHost", typeof(AppHost).Assembly) { }
 
-            public override void Configure(Container container)
-            {
-            }
+            public override void Configure(Container container) {}
         }
 
         [Route("/echo")]
+        [Route("/echo/{Param}")]
         public class Echo : IReturn<Echo>
         {
             public string Param { get; set; }
@@ -54,9 +53,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Does_url_decode_raw_QueryString()
         {
-            var testEncoding = "test://?&%encoding";
+            var testEncoding = "test://?&% encoding";
             var url = "{0}echo?Param={1}".Fmt(Config.AbsoluteBaseUri, testEncoding.UrlEncode());
-            Assert.That(url, Is.StringEnding("/echo?Param=test%3a%2f%2f%3f%26%25encoding"));
+            Assert.That(url, Is.StringEnding("/echo?Param=test%3a%2f%2f%3f%26%25%20encoding"));
+
+            var json = url.GetJsonFromUrl();
+            var response = json.FromJson<Echo>();
+            Assert.That(response.Param, Is.EqualTo(testEncoding));
+        }
+
+        [Test]
+        public void Does_url_decode_raw_PathInfo()
+        {
+            var testEncoding = "test encoding";
+            var url = "{0}echo/{1}".Fmt(Config.AbsoluteBaseUri, testEncoding.UrlEncode());
+            Assert.That(url, Is.StringEnding("/echo/test%20encoding"));
 
             var json = url.GetJsonFromUrl();
             var response = json.FromJson<Echo>();
@@ -67,7 +78,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Does_url_transparently_decode_QueryString()
         {
             var client = new JsonServiceClient(Config.AbsoluteBaseUri);
-            var request = new Echo { Param = "test://?&%encoding" };
+            var request = new Echo { Param = "test://?&% encoding" };
             var response = client.Get(request);
             Assert.That(response.Param, Is.EqualTo(request.Param));
         }
@@ -76,10 +87,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Does_url_transparently_decode_RequestBody()
         {
             var client = new JsonServiceClient(Config.AbsoluteBaseUri);
-            var request = new Echo { Param = "test://?&%encoding" };
+            var request = new Echo { Param = "test://?&% encoding" };
             var response = client.Post(request);
             Assert.That(response.Param, Is.EqualTo(request.Param));
         }
- 
+
     }
 }
