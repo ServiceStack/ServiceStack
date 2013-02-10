@@ -1,6 +1,8 @@
-﻿using Funq;
+﻿using System.IO;
+using Funq;
 using NUnit.Framework;
 using ServiceStack.Common;
+using ServiceStack.MiniProfiler.UI;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 
@@ -51,10 +53,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_handle_encoded_chars()
         {
             var response = BaseUri.CombineWith("request/123%20456").GetStringFromUrl();
-            Assert.That(response, Is.EqualTo("123%20456"));
+            Assert.That(response, Is.EqualTo("123 456"));
             response = BaseUri.CombineWith("request/123%7C456").GetStringFromUrl();
-            Assert.That(response, Is.EqualTo("123%7C456"));
+            Assert.That(response, Is.EqualTo("123|456"));
         }
-
     }
 }

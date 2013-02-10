@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Web;
 using System.Text;
+using ServiceStack.Text;
 using ServiceStack.Common;
 using ServiceStack.MiniProfiler.Helpers;
 using ServiceStack.ServiceHost;
@@ -20,7 +22,7 @@ namespace ServiceStack.MiniProfiler.UI
 	{
 		public static IHttpHandler MatchesRequest(IHttpRequest request)
 		{
-			var file = Path.GetFileNameWithoutExtension(request.PathInfo);
+			var file = GetFileNameWithoutExtension(request.PathInfo);
 			return file != null && file.StartsWith("ssr-")
 				? new MiniProfilerHandler()
 				: null;
@@ -77,6 +79,12 @@ namespace ServiceStack.MiniProfiler.UI
 
 			return new HtmlString(result);
 		}
+
+        public static string GetFileNameWithoutExtension(string pathInfo)
+        {
+            //Path.GetFileNameWithoutExtension() throws exception with illegal chars
+            return pathInfo.SplitOnLast('.')[0].SplitOnLast('/').Last();
+        }
 
 		//internal static void RegisterRoutes()
 		//{
