@@ -20,10 +20,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Route("/echo")]
-        [Route("/echo/{Param}")]
+        [Route("/echo/{PathInfoParam}")]
         public class Echo : IReturn<Echo>
         {
             public string Param { get; set; }
+            public string PathInfoParam { get; set; }
         }
 
         public class EchoService : ServiceInterface.Service
@@ -77,7 +78,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var json = url.GetJsonFromUrl();
             var response = json.FromJson<Echo>();
-            Assert.That(response.Param, Is.EqualTo(testEncoding));
+            Assert.That(response.PathInfoParam, Is.EqualTo(testEncoding));
         }
 
         [Test]
@@ -85,6 +86,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var client = new JsonServiceClient(Config.AbsoluteBaseUri);
             var request = new Echo { Param = "test://?&% encoding" };
+            var response = client.Get(request);
+            Assert.That(response.Param, Is.EqualTo(request.Param));
+        }
+
+        [Test]
+        public void Does_url_transparently_decode_PathInfo()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var request = new Echo { PathInfoParam = "test:?&% encoding" };
             var response = client.Get(request);
             Assert.That(response.Param, Is.EqualTo(request.Param));
         }
