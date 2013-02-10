@@ -50,6 +50,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(Config.AbsoluteBaseUri);
         }
 
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
+
         [Test]
         public void Does_url_decode_raw_QueryString()
         {
