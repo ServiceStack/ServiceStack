@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests
 {
@@ -10,6 +11,17 @@ namespace ServiceStack.Common.Tests
     {
         public long Id { get; set; }
     }
+
+	[Route("/route/{Id}")]
+	public class FieldId : IReturn
+	{
+		public readonly long Id;
+
+		public FieldId(long id)
+		{
+			Id = id;
+		}
+	}
 
     [Route("/route/{Ids}")]
     public class ArrayIds : IReturn
@@ -67,6 +79,19 @@ namespace ServiceStack.Common.Tests
             var url = new JustId { Id = 1 }.ToUrl("GET");
             Assert.That(url, Is.EqualTo("/route/1"));
         }
+
+		[Test]
+		public void Can_create_url_with_FieldId()
+		{
+			using (JsConfig.BeginScope())
+			{
+				JsConfig.IncludePublicFields = true;
+				var url = new FieldId(1).ToUrl("GET");
+				Assert.That(url, Is.EqualTo("/route/1"));
+
+			}
+		}
+
 
         [Test]
         public void Can_create_url_with_ArrayIds()

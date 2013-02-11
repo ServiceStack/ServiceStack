@@ -212,6 +212,7 @@
     <Compile Include="Messaging\TransientMessageServiceBase.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ServiceClient.Web\RouteMember.cs" />
     <Compile Include="ServiceModel\MetadataTypes.cs" />
     <Compile Include="Model.cs">
       <SubType>Code</SubType>
