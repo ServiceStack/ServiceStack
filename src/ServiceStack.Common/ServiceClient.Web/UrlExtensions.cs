@@ -171,10 +171,12 @@ namespace ServiceStack.ServiceClient.Web
         private const string VariablePostfix = "}";
         private const char VariablePostfixChar = '}';
 
-        private readonly IDictionary<string, PropertyInfo> queryProperties;
-        private readonly IDictionary<string, PropertyInfo> variablesMap = new Dictionary<string, PropertyInfo>(StringComparer.InvariantCultureIgnoreCase);
+        private readonly IDictionary<string, RouteMember> queryProperties;
+		private readonly IDictionary<string, RouteMember> variablesMap = new Dictionary<string, RouteMember>(StringComparer.InvariantCultureIgnoreCase);
 
-        public RestRoute(Type type, string path, string verbs)
+
+
+	    public RestRoute(Type type, string path, string verbs)
         {
             this.HttpMethods = (verbs ?? string.Empty).Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
             this.Type = type;
@@ -183,15 +185,15 @@ namespace ServiceStack.ServiceClient.Web
             this.queryProperties = GetQueryProperties(type);
             foreach (var variableName in GetUrlVariables(path))
             {
-                PropertyInfo propertyInfo;
-                if (!this.queryProperties.TryGetValue(variableName, out propertyInfo))
-                {
-                    this.AppendError("Variable '{0}' does not match any property.".Fmt(variableName));
-                    continue;
-                }
+	            RouteMember propertyInfo;
+	            if (!this.queryProperties.TryGetValue(variableName, out propertyInfo))
+	            {
+		            this.AppendError("Variable '{0}' does not match any property.".Fmt(variableName));
+		            continue;
+	            }
 
-                this.variablesMap[variableName] = propertyInfo;
-                this.queryProperties.Remove(variableName);
+				this.variablesMap[variableName] = propertyInfo;
+		        this.queryProperties.Remove(variableName);
             }
         }
 
@@ -232,7 +234,7 @@ namespace ServiceStack.ServiceClient.Web
             foreach (var variable in this.variablesMap)
             {
                 var property = variable.Value;
-                var value = property.GetValue(request, null);
+                var value = property.GetValue(request);
                 if (value == null)
                 {
                     unmatchedVariables.Add(variable.Key);
@@ -257,13 +259,13 @@ namespace ServiceStack.ServiceClient.Web
             return GetQueryString(request, this.queryProperties);
         }
 
-        internal static string GetQueryString(object request, IDictionary<string, PropertyInfo> propertyMap)
+        internal static string GetQueryString(object request, IDictionary<string, RouteMember> propertyMap)
         {
             var result = new StringBuilder();
 
             foreach (var queryProperty in propertyMap)
             {
-                var value = queryProperty.Value.GetValue(request, null);
+                var value = queryProperty.Value.GetValue(request);
                 if (value == null)
                 {
                     continue;
@@ -279,9 +281,9 @@ namespace ServiceStack.ServiceClient.Web
             return result.ToString();
         }
 
-        internal static IDictionary<string, PropertyInfo> GetQueryProperties(Type requestType)
+        internal static IDictionary<string, RouteMember> GetQueryProperties(Type requestType)
         {
-            var result = new Dictionary<string, PropertyInfo>(StringComparer.InvariantCultureIgnoreCase);
+            var result = new Dictionary<string, RouteMember>(StringComparer.InvariantCultureIgnoreCase);
             var hasDataContract = requestType.HasAttr<DataContractAttribute>();
 
             foreach (var propertyInfo in requestType.GetProperties(BindingFlags.Instance | BindingFlags.Public))
@@ -303,8 +305,21 @@ namespace ServiceStack.ServiceClient.Web
                     if (propertyInfo.IsDefined(typeof(IgnoreDataMemberAttribute), true)) continue;
                 }
 
-                result[propertyName.ToCamelCase()] = propertyInfo;
+                result[propertyName.ToCamelCase()] = new PropertyRouteMember(propertyInfo);
             }
+
+			if (JsConfig.IncludePublicFields)
+			{
+				foreach (var fieldInfo in requestType.GetFields(BindingFlags.Instance | BindingFlags.Public))
+				{
+					var fieldName = fieldInfo.Name;
+
+					if (fieldInfo.IsDefined(typeof(IgnoreDataMemberAttribute), true)) continue;
+
+					result[fieldName.ToCamelCase()] = new FieldRouteMember(fieldInfo);
+				}
+
+			}
 
             return result;
         }
@@ -386,4 +401,6 @@ namespace ServiceStack.ServiceClient.Web
             return Route.Variables.All(v => other.Route.Variables.Contains(v));
         }
     }
+
+
 }
