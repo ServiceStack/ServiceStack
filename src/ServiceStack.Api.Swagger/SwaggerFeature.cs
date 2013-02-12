@@ -17,7 +17,7 @@ namespace ServiceStack.Api.Swagger
                 SwaggerResourcesService.resourceFilterRegex = new Regex(ResourceFilterPattern, RegexOptions.Compiled);
 
             appHost.RegisterService(typeof(SwaggerResourcesService), new[] { "/resources" });
-            appHost.RegisterService(typeof(SwaggerApiService), new[] { "/resource/{Name*}" });
+            appHost.RegisterService(typeof(SwaggerApiService), new[] { SwaggerResourcesService.RESOURCE_PATH + "/{Name*}" });
         }
 
         public static bool IsEnabled
