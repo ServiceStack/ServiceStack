@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using ServiceStack.ServiceHost;
@@ -71,7 +72,25 @@ namespace ServiceStack.Api.Swagger
         public bool Required { get; set; }
         [DataMember(Name = "dataType")]
         public string DataType { get; set; }
+		[DataMember(Name = "allowableValues")]
+		public ParameterAllowableValues AllowableValues { get; set; }
     }
+
+	[DataContract]
+	public class ParameterAllowableValues
+	{
+		[DataMember(Name = "valueType")]
+		public string ValueType { get; set; }
+
+		[DataMember(Name = "values")]
+		public string[] Values { get; set; }
+
+		[DataMember(Name = "min")]
+		public int? Min { get; set; }
+
+		[DataMember(Name = "max")]
+		public int? Max { get; set; }
+	}
 
     [DefaultRequest(typeof(ResourceRequest))]
     public class SwaggerApiService : ServiceInterface.Service
@@ -84,7 +103,15 @@ namespace ServiceStack.Api.Swagger
             var path = "/" + request.Name;
             var map = EndpointHost.ServiceManager.ServiceController.RestPathMap;
             var paths = new List<RestPath>();
-            var basePath = httpReq.GetApplicationUrl();
+
+			var basePath = httpReq.GetParentPathUrl();
+
+			if (basePath.ToLower().EndsWith(SwaggerResourcesService.RESOURCE_PATH))
+			{
+				basePath = basePath.Substring(0, basePath.ToLower().LastIndexOf(SwaggerResourcesService.RESOURCE_PATH));
+			}
+
+
             foreach (var key in map.Keys)
             {
                 paths.AddRange(map[key].Where(x => x.Path == path || x.Path.StartsWith(path + "/")));
@@ -127,12 +154,31 @@ namespace ServiceStack.Api.Swagger
             return md;
         }
 
+		private static ParameterAllowableValues GetAllowableValue(SwaggerAllowableValuesAttribute attr)
+		{
+			if (attr != null)
+			{
+				return new ParameterAllowableValues() {
+					ValueType = attr.Type,
+					Values = attr.Values,
+					Max = attr.Max,
+					Min = attr.Min
+				};
+			}
+			return null;
+		}
+
         private static List<MethodOperationParameter> ParseParameters(string verb, Type operationType)
         {
             var properties = operationType.GetProperties();
             var paramAttrs = new List<object>();
-            foreach (var property in properties)
-                paramAttrs.AddRange(property.GetCustomAttributes(typeof(ApiMemberAttribute), true));
+			var allowableParams = new List<SwaggerAllowableValuesAttribute>();
+
+			foreach (var property in properties)
+			{
+				paramAttrs.AddRange(property.GetCustomAttributes(typeof(ApiMemberAttribute), true));
+				allowableParams.AddRange(property.GetCustomAttributes(typeof(SwaggerAllowableValuesAttribute), true).Cast<SwaggerAllowableValuesAttribute>().ToArray());
+			}
 
             return (from ApiMemberAttribute p in paramAttrs
                     where p.Verb == null || string.Compare(p.Verb, verb, StringComparison.InvariantCultureIgnoreCase) == 0
@@ -142,7 +188,8 @@ namespace ServiceStack.Api.Swagger
                         Description = p.Description,
                         Name = p.Name,
                         ParamType = p.ParameterType,
-                        Required = p.IsRequired
+                        Required = p.IsRequired,
+						AllowableValues = GetAllowableValue(allowableParams.FirstOrDefault(attr => attr.Name == p.Name))
                     }).ToList();
         }
 
