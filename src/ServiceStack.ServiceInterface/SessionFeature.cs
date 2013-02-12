@@ -1,5 +1,4 @@
 using System;
-using System.Net;
 using System.Web;
 using ServiceStack.CacheAccess;
 using ServiceStack.Common.Utils;
@@ -32,18 +31,14 @@ namespace ServiceStack.ServiceInterface
 
         public static void AddSessionIdToRequestFilter(IHttpRequest req, IHttpResponse res, object requestDto)
         {
-          Cookie __cookie;
-          req.Cookies.TryGetValue(SessionFeature.SessionId, out __cookie);
-
-          if (__cookie == null)
-          {
-            res.CreateTemporarySessionId(req);
-          }
-          
-          if (req.GetCookieValue(PermanentSessionId) == null)
-          {
-            res.CreatePermanentSessionId(req);
-          }
+            if (req.GetCookieValue(SessionId) == null)
+            {
+                res.CreateTemporarySessionId(req);
+            }
+            if (req.GetCookieValue(PermanentSessionId) == null)
+            {
+                res.CreatePermanentSessionId(req);
+            }
         }
 
         public static string GetSessionId(IHttpRequest httpReq = null)

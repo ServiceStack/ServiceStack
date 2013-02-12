@@ -8,7 +8,7 @@ using ServiceStack.Text;
 namespace ServiceStack.ServiceHost
 {
 	public static class HttpRequestAuthentication
-	{    
+	{
 		public static string GetBasicAuth(this IHttpRequest httpReq)
 		{
 			var auth = httpReq.Headers[HttpHeaders.Authorization];
@@ -59,10 +59,11 @@ namespace ServiceStack.ServiceHost
 		public static string GetCookieValue(this IHttpRequest httpReq, string cookieName)
 		{
 			Cookie cookie;
-			httpReq.Cookies.TryGetValue(cookieName, out cookie);      
+			httpReq.Cookies.TryGetValue(cookieName, out cookie);
 			return cookie != null ? cookie.Value : null;
 		}
-    public static string GetItemStringValue(this IHttpRequest httpReq, string itemName)
+
+		public static string GetItemStringValue(this IHttpRequest httpReq, string itemName)
 		{
 			object val;
 			if (!httpReq.Items.TryGetValue(itemName, out val)) return null;
