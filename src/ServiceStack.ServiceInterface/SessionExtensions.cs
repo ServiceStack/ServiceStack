@@ -24,6 +24,22 @@ namespace ServiceStack.ServiceInterface
     /// </summary>
     public static class SessionExtensions 
     {
+      private const string SecureCookieAsRequest = "ss:Cookie:SecureAsRequest";
+      public static bool AllowCookieSecureAsRequest
+      {
+        get
+        {
+          bool __disallow = false;
+          //INFO: We would like to secure the cookie if the request is secured; even if it's already exist.
+          //However, we keep the same Id to guarantee that the current User Session storage is keeped.
+          string __secureCookieAsRequest = System.Configuration.ConfigurationManager.AppSettings[SessionExtensions.SecureCookieAsRequest];
+          if (!string.IsNullOrEmpty(__secureCookieAsRequest))
+          {
+            __disallow = Convert.ToBoolean(__secureCookieAsRequest);
+          }
+          return __disallow;
+        }
+      }
         public static string GetSessionId(this IHttpRequest httpReq)
         {
             var sessionOptions = GetSessionOptions(httpReq);
@@ -80,7 +96,7 @@ namespace ServiceStack.ServiceInterface
         public static string CreateTemporarySessionId(this IHttpResponse res, IHttpRequest req)
         {
             var sessionId = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-            res.Cookies.AddSessionCookie(SessionFeature.SessionId, sessionId);
+            res.Cookies.AddSessionCookie(SessionFeature.SessionId, sessionId, (SessionExtensions.AllowCookieSecureAsRequest && req.IsSecureConnection));
             req.Items[SessionFeature.SessionId] = sessionId;
             return sessionId;
         }
