@@ -43,9 +43,10 @@ namespace ServiceStack.ServiceHost
 		/// </summary>
 		public void DeleteCookie(string cookieName)
 		{
-			var cookie = String.Format("{0}=;expires={1};path=/",
-				cookieName, DateTime.UtcNow.AddDays(-1).ToString("R"));
-			httpRes.AddHeader(HttpHeaders.SetCookie, cookie);
+			var cookie = new Cookie(cookieName, string.Empty, "/") {
+				Expires = DateTime.UtcNow.AddDays(-1)
+			};
+			AddCookie(cookie);
 		}
 
 		public HttpCookie ToHttpCookie(Cookie cookie)
