@@ -5,6 +5,7 @@ using System.Net;
 using System.Web;
 using ServiceStack.CacheAccess;
 using ServiceStack.Common;
+using ServiceStack.Configuration;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
@@ -23,7 +24,7 @@ namespace ServiceStack.ServiceInterface
     /// Configure ServiceStack to have ISession support
     /// </summary>
     public static class SessionExtensions 
-    {
+    {        
         public static string GetSessionId(this IHttpRequest httpReq)
         {
             var sessionOptions = GetSessionOptions(httpReq);
@@ -80,7 +81,7 @@ namespace ServiceStack.ServiceInterface
         public static string CreateTemporarySessionId(this IHttpResponse res, IHttpRequest req)
         {
             var sessionId = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-            res.Cookies.AddSessionCookie(SessionFeature.SessionId, sessionId);
+            res.Cookies.AddSessionCookie(SessionFeature.SessionId, sessionId, (EndpointHostConfig.Instance.AllowCookieSecureAsRequest && req.IsSecureConnection));
             req.Items[SessionFeature.SessionId] = sessionId;
             return sessionId;
         }
