@@ -46,12 +46,22 @@ namespace ServiceStack.Messaging
             InvokeMessageReceived(new EventArgs());
         }
 
+        /// <summary>
+        /// Returns the next message from queueName or null if no message
+        /// </summary>
+        /// <param name="queueName"></param>
+        /// <returns></returns>
         public byte[] GetMessageAsync(string queueName)
         {
             lock (syncLock)
             {
                 Queue<byte[]> bytesQueue;
                 if (!queueMessageBytesMap.TryGetValue(queueName, out bytesQueue))
+                {
+                    return null;
+                }
+
+                if (bytesQueue.Count == 0)
                 {
                     return null;
                 }
