@@ -418,7 +418,14 @@ namespace ServiceStack.WebHost.Endpoints
                 this.defaultOperationNamespace = value;
             }
         }
-
+        private const string SecureCookieAsRequest = "ss:Cookie:SecureAsRequest";
+        public bool AllowCookieSecureAsRequest
+        {
+          get
+          {
+            return ConfigUtils.GetAppSetting<bool>(EndpointHostConfig.SecureCookieAsRequest, false);
+          }
+        }
         private string GetDefaultNamespace()
         {
             if (!String.IsNullOrEmpty(this.defaultOperationNamespace)

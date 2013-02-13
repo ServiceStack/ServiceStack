@@ -12,7 +12,7 @@ namespace ServiceStack.ServiceHost
 	{
 		readonly IHttpResponse httpRes;
 		private static readonly DateTime Session = DateTime.MinValue;
-		private static readonly DateTime Permanaent = DateTime.UtcNow.AddYears(20);
+		private static readonly DateTime Permanent = DateTime.UtcNow.AddYears(20);
 		private const string RootPath = "/";
 
 		public Cookies(IHttpResponse httpRes)
@@ -26,7 +26,7 @@ namespace ServiceStack.ServiceHost
 		public void AddPermanentCookie(string cookieName, string cookieValue)
 		{
 			AddCookie(new Cookie(cookieName, cookieValue, RootPath) {
-				Expires = Permanaent,
+				Expires = Permanent,
 			});
 		}
 
@@ -35,8 +35,17 @@ namespace ServiceStack.ServiceHost
 		/// </summary>
 		public void AddSessionCookie(string cookieName, string cookieValue)
 		{
-			AddCookie(new Cookie(cookieName, cookieValue, RootPath));
+      this.AddSessionCookie(cookieName, cookieValue, false);
 		}
+    /// <summary>
+    /// Sets a session cookie which expires after the browser session closes
+    /// </summary>
+    public void AddSessionCookie(string cookieName, string cookieValue, bool secureCookieAsRequest)
+    {
+      var __newCookie = new Cookie(cookieName, cookieValue, RootPath);
+      __newCookie.Secure = secureCookieAsRequest;
+      this.AddCookie(__newCookie);
+    }
 
 		/// <summary>
 		/// Deletes a specified cookie by setting its value to empty and expiration to -1 days
@@ -54,7 +63,8 @@ namespace ServiceStack.ServiceHost
 			var httpCookie = new HttpCookie(cookie.Name, cookie.Value) {
 				Path = cookie.Path,
 				Expires = cookie.Expires,
-				HttpOnly = true
+				HttpOnly = true,
+        Secure = cookie.Secure
 			};
 			if (string.IsNullOrEmpty(httpCookie.Domain))
 			{
