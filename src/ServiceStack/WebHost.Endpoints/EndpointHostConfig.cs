@@ -96,6 +96,7 @@ namespace ServiceStack.WebHost.Endpoints
                         CustomHttpHandlers = new Dictionary<HttpStatusCode, IServiceStackHttpHandler>(),
                         GlobalHtmlErrorHttpHandler = null,
                         MapExceptionToStatusCode = new Dictionary<Type, int>(),
+                        OnlySendSessionCookiesSecurely = false,
                         DefaultJsonpCacheExpiration = new TimeSpan(0, 20, 0),
                         MetadataVisibility = EndpointAttributes.Any,
                         Return204NoContentForEmptyResponse = true,
@@ -155,6 +156,7 @@ namespace ServiceStack.WebHost.Endpoints
             this.CustomHttpHandlers = instance.CustomHttpHandlers;
             this.GlobalHtmlErrorHttpHandler = instance.GlobalHtmlErrorHttpHandler;
             this.MapExceptionToStatusCode = instance.MapExceptionToStatusCode;
+            this.OnlySendSessionCookiesSecurely = instance.OnlySendSessionCookiesSecurely;
             this.DefaultJsonpCacheExpiration = instance.DefaultJsonpCacheExpiration;
             this.MetadataVisibility = instance.MetadataVisibility;
             this.Return204NoContentForEmptyResponse = Return204NoContentForEmptyResponse;
@@ -399,6 +401,8 @@ namespace ServiceStack.WebHost.Endpoints
         public IServiceStackHttpHandler GlobalHtmlErrorHttpHandler { get; set; }
         public Dictionary<Type, int> MapExceptionToStatusCode { get; set; }
 
+        public bool OnlySendSessionCookiesSecurely { get; set; }
+
         public TimeSpan DefaultJsonpCacheExpiration { get; set; }
         public bool Return204NoContentForEmptyResponse { get; set; }
 
@@ -418,14 +422,7 @@ namespace ServiceStack.WebHost.Endpoints
                 this.defaultOperationNamespace = value;
             }
         }
-        private const string SecureCookieAsRequest = "ss:Cookie:SecureAsRequest";
-        public bool AllowCookieSecureAsRequest
-        {
-          get
-          {
-            return ConfigUtils.GetAppSetting<bool>(EndpointHostConfig.SecureCookieAsRequest, false);
-          }
-        }
+
         private string GetDefaultNamespace()
         {
             if (!String.IsNullOrEmpty(this.defaultOperationNamespace)

@@ -81,7 +81,8 @@ namespace ServiceStack.ServiceInterface
         public static string CreateTemporarySessionId(this IHttpResponse res, IHttpRequest req)
         {
             var sessionId = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-            res.Cookies.AddSessionCookie(SessionFeature.SessionId, sessionId, (EndpointHostConfig.Instance.AllowCookieSecureAsRequest && req.IsSecureConnection));
+            res.Cookies.AddSessionCookie(SessionFeature.SessionId, sessionId, 
+                (EndpointHost.Config.OnlySendSessionCookiesSecurely && req.IsSecureConnection));
             req.Items[SessionFeature.SessionId] = sessionId;
             return sessionId;
         }
