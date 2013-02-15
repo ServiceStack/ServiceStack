@@ -97,6 +97,7 @@ namespace ServiceStack.WebHost.Endpoints
                         GlobalHtmlErrorHttpHandler = null,
                         MapExceptionToStatusCode = new Dictionary<Type, int>(),
                         OnlySendSessionCookiesSecurely = false,
+                        RestrictAllCookiesToDomain = null,
                         DefaultJsonpCacheExpiration = new TimeSpan(0, 20, 0),
                         MetadataVisibility = EndpointAttributes.Any,
                         Return204NoContentForEmptyResponse = true,
@@ -157,6 +158,7 @@ namespace ServiceStack.WebHost.Endpoints
             this.GlobalHtmlErrorHttpHandler = instance.GlobalHtmlErrorHttpHandler;
             this.MapExceptionToStatusCode = instance.MapExceptionToStatusCode;
             this.OnlySendSessionCookiesSecurely = instance.OnlySendSessionCookiesSecurely;
+            this.RestrictAllCookiesToDomain = instance.RestrictAllCookiesToDomain;
             this.DefaultJsonpCacheExpiration = instance.DefaultJsonpCacheExpiration;
             this.MetadataVisibility = instance.MetadataVisibility;
             this.Return204NoContentForEmptyResponse = Return204NoContentForEmptyResponse;
@@ -402,6 +404,7 @@ namespace ServiceStack.WebHost.Endpoints
         public Dictionary<Type, int> MapExceptionToStatusCode { get; set; }
 
         public bool OnlySendSessionCookiesSecurely { get; set; }
+        public string RestrictAllCookiesToDomain { get; set; }
 
         public TimeSpan DefaultJsonpCacheExpiration { get; set; }
         public bool Return204NoContentForEmptyResponse { get; set; }

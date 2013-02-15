@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Net;
+using System.Text;
 using System.Web;
 using ServiceStack.Common.Web;
+using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceHost
 {
@@ -68,15 +71,41 @@ namespace ServiceStack.ServiceHost
             {
                 httpCookie.Domain = (string.IsNullOrEmpty(cookie.Domain) ? null : cookie.Domain);
             }
+            else if (EndpointHost.Config.RestrictAllCookiesToDomain != null)
+            {
+                httpCookie.Domain = EndpointHost.Config.RestrictAllCookiesToDomain;
+            }
             return httpCookie;
         }
 
         public string GetHeaderValue(Cookie cookie)
         {
-            return cookie.Expires == Session
-                ? String.Format("{0}={1};path=/", cookie.Name, cookie.Value)
-                : String.Format("{0}={1};expires={2};path={3}",
-                    cookie.Name, cookie.Value, cookie.Expires.ToString("R"), cookie.Path ?? "/");
+            var path = cookie.Expires == Session
+                ? "/"
+                : cookie.Path ?? "/";
+
+            var sb = new StringBuilder();
+
+            sb.AppendFormat("{0}={1};path={2}", cookie.Name, cookie.Value, path);
+
+            if (cookie.Expires != Session)
+            {
+                sb.AppendFormat(";expires={0}", cookie.Expires.ToString("R"));
+            }
+            if (EndpointHost.Config.RestrictAllCookiesToDomain != null)
+            {
+                sb.AppendFormat(";domain={0}", EndpointHost.Config.RestrictAllCookiesToDomain);
+            }
+            if (cookie.Secure)
+            {
+                sb.Append(";Secure");
+            }
+            if (cookie.HttpOnly)
+            {
+                sb.Append(";HttpOnly");
+            }
+            
+            return sb.ToString();
         }
 
         /// <summary>
