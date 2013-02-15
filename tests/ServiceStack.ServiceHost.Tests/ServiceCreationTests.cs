@@ -94,5 +94,44 @@ namespace ServiceStack.ServiceHost.Tests
 				Assert.That(response.RequestCount, Is.EqualTo(1));
 			}
 		}
-	}
+
+        public class Foo
+        {
+            public static int GlobalId = 0;
+            public int Id { get; set; }
+
+            public Foo()
+            {
+                this.Id = GlobalId++;
+            }
+        }
+
+        [Test]
+        public void Funq_is_singleton_by_Default()
+        {
+            var container = new Container();
+            container.Register(c => new Foo());
+
+            var foo = container.Resolve<Foo>();
+            Assert.That(foo.Id, Is.EqualTo(0));
+            foo = container.Resolve<Foo>();
+            Assert.That(foo.Id, Is.EqualTo(0));
+            foo = container.Resolve<Foo>();
+            Assert.That(foo.Id, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Funq_does_transient_scope()
+        {
+            var container = new Container();
+            container.Register(c => new Foo()).ReusedWithin(ReuseScope.None);
+
+            var foo = container.Resolve<Foo>();
+            Assert.That(foo.Id, Is.EqualTo(0));
+            foo = container.Resolve<Foo>();
+            Assert.That(foo.Id, Is.EqualTo(1));
+            foo = container.Resolve<Foo>();
+            Assert.That(foo.Id, Is.EqualTo(2));
+        }
+    }
 }
