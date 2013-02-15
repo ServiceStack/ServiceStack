@@ -92,10 +92,16 @@ namespace ServiceStack.ServiceHost
             {
                 sb.AppendFormat(";expires={0}", cookie.Expires.ToString("R"));
             }
-            if (EndpointHost.Config.RestrictAllCookiesToDomain != null)
+            
+            if (cookie.Domain != null)
+            {
+                sb.AppendFormat(";domain={0}", cookie.Domain);
+            }
+            else if (EndpointHost.Config.RestrictAllCookiesToDomain != null)
             {
                 sb.AppendFormat(";domain={0}", EndpointHost.Config.RestrictAllCookiesToDomain);
             }
+
             if (cookie.Secure)
             {
                 sb.Append(";Secure");
