@@ -161,11 +161,17 @@ namespace ServiceStack.Common.Web
             {
                 using (var ms = new MemoryStream())
                 {
-                    var httpRes = new HttpResponseStreamWrapper(ms);
+
+                    var httpRes = new HttpResponseStreamWrapper(ms) {
+                        KeepOpen = true, //Don't let view engines close the OutputStream
+                    };
                     responseWriter(requestContext, response, httpRes);
 
                     ms.Position = 0;
                     var result = new StreamReader(ms, UTF8EncodingWithoutBom).ReadToEnd();
+
+                    httpRes.ForceClose(); //Manually close the OutputStream
+
                     return result;
                 }
             }
@@ -211,7 +217,7 @@ namespace ServiceStack.Common.Web
         public ResponseSerializerDelegate GetResponseSerializer(string contentType)
         {
             ResponseSerializerDelegate responseWriter;
-            if (this.ContentTypeResponseSerializers.TryGetValue(contentType, out responseWriter)||
+            if (this.ContentTypeResponseSerializers.TryGetValue(contentType, out responseWriter) ||
                 this.ContentTypeResponseSerializers.TryGetValue(ContentType.GetRealContentType(contentType), out responseWriter))
             {
                 return responseWriter;
@@ -226,7 +232,7 @@ namespace ServiceStack.Common.Web
         public StreamSerializerDelegate GetStreamSerializer(string contentType)
         {
             StreamSerializerDelegate responseWriter;
-            if (this.ContentTypeSerializers.TryGetValue(contentType, out responseWriter)||
+            if (this.ContentTypeSerializers.TryGetValue(contentType, out responseWriter) ||
                 this.ContentTypeSerializers.TryGetValue(ContentType.GetRealContentType(contentType), out responseWriter))
             {
                 return responseWriter;

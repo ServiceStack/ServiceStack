@@ -95,51 +95,43 @@ namespace RazorRockstars.Console.Files
         [DataMember] public List<Rockstar> Results { get; set; }
     }
 
-    public class RockstarsService : RestServiceBase<Rockstars>
+    public class RockstarsService : Service
     {
-        public IDbConnectionFactory DbFactory { get; set; }
-
-        public override object OnGet(Rockstars request)
+        public object Get(Rockstars request)
         {
-            using (var db = DbFactory.OpenDbConnection())
+            if (request.Delete == "reset")
             {
-                if (request.Delete == "reset")
-                {
-                    db.DeleteAll<Rockstar>();
-                    db.Insert(Rockstar.SeedData);
-                }
-                else if (request.Delete.IsInt())
-                {
-                    db.DeleteById<Rockstar>(request.Delete.ToInt());
-                }
+                Db.DeleteAll<Rockstar>();
+                Db.Insert(Rockstar.SeedData);
+            }
+            else if (request.Delete.IsInt())
+            {
+                Db.DeleteById<Rockstar>(request.Delete.ToInt());
+            }
 
-                var response = new RockstarsResponse {
-                    Aged = request.Age,
-                    Total = db.GetScalar<int>("select count(*) from Rockstar"),
-                    Results = request.Id != default(int) ?
-                        db.Select<Rockstar>(q => q.Id == request.Id)
-                          : request.Age.HasValue ?
-                        db.Select<Rockstar>(q => q.Age == request.Age.Value)
-                          : db.Select<Rockstar>()
+            var response = new RockstarsResponse {
+                Aged = request.Age,
+                Total = Db.GetScalar<int>("select count(*) from Rockstar"),
+                Results = request.Id != default(int) ?
+                    Db.Select<Rockstar>(q => q.Id == request.Id)
+                      : request.Age.HasValue ?
+                    Db.Select<Rockstar>(q => q.Age == request.Age.Value)
+                      : Db.Select<Rockstar>()
+            };
+
+            if (request.View != null || request.Template != null)
+                return new HttpResult(response) {
+                    View = request.View,
+                    Template = request.Template,
                 };
 
-                if (request.View != null || request.Template != null)
-                    return new HttpResult(response) {
-                        View = request.View,
-                        Template = request.Template,
-                    };
-                
-                return response;
-            }
+            return response;
         }
 
-        public override object OnPost(Rockstars request)
+        public object Post(Rockstars request)
         {
-            using (var db = DbFactory.OpenDbConnection())
-            {
-                db.Insert(request.TranslateTo<Rockstar>());
-                return OnGet(new Rockstars());
-            }
+            Db.Insert(request.TranslateTo<Rockstar>());
+            return Get(new Rockstars());
         }
     }
 }

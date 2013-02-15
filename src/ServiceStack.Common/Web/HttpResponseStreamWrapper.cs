@@ -25,6 +25,7 @@ namespace ServiceStack.Common.Web
         public int StatusCode { set; get; }
         public string StatusDescription { set; get; }
         public string ContentType { get; set; }
+        public bool KeepOpen { get; set; }
 
         public ICookies Cookies { get; set; }
 
@@ -47,6 +48,12 @@ namespace ServiceStack.Common.Web
         }
 
         public void Close()
+        {
+            if (KeepOpen) return;
+            ForceClose();
+        }
+
+        public void ForceClose()
         {
             if (IsClosed) return;
             OutputStream.Close();

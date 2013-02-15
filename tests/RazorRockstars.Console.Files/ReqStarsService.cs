@@ -46,6 +46,12 @@ namespace RazorRockstars.Console.Files
     [Route("/reqstars", "GET")]
     public class AllReqstars : IReturn<List<Reqstar>> { }
 
+    [Route("/reqstars/cached/{Aged}", "GET")]
+    public class CachedAllReqstars : IReturn<ReqstarsResponse>
+    {
+        public int Aged { get; set; }        
+    }
+
     public class ReqstarsResponse
     {
         public int Total { get; set; }
@@ -153,6 +159,20 @@ namespace RazorRockstars.Console.Files
         public List<Reqstar> Any(AllReqstars request)
         {
             return Db.Select<Reqstar>();
+        }
+
+        public object Any(CachedAllReqstars request)
+        {
+            if (request.Aged <= 0)
+                throw new ArgumentException("Invalid Age");
+
+            var cacheKey = typeof(CachedAllReqstars).Name;
+            return base.RequestContext.ToOptimizedResultUsingCache(base.Cache, cacheKey, () => 
+                new ReqstarsResponse {
+                    Aged = request.Aged,
+                    Total = Db.GetScalar<int>("select count(*) from Reqstar"),
+                    Results = Db.Select<Reqstar>(q => q.Age == request.Aged)
+                });
         }
 
         [ClientCanSwapTemplates] //allow action-level filters
@@ -816,5 +836,13 @@ namespace RazorRockstars.Console.Files
             Assert.That(response.StringSet, Is.EquivalentTo(request.StringSet));
         }
 
+        [Test]
+        public void Does_Cache_RazorPage()
+        {
+            var html = "{0}/reqstars/cached/10".Fmt(Host).GetStringFromUrl();
+            Assert.That(html, Is.StringContaining("<h1>Counter:10</h1>"));
+            html = "{0}/reqstars/cached/20".Fmt(Host).GetStringFromUrl();
+            Assert.That(html, Is.StringContaining("<h1>Counter:10</h1>"));
+        }
     }
 }

@@ -108,6 +108,7 @@ namespace RazorRockstars.Console.Files
         static string ViewRockstarsMark = "<!--view:RockstarsMark.md-->";
         static string ViewNoModelNoController = "<!--view:NoModelNoController.cshtml-->";
         static string ViewTypedModelNoController = "<!--view:TypedModelNoController.cshtml-->";
+        static string ViewCachedAllReqstars = "<!--view:CachedAllReqstars.cshtml-->";
         static string ViewPage1 = "<!--view:Page1.cshtml-->";
         static string ViewPage2 = "<!--view:Page2.cshtml-->";
         static string ViewPage3 = "<!--view:Page3.cshtml-->";
@@ -254,6 +255,7 @@ namespace RazorRockstars.Console.Files
         {
             Assert200(Host + "/rockstars?View=Rockstars3", ViewRockstars3, Template_SimpleLayout2);
         }
+
     }
 }
 

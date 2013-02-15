@@ -1,0 +1,35 @@
+﻿@inherits ViewPage<ReqstarsResponse>
+
+@{
+    ViewBag.Title = "All Reqstars";
+    Layout = "HtmlReport";
+}
+
+<h1>Counter:@Model.Aged</h1>
+<h3>We have @Model.Results.Count Reqstars</h3>
+<table>
+    <thead> 
+        <tr>
+            <th>Name</th>
+            <th>Age</th>
+        </tr>
+    </thead>
+    <tfoot>
+        <tr>
+            <td colspan="2">
+                <p><a href="/reqstars">Show all @Model.Results.Count Reqstars</a></p>
+            </td>
+        </tr>
+    </tfoot>
+    <tbody>
+        @foreach (var rockstar in Model.Results)
+        {
+            <tr>
+                <td>@rockstar.FirstName @rockstar.LastName </td>
+                <td>@rockstar.Age </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!--view:CachedAllReqstars.cshtml-->
