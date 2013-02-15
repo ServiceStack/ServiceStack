@@ -1,5 +1,8 @@
 using System;
+using System.ComponentModel;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using ServiceStack.Common.Reflection;
 using ServiceStack.DesignPatterns.Model;
 
@@ -23,16 +26,27 @@ namespace ServiceStack.Common.Utils
             }
 #endif
 
-            if (typeof(T).IsClass
-                && typeof(T).GetProperty(IdUtils.IdField) != null
-                && typeof(T).GetProperty(IdUtils.IdField).GetGetMethod() != null)
+            if (typeof(T).IsClass)
             {
-                CanGetId = HasPropertyId<T>.GetId;
+                if (typeof(T).GetProperty(IdUtils.IdField) != null
+                    && typeof(T).GetProperty(IdUtils.IdField).GetGetMethod() != null)
+                {
+                    CanGetId = HasPropertyId<T>.GetId;
+                }
+                else
+                {
+                    foreach (var pi in typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                        .Where(pi => pi.GetCustomAttributes(true)
+                            .Cast<Attribute>()
+                            .Any(attr => attr.GetType().Name == "PrimaryKeyAttribute")))
+                    {
+                        CanGetId = StaticAccessors<T>.ValueUnTypedGetPropertyTypeFn(pi);
+                        return;
+                    }
+                }
             }
-            else
-            {
-                CanGetId = x => x.GetHashCode();
-            }
+
+            CanGetId = x => x.GetHashCode();
         }
 
         public static object GetId(T entity)
