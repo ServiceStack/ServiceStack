@@ -233,14 +233,14 @@
     <Compile Include="..\ServiceStack.Common\ServiceClient.Web\JsvServiceClient.cs">
       <Link>ServiceClient.Web\JsvServiceClient.cs</Link>
     </Compile>
+    <Compile Include="..\ServiceStack.Common\ServiceClient.Web\RouteMember.cs">
+      <Link>ServiceClient.Web\RouteMember.cs</Link>
+    </Compile>
     <Compile Include="..\ServiceStack.Common\ServiceClient.Web\ServiceClientBase.cs">
       <Link>ServiceClient.Web\ServiceClientBase.cs</Link>
     </Compile>
     <Compile Include="..\ServiceStack.Common\ServiceClient.Web\Soap11ServiceClient.cs">
       <Link>ServiceClient.Web\Soap11ServiceClient.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Common\ServiceClient.Web\Soap12ServiceClient.cs">
-      <Link>ServiceClient.Web\Soap12ServiceClient.cs</Link>
     </Compile>
     <Compile Include="..\ServiceStack.Common\ServiceClient.Web\WcfServiceClient.cs">
       <Link>ServiceClient.Web\WcfServiceClient.cs</Link>
