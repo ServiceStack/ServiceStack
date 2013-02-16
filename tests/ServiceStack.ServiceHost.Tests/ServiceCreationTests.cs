@@ -1,17 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
-using ServiceStack.WebHost.Endpoints.Support;
-using System.Collections;
 using ServiceStack.WebHost.Endpoints;
-using ServiceStack.ServiceInterface.Validation;
 using Funq;
-using ServiceStack.ServiceInterface;
-using ServiceStack.FluentValidation;
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
 
@@ -29,11 +20,11 @@ namespace ServiceStack.ServiceHost.Tests
 		public int RequestCount { get; set; }
 	}
 
-	public class ServiceCreationService : IService<ServiceCreation>
+    public class ServiceCreationService : ServiceInterface.Service
 	{
 		public int RequestCounter = 0;
 
-		public object Execute(ServiceCreation request)
+		public object Any(ServiceCreation request)
 		{
 			this.RequestCounter++;
 			return new ServiceCreationResponse()
@@ -109,6 +100,7 @@ namespace ServiceStack.ServiceHost.Tests
         [Test]
         public void Funq_is_singleton_by_Default()
         {
+            Foo.GlobalId = 0;
             var container = new Container();
             container.Register(c => new Foo());
 
@@ -123,6 +115,7 @@ namespace ServiceStack.ServiceHost.Tests
         [Test]
         public void Funq_does_transient_scope()
         {
+            Foo.GlobalId = 0;
             var container = new Container();
             container.Register(c => new Foo()).ReusedWithin(ReuseScope.None);
 
