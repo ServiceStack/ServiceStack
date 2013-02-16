@@ -314,14 +314,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			{
 				var client = GetClient();
 
-				var authResponse = client.Send<AuthResponse>(new Auth {
+				var authResponse = client.Send(new Auth {
 					provider = CredentialsAuthProvider.Name,
 					UserName = "user",
 					Password = "p@55word",
 					RememberMe = true,
 				});
 
-				Console.WriteLine(authResponse.Dump());
+			    authResponse.PrintDump();
 
 				var request = new Secured { Name = "test" };
 				var response = client.Send<SecureResponse>(request);
@@ -347,7 +347,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				Password = "p@55word",
 				RememberMe = true,
 			}, authResponse => {
-				Console.WriteLine(authResponse.Dump());
+                authResponse.PrintDump();
 				client.SendAsync<SecureResponse>(request, r => response = r, FailOnAsyncError);
 
 			}, FailOnAsyncError);

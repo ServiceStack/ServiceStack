@@ -67,9 +67,9 @@ namespace ServiceStack.ServiceHost
                 HttpOnly = true,
                 Secure = cookie.Secure
             };
-            if (string.IsNullOrEmpty(httpCookie.Domain))
+            if (!string.IsNullOrEmpty(cookie.Domain))
             {
-                httpCookie.Domain = (string.IsNullOrEmpty(cookie.Domain) ? null : cookie.Domain);
+                httpCookie.Domain = cookie.Domain;
             }
             else if (EndpointHost.Config.RestrictAllCookiesToDomain != null)
             {
@@ -92,8 +92,8 @@ namespace ServiceStack.ServiceHost
             {
                 sb.AppendFormat(";expires={0}", cookie.Expires.ToString("R"));
             }
-            
-            if (cookie.Domain != null)
+
+            if (!string.IsNullOrEmpty(cookie.Domain))
             {
                 sb.AppendFormat(";domain={0}", cookie.Domain);
             }

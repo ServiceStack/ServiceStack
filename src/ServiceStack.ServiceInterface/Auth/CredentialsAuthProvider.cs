@@ -51,7 +51,7 @@ namespace ServiceStack.ServiceInterface.Auth
                 session.IsAuthenticated = true;
                 session.UserAuthId =  userAuth.Id.ToString(CultureInfo.InvariantCulture);
                 session.ProviderOAuthAccess = authRepo.GetUserOAuthProviders(session.UserAuthId)
-                .ConvertAll(x => (IOAuthTokens)x);
+                    .ConvertAll(x => (IOAuthTokens)x);
 
                 return true;
             }
