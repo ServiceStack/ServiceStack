@@ -1,11 +1,11 @@
 //
-// http://code.google.com/p/servicestack/wiki/ServiceStackRedis
+// https://github.com/ServiceStack/ServiceStack.Redis/
 // ServiceStack.Redis: ECMA CLI Binding to the Redis key-value storage system
 //
 // Authors:
 //   Demis Bellot (demis.bellot@gmail.com)
 //
-// Copyright 2010 Liquidbit Ltd.
+// Copyright 2013 ServiceStack.
 //
 // Licensed under the same terms of Redis and ServiceStack: new BSD license.
 //
@@ -183,10 +183,15 @@ namespace ServiceStack.Redis
 		byte[][] PUnSubscribe(params string[] toChannelsMatchingPatterns);
 		byte[][] ReceiveMessages();
 
-		int EvalInt(string body, int numberKeysInArgs, params byte[][] keys);
-		string EvalStr(string body, int numberKeysInArgs, params byte[][] keys);
-		byte[][] Eval(string body, int numberKeysInArgs, params byte[][] keys);
-		byte[][] ScriptExists(params byte[][] sha1Refs);
+        //Redis LUA support
+        int EvalInt(string luaBody, int numberKeysInArgs, params byte[][] keys);
+        int EvalShaInt(string sha1, int numberKeysInArgs, params byte[][] keys);
+        string EvalStr(string luaBody, int numberKeysInArgs, params byte[][] keys);
+        string EvalShaStr(string sha1, int numberKeysInArgs, params byte[][] keys);
+        byte[][] Eval(string luaBody, int numberKeysInArgs, params byte[][] keys);
+        byte[][] EvalSha(string sha1, int numberKeysInArgs, params byte[][] keys);
+
+        byte[][] ScriptExists(params byte[][] sha1Refs);
 		void ScriptFlush();
 		void ScriptKill();
 		byte[] ScriptLoad(string body);

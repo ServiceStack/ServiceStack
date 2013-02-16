@@ -1,11 +1,11 @@
 //
-// http://code.google.com/p/servicestack/wiki/ServiceStackRedis
+// https://github.com/ServiceStack/ServiceStack.Redis/
 // ServiceStack.Redis: ECMA CLI Binding to the Redis key-value storage system
 //
 // Authors:
 //   Demis Bellot (demis.bellot@gmail.com)
 //
-// Copyright 2010 Liquidbit Ltd.
+// Copyright 2013 ServiceStack.
 //
 // Licensed under the same terms of Redis and ServiceStack: new BSD license.
 //
@@ -263,9 +263,12 @@ namespace ServiceStack.Redis
 
 		#region Eval/Lua operations
 
-		string GetEvalStr(string body, int numOfArgs, params string[] args);
-		int GetEvalInt(string body, int numOfArgs, params string[] args);
-		List<string> GetEvalMultiData(string body, int numOfArgs, params string[] args);
+        string ExecLuaAsStr(string luaBody, int numOfArgs, params string[] args);
+        string ExecLuaShaAsStr(string sha1, int numOfArgs, params string[] args);
+        int ExecLuaAsInt(string luaBody, int numOfArgs, params string[] args);
+        int ExecLuaShaAsInt(string sha1, int numOfArgs, params string[] args);
+        List<string> ExecLuaAsList(string luaBody, int numOfArgs, params string[] args);
+        List<string> ExecLuaShaAsList(string sha1, int numOfArgs, params string[] args);
 
 		#endregion
 
