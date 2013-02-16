@@ -32,17 +32,16 @@ namespace ServiceStack.Common.Utils
                     && typeof(T).GetProperty(IdUtils.IdField).GetGetMethod() != null)
                 {
                     CanGetId = HasPropertyId<T>.GetId;
+                    return;
                 }
-                else
+                
+                foreach (var pi in typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                    .Where(pi => pi.GetCustomAttributes(true)
+                             .Cast<Attribute>()
+                             .Any(attr => attr.GetType().Name == "PrimaryKeyAttribute")))
                 {
-                    foreach (var pi in typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                        .Where(pi => pi.GetCustomAttributes(true)
-                            .Cast<Attribute>()
-                            .Any(attr => attr.GetType().Name == "PrimaryKeyAttribute")))
-                    {
-                        CanGetId = StaticAccessors<T>.ValueUnTypedGetPropertyTypeFn(pi);
-                        return;
-                    }
+                    CanGetId = StaticAccessors<T>.ValueUnTypedGetPropertyTypeFn(pi);
+                    return;
                 }
             }
 
