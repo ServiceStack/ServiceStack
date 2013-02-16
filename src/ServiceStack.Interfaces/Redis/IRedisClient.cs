@@ -263,8 +263,8 @@ namespace ServiceStack.Redis
 
 		#region Eval/Lua operations
 
-        string ExecLuaAsStr(string luaBody, int numOfArgs, params string[] args);
-        string ExecLuaShaAsStr(string sha1, int numOfArgs, params string[] args);
+        string ExecLuaAsString(string luaBody, int numOfArgs, params string[] args);
+        string ExecLuaShaAsString(string sha1, int numOfArgs, params string[] args);
         int ExecLuaAsInt(string luaBody, int numOfArgs, params string[] args);
         int ExecLuaShaAsInt(string sha1, int numOfArgs, params string[] args);
         List<string> ExecLuaAsList(string luaBody, int numOfArgs, params string[] args);
