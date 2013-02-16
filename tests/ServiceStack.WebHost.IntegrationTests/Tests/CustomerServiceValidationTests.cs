@@ -67,7 +67,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		{
 			try
 			{
-				var response = client.Send<CustomersResponse>(new Customers());
+				var response = client.Send(new Customers());
 				response.PrintDump();
 				Assert.Fail("Should throw Validation Exception");
 			}
@@ -91,7 +91,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		{
 			try
 			{
-				var response = client.Get<CustomersResponse>("/Customers");
+				var response = client.Get(new Customers());
 				response.PrintDump();
 				Assert.Fail("Should throw Validation Exception");
 			}
@@ -110,7 +110,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		[Test, TestCaseSource(typeof(CustomerServiceValidationTests), "ServiceClients")]
 		public void Post_ValidRequest_succeeds(IServiceClient client)
 		{
-			var response = client.Send<CustomersResponse>(validRequest);
+			var response = client.Send(validRequest);
 			Assert.That(response.ResponseStatus, Is.Null);
 		}
 

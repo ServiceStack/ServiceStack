@@ -10,7 +10,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 {
 	[Route("/customers")]
 	[Route("/customers/{Id}")]
-	public class Customers
+    public class Customers : IReturn<CustomersResponse>
 	{
 		public int Id { get; set; }
 		public string FirstName { get; set; }
@@ -21,6 +21,13 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public string Postcode { get; set; }
 		public bool HasDiscount { get; set; }
 	}
+
+    public class CustomersResponse
+    {
+        public Customers Result { get; set; }
+
+        public ResponseStatus ResponseStatus { get; set; }
+    }
 
 	public class CustomersValidator : AbstractValidator<Customers>
 	{
@@ -46,31 +53,24 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		}
 	}
 
-	public class CustomersResponse
+    public class CustomerService : ServiceInterface.Service
 	{
-		public Customers Result { get; set; }
-
-		public ResponseStatus ResponseStatus { get; set; }
-	}
-
-	public class CustomerService : RestServiceBase<Customers>
-	{
-		public override object OnGet(Customers request)
+		public object Get(Customers request)
 		{
 			return new CustomersResponse { Result = request };
 		}
 
-		public override object OnPost(Customers request)
+		public object Post(Customers request)
 		{
 			return new CustomersResponse { Result = request };
 		}
 
-		public override object OnPut(Customers request)
+		public object Put(Customers request)
 		{
 			return new CustomersResponse { Result = request };
 		}
 
-		public override object OnDelete(Customers request)
+		public object Delete(Customers request)
 		{
 			return new CustomersResponse { Result = request };
 		}
