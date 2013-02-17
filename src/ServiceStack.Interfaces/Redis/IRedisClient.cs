@@ -263,12 +263,18 @@ namespace ServiceStack.Redis
 
 		#region Eval/Lua operations
 
-        string ExecLuaAsString(string luaBody, int numOfArgs, params string[] args);
-        string ExecLuaShaAsString(string sha1, int numOfArgs, params string[] args);
-        int ExecLuaAsInt(string luaBody, int numOfArgs, params string[] args);
-        int ExecLuaShaAsInt(string sha1, int numOfArgs, params string[] args);
-        List<string> ExecLuaAsList(string luaBody, int numOfArgs, params string[] args);
-        List<string> ExecLuaShaAsList(string sha1, int numOfArgs, params string[] args);
+        string ExecLuaAsString(string luaBody, params string[] args);
+        string ExecLuaAsString(string luaBody, string[] keys, string[] args);
+        string ExecLuaShaAsString(string sha1, params string[] args);
+        string ExecLuaShaAsString(string sha1, string[] keys, string[] args);
+        int ExecLuaAsInt(string luaBody, params string[] args);
+        int ExecLuaAsInt(string luaBody, string[] keys, string[] args);
+        int ExecLuaShaAsInt(string sha1, params string[] args);
+        int ExecLuaShaAsInt(string sha1, string[] keys, string[] args);
+        List<string> ExecLuaAsList(string luaBody, params string[] args);
+        List<string> ExecLuaAsList(string luaBody, string[] keys, string[] args);
+        List<string> ExecLuaShaAsList(string sha1, params string[] args);
+        List<string> ExecLuaShaAsList(string sha1, string[] keys, string[] args);
 
 		#endregion
 

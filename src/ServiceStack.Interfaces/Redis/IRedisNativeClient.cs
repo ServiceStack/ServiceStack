@@ -60,7 +60,7 @@ namespace ServiceStack.Redis
 		bool MSetNx(string[] keys, byte[][] values);
 		byte[] Get(string key);
 		byte[] GetSet(string key, byte[] value);
-		byte[][] MGet(params byte[][] keys);
+		byte[][] MGet(params byte[][] keysAndArgs);
 		byte[][] MGet(params string[] keys);
 		int Del(string key);
 		int Del(params string[] keys);
@@ -165,7 +165,7 @@ namespace ServiceStack.Redis
 		int HIncrby(string hashId, byte[] key, int incrementBy);
 		double HIncrbyFloat(string hashId, byte[] key, double incrementBy);
 		byte[] HGet(string hashId, byte[] key);
-		byte[][] HMGet(string hashId, params byte[][] keys);
+		byte[][] HMGet(string hashId, params byte[][] keysAndArgs);
 		int HDel(string hashId, byte[] key);
 		int HExists(string hashId, byte[] key);
 		int HLen(string hashId);
@@ -184,13 +184,14 @@ namespace ServiceStack.Redis
 		byte[][] ReceiveMessages();
 
         //Redis LUA support
-        int EvalInt(string luaBody, int numberKeysInArgs, params byte[][] keys);
-        int EvalShaInt(string sha1, int numberKeysInArgs, params byte[][] keys);
-        string EvalStr(string luaBody, int numberKeysInArgs, params byte[][] keys);
-        string EvalShaStr(string sha1, int numberKeysInArgs, params byte[][] keys);
-        byte[][] Eval(string luaBody, int numberKeysInArgs, params byte[][] keys);
-        byte[][] EvalSha(string sha1, int numberKeysInArgs, params byte[][] keys);
+        int EvalInt(string luaBody, int numberOfKeys, params byte[][] keysAndArgs);
+        int EvalShaInt(string sha1, int numberOfKeys, params byte[][] keysAndArgs);
+        string EvalStr(string luaBody, int numberOfKeys, params byte[][] keysAndArgs);
+        string EvalShaStr(string sha1, int numberOfKeys, params byte[][] keysAndArgs);
+        byte[][] Eval(string luaBody, int numberOfKeys, params byte[][] keysAndArgs);
+        byte[][] EvalSha(string sha1, int numberOfKeys, params byte[][] keysAndArgs);
 
+        string CalculateSha1(string luaBody);
         byte[][] ScriptExists(params byte[][] sha1Refs);
 		void ScriptFlush();
 		void ScriptKill();
