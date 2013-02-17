@@ -267,16 +267,26 @@ namespace ServiceStack.Redis
         string ExecLuaAsString(string luaBody, string[] keys, string[] args);
         string ExecLuaShaAsString(string sha1, params string[] args);
         string ExecLuaShaAsString(string sha1, string[] keys, string[] args);
+        
         int ExecLuaAsInt(string luaBody, params string[] args);
         int ExecLuaAsInt(string luaBody, string[] keys, string[] args);
         int ExecLuaShaAsInt(string sha1, params string[] args);
         int ExecLuaShaAsInt(string sha1, string[] keys, string[] args);
+
         List<string> ExecLuaAsList(string luaBody, params string[] args);
         List<string> ExecLuaAsList(string luaBody, string[] keys, string[] args);
         List<string> ExecLuaShaAsList(string sha1, params string[] args);
         List<string> ExecLuaShaAsList(string sha1, string[] keys, string[] args);
 
-		#endregion
+        string CalculateSha1(string luaBody);
+        
+        bool HasLuaScript(string sha1Ref);
+        Dictionary<string, bool> WhichLuaScriptsExists(params string[] sha1Refs);
+        void RemoveAllLuaScripts();
+        void KillRunningLuaScript();
+        string LoadLuaScript(string body);
+        
+        #endregion
 
 	}
 }
