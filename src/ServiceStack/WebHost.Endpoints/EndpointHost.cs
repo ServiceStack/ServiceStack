@@ -63,6 +63,11 @@ namespace ServiceStack.WebHost.Endpoints
                 new PredefinedRoutesFeature(),
                 new MetadataFeature(),
             };
+
+            //Default Config for projects that want to use components but not WebFramework (e.g. MVC)
+            Config = new EndpointHostConfig(
+                "Empty Config",
+                new ServiceManager(new Container(), new ServiceController(null)));
         }
 
         // Pre user config
