@@ -72,20 +72,23 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 				OptimizeForFlash = optimizeForFlash,
 			}.ToString();
 
+            var soapFormat = GetType().Name.StartsWith("Soap11", StringComparison.OrdinalIgnoreCase)
+                ? Format.Soap11 : Format.Soap12;
+
 			var wsdlTemplate = GetWsdlTemplate();
 			wsdlTemplate.Xsd = xsd;
-            wsdlTemplate.ReplyOperationNames = operations.GetReplyOperationNames();
-            wsdlTemplate.OneWayOperationNames = operations.GetOneWayOperationNames();
-
-			if (rawUrl.ToLower().StartsWith(baseUri))
+            wsdlTemplate.ReplyOperationNames = operations.GetReplyOperationNames(soapFormat);
+            wsdlTemplate.OneWayOperationNames = operations.GetOneWayOperationNames(soapFormat);
+            
+            if (rawUrl.ToLower().StartsWith(baseUri))
 			{
 				wsdlTemplate.ReplyEndpointUri = rawUrl;
 				wsdlTemplate.OneWayEndpointUri = rawUrl;
 			}
 			else
 			{
-				var suffix = GetType().Name.StartsWith("Soap11") ? "soap11" : "soap12";
-				wsdlTemplate.ReplyEndpointUri = baseUri + suffix;
+                var suffix = soapFormat == Format.Soap11 ? "soap11" : "soap12";
+                wsdlTemplate.ReplyEndpointUri = baseUri + suffix;
 				wsdlTemplate.OneWayEndpointUri = baseUri + suffix;
 			}
 

@@ -70,5 +70,11 @@ namespace ServiceStack.ServiceHost
             if (ignoredFormats.Contains(format.FromFormat())) return false;
             return metadata.CanAccess(httpRequest, format, operation);
         }
+
+        public bool CanAccess(Format format, string operation)
+        {
+            if (ignoredFormats.Contains(format.FromFormat())) return false;
+            return metadata.CanAccess(format, operation);
+        }
     }
 }

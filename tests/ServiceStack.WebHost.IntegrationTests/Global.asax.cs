@@ -63,7 +63,7 @@ namespace ServiceStack.WebHost.IntegrationTests
                 this.Container.Register<IDbConnectionFactory>(c =>
                     new OrmLiteConnectionFactory(
                         "~/App_Data/db.sqlite".MapHostAbsolutePath(),
-                        SqliteOrmLiteDialectProvider.Instance) {
+                        SqliteDialect.Provider) {
                             ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
                         });
 

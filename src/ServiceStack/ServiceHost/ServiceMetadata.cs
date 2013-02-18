@@ -241,6 +241,24 @@ namespace ServiceStack.ServiceHost
             return allowsFormat;
         }
 
+        public bool CanAccess(Format format, string operationName)
+        {
+            if (EndpointHost.Config != null && !EndpointHost.Config.EnableAccessRestrictions)
+                return true;
+
+            Operation operation;
+            OperationNamesMap.TryGetValue(operationName.ToLower(), out operation);
+            if (operation == null) return false;
+
+            var canCall = HasImplementation(operation, format);
+            if (!canCall) return false;
+
+            if (operation.RestrictTo == null) return true;
+
+            var allowsFormat = operation.RestrictTo.HasAccessTo((EndpointAttributes)(long)format);
+            return allowsFormat;
+        }
+
         public bool HasImplementation(Operation operation, Format format)
         {
             if (format == Format.Soap11 || format == Format.Soap12)
@@ -308,17 +326,21 @@ namespace ServiceStack.ServiceHost
             return allTypes;
         }
 
-        public List<string> GetReplyOperationNames()
+        public List<string> GetReplyOperationNames(Format format)
         {
             return Metadata.OperationsMap.Values
+                .Where(x => EndpointHost.Config != null
+                    && EndpointHost.Config.MetadataPagesConfig.CanAccess(format, x.Name))
                 .Where(x => !x.IsOneWay)
                 .Select(x => x.RequestType.Name)
                 .ToList();
         }
 
-        public List<string> GetOneWayOperationNames()
+        public List<string> GetOneWayOperationNames(Format format)
         {
             return Metadata.OperationsMap.Values
+                .Where(x => EndpointHost.Config != null
+                    && EndpointHost.Config.MetadataPagesConfig.CanAccess(format, x.Name))
                 .Where(x => x.IsOneWay)
                 .Select(x => x.RequestType.Name)
                 .ToList();
