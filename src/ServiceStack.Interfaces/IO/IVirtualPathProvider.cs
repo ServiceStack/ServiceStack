@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using ServiceStack.WebHost.Endpoints;
 
-namespace ServiceStack.VirtualPath
+namespace ServiceStack.IO
 {
     public interface IVirtualPathProvider
     {

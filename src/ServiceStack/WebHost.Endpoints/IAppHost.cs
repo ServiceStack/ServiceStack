@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ServiceStack.Html;
+using ServiceStack.IO;
 using ServiceStack.ServiceHost;
 using ServiceStack.VirtualPath;
 

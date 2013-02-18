@@ -4,6 +4,7 @@ using System.IO;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Html;
+using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Markdown;
 using ServiceStack.ServiceHost;

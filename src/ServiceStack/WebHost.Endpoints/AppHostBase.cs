@@ -8,6 +8,7 @@ using Funq;
 using ServiceStack.Common;
 using ServiceStack.Configuration;
 using ServiceStack.Html;
+using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.VirtualPath;

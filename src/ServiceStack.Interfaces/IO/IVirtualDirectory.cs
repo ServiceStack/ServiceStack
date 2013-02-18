@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ServiceStack.VirtualPath
+namespace ServiceStack.IO
 {
     public interface IVirtualDirectory : IVirtualNode, IEnumerable<IVirtualNode>
     {

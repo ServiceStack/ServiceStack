@@ -286,6 +286,10 @@
     <Compile Include="DesignPatterns\Translator\ITranslator.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="IO\IVirtualDirectory.cs" />
+    <Compile Include="IO\IVirtualFile.cs" />
+    <Compile Include="IO\IVirtualNode.cs" />
+    <Compile Include="IO\IVirtualPathProvider.cs" />
     <Compile Include="Logging\ILog.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 using Funq;
 using ServiceStack.Common;
 using ServiceStack.DataAnnotations;
+using ServiceStack.IO;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.Razor;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using ServiceStack.IO;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 

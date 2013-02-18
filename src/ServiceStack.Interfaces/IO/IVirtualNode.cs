@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ServiceStack.VirtualPath
+namespace ServiceStack.IO
 {
     public interface IVirtualNode
     {

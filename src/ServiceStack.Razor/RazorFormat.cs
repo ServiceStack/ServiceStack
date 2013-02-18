@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using ServiceStack.Common;
 using ServiceStack.Html;
+using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Razor.Templating;
 using ServiceStack.ServiceHost;

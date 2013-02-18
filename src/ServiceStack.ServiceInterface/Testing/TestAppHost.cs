@@ -5,6 +5,7 @@ using System.Reflection;
 using Funq;
 using ServiceStack.Common.Web;
 using ServiceStack.Html;
+using ServiceStack.IO;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Validation;
 using ServiceStack.VirtualPath;

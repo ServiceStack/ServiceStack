@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using ServiceStack.IO;
 
 namespace ServiceStack.VirtualPath
 {

@@ -200,6 +200,7 @@
     <Compile Include="VirtualPath\FileSystemVirtualFile.cs" />
     <Compile Include="VirtualPath\FileSystemVirtualPathProvider.cs" />
     <Compile Include="VirtualPath\InMemoryVirtualPathProvider.cs" />
+    <Compile Include="VirtualPath\VirtualPathExtension.cs" />
     <Compile Include="WebHost.Endpoints\ActionContext.cs" />
     <Compile Include="WebHost.Endpoints\AppHostExtensions.cs" />
     <Compile Include="Markdown\CachedExpressionCompiler.cs" />
@@ -328,11 +329,6 @@
     <Compile Include="WebHost.Endpoints\Support\Templates\ListTemplate.cs" />
     <Compile Include="WebHost.Endpoints\IAppHost.cs" />
     <Compile Include="WebHost.Endpoints\IPlugin.cs" />
-    <Compile Include="VirtualPath\IVirtualDirectory.cs" />
-    <Compile Include="VirtualPath\IVirtualFile.cs" />
-    <Compile Include="VirtualPath\IVirtualNode.cs" />
-    <Compile Include="VirtualPath\IVirtualPathProvider.cs" />
-    <Compile Include="VirtualPath\VirtualPathExtension.cs" />
     <Compile Include="Html\IViewPage.cs" />
     <Compile Include="Html\TemplateProvider.cs" />
     <Compile Include="WebHost.Endpoints\Support\MarkdownDeep\Abbreviation.cs" />
