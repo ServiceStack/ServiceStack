@@ -18,8 +18,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		    var xsdMetadata = new XsdMetadata(Metadata);
 		    var wsdlTemplate = wsdlGenerator.GetWsdlTemplate(xsdMetadata, "http://w3c.org/types", false, "http://w3c.org/types");
 
-            Assert.That(wsdlTemplate.ReplyOperationNames, Is.EquivalentTo(xsdMetadata.GetReplyOperationNames()));
-            Assert.That(wsdlTemplate.OneWayOperationNames, Is.EquivalentTo(xsdMetadata.GetOneWayOperationNames()));
+            Assert.That(wsdlTemplate.ReplyOperationNames, Is.EquivalentTo(xsdMetadata.GetReplyOperationNames(Format.Soap12)));
+            Assert.That(wsdlTemplate.OneWayOperationNames, Is.EquivalentTo(xsdMetadata.GetOneWayOperationNames(Format.Soap12)));
 		}
 
 		[Test]
