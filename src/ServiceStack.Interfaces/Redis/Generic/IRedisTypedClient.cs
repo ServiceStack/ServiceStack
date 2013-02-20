@@ -123,6 +123,7 @@ namespace ServiceStack.Redis.Generic
 		T PopItemFromList(IRedisList<T> fromList);
 		T BlockingPopItemFromList(IRedisList<T> fromList, TimeSpan? timeOut);
 		T PopAndPushItemBetweenLists(IRedisList<T> fromList, IRedisList<T> toList);
+        T BlockingPopAndPushItemBetweenLists(IRedisList<T> fromList, IRedisList<T> toList, TimeSpan? timeOut);
 
 		//Sorted Set operations
 		void AddItemToSortedSet(IRedisSortedSet<T> toSet, T value);
