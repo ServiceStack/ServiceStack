@@ -122,10 +122,17 @@ namespace ServiceStack.Razor.Templating
             }
             set
             {
-                if (HasDynamicModel && !(value is DynamicObject) && !(value is ExpandoObject))
+                if (HasDynamicModel 
+                    && !(value is DynamicObject) 
+                    && !(value is ExpandoObject) 
+                    && !(value is TModel))
+                {
                     model = new RazorDynamicObject { Model = value };
+                }
                 else
-                    model = value;
+                {
+                    model = value;                    
+                }
             }
         }
 

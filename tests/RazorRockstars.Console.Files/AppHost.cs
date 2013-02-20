@@ -29,7 +29,7 @@ namespace RazorRockstars.Console.Files
 
             using (var db = container.Resolve<IDbConnectionFactory>().OpenDbConnection())
             {
-                db.CreateTable<Rockstar>(overwrite: false); //Create table if not exists
+                db.DropAndCreateTable<Rockstar>(); //Create table if not exists
                 db.Insert(Rockstar.SeedData); //Populate with seed data
             }
 		}
@@ -95,6 +95,9 @@ namespace RazorRockstars.Console.Files
         [DataMember] public List<Rockstar> Results { get; set; }
     }
 
+    [Route("/ilist")]
+    public class IList {}
+
     public class RockstarsService : Service
     {
         public object Get(Rockstars request)
@@ -132,6 +135,11 @@ namespace RazorRockstars.Console.Files
         {
             Db.Insert(request.TranslateTo<Rockstar>());
             return Get(new Rockstars());
+        }
+
+        public IList<Rockstar> Get(IList request)
+        {
+            return Db.Select<Rockstar>();
         }
     }
 }

@@ -1,0 +1,34 @@
+﻿@inherits ViewPage<IList<Rockstar>>
+
+@{
+    ViewBag.Title = "IList";
+    Layout = "HtmlReport";
+}
+
+<h3>We have @Model.Count Reqstars</h3>
+<table>
+    <thead> 
+        <tr>
+            <th>Name</th>
+            <th>Age</th>
+        </tr>
+    </thead>
+    <tfoot>
+        <tr>
+            <td colspan="2">
+                <p><a href="/reqstars">Show all @Model.Count Reqstars</a></p>
+            </td>
+        </tr>
+    </tfoot>
+    <tbody>
+        @foreach (var rockstar in Model)
+        {
+            <tr>
+                <td>@rockstar.FirstName @rockstar.LastName </td>
+                <td><a href="/reqstars/aged/@rockstar.Age">@rockstar.Age</a></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!--view:IList.cshtml-->
