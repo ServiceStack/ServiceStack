@@ -63,7 +63,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
         public static bool WriteToResponse(this IHttpResponse httpRes, IHttpRequest httpReq, object result, byte[] bodyPrefix, byte[] bodySuffix)
         {
-            if (result == null) return true;
+            if (result == null)
+            {
+                ApplyGlobalResponseHeaders(httpRes);                
+                return true;
+            }
 
             var serializationContext = new HttpRequestContext(httpReq, httpRes, result);
             var httpResult = result as IHttpResult;
