@@ -142,7 +142,7 @@ namespace ServiceStack.ServiceClient.Web
 
     public class RestRoute
     {
-        private static readonly char[] ArrayBrackets = new[] { '[', ']' };
+        private static readonly char[] ArrayBrackets = new[] { '[', ']', '"' };
 
         private static string FormatValue(object value)
         {
