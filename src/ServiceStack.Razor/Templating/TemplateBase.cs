@@ -125,7 +125,7 @@ namespace ServiceStack.Razor.Templating
                 if (HasDynamicModel 
                     && !(value is DynamicObject) 
                     && !(value is ExpandoObject) 
-                    && !(value is TModel))
+                    && !(typeof(TModel).IsInterface))
                 {
                     model = new RazorDynamicObject { Model = value };
                 }

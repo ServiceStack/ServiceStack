@@ -59,19 +59,31 @@ namespace RazorRockstars.Web
 		public static string AcceptContentType = "*/*";
 		public void Assert200(string url, params string[] containsItems)
 		{
-            url.Print();
-			var text = url.GetStringFromUrl(AcceptContentType, r => {
-				if (r.StatusCode != HttpStatusCode.OK)
-					Assert.Fail(url + " did not return 200 OK");
-			});
-			foreach (var item in containsItems)
-			{
-				if (!text.Contains(item))
-				{
-					Assert.Fail(item + " was not found in " + url);
-				}
-			}
-		}
+            try
+            {
+                url.Print();
+                var text = url.GetStringFromUrl(AcceptContentType, r => {
+                    if (r.StatusCode != HttpStatusCode.OK)
+                        Assert.Fail(url + " did not return 200 OK");
+                });
+                foreach (var item in containsItems)
+                {
+                    if (!text.Contains(item))
+                    {
+                        Assert.Fail(item + " was not found in " + url);
+                    }
+                }
+            }
+            catch (WebException webEx)
+            {
+                var errorResponse = ((HttpWebResponse)webEx.Response);
+                var bytes = errorResponse.GetResponseStream().ReadFully();
+                var text = bytes.FromUtf8Bytes();
+                text.Print();
+                
+                throw;
+            }
+        }
 
 		public void Assert200UrlContentType(string url, string contentType)
 		{
