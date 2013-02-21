@@ -82,6 +82,7 @@ namespace ServiceStack.WebHost.Endpoints
                         DebugHttpListenerHostEnvironment = Env.IsMono ? "XSP" : "WebServer20",
                         EnableFeatures = Feature.All,
                         WriteErrorsToResponse = true,
+                        ReturnsInnerException = true,
                         MarkdownOptions = new MarkdownOptions(),
                         MarkdownBaseType = typeof(MarkdownViewBase),
                         MarkdownGlobalHelpers = new Dictionary<string, Type>(),
@@ -147,6 +148,7 @@ namespace ServiceStack.WebHost.Endpoints
             this.AllowFileExtensions = instance.AllowFileExtensions;
             this.EnableFeatures = instance.EnableFeatures;
             this.WriteErrorsToResponse = instance.WriteErrorsToResponse;
+            this.ReturnsInnerException = instance.ReturnsInnerException;
             this.MarkdownOptions = instance.MarkdownOptions;
             this.MarkdownBaseType = instance.MarkdownBaseType;
             this.MarkdownGlobalHelpers = instance.MarkdownGlobalHelpers;
@@ -386,6 +388,7 @@ namespace ServiceStack.WebHost.Endpoints
         public bool UseBclJsonSerializers { get; set; }
         public Dictionary<string, string> GlobalResponseHeaders { get; set; }
         public Feature EnableFeatures { get; set; }
+        public bool ReturnsInnerException { get; set; }
         public bool WriteErrorsToResponse { get; set; }
 
         public MarkdownOptions MarkdownOptions { get; set; }

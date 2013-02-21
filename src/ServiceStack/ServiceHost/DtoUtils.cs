@@ -151,8 +151,11 @@ namespace ServiceStack.ServiceHost
         /// <returns></returns>
         public static object HandleException(IResolver iocResolver, object request, Exception ex)
         {
-            if (ex.InnerException != null && !(ex is IHttpError))
+            if (EndpointHost.Config.ReturnsInnerException 
+                && ex.InnerException != null && !(ex is IHttpError))
+            {
                 ex = ex.InnerException;
+            }
 
             var responseStatus = ex.ToResponseStatus();
 
