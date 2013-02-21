@@ -142,7 +142,7 @@ namespace ServiceStack.ServiceClient.Web
 
     public class RestRoute
     {
-        private static readonly char[] ArrayBrackets = new[] { '[', ']', '"' };
+        private static readonly char[] ArrayBrackets = new[] { '[', ']'};
 
         private static string FormatValue(object value)
         {
@@ -154,7 +154,7 @@ namespace ServiceStack.ServiceClient.Web
         public static Func<object, string> FormatVariable = value =>
         {
             var valueString = value as string;
-            return valueString != null ? Uri.EscapeDataString(valueString) : FormatValue(value);
+            return valueString != null ? Uri.EscapeDataString(valueString) : FormatValue(value).Trim('"');
         };
 
         [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:FieldsMustBePrivate", Justification = "Using field is just easier.")]
