@@ -126,6 +126,16 @@ namespace RazorRockstars.Web
         public string Result { get; set; }
         public ResponseStatus ResponseStatus { get; set; }
     }
+
+    [Api("Service Description")]
+    [Route("/annotated/{Name}", "GET", Summary = @"GET Summary", Notes = "GET Notes")]
+    [Route("/annotated/{Name}", "POST", Summary = @"POST Summary", Notes = "POST Notes")]
+    public class Annotated
+    {
+        [ApiMember(Name = "Name", Description = "Name Description",
+                   ParameterType = "path", DataType = "string", IsRequired = true)]
+        public string Name { get; set; }
+    }
     
     public class ReqstarsService : Service
     {
@@ -210,6 +220,11 @@ namespace RazorRockstars.Web
         public ViewStateResponse Get(ViewState request)
         {
             return new ViewStateResponse();
+        }
+
+        public Annotated Any(Annotated request)
+        {
+            return request;
         }
     }
 

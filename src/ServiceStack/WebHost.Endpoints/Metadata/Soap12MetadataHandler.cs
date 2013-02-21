@@ -26,7 +26,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 			return soapEnvelope;
 		}
 
-        protected override void RenderOperation(System.Web.UI.HtmlTextWriter writer, IHttpRequest httpReq, string operationName, string requestMessage, string responseMessage, string restPaths, string descriptionHtml)
+        protected override void RenderOperation(System.Web.UI.HtmlTextWriter writer, IHttpRequest httpReq, string operationName, string requestMessage, string responseMessage, string metadataHtml)
         {
             var operationControl = new Soap12OperationControl
             {
@@ -38,8 +38,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
                 HostName = httpReq.GetUrlHostName(),
                 RequestMessage = requestMessage,
                 ResponseMessage = responseMessage,
-                RestPaths = restPaths,
-                DescriptionHtml = descriptionHtml,
+                MetadataHtml = metadataHtml,
             };
             if (!this.ContentType.IsNullOrEmpty())
             {

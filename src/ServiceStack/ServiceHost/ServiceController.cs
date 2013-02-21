@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
@@ -179,10 +180,16 @@ namespace ServiceStack.ServiceHost
 
         public void AfterInit()
         {
+            //Register any routes configured on Metadata.Routes
             foreach (var restPath in this.Metadata.Routes.RestPaths)
             {
                 RegisterRestPath(restPath);
             }
+
+            //Sync the RestPaths collections
+            Metadata.Routes.RestPaths.Clear();
+            Metadata.Routes.RestPaths.AddRange(RestPathMap.Values.SelectMany(x => x));
+
             Metadata.AfterInit();
         }
 

@@ -27,9 +27,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 		public string HostName { get; set; }
 		public string RequestMessage { get; set; }
 		public string ResponseMessage { get; set; }
-		public string RestPaths { get; set; }
 
-		public string DescriptionHtml { get; set; }
+		public string MetadataHtml { get; set; }
 
 		public virtual string RequestUri
 		{
@@ -51,8 +50,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 				OperationName,
 				HttpRequestTemplate, 
 				ResponseTemplate,
-				RestPathsTemplate,
-				DescriptionHtml);
+				MetadataHtml);
 
 			output.Write(renderedTemplate);
 		}
@@ -69,6 +67,31 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
             font-family:Verdana;
             margin: 0;
         }}
+        table {{
+            border-collapse: collapse;
+            border-spacing: 0;
+            margin: 0 0 20px 0;
+            font-size: 12px;
+        }}
+        caption {{
+            text-align: left;
+            font-size: 14px;
+            padding: 10px 0;
+            white-space: nowrap;
+        }}
+        tbody th {{
+            text-align: left;
+        }}
+        thead th {{
+            background-color: #E5E5CC;
+            text-align: left;
+        }}
+        th, td {{
+            padding: 5px 15px;
+        }}
+        .call-info {{
+            margin: 0 0 20px 0;
+        }}
         a#logo {{
             position: absolute;
             top: 8px;
@@ -80,7 +103,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
         }}
 		#desc{{
 			margin: 0;
-			padding: 0 0 15px 20px;
+			padding: 0 0 15px 15px;
 			font-size: 16px;
 		}}
 		#desc P {{
@@ -156,11 +179,10 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
         <p><a href=""{1}"">&lt;back to all web services</a></p>
         <h2>{3}</h2>
 
-		{7}
+		{6}
 
 		<div class=""example"">
 <!-- REST Examples -->
-{6}
 
             <h3>HTTP + {2}</h3>
             <p> The following are sample HTTP requests and responses. 
@@ -220,27 +242,6 @@ Content-Type: {0}
 Content-Length: length
 
 {1}", ContentType, HttpUtility.HtmlEncode(ResponseMessage));
-			}
-		}
-
-		public virtual string RestPathsTemplate
-		{
-			get
-			{
-				var jsonp = ContentFormat == "json"
-		            ? "<p>To embed the response in a <b>jsonp</b> callback, append <b>?callback=myCallback</b></p>"
-		            : "";
-
-				return string.IsNullOrEmpty(RestPaths) ? null : string.Format(
-@"
-<h3>REST Paths</h3>
-<p>The following REST paths are available for this service.</p>
-<div class=""restpaths"">
-<pre>{0}</pre>
-<p>To override the Content-type in your clients HTTP <b>Accept</b> Header, append <b>?format={1}</b></p>
-{2}
-</div>
-", RestPaths, ContentFormat, jsonp);
 			}
 		}
 	}

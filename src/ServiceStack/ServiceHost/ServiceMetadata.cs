@@ -84,6 +84,13 @@ namespace ServiceStack.ServiceHost
                 .ToList();
         }
 
+        public Operation GetOperation(Type operationType)
+        {
+            Operation op;
+            OperationsMap.TryGetValue(operationType, out op);
+            return op;
+        }
+
         public List<string> GetImplementedActions(Type serviceType, Type requestType)
         {
             if (typeof(IService).IsAssignableFrom(serviceType))
@@ -394,6 +401,18 @@ namespace ServiceStack.ServiceHost
         {
             var apiAttr = operationType.GetCustomAttributes(typeof(Api), true).OfType<Api>().FirstOrDefault();
             return apiAttr != null ? apiAttr.Description : "";
+        }
+
+        public static List<ApiMemberAttribute> GetApiMembers(this Type operationType)
+        {
+            var attrs = operationType
+                .GetMembers(BindingFlags.Instance | BindingFlags.Public)
+                .SelectMany(x =>
+                    x.GetCustomAttributes(typeof(ApiMemberAttribute), true).OfType<ApiMemberAttribute>()
+                )
+                .ToList();
+
+            return attrs;
         }
     }
 

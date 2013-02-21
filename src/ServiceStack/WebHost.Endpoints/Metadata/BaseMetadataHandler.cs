@@ -5,6 +5,7 @@ using System.Net;
 using System.Web;
 using System.Web.UI;
 using ServiceStack.Common.Extensions;
+using ServiceStack.Common.Web;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Support.Metadata.Controls;
@@ -46,13 +47,15 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
             if (!AssertAccess(httpReq, httpRes, operationName)) return;
 
+            ContentFormat = Common.Web.ContentType.GetContentFormat(Format);
             var metadata = EndpointHost.Metadata;
             if (operationName != null)
             {
                 var allTypes = metadata.GetAllTypes();
                 var operationType = allTypes.Single(x => x.Name == operationName);
+                var op = metadata.GetOperation(operationType);
+
                 var requestMessage = CreateMessage(operationType);
-                var restPaths = CreateRestPaths(operationType);
                 string responseMessage = null;
 
                 var responseType = metadata.GetResponseTypeByRequest(operationType);
@@ -61,24 +64,93 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
                     responseMessage = CreateMessage(responseType);
                 }
 
+                var isSoap = Format == Format.Soap11 || Format == Format.Soap12;
+                var sb = new StringBuilder();
                 var description = operationType.GetDescription();
                 if (!description.IsNullOrEmpty())
                 {
-                    description = "<div id='desc'>"
-                        + "<p>" + description
-                            .Replace("<", "&lt;")
-                            .Replace(">", "&gt;")
-                            .Replace("\n", "<br />\n")
-                        + "</p>"
-                        + "</div>";
+                    sb.AppendFormat("<h3 id='desc'>{0}</div>", ConvertToHtml(description));
                 }
 
+                if (op.Routes.Count > 0)
+                {
+                    sb.Append("<table>");
+                    if (!isSoap)
+                    {
+                        sb.Append("<caption>The following routes are available for this service:</caption>");
+                    }
+                    sb.Append("<tbody>");
 
-                RenderOperation(writer, httpReq, operationName, requestMessage, responseMessage, restPaths, description);
+                    foreach (var route in op.Routes)
+                    {
+                        if (isSoap && !(route.AllowsAllVerbs || route.AllowedVerbs.Contains(HttpMethods.Post)))
+                            continue;
+
+                        sb.Append("<tr>");
+                        var verbs = route.AllowsAllVerbs ? "All Verbs" : route.AllowedVerbs;
+                        
+                        if (!isSoap)
+                        {
+                            sb.AppendFormat("<th>{0}</th>", verbs);
+                            sb.AppendFormat("<th>{0}</th>", route.Path);
+                        }
+                        sb.AppendFormat("<td>{0}</td>", route.Summary);
+                        sb.AppendFormat("<td><i>{0}</i></td>", route.Notes);
+                        sb.Append("</tr>");
+                    }
+
+                    sb.Append("<tbody>");
+                    sb.Append("</tbody>");
+                    sb.Append("</table>");
+                }
+
+                var apiMembers = operationType.GetApiMembers();
+                if (apiMembers.Count > 0)
+                {
+                    sb.Append("<table><caption>Parameters:</caption>");
+                    sb.Append("<thead><tr>");
+                    sb.Append("<th>Name</th>");
+                    sb.Append("<th>Parameter</th>");
+                    sb.Append("<th>Data Type</th>");
+                    sb.Append("<th>Required</th>");
+                    sb.Append("<th>Description</th>");
+                    sb.Append("</tr></thead>");
+
+                    sb.Append("<tbody>");
+                    foreach (var apiMember in apiMembers)
+                    {
+                        sb.Append("<tr>");
+                        sb.AppendFormat("<td>{0}</td>", ConvertToHtml(apiMember.Name));
+                        sb.AppendFormat("<td>{0}</td>", apiMember.ParameterType);
+                        sb.AppendFormat("<td>{0}</td>", apiMember.DataType);
+                        sb.AppendFormat("<td>{0}</td>", apiMember.IsRequired ? "Yes" : "No");
+                        sb.AppendFormat("<td>{0}</td>", apiMember.Description);
+                        sb.Append("</tr>");
+                    }
+                    sb.Append("</tbody>");
+                    sb.Append("</table>");
+                }
+
+                sb.Append(@"<div class=""call-info"">");
+                sb.AppendFormat(@"<p>To override the Content-type in your clients HTTP <b>Accept</b> Header, append <b>?format={0}</b></p>", ContentFormat);
+                if (ContentFormat == "json")
+                {
+                    sb.Append("<p>To embed the response in a <b>jsonp</b> callback, append <b>?callback=myCallback</b></p>");
+                }
+                sb.Append("</div>");
+
+                RenderOperation(writer, httpReq, operationName, requestMessage, responseMessage, sb.ToString());
                 return;
             }
 
             RenderOperations(writer, httpReq, metadata);
+        }
+
+        private string ConvertToHtml(string text)
+        {
+            return text.Replace("<", "&lt;")
+                .Replace(">", "&gt;")
+                .Replace("\n", "<br />\n");
         }
 
         protected bool AssertAccess(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
@@ -99,7 +171,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
         protected abstract string CreateMessage(Type dtoType);
 
         protected virtual void RenderOperation(HtmlTextWriter writer, IHttpRequest httpReq, string operationName,
-            string requestMessage, string responseMessage, string restPaths, string descriptionHtml)
+            string requestMessage, string responseMessage, string metadataHtml)
         {
             var operationControl = new OperationControl {
                 HttpRequest = httpReq,
@@ -110,8 +182,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
                 HostName = httpReq.GetUrlHostName(),
                 RequestMessage = requestMessage,
                 ResponseMessage = responseMessage,
-                RestPaths = restPaths,
-                DescriptionHtml = descriptionHtml,
+                MetadataHtml = metadataHtml,
             };
             if (!this.ContentType.IsNullOrEmpty())
             {
@@ -127,21 +198,27 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
         protected abstract void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, ServiceMetadata metadata);
 
-        protected virtual string CreateRestPaths(Type operationType)
-        {
-            var map = EndpointHost.ServiceManager.ServiceController.RestPathMap;
-            var paths = new List<RestPath>();
-            foreach (var key in map.Keys)
-            {
-                paths.AddRange(map[key].Where(x => x.RequestType == operationType));
-            }
-            var restPaths = new StringBuilder();
-            foreach (var restPath in paths)
-            {
-                var verbs = restPath.AllowsAllVerbs ? "All Verbs" : restPath.AllowedVerbs;
-                restPaths.AppendLine(verbs + " " + restPath.Path);
-            }
-            return restPaths.ToString();
-        }
+        //protected virtual string CreateRestPaths(Type operationType)
+        //{
+        //    var paths = GetRestPaths(operationType);
+        //    var restPaths = new StringBuilder();
+        //    foreach (var restPath in paths)
+        //    {
+        //        var verbs = restPath.AllowsAllVerbs ? "All Verbs" : restPath.AllowedVerbs;
+        //        restPaths.AppendLine(verbs + " " + restPath.Path);
+        //    }
+        //    return restPaths.ToString();
+        //}
+
+        //private static List<RestPath> GetRestPaths(Type operationType)
+        //{
+        //    var map = EndpointHost.ServiceManager.ServiceController.RestPathMap;
+        //    var paths = new List<RestPath>();
+        //    foreach (var key in map.Keys)
+        //    {
+        //        paths.AddRange(map[key].Where(x => x.RequestType == operationType));
+        //    }
+        //    return paths;
+        //}
     }
 }
