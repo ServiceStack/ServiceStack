@@ -110,6 +110,7 @@ namespace RazorRockstars.Console.Files
         static string ViewTypedModelNoController = "<!--view:TypedModelNoController.cshtml-->";
         static string ViewCachedAllReqstars = "<!--view:CachedAllReqstars.cshtml-->";
         static string ViewIList = "<!--view:IList.cshtml-->";
+        static string ViewList = "<!--view:List.cshtml-->";
         static string ViewPage1 = "<!--view:Page1.cshtml-->";
         static string ViewPage2 = "<!--view:Page2.cshtml-->";
         static string ViewPage3 = "<!--view:Page3.cshtml-->";
@@ -260,7 +261,13 @@ namespace RazorRockstars.Console.Files
         [Test]
         public void Can_get_razor_view_with_interface_response()
         {
-            Assert200(Host + "/ilist", ViewIList, Template_HtmlReport);
+            Assert200(Host + "/ilist1/IList", ViewIList, Template_HtmlReport);
+            Assert200(Host + "/ilist2/IList", ViewIList, Template_HtmlReport);
+            Assert200(Host + "/ilist3/IList", ViewIList, Template_HtmlReport);
+
+            Assert200(Host + "/ilist1/List", ViewList, Template_HtmlReport);
+            Assert200(Host + "/ilist2/List", ViewList, Template_HtmlReport);
+            Assert200(Host + "/ilist3/List", ViewList, Template_HtmlReport);
         }
 
     }

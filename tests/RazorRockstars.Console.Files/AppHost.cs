@@ -95,8 +95,23 @@ namespace RazorRockstars.Console.Files
         [DataMember] public List<Rockstar> Results { get; set; }
     }
 
-    [Route("/ilist")]
-    public class IList {}
+    [Route("/ilist1/{View}")]
+    public class IList1
+    {
+        public string View { get; set; }
+    }
+
+    [Route("/ilist2/{View}")]
+    public class IList2
+    {
+        public string View { get; set; }
+    }
+
+    [Route("/ilist3/{View}")]
+    public class IList3
+    {
+        public string View { get; set; }
+    }
 
     public class RockstarsService : Service
     {
@@ -136,9 +151,22 @@ namespace RazorRockstars.Console.Files
             Db.Insert(request.TranslateTo<Rockstar>());
             return Get(new Rockstars());
         }
-
-        public IList<Rockstar> Get(IList request)
+        
+        public IList<Rockstar> Get(IList1 request)
         {
+            base.Request.Items["View"] = request.View;
+            return Db.Select<Rockstar>();
+        }
+
+        public List<Rockstar> Get(IList2 request)
+        {
+            base.Request.Items["View"] = request.View;
+            return Db.Select<Rockstar>();
+        }
+
+        public object Get(IList3 request)
+        {
+            base.Request.Items["View"] = request.View;
             return Db.Select<Rockstar>();
         }
     }
