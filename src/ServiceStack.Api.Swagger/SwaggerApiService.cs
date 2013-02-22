@@ -171,26 +171,33 @@ namespace ServiceStack.Api.Swagger
         private static List<MethodOperationParameter> ParseParameters(string verb, Type operationType)
         {
             var properties = operationType.GetProperties();
-            var paramAttrs = new List<object>();
+            var paramAttrs = new Dictionary<string, ApiMemberAttribute[]>();
 			var allowableParams = new List<SwaggerAllowableValuesAttribute>();
 
 			foreach (var property in properties)
 			{
-				paramAttrs.AddRange(property.GetCustomAttributes(typeof(ApiMemberAttribute), true));
+                paramAttrs[property.Name] = (ApiMemberAttribute[])property.GetCustomAttributes(typeof(ApiMemberAttribute), true);
 				allowableParams.AddRange(property.GetCustomAttributes(typeof(SwaggerAllowableValuesAttribute), true).Cast<SwaggerAllowableValuesAttribute>().ToArray());
 			}
 
-            return (from ApiMemberAttribute p in paramAttrs
+            var methodOperationParameters = new List<MethodOperationParameter>();
+            foreach (var k in paramAttrs.Keys)
+            {
+                var value = paramAttrs[k];
+                methodOperationParameters.AddRange(
+                    from ApiMemberAttribute p in value
                     where p.Verb == null || string.Compare(p.Verb, verb, StringComparison.InvariantCultureIgnoreCase) == 0
                     select new MethodOperationParameter {
                         DataType = p.DataType,
                         AllowMultiple = p.AllowMultiple,
                         Description = p.Description,
-                        Name = p.Name,
+                        Name = p.Name ?? k,
                         ParamType = p.ParameterType,
                         Required = p.IsRequired,
 						AllowableValues = GetAllowableValue(allowableParams.FirstOrDefault(attr => attr.Name == p.Name))
-                    }).ToList();
+                    });
+            }
+            return methodOperationParameters;
         }
 
         /*

@@ -21,18 +21,39 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Name { get; set; }
     }
 
+    [ServiceHost.Api]
+    [Route("/swagger2/NameIsNotSetRequest", "GET")]
+    public class NameIsNotSetRequest
+    {
+        [ApiMember]
+        public string Name { get; set; }
+    }
+
+
     public class SwaggerFeatureResponse
     {
         public bool IsSuccess { get; set; }
     }
 
-    public class SwaggerFeatureService : IService<SwaggerFeatureRequest>
+    public class SwaggerFeatureService : ServiceInterface.Service
     {
-        public object Execute(SwaggerFeatureRequest request)
+        public object Get(SwaggerFeatureRequest request)
         {
             return new SwaggerFeatureResponse { IsSuccess = true };
         }
+
+        public object Post(SwaggerFeatureRequest request)
+        {
+            return new SwaggerFeatureResponse { IsSuccess = true };
+        }
+
+        public object Get(NameIsNotSetRequest request)
+        {
+            return 0;
+        }
     }
+
+
     
     [TestFixture]
     public class SwaggerFeatureServiceTests
@@ -84,6 +105,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void RunFor5Mins()
         {
             Thread.Sleep(TimeSpan.FromMinutes(5));
+        }
+
+        [Test, TestCaseSource("RestClients")]
+        public void NameShouldBeTakenFromProperty(IRestClient client)
+        {
+            var resource = client.Get<ResourceResponse>("/resource/swagger2/NameIsNotSetRequest");
+
+            var p = resource.Apis.SelectMany(t => t.Operations).SelectMany(t => t.Parameters);
+            Assert.That(p.Count(), Is.EqualTo(1));
+            Assert.That(p.FirstOrDefault(t=>t.Name == "Name"), Is.Not.Null);
         }
 
         [Test, TestCaseSource("RestClients")]
