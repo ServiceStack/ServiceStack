@@ -411,11 +411,11 @@
     <Compile Include="..\..\ServiceStack.Common\ServiceClient.Web\UrlExtensions.cs">
       <Link>ServiceClient.Web\UrlExtensions.cs</Link>
     </Compile>
-    <Compile Include="..\..\ServiceStack.Common\ServiceClient.Web\Soap12ServiceClient.cs">
-      <Link>ServiceClient.Web\Soap12ServiceClient.cs</Link>
-    </Compile>
     <Compile Include="..\..\ServiceStack.Common\Utils\ResponseStatusUtils.cs">
       <Link>Utils\ResponseStatusUtils.cs</Link>
+    </Compile>
+    <Compile Include="..\..\ServiceStack.Common\ServiceClient.Web\RouteMember.cs">
+      <Link>ServiceClient.Web\RouteMember.cs</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>
