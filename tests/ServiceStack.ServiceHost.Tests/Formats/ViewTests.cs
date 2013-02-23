@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Funq;
 using NUnit.Framework;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
@@ -120,6 +121,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		    {
 		        throw new NotImplementedException();
 		    }
+
+            public Container Container { get; set; }
 		}
 
 		public string GetHtml(object dto, string format)
