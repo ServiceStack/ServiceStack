@@ -21,7 +21,7 @@ namespace ServiceStack.WebHost.Endpoints
 	/// ASP.NET application.
 	/// </summary>
 	public abstract class AppHostBase
-		: IFunqlet, IDisposable, IAppHost
+        : IFunqlet, IDisposable, IAppHost, IHasContainer
 	{
 		private readonly ILog log = LogManager.GetLogger(typeof(AppHostBase));
 

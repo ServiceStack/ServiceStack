@@ -28,7 +28,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 	/// server, for start and stop management and event routing of the actual
 	/// inbound requests.
 	/// </summary>
-	public abstract class HttpListenerBase : IDisposable, IAppHost
+    public abstract class HttpListenerBase : IDisposable, IAppHost, IHasContainer
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(HttpListenerBase));
 

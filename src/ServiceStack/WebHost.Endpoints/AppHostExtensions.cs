@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Funq;
 using ServiceStack.Common.Utils;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
@@ -49,6 +50,19 @@ namespace ServiceStack.WebHost.Endpoints
 				}
 			}
 		}
+
+        /// <summary>
+        /// Get an IAppHost container. 
+        /// Note: Registering dependencies should only be done during setup/configuration 
+        /// stage and remain immutable there after for thread-safety.
+        /// </summary>
+        /// <param name="appHost"></param>
+        /// <returns></returns>
+        public static Container GetContainer(this IAppHost appHost)
+        {
+            var hasContainer = appHost as IHasContainer;
+            return hasContainer != null ? hasContainer.Container : null;
+        }
 	}
 
 }

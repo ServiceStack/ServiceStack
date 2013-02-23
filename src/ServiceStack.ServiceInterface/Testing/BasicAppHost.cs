@@ -11,7 +11,7 @@ using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface.Testing
 {
-    public class BasicAppHost : IAppHost
+    public class BasicAppHost : IAppHost, IHasContainer
     {
         public BasicAppHost()
         {

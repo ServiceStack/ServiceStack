@@ -7,6 +7,11 @@ using ServiceStack.Text;
 
 namespace Funq
 {
+    public interface IHasContainer
+    {
+        Container Container { get; }
+    }
+
 	/// <include file='Container.xdoc' path='docs/doc[@for="Container"]/*'/>
 	public sealed partial class Container : IDisposable
 	{
