@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Funq;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.ServiceHost;
@@ -120,6 +121,11 @@ namespace ServiceStack.WebHost.Endpoints
         /// Create a service runner for IService actions
         /// </summary>
 	    IServiceRunner<TRequest> CreateServiceRunner<TRequest>(ActionContext actionContext);
+
+        /// <summary>
+        /// The IOC container for this AppHost
+        /// </summary>
+        Container Container { get; }
 	}
 
 	public interface IHasAppHost

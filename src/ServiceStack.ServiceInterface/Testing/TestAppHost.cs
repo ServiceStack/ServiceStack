@@ -103,5 +103,7 @@ namespace ServiceStack.ServiceInterface.Testing
         {
             throw new NotImplementedException();
         }
+
+        public Container Container { get; set; }
     }
 }
