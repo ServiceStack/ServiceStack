@@ -235,15 +235,23 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			get { return this.Form; }
 		}
 
-		private string httpMethod;
-		public string HttpMethod
-		{
-			get
-			{
-				return httpMethod
-					?? (httpMethod = request.Headers[HttpHeaders.XHttpMethodOverride] ?? request.HttpMethod);
-			}
-		}
+        private string httpMethod;
+        public string HttpMethod
+        {
+            get
+            {
+                return httpMethod
+                    ?? (httpMethod = Param(HttpHeaders.XHttpMethodOverride)
+                    ?? request.HttpMethod);
+            }
+        }
+
+        public string Param(string name)
+        {
+            return Headers[name]
+                ?? QueryString[name]
+                ?? FormData[name];
+        }
 
 		public string ContentType
 		{

@@ -66,8 +66,16 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
             get
             {
                 return httpMethod
-                    ?? (httpMethod = request.Headers[HttpHeaders.XHttpMethodOverride] ?? request.HttpMethod);
+                    ?? (httpMethod = Param(HttpHeaders.XHttpMethodOverride)
+                    ?? request.HttpMethod);
             }
+        }
+
+        public string Param(string name)
+        {
+            return Headers[name]
+                ?? QueryString[name]
+                ?? FormData[name];
         }
 
         public string UserAgent
