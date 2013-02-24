@@ -308,13 +308,14 @@ namespace Funq
         {
             try
             {
+                TService resolved;
                 if (CheckAdapterFirst
                     && Adapter != null
                     && typeof(TService) != typeof(IRequestContext)
-                    && !Equals(default(TService), Adapter.TryResolve<TService>()))
+                    && !Equals(default(TService), (resolved = Adapter.TryResolve<TService>())))
                 {
                     return new ServiceEntry<TService, TFunc>(
-                        (TFunc)(object)(Func<Container, TService>)(c => Adapter.TryResolve<TService>()))
+                        (TFunc)(object)(Func<Container, TService>)(c => resolved))
                     {
                         Owner = DefaultOwner,
                         Container = this,
