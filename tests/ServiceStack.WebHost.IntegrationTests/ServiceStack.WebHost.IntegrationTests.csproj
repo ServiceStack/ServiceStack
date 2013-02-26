@@ -191,6 +191,7 @@
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="Services\CachedProtoBufEmailService.cs" />
+    <Compile Include="Services\CustomHeadersService.cs" />
     <Compile Include="Services\EndpointAccessService.cs" />
     <Compile Include="Services\HelloImage.cs" />
     <Compile Include="Services\IocServiceTests.cs" />
@@ -202,6 +203,7 @@
       <DependentUpon>Test.aspx</DependentUpon>
     </Compile>
     <Compile Include="Tests\BinarySerializedTests.cs" />
+    <Compile Include="Tests\CustomHeadersTests.cs" />
     <Compile Include="Tests\ExceptionHandlingTests.cs" />
     <Compile Include="Tests\ProtoBufServiceTests.cs" />
     <Compile Include="Services\ContentManagerOnly.cs" />
