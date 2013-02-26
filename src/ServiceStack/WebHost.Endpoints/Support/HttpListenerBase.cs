@@ -34,6 +34,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		private const int RequestThreadAbortedException = 995;
 
+	    protected object ListenerSyncRoot = new object();
 		protected HttpListener Listener;
 		protected bool IsStarted = false;
 
@@ -107,31 +108,40 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			if (this.IsStarted)
 				return;
 
-			if (this.Listener == null)
-			{
-				this.Listener = new HttpListener();
-			}
+		    lock (this.ListenerSyncRoot)
+		    {
+		        if (this.Listener == null)
+		        {
+		            this.Listener = new HttpListener();
+		        }
 
-            EndpointHost.Config.ServiceStackHandlerFactoryPath = HttpListenerRequestWrapper.GetHandlerPathIfAny(urlBase);
+		        EndpointHost.Config.ServiceStackHandlerFactoryPath = HttpListenerRequestWrapper.GetHandlerPathIfAny(urlBase);
 
-			this.Listener.Prefixes.Add(urlBase);
+		        this.Listener.Prefixes.Add(urlBase);
 
-			this.IsStarted = true;
-			this.Listener.Start();
+		        this.IsStarted = true;
+		        this.Listener.Start();
+		    }
 
-			ThreadPool.QueueUserWorkItem(Listen);
+		    ThreadPool.QueueUserWorkItem(Listen);
 		}
 
 		// Loop here to begin processing of new requests.
 		private void Listen(object state)
 		{
-			while (this.Listener.IsListening)
+			while (IsListening())
 			{
-				if (this.Listener == null) return;
+			    lock (this.ListenerSyncRoot)
+			    {
+                    if (this.Listener == null) return;
+			    }
 
 				try
 				{
-					this.Listener.BeginGetContext(ListenerCallback, this.Listener);
+				    lock (this.ListenerSyncRoot)
+				    {
+                        this.Listener.BeginGetContext(ListenerCallback, this.Listener);
+				    }
 					ListenForNextRequest.WaitOne();
 				}
 				catch (Exception ex)
@@ -139,9 +149,17 @@ namespace ServiceStack.WebHost.Endpoints.Support
 					Log.Error("Listen()", ex);
 					return;
 				}
-				if (this.Listener == null) return;
 			}
 		}
+
+        // Thread safe check if the listener is currently listening
+        private bool IsListening()
+        {
+            lock (this.ListenerSyncRoot)
+            {
+                return this.Listener != null && this.Listener.IsListening;
+            }
+        }
 
 		// Handle the processing of a request in here.
 		private void ListenerCallback(IAsyncResult asyncResult)
@@ -242,20 +260,25 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		/// </summary>
 		public virtual void Stop()
 		{
-			if (Listener == null) return;
+	        lock (this.ListenerSyncRoot)
+	        {
+	            if (Listener == null)
+	                return;
 
-			try
-			{
-				this.Listener.Close();
-			}
-			catch (HttpListenerException ex)
-			{
-				if (ex.ErrorCode != RequestThreadAbortedException) throw;
+	            try
+	            {
+	                this.Listener.Close();
+	            }
+	            catch (HttpListenerException ex)
+	            {
+	                if (ex.ErrorCode != RequestThreadAbortedException)
+	                    throw;
 
-				Log.ErrorFormat("Swallowing HttpListenerException({0}) Thread exit or aborted request", RequestThreadAbortedException);
-			}
-			this.Listener = null;
-			this.IsStarted = false;
+	                Log.ErrorFormat("Swallowing HttpListenerException({0}) Thread exit or aborted request", RequestThreadAbortedException);
+	            }
+	            this.Listener = null;
+	            this.IsStarted = false;
+	        }
 		}
 
 		/// <summary>
