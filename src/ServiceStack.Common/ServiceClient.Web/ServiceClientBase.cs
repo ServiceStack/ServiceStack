@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -85,6 +87,11 @@ namespace ServiceStack.ServiceClient.Web
             }
         }
 
+        /// <summary>
+        /// Gets the collection of headers to be added to outgoing requests.
+        /// </summary>
+        public NameValueCollection Headers { get; private set; } 
+
         public const string DefaultHttpMethod = "POST";
 
         readonly AsyncServiceClient asyncClient;
@@ -105,6 +112,7 @@ namespace ServiceStack.ServiceClient.Web
                 LocalHttpWebResponseFilter = this.LocalHttpWebResponseFilter
             };
             this.StoreCookies = true; //leave
+            this.Headers = new NameValueCollection();
 
 #if SILVERLIGHT
             asyncClient.HandleCallbackOnUIThread = this.HandleCallbackOnUIThread = true;
@@ -569,6 +577,7 @@ namespace ServiceStack.ServiceClient.Web
             {
                 client.Accept = Accept;
                 client.Method = httpMethod;
+                client.Headers.Add(Headers);
 
                 if (Proxy != null) client.Proxy = Proxy;
                 if (this.Timeout.HasValue) client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
