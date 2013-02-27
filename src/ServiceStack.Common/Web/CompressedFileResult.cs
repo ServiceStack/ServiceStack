@@ -6,6 +6,9 @@ using ServiceStack.Configuration;
 using ServiceStack.Service;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+#if NETFX_CORE
+using System.Net.Http.Headers;
+#endif
 
 namespace ServiceStack.Common.Web
 {
@@ -14,7 +17,11 @@ namespace ServiceStack.Common.Web
     {
         public const int Adler32ChecksumLength = 4;
 
+#if NETFX_CORE
+        public const string DefaultContentType = "application/xml";
+#else
         public const string DefaultContentType = MimeTypes.Xml;
+#endif
 
         public string FilePath { get; private set; }
 
@@ -39,12 +46,32 @@ namespace ServiceStack.Common.Web
             }
 
             this.FilePath = filePath;
+#if NETFX_CORE
+            this.Headers = new Dictionary<string, string> {
+                { "Content-Type", contentMimeType },
+                { "Content-Encoding", compressionType },
+            };
+#else
             this.Headers = new Dictionary<string, string> {
                 { HttpHeaders.ContentType, contentMimeType },
                 { HttpHeaders.ContentEncoding, compressionType },
             };
+#endif
         }
 
+#if NETFX_CORE
+        public async void WriteTo(Stream responseStream)
+        {
+            var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(this.FilePath);
+            using (var fs = await file.OpenStreamForWriteAsync())
+            {
+                fs.Position = Adler32ChecksumLength;
+
+                fs.WriteTo(responseStream);
+                responseStream.Flush();
+            }
+        }
+#else
         public void WriteTo(Stream responseStream)
         {
             using (var fs = new FileStream(this.FilePath, FileMode.Open, FileAccess.Read))
@@ -55,6 +82,7 @@ namespace ServiceStack.Common.Web
                 responseStream.Flush();
             }
         }
+#endif
 
     }
 }

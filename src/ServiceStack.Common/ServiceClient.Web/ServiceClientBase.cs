@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Linq;
 #if !(MONOTOUCH || SILVERLIGHT)
 using System.Text;
 using System.Web;
@@ -90,7 +91,11 @@ namespace ServiceStack.ServiceClient.Web
         /// <summary>
         /// Gets the collection of headers to be added to outgoing requests.
         /// </summary>
+#if NETFX_CORE || WINDOWS_PHONE
+        public Dictionary<string, string> Headers { get; private set; } 
+#else
         public NameValueCollection Headers { get; private set; } 
+#endif
 
         public const string DefaultHttpMethod = "POST";
 
@@ -112,7 +117,11 @@ namespace ServiceStack.ServiceClient.Web
                 LocalHttpWebResponseFilter = this.LocalHttpWebResponseFilter
             };
             this.StoreCookies = true; //leave
+#if NETFX_CORE || WINDOWS_PHONE
+            this.Headers = new Dictionary<string, string>();
+#else
             this.Headers = new NameValueCollection();
+#endif
 
 #if SILVERLIGHT
             asyncClient.HandleCallbackOnUIThread = this.HandleCallbackOnUIThread = true;
@@ -804,8 +813,13 @@ namespace ServiceStack.ServiceClient.Web
 
         public virtual void CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
+#if NETFX_CORE
+            if (!HttpMethods.AllVerbs.Any(p => p.Equals(httpVerb.ToUpper())))
+                throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
+#else
             if (!HttpMethods.AllVerbs.Contains(httpVerb.ToUpper()))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
+#endif
 
             asyncClient.SendAsync(httpVerb, GetUrl(request.ToUrl(httpVerb, Format)), request, onSuccess, onError);
         }

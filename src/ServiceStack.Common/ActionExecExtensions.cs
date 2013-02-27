@@ -4,6 +4,10 @@ using System.Linq;
 using System.Threading;
 using ServiceStack.Common.Support;
 
+#if NETFX_CORE
+using Windows.System.Threading;
+#endif
+
 namespace ServiceStack.Common
 {
     public static class ActionExecExtensions
@@ -28,7 +32,11 @@ namespace ServiceStack.Common
                 var waitHandle = new AutoResetEvent(false);
                 waitHandles.Add(waitHandle);
                 var commandExecsHandler = new ActionExecHandler(action, waitHandle);
+#if NETFX_CORE
+                ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction) => commandExecsHandler.Execute()));
+#else
                 ThreadPool.QueueUserWorkItem(x => ((ActionExecHandler)x).Execute(), commandExecsHandler);
+#endif
             }
             return waitHandles;
         }

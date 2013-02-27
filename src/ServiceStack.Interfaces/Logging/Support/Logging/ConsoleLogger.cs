@@ -1,3 +1,4 @@
+#if !NETFX_CORE
 using System;
 
 namespace ServiceStack.Logging.Support.Logging
@@ -149,3 +150,4 @@ namespace ServiceStack.Logging.Support.Logging
         #endregion
     }
 }
+#endif

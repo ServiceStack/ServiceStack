@@ -23,9 +23,11 @@ namespace ServiceStack.Common
         /// </summary>
         /// <param name="enum"></param>
         /// <returns></returns>
+#if !NETFX_CORE
         public static string ToDescription(this Enum @enum) 
         {
             var type = @enum.GetType();
+
             var memInfo = type.GetMember(@enum.ToString());
             if (memInfo != null && memInfo.Length > 0)
             {
@@ -39,6 +41,7 @@ namespace ServiceStack.Common
 
             return @enum.ToString();
         }
+#endif
 
         public static List<string> ToList(this Enum @enum)
         {

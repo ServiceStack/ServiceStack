@@ -26,6 +26,26 @@ namespace ServiceStack.Common.Utils
             }
 #endif
 
+#if NETFX_CORE
+            if (typeof(T).GetTypeInfo().IsClass)
+            {
+                if (typeof(T).GetRuntimeProperty(IdUtils.IdField) != null
+                    && typeof(T).GetRuntimeProperty(IdUtils.IdField).GetMethod != null)
+                {
+                    CanGetId = HasPropertyId<T>.GetId;
+                    return;
+                }
+                
+                foreach (var pi in typeof(T).GetRuntimeProperties()
+                    .Where(pi => pi.GetCustomAttributes(true)
+                             .Cast<Attribute>()
+                             .Any(attr => attr.GetType().Name == "PrimaryKeyAttribute")))
+                {
+                    CanGetId = StaticAccessors<T>.ValueUnTypedGetPropertyTypeFn(pi);
+                    return;
+                }
+            }
+#else
             if (typeof(T).IsClass)
             {
                 if (typeof(T).GetProperty(IdUtils.IdField) != null
@@ -44,6 +64,7 @@ namespace ServiceStack.Common.Utils
                     return;
                 }
             }
+#endif
 
             CanGetId = x => x.GetHashCode();
         }
@@ -60,7 +81,11 @@ namespace ServiceStack.Common.Utils
 
         static HasPropertyId()
         {
+#if NETFX_CORE
+            var pi = typeof(TEntity).GetRuntimeProperty(IdUtils.IdField);
+#else 
             var pi = typeof(TEntity).GetProperty(IdUtils.IdField);
+#endif
             GetIdFn = StaticAccessors<TEntity>.ValueUnTypedGetPropertyTypeFn(pi);
         }
 
@@ -123,7 +148,11 @@ namespace ServiceStack.Common.Utils
 
         public static object GetObjectId(this object entity)
         {
+#if NETFX_CORE
+            return entity.GetType().GetRuntimeProperty(IdField).GetMethod.Invoke(entity, new object[0]);
+#else
             return entity.GetType().GetProperty(IdField).GetGetMethod().Invoke(entity, new object[0]);
+#endif
         }
 
         public static object GetId<T>(this T entity)
@@ -159,8 +188,13 @@ namespace ServiceStack.Common.Utils
             var dir1 = idValue.Substring(0, 2);
             var dir2 = idValue.Substring(2, 2);
 
+#if NETFX_CORE
+            var path = string.Format("{1}{0}{2}{0}{3}{0}{4}", '\\',
+                rootDir, dir1, dir2, idValue);
+#else
             var path = string.Format("{1}{0}{2}{0}{3}{0}{4}", Path.DirectorySeparatorChar,
                 rootDir, dir1, dir2, idValue);
+#endif
 
             return path;
         }

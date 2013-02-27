@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 using ServiceStack.Common.Utils;
@@ -58,8 +59,13 @@ namespace ServiceStack.Common.Support
             if (FieldInfo != null)
                 return o => FieldInfo.GetValue(o);
             if (MethodInfo != null)
+#if NETFX_CORE
+                return (PropertyGetterDelegate)
+                    MethodInfo.CreateDelegate(typeof(PropertyGetterDelegate));
+#else
                 return (PropertyGetterDelegate)
                     Delegate.CreateDelegate(typeof(PropertyGetterDelegate), MethodInfo);
+#endif
             return null;
         }
 
@@ -70,8 +76,13 @@ namespace ServiceStack.Common.Support
             if (FieldInfo != null)
                 return (o, v) => FieldInfo.SetValue(o, v);
             if (MethodInfo != null)
+#if NETFX_CORE
+                return (PropertySetterDelegate)
+                    MethodInfo.CreateDelegate(typeof(PropertySetterDelegate));
+#else
                 return (PropertySetterDelegate)
                     Delegate.CreateDelegate(typeof(PropertySetterDelegate), MethodInfo);
+#endif
             return null;
         }
     }
@@ -97,8 +108,13 @@ namespace ServiceStack.Common.Support
 
         public void PopulateFromPropertiesWithAttribute(object to, object from, Type attributeType)
         {
+#if NETFX_CORE
+            var hasAttributePredicate = (Func<PropertyInfo, bool>)
+                (x => x.GetCustomAttributes(attributeType, true).Count() > 0);
+#else
             var hasAttributePredicate = (Func<PropertyInfo, bool>)
                 (x => x.GetCustomAttributes(attributeType, true).Length > 0);
+#endif
 
             Populate(to, from, hasAttributePredicate, null);
         }
@@ -151,11 +167,19 @@ namespace ServiceStack.Common.Support
                         {
                             fromValue = TypeSerializer.SerializeToString(fromValue);
                         }
+#if NETFX_CORE
+                        else if (toMember.Type.GetTypeInfo().IsGenericType
+                            && toMember.Type.GetTypeInfo().GetGenericTypeDefinition() == typeof(Nullable<>))
+						{
+                            Type genericArg = toMember.Type.GenericTypeArguments[0];
+							if (genericArg.GetTypeInfo().IsEnum)
+#else
                         else if (toMember.Type.IsGenericType
                             && toMember.Type.GetGenericTypeDefinition() == typeof(Nullable<>))
 						{
                             Type genericArg = toMember.Type.GetGenericArguments()[0];
 							if (genericArg.IsEnum)
+#endif
 							{
 								fromValue = Enum.ToObject(genericArg, fromValue);
 							}

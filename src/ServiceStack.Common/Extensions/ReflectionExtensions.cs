@@ -29,21 +29,33 @@ namespace ServiceStack.Common.Extensions
         }
 
         public static TAttribute FirstAttribute<TAttribute>(this Type type)
+#if NETFX_CORE
+            where TAttribute : System.Attribute
+#endif
         {
             return Proxy.FirstAttribute<TAttribute>(type);
         }
 
         public static TAttribute FirstAttribute<TAttribute>(this Type type, bool inherit)
+#if NETFX_CORE
+ where TAttribute : System.Attribute
+#endif
         {
             return Proxy.FirstAttribute<TAttribute>(type, inherit);
         }
 
         public static TAttribute FirstAttribute<TAttribute>(this PropertyInfo propertyInfo)
+#if NETFX_CORE
+ where TAttribute : System.Attribute
+#endif
         {
             return Proxy.FirstAttribute<TAttribute>(propertyInfo);
         }
 
         public static TAttribute FirstAttribute<TAttribute>(this PropertyInfo propertyInfo, bool inherit)
+#if NETFX_CORE
+ where TAttribute : System.Attribute
+#endif
         {
             return Proxy.FirstAttribute<TAttribute>(propertyInfo, inherit);
         }

@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using System.Linq;
 
 namespace ServiceStack.Common.Reflection
 {
@@ -70,8 +71,13 @@ namespace ServiceStack.Common.Reflection
         /// </summary>
         public static Func<TEntity, TId> TypedGetPropertyFn<TId>(PropertyInfo pi)
         {
+#if NETFX_CORE
+            var mi = pi.GetMethod;
+            return (Func<TEntity, TId>)mi.CreateDelegate(typeof(Func<TEntity, TId>));
+#else
             var mi = pi.GetGetMethod();
             return (Func<TEntity, TId>)Delegate.CreateDelegate(typeof(Func<TEntity, TId>), mi);
+#endif
         }
 
         /// <summary>
@@ -85,12 +91,21 @@ namespace ServiceStack.Common.Reflection
 
         public static Func<TEntity, object> ValueUnTypedGetPropertyTypeFn(PropertyInfo pi)
         {
+#if NETFX_CORE
+            var mi = typeof(StaticAccessors<TEntity>).GetRuntimeMethods().First(p => p.Name.Equals("TypedGetPropertyFn"));
+            var genericMi = mi.MakeGenericMethod(pi.PropertyType);
+#else
             var mi = typeof(StaticAccessors<TEntity>).GetMethod("TypedGetPropertyFn");
             var genericMi = mi.MakeGenericMethod(pi.PropertyType);
+#endif
             var typedGetPropertyFn = (Delegate)genericMi.Invoke(null, new[] { pi });
 
 #if MONOTOUCH || SILVERLIGHT
+#if NETFX_CORE
+            return x => typedGetPropertyFn.GetMethodInfo().Invoke(x, new object[] { });
+#else
             return x => typedGetPropertyFn.Method.Invoke(x, new object[] { });
+#endif
 #else
             var typedMi = typedGetPropertyFn.Method;
             var paramFunc = Expression.Parameter(typeof(object), "oFunc");
@@ -119,8 +134,13 @@ namespace ServiceStack.Common.Reflection
         /// </summary>
         public static Action<TEntity, TId> TypedSetPropertyFn<TId>(PropertyInfo pi)
         {
+#if NETFX_CORE
+            var mi = pi.SetMethod;
+            return (Action<TEntity, TId>)mi.CreateDelegate(typeof(Action<TEntity, TId>));
+#else
             var mi = pi.GetSetMethod();
             return (Action<TEntity, TId>)Delegate.CreateDelegate(typeof(Action<TEntity, TId>), mi);
+#endif
         }
 
         /// <summary>
@@ -134,12 +154,20 @@ namespace ServiceStack.Common.Reflection
 
         public static Action<TEntity, object> ValueUnTypedSetPropertyTypeFn(PropertyInfo pi)
         {
+#if NETFX_CORE
+            var mi = typeof(StaticAccessors<TEntity>).GetRuntimeMethods().First(p => p.Name.Equals("TypedSetPropertyFn"));
+#else
             var mi = typeof(StaticAccessors<TEntity>).GetMethod("TypedSetPropertyFn");
+#endif
             var genericMi = mi.MakeGenericMethod(pi.PropertyType);
             var typedSetPropertyFn = (Delegate)genericMi.Invoke(null, new[] { pi });
 
 #if MONOTOUCH || SILVERLIGHT
+#if NETFX_CORE
+            return (x, y) => typedSetPropertyFn.GetMethodInfo().Invoke(x, new[] { y });
+#else
             return (x, y) => typedSetPropertyFn.Method.Invoke(x, new[] { y });
+#endif
 #else
             var typedMi = typedSetPropertyFn.Method;
             var paramFunc = Expression.Parameter(typeof(object), "oFunc");
