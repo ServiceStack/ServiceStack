@@ -3,6 +3,9 @@ using ServiceStack.Net30.Collections.Concurrent;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using System;
+#if NETFX_CORE
+using System.Collections.Concurrent;
+#endif
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -89,10 +92,21 @@ namespace ServiceStack.ServiceClient.Web
 
         private static List<RestRoute> GetRoutesForType(Type requestType)
         {
+#if NETFX_CORE
+            var restRoutes = requestType.GetTypeInfo().GetCustomAttributes<RouteAttribute>(true)
+                .Select(attr => new RestRoute(requestType, attr.Path, attr.Verbs))
+                .ToList();
+#elif WINDOWS_PHONE
+            var restRoutes = requestType.GetCustomAttributes(typeof(RouteAttribute), true)
+                .OfType<RouteAttribute>()
+                .Select(attr => new RestRoute(requestType, attr.Path, attr.Verbs))
+                .ToList();
+#else
             var restRoutes = TypeDescriptor.GetAttributes(requestType)
                 .OfType<RouteAttribute>()
                 .Select(attr => new RestRoute(requestType, attr.Path, attr.Verbs))
                 .ToList();
+#endif
 
             return restRoutes;
         }
@@ -172,9 +186,11 @@ namespace ServiceStack.ServiceClient.Web
         private const char VariablePostfixChar = '}';
 
         private readonly IDictionary<string, RouteMember> queryProperties;
+#if NETFX_CORE
+		private readonly IDictionary<string, RouteMember> variablesMap = new Dictionary<string, RouteMember>(StringComparer.CurrentCultureIgnoreCase);
+#else
 		private readonly IDictionary<string, RouteMember> variablesMap = new Dictionary<string, RouteMember>(StringComparer.InvariantCultureIgnoreCase);
-
-
+#endif
 
 	    public RestRoute(Type type, string path, string verbs)
         {
@@ -283,10 +299,18 @@ namespace ServiceStack.ServiceClient.Web
 
         internal static IDictionary<string, RouteMember> GetQueryProperties(Type requestType)
         {
+#if NETFX_CORE
+            var result = new Dictionary<string, RouteMember>(StringComparer.CurrentCultureIgnoreCase);
+#else
             var result = new Dictionary<string, RouteMember>(StringComparer.InvariantCultureIgnoreCase);
+#endif
             var hasDataContract = requestType.HasAttr<DataContractAttribute>();
 
+#if NETFX_CORE
+            foreach (var propertyInfo in requestType.GetRuntimeProperties())
+#else
             foreach (var propertyInfo in requestType.GetProperties(BindingFlags.Instance | BindingFlags.Public))
+#endif
             {
                 var propertyName = propertyInfo.Name;
 
@@ -294,7 +318,11 @@ namespace ServiceStack.ServiceClient.Web
                 if (hasDataContract)
                 {
                     if (!propertyInfo.IsDefined(typeof(DataMemberAttribute), true)) continue;
+#if NETFX_CORE
+                    var dataMember = propertyInfo.GetCustomAttributes<DataMemberAttribute>(true).First();
+#else
                     var dataMember = (DataMemberAttribute)propertyInfo.GetCustomAttributes(typeof(DataMemberAttribute), true)[0];
+#endif
                     if (!string.IsNullOrEmpty(dataMember.Name))
                     {
                         propertyName = dataMember.Name;
@@ -310,7 +338,11 @@ namespace ServiceStack.ServiceClient.Web
 
 			if (JsConfig.IncludePublicFields)
 			{
+#if NETFX_CORE
+				foreach (var fieldInfo in requestType.GetRuntimeFields())
+#else
 				foreach (var fieldInfo in requestType.GetFields(BindingFlags.Instance | BindingFlags.Public))
+#endif
 				{
 					var fieldName = fieldInfo.Name;
 

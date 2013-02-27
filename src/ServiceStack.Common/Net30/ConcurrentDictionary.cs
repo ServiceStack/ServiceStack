@@ -22,7 +22,7 @@
 //
 //
 
-#if !NET_4_0 
+#if !NET_4_0 && !NETFX_CORE
 
 using System;
 using System.Threading;

@@ -236,6 +236,9 @@
     <Compile Include="..\ServiceStack.Common\ServiceClient.Web\JsvServiceClient.cs">
       <Link>ServiceClient.Web\JsvServiceClient.cs</Link>
     </Compile>
+    <Compile Include="..\ServiceStack.Common\ServiceClient.Web\RouteMember.cs">
+      <Link>ServiceClient.Web\RouteMember.cs</Link>
+    </Compile>
     <Compile Include="..\ServiceStack.Common\ServiceClient.Web\ServiceClientBase.cs">
       <Link>ServiceClient.Web\ServiceClientBase.cs</Link>
     </Compile>
@@ -371,6 +374,9 @@
     <Compile Include="..\ServiceStack.Common\Utils\ReflectionUtils.cs">
       <Link>Utils\ReflectionUtils.cs</Link>
     </Compile>
+    <Compile Include="..\ServiceStack.Common\Utils\ResponseStatusUtils.cs">
+      <Link>Utils\ResponseStatusUtils.cs</Link>
+    </Compile>
     <Compile Include="..\ServiceStack.Common\Web\CompressedFileResult.cs">
       <Link>Web\CompressedFileResult.cs</Link>
     </Compile>
@@ -385,9 +391,6 @@
     </Compile>
     <Compile Include="..\ServiceStack.Common\Web\EndPoint.cs">
       <Link>Web\EndPoint.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Common\Web\EndpointType.cs">
-      <Link>Web\EndpointType.cs</Link>
     </Compile>
     <Compile Include="..\ServiceStack.Common\Web\HttpError.cs">
       <Link>Web\HttpError.cs</Link>

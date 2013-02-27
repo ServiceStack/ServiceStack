@@ -521,9 +521,6 @@
     <Compile Include="..\ServiceStack.Interfaces\ServiceHost\RestServiceAttribute.cs">
       <Link>ServiceHost\RestServiceAttribute.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\ServiceAttribute.cs">
-      <Link>ServiceHost\ServiceAttribute.cs</Link>
-    </Compile>
     <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\CollectionTypes.cs">
       <Link>ServiceInterface.ServiceModel\CollectionTypes.cs</Link>
     </Compile>
@@ -538,6 +535,9 @@
     </Compile>
     <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\IHasResponseStatus.cs">
       <Link>ServiceInterface.ServiceModel\IHasResponseStatus.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\IResponseStatusConvertible.cs">
+      <Link>ServiceInterface.ServiceModel\IResponseStatusConvertible.cs</Link>
     </Compile>
     <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\Property.cs">
       <Link>ServiceInterface.ServiceModel\Property.cs</Link>
@@ -600,11 +600,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\README.md" />
-    <None Include="..\Redis\Redis.cd" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\Redis\Redis-annotated.png" />
-    <Content Include="..\Redis\Redis.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text.WP\ServiceStack.Text.WP.csproj">

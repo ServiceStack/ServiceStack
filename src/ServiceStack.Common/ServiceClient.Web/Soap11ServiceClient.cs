@@ -68,20 +68,24 @@ namespace ServiceStack.ServiceClient.Web
             throw new NotImplementedException();
         }
 
+#if !NETFX_CORE
         public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
         {
             throw new NotImplementedException();
         }
+#endif
 
         public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
         {
             throw new NotImplementedException();
         }
 
+#if !NETFX_CORE
         public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request)
         {
             throw new NotImplementedException();
         }
+#endif
         
         public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request)
         {
