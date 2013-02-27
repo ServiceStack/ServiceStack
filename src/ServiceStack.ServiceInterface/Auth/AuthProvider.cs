@@ -52,7 +52,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
             service.RemoveSession();
 
-            if (service.RequestContext.ResponseContentType == ContentType.Html)
+            if (service.RequestContext.ResponseContentType == ContentType.Html && !String.IsNullOrEmpty(referrerUrl))
                 return service.Redirect(referrerUrl.AddHashParam("s", "-1"));
 
             return new AuthResponse();
