@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+#if NETFX_CORE
+using System.Collections.Concurrent;
+#endif
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -33,7 +36,11 @@ namespace ServiceStack.Common.Utils
             }
 
             var type = obj.GetType();
+#if NETFX_CORE
+            if (type.GetTypeInfo().IsArray || type.GetTypeInfo().IsValueType || type.GetTypeInfo().IsGenericType)
+#else
             if (type.IsArray || type.IsValueType || type.IsGenericType)
+#endif
             {
                 var value = CreateDefaultValue(type, new Dictionary<Type, int>(20));
                 return value;
@@ -54,6 +61,21 @@ namespace ServiceStack.Common.Utils
             if (obj is string) return obj; // prevents it from dropping into the char[] Chars property.  Sheesh
             var type = obj.GetType();
 
+#if NETFX_CORE
+            var fields = type.GetRuntimeFields().Where(p => p.IsPublic && !p.IsStatic);
+            foreach (var fieldInfo in fields)
+            {
+                var value = CreateDefaultValue(fieldInfo.FieldType, recursionInfo);
+                SetValue(fieldInfo, null, obj, value);
+            }
+
+            var properties = type.GetRuntimeProperties();
+            foreach (var propertyInfo in properties)
+            {
+                var value = CreateDefaultValue(propertyInfo.PropertyType, recursionInfo);
+                SetValue(null, propertyInfo, obj, value);
+            }
+#else
             var members = type.GetMembers(BindingFlags.Public | BindingFlags.Instance);
             foreach (var info in members)
             {
@@ -66,6 +88,7 @@ namespace ServiceStack.Common.Utils
                     SetValue(fieldInfo, propertyInfo, obj, value);
                 }
             }
+#endif
             return obj;
         }
 
@@ -74,7 +97,11 @@ namespace ServiceStack.Common.Utils
 
         public static object GetDefaultValue(Type type)
         {
+#if NETFX_CORE
+            if (!type.GetTypeInfo().IsValueType) return null;
+#else
             if (!type.IsValueType) return null;
+#endif
 
             object defaultValue;
             lock (DefaultValueTypes)
@@ -123,8 +150,14 @@ namespace ServiceStack.Common.Utils
         {
             var map = new Dictionary<string, AssignmentMember>();
 
+#if NETFX_CORE
+            var members = new List<MemberInfo>();
+            members.AddRange(type.GetRuntimeFields().Where(p => p.IsPublic && !p.IsStatic));
+            members.AddRange(type.GetRuntimeProperties());
+#else
             var members = type.GetMembers(
                 BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
+#endif
             foreach (var info in members)
             {
                 if (info.DeclaringType == typeof(object)) continue;
@@ -232,7 +265,11 @@ namespace ServiceStack.Common.Utils
                 Log.WarnFormat("Attempted to set read only property '{0}'", propertyInfo.Name);
                 return;
             }
+#if NETFX_CORE
+            var propertySetMetodInfo = propertyInfo.SetMethod;
+#else
             var propertySetMetodInfo = propertyInfo.GetSetMethod();
+#endif
             if (propertySetMetodInfo != null)
             {
                 propertySetMetodInfo.Invoke(obj, new[] { value });
@@ -244,7 +281,11 @@ namespace ServiceStack.Common.Utils
             if (propertyInfo == null || !propertyInfo.CanRead)
                 return null;
 
+#if NETFX_CORE
+            var getMethod = propertyInfo.GetMethod;
+#else
             var getMethod = propertyInfo.GetGetMethod();
+#endif
             return getMethod != null ? getMethod.Invoke(obj, new object[0]) : null;
         }
 
@@ -271,6 +312,19 @@ namespace ServiceStack.Common.Utils
 
         public static bool IsUnsettableValue(FieldInfo fieldInfo, PropertyInfo propertyInfo)
         {
+#if NETFX_CORE
+            if (propertyInfo != null)
+            {
+                // Properties on non-user defined classes should not be set
+                // Currently we define those properties as properties declared on
+                // types defined in mscorlib
+
+                if (propertyInfo.DeclaringType.AssemblyQualifiedName.Equals(typeof(object).AssemblyQualifiedName))
+                {
+                    return true;
+                }
+            }
+#else
             if (propertyInfo != null && propertyInfo.ReflectedType != null)
             {
                 // Properties on non-user defined classes should not be set
@@ -282,6 +336,7 @@ namespace ServiceStack.Common.Utils
                     return true;
                 }
             }
+#endif
 
             return false;
         }
@@ -305,7 +360,11 @@ namespace ServiceStack.Common.Utils
                 return type.Name;
             }
 
+#if NETFX_CORE
+            if (type.GetTypeInfo().IsEnum)
+#else
             if (type.IsEnum)
+#endif
             {
 #if SILVERLIGHT4 || WINDOWS_PHONE
                 return Enum.ToObject(type, 0);
@@ -324,14 +383,26 @@ namespace ServiceStack.Common.Utils
             {
 
                 //when using KeyValuePair<TKey, TValue>, TKey must be non-default to stuff in a Dictionary
+#if NETFX_CORE
+                if (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
+#else
                 if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
+#endif
                 {
+#if NETFX_CORE
+                    var genericTypes = type.GenericTypeArguments;
+#else
                     var genericTypes = type.GetGenericArguments();
+#endif
                     var valueType = Activator.CreateInstance(type, CreateDefaultValue(genericTypes[0], recursionInfo), CreateDefaultValue(genericTypes[1], recursionInfo));
                     return PopulateObjectInternal(valueType, recursionInfo);
                 }
 
+#if NETFX_CORE
+                if (type.GetTypeInfo().IsValueType)
+#else
                 if (type.IsValueType)
+#endif
                 {
                     return type.CreateInstance();
                 }
@@ -341,7 +412,11 @@ namespace ServiceStack.Common.Utils
                     return PopulateArray(type, recursionInfo);
                 }
 
+#if NETFX_CORE
+                var constructorInfo = type.GetTypeInfo().DeclaredConstructors.First(p => p.GetParameters().Count() == 0);
+#else
                 var constructorInfo = type.GetConstructor(Type.EmptyTypes);
+#endif
                 var hasEmptyConstructor = constructorInfo != null;
 
                 if (hasEmptyConstructor)
@@ -370,7 +445,11 @@ namespace ServiceStack.Common.Utils
 
         private static Type GetGenericCollectionType(Type type)
         {
-#if WINDOWS_PHONE
+#if NETFX_CORE
+            var genericCollectionType =
+                type.GetTypeInfo().ImplementedInterfaces
+                    .FirstOrDefault(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof (ICollection<>));
+#elif WINDOWS_PHONE
             var genericCollectionType =
                 type.GetInterfaces()
                     .FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof (ICollection<>));
@@ -385,7 +464,11 @@ namespace ServiceStack.Common.Utils
 
         public static void SetGenericCollection(Type realisedListType, object genericObj, Dictionary<Type, int> recursionInfo)
         {
+#if NETFX_CORE
+            var args = realisedListType.GenericTypeArguments;
+#else
             var args = realisedListType.GetGenericArguments();
+#endif
 
             if (args.Length != 1)
             {
@@ -394,7 +477,11 @@ namespace ServiceStack.Common.Utils
                 return;
             }
 
+#if NETFX_CORE
+            var methodInfo = realisedListType.GetRuntimeMethods().First(p => p.Name.Equals("Add"));
+#else
             var methodInfo = realisedListType.GetMethod("Add");
+#endif
 
             if (methodInfo != null)
             {
@@ -417,9 +504,17 @@ namespace ServiceStack.Common.Utils
         //TODO: replace with InAssignableFrom
         public static bool CanCast(Type toType, Type fromType)
         {
+#if NETFX_CORE
+            if (toType.GetTypeInfo().IsInterface)
+#else
             if (toType.IsInterface)
+#endif
             {
+#if NETFX_CORE
+                var interfaceList = fromType.GetTypeInfo().ImplementedInterfaces.ToList();
+#else
                 var interfaceList = fromType.GetInterfaces().ToList();
+#endif
                 if (interfaceList.Contains(toType)) return true;
             }
             else
@@ -430,7 +525,11 @@ namespace ServiceStack.Common.Utils
                 {
                     areSameTypes = baseType == toType;
                 }
+#if NETFX_CORE
+                while (!areSameTypes && (baseType = fromType.GetTypeInfo().BaseType) != null);
+#else
                 while (!areSameTypes && (baseType = fromType.BaseType) != null);
+#endif
 
                 if (areSameTypes) return true;
             }
@@ -444,7 +543,11 @@ namespace ServiceStack.Common.Utils
             var baseType = fromType;
             do
             {
+#if NETFX_CORE
+                var propertyInfos = baseType.GetRuntimeProperties();
+#else
                 var propertyInfos = baseType.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+#endif
                 foreach (var propertyInfo in propertyInfos)
                 {
                     var attributes = propertyInfo.GetCustomAttributes(attributeType, true);
@@ -454,7 +557,11 @@ namespace ServiceStack.Common.Utils
                     }
                 }
             }
+#if NETFX_CORE
+            while ((baseType = baseType.GetTypeInfo().BaseType) != null);
+#else
             while ((baseType = baseType.BaseType) != null);
+#endif
         }
     }
 }
