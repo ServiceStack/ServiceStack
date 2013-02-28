@@ -1,38 +1,26 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
   <MonoDevelop.Ide.Workbench ActiveDocument="ServiceStack/Html/TemplateProvider.cs">
     <Files>
-      <File FileName="ServiceStack.Razor/RazorFormat.cs" Line="113" Column="15" />
-      <File FileName="ServiceStack/WebHost.Endpoints/Formats/MarkdownFormat.cs" Line="353" Column="48" />
-      <File FileName="ServiceStack/Html/IViewPage.cs" Line="7" Column="1" />
-      <File FileName="ServiceStack/Html/TemplateProvider.cs" Line="25" Column="4" />
-      <File FileName="ServiceStack/WebHost.Endpoints/Formats/HtmlFormat.cs" Line="57" Column="4" />
-      <File FileName="ServiceStack.Razor/RazorFormat.cs" Line="113" Column="15" />
-      <File FileName="ServiceStack/WebHost.Endpoints/Formats/MarkdownFormat.cs" Line="353" Column="48" />
-      <File FileName="ServiceStack/Html/IViewPage.cs" Line="7" Column="1" />
-      <File FileName="ServiceStack/Html/TemplateProvider.cs" Line="9" Column="1" />
-      <File FileName="ServiceStack/WebHost.Endpoints/Formats/HtmlFormat.cs" Line="57" Column="4" />
+      <File FileName="ServiceStack.Razor/RazorFormat.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack/WebHost.Endpoints/Formats/MarkdownFormat.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack/Html/IViewPage.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack/Html/TemplateProvider.cs" Line="32" Column="16" />
+      <File FileName="ServiceStack/WebHost.Endpoints/Formats/HtmlFormat.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Plugins.ProtoBuf/ProtoBufServiceClient.cs" Line="19" Column="3" />
+      <File FileName="ServiceStack.Common/ServiceClient.Web/JsvServiceClient.cs" Line="29" Column="3" />
+      <File FileName="ServiceStack.Common/ServiceClient.Web/JsvRestClientAsync.cs" Line="29" Column="3" />
+      <File FileName="ServiceStack.Common/ServiceClient.Web/JsonServiceClient.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Common/ServiceClient.Web/AsyncServiceClient.cs" Line="351" Column="18" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
-          <Node name="Tests" expanded="True">
-            <Node name="RazorRockstars.Console" expanded="True" />
-          </Node>
-          <Node name="ServiceStack" expanded="True">
-            <Node name="Html" expanded="True">
-              <Node name="TemplateProvider.cs" selected="True" />
-            </Node>
-            <Node name="WebHost.Endpoints" expanded="True">
-              <Node name="Formats" expanded="True" />
-              <Node name="Support" expanded="True" />
-            </Node>
-          </Node>
           <Node name="ServiceStack.Common" expanded="True">
-            <Node name="Net30" expanded="True" />
+            <Node name="ServiceClient.Web" expanded="True" />
+            <Node name="Web" expanded="True" />
           </Node>
-          <Node name="ServiceStack.Interfaces" expanded="True" />
-          <Node name="ServiceStack.Razor" expanded="True" />
+          <Node name="ServiceStack.Plugins.ProtoBuf" expanded="True" />
         </State>
       </Pad>
       <Pad Id="ClassPad">

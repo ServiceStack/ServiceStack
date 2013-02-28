@@ -48,3 +48,7 @@ build/
 *.DS_Store
 
 *.dotCover
+
+*.userprefs
+
+tests/ServiceStack.WebHost.IntegrationTests/Subpages/Test.aspx.designer.cs
