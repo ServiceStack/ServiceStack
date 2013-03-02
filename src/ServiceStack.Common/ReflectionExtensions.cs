@@ -36,17 +36,13 @@ namespace ServiceStack.Common
         }
 
         public static TAttribute FirstAttribute<TAttribute>(this Type type)
-#if NETFX_CORE
-            where TAttribute : System.Attribute
-#endif
+            where TAttribute : Attribute
         {
             return type.FirstAttribute<TAttribute>(true);
         }
 
         public static TAttribute FirstAttribute<TAttribute>(this Type type, bool inherit)
-#if NETFX_CORE
-            where TAttribute : System.Attribute
-#endif
+            where TAttribute : Attribute
         {
 #if NETFX_CORE
             var attrs = type.GetTypeInfo().GetCustomAttributes<TAttribute>(inherit);
@@ -58,17 +54,13 @@ namespace ServiceStack.Common
         }
 
         public static TAttribute FirstAttribute<TAttribute>(this PropertyInfo propertyInfo)
-#if NETFX_CORE
-            where TAttribute : System.Attribute
-#endif
+            where TAttribute : Attribute
         {
             return propertyInfo.FirstAttribute<TAttribute>(true);
         }
 
         public static TAttribute FirstAttribute<TAttribute>(this PropertyInfo propertyInfo, bool inherit)
-#if NETFX_CORE
-            where TAttribute : System.Attribute
-#endif
+            where TAttribute : Attribute
         {
 #if NETFX_CORE
             var attrs = propertyInfo.GetCustomAttributes<TAttribute>(inherit);
@@ -108,7 +100,7 @@ namespace ServiceStack.Common
 
                 type = type.GetTypeInfo().BaseType;
 #else
-                if (type.IsGenericType)
+                if (type.IsGenericType())
                     return type.GetGenericTypeDefinition();
 
                 type = type.BaseType;
