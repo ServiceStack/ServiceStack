@@ -341,7 +341,7 @@ namespace CSharpEval
 			{
 				assemblies.Add(assembly);
 
-				if (Common.ReflectionExtensions.IsDynamic(assembly)) continue;
+                if (assembly.IsDynamic()) continue;
 				AddAssembly(cp, assembly.Location);
 			}
 		}

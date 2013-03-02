@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 
 using Proxy = ServiceStack.Common.ReflectionExtensions;
+using ProxyText = ServiceStack.Text.PlatformExtensions;
 
 namespace ServiceStack.Common.Extensions
 {
@@ -31,35 +32,30 @@ namespace ServiceStack.Common.Extensions
         public static TAttribute FirstAttribute<TAttribute>(this Type type)
             where TAttribute : Attribute
         {
-            return Proxy.FirstAttribute<TAttribute>(type);
+            return ProxyText.FirstAttribute<TAttribute>(type);
         }
 
         public static TAttribute FirstAttribute<TAttribute>(this Type type, bool inherit)
             where TAttribute : Attribute
         {
-            return Proxy.FirstAttribute<TAttribute>(type, inherit);
+            return ProxyText.FirstAttribute<TAttribute>(type, inherit);
         }
 
         public static TAttribute FirstAttribute<TAttribute>(this PropertyInfo propertyInfo)
             where TAttribute : Attribute
         {
-            return Proxy.FirstAttribute<TAttribute>(propertyInfo);
+            return ProxyText.FirstAttribute<TAttribute>(propertyInfo);
         }
 
         public static TAttribute FirstAttribute<TAttribute>(this PropertyInfo propertyInfo, bool inherit)
             where TAttribute : Attribute
         {
-            return Proxy.FirstAttribute<TAttribute>(propertyInfo, inherit);
-        }
-
-        public static bool IsGenericType(this Type type)
-        {
-            return Proxy.IsGenericType(type);
+            return ProxyText.FirstAttribute<TAttribute>(propertyInfo, inherit);
         }
 
         public static Type FirstGenericTypeDefinition(this Type type)
         {
-            return Proxy.FirstGenericTypeDefinition(type);
+            return ProxyText.FirstGenericTypeDefinition(type);
         }
     }
 }
