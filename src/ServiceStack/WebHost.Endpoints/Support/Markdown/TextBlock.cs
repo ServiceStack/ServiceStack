@@ -923,7 +923,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 			Type type = null;
 			if (typePropertyName == "Html")
 			{
-				type = Common.ReflectionExtensions.IsGenericType(markdownPage.ExecutionContext.BaseType)
+                type = markdownPage.ExecutionContext.BaseType.HasGenericType()
 					   ? typeof(HtmlHelper<>)
 					   : typeof(HtmlHelper);
 			}
