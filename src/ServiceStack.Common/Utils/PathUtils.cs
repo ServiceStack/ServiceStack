@@ -33,7 +33,11 @@ namespace ServiceStack.Common.Utils
         /// eg. in a unit test scenario  the assembly would be in /bin/Debug/.</remarks>
         public static string MapProjectPath(this string relativePath)
         {
+#if NETFX_CORE || WINDOWS_PHONE
+            var mapPath = MapAbsolutePath(relativePath, string.Format("{0}..{0}..", '\\'));
+#else
             var mapPath = MapAbsolutePath(relativePath, string.Format("{0}..{0}..", Path.DirectorySeparatorChar));
+#endif
             return mapPath;
         }
 
@@ -57,7 +61,11 @@ namespace ServiceStack.Common.Utils
         /// <remarks>Assumes static content is in the parent folder of the /bin/ directory</remarks>
         public static string MapHostAbsolutePath(this string relativePath)
         {
+#if NETFX_CORE || WINDOWS_PHONE
+            var mapPath = MapAbsolutePath(relativePath, string.Format("{0}..", '\\'));
+#else
             var mapPath = MapAbsolutePath(relativePath, string.Format("{0}..", Path.DirectorySeparatorChar));
+#endif
             return mapPath;
         }
 

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Threading;
 using ServiceStack.Common.Support;
 using ServiceStack.DesignPatterns.Command;
+#if NETFX_CORE
+using Windows.System.Threading;
+#endif
 
 namespace ServiceStack.Common.Utils
 {
@@ -24,7 +27,11 @@ namespace ServiceStack.Common.Utils
                 waitHandles.Add(waitHandle);
                 var commandResultsHandler = new CommandResultsHandler<T>(results, command, waitHandle);
 
+#if NETFX_CORE
+                ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction) => ExecuteCommandList(commandResultsHandler)));
+#else
                 ThreadPool.QueueUserWorkItem(ExecuteCommandList, commandResultsHandler);
+#endif
             }
             WaitAll(waitHandles.ToArray(), timeout);
             return results;
@@ -78,7 +85,11 @@ namespace ServiceStack.Common.Utils
         {
             foreach (ICommandExec command in commands)
             {
+#if NETFX_CORE
+                ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction) => ExecuteCommandExec(command)));
+#else
                 ThreadPool.QueueUserWorkItem(ExecuteCommandExec, command);
+#endif
             }
         }
 
@@ -95,7 +106,11 @@ namespace ServiceStack.Common.Utils
                 var waitHandle = new AutoResetEvent(false);
                 waitHandles.Add(waitHandle);
                 var commandExecsHandler = new CommandExecsHandler(command, waitHandle);
+#if NETFX_CORE
+                ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction) => ExecuteCommandList(commandExecsHandler)));
+#else
                 ThreadPool.QueueUserWorkItem(ExecuteCommandList, commandExecsHandler);
+#endif
             }
             return waitHandles;
         }

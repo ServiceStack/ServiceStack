@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Linq;
 
 namespace ServiceStack.Messaging
 {
@@ -23,10 +24,16 @@ namespace ServiceStack.Messaging
                 return factoryFn(response);
 
             var genericMessageType = typeof(Message<>).MakeGenericType(type);
+#if NETFX_CORE
+            var mi = genericMessageType.GetRuntimeMethods().First(p => p.Name.Equals("Create"));
+            factoryFn = (MessageFactoryDelegate)mi.CreateDelegate(
+                typeof(MessageFactoryDelegate));
+#else
             var mi = genericMessageType.GetMethod("Create",
                 BindingFlags.Public | BindingFlags.Static);
             factoryFn = (MessageFactoryDelegate)Delegate.CreateDelegate(
                 typeof(MessageFactoryDelegate), mi);
+#endif
 
             lock (CacheFn) CacheFn[type] = factoryFn;
 

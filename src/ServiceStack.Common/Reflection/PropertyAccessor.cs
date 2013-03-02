@@ -46,7 +46,11 @@ namespace ServiceStack.Common.Reflection
 
         public PropertyAccessor(string propertyName)
         {
+#if NETFX_CORE
+            this.pi = typeof(TEntity).GetRuntimeProperty(propertyName);
+#else
             this.pi = typeof(TEntity).GetProperty(propertyName);
+#endif
             this.Name = propertyName;
             this.PropertyType = pi.PropertyType;
 
