@@ -12,7 +12,11 @@ namespace ServiceStack.Common.Web
     {
         public const int Adler32ChecksumLength = 4;
 
+#if NETFX_CORE
+        public const string DefaultContentType = "application/xml";
+#else
         public const string DefaultContentType = MimeTypes.Xml;
+#endif
 
         public byte[] Contents { get; private set; }
 
@@ -62,9 +66,15 @@ namespace ServiceStack.Common.Web
             this.ContentType = contentMimeType;
 
             this.Contents = contents;
+#if NETFX_CORE
+            this.Headers = new Dictionary<string, string> {
+                { "Content-Encoding", compressionType },
+            };
+#else
             this.Headers = new Dictionary<string, string> {
                 { HttpHeaders.ContentEncoding, compressionType },
             };
+#endif
         }
 
         public void WriteTo(Stream responseStream)

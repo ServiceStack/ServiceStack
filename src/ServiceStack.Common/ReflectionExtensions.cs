@@ -36,35 +36,64 @@ namespace ServiceStack.Common
         }
 
         public static TAttribute FirstAttribute<TAttribute>(this Type type)
+#if NETFX_CORE
+            where TAttribute : System.Attribute
+#endif
         {
             return type.FirstAttribute<TAttribute>(true);
         }
 
         public static TAttribute FirstAttribute<TAttribute>(this Type type, bool inherit)
+#if NETFX_CORE
+            where TAttribute : System.Attribute
+#endif
         {
+#if NETFX_CORE
+            var attrs = type.GetTypeInfo().GetCustomAttributes<TAttribute>(inherit);
+            return (attrs.Count() > 0 ? attrs.ElementAt(0) : null);
+#else
             var attrs = type.GetCustomAttributes(typeof(TAttribute), inherit);
             return (TAttribute)(attrs.Length > 0 ? attrs[0] : null);
+#endif
         }
 
         public static TAttribute FirstAttribute<TAttribute>(this PropertyInfo propertyInfo)
+#if NETFX_CORE
+            where TAttribute : System.Attribute
+#endif
         {
             return propertyInfo.FirstAttribute<TAttribute>(true);
         }
 
         public static TAttribute FirstAttribute<TAttribute>(this PropertyInfo propertyInfo, bool inherit)
+#if NETFX_CORE
+            where TAttribute : System.Attribute
+#endif
         {
+#if NETFX_CORE
+            var attrs = propertyInfo.GetCustomAttributes<TAttribute>(inherit);
+            return (TAttribute)(attrs.Count() > 0 ? attrs.ElementAt(0) : null);
+#else
             var attrs = propertyInfo.GetCustomAttributes(typeof(TAttribute), inherit);
             return (TAttribute)(attrs.Length > 0 ? attrs[0] : null);
+#endif
         }
 
         public static bool IsGenericType(this Type type)
         {
             while (type != null)
             {
+#if NETFX_CORE
+                if (type.GetTypeInfo().IsGenericType)
+                    return true;
+
+                type = type.GetTypeInfo().BaseType;
+#else
                 if (type.IsGenericType)
                     return true;
 
                 type = type.BaseType;
+#endif
             }
             return false;
         }
@@ -73,10 +102,17 @@ namespace ServiceStack.Common
         {
             while (type != null)
             {
+#if NETFX_CORE
+                if (type.GetTypeInfo().IsGenericType)
+                    return type.GetGenericTypeDefinition();
+
+                type = type.GetTypeInfo().BaseType;
+#else
                 if (type.IsGenericType)
                     return type.GetGenericTypeDefinition();
 
                 type = type.BaseType;
+#endif
             }
 
             return null;
@@ -84,7 +120,7 @@ namespace ServiceStack.Common
 
         public static bool IsDynamic(this Assembly assembly)
         {
-#if MONOTOUCH || WINDOWS_PHONE
+#if MONOTOUCH || WINDOWS_PHONE || NETFX_CORE
             return false;
 #else
             try
@@ -103,7 +139,11 @@ namespace ServiceStack.Common
 
         public static bool IsDebugBuild(this Assembly assembly)
         {
-#if WINDOWS_PHONE
+#if NETFX_CORE
+            return assembly.GetCustomAttributes()
+                .OfType<DebuggableAttribute>()
+                .Any();
+#elif WINDOWS_PHONE
             return assembly.GetCustomAttributes(false)
                 .OfType<DebuggableAttribute>()
                 .Any();

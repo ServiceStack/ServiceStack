@@ -11,7 +11,11 @@ namespace ServiceStack.Common.Support
     {
         public static PropertySetterDelegate GetPropertySetterFn(this PropertyInfo propertyInfo)
         {
+#if NETFX_CORE
+            var propertySetMethod = propertyInfo.SetMethod;
+#else
             var propertySetMethod = propertyInfo.GetSetMethod();
+#endif
             if (propertySetMethod == null) return null;
 
 #if MONOTOUCH || SILVERLIGHT || XBOX
@@ -35,11 +39,19 @@ namespace ServiceStack.Common.Support
 
         public static PropertyGetterDelegate GetPropertyGetterFn(this PropertyInfo propertyInfo)
         {
+#if NETFX_CORE
+            var getMethodInfo = propertyInfo.GetMethod;
+#else
             var getMethodInfo = propertyInfo.GetGetMethod();
+#endif
             if (getMethodInfo == null) return null;
 
 #if MONOTOUCH || SILVERLIGHT || XBOX
+#if NETFX_CORE
+            return o => propertyInfo.GetMethod.Invoke(o, new object[] { });
+#else
             return o => propertyInfo.GetGetMethod().Invoke(o, new object[] { });
+#endif
 #else
             try
             {

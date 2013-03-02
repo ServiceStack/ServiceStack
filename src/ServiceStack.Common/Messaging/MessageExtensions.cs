@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
+using System.Linq;
 using ServiceStack.Text;
 
 namespace ServiceStack.Messaging
@@ -26,8 +27,13 @@ namespace ServiceStack.Messaging
             if (toMessageFn != null) return toMessageFn;
 
             var genericType = typeof(MessageExtensions<>).MakeGenericType(type);
+#if NETFX_CORE
+            var mi = genericType.GetRuntimeMethods().First(p => p.Name.Equals("ConvertToMessage"));
+            toMessageFn = (ToMessageDelegate)mi.CreateDelegate(typeof(ToMessageDelegate));
+#else
             var mi = genericType.GetMethod("ConvertToMessage", BindingFlags.Public | BindingFlags.Static);
             toMessageFn = (ToMessageDelegate)Delegate.CreateDelegate(typeof(ToMessageDelegate), mi);
+#endif
 
             Dictionary<Type, ToMessageDelegate> snapshot, newCache;
             do

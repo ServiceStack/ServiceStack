@@ -32,8 +32,13 @@ namespace ServiceStack.ServiceModel.Serialization
         }
 
         private readonly Type type;
+#if NETFX_CORE
+        private readonly Dictionary<string, PropertySerializerEntry> propertySetterMap
+            = new Dictionary<string, PropertySerializerEntry>(StringComparer.CurrentCultureIgnoreCase);
+#else
         private readonly Dictionary<string, PropertySerializerEntry> propertySetterMap
             = new Dictionary<string, PropertySerializerEntry>(StringComparer.InvariantCultureIgnoreCase);
+#endif
 
         public StringMapTypeDeserializer(Type type)
         {

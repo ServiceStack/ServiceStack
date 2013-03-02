@@ -1,5 +1,8 @@
 using System.Collections.Generic;
 using ServiceStack.ServiceHost;
+#if WINDOWS_PHONE && !WP
+using ServiceStack.Text.WP;
+#endif
 
 namespace ServiceStack.Common.Web
 {

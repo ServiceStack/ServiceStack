@@ -1,3 +1,4 @@
+#if !NETFX_CORE
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -164,3 +165,4 @@ namespace ServiceStack.Common.Extensions
 
     }
 }
+#endif
