@@ -52,11 +52,7 @@ namespace ServiceStack.ServiceClient.Web
 
         internal static void AddBasicAuth(this WebRequest client, string userName, string password)
         {
-#if NETFX_CORE
-            client.Headers["Authorization"]
-#else
             client.Headers[HttpHeaders.Authorization]
-#endif
                 = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(userName + ":" + password));
         }
 
@@ -85,16 +81,10 @@ namespace ServiceStack.ServiceClient.Web
                 var genericDef = request.GetType().GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
                 if (genericDef != null)
                 {
-                    
-#if NETFX_CORE
-                    var returnDtoType = genericDef.GenericTypeArguments[0];
-                    var hasResponseStatus = returnDtoType is IHasResponseStatus 
-                        || returnDtoType.GetRuntimeProperty("ResponseStatus") != null;
-#else
-                    var returnDtoType = genericDef.GetGenericArguments()[0];
-                    var hasResponseStatus = returnDtoType is IHasResponseStatus 
-                        || returnDtoType.GetProperty("ResponseStatus") != null;
-#endif
+
+                    var returnDtoType = genericDef.GenericTypeArguments()[0];
+                    var hasResponseStatus = returnDtoType is IHasResponseStatus
+                        || returnDtoType.GetPropertyInfo("ResponseStatus") != null;
                    
                     //Only use the specified Return type if it has a ResponseStatus property
                     if (hasResponseStatus)
@@ -106,7 +96,6 @@ namespace ServiceStack.ServiceClient.Web
 
             return responseDtoType ?? typeof(ErrorResponse);
         }
-
     }
 
 }

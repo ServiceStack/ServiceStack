@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using System.Linq;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Reflection
 {
@@ -11,7 +12,7 @@ namespace ServiceStack.Common.Reflection
     }
 #else
     using System.Linq.Expressions;
-    
+
     public static class StaticAccessors
     {
         public static Func<object, object> GetValueGetter(Type type, PropertyInfo propertyInfo)
@@ -71,13 +72,8 @@ namespace ServiceStack.Common.Reflection
         /// </summary>
         public static Func<TEntity, TId> TypedGetPropertyFn<TId>(PropertyInfo pi)
         {
-#if NETFX_CORE
-            var mi = pi.GetMethod;
-            return (Func<TEntity, TId>)mi.CreateDelegate(typeof(Func<TEntity, TId>));
-#else
-            var mi = pi.GetGetMethod();
-            return (Func<TEntity, TId>)Delegate.CreateDelegate(typeof(Func<TEntity, TId>), mi);
-#endif
+            var mi = pi.GetMethodInfo();
+            return (Func<TEntity, TId>)mi.MakeDelegate(typeof(Func<TEntity, TId>));
         }
 
         /// <summary>
@@ -91,25 +87,17 @@ namespace ServiceStack.Common.Reflection
 
         public static Func<TEntity, object> ValueUnTypedGetPropertyTypeFn(PropertyInfo pi)
         {
-#if NETFX_CORE
-            var mi = typeof(StaticAccessors<TEntity>).GetRuntimeMethods().First(p => p.Name.Equals("TypedGetPropertyFn"));
+            var mi = typeof(StaticAccessors<TEntity>).GetMethodInfo("TypedGetPropertyFn");
             var genericMi = mi.MakeGenericMethod(pi.PropertyType);
-#else
-            var mi = typeof(StaticAccessors<TEntity>).GetMethod("TypedGetPropertyFn");
-            var genericMi = mi.MakeGenericMethod(pi.PropertyType);
-#endif
             var typedGetPropertyFn = (Delegate)genericMi.Invoke(null, new[] { pi });
 
-#if MONOTOUCH || SILVERLIGHT
-#if NETFX_CORE
-            return x => typedGetPropertyFn.GetMethodInfo().Invoke(x, new object[] { });
+#if MONOTOUCH || SILVERLIGHT || NETFX_CORE
+            return x => typedGetPropertyFn.InvokeMethod(x);
 #else
-            return x => typedGetPropertyFn.Method.Invoke(x, new object[] { });
-#endif
-#else
+
             var typedMi = typedGetPropertyFn.Method;
             var paramFunc = Expression.Parameter(typeof(object), "oFunc");
-            var expr = Expression.Lambda<Func<TEntity, object>> (
+            var expr = Expression.Lambda<Func<TEntity, object>>(
                     Expression.Convert(
                         Expression.Call(
                             Expression.Convert(paramFunc, typedMi.DeclaringType),
@@ -134,13 +122,8 @@ namespace ServiceStack.Common.Reflection
         /// </summary>
         public static Action<TEntity, TId> TypedSetPropertyFn<TId>(PropertyInfo pi)
         {
-#if NETFX_CORE
-            var mi = pi.SetMethod;
-            return (Action<TEntity, TId>)mi.CreateDelegate(typeof(Action<TEntity, TId>));
-#else
-            var mi = pi.GetSetMethod();
-            return (Action<TEntity, TId>)Delegate.CreateDelegate(typeof(Action<TEntity, TId>), mi);
-#endif
+            var mi = pi.SetMethod();
+            return (Action<TEntity, TId>)mi.MakeDelegate(typeof(Action<TEntity, TId>));
         }
 
         /// <summary>
@@ -154,21 +137,14 @@ namespace ServiceStack.Common.Reflection
 
         public static Action<TEntity, object> ValueUnTypedSetPropertyTypeFn(PropertyInfo pi)
         {
-#if NETFX_CORE
-            var mi = typeof(StaticAccessors<TEntity>).GetRuntimeMethods().First(p => p.Name.Equals("TypedSetPropertyFn"));
-#else
-            var mi = typeof(StaticAccessors<TEntity>).GetMethod("TypedSetPropertyFn");
-#endif
+            var mi = typeof(StaticAccessors<TEntity>).GetMethodInfo("TypedSetPropertyFn");
             var genericMi = mi.MakeGenericMethod(pi.PropertyType);
             var typedSetPropertyFn = (Delegate)genericMi.Invoke(null, new[] { pi });
 
-#if MONOTOUCH || SILVERLIGHT
-#if NETFX_CORE
-            return (x, y) => typedSetPropertyFn.GetMethodInfo().Invoke(x, new[] { y });
+#if MONOTOUCH || SILVERLIGHT || NETFX_CORE
+            return (x, y) => typedSetPropertyFn.InvokeMethod(x, new[] { y });
 #else
-            return (x, y) => typedSetPropertyFn.Method.Invoke(x, new[] { y });
-#endif
-#else
+
             var typedMi = typedSetPropertyFn.Method;
             var paramFunc = Expression.Parameter(typeof(object), "oFunc");
             var paramValue = Expression.Parameter(typeof(object), "oValue");

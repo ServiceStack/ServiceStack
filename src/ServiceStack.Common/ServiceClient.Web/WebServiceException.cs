@@ -40,21 +40,15 @@ namespace ServiceStack.ServiceClient.Web
             }
             var jsv = TypeSerializer.SerializeToString(ResponseDto);
             var map = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(jsv);
-#if NETFX_CORE
-            map = new Dictionary<string, string>(map, StringComparer.CurrentCultureIgnoreCase);
-#else
-            map = new Dictionary<string, string>(map, StringComparer.InvariantCultureIgnoreCase);
-#endif
+            map = new Dictionary<string, string>(map, StringExtensions.InvariantComparerIgnoreCase());
+
             string responseStatus;
             if (!map.TryGetValue("ResponseStatus", out responseStatus)) return;
 
             var rsMap = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(responseStatus);
             if (rsMap == null) return;
-#if NETFX_CORE
-            rsMap = new Dictionary<string, string>(rsMap, StringComparer.CurrentCultureIgnoreCase);
-#else
-            rsMap = new Dictionary<string, string>(rsMap, StringComparer.InvariantCultureIgnoreCase);
-#endif
+
+            rsMap = new Dictionary<string, string>(rsMap, StringExtensions.InvariantComparerIgnoreCase());
             rsMap.TryGetValue("ErrorCode", out errorCode);
             rsMap.TryGetValue("Message", out errorMessage);
             rsMap.TryGetValue("StackTrace", out serverStackTrace);
@@ -109,11 +103,7 @@ namespace ServiceStack.ServiceClient.Web
                 if (hasResponseStatus != null)
                     return hasResponseStatus.ResponseStatus;
 
-#if NETFX_CORE
-                var propertyInfo = this.ResponseDto.GetType().GetRuntimeProperty("ResponseStatus");
-#else
-                var propertyInfo = this.ResponseDto.GetType().GetProperty("ResponseStatus");
-#endif
+                var propertyInfo = this.ResponseDto.GetType().GetPropertyInfo("ResponseStatus");
                 if (propertyInfo == null)
                     return null;
 

@@ -36,14 +36,19 @@ namespace ServiceStack.Common
             return RegexSplitCamelCase.Replace(value, " $1").TrimStart();
         }
 
+        public static string ToInvariantUpper(this char value)
+        {
+#if NETFX_CORE
+            return value.ToUpperInvariant() + ucWords.Substring(1);
+#else
+            return value.ToString(CultureInfo.InvariantCulture).ToUpper();
+#endif
+        }
+
         public static string ToEnglish(this string camelCase)
         {
             var ucWords = camelCase.SplitCamelCase().ToLower();
-#if NETFX_CORE
-            return ucWords[0].ToString().ToUpperInvariant() + ucWords.Substring(1);
-#else
-            return ucWords[0].ToString(CultureInfo.InvariantCulture).ToUpper() + ucWords.Substring(1);
-#endif
+            return ucWords[0].ToInvariantUpper() + ucWords.Substring(1);
         }
 
         public static bool IsEmpty(this string value)
@@ -165,17 +170,10 @@ namespace ServiceStack.Common
 
         public static bool IsUserType(this Type type)
         {
-#if NETFX_CORE
-            return type.GetTypeInfo().IsClass
+            return type.IsClass()
                 && type.Namespace != null
                 && !type.Namespace.StartsWith("System")
                 && type.Name.IndexOfAny(SystemTypeChars) == -1;
-#else
-            return type.IsClass
-                && type.Namespace != null
-                && !type.Namespace.StartsWith("System")
-                && type.Name.IndexOfAny(SystemTypeChars) == -1;
-#endif
         }
 
         public static bool IsInt(this string text)

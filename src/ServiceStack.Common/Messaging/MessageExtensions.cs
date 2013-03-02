@@ -27,13 +27,8 @@ namespace ServiceStack.Messaging
             if (toMessageFn != null) return toMessageFn;
 
             var genericType = typeof(MessageExtensions<>).MakeGenericType(type);
-#if NETFX_CORE
-            var mi = genericType.GetRuntimeMethods().First(p => p.Name.Equals("ConvertToMessage"));
-            toMessageFn = (ToMessageDelegate)mi.CreateDelegate(typeof(ToMessageDelegate));
-#else
-            var mi = genericType.GetMethod("ConvertToMessage", BindingFlags.Public | BindingFlags.Static);
-            toMessageFn = (ToMessageDelegate)Delegate.CreateDelegate(typeof(ToMessageDelegate), mi);
-#endif
+            var mi = genericType.GetPublicStaticMethod("ConvertToMessage");
+            toMessageFn = (ToMessageDelegate)mi.MakeDelegate(typeof(ToMessageDelegate));
 
             Dictionary<Type, ToMessageDelegate> snapshot, newCache;
             do
