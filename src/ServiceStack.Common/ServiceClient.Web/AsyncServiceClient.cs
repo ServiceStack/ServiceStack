@@ -354,11 +354,7 @@ namespace ServiceStack.ServiceClient.Web
             if (this.UseBrowserHttpHandling && httpMethod != "GET" && httpMethod != "POST") 
             {
                 webRequest.Method = "POST"; 
-#if NETFX_CORE
-                webRequest.Headers["X-HTTP-Method-Override"] = httpMethod;
-#else
                 webRequest.Headers[HttpHeaders.XHttpMethodOverride] = httpMethod;
-#endif
             }
             else
             {

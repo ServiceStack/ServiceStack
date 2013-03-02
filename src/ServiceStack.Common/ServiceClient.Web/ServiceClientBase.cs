@@ -813,13 +813,8 @@ namespace ServiceStack.ServiceClient.Web
 
         public virtual void CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
-#if NETFX_CORE
-            if (!HttpMethods.AllVerbs.Any(p => p.Equals(httpVerb.ToUpper())))
+            if (!HttpMethods.HasVerb(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
-#else
-            if (!HttpMethods.AllVerbs.Contains(httpVerb.ToUpper()))
-                throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
-#endif
 
             asyncClient.SendAsync(httpVerb, GetUrl(request.ToUrl(httpVerb, Format)), request, onSuccess, onError);
         }

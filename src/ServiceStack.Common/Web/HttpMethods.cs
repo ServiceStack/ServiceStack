@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.ServiceHost;
 #if WINDOWS_PHONE && !WP
 using ServiceStack.Text.WP;
@@ -8,7 +9,7 @@ namespace ServiceStack.Common.Web
 {
     public static class HttpMethods
     {
-        public static HashSet<string> AllVerbs = new HashSet<string>(new[] {
+        static readonly string[] allVerbs = new[] {
             "OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "CONNECT", // RFC 2616
             "PROPFIND", "PROPPATCH", "MKCOL", "COPY", "MOVE", "LOCK", "UNLOCK",    // RFC 2518
             "VERSION-CONTROL", "REPORT", "CHECKOUT", "CHECKIN", "UNCHECKOUT",
@@ -19,7 +20,18 @@ namespace ServiceStack.Common.Web
             "SEARCH",     // https://datatracker.ietf.org/doc/draft-reschke-webdav-search/
             "BCOPY", "BDELETE", "BMOVE", "BPROPFIND", "BPROPPATCH", "NOTIFY",  
             "POLL",  "SUBSCRIBE", "UNSUBSCRIBE" //MS Exchange WebDav: http://msdn.microsoft.com/en-us/library/aa142917.aspx
-        });
+        };
+
+        public static HashSet<string> AllVerbs = new HashSet<string>(allVerbs);
+
+        public static bool HasVerb(string httpVerb)
+        {
+#if NETFX_CORE
+            return allVerbs.Any(p => p.Equals(httpVerb.ToUpper()));
+#else
+            return AllVerbs.Contains(httpVerb.ToUpper());
+#endif
+        }
 
         public const string Get = "GET";
         public const string Put = "PUT";

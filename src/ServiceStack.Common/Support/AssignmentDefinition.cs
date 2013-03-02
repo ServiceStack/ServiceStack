@@ -76,13 +76,8 @@ namespace ServiceStack.Common.Support
             if (FieldInfo != null)
                 return (o, v) => FieldInfo.SetValue(o, v);
             if (MethodInfo != null)
-#if NETFX_CORE
-                return (PropertySetterDelegate)
-                    MethodInfo.CreateDelegate(typeof(PropertySetterDelegate));
-#else
-                return (PropertySetterDelegate)
-                    Delegate.CreateDelegate(typeof(PropertySetterDelegate), MethodInfo);
-#endif
+                return (PropertySetterDelegate)MethodInfo.MakeDelegate(typeof(PropertySetterDelegate));
+
             return null;
         }
     }
@@ -108,14 +103,8 @@ namespace ServiceStack.Common.Support
 
         public void PopulateFromPropertiesWithAttribute(object to, object from, Type attributeType)
         {
-#if NETFX_CORE
             var hasAttributePredicate = (Func<PropertyInfo, bool>)
-                (x => x.GetCustomAttributes(attributeType, true).Count() > 0);
-#else
-            var hasAttributePredicate = (Func<PropertyInfo, bool>)
-                (x => x.GetCustomAttributes(attributeType, true).Length > 0);
-#endif
-
+                (x => x.CustomAttributes(attributeType).Length > 0);
             Populate(to, from, hasAttributePredicate, null);
         }
 
@@ -167,20 +156,12 @@ namespace ServiceStack.Common.Support
                         {
                             fromValue = TypeSerializer.SerializeToString(fromValue);
                         }
-#if NETFX_CORE
-                        else if (toMember.Type.GetTypeInfo().IsGenericType
-                            && toMember.Type.GetTypeInfo().GetGenericTypeDefinition() == typeof(Nullable<>))
-						{
-                            Type genericArg = toMember.Type.GenericTypeArguments[0];
-							if (genericArg.GetTypeInfo().IsEnum)
-#else
-                        else if (toMember.Type.IsGenericType
-                            && toMember.Type.GetGenericTypeDefinition() == typeof(Nullable<>))
-						{
-                            Type genericArg = toMember.Type.GetGenericArguments()[0];
-							if (genericArg.IsEnum)
-#endif
-							{
+                        else if (toMember.Type.IsGeneric()
+                            && toMember.Type.GenericTypeDefinition() == typeof(Nullable<>))
+                        {
+                            Type genericArg = toMember.Type.GenericTypeArguments()[0];
+                            if (genericArg.IsEnum())
+                            {
 								fromValue = Enum.ToObject(genericArg, fromValue);
 							}
 						}

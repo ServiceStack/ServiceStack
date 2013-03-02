@@ -17,11 +17,7 @@ namespace ServiceStack.Common.Web
     {
         public const int Adler32ChecksumLength = 4;
 
-#if NETFX_CORE
-        public const string DefaultContentType = "application/xml";
-#else
         public const string DefaultContentType = MimeTypes.Xml;
-#endif
 
         public string FilePath { get; private set; }
 
@@ -46,17 +42,10 @@ namespace ServiceStack.Common.Web
             }
 
             this.FilePath = filePath;
-#if NETFX_CORE
-            this.Headers = new Dictionary<string, string> {
-                { "Content-Type", contentMimeType },
-                { "Content-Encoding", compressionType },
-            };
-#else
             this.Headers = new Dictionary<string, string> {
                 { HttpHeaders.ContentType, contentMimeType },
                 { HttpHeaders.ContentEncoding, compressionType },
             };
-#endif
         }
 
 #if NETFX_CORE
