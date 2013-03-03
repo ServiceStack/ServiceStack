@@ -39,7 +39,7 @@ namespace ServiceStack.Common
         public static string ToInvariantUpper(this char value)
         {
 #if NETFX_CORE
-            return value.ToUpperInvariant() + ucWords.Substring(1);
+            return value.ToString().ToUpperInvariant();
 #else
             return value.ToString(CultureInfo.InvariantCulture).ToUpper();
 #endif

@@ -52,7 +52,7 @@ namespace ServiceStack.ServiceClient.Web
 
         internal static void AddBasicAuth(this WebRequest client, string userName, string password)
         {
-            client.Headers[HttpHeaders.Authorization]
+            client.Headers[ServiceStack.Common.Web.HttpHeaders.Authorization]
                 = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(userName + ":" + password));
         }
 
