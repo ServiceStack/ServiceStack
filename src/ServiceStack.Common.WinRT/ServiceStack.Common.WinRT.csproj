@@ -408,6 +408,9 @@
     <Compile Include="..\servicestack.common\support\PropertyInvoker.cs">
       <Link>Support\PropertyInvoker.cs</Link>
     </Compile>
+    <Compile Include="..\ServiceStack.Common\Support\Thread.WinRT.cs">
+      <Link>Support\Thread.WinRT.cs</Link>
+    </Compile>
     <Compile Include="..\ServiceStack.Common\TypeExtensions.cs">
       <Link>TypeExtensions.cs</Link>
     </Compile>
@@ -438,26 +441,49 @@
     <Compile Include="..\ServiceStack.Common\Utils\ResponseStatusUtils.cs">
       <Link>Utils\ResponseStatusUtils.cs</Link>
     </Compile>
-    <Compile Include="..\servicestack.common\web\CompressedFileResult.cs">
+    <Compile Include="..\ServiceStack.Common\Web\CompressedFileResult.cs">
       <Link>Web\CompressedFileResult.cs</Link>
     </Compile>
-    <Compile Include="..\servicestack.common\web\CompressedResult.cs">
+    <Compile Include="..\ServiceStack.Common\Web\CompressedResult.cs">
       <Link>Web\CompressedResult.cs</Link>
     </Compile>
-    <Compile Include="..\servicestack.common\web\CompressionTypes.cs">
+    <Compile Include="..\ServiceStack.Common\Web\CompressionTypes.cs">
       <Link>Web\CompressionTypes.cs</Link>
     </Compile>
-    <Compile Include="..\servicestack.common\web\ContentType.cs">
+    <Compile Include="..\ServiceStack.Common\Web\ContentType.cs">
       <Link>Web\ContentType.cs</Link>
     </Compile>
-    <Compile Include="..\servicestack.common\web\EndPoint.cs">
+    <Compile Include="..\ServiceStack.Common\Web\EndPoint.cs">
       <Link>Web\EndPoint.cs</Link>
     </Compile>
+    <Compile Include="..\ServiceStack.Common\Web\HttpError.cs">
+      <Link>Web\HttpError.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Common\Web\HttpHeaders.cs">
+      <Link>Web\HttpHeaders.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Common\Web\HttpMethods.cs">
+      <Link>Web\HttpMethods.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Common\Web\HttpResponseFilter.cs">
+      <Link>Web\HttpResponseFilter.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Common\Web\HttpResponseStreamWrapper.cs">
+      <Link>Web\HttpResponseStreamWrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Common\Web\HttpResult.cs">
+      <Link>Web\HttpResult.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Common\Web\HttpResultExtensions.cs">
+      <Link>Web\HttpResultExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Common\Web\MimeTypes.cs">
+      <Link>Web\MimeTypes.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Common\Web\SerializationContext.cs">
+      <Link>Web\SerializationContext.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Support\Thread.cs" />
-    <Compile Include="Web\HttpHeaders.cs" />
-    <Compile Include="Web\HttpMethods.cs" />
-    <Compile Include="Web\MimeTypes.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text.WinRT\ServiceStack.Text.WinRT.csproj">
