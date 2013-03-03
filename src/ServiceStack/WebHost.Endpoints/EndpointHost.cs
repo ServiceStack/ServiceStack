@@ -164,6 +164,9 @@ namespace ServiceStack.WebHost.Endpoints
                 };
             }
 
+            if (config.ServiceStackHandlerFactoryPath != null)
+                config.ServiceStackHandlerFactoryPath = config.ServiceStackHandlerFactoryPath.TrimStart('/');
+
             var specifiedContentType = config.DefaultContentType; //Before plugins loaded
 
             ConfigurePlugins();
