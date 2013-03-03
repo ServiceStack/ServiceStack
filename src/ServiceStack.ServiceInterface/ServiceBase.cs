@@ -42,17 +42,16 @@ namespace ServiceStack.ServiceInterface
         /// Access to the Applications ServiceStack AppHost Instance
         /// </summary>
         /// 
-        private IResolver appHost; //not property to stop alt IOC's creating new instances of AppHost
-
+        private IResolver resolver; //not property to stop alt IOC's creating new instances of AppHost
         public IResolver GetResolver()
         {
-            return appHost ?? EndpointHost.AppHost;
+            return resolver ?? EndpointHost.AppHost;
         }
 
         private HandleServiceExceptionDelegate serviceExceptionHandler;
         public HandleServiceExceptionDelegate ServiceExceptionHandler
         {
-            get { return serviceExceptionHandler ?? (GetResolver() as IAppHost != null ? ((IAppHost)GetResolver()).ServiceExceptionHandler : null); }
+            get { return serviceExceptionHandler ?? (GetResolver() is IAppHost ? ((IAppHost)GetResolver()).ServiceExceptionHandler : null); }
             set { serviceExceptionHandler = value; }
         }
 
@@ -64,7 +63,7 @@ namespace ServiceStack.ServiceInterface
 
         public ServiceBase<TRequest> SetResolver(IResolver appHost) //Allow chaining
         {
-            this.appHost = appHost;
+            this.resolver = appHost;
             return this;
         }
 
