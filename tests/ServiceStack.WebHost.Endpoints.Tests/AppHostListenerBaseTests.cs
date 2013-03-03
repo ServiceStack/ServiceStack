@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Common.Web;
@@ -230,6 +231,38 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var handlerPath = HttpListenerRequestWrapper.GetHandlerPathIfAny(entry.Key);
                 Assert.That(handlerPath, Is.EqualTo(entry.Value));
             }
+        }
+
+        [Test, Ignore("You have to manually check the test output if there where NullReferenceExceptions!")]
+        public void Rapid_Start_Stop_should_not_cause_exceptions()
+        {
+            var localAppHost = new ExampleAppHostHttpListener();
+
+            for (int i = 0; i < 100; i++)
+            {
+                localAppHost.Start(GetBaseAddressWithFreePort());
+                localAppHost.Stop();
+            }
+        }
+
+        private static string GetBaseAddressWithFreePort()
+        {
+            TcpListener listener = new TcpListener(IPAddress.Loopback, 0);
+            listener.Start();
+            IPEndPoint endPoint = listener.LocalEndpoint as IPEndPoint;
+
+            if (endPoint != null)
+            {
+                string address = endPoint.Address.ToString();
+                int port = endPoint.Port;
+                Uri uri = new UriBuilder(Uri.UriSchemeHttp, address, port).Uri;
+
+                listener.Stop();
+
+                return uri.ToString();
+            }
+
+            throw new InvalidOperationException("Can not find a port to start the WpcsServer!");
         }
     }
 }
