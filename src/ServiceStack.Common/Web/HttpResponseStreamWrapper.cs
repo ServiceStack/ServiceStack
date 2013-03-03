@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using ServiceStack.ServiceHost;
+using ServiceStack.Common;
 
 namespace ServiceStack.Common.Web
 {
@@ -56,6 +57,7 @@ namespace ServiceStack.Common.Web
         public void ForceClose()
         {
             if (IsClosed) return;
+
             OutputStream.Close();
             IsClosed = true;
         }

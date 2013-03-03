@@ -1,4 +1,5 @@
 ﻿using System;
+using ServiceStack.Text;
 using ServiceStack.Common.Utils;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
@@ -76,7 +77,7 @@ namespace ServiceStack.Common.Web
             if (hasResponseStatus != null)
                 return hasResponseStatus.ResponseStatus;
 
-            var propertyInfo = response.GetType().GetProperty("ResponseStatus");
+            var propertyInfo = response.GetType().GetPropertyInfo("ResponseStatus");
             if (propertyInfo == null)
                 return null;
 

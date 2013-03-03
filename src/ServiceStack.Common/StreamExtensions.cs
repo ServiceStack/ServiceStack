@@ -1,4 +1,3 @@
-#if !SILVERLIGHT && !XBOX
 using System;
 using System.IO;
 using System.Text;
@@ -11,7 +10,7 @@ namespace ServiceStack.Common
 {
     public static class StreamExtensions
     {
-#if !MONOTOUCH
+#if !SILVERLIGHT && !XBOX && !MONOTOUCH
         /// <summary>
         /// Compresses the specified text using the default compression method: Deflate
         /// </summary>
@@ -94,7 +93,14 @@ namespace ServiceStack.Common
             stream.Write(bytes, 0, bytes.Length);
         }
 
+        public static void Close(this Stream stream)
+        {
+#if NETFX_CORE
+            stream.Dispose();
+#else
+            stream.Close(); //For documentation purposes. In reality it won't call this Ext method.
+#endif
+        }
     }
 
 }
-#endif

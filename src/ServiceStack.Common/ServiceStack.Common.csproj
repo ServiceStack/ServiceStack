@@ -394,6 +394,7 @@
     <Compile Include="Support\PropertyInvoker.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Support\Thread.WinRT.cs" />
     <Compile Include="TypeExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
