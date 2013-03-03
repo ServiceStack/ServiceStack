@@ -122,10 +122,15 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			ThreadPool.QueueUserWorkItem(Listen);
 		}
 
+	    private bool IsListening
+	    {
+            get { return this.IsStarted && this.Listener != null && this.Listener.IsListening; }
+	    }
+
 		// Loop here to begin processing of new requests.
 		private void Listen(object state)
 		{
-			while (this.Listener.IsListening)
+			while (this.IsListening)
 			{
 				if (this.Listener == null) return;
 
@@ -150,11 +155,10 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			HttpListenerContext context = null;
 
 			if (listener == null) return;
-			var isListening = listener.IsListening;
 
 			try
 			{
-				if (!isListening)
+				if (!IsListening)
 				{
 					Log.DebugFormat("Ignoring ListenerCallback() as HttpListener is no longer listening");
 					return;
@@ -169,7 +173,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				// because there will be a thread stopped waiting on the .EndGetContext()
 				// method, and again, that is just the way most Begin/End asynchronous
 				// methods of the .NET Framework work.
-				var errMsg = ex + ": " + isListening;
+                var errMsg = ex + ": " + IsListening;
 				Log.Warn(errMsg);
 				return;
 			}
@@ -254,8 +258,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 				Log.ErrorFormat("Swallowing HttpListenerException({0}) Thread exit or aborted request", RequestThreadAbortedException);
 			}
-			this.Listener = null;
-			this.IsStarted = false;
+            this.IsStarted = false;
+            this.Listener = null;
 		}
 
 		/// <summary>
