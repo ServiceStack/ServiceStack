@@ -291,8 +291,12 @@ namespace ServiceStack.ServiceClient.Web
         /// Determines if the basic auth header should be sent with every request.
         /// By default, the basic auth header is only sent when "401 Unauthorized" is returned.
         /// </summary>
-        public bool AlwaysSendBasicAuthHeader { get; set; }
-
+        private bool alwaysSendBasicAuthHeader;
+        public bool AlwaysSendBasicAuthHeader
+        {
+            get { return alwaysSendBasicAuthHeader; }
+            set { asyncClient.AlwaysSendBasicAuthHeader = alwaysSendBasicAuthHeader = value;}
+        }
 
         /// <summary>
         /// Specifies if cookies should be stored

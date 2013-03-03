@@ -48,6 +48,8 @@ namespace ServiceStack.ServiceClient.Web
 
         public ICredentials Credentials { get; set; }
 
+        public bool AlwaysSendBasicAuthHeader { get; set; }
+
         public bool StoreCookies { get; set; }
 
         public CookieContainer CookieContainer { get; set; }
@@ -362,10 +364,8 @@ namespace ServiceStack.ServiceClient.Web
             }
 #endif
 
-            if (this.Credentials != null)
-            {
-                webRequest.Credentials = this.Credentials;
-            }
+            if (this.Credentials != null) webRequest.Credentials = this.Credentials;
+            if (this.AlwaysSendBasicAuthHeader) webRequest.AddBasicAuth(this.UserName, this.Password);
 
             ApplyWebRequestFilters(webRequest);
 
