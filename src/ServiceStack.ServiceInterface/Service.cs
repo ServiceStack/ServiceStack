@@ -16,22 +16,30 @@ namespace ServiceStack.ServiceInterface
     {
         public IRequestContext RequestContext { get; set; }
 
-        private IAppHost appHost;
-        public virtual IAppHost GetAppHost()
+        private IResolver resolver;
+        public virtual IResolver GetResolver()
         {
-            return appHost ?? EndpointHost.AppHost;
+            return resolver ?? EndpointHost.AppHost;
         }
 
-        public virtual void SetAppHost(IAppHost appHost)
+        public virtual Service SetResolver(IResolver resolver)
         {
-            this.appHost = appHost;
+            this.resolver = resolver;
+            return this;
+        }
+
+        [Obsolete("Use SetResolver")]
+        public virtual Service SetAppHost(IAppHost appHost)
+        {
+            this.resolver = appHost;
+            return this;
         }
 
         public virtual T TryResolve<T>()
         {
-            return this.GetAppHost() == null
+            return this.GetResolver() == null
                 ? default(T)
-                : this.GetAppHost().TryResolve<T>();
+                : this.GetResolver().TryResolve<T>();
         }
 
         public virtual T ResolveService<T>()

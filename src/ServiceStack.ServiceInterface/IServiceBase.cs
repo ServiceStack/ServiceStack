@@ -5,7 +5,7 @@ namespace ServiceStack.ServiceInterface
 {
     public interface IServiceBase : IResolver
     {
-        IAppHost GetAppHost();
+        IResolver GetResolver();
 
         /// <summary>
         /// Resolve an alternate Web Service from ServiceStack's IOC container.
