@@ -42,9 +42,9 @@ namespace ServiceStack.ServiceInterface
         /// Access to the Applications ServiceStack AppHost Instance
         /// </summary>
         /// 
-        private IAppHost appHost; //not property to stop alt IOC's creating new instances of AppHost
-        
-        public IAppHost GetAppHost()
+        private IResolver appHost; //not property to stop alt IOC's creating new instances of AppHost
+
+        public IResolver GetResolver()
         {
             return appHost ?? EndpointHost.AppHost;
         }
@@ -52,11 +52,17 @@ namespace ServiceStack.ServiceInterface
         private HandleServiceExceptionDelegate serviceExceptionHandler;
         public HandleServiceExceptionDelegate ServiceExceptionHandler
         {
-            get { return serviceExceptionHandler ?? (GetAppHost() != null ? GetAppHost().ServiceExceptionHandler : null); }
+            get { return serviceExceptionHandler ?? (GetResolver() as IAppHost != null ? ((IAppHost)GetResolver()).ServiceExceptionHandler : null); }
             set { serviceExceptionHandler = value; }
         }
 
-        public ServiceBase<TRequest> SetAppHost(IAppHost appHost) //Allow chaining
+        [Obsolete("Use SetResolver")]
+        public ServiceBase<TRequest> SetAppHost(IAppHost appHost)
+        {
+            return SetResolver(appHost);
+        }
+
+        public ServiceBase<TRequest> SetResolver(IResolver appHost) //Allow chaining
         {
             this.appHost = appHost;
             return this;
@@ -159,7 +165,7 @@ namespace ServiceStack.ServiceInterface
         /// <returns></returns>
         public T ResolveService<T>()
         {
-            var service = this.GetAppHost().TryResolve<T>();
+            var service = this.GetResolver().TryResolve<T>();
             var requiresContext = service as IRequiresRequestContext;
             if (requiresContext != null)
             {
@@ -180,9 +186,9 @@ namespace ServiceStack.ServiceInterface
         /// <returns></returns>
         public T TryResolve<T>()
         {
-            return this.GetAppHost() == null
+            return this.GetResolver() == null
                 ? default(T)
-                : this.GetAppHost().TryResolve<T>();
+                : this.GetResolver().TryResolve<T>();
         }
 
         /// <summary>
@@ -248,7 +254,7 @@ namespace ServiceStack.ServiceInterface
         {
             var errorResponse = ServiceExceptionHandler != null
                 ? ServiceExceptionHandler(request, ex)
-                : DtoUtils.HandleException(GetAppHost(), request, ex);
+                : DtoUtils.HandleException(GetResolver(), request, ex);
 
             AfterEachRequest(request, errorResponse ?? ex);
             
