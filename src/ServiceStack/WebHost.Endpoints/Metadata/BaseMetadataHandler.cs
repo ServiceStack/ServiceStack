@@ -41,6 +41,20 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
             }
         }
 
+        public virtual string CreateResponse(Type type)
+        {
+            if (type == typeof(string))
+                return "(string)";
+            if (type == typeof(byte[]))
+                return "(byte[])";
+            if (type == typeof(Stream))
+                return "(Stream)";
+            if (type == typeof(HttpWebResponse))
+                return "(HttpWebResponse)";
+
+            return CreateMessage(type);
+        }
+
         protected virtual void ProcessOperations(HtmlTextWriter writer, IHttpRequest httpReq, IHttpResponse httpRes)
         {
             var operationName = httpReq.QueryString["op"];
@@ -55,13 +69,13 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
                 var operationType = allTypes.Single(x => x.Name == operationName);
                 var op = metadata.GetOperation(operationType);
 
-                var requestMessage = CreateMessage(operationType);
+                var requestMessage = CreateResponse(operationType);
                 string responseMessage = null;
 
                 var responseType = metadata.GetResponseTypeByRequest(operationType);
                 if (responseType != null)
                 {
-                    responseMessage = CreateMessage(responseType);
+                    responseMessage = CreateResponse(responseType);
                 }
 
                 var isSoap = Format == Format.Soap11 || Format == Format.Soap12;
