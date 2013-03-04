@@ -103,7 +103,8 @@ namespace ServiceStack.ServiceInterface
         {
             get
             {
-                return session ?? (session = SessionFactory.GetOrCreateSession(Request, Response));
+                return session ?? (session = TryResolve<ISession>() //Easier to mock
+                    ?? SessionFactory.GetOrCreateSession(Request, Response));
             }
         }
 
@@ -113,7 +114,13 @@ namespace ServiceStack.ServiceInterface
         private object userSession;
         protected virtual TUserSession SessionAs<TUserSession>()
         {
-            return (TUserSession)(userSession ?? (userSession = Cache.SessionAs<TUserSession>(Request, Response)));
+            if (userSession == null)
+            {
+                userSession = TryResolve<TUserSession>(); //Easier to mock
+                if (userSession == null)
+                    userSession = Cache.SessionAs<TUserSession>(Request, Response);
+            }
+            return (TUserSession)userSession;
         }
 
         public virtual void PublishMessage<T>(T message)
