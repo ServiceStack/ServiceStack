@@ -43,6 +43,7 @@ namespace ServiceStack.ServiceHost.Tests
 			public string ContentType { get; private set; }
 			public string HttpMethod { get; private set; }
 			public string UserAgent { get; set; }
+            public bool IsLocal { get; set; }
 
 			public IDictionary<string, Cookie> Cookies { get; private set; }
 			public string ResponseContentType { get; set; }

@@ -262,5 +262,6 @@ namespace ServiceStack.ServiceHost
             if (ex is HttpError) return ((HttpError)ex).ErrorCode;
             return ex.GetType().Name;
         }
+        
 	}
 }

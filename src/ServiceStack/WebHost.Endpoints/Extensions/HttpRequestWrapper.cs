@@ -59,7 +59,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
         {
             get { return request.ContentType; }
         }
-
+        
         private string httpMethod;
         public string HttpMethod
         {
@@ -76,6 +76,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
             return Headers[name]
                 ?? QueryString[name]
                 ?? FormData[name];
+        }
+
+        public bool IsLocal
+        {
+            get { return request.IsLocal; }
         }
 
         public string UserAgent

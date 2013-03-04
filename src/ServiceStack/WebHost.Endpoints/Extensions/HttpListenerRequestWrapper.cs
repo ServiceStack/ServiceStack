@@ -235,6 +235,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			get { return this.Form; }
 		}
 
+        public bool IsLocal
+        {
+            get { return request.IsLocal; }
+        }
+
         private string httpMethod;
         public string HttpMethod
         {
