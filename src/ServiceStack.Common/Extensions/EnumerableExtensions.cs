@@ -13,6 +13,7 @@ namespace ServiceStack.Common.Extensions
     /// These extensions have a potential to conflict with the LINQ extensions methods so
     /// leaving the implmentation in the 'Extensions' sub-namespace to force explicit opt-in
     /// </summary>
+    [Obsolete("Use ServiceStack.Common.EnumerableExtensions")]
     public static class EnumerableExtensions
     {
         public static void ForEach<T>(this IEnumerable<T> values, Action<T> action)

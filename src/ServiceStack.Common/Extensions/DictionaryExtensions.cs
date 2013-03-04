@@ -5,6 +5,7 @@ using Proxy = ServiceStack.Common.DictionaryExtensions;
 
 namespace ServiceStack.Common.Extensions
 {
+    [Obsolete("Use ServiceStack.Common.DictionaryExtensions")]
     public static class DictionaryExtensions
     {
         public static TValue GetValueOrDefault<TValue, TKey>(this Dictionary<TKey, TValue> dictionary, TKey key)

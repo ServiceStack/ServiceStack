@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using ServiceStack.DesignPatterns.Translator;
 
 namespace ServiceStack.Common.Extensions
 {
+    [Obsolete("Use ConvertAll")]
     public static class TranslatorExtensions
     {
         // Methods

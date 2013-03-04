@@ -5,6 +5,7 @@ using Proxy = ServiceStack.Common.IntExtensions;
 
 namespace ServiceStack.Common.Extensions
 {
+    [Obsolete("Use ServiceStack.Common.IntExtensions")]
     public static class IntExtensions
     {
         public static IEnumerable<int> Times(this int times)

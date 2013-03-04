@@ -6,6 +6,7 @@ using Proxy = ServiceStack.Common.AssertExtensions;
 
 namespace ServiceStack.Common.Extensions
 {
+    [Obsolete("Use ServiceStack.Common.AssertExtensions")]
     public static class AssertExtensions
     {
         public static void ThrowOnFirstNull(params object[] objs)
