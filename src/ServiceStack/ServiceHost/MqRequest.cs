@@ -47,6 +47,11 @@ namespace ServiceStack.ServiceHost
             get { return "MQ"; }
         }
 
+        public bool IsLocal
+        {
+            get { return true; }
+        }
+
         public IDictionary<string, Cookie> Cookies
         {
             get { return requestContext.Cookies; }

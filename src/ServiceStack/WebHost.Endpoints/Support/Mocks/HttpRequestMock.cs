@@ -45,7 +45,13 @@ namespace ServiceStack.WebHost.Endpoints.Support.Mocks
 		public string OperationName { get; set; }
 		public string ContentType { get; set; }
 		public string HttpMethod { get; set; }
-		public string UserAgent { get; set; }
+
+	    public bool IsLocal
+	    {
+	        get { return true; }
+	    }
+
+	    public string UserAgent { get; set; }
 
 		public IDictionary<string, Cookie> Cookies { get; set; }
 

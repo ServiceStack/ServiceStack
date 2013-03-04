@@ -28,6 +28,8 @@ namespace ServiceStack.ServiceHost
         string ContentType { get; }
 
         string HttpMethod { get; }
+        
+        bool IsLocal { get; }
 
         string UserAgent { get; }
 

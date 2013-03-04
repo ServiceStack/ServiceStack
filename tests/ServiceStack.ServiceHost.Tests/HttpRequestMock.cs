@@ -23,6 +23,11 @@ namespace ServiceStack.ServiceHost.Tests
 			get { throw new NotImplementedException(); }
 		}
 
+        public bool IsLocal
+        {
+            get { return true; }
+        }
+
 		public string HttpMethod
 		{
 			get { throw new NotImplementedException(); }

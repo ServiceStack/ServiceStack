@@ -50,6 +50,7 @@ namespace ServiceStack.ServiceInterface.Testing
         public string ContentType { get; set; }
         public string HttpMethod { get; set; }
         public string UserAgent { get; set; }
+        public bool IsLocal { get; set; }
 
         public IDictionary<string, Cookie> Cookies { get; set; }
 
