@@ -133,6 +133,7 @@
     <Compile Include="CompressionTests.cs" />
     <Compile Include="ExceptionHandling2Tests.cs" />
     <Compile Include="IntegrationTests\MovieSoap11Tests.cs" />
+    <Compile Include="ServiceClientsBuiltInResponseTests.cs" />
     <Compile Include="ServiceSetupTests.cs" />
     <Compile Include="UniqueRequestTests.cs" />
     <Compile Include="SendOneWayTests.cs" />
