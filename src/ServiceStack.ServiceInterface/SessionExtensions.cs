@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Web;
 using ServiceStack.CacheAccess;
 using ServiceStack.Common;
@@ -70,9 +71,17 @@ namespace ServiceStack.ServiceInterface
                 : tempId;
         }
 
+        static readonly RandomNumberGenerator randgen = new RNGCryptoServiceProvider();
+        internal static string CreateRandomSessionId()
+        {
+            var data = new byte[15];
+            randgen.GetBytes(data);
+            return Convert.ToBase64String(data);
+        }
+
         public static string CreatePermanentSessionId(this IHttpResponse res, IHttpRequest req)
         {
-            var sessionId = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+            var sessionId = CreateRandomSessionId();
             res.Cookies.AddPermanentCookie(SessionFeature.PermanentSessionId, sessionId);
             req.Items[SessionFeature.PermanentSessionId] = sessionId;
             return sessionId;
@@ -80,7 +89,7 @@ namespace ServiceStack.ServiceInterface
 
         public static string CreateTemporarySessionId(this IHttpResponse res, IHttpRequest req)
         {
-            var sessionId = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+            var sessionId = CreateRandomSessionId();
             res.Cookies.AddSessionCookie(SessionFeature.SessionId, sessionId,
                 (EndpointHost.Config != null && EndpointHost.Config.OnlySendSessionCookiesSecurely && req.IsSecureConnection));
             req.Items[SessionFeature.SessionId] = sessionId;
