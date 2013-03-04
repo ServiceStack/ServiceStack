@@ -56,13 +56,13 @@ namespace ServiceStack.ServiceInterface
         private IHttpRequest request;
         protected virtual IHttpRequest Request
         {
-            get { return request ?? (request = RequestContext.Get<IHttpRequest>()); }
+            get { return request ?? (request = TryResolve<IHttpRequest>() ?? (RequestContext != null ? RequestContext.Get<IHttpRequest>() : null)); }
         }
 
         private IHttpResponse response;
         protected virtual IHttpResponse Response
         {
-            get { return response ?? (response = RequestContext.Get<IHttpResponse>()); }
+            get { return response ?? (response = TryResolve<IHttpResponse>() ?? (RequestContext != null ? RequestContext.Get<IHttpResponse>() : null)); }
         }
 
         private ICacheClient cache;
