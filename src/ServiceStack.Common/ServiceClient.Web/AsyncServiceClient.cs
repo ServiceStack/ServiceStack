@@ -132,7 +132,7 @@ namespace ServiceStack.ServiceClient.Web
                 this.OnSuccess(response);
 #endif
             }
-            
+
             public void HandleError(TResponse response, Exception ex)
             {
                 if (this.OnError == null)
@@ -211,7 +211,7 @@ namespace ServiceStack.ServiceClient.Web
         public bool DisableAutoCompression { get; set; }
 
         public string UserName { get; set; }
-    
+
         public string Password { get; set; }
 
         public void SetCredentials(string userName, string password)
@@ -256,11 +256,11 @@ namespace ServiceStack.ServiceClient.Web
         internal static void AllowAutoCompression(HttpWebRequest webRequest)
         {
             webRequest.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip,deflate");
-            webRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;            
+            webRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
         }
 #endif
 
-        private RequestState<TResponse> SendWebRequest<TResponse>(string httpMethod, string absoluteUrl, object request, 
+        private RequestState<TResponse> SendWebRequest<TResponse>(string httpMethod, string absoluteUrl, object request,
             Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             if (httpMethod == null) throw new ArgumentNullException("httpMethod");
@@ -310,12 +310,11 @@ namespace ServiceStack.ServiceClient.Web
             if (!DisableAutoCompression)
             {
                 _webRequest.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip,deflate");
-                _webRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;                
+                _webRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
             }
 #endif
 
-            var requestState = new RequestState<TResponse>
-            {
+            var requestState = new RequestState<TResponse> {
                 HttpMethod = httpMethod,
                 Url = requestUri,
 #if SILVERLIGHT && !WINDOWS_PHONE && !NETFX_CORE
@@ -341,13 +340,13 @@ namespace ServiceStack.ServiceClient.Web
             return requestState;
         }
 
-        private void SendWebRequestAsync<TResponse>(string httpMethod, object request, 
+        private void SendWebRequestAsync<TResponse>(string httpMethod, object request,
             RequestState<TResponse> requestState, HttpWebRequest webRequest)
         {
             var httpGetOrDeleteOrHead = (httpMethod == "GET" || httpMethod == "DELETE" || httpMethod == "HEAD");
             webRequest.Accept = string.Format("{0}, */*", ContentType);
 
-#if !SILVERLIGHT 
+#if !SILVERLIGHT
             webRequest.Method = httpMethod;
 #else
             //Methods others than GET and POST are only supported by Client request creator, see
@@ -425,6 +424,12 @@ namespace ServiceStack.ServiceClient.Web
                 requestState.WebResponse = (HttpWebResponse)webRequest.EndGetResponse(asyncResult);
 
                 ApplyWebResponseFilters(requestState.WebResponse);
+
+                if (typeof(T) == typeof(HttpWebResponse))
+                {
+                    requestState.HandleSuccess((T)(object)requestState.WebResponse);
+                    return;
+                }
 
                 // Read the response into a Stream object.
                 var responseStream = requestState.WebResponse.GetResponseStream();
@@ -512,9 +517,30 @@ namespace ServiceStack.ServiceClient.Web
                 try
                 {
                     requestState.BytesData.Position = 0;
-                    using (var reader = requestState.BytesData)
+                    if (typeof(T) == typeof(Stream))
                     {
-                        response = (T)this.StreamDeserializer(typeof(T), reader);
+                        response = (T)(object)requestState.BytesData;
+                    }
+                    else
+                    {
+                        using (var reader = requestState.BytesData)
+                        {
+                            if (typeof(T) == typeof(string))
+                            {
+                                using (var sr = new StreamReader(reader))
+                                {
+                                    response = (T)(object)sr.ReadToEnd();
+                                }
+                            }
+                            else if (typeof(T) == typeof(byte[]))
+                            {
+                                response = (T)(object)reader.ToArray();
+                            }
+                            else
+                            {
+                                response = (T)this.StreamDeserializer(typeof(T), reader);
+                            }
+                        }
                     }
 
 #if SILVERLIGHT && !WINDOWS_PHONE && !NETFX_CORE
@@ -557,18 +583,17 @@ namespace ServiceStack.ServiceClient.Web
         {
             var webEx = exception as WebException;
             if (webEx != null
-#if !SILVERLIGHT 
-                && webEx.Status == WebExceptionStatus.ProtocolError
+#if !SILVERLIGHT
+ && webEx.Status == WebExceptionStatus.ProtocolError
 #endif
-            )
+)
             {
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 Log.Error(webEx);
                 Log.DebugFormat("Status Code : {0}", errorResponse.StatusCode);
                 Log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
 
-                var serviceEx = new WebServiceException(errorResponse.StatusDescription)
-                {
+                var serviceEx = new WebServiceException(errorResponse.StatusDescription) {
                     StatusCode = (int)errorResponse.StatusCode,
                 };
 
@@ -591,10 +616,9 @@ namespace ServiceStack.ServiceClient.Web
                 {
                     // Oh, well, we tried
                     Log.Debug(string.Format("WebException Reading Response Error: {0}", innerEx.Message), innerEx);
-                    requestState.HandleError(default(TResponse), new WebServiceException(errorResponse.StatusDescription, innerEx)
-                        {
-                            StatusCode = (int)errorResponse.StatusCode,
-                        });
+                    requestState.HandleError(default(TResponse), new WebServiceException(errorResponse.StatusDescription, innerEx) {
+                        StatusCode = (int)errorResponse.StatusCode,
+                    });
                 }
                 return;
             }

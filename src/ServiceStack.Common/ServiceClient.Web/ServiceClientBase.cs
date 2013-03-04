@@ -94,7 +94,7 @@ namespace ServiceStack.ServiceClient.Web
 #if NETFX_CORE || WINDOWS_PHONE
         public Dictionary<string, string> Headers { get; private set; } 
 #else
-        public NameValueCollection Headers { get; private set; } 
+        public NameValueCollection Headers { get; private set; }
 #endif
 
         public const string DefaultHttpMethod = "POST";
@@ -105,8 +105,7 @@ namespace ServiceStack.ServiceClient.Web
         {
             this.HttpMethod = DefaultHttpMethod;
             this.CookieContainer = new CookieContainer();
-            asyncClient = new AsyncServiceClient
-            {
+            asyncClient = new AsyncServiceClient {
                 ContentType = ContentType,
                 StreamSerializer = SerializeToStream,
                 StreamDeserializer = StreamDeserializer,
@@ -295,7 +294,7 @@ namespace ServiceStack.ServiceClient.Web
         public bool AlwaysSendBasicAuthHeader
         {
             get { return alwaysSendBasicAuthHeader; }
-            set { asyncClient.AlwaysSendBasicAuthHeader = alwaysSendBasicAuthHeader = value;}
+            set { asyncClient.AlwaysSendBasicAuthHeader = alwaysSendBasicAuthHeader = value; }
         }
 
         /// <summary>
@@ -508,8 +507,7 @@ namespace ServiceStack.ServiceClient.Web
                 log.DebugFormat("Status Code : {0}", errorResponse.StatusCode);
                 log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
 
-                var serviceEx = new WebServiceException(errorResponse.StatusDescription)
-                {
+                var serviceEx = new WebServiceException(errorResponse.StatusDescription) {
                     StatusCode = (int)errorResponse.StatusCode,
                     StatusDescription = errorResponse.StatusDescription,
                 };
@@ -533,8 +531,7 @@ namespace ServiceStack.ServiceClient.Web
                 catch (Exception innerEx)
                 {
                     // Oh, well, we tried
-                    throw new WebServiceException(errorResponse.StatusDescription, innerEx)
-                    {
+                    throw new WebServiceException(errorResponse.StatusDescription, innerEx) {
                         StatusCode = (int)errorResponse.StatusCode,
                         StatusDescription = errorResponse.StatusDescription,
                         ResponseBody = serviceEx.ResponseBody
@@ -559,8 +556,7 @@ namespace ServiceStack.ServiceClient.Web
 
         private WebRequest SendRequest(string httpMethod, string requestUri, object request)
         {
-            return PrepareWebRequest(httpMethod, requestUri, request, client =>
-                {
+            return PrepareWebRequest(httpMethod, requestUri, request, client => {
                     using (var requestStream = client.GetRequestStream())
                     {
                         SerializeToStream(null, request, requestStream);
@@ -969,8 +965,7 @@ namespace ServiceStack.ServiceClient.Web
             var requestUri = GetUrl(relativeOrAbsoluteUrl);
             var currentStreamPosition = fileToUpload.Position;
 
-            Func<WebRequest> createWebRequest = () =>
-            {
+            Func<WebRequest> createWebRequest = () => {
                 var webRequest = PrepareWebRequest(HttpMethods.Post, requestUri, null, null);
 
                 var queryString = QueryStringSerializer.SerializeToString(request);
@@ -1077,9 +1072,25 @@ namespace ServiceStack.ServiceClient.Web
             {
                 return (TResponse)Convert.ChangeType(webResponse, typeof(TResponse));
             }
+            if (typeof(TResponse) == typeof(Stream)) //Callee Needs to dispose manually
+            {
+                return (TResponse)(object)webResponse.GetResponseStream();
+            }
 
             using (var responseStream = webResponse.GetResponseStream())
             {
+                if (typeof(TResponse) == typeof(string))
+                {
+                    using (var reader = new StreamReader(responseStream))
+                    {
+                        return (TResponse)(object)reader.ReadToEnd();
+                    }
+                }
+                if (typeof(TResponse) == typeof(byte[]))
+                {
+                    return (TResponse)(object)responseStream.ReadFully();
+                }
+
                 var response = DeserializeFromStream<TResponse>(responseStream);
                 return response;
             }
