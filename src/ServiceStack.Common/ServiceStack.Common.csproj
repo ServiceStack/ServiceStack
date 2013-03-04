@@ -148,9 +148,6 @@
     <Compile Include="Extensions\ITranslatorExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Extensions\ReflectionExtensions.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Extensions\StringExtensions.cs">
       <SubType>Code</SubType>
     </Compile>

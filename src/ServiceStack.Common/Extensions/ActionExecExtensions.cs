@@ -6,6 +6,7 @@ using Proxy = ServiceStack.Common.ActionExecExtensions;
 
 namespace ServiceStack.Common.Extensions
 {
+    [Obsolete("Use ServiceStack.Common.ActionExecExtensions")]
     public static class ExtensionsProxy
     {
         public static void ExecAllAndWait(this ICollection<Action> actions, TimeSpan timeout)
