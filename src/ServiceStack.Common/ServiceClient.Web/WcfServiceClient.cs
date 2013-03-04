@@ -356,6 +356,11 @@ namespace ServiceStack.ServiceClient.Web
             throw new NotImplementedException();
         }
 
+        public void GetAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            throw new NotImplementedException();
+        }
+
         public void GetAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             throw new NotImplementedException();
@@ -366,12 +371,37 @@ namespace ServiceStack.ServiceClient.Web
             throw new NotImplementedException();
         }
 
+        public void DeleteAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void PostAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            throw new NotImplementedException();
+        }
+
         public void PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             throw new NotImplementedException();
         }
 
+        public void PutAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            throw new NotImplementedException();
+        }
+
         public void PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CancelAsync()
         {
             throw new NotImplementedException();
         }
