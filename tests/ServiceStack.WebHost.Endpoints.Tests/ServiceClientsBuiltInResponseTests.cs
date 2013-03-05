@@ -13,6 +13,18 @@ using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
+    [Route("/poco/{Text}")]
+    public class Poco : IReturn<PocoResponse>
+    {
+        public string Text { get; set; }
+    }
+
+    public class PocoResponse
+    {
+        public string Result { get; set; }
+    }
+
+    
     [Route("/headers/{Text}")]
     public class Headers : IReturn<HttpWebResponse>
     {
@@ -39,10 +51,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class BuiltInTypesService : ServiceInterface.Service
     {
-        public object Any(Headers request)
+        public PocoResponse Any(Poco request)
+        {
+            return new PocoResponse { Result = "Hello, " + (request.Text ?? "World!") };
+        }
+
+        public void Any(Headers request)
         {
             base.Response.AddHeader("X-Response", request.Text);
-            return null;
         }
 
         public string Any(Strings request)
@@ -72,6 +88,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public override void Configure(Container container) {}
     }
 
+    [TestFixture]
     public class ServiceClientsBuiltInResponseTests
     {
         private BufferedRequestAppHost appHost;
@@ -100,6 +117,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         protected static IServiceClient[] ServiceClients = 
             RestClients.OfType<IServiceClient>().ToArray();
+
+        [Test, TestCaseSource("RestClients")]
+        public void Can_download_Poco_response_as_string(IRestClient client)
+        {
+            string response = client.Get<string>("/poco/Test");
+
+            Assert.That(response, Is.StringContaining("Hello, Test"));
+        }
+
+        [Test, TestCaseSource("RestClients")]
+        public void Can_download_Poco_response_as_bytes(IRestClient client)
+        {
+            byte[] response = client.Get<byte[]>("/poco/Test");
+
+            Assert.That(response.FromUtf8Bytes(), Is.StringContaining("Hello, Test"));
+        }
+
+        [Test, TestCaseSource("RestClients")]
+        public void Can_download_Poco_response_as_PocoResponse(IRestClient client)
+        {
+            HttpWebResponse response = client.Get<HttpWebResponse>("/poco/Test");
+
+            using (var stream = response.GetResponseStream())
+            using (var sr = new StreamReader(stream))
+            {
+                Assert.That(sr.ReadToEnd(), Is.StringContaining("Hello, Test"));
+            }
+        }
 
         [Test, TestCaseSource("RestClients")]
         public void Can_download_Headers_response(IRestClient client)
