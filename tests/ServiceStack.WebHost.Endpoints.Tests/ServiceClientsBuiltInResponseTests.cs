@@ -119,6 +119,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             RestClients.OfType<IServiceClient>().ToArray();
 
         [Test, TestCaseSource("RestClients")]
+        public void Can_download_Poco_response(IRestClient client)
+        {
+            PocoResponse response = client.Get(new Poco { Text = "Test" });
+
+            Assert.That(response.Result, Is.EqualTo("Hello, Test"));
+        }
+
+        [Test, TestCaseSource("RestClients")]
         public void Can_download_Poco_response_as_string(IRestClient client)
         {
             string response = client.Get<string>("/poco/Test");
@@ -132,6 +140,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             byte[] response = client.Get<byte[]>("/poco/Test");
 
             Assert.That(response.FromUtf8Bytes(), Is.StringContaining("Hello, Test"));
+        }
+
+        [Test, TestCaseSource("RestClients")]
+        public void Can_download_Poco_response_as_Stream(IRestClient client)
+        {
+            Stream response = client.Get<Stream>("/poco/Test");
+            using (response)
+            {
+                var bytes = response.ReadFully();
+                Assert.That(bytes.FromUtf8Bytes(), Is.StringContaining("Hello, Test"));
+            }
         }
 
         [Test, TestCaseSource("RestClients")]
