@@ -42,6 +42,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     [ServiceHost.Api]
     [Route("/swg3/conference/{Name}/conferences", "POST")]
+    [Route("/swgb3/conference/{Name}/conferences", "POST")]
     public class MultipleTest2Request : IReturn<object>
     {
         [ApiMember]
@@ -189,6 +190,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             resources.PrintDump();
 
             var swagger = resources.Apis.Where(t => t.Path.Contains("/resource/swg3"));
+            Assert.That(swagger.Count(), Is.EqualTo(1));
+        }
+
+        [Test, TestCaseSource("RestClients")]
+        public void Should_distinct_base_path(IRestClient client)
+        {
+            var resources = client.Get<ResourcesResponse>("/resources");
+            resources.PrintDump();
+
+            var swagger = resources.Apis.Where(t => t.Path.Contains("/resource/swgb3"));
             Assert.That(swagger.Count(), Is.EqualTo(1));
         }
 
