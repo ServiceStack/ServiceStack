@@ -81,16 +81,22 @@ namespace ServiceStack.Api.Swagger
 
 			if (paths.Count == 0) return;
 
-			var minPath = paths.Min();
-			if (string.IsNullOrEmpty(minPath) || minPath == "/") return;
-			if (!apis.Any(a => a.Path == string.Concat(RESOURCE_PATH, minPath)))
-			{
-				apis.Add(new RestService
-				{
-					Path = string.Concat(RESOURCE_PATH, minPath),
-					Description = operationType.GetDescription()
-				});
-			}
+		    var basePaths = paths.Select(t => string.IsNullOrEmpty(t) ? null : t.Split('/'))
+		        .Where(t => t != null && t.Length > 1)
+		        .Select(t => t[1]);
+
+            foreach (var bp in basePaths)
+            {
+                if (string.IsNullOrEmpty(bp)) return;
+                if (!apis.Any(a => a.Path == string.Concat(RESOURCE_PATH, "/" + bp)))
+                {
+                    apis.Add(new RestService
+                                 {
+                                     Path = string.Concat(RESOURCE_PATH, "/" + bp),
+                                     Description = operationType.GetDescription()
+                                 });
+                }
+            }
 		}
 	}
 }
