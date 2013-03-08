@@ -232,6 +232,18 @@ namespace ServiceStack.ServiceClient.Web
                 this.asyncClient.Timeout = value;
             }
         }
+        
+        private TimeSpan? readWriteTimeout;
+    	public TimeSpan? ReadWriteTimeout
+		{
+			get { return this.readWriteTimeout; }
+			set
+			{
+				this.readWriteTimeout = value;
+                // TODO implement ReadWriteTimeout in asyncClient
+				//this.asyncClient.ReadWriteTimeout = value;
+			}
+		}
 
         public virtual string Accept
         {
@@ -590,6 +602,7 @@ namespace ServiceStack.ServiceClient.Web
 
                 if (Proxy != null) client.Proxy = Proxy;
                 if (this.Timeout.HasValue) client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
+                if (this.ReadWriteTimeout.HasValue) client.ReadWriteTimeout = (int)this.ReadWriteTimeout.Value.TotalMilliseconds;
                 if (this.credentials != null) client.Credentials = this.credentials;
                 if (this.AlwaysSendBasicAuthHeader) client.AddBasicAuth(this.UserName, this.Password);
 
