@@ -204,7 +204,7 @@
     <Compile Include="WebHost.Endpoints\ActionContext.cs" />
     <Compile Include="WebHost.Endpoints\AppHostExtensions.cs" />
     <Compile Include="Markdown\CachedExpressionCompiler.cs" />
-    <Compile Include="Markdown\DynamicTypeGenerator .cs" />
+    <Compile Include="Markdown\DynamicTypeGenerator.cs" />
     <Compile Include="Markdown\ExpressionHelper.cs" />
     <Compile Include="Html\HtmlHelper.cs" />
     <Compile Include="Html\DisplayTextExtensions.cs" />
