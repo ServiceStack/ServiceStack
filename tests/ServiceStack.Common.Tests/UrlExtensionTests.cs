@@ -70,6 +70,23 @@ namespace ServiceStack.Common.Tests
         public string Excluded { get; set; }
     }
 
+	public enum Gender
+	{
+		None = 0,
+		Male,
+		Female
+	}
+
+	[Route("/route/{Id}")]
+	public class RequestWithValueTypes : IReturn
+	{
+		public long Id { get; set; }
+
+		public Gender Gender1 { get; set; }
+
+		public Gender? Gender2 { get; set; }
+	}
+
     [TestFixture]
     public class UrlExtensionTests
     {
@@ -120,5 +137,40 @@ namespace ServiceStack.Common.Tests
             var url = new RequestWithNamedDataMembers { Id = 1, Included = "Yes", Excluded = "No" }.ToUrl("GET");
             Assert.That(url, Is.EqualTo("/route/1?inc=Yes"));
         }
-    }
+
+		[Test]
+		public void Cannot_use_default_for_non_nullable_value_types_on_querystring()
+		{
+			var url = new RequestWithValueTypes {Id = 1, Gender1 = Gender.None}.ToUrl("GET");
+			Assert.That(url, Is.EqualTo("/route/1"));
+		}
+
+		[Test]
+		public void Can_use_non_default_for_non_nullable_value_types_on_querystring()
+		{
+			var url = new RequestWithValueTypes { Id = 1, Gender1 = Gender.Male }.ToUrl("GET");
+			Assert.That(url, Is.EqualTo("/route/1?gender1=Male"));
+		}
+
+		[Test]
+		public void Can_use_default_for_nullable_value_types_on_querystring()
+		{
+			var url = new RequestWithValueTypes { Id = 1, Gender2 = Gender.None }.ToUrl("GET");
+			Assert.That(url, Is.EqualTo("/route/1?gender2=None"));
+		}
+
+		[Test]
+		public void Cannot_use_null_for_nullable_value_types_on_querystring()
+		{
+			var url = new RequestWithValueTypes { Id = 1, Gender2 = null }.ToUrl("GET");
+			Assert.That(url, Is.EqualTo("/route/1"));
+		}
+
+		[Test]
+		public void Can_use_non_default_for_nullable_value_types_on_querystring()
+		{
+			var url = new RequestWithValueTypes { Id = 1, Gender2 = Gender.Male }.ToUrl("GET");
+			Assert.That(url, Is.EqualTo("/route/1?gender2=Male"));
+		}
+	}
 }

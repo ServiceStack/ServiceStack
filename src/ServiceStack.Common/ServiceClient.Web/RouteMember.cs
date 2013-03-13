@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using ServiceStack.Text;
 
 namespace ServiceStack.ServiceClient.Web
 {
@@ -18,7 +19,9 @@ namespace ServiceStack.ServiceClient.Web
 
 		public override object GetValue(object target)
 		{
-			return field.GetValue(target);
+			var v = field.GetValue(target);
+			if (Equals(v, field.FieldType.GetDefaultValue())) return null;
+			return v;
 		}
 	}
 
@@ -33,7 +36,9 @@ namespace ServiceStack.ServiceClient.Web
 
 		public override object GetValue(object target)
 		{
-			return property.GetValue(target, null);
+			var v = property.GetValue(target, null);
+			if (Equals(v, property.PropertyType.GetDefaultValue())) return null;
+			return v;
 		}
 	}
 }
