@@ -79,7 +79,7 @@ public class TodosService : Service
 //no code-gen required, can re-use above DTO's
 
 var restClient = new JsonServiceClient(BaseUri);
-List<Todo> all = restClient.Get(new Todos()); 			// Count = 0
+List<Todo> all = restClient.Get(new Todos());     		// Count = 0
 
 var todo = restClient.Post(
     new Todo { Content = "New TODO", Order = 1 }); 	    // todo.Id = 1
@@ -146,15 +146,11 @@ If you just want ServiceStack hosted at `/` - Create an empty ASP.NET Web Applic
 Otherwise if you want to host ServiceStack Side-by-Side with MVC: Hosted at `/api` - Create an empty MVC Web Application and
 ![Install-Pacakage ServiceStack.Host.Mvc](http://www.servicestack.net/img/nuget-servicestack.host.mvc.png)
 
-To help get started you should also download the ServiceStack.Examples projects (includes dlls, demos and starter templates):
+To help get started you should also clone the ServiceStack.Examples projects (includes dlls, demos and starter templates):
 
-  * **[ServiceStack.Examples/downloads/](https://github.com/ServiceStack/ServiceStack.Examples/downloads)**
+    git clone git://github.com/ServiceStack/ServiceStack.Examples.git
 
-If you prefer not to use NuGet and just want to download the latest release binaries get them at:
-
-  * **[ServiceStack/downloads/](https://github.com/ServiceStack/ServiceStack/downloads)**
-
-Alternatively if you want keep up with the latest version you can always use the power of Git :)
+Alternatively if you want keep up with the latest version and not use NuGet, simply clone this repo:
 
     git clone git://github.com/ServiceStack/ServiceStack.git
 
