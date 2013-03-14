@@ -7,17 +7,17 @@ namespace ServiceStack.Configuration
 {
     public class AppSettingsBase : IResourceManager
     {
-        private readonly ISettings _settings;
+        protected ISettings settings;
         const string ErrorAppsettingNotFound = "Unable to find App Setting: {0}";
 
-        public AppSettingsBase(ISettings settings)
+        public AppSettingsBase(ISettings settings=null)
         {
-            _settings = settings;
+            this.settings = settings;
         }
 
         public virtual string GetNullableString(string name)
         {
-            return _settings.Get(name);
+            return settings.Get(name);
         }
 
         public virtual string GetString(string name)

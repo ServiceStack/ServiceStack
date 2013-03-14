@@ -116,6 +116,7 @@
     <Compile Include="Configuration\AppSettings.cs" />
     <Compile Include="Configuration\AppSettingsBase.cs" />
     <Compile Include="Configuration\ConfigUtils.cs" />
+    <Compile Include="Configuration\DictionarySettings.cs" />
     <Compile Include="Configuration\ISettings.cs" />
     <Compile Include="HttpExtensions.cs" />
     <Compile Include="MetadataTypesHandler.cs" />
