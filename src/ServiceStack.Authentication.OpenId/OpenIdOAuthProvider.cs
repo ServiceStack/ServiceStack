@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using DotNetOpenAuth.Messaging;
 using DotNetOpenAuth.OpenId.Extensions.AttributeExchange;
 using DotNetOpenAuth.OpenId.Extensions.SimpleRegistration;
@@ -227,17 +228,18 @@ namespace ServiceStack.Authentication.OpenId
 
             if (fetchResponse == null) return ret;
 
+	        string fullName = null;
             var names = new List<string>();
             var emails = new List<string>();
 
             if (fetchResponse.Attributes.Contains("http://schema.openid.net/namePerson"))
-                names.AddRange(fetchResponse.Attributes["http://schema.openid.net/namePerson"].Values);
+                fullName = fetchResponse.Attributes["http://schema.openid.net/namePerson"].Values.FirstOrDefault();
 
-            if (fetchResponse.Attributes.Contains(WellKnownAttributes.Name.FullName))
-                names.AddRange(fetchResponse.Attributes[WellKnownAttributes.Name.FullName].Values);
+            if (fullName == null && fetchResponse.Attributes.Contains(WellKnownAttributes.Name.FullName))
+                fullName = fetchResponse.Attributes[WellKnownAttributes.Name.FullName].Values.FirstOrDefault();
 
-            if (fetchResponse.Attributes.Contains(WellKnownAttributes.Name.Alias))
-                names.AddRange(fetchResponse.Attributes[WellKnownAttributes.Name.Alias].Values);
+            if (fullName == null && fetchResponse.Attributes.Contains(WellKnownAttributes.Name.Alias))
+                fullName = fetchResponse.Attributes[WellKnownAttributes.Name.Alias].Values.FirstOrDefault();
 
             if (fetchResponse.Attributes.Contains(WellKnownAttributes.Name.First))
                 names.AddRange(fetchResponse.Attributes[WellKnownAttributes.Name.First].Values);
@@ -251,8 +253,11 @@ namespace ServiceStack.Authentication.OpenId
             if (fetchResponse.Attributes.Contains(WellKnownAttributes.Contact.Email))
                 emails.AddRange(fetchResponse.Attributes[WellKnownAttributes.Contact.Email].Values);
 
-            if (names.Count > 0)
-                ret["FullName"] = names[0];
+			if (fullName == null && names.Count > 0) 
+				fullName = string.Join(" ", names.ToArray());
+
+			if (fullName != null)
+                ret["FullName"] = fullName;
 
             if (emails.Count > 0)
                 ret["Email"] = emails[0];
