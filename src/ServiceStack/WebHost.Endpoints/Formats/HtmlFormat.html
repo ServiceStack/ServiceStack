@@ -282,12 +282,22 @@ function val(m) {
   return m.length ? arr(m) : obj(m);
 }
 function num(m) { return m; }
-function str(m) {
-  return m.substr(0,6) == '/Date(' ? dmft(date(m)) : m;
+function strFact(showFullDate){
+
+  function shortDate(m){
+    return m.substr(0,6) == '/Date(' ? dmft(date(m)) : m;
+  }
+
+  function fullDate(m){
+    return m.substr(0,6) == '/Date(' ? dmfthm(date(m)) : m;
+  }
+  return showFullDate ? fullDate : shortDate;  
 }
+str = strFact(location.hash.indexOf('show=') != -1 && location.hash.indexOf('fulldates') != -1);
 function date(s) { return new Date(parseFloat(/Date\(([^)]+)\)/.exec(s)[1])); }
 function pad(d) { return d < 10 ? '0'+d : d; }
 function dmft(d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()); }
+function dmfthm(d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ":" + pad(d.getMinutes()); }
 function show(k) { return typeof k != 'string' || k.substr(0,2) != '__'; }
 function obj(m) {
   var sb = '<dl>';
