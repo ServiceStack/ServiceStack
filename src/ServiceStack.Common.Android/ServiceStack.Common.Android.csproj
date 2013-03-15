@@ -101,9 +101,6 @@
     <Compile Include="..\ServiceStack.Common\Extensions\ITranslatorExtensions.cs">
       <Link>Extensions\ITranslatorExtensions.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Common\Extensions\ReflectionExtensions.cs">
-      <Link>Extensions\ReflectionExtensions.cs</Link>
-    </Compile>
     <Compile Include="..\ServiceStack.Common\Extensions\StringExtensions.cs">
       <Link>Extensions\StringExtensions.cs</Link>
     </Compile>
