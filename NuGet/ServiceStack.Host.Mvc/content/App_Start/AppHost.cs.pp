@@ -70,7 +70,7 @@ namespace $rootnamespace$.App_Start
 			var appSettings = new AppSettings();
 
 			//Default route: /auth/{provider}
-			Plugins.Add(new AuthFeature(this, () => new CustomUserSession(),
+			Plugins.Add(new AuthFeature(() => new CustomUserSession(),
 				new IAuthProvider[] {
 					new CredentialsAuthProvider(appSettings), 
 					new FacebookAuthProvider(appSettings), 
