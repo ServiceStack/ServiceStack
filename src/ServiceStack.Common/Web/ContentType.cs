@@ -181,7 +181,10 @@ namespace ServiceStack.Common.Web
 
         public static string GetContentFormat(Format format)
         {
-            return format.ToString().ToLower();
+            var formatStr = format.ToString().ToLower();
+            return format == Format.MsgPack || format == Format.ProtoBuf 
+                ? "x-" + formatStr 
+                : formatStr;
         }
 
         public static string GetContentFormat(string contentType)

@@ -38,18 +38,13 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         }
     }
 
-    class CachedProtoBufEmailService : ServiceBase<CachedProtoBufEmail>
+    class CachedProtoBufEmailService : ServiceInterface.Service
     {
-        public IDbConnectionFactory DbFactory { get; set; }
-
-        public ICacheClient CacheClient { get; set; }
-
-        protected override object Run(CachedProtoBufEmail request)
+        protected object Any(CachedProtoBufEmail request)
         {
-            return base.RequestContext.ToOptimizedResultUsingCache(
-                    this.CacheClient,
-                    UrnId.Create<ProtoBufEmail>(request.FromAddress ?? "none"),
-                    () => new ProtoBufEmail { FromAddress = request.FromAddress ?? "none" });
+            return base.RequestContext.ToOptimizedResultUsingCache(this.Cache,
+                UrnId.Create<ProtoBufEmail>(request.FromAddress ?? "none"),
+                () => new ProtoBufEmail { FromAddress = request.FromAddress ?? "none" });
         }
     }
 }
