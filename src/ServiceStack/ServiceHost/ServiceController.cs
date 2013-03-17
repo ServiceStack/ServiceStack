@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -155,7 +156,7 @@ namespace ServiceStack.ServiceHost
 
         public void RegisterRestPaths(Type requestType)
         {
-            var attrs = requestType.GetCustomAttributes(typeof(RouteAttribute), true);
+            var attrs = TypeDescriptor.GetAttributes(requestType).OfType<RouteAttribute>();
             foreach (RouteAttribute attr in attrs)
             {
                 var restPath = new RestPath(requestType, attr.Path, attr.Verbs, attr.Summary, attr.Notes);
