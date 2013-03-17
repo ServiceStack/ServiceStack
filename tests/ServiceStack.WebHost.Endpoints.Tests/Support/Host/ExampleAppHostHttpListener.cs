@@ -376,7 +376,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
         }
     }
 
-    [Route("inbox/{Id}/responses", "GET, PUT, OPTIONS")]
+    [Route("/inbox/{Id}/responses", "GET, PUT, OPTIONS")]
     public class InboxPost
     {
         public bool Throw { get; set; }

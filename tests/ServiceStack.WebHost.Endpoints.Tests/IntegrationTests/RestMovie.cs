@@ -11,7 +11,7 @@ using ServiceStack.ServiceInterface.ServiceModel;
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {
 	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
-	[Route("restmovies/{Id}")]
+	[Route("/restmovies/{Id}")]
 	public class RestMovies
 	{
 		[DataMember(EmitDefaultValue = false)]
