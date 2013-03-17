@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Runtime.Serialization;
 using NUnit.Framework;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
@@ -12,7 +13,7 @@ namespace ServiceStack.Common.Tests
         public long Id { get; set; }
     }
 
-	[Route("/route/{Id}")]
+    [Route("/route/{Id}")]
 	public class FieldId : IReturn
 	{
 		public readonly long Id;
@@ -172,5 +173,14 @@ namespace ServiceStack.Common.Tests
 			var url = new RequestWithValueTypes { Id = 1, Gender2 = Gender.Male }.ToUrl("GET");
 			Assert.That(url, Is.EqualTo("/route/1?gender2=Male"));
 		}
-	}
+
+        [Test]
+        public void Starting_slash_test_Fails()
+        {
+            var serviceEndpoint = new Uri("http://localhost/api/", UriKind.Absolute);
+            var actionUrl = new Uri(new JustId { Id = 1 }.ToUrl("GET").Substring(), UriKind.Relative);
+
+            Assert.That(new Uri(serviceEndpoint, actionUrl).ToString(), Is.EqualTo("http://localhost/api/route/1"));
+        }
+    }
 }
