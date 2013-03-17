@@ -178,7 +178,7 @@ namespace ServiceStack.Common.Tests
         public void Can_combine_Uris_with_toUrl()
         {
             var serviceEndpoint = new Uri("http://localhost/api/", UriKind.Absolute);
-            var actionUrl = new Uri(new JustId { Id = 1 }.ToUrl("GET").Substring(), UriKind.Relative);
+            var actionUrl = new Uri(new JustId { Id = 1 }.ToUrl("GET").Substring(1), UriKind.Relative);
 
             Assert.That(new Uri(serviceEndpoint, actionUrl).ToString(), Is.EqualTo("http://localhost/api/route/1"));
         }
