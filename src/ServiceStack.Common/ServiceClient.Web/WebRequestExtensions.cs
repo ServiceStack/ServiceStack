@@ -192,6 +192,22 @@ namespace ServiceStack.ServiceClient.Web
             }
         }
 
+        public static WebResponse PostFileToUrl(this string url,
+            FileInfo uploadFileInfo, string uploadFileMimeType,
+            string acceptContentType = null,
+            Action<HttpWebRequest> requestFilter = null)
+        {
+            var webReq = (HttpWebRequest)WebRequest.Create(url);
+            using (var fileStream = uploadFileInfo.OpenRead())
+            {
+                var fileName = uploadFileInfo.Name;
+
+                webReq.UploadFile(fileStream, fileName, uploadFileMimeType, acceptContentType:acceptContentType, requestFilter:requestFilter);
+            }
+
+            return webReq.GetResponse();
+        }
+
         public static WebResponse UploadFile(this WebRequest webRequest,
             FileInfo uploadFileInfo, string uploadFileMimeType)
         {
@@ -205,13 +221,20 @@ namespace ServiceStack.ServiceClient.Web
             return webRequest.GetResponse();
         }
 
-        public static void UploadFile(this WebRequest webRequest, Stream fileStream, string fileName, string mimeType)
+        public static void UploadFile(this WebRequest webRequest, Stream fileStream, string fileName, string mimeType,
+            string acceptContentType = null, Action<HttpWebRequest> requestFilter = null)
         {
             var httpReq = (HttpWebRequest)webRequest;
             httpReq.UserAgent = Env.ServerUserAgent;
             httpReq.Method = "POST";
             httpReq.AllowAutoRedirect = false;
             httpReq.KeepAlive = false;
+
+            if (acceptContentType != null)
+                httpReq.Accept = acceptContentType;
+
+            if (requestFilter != null)
+                requestFilter(httpReq);
 
             var boundary = "----------------------------" + DateTime.UtcNow.Ticks.ToString("x");
 
