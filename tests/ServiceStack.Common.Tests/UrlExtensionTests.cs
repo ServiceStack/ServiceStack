@@ -175,7 +175,7 @@ namespace ServiceStack.Common.Tests
 		}
 
         [Test]
-        public void Starting_slash_test_Fails()
+        public void Can_combine_Uris_with_toUrl()
         {
             var serviceEndpoint = new Uri("http://localhost/api/", UriKind.Absolute);
             var actionUrl = new Uri(new JustId { Id = 1 }.ToUrl("GET").Substring(), UriKind.Relative);
