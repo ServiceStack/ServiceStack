@@ -38,10 +38,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		public long Result { get; set; }
 	}
 
-	public class GetFactorialService
-		: IService<GetFactorial>
+	public class GetFactorialService : IService
 	{
-		public object Execute(GetFactorial request)
+		public object Any(GetFactorial request)
 		{
 			return new GetFactorialResponse { Result = GetFactorial(request.ForNumber) };
 		}
@@ -62,10 +61,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class AlwaysThrowsService
-		: ServiceBase<AlwaysThrows>
+	public class AlwaysThrowsService : ServiceInterface.Service
 	{
-		protected override object Run(AlwaysThrows request)
+	    public object Any(AlwaysThrows request)
 		{
 			throw new ArgumentException("This service always throws an error");
 		}
@@ -144,14 +142,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 	}
 
 
-	public class MovieService : RestServiceBase<Movie>
+    public class MovieService : ServiceInterface.Service
 	{
 		public IDbConnectionFactory DbFactory { get; set; }
 
 		/// <summary>
 		/// GET /movies/{Id} 
 		/// </summary>
-		public override object OnGet(Movie movie)
+		public object Get(Movie movie)
 		{
 			return new MovieResponse {
 				Movie = DbFactory.Run(db => db.GetById<Movie>(movie.Id))
@@ -161,7 +159,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		/// <summary>
 		/// POST /movies
 		/// </summary>
-		public override object OnPost(Movie movie)
+		public object Post(Movie movie)
 		{
 			var newMovieId = DbFactory.Run(db => {
 				db.Insert(movie);
@@ -182,7 +180,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		/// <summary>
 		/// PUT /movies
 		/// </summary>
-		public override object OnPut(Movie movie)
+		public object Put(Movie movie)
 		{
 			DbFactory.Run(db => db.Save(movie));
 			return new MovieResponse();
@@ -191,7 +189,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		/// <summary>
 		/// DELETE /movies/{Id}
 		/// </summary>
-		public override object OnDelete(Movie request)
+		public object Delete(Movie request)
 		{
 			DbFactory.Run(db => db.DeleteById<Movie>(request.Id));
 			return new MovieResponse();
@@ -333,9 +331,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		public string Result { get; set; }
 	}
 
-	public class HttpResultService : IService<GetHttpResult>
+	public class HttpResultService : IService
 	{
-		public object Execute(GetHttpResult request)
+		public object Any(GetHttpResult request)
 		{
 			var getHttpResultResponse = new GetHttpResultResponse { Result = "result" };
 			return new HttpResult(getHttpResultResponse);
@@ -343,7 +341,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 	}
 
 
-    [Route("inbox/{Id}/responses", "GET, PUT, OPTIONS")]
+    [Route("/inbox/{Id}/responses", "GET, PUT, OPTIONS")]
     public class InboxPostResponseRequest
     {
         public int Id { get; set; }
@@ -363,9 +361,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
         public string PageElementResponse { get; set; }
     }
 
-    public class InboxPostResponseRequestService : ServiceBase<InboxPostResponseRequest>
+    public class InboxPostResponseRequestService : ServiceInterface.Service
     {
-        protected override object Run(InboxPostResponseRequest request)
+        public object Any(InboxPostResponseRequest request)
         {
             if (request.Responses == null || request.Responses.Count == 0)
             {
@@ -385,9 +383,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
         public int Id { get; set; }
     }
 
-    public class InboxPostService : ServiceBase<InboxPost>
+    public class InboxPostService : ServiceInterface.Service
     {
-        protected override object Run(InboxPost request)
+        public object Any(InboxPost request)
         {
             if (request.Throw)
                 throw new ArgumentNullException("Throw");
@@ -400,9 +398,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
     [Route("/long_running")]
     public class LongRunning { }
 
-    public class LongRunningService : ServiceBase<LongRunning>
+    public class LongRunningService : ServiceInterface.Service
     {
-        protected override object Run(LongRunning request)
+        public object Any(LongRunning request)
         {
             Thread.Sleep(5000);
 

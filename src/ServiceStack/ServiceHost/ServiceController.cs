@@ -172,11 +172,14 @@ namespace ServiceStack.ServiceHost
 
         public void RegisterRestPath(RestPath restPath)
         {
-            if (!restPath.Path.StartsWith("/"))
-                throw new ArgumentException("Route '{0}' on '{1}' must start with a '/'".Fmt(restPath.Path, restPath.RequestType.Name));
-            if (restPath.Path.IndexOfAny(InvalidRouteChars) != -1)
-                throw new ArgumentException("Route '{0}' on '{1}' contains invalid chars. " +
-                                            "See https://github.com/ServiceStack/ServiceStack/wiki/Routing for info on valid routes.".Fmt(restPath.Path, restPath.RequestType.Name));
+            if (!EndpointHostConfig.SkipRouteValidation)
+            {
+                if (!restPath.Path.StartsWith("/"))
+                    throw new ArgumentException("Route '{0}' on '{1}' must start with a '/'".Fmt(restPath.Path, restPath.RequestType.Name));
+                if (restPath.Path.IndexOfAny(InvalidRouteChars) != -1)
+                    throw new ArgumentException("Route '{0}' on '{1}' contains invalid chars. " +
+                                                "See https://github.com/ServiceStack/ServiceStack/wiki/Routing for info on valid routes.".Fmt(restPath.Path, restPath.RequestType.Name));
+            }
 
             List<RestPath> pathsAtFirstMatch;
             if (!RestPathMap.TryGetValue(restPath.FirstMatchHashKey, out pathsAtFirstMatch))

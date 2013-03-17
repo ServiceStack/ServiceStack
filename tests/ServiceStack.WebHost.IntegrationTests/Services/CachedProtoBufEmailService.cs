@@ -1,9 +1,6 @@
 ﻿using System.Runtime.Serialization;
-using ServiceStack.CacheAccess;
 using ServiceStack.Common;
-using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 using ServiceStack.WebHost.IntegrationTests.Tests;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
@@ -26,13 +23,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public string FromAddress { get; set; }
     }
 
-    class UncachedProtoBufEmailService : ServiceBase<UncachedProtoBufEmail>
+    class UncachedProtoBufEmailService : ServiceInterface.Service
     {
-        public IDbConnectionFactory DbFactory { get; set; }
-
-        public ICacheClient CacheClient { get; set; }
-
-        protected override object Run(UncachedProtoBufEmail request)
+        public object Any(UncachedProtoBufEmail request)
         {
             return new ProtoBufEmail { FromAddress = request.FromAddress ?? "none" };
         }
@@ -40,7 +33,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 
     class CachedProtoBufEmailService : ServiceInterface.Service
     {
-        protected object Any(CachedProtoBufEmail request)
+        public object Any(CachedProtoBufEmail request)
         {
             return base.RequestContext.ToOptimizedResultUsingCache(this.Cache,
                 UrnId.Create<ProtoBufEmail>(request.FromAddress ?? "none"),
