@@ -1,77 +1,85 @@
 ﻿using System;
 using NUnit.Framework;
 using ServiceStack.ServiceHost.Tests.Support;
+using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceHost.Tests
 {
-	[TestFixture]
-	public class ServiceControllerTests
-	{
-		[Test]
-		public void Can_register_all_services_in_an_assembly()
-		{
-			var serviceManager = new ServiceManager(typeof(BasicService).Assembly);
-			serviceManager.Init();
+    [TestFixture]
+    public class ServiceControllerTests
+    {
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
+        {
+            EndpointHostConfig.SkipRouteValidation = true;
+        }
 
-			var container = serviceManager.Container;
-			container.Register<IFoo>(c => new Foo());
-			container.Register<IBar>(c => new Bar());
+        [Test]
+        public void Can_register_all_services_in_an_assembly()
+        {
+            var serviceManager = new ServiceManager(typeof(BasicService).Assembly);
+            serviceManager.Init();
 
-			var serviceController = serviceManager.ServiceController;
+            var container = serviceManager.Container;
+            container.Register<IFoo>(c => new Foo());
+            container.Register<IBar>(c => new Bar());
 
-			var request = new AutoWire();
+            var serviceController = serviceManager.ServiceController;
 
-			var response = serviceController.Execute(request) as AutoWireResponse;
+            var request = new AutoWire();
 
-			Assert.That(response, Is.Not.Null);
-		}
+            var response = serviceController.Execute(request) as AutoWireResponse;
 
-		[Test]
-		public void Can_override_service_creation_with_custom_implementation()
-		{
-			var serviceManager = new ServiceManager(typeof(BasicService).Assembly);
-			serviceManager.Init();
+            Assert.That(response, Is.Not.Null);
+        }
 
-			var container = serviceManager.Container;
-			container.Register<IFoo>(c => new Foo());
-			container.Register<IBar>(c => new Bar());
+        [Test]
+        public void Can_override_service_creation_with_custom_implementation()
+        {
+            var serviceManager = new ServiceManager(typeof(BasicService).Assembly);
+            serviceManager.Init();
 
-			var serviceController = serviceManager.ServiceController;
+            var container = serviceManager.Container;
+            container.Register<IFoo>(c => new Foo());
+            container.Register<IBar>(c => new Bar());
 
-			var request = new AutoWire();
+            var serviceController = serviceManager.ServiceController;
 
-			var response = serviceController.Execute(request) as AutoWireResponse;
+            var request = new AutoWire();
 
-			Assert.That(response, Is.Not.Null);
-			Assert.That(response.Foo as Foo, Is.Not.Null);
-			Assert.That(response.Bar as Bar, Is.Not.Null);
+            var response = serviceController.Execute(request) as AutoWireResponse;
 
-			container.Register(c =>
-				new AutoWireService(new Foo2()) {
-					Bar = new Bar2()
-				});
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response.Foo as Foo, Is.Not.Null);
+            Assert.That(response.Bar as Bar, Is.Not.Null);
 
-			response = serviceController.Execute(request) as AutoWireResponse;
+            container.Register(c =>
+                new AutoWireService(new Foo2())
+                {
+                    Bar = new Bar2()
+                });
 
-			Assert.That(response, Is.Not.Null);
-			Assert.That(response.Foo as Foo2, Is.Not.Null);
-			Assert.That(response.Bar as Bar2, Is.Not.Null);
-		}
+            response = serviceController.Execute(request) as AutoWireResponse;
 
-		[Test]
-		public void Can_inject_RequestContext_for_IRequiresRequestContext_services()
-		{
-			var serviceManager = new ServiceManager(typeof(RequiresContextService).Assembly);
-			serviceManager.Init();
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response.Foo as Foo2, Is.Not.Null);
+            Assert.That(response.Bar as Bar2, Is.Not.Null);
+        }
 
-			var serviceController = serviceManager.ServiceController;
+        [Test]
+        public void Can_inject_RequestContext_for_IRequiresRequestContext_services()
+        {
+            var serviceManager = new ServiceManager(typeof(RequiresContextService).Assembly);
+            serviceManager.Init();
 
-			var request = new RequiresContext();
-			var response = serviceController.Execute(request, new HttpRequestContext(request))
-				as RequiresContextResponse;
+            var serviceController = serviceManager.ServiceController;
 
-			Assert.That(response, Is.Not.Null);
-		}
+            var request = new RequiresContext();
+            var response = serviceController.Execute(request, new HttpRequestContext(request))
+                as RequiresContextResponse;
+
+            Assert.That(response, Is.Not.Null);
+        }
 
         [Test]
         public void Generic_Service_should_not_get_registered_with_generic_parameter()
@@ -152,13 +160,17 @@ namespace ServiceStack.ServiceHost.Tests
         [Test]
         public void Does_throw_on_invalid_Route_Definitions()
         {
-            var controller = new ServiceController(() => new[] {typeof (MyService)});
+            EndpointHostConfig.SkipRouteValidation = false;
+
+            var controller = new ServiceController(() => new[] { typeof(MyService) });
 
             Assert.Throws<ArgumentException>(
                 () => controller.RegisterRestPaths(typeof(NoSlashPrefix)));
 
             Assert.Throws<ArgumentException>(
                 () => controller.RegisterRestPaths(typeof(UsesQueryString)));
+
+            EndpointHostConfig.SkipRouteValidation = true;
         }
-	}
+    }
 }

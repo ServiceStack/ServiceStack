@@ -8,83 +8,85 @@ using ServiceStack.CacheAccess.Providers;
 
 namespace ServiceStack.ServiceHost.Tests
 {
-	[Route("/notsingleton")]
-	public class ServiceCreation
-	{
-		public bool RequestFilterExecuted { get; set; }
-		public bool ContextualRequestFilterExecuted { get; set; }
-		public bool RequestFilterDependenyIsResolved { get; set; }
-	}
-	public class ServiceCreationResponse
-	{
-		public int RequestCount { get; set; }
-	}
+    [Route("/notsingleton")]
+    public class ServiceCreation
+    {
+        public bool RequestFilterExecuted { get; set; }
+        public bool ContextualRequestFilterExecuted { get; set; }
+        public bool RequestFilterDependenyIsResolved { get; set; }
+    }
+    public class ServiceCreationResponse
+    {
+        public int RequestCount { get; set; }
+    }
 
     public class ServiceCreationService : ServiceInterface.Service
-	{
-		public int RequestCounter = 0;
+    {
+        public int RequestCounter = 0;
 
-		public object Any(ServiceCreation request)
-		{
-			this.RequestCounter++;
-			return new ServiceCreationResponse()
-			{
-				RequestCount  = this.RequestCounter
-			};
-		}
-	}
+        public object Any(ServiceCreation request)
+        {
+            this.RequestCounter++;
+            return new ServiceCreationResponse()
+            {
+                RequestCount = this.RequestCounter
+            };
+        }
+    }
 
-	[TestFixture]
-	public class ServiceCreationTest
-	{
-		private const string ListeningOn = "http://localhost:82/";
-		private const string ServiceClientBaseUri = "http://localhost:82/";
+    [TestFixture]
+    public class ServiceCreationTest
+    {
+        private const string ListeningOn = "http://localhost:82/";
+        private const string ServiceClientBaseUri = "http://localhost:82/";
 
-		public class AttributeFiltersAppHostHttpListener
-			: AppHostHttpListenerBase
-		{
+        public class AttributeFiltersAppHostHttpListener
+            : AppHostHttpListenerBase
+        {
 
-			public AttributeFiltersAppHostHttpListener()
-				: base("Service Creation Tests", typeof(ServiceCreationService).Assembly) { }
+            public AttributeFiltersAppHostHttpListener()
+                : base("Service Creation Tests", typeof(ServiceCreationService).Assembly) { }
 
-			public override void Configure(Funq.Container container)
-			{
-				container.Register<ICacheClient>(new MemoryCacheClient());
-			}
-		}
+            public override void Configure(Funq.Container container)
+            {
+                container.Register<ICacheClient>(new MemoryCacheClient());
+            }
+        }
 
-		AttributeFiltersAppHostHttpListener appHost;
+        AttributeFiltersAppHostHttpListener appHost;
 
-		[TestFixtureSetUp]
-		public void OnTestFixtureSetUp()
-		{
-			appHost = new AttributeFiltersAppHostHttpListener();
-			appHost.Init();
-			appHost.Start(ListeningOn);
-		}
+        [TestFixtureSetUp]
+        public void OnTestFixtureSetUp()
+        {
+            EndpointHostConfig.SkipRouteValidation = true;
 
-		[TestFixtureTearDown]
-		public void OnTestFixtureTearDown()
-		{
-			appHost.Dispose();
-		}
+            appHost = new AttributeFiltersAppHostHttpListener();
+            appHost.Init();
+            appHost.Start(ListeningOn);
+        }
 
-		protected static IRestClient[] RestClients = 
+        [TestFixtureTearDown]
+        public void OnTestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
+
+        protected static IRestClient[] RestClients = 
         {
             new JsonServiceClient(ServiceClientBaseUri),
             new XmlServiceClient(ServiceClientBaseUri),
             new JsvServiceClient(ServiceClientBaseUri)
         };
 
-		[Test, TestCaseSource("RestClients")]
-		public void Service_is_not_singleton(IRestClient client)
-		{
-			for (int i = 0; i < 5; i++)
-			{
-				var response = client.Post<ServiceCreationResponse>("notsingleton", new ServiceCreation() { });
-				Assert.That(response.RequestCount, Is.EqualTo(1));
-			}
-		}
+        [Test, TestCaseSource("RestClients")]
+        public void Service_is_not_singleton(IRestClient client)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                var response = client.Post<ServiceCreationResponse>("notsingleton", new ServiceCreation() { });
+                Assert.That(response.RequestCount, Is.EqualTo(1));
+            }
+        }
 
         public class Foo
         {
