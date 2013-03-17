@@ -225,7 +225,6 @@
     <Compile Include="Html\ViewDataInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs" />
     <Compile Include="Html\ITemplatePage.cs" />
-    <Compile Include="Funq\AutoWireHelpers.cs" />
     <Compile Include="ServiceHost\FileExtensions.cs" />
     <Compile Include="ServiceHost\HttpFile.cs" />
     <Compile Include="ServiceHost\HttpRequestAuthentication.cs" />

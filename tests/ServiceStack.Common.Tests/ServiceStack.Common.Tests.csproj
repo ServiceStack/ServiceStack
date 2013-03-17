@@ -130,6 +130,7 @@
     <Compile Include="Configuration\AppSettingsTests.cs" />
     <Compile Include="EndpointHandlerBaseTests.cs" />
     <Compile Include="FluentValidation\ErrorCodeTests.cs" />
+    <Compile Include="FunqTests.cs" />
     <Compile Include="MappingTests.cs" />
     <Compile Include="MessagingTests.cs" />
     <Compile Include="Messaging\RedisMqServerTests.cs" />
