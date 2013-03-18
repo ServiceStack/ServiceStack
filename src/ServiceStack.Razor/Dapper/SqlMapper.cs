@@ -463,39 +463,39 @@ namespace ServiceStack.Razor.Dapper
 
 #if CSHARP30
         /// <summary>
-        /// Execute parameterized SQL  
+        /// ExecuteDapper parameterized SQL  
         /// </summary>
         /// <returns>Number of rows affected</returns>
-        public static int Execute(this IDbConnection cnn, string sql, object param)
+        public static int ExecuteDapper(this IDbConnection cnn, string sql, object param)
         {
-            return Execute(cnn, sql, param, null, null, null);
+            return ExecuteDapper(cnn, sql, param, null, null, null);
         }
 
         /// <summary>
-        /// Execute parameterized SQL
+        /// ExecuteDapper parameterized SQL
         /// </summary>
         /// <returns>Number of rows affected</returns>
-        public static int Execute(this IDbConnection cnn, string sql, object param, IDbTransaction transaction)
+        public static int ExecuteDapper(this IDbConnection cnn, string sql, object param, IDbTransaction transaction)
         {
-            return Execute(cnn, sql, param, transaction, null, null);
+            return ExecuteDapper(cnn, sql, param, transaction, null, null);
         }
 
         /// <summary>
-        /// Execute parameterized SQL
+        /// ExecuteDapper parameterized SQL
         /// </summary>
         /// <returns>Number of rows affected</returns>
-        public static int Execute(this IDbConnection cnn, string sql, object param, CommandType commandType)
+        public static int ExecuteDapper(this IDbConnection cnn, string sql, object param, CommandType commandType)
         {
-            return Execute(cnn, sql, param, null, null, commandType);
+            return ExecuteDapper(cnn, sql, param, null, null, commandType);
         }
 
         /// <summary>
-        /// Execute parameterized SQL
+        /// ExecuteDapper parameterized SQL
         /// </summary>
         /// <returns>Number of rows affected</returns>
-        public static int Execute(this IDbConnection cnn, string sql, object param, IDbTransaction transaction, CommandType commandType)
+        public static int ExecuteDapper(this IDbConnection cnn, string sql, object param, IDbTransaction transaction, CommandType commandType)
         {
-            return Execute(cnn, sql, param, transaction, null, commandType);
+            return ExecuteDapper(cnn, sql, param, transaction, null, commandType);
         }
 
         /// <summary>
@@ -504,9 +504,9 @@ namespace ServiceStack.Razor.Dapper
         /// <returns>A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
         /// created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
         /// </returns>
-        public static IEnumerable<T> Query<T>(this IDbConnection cnn, string sql, object param)
+        public static IEnumerable<T> QueryDapper<T>(this IDbConnection cnn, string sql, object param)
         {
-            return Query<T>(cnn, sql, param, null, true, null, null);
+            return QueryDapper<T>(cnn, sql, param, null, true, null, null);
         }
 
         /// <summary>
@@ -515,9 +515,9 @@ namespace ServiceStack.Razor.Dapper
         /// <returns>A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
         /// created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
         /// </returns>
-        public static IEnumerable<T> Query<T>(this IDbConnection cnn, string sql, object param, IDbTransaction transaction)
+        public static IEnumerable<T> QueryDapper<T>(this IDbConnection cnn, string sql, object param, IDbTransaction transaction)
         {
-            return Query<T>(cnn, sql, param, transaction, true, null, null);
+            return QueryDapper<T>(cnn, sql, param, transaction, true, null, null);
         }
 
         /// <summary>
@@ -526,9 +526,9 @@ namespace ServiceStack.Razor.Dapper
         /// <returns>A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
         /// created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
         /// </returns>
-        public static IEnumerable<T> Query<T>(this IDbConnection cnn, string sql, object param, CommandType commandType)
+        public static IEnumerable<T> QueryDapper<T>(this IDbConnection cnn, string sql, object param, CommandType commandType)
         {
-            return Query<T>(cnn, sql, param, null, true, null, commandType);
+            return QueryDapper<T>(cnn, sql, param, null, true, null, commandType);
         }
 
         /// <summary>
@@ -537,40 +537,40 @@ namespace ServiceStack.Razor.Dapper
         /// <returns>A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
         /// created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
         /// </returns>
-        public static IEnumerable<T> Query<T>(this IDbConnection cnn, string sql, object param, IDbTransaction transaction, CommandType commandType)
+        public static IEnumerable<T> QueryDapper<T>(this IDbConnection cnn, string sql, object param, IDbTransaction transaction, CommandType commandType)
         {
-            return Query<T>(cnn, sql, param, transaction, true, null, commandType);
+            return QueryDapper<T>(cnn, sql, param, transaction, true, null, commandType);
         }
 
         /// <summary>
-        /// Execute a command that returns multiple result sets, and access each in turn
+        /// ExecuteDapper a command that returns multiple result sets, and access each in turn
         /// </summary>
-        public static GridReader QueryMultiple(this IDbConnection cnn, string sql, object param, IDbTransaction transaction)
+        public static GridReader QueryMultipleDapper(this IDbConnection cnn, string sql, object param, IDbTransaction transaction)
         {
-            return QueryMultiple(cnn, sql, param, transaction, null, null);
+            return QueryMultipleDapper(cnn, sql, param, transaction, null, null);
         }
 
         /// <summary>
-        /// Execute a command that returns multiple result sets, and access each in turn
+        /// ExecuteDapper a command that returns multiple result sets, and access each in turn
         /// </summary>
-        public static GridReader QueryMultiple(this IDbConnection cnn, string sql, object param, CommandType commandType)
+        public static GridReader QueryMultipleDapper(this IDbConnection cnn, string sql, object param, CommandType commandType)
         {
-            return QueryMultiple(cnn, sql, param, null, null, commandType);
+            return QueryMultipleDapper(cnn, sql, param, null, null, commandType);
         }
 
         /// <summary>
-        /// Execute a command that returns multiple result sets, and access each in turn
+        /// ExecuteDapper a command that returns multiple result sets, and access each in turn
         /// </summary>
-        public static GridReader QueryMultiple(this IDbConnection cnn, string sql, object param, IDbTransaction transaction, CommandType commandType)
+        public static GridReader QueryMultipleDapper(this IDbConnection cnn, string sql, object param, IDbTransaction transaction, CommandType commandType)
         {
-            return QueryMultiple(cnn, sql, param, transaction, null, commandType);
+            return QueryMultipleDapper(cnn, sql, param, transaction, null, commandType);
         }
 #endif
         /// <summary>
-        /// Execute parameterized SQL  
+        /// ExecuteDapper parameterized SQL  
         /// </summary>
         /// <returns>Number of rows affected</returns>
-        public static int Execute(
+        public static int ExecuteDapper(
 #if CSHARP30
 this IDbConnection cnn, string sql, object param, IDbTransaction transaction, int? commandTimeout, CommandType? commandType
 #else
@@ -622,9 +622,9 @@ this IDbConnection cnn, string sql, dynamic param = null, IDbTransaction transac
         /// <summary>
         /// Return a list of dynamic objects, reader is closed after the call
         /// </summary>
-        public static IEnumerable<dynamic> Query(this IDbConnection cnn, string sql, dynamic param = null, IDbTransaction transaction = null, bool buffered = true, int? commandTimeout = null, CommandType? commandType = null)
+        public static IEnumerable<dynamic> QueryDapper(this IDbConnection cnn, string sql, dynamic param = null, IDbTransaction transaction = null, bool buffered = true, int? commandTimeout = null, CommandType? commandType = null)
         {
-            return Query<FastExpando>(cnn, sql, param as object, transaction, buffered, commandTimeout, commandType);
+            return QueryDapper<FastExpando>(cnn, sql, param as object, transaction, buffered, commandTimeout, commandType);
         }
 #endif
 
@@ -635,7 +635,7 @@ this IDbConnection cnn, string sql, dynamic param = null, IDbTransaction transac
         /// <returns>A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
         /// created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
         /// </returns>
-        public static IEnumerable<T> Query<T>(
+        public static IEnumerable<T> QueryDapper<T>(
 #if CSHARP30
 this IDbConnection cnn, string sql, object param, IDbTransaction transaction, bool buffered, int? commandTimeout, CommandType? commandType
 #else
@@ -648,9 +648,9 @@ this IDbConnection cnn, string sql, dynamic param = null, IDbTransaction transac
         }
 
         /// <summary>
-        /// Execute a command that returns multiple result sets, and access each in turn
+        /// ExecuteDapper a command that returns multiple result sets, and access each in turn
         /// </summary>
-        public static GridReader QueryMultiple(
+        public static GridReader QueryMultipleDapper(
 #if CSHARP30
 this IDbConnection cnn, string sql, object param, IDbTransaction transaction, int? commandTimeout, CommandType? commandType
 #else
@@ -724,7 +724,7 @@ this IDbConnection cnn, string sql, dynamic param = null, IDbTransaction transac
         /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
         /// <param name="commandType">Is it a stored proc or a batch?</param>
         /// <returns></returns>
-        public static IEnumerable<TReturn> Query<TFirst, TSecond, TReturn>(
+        public static IEnumerable<TReturn> QueryDapper<TFirst, TSecond, TReturn>(
 #if CSHARP30
 this IDbConnection cnn, string sql, Func<TFirst, TSecond, TReturn> map, object param, IDbTransaction transaction, bool buffered, string splitOn, int? commandTimeout, CommandType? commandType
 #else
@@ -732,7 +732,7 @@ this IDbConnection cnn, string sql, Func<TFirst, TSecond, TReturn> map, dynamic 
 #endif
 )
         {
-            return MultiMap<TFirst, TSecond, DontMap, DontMap, DontMap, TReturn>(cnn, sql, map, param as object, transaction, buffered, splitOn, commandTimeout, commandType);
+            return MultiMapDapper<TFirst, TSecond, DontMap, DontMap, DontMap, TReturn>(cnn, sql, map, param as object, transaction, buffered, splitOn, commandTimeout, commandType);
         }
 
         /// <summary>
@@ -752,7 +752,7 @@ this IDbConnection cnn, string sql, Func<TFirst, TSecond, TReturn> map, dynamic 
         /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
         /// <param name="commandType"></param>
         /// <returns></returns>
-        public static IEnumerable<TReturn> Query<TFirst, TSecond, TThird, TReturn>(
+        public static IEnumerable<TReturn> QueryDapper<TFirst, TSecond, TThird, TReturn>(
 #if CSHARP30
 this IDbConnection cnn, string sql, Func<TFirst, TSecond, TThird, TReturn> map, object param, IDbTransaction transaction, bool buffered, string splitOn, int? commandTimeout, CommandType? commandType
 #else
@@ -760,7 +760,7 @@ this IDbConnection cnn, string sql, Func<TFirst, TSecond, TThird, TReturn> map, 
 #endif
 )
         {
-            return MultiMap<TFirst, TSecond, TThird, DontMap, DontMap, TReturn>(cnn, sql, map, param as object, transaction, buffered, splitOn, commandTimeout, commandType);
+            return MultiMapDapper<TFirst, TSecond, TThird, DontMap, DontMap, TReturn>(cnn, sql, map, param as object, transaction, buffered, splitOn, commandTimeout, commandType);
         }
 
         /// <summary>
@@ -781,7 +781,7 @@ this IDbConnection cnn, string sql, Func<TFirst, TSecond, TThird, TReturn> map, 
         /// <param name="commandTimeout"></param>
         /// <param name="commandType"></param>
         /// <returns></returns>
-        public static IEnumerable<TReturn> Query<TFirst, TSecond, TThird, TFourth, TReturn>(
+        public static IEnumerable<TReturn> QueryDapper<TFirst, TSecond, TThird, TFourth, TReturn>(
 #if CSHARP30
 this IDbConnection cnn, string sql, Func<TFirst, TSecond, TThird, TFourth, TReturn> map, object param, IDbTransaction transaction, bool buffered, string splitOn, int? commandTimeout, CommandType? commandType
 #else
@@ -789,7 +789,7 @@ this IDbConnection cnn, string sql, Func<TFirst, TSecond, TThird, TFourth, TRetu
 #endif
 )
         {
-            return MultiMap<TFirst, TSecond, TThird, TFourth, DontMap, TReturn>(cnn, sql, map, param as object, transaction, buffered, splitOn, commandTimeout, commandType);
+            return MultiMapDapper<TFirst, TSecond, TThird, TFourth, DontMap, TReturn>(cnn, sql, map, param as object, transaction, buffered, splitOn, commandTimeout, commandType);
         }
 #if !CSHARP30
         /// <summary>
@@ -811,13 +811,13 @@ this IDbConnection cnn, string sql, Func<TFirst, TSecond, TThird, TFourth, TRetu
         /// <param name="commandTimeout"></param>
         /// <param name="commandType"></param>
         /// <returns></returns>
-        public static IEnumerable<TReturn> Query<TFirst, TSecond, TThird, TFourth, TFifth, TReturn>(this IDbConnection cnn, string sql, Func<TFirst, TSecond, TThird, TFourth, TFifth, TReturn> map, dynamic param = null, IDbTransaction transaction = null, bool buffered = true, string splitOn = "Id", int? commandTimeout = null, CommandType? commandType = null)
+        public static IEnumerable<TReturn> QueryDapper<TFirst, TSecond, TThird, TFourth, TFifth, TReturn>(this IDbConnection cnn, string sql, Func<TFirst, TSecond, TThird, TFourth, TFifth, TReturn> map, dynamic param = null, IDbTransaction transaction = null, bool buffered = true, string splitOn = "Id", int? commandTimeout = null, CommandType? commandType = null)
         {
-            return MultiMap<TFirst, TSecond, TThird, TFourth, TFifth, TReturn>(cnn, sql, map, param as object, transaction, buffered, splitOn, commandTimeout, commandType);
+            return MultiMapDapper<TFirst, TSecond, TThird, TFourth, TFifth, TReturn>(cnn, sql, map, param as object, transaction, buffered, splitOn, commandTimeout, commandType);
         }
 #endif
         class DontMap { }
-        static IEnumerable<TReturn> MultiMap<TFirst, TSecond, TThird, TFourth, TFifth, TReturn>(
+        static IEnumerable<TReturn> MultiMapDapper<TFirst, TSecond, TThird, TFourth, TFifth, TReturn>(
             this IDbConnection cnn, string sql, object map, object param, IDbTransaction transaction, bool buffered, string splitOn, int? commandTimeout, CommandType? commandType)
         {
             var results = MultiMapImpl<TFirst, TSecond, TThird, TFourth, TFifth, TReturn>(cnn, sql, map, param, transaction, splitOn, commandTimeout, commandType, null, null);
@@ -2028,7 +2028,7 @@ Type type, IDataReader reader, int startBound = 0, int length = -1, bool returnN
     }
 
     /// <summary>
-    /// A bag of parameters that can be passed to the Dapper Query and Execute methods
+    /// A bag of parameters that can be passed to the Dapper QueryDapper and ExecuteDapper methods
     /// </summary>
     public class DynamicParameters : SqlMapper.IDynamicParameters
     {
