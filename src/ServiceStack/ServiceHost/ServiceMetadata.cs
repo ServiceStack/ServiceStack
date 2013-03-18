@@ -399,7 +399,7 @@ namespace ServiceStack.ServiceHost
 
         public static string GetDescription(this Type operationType)
         {
-            var apiAttr = operationType.GetCustomAttributes(typeof(Api), true).OfType<Api>().FirstOrDefault();
+            var apiAttr = operationType.GetCustomAttributes(typeof(ApiAttribute), true).OfType<ApiAttribute>().FirstOrDefault();
             return apiAttr != null ? apiAttr.Description : "";
         }
 

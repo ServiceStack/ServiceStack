@@ -471,7 +471,7 @@
     <Compile Include="SearchIndex\FullTextIndexFieldAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\Api.cs" />
+    <Compile Include="ServiceHost\ApiAttribute.cs" />
     <Compile Include="ServiceHost\ApiMemberAttribute.cs" />
     <Compile Include="ServiceHost\IRestOptionsService.cs" />
     <Compile Include="ServiceHost\IService.cs" />
