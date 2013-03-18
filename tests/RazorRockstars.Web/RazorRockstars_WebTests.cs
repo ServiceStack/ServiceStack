@@ -37,7 +37,7 @@ namespace RazorRockstars.Web
             url.Print();
             try
             {
-                var text = url.GetStringFromUrl(AcceptContentType, r => {
+                var text = url.GetStringFromUrl(AcceptContentType, responseFilter: r => {
                     if (r.StatusCode != statusCode)
                         Assert.Fail("'{0}' returned {1} expected {2}".Fmt(url, r.StatusCode, statusCode));
                 });
@@ -62,7 +62,7 @@ namespace RazorRockstars.Web
             try
             {
                 Debug.WriteLine(url);
-                var text = url.GetStringFromUrl(AcceptContentType, r => {
+                var text = url.GetStringFromUrl(AcceptContentType, responseFilter: r => {
                     if (r.StatusCode != HttpStatusCode.OK)
                         Assert.Fail(url + " did not return 200 OK");
                 });
@@ -88,7 +88,7 @@ namespace RazorRockstars.Web
 		public void Assert200UrlContentType(string url, string contentType)
 		{
             url.Print();
-            url.GetStringFromUrl(AcceptContentType, r => {
+            url.GetStringFromUrl(AcceptContentType, responseFilter: r => {
 				if (r.StatusCode != HttpStatusCode.OK)
 					Assert.Fail(url + " did not return 200 OK: " + r.StatusCode);
 				if (!r.ContentType.StartsWith(contentType))

@@ -2,6 +2,7 @@ using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.Plugins.ProtoBuf;
 using ServiceStack.ServiceClient.Web;
+using ServiceStack.Text;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
@@ -51,7 +52,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		public void Can_call_Cached_WebService_with_JSONP()
 		{
 			var url = Config.ServiceStackBaseUri.CombineWith("/cached/movies?callback=cb");
-			var jsonp = url.DownloadJsonFromUrl();
+			var jsonp = url.GetJsonFromUrl();
 			Assert.That(jsonp.StartsWith("cb("));
 		}
 	}

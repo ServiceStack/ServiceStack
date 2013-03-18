@@ -1,6 +1,7 @@
 using System.Net;
 using NUnit.Framework;
 using ServiceStack.ServiceClient.Web;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
 {
@@ -15,14 +16,14 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		[Test]
 		public void Root_path_redirects_to_metadata_page()
 		{
-			var html = Config.ServiceStackBaseUri.DownloadUrl();
+            var html = Config.ServiceStackBaseUri.GetStringFromUrl();
 			Assert.That(html.Contains("The following operations are supported."));
 		}
 
 		[Test]
 		public void Can_download_webpage_html_page()
 		{
-			var html = (BasePath + "webpage.html").DownloadUrl();
+            var html = (BasePath + "webpage.html").GetStringFromUrl();
 			Assert.That(html.Contains("Default index ServiceStack.WebHost.Endpoints.Tests page"));
 		}
 

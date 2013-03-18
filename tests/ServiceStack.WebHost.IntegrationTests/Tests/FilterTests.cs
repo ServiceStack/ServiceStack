@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 using ServiceStack.Common;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
 {
@@ -11,7 +11,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		public void Can_call_service_returning_string()
 		{
 			var response = Config.ServiceStackBaseUri.CombineWith("hello2/world")
-				.DownloadJsonFromUrl();
+				.GetJsonFromUrl();
 
 			Assert.That(response, Is.EqualTo("world"));
 		}

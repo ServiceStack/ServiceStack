@@ -46,21 +46,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Root_path_redirects_to_metadata_page()
         {
-            var html = ListeningOn.DownloadUrl();
+            var html = ListeningOn.GetStringFromUrl();
             Assert.That(html.Contains("The following operations are supported."));
         }
 
         [Test]
         public void Can_download_webpage_html_page()
         {
-            var html = (ListeningOn + "webpage.html").DownloadUrl();
+            var html = (ListeningOn + "webpage.html").GetStringFromUrl();
             Assert.That(html.Contains("Default index ServiceStack.WebHost.Endpoints.Tests page"));
         }
 
         [Test]
         public void Can_download_requestinfo_json()
         {
-            var html = (ListeningOn + "_requestinfo").DownloadUrl();
+            var html = (ListeningOn + "_requestinfo").GetStringFromUrl();
             Assert.That(html.Contains("\"Host\":"));
         }
 
@@ -189,8 +189,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             for (int i = 0; i < clientCount; i++)
             {
                 threads.Add(new Thread(() => {
-                                               var html = (ListeningOn + "long_running").DownloadUrl();
-                                           }));
+                    var html = (ListeningOn + "long_running").GetStringFromUrl();
+                }));
             }
 
             var sw = new Stopwatch();

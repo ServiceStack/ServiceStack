@@ -3,6 +3,7 @@ using NUnit.Framework;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.ServiceClient.Web;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -41,7 +42,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Actually_uses_the_BclJsonSerializers()
 		{
-			var json = (ListeningOn + "login/user/pass").DownloadJsonFromUrl();
+			var json = (ListeningOn + "login/user/pass").GetJsonFromUrl();
 
 			Console.WriteLine(json);
 			Assert.That(json, Is.EqualTo("{\"pwd\":\"pass\",\"uname\":\"user\"}"));

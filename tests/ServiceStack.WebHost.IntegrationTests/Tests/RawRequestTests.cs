@@ -39,7 +39,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		{
 			var rawData = "<<(( 'RAW_DATA' ))>>";
 			var requestUrl = Config.ServiceStackBaseUri + "/rawrequest";
-			var json = requestUrl.PutToUrl(rawData, ContentType.PlainText, ContentType.Json);
+            var json = requestUrl.PutStringToUrl(rawData, contentType: ContentType.PlainText, acceptContentType: ContentType.Json);
 			var response = json.FromJson<RawRequestResponse>();
 			Assert.That(response.Result, Is.EqualTo(rawData));
 		}
@@ -49,7 +49,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		{
 			var rawData = "<<(( 'RAW_DATA' ))>>";
 			var requestUrl = Config.ServiceStackBaseUri + "/rawrequest";
-			var json = requestUrl.PutToUrl(rawData, ContentType.PlainText, ContentType.Json);
+            var json = requestUrl.PutStringToUrl(rawData, contentType: ContentType.PlainText, acceptContentType: ContentType.Json);
 			var response = json.FromJson<RawRequestResponse>();
 			Assert.That(response.Result, Is.EqualTo(rawData));
 		}

@@ -21,7 +21,7 @@ namespace ServiceStack.ServiceInterface.Auth
             twitterUserId.ThrowIfNullOrEmpty("twitterUserId");
 
             var url = TwitterUserUrl.Fmt(twitterUserId);
-            var json = url.DownloadUrl();
+            var json = url.GetStringFromUrl();
             return json;
         }
 
@@ -30,7 +30,7 @@ namespace ServiceStack.ServiceInterface.Auth
             facebookCode.ThrowIfNullOrEmpty("facebookCode");
 
             var url = FacebookUserUrl.Fmt(facebookCode);
-            var json = url.DownloadUrl();
+            var json = url.GetStringFromUrl();
             return json;
         }
     }

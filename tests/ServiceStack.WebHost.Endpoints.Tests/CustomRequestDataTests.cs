@@ -75,7 +75,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Does_use_request_binder_for_predefined_GET()
 		{
-			var responseStr = predefinedUrl.DownloadJsonFromUrl();
+            var responseStr = predefinedUrl.GetJsonFromUrl();
 			Console.WriteLine(responseStr);
 			var response = responseStr.FromJson<CustomRequestBinderResponse>();
 			Assert.That(response.FromBinder);
@@ -85,7 +85,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		public void Does_use_request_binder_for_predefined_GET_with_QueryString()
 		{
 			var customUrlWithQueryString = customUrl + "?IsFromBinder=false";
-			var responseStr = customUrlWithQueryString.DownloadJsonFromUrl();
+			var responseStr = customUrlWithQueryString.GetJsonFromUrl();
 			Console.WriteLine(responseStr);
 			var response = responseStr.FromJson<CustomRequestBinderResponse>();
 			Assert.That(response.FromBinder);
@@ -108,7 +108,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Does_use_request_binder_for_POST_FormData()
 		{
-			var responseStr = customUrl.PostToUrl("IsFromBinder=false", ContentType.FormUrlEncoded, ContentType.Json);
+			var responseStr = customUrl.PostToUrl("IsFromBinder=false", acceptContentType:ContentType.Json);
 			Console.WriteLine(responseStr);
 			var response = responseStr.FromJson<CustomRequestBinderResponse>();
 			Assert.That(response.FromBinder);
@@ -117,7 +117,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Does_use_request_binder_for_POST_FormData_without_ContentType()
 		{
-			var responseStr = customUrl.PostToUrl("{\"IsFromBinder\":false}", ContentType.Json, ContentType.Json);
+			var responseStr = customUrl.PostJsonToUrl("{\"IsFromBinder\":false}");
 			Console.WriteLine(responseStr);
 			var response = responseStr.FromJson<CustomRequestBinderResponse>();
 			Assert.That(response.FromBinder);
@@ -144,7 +144,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Does_use_request_binder_for_predefined_POST_FormData()
 		{
-			var responseStr = predefinedUrl.PostToUrl("k=v", ContentType.FormUrlEncoded, ContentType.Json);
+			var responseStr = predefinedUrl.PostToUrl("k=v", acceptContentType: ContentType.Json);
 			Console.WriteLine(responseStr);
 			var response = responseStr.FromJson<CustomRequestBinderResponse>();
 			Assert.That(response.FromBinder);

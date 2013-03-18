@@ -3,6 +3,7 @@ using ServiceStack.Common;
 using ServiceStack.Plugins.ProtoBuf;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceInterface;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -50,7 +51,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		public void Can_call_Cached_WebService_with_JSONP()
 		{
 			var url = Config.ServiceStackBaseUri.CombineWith("/cached/movies?callback=cb");
-			var jsonp = url.DownloadJsonFromUrl();
+			var jsonp = url.GetJsonFromUrl();
 			Assert.That(jsonp.StartsWith("cb("));
 		}
 	}
