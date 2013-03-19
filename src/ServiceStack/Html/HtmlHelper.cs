@@ -51,9 +51,8 @@ namespace ServiceStack.Html
 		{
 			get 
             { 
-                return viewData ?? 
-                    (viewData = base.ViewData as ViewDataDictionary<TModel> 
-                        ?? new ViewDataDictionary<TModel>((TModel)base.ViewData.Model)); 
+                return base.ViewData as ViewDataDictionary<TModel> 
+                    ?? new ViewDataDictionary<TModel>((TModel)base.ViewData.Model); 
             }
 		}
 	}
@@ -146,9 +145,18 @@ namespace ServiceStack.Html
 		
 		public MvcHtmlString Partial(string viewName, object model)
 		{
-			var result = ViewEngine.RenderPartial(viewName, model, this.RenderHtml, this);
-			return MvcHtmlString.Create(result);
-		}
+		    var masterModel = this.viewData;
+            try
+            {
+                this.viewData = new ViewDataDictionary(model);
+                var result = ViewEngine.RenderPartial(viewName, model, this.RenderHtml, this);
+                return MvcHtmlString.Create(result);
+            }
+            finally
+            {
+                this.viewData = masterModel;
+            }
+        }
 
         public string Debug(object model)
         {

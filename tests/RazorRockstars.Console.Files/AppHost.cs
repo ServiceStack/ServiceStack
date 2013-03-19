@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using Funq;
 using ServiceStack.Common;
@@ -113,6 +114,16 @@ namespace RazorRockstars.Console.Files
         public string View { get; set; }
     }
 
+    [Route("/partialmodel")]
+    public class PartialModel
+    {
+        public IEnumerable<PartialChildModel> Items { get; set; }
+    }
+    public class PartialChildModel
+    {
+        public string SomeProperty { get; set; }
+    }
+
     public class RockstarsService : Service
     {
         public object Get(Rockstars request)
@@ -168,6 +179,16 @@ namespace RazorRockstars.Console.Files
         {
             base.Request.Items["View"] = request.View;
             return Db.Select<Rockstar>();
+        }
+
+        public PartialModel Any(PartialModel request)
+        {
+            return new PartialModel
+            {
+                Items = 5.Times(x => new PartialChildModel {
+                    SomeProperty = "value " + x
+                })
+            };
         }
     }
 }
