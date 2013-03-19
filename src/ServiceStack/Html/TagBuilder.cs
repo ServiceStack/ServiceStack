@@ -99,7 +99,7 @@ namespace ServiceStack.Html
 
 	public class TagBuilder
 	{
-		//private string idAttributeDotReplacement;
+		private const string IdAttributeDotReplacement = "_";
 
 		private const string AttributeFormat = @" {0}=""{1}""";
 		private const string ElementFormatEndTag = "</{0}>";
@@ -150,11 +150,20 @@ namespace ServiceStack.Html
 			}
 		}
 
-		internal static string CreateSanitizedId(string originalId, string dotReplacement)
+		public static string CreateSanitizedId(string originalId)
+		{
+			return CreateSanitizedId(originalId, TagBuilder.IdAttributeDotReplacement);
+		}
+
+		internal static string CreateSanitizedId(string originalId, string invalidCharReplacement)
 		{
 			if (String.IsNullOrEmpty(originalId))
 			{
 				return null;
+			}
+
+			if (invalidCharReplacement == null) {
+				throw new ArgumentNullException("invalidCharReplacement");
 			}
 
 			char firstChar = originalId[0];
@@ -176,11 +185,21 @@ namespace ServiceStack.Html
 				}
 				else
 				{
-					sb.Append(dotReplacement);
+					sb.Append(invalidCharReplacement);
 				}
 			}
 
 			return sb.ToString();
+		}
+
+		public void GenerateId(string name)
+		{
+			if (!Attributes.ContainsKey("id")) {
+				string sanitizedId = CreateSanitizedId(name, IdAttributeDotReplacement);
+				if (!String.IsNullOrEmpty(sanitizedId)) {
+					Attributes["id"] = sanitizedId;
+				}
+			}
 		}
 		
 		private string GetAttributesString()

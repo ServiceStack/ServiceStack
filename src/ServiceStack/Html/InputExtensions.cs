@@ -409,6 +409,10 @@ namespace ServiceStack.Html
 					break;
 			}
 
+			if (setId) {
+				tagBuilder.GenerateId(fullName);
+			}
+
 			return tagBuilder.ToMvcHtmlString(TagRenderMode.SelfClosing);
 		}
 

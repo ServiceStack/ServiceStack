@@ -60,6 +60,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Authentication
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Api.Swagger", "ServiceStack.Api.Swagger\ServiceStack.Api.Swagger.csproj", "{01D3F057-7984-498F-8B0A-EB375701E204}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Tests", "..\tests\ServiceStack.Tests\ServiceStack.Tests.csproj", "{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -624,6 +626,31 @@ Global
 		{01D3F057-7984-498F-8B0A-EB375701E204}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{01D3F057-7984-498F-8B0A-EB375701E204}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{01D3F057-7984-498F-8B0A-EB375701E204}.Release|x86.ActiveCfg = Release|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.MonoDebug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.MonoDebug|Any CPU.Build.0 = Debug|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.MonoDebug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.MonoDebug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.MonoDebug|x86.ActiveCfg = Debug|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.MonoRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.MonoRelease|Any CPU.Build.0 = Release|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.MonoRelease|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.MonoRelease|Mixed Platforms.Build.0 = Release|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.MonoRelease|x86.ActiveCfg = Release|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.MonoTouch|Any CPU.Build.0 = Release|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.MonoTouch|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.MonoTouch|Mixed Platforms.Build.0 = Release|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.MonoTouch|x86.ActiveCfg = Release|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -640,6 +667,7 @@ Global
 		{B7F650D2-6D7E-48BE-ADCE-19076249B3B7} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{1A5796C5-8AB6-4676-AC20-83594AED1798} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
+		{93AEB5A2-C491-4C12-9014-5BBBEB89B6FF} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = ..\tests\RazorRockstars.Console\RazorRockstars.Console.csproj
