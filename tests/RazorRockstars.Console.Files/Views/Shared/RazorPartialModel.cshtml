@@ -1,4 +1,4 @@
-﻿@inherits ViewPage<List<Rockstar>>
+﻿@model List<Rockstar>
 
 <div id="sidebar">
     <h4>Razor Partials with Model</h4>
@@ -6,7 +6,5 @@
         <li>@rockstar.FirstName - @rockstar.LastName (<a href="?Age=@rockstar.Age">@rockstar.Age</a>)</li>
     }
 </div>
-
-PathInfo: <b>@base.Request.PathInfo</b>
 
 <!--view:RazorPartialModel.cshtml-->

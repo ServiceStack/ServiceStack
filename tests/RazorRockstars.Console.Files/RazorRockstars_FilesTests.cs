@@ -287,6 +287,12 @@ namespace RazorRockstars.Console.Files
             Assert200(Host + "/partialmodel", containsItems.ToArray());
         }
 
+        [Test]
+        public void Can_get_RequestPathInfo_in_PartialChildModel()
+        {
+            Assert200(Host + "/partialmodel", Template_PartialModel, ViewPartialChildModel, "PathInfo: <b>/partialmodel</b>");
+        }
+
     }
 }
 

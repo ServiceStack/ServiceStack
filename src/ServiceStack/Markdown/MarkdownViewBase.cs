@@ -114,7 +114,7 @@ namespace ServiceStack.Markdown
 		/// </summary>
 		/// <param name="content"></param>
 		/// <returns></returns>
-		public string Raw(string content)
+		public MvcHtmlString Raw(string content)
 		{
 			return Html.Raw(content);
 		}
