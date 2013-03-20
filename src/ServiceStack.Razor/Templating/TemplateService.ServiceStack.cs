@@ -147,8 +147,8 @@ namespace ServiceStack.Razor.Templating
                 }
                 catch (Exception ex)
                 {
-                    throw new InvalidOperationException(
-                        "Could not execute partial: " + name + ", model: " + model);
+					throw new InvalidOperationException(
+						"Could not execute partial: " + name + ", model: " + model + ", message: " + ex.Message);
                 }
 
                 template.Prepend(capture);
