@@ -49,6 +49,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Text { get; set; }
     }
 
+    [Route("/streamwriter/{Text}")]
+    public class StreamWriters : IReturn<Stream>
+    {
+        public string Text { get; set; }
+    }
+
     public class BuiltInTypesService : ServiceInterface.Service
     {
         public PocoResponse Any(Poco request)
@@ -74,7 +80,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public byte[] Any(Streams request)
         {
             return new Guid(request.Text).ToByteArray();
-        }        
+        }
+
+        public IStreamWriter Any(StreamWriters request)
+        {
+            return new StreamWriterResult(new Guid(request.Text).ToByteArray());
+        }
+    }
+
+    public class StreamWriterResult : IStreamWriter
+    {
+        private byte[] result;
+
+        public StreamWriterResult(byte[] result)
+        {
+            this.result = result;
+        }
+
+        public void WriteTo(Stream responseStream)
+        {
+            responseStream.Write(result, 0, result.Length);
+        }
     }
     
     public class BuiltInTypesAppHost : AppHostHttpListenerBase
@@ -255,6 +281,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Thread.Sleep(2000);
 
             Assert.That(new Guid(bytes), Is.EqualTo(guid));
+        }
+
+        [Test, TestCaseSource("RestClients")]
+        public void Can_download_StreamWroter_response(IRestClient client)
+        {
+            var guid = Guid.NewGuid();
+            Stream response = client.Get(new StreamWriters { Text = guid.ToString() });
+            using (response)
+            {
+                var bytes = response.ReadFully();
+                Assert.That(new Guid(bytes), Is.EqualTo(guid));
+            }
         }
          
     }
