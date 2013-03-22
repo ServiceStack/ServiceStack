@@ -39,6 +39,8 @@ namespace ServiceStack.ServiceClient.Web
         private string replyPath = "/syncreply/";
         private string oneWayPath = "/asynconeway/";
 
+		private AuthenticationInfo authInfo = null;
+
         public bool UseNewPredefinedRoutes
         {
             set
@@ -458,14 +460,9 @@ namespace ServiceStack.ServiceClient.Web
 						WebHeaderCollection headers = ((HttpWebResponse) webEx.Response).Headers;
 						var doAuthHeader = headers[ServiceStack.Common.Web.HttpHeaders.WwwAuthenticate];
 						// check value of WWW-Authenticate header
-						var authInfo = new ServiceStack.ServiceClient.Web.AuthenticationInfo(doAuthHeader);
+						this.authInfo = new ServiceStack.ServiceClient.Web.AuthenticationInfo(doAuthHeader);
 
-						if ("basic".Equals (authInfo.method)) {
-							client.AddBasicAuth(this.UserName, this.Password); // FIXME AddBasicAuth ignores the server provided Realm property. Potential Bug.
-						} else if ("digest".Equals (authInfo.method)) {
-							// do digest auth header using auth info
-							// TODO save auth info somewhere for re-use on subsequent requests
-						}
+						client.AddAuthInfo(this.UserName,this.Password,authInfo);
 					}
 
 
@@ -622,7 +619,12 @@ namespace ServiceStack.ServiceClient.Web
                 if (this.Timeout.HasValue) client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
                 if (this.ReadWriteTimeout.HasValue) client.ReadWriteTimeout = (int)this.ReadWriteTimeout.Value.TotalMilliseconds;
                 if (this.credentials != null) client.Credentials = this.credentials;
-                if (this.AlwaysSendBasicAuthHeader) client.AddBasicAuth(this.UserName, this.Password);
+
+				if (null != this.authInfo) {	
+					client.AddAuthInfo(this.UserName,this.Password,authInfo);
+				} else {
+					if (this.AlwaysSendBasicAuthHeader) client.AddBasicAuth(this.UserName, this.Password);
+				}
 
                 if (!DisableAutoCompression)
                 {

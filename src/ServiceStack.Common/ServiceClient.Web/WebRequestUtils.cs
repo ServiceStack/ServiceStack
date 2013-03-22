@@ -152,6 +152,17 @@ namespace ServiceStack.ServiceClient.Web
 			return ret;
 		}
 
+		internal static void AddAuthInfo(this WebRequest client,string userName,string password,AuthenticationInfo authInfo) {
+			
+			if ("basic".Equals (authInfo.method)) {
+				client.AddBasicAuth (userName, password); // FIXME AddBasicAuth ignores the server provided Realm property. Potential Bug.
+			} else if ("digest".Equals (authInfo.method)) {
+				// do digest auth header using auth info
+				// TODO save auth info somewhere for re-use on subsequent requests
+				client.AddDigestAuth (userName, password, authInfo);
+			}
+		}
+
 		internal static void AddDigestAuth(this WebRequest client,string userName,string password,AuthenticationInfo authInfo)
 		{
 			// by adamfowleruk
