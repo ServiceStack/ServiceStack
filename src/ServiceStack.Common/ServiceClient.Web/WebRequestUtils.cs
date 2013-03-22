@@ -7,6 +7,7 @@ using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
 using System.Security.Cryptography;
+using ServiceStack.Logging;
 
 
 #if NETFX_CORE
@@ -33,6 +34,8 @@ namespace ServiceStack.ServiceClient.Web
 	// by adamfowleruk
 	public class AuthenticationInfo 
 	{
+		private static readonly ILog Log = LogManager.GetLogger(typeof(AuthenticationInfo));
+
 		public string method {get;set;}
 		public string realm {get;set;}
 		public string qop {get;set;}
@@ -47,11 +50,17 @@ namespace ServiceStack.ServiceClient.Web
 			cnonce = "0a4f113b";
 			nc = 1;
 
+			Log.Info  ("Auth header: " + authHeader);
+
+			Log.Info ("wibble");
 
 			// get method from first word
 			int pos = authHeader.IndexOf (" ");
 			method = authHeader.Substring (0, pos).ToLower ();
-			string remainder = method.Substring (pos + 1);
+			Log.Info ("method: " + method);
+			string remainder = authHeader.Substring (pos + 1);
+
+			Log.Info ("method: " + method + ", remainder: " + remainder);
 
 			// split the rest by comma, then =
 			string[] pars = remainder.Split (',');
@@ -69,6 +78,8 @@ namespace ServiceStack.ServiceClient.Web
 					i++; // skips next value
 				}
 			}
+
+			Log.Info ("From " + pars.Length + " parameters we actually have " + maxnewpars + " usable parameters");
 
 			// now go through each part, splitting on first = character, and removing leading and trailing spaces and " quotes
 			for (int i = 0;i < maxnewpars;i++) {
@@ -92,11 +103,21 @@ namespace ServiceStack.ServiceClient.Web
 					opaque = value;
 				}
 			}
+
+			Log.Info ("Parsed values: " + this.ToString ());
+		}
+
+		public override string ToString ()
+		{
+			return string.Format ("[AuthenticationInfo: method={0}, realm={1}, qop={2}, nonce={3}, opaque={4}, cnonce={5}, nc={6}]", method, realm, qop, nonce, opaque, cnonce, nc);
 		}
 	}
 
     public static class WebRequestUtils
     {
+		
+		private static readonly ILog Log = LogManager.GetLogger(typeof(WebRequestUtils));
+
         internal static AuthenticationException CreateCustomException(string uri, AuthenticationException ex)
         {
             if (uri.StartsWith("https"))
@@ -138,7 +159,7 @@ namespace ServiceStack.ServiceClient.Web
 			{
 				sb.Append(hash[i].ToString("X2"));
 			}
-			return sb.ToString();
+			return sb.ToString().ToLower();
 		}
 
 		internal static string padNC(int num) 
@@ -168,25 +189,34 @@ namespace ServiceStack.ServiceClient.Web
 			// by adamfowleruk
 			// See Client Request at http://en.wikipedia.org/wiki/Digest_access_authentication
 
+			Log.Info ("AddDigestAuth");
+
 			string ncUse = padNC(authInfo.nc);
 			authInfo.nc++; // incrememnt for subsequent requests
 
 			string ha1raw = userName + ":" + authInfo.realm + ":" + password;
 			string ha1 = CalculateMD5Hash(ha1raw);
+			Log.Info ("ha1raw: " + ha1raw);
+			Log.Info ("ha1hex: " + ha1);
 
 
-			string ha2raw = client.Method + ":" + client.RequestUri;
+			string ha2raw = client.Method + ":" + client.RequestUri.PathAndQuery;
 			string ha2 = CalculateMD5Hash(ha2raw);
+			Log.Info ("ha2raw: " + ha2raw);
+			Log.Info ("ha2hex: " + ha2);
 
 			string md5rraw = ha1 + ":" + authInfo.nonce + ":" + ncUse + ":" + authInfo.cnonce + ":" + authInfo.qop + ":" + ha2;
 			string response = CalculateMD5Hash(md5rraw);
+			Log.Info ("responseraw: " + md5rraw);
+			Log.Info ("responsehex: " + response);
 
 
-
-			client.Headers[ServiceStack.Common.Web.HttpHeaders.Authorization] = 
+			string header = 
 				"Digest username=\"" + userName + "\", realm=\"" + authInfo.realm + "\", nonce=\"" + authInfo.nonce + "\", uri=\"" + 
-				client.RequestUri + "\", cnonce=\"" + authInfo.cnonce + "\", nc=" + ncUse + ", qop=\"" + authInfo.qop + "\", response=\"" + response + 
-				"\", opaque=\"" + authInfo.opaque + "\"";
+					client.RequestUri.PathAndQuery + "\", cnonce=\"" + authInfo.cnonce + "\", nc=" + ncUse + ", qop=\"" + authInfo.qop + "\", response=\"" + response + 
+					"\", opaque=\"" + authInfo.opaque + "\"";
+			Log.Info ("Digest header: " + header);
+			client.Headers [ServiceStack.Common.Web.HttpHeaders.Authorization] = header;
 			// TODO ensure client.RequestUri is the /path/?param=value type URL (MUST include query string)
 		}
 
