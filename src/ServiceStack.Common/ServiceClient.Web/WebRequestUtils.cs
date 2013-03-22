@@ -54,7 +54,7 @@ namespace ServiceStack.ServiceClient.Web
 			string remainder = method.Substring (pos + 1);
 
 			// split the rest by comma, then =
-			string[] pars = remainder.Split (",");
+			string[] pars = remainder.Split (',');
 			string[] newpars = new string[pars.Length];
 			int maxnewpars = 0;
 			// test possibility that a comma is mid value for a split
