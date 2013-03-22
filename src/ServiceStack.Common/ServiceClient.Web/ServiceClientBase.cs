@@ -449,8 +449,26 @@ namespace ServiceStack.ServiceClient.Web
             {
                 if (WebRequestUtils.ShouldAuthenticate(ex, this.UserName, this.Password))
                 {
-                    var client = createWebRequest();
-                    client.AddBasicAuth(this.UserName, this.Password);
+					// adamfowleruk : Check response object to see what type of auth header to add
+					
+					var client = createWebRequest();
+
+					var webEx = ex as WebException;
+					if (webEx != null && webEx.Response != null) {
+						WebHeaderCollection headers = ((HttpWebResponse) webEx.Response).Headers;
+						var doAuthHeader = headers[ServiceStack.Common.Web.HttpHeaders.WwwAuthenticate];
+						// check value of WWW-Authenticate header
+						var authInfo = new ServiceStack.ServiceClient.Web.AuthenticationInfo(doAuthHeader);
+
+						if ("basic".Equals (authInfo.method)) {
+							client.AddBasicAuth(this.UserName, this.Password); // FIXME AddBasicAuth ignores the server provided Realm property. Potential Bug.
+						} else if ("digest".Equals (authInfo.method)) {
+							// do digest auth header using auth info
+							// TODO save auth info somewhere for re-use on subsequent requests
+						}
+					}
+
+
                     if (OnAuthenticationRequired != null)
                     {
                         OnAuthenticationRequired(client);
