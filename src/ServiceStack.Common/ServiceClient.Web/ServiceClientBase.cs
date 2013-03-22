@@ -39,6 +39,8 @@ namespace ServiceStack.ServiceClient.Web
         private string replyPath = "/syncreply/";
         private string oneWayPath = "/asynconeway/";
 
+		private AuthenticationInfo authInfo = null;
+
         public bool UseNewPredefinedRoutes
         {
             set
@@ -449,8 +451,21 @@ namespace ServiceStack.ServiceClient.Web
             {
                 if (WebRequestUtils.ShouldAuthenticate(ex, this.UserName, this.Password))
                 {
-                    var client = createWebRequest();
-                    client.AddBasicAuth(this.UserName, this.Password);
+					// adamfowleruk : Check response object to see what type of auth header to add
+					
+					var client = createWebRequest();
+
+					var webEx = ex as WebException;
+					if (webEx != null && webEx.Response != null) {
+						WebHeaderCollection headers = ((HttpWebResponse) webEx.Response).Headers;
+						var doAuthHeader = headers[ServiceStack.Common.Web.HttpHeaders.WwwAuthenticate];
+						// check value of WWW-Authenticate header
+						this.authInfo = new ServiceStack.ServiceClient.Web.AuthenticationInfo(doAuthHeader);
+
+						client.AddAuthInfo(this.UserName,this.Password,authInfo);
+					}
+
+
                     if (OnAuthenticationRequired != null)
                     {
                         OnAuthenticationRequired(client);
@@ -604,7 +619,12 @@ namespace ServiceStack.ServiceClient.Web
                 if (this.Timeout.HasValue) client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
                 if (this.ReadWriteTimeout.HasValue) client.ReadWriteTimeout = (int)this.ReadWriteTimeout.Value.TotalMilliseconds;
                 if (this.credentials != null) client.Credentials = this.credentials;
-                if (this.AlwaysSendBasicAuthHeader) client.AddBasicAuth(this.UserName, this.Password);
+
+				if (null != this.authInfo) {	
+					client.AddAuthInfo(this.UserName,this.Password,authInfo);
+				} else {
+					if (this.AlwaysSendBasicAuthHeader) client.AddBasicAuth(this.UserName, this.Password);
+				}
 
                 if (!DisableAutoCompression)
                 {

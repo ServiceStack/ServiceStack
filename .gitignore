@@ -48,3 +48,5 @@ build/
 *.DS_Store
 
 *.dotCover
+
+src/ServiceStack/Properties/Resources.resources
