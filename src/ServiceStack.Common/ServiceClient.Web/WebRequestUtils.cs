@@ -50,23 +50,18 @@ namespace ServiceStack.ServiceClient.Web
 			cnonce = "0a4f113b";
 			nc = 1;
 
-			Log.Info  ("Auth header: " + authHeader);
-
-			Log.Info ("wibble");
+			// Example Digest header: WWW-Authenticate: Digest realm="testrealm@host.com", qop="auth,auth-int", nonce="dcd98b7102dd2f0e8b11d0f600bfb0c093", opaque="5ccc069c403ebaf9f0171e9517f40e41"
 
 			// get method from first word
 			int pos = authHeader.IndexOf (" ");
 			method = authHeader.Substring (0, pos).ToLower ();
-			Log.Info ("method: " + method);
 			string remainder = authHeader.Substring (pos + 1);
-
-			Log.Info ("method: " + method + ", remainder: " + remainder);
 
 			// split the rest by comma, then =
 			string[] pars = remainder.Split (',');
 			string[] newpars = new string[pars.Length];
 			int maxnewpars = 0;
-			// test possibility that a comma is mid value for a split
+			// test possibility that a comma is mid value for a split (as in above example)
 			for (int i = 0; i < pars.Length; i++) {
 				if (pars[i].EndsWith("\"")) {
 					newpars[maxnewpars] = pars[i];
@@ -78,8 +73,6 @@ namespace ServiceStack.ServiceClient.Web
 					i++; // skips next value
 				}
 			}
-
-			Log.Info ("From " + pars.Length + " parameters we actually have " + maxnewpars + " usable parameters");
 
 			// now go through each part, splitting on first = character, and removing leading and trailing spaces and " quotes
 			for (int i = 0;i < maxnewpars;i++) {
@@ -103,8 +96,6 @@ namespace ServiceStack.ServiceClient.Web
 					opaque = value;
 				}
 			}
-
-			Log.Info ("Parsed values: " + this.ToString ());
 		}
 
 		public override string ToString ()
@@ -159,7 +150,7 @@ namespace ServiceStack.ServiceClient.Web
 			{
 				sb.Append(hash[i].ToString("X2"));
 			}
-			return sb.ToString().ToLower();
+			return sb.ToString().ToLower(); // The RFC requires the hex values are lowercase
 		}
 
 		internal static string padNC(int num) 
@@ -179,7 +170,7 @@ namespace ServiceStack.ServiceClient.Web
 				client.AddBasicAuth (userName, password); // FIXME AddBasicAuth ignores the server provided Realm property. Potential Bug.
 			} else if ("digest".Equals (authInfo.method)) {
 				// do digest auth header using auth info
-				// TODO save auth info somewhere for re-use on subsequent requests
+				// auth info saved in ServiceClientBase for subsequent requests
 				client.AddDigestAuth (userName, password, authInfo);
 			}
 		}
@@ -189,35 +180,27 @@ namespace ServiceStack.ServiceClient.Web
 			// by adamfowleruk
 			// See Client Request at http://en.wikipedia.org/wiki/Digest_access_authentication
 
-			Log.Info ("AddDigestAuth");
-
 			string ncUse = padNC(authInfo.nc);
 			authInfo.nc++; // incrememnt for subsequent requests
 
 			string ha1raw = userName + ":" + authInfo.realm + ":" + password;
 			string ha1 = CalculateMD5Hash(ha1raw);
-			Log.Info ("ha1raw: " + ha1raw);
-			Log.Info ("ha1hex: " + ha1);
 
 
 			string ha2raw = client.Method + ":" + client.RequestUri.PathAndQuery;
 			string ha2 = CalculateMD5Hash(ha2raw);
-			Log.Info ("ha2raw: " + ha2raw);
-			Log.Info ("ha2hex: " + ha2);
 
 			string md5rraw = ha1 + ":" + authInfo.nonce + ":" + ncUse + ":" + authInfo.cnonce + ":" + authInfo.qop + ":" + ha2;
 			string response = CalculateMD5Hash(md5rraw);
-			Log.Info ("responseraw: " + md5rraw);
-			Log.Info ("responsehex: " + response);
 
 
 			string header = 
 				"Digest username=\"" + userName + "\", realm=\"" + authInfo.realm + "\", nonce=\"" + authInfo.nonce + "\", uri=\"" + 
 					client.RequestUri.PathAndQuery + "\", cnonce=\"" + authInfo.cnonce + "\", nc=" + ncUse + ", qop=\"" + authInfo.qop + "\", response=\"" + response + 
 					"\", opaque=\"" + authInfo.opaque + "\"";
-			Log.Info ("Digest header: " + header);
+
 			client.Headers [ServiceStack.Common.Web.HttpHeaders.Authorization] = header;
-			// TODO ensure client.RequestUri is the /path/?param=value type URL (MUST include query string)
+
 		}
 
         /// <summary>
