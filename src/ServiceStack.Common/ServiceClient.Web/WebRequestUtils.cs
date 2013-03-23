@@ -7,6 +7,7 @@ using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
 using System.Security.Cryptography;
+using ServiceStack.Logging;
 
 
 #if NETFX_CORE
@@ -33,6 +34,8 @@ namespace ServiceStack.ServiceClient.Web
 	// by adamfowleruk
 	public class AuthenticationInfo 
 	{
+		private static readonly ILog Log = LogManager.GetLogger(typeof(AuthenticationInfo));
+
 		public string method {get;set;}
 		public string realm {get;set;}
 		public string qop {get;set;}
@@ -47,17 +50,18 @@ namespace ServiceStack.ServiceClient.Web
 			cnonce = "0a4f113b";
 			nc = 1;
 
+			// Example Digest header: WWW-Authenticate: Digest realm="testrealm@host.com", qop="auth,auth-int", nonce="dcd98b7102dd2f0e8b11d0f600bfb0c093", opaque="5ccc069c403ebaf9f0171e9517f40e41"
 
 			// get method from first word
 			int pos = authHeader.IndexOf (" ");
 			method = authHeader.Substring (0, pos).ToLower ();
-			string remainder = method.Substring (pos + 1);
+			string remainder = authHeader.Substring (pos + 1);
 
 			// split the rest by comma, then =
 			string[] pars = remainder.Split (',');
 			string[] newpars = new string[pars.Length];
 			int maxnewpars = 0;
-			// test possibility that a comma is mid value for a split
+			// test possibility that a comma is mid value for a split (as in above example)
 			for (int i = 0; i < pars.Length; i++) {
 				if (pars[i].EndsWith("\"")) {
 					newpars[maxnewpars] = pars[i];
@@ -93,10 +97,18 @@ namespace ServiceStack.ServiceClient.Web
 				}
 			}
 		}
+
+		public override string ToString ()
+		{
+			return string.Format ("[AuthenticationInfo: method={0}, realm={1}, qop={2}, nonce={3}, opaque={4}, cnonce={5}, nc={6}]", method, realm, qop, nonce, opaque, cnonce, nc);
+		}
 	}
 
     public static class WebRequestUtils
     {
+		
+		private static readonly ILog Log = LogManager.GetLogger(typeof(WebRequestUtils));
+
         internal static AuthenticationException CreateCustomException(string uri, AuthenticationException ex)
         {
             if (uri.StartsWith("https"))
@@ -138,7 +150,7 @@ namespace ServiceStack.ServiceClient.Web
 			{
 				sb.Append(hash[i].ToString("X2"));
 			}
-			return sb.ToString();
+			return sb.ToString().ToLower(); // The RFC requires the hex values are lowercase
 		}
 
 		internal static string padNC(int num) 
@@ -158,7 +170,7 @@ namespace ServiceStack.ServiceClient.Web
 				client.AddBasicAuth (userName, password); // FIXME AddBasicAuth ignores the server provided Realm property. Potential Bug.
 			} else if ("digest".Equals (authInfo.method)) {
 				// do digest auth header using auth info
-				// TODO save auth info somewhere for re-use on subsequent requests
+				// auth info saved in ServiceClientBase for subsequent requests
 				client.AddDigestAuth (userName, password, authInfo);
 			}
 		}
@@ -175,19 +187,20 @@ namespace ServiceStack.ServiceClient.Web
 			string ha1 = CalculateMD5Hash(ha1raw);
 
 
-			string ha2raw = client.Method + ":" + client.RequestUri;
+			string ha2raw = client.Method + ":" + client.RequestUri.PathAndQuery;
 			string ha2 = CalculateMD5Hash(ha2raw);
 
 			string md5rraw = ha1 + ":" + authInfo.nonce + ":" + ncUse + ":" + authInfo.cnonce + ":" + authInfo.qop + ":" + ha2;
 			string response = CalculateMD5Hash(md5rraw);
 
 
-
-			client.Headers[ServiceStack.Common.Web.HttpHeaders.Authorization] = 
+			string header = 
 				"Digest username=\"" + userName + "\", realm=\"" + authInfo.realm + "\", nonce=\"" + authInfo.nonce + "\", uri=\"" + 
-				client.RequestUri + "\", cnonce=\"" + authInfo.cnonce + "\", nc=" + ncUse + ", qop=\"" + authInfo.qop + "\", response=\"" + response + 
-				"\", opaque=\"" + authInfo.opaque + "\"";
-			// TODO ensure client.RequestUri is the /path/?param=value type URL (MUST include query string)
+					client.RequestUri.PathAndQuery + "\", cnonce=\"" + authInfo.cnonce + "\", nc=" + ncUse + ", qop=\"" + authInfo.qop + "\", response=\"" + response + 
+					"\", opaque=\"" + authInfo.opaque + "\"";
+
+			client.Headers [ServiceStack.Common.Web.HttpHeaders.Authorization] = header;
+
 		}
 
         /// <summary>
