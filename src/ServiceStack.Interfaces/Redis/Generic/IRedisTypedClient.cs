@@ -112,6 +112,8 @@ namespace ServiceStack.Redis.Generic
 		int GetListCount(IRedisList<T> fromList);
 		T GetItemFromList(IRedisList<T> fromList, int listIndex);
 		void SetItemInList(IRedisList<T> toList, int listIndex, T value);
+        void InsertBeforeItemInList(IRedisList<T> toList, T pivot, T value);
+        void InsertAfterItemInList(IRedisList<T> toList, T pivot, T value);
 
 		//Queue operations
 		void EnqueueItemOnList(IRedisList<T> fromList, T item);

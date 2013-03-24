@@ -100,6 +100,7 @@ namespace ServiceStack.Redis
 		int LRem(string listId, int removeNoOfMatches, byte[] value);
 		int LLen(string listId);
 		byte[] LIndex(string listId, int listIndex);
+        void LInsert(string listId, bool insertBefore, byte[] pivot, byte[] value);
 		void LSet(string listId, int listIndex, byte[] value);
 		byte[] LPop(string listId);
 		byte[] RPop(string listId);
