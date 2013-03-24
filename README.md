@@ -153,6 +153,24 @@ To help get started you should also clone the ServiceStack.Examples projects (in
 Alternatively if you want keep up with the latest version and not use NuGet, simply clone this repo:
 
     git clone git://github.com/ServiceStack/ServiceStack.git
+    
+## Download published NuGet binaries without NuGet
+
+For environments that doesn't have NuGet installed (e.g. OSX/Linux) you can still download the published binaries by 
+extracting them from the published NuGet packages. The url to download a nuget package is: 
+
+    http://packages.nuget.org/api/v1/package/{PackageName}/{Version}
+    
+ So to get the core ServiceStack and ServiceStack.Text libs in OSX/Linux (or using gnu tools for Windows) you can just do:
+
+    wget -O ServiceStack http://packages.nuget.org/api/v1/package/ServiceStack/3.9.42
+    unzip ServiceStack 'lib/*'
+    
+    wget -O ServiceStack.Text http://packages.nuget.org/api/v1/package/ServiceStack.Text/3.9.42
+    unzip ServiceStack.Text 'lib/*'
+
+which will download and extract the dlls into your local local `lib/` folder.
+    
 
 [Release notes for major releases](https://github.com/ServiceStack/ServiceStack/wiki/Release-Notes)
 
