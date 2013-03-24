@@ -45,6 +45,10 @@ namespace ServiceStack.ServiceHost
 			if ((value = httpReq.QueryString[name]) != null) return value;
 			if ((value = httpReq.FormData[name]) != null) return value;
 
+            //IIS will assign null to params without a name: .../?some_value can be retrieved as req.Params[null]
+            //TryGetValue is not happy with null dictionary keys, so we should bail out here
+            if (string.IsNullOrEmpty(name)) return null;
+
 			Cookie cookie;
 			if (httpReq.Cookies.TryGetValue(name, out cookie)) return cookie.Value;
 
