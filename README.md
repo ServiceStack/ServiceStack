@@ -156,7 +156,8 @@ Alternatively if you want keep up with the latest version and not use NuGet, sim
     
 ## Download published NuGet binaries without NuGet
 
-For environments that doesn't have NuGet installed (e.g. OSX/Linux) you can still download the published binaries by 
+GitHub has disabled its download feature so currently NuGet is the best way to get ServiceStack published releases.
+For environments that don't have NuGet installed (e.g. OSX/Linux) you can still download the published binaries by 
 extracting them from the published NuGet packages. The url to download a nuget package is: 
 
     http://packages.nuget.org/api/v1/package/{PackageName}/{Version}
