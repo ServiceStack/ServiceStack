@@ -180,3 +180,5 @@
  - [biliktamas79](https://github.com/biliktamas79)
  - [garuma](https://github.com/garuma) (Jérémie Laval)
  - [dsimunic](https://github.com/dsimunic)
+ - [adamfowleruk](https://github.com/adamfowleruk) (Adam Fowler)
+	
