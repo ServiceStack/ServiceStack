@@ -496,6 +496,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [Metal10k](https://github.com/Metal10k)
  - [cmelgarejo](https://github.com/cmelgarejo)
  - [skaman](https://github.com/skaman)
+ - [rossipedia](https://github.com/rossipedia) (Bryan J. Ross)
 
 ***
 
