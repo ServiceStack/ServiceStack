@@ -174,3 +174,4 @@
  - [filipw](https://github.com/filipw) (Filip Wojcieszyn)
  - [ghuntley](https://github.com/ghuntley) (Geoffrey Huntley)
  - [baramuse](https://github.com/baramuse)
+ - [pdegenhardt](https://github.com/pdegenhardt) (Phil Degenhardt)
