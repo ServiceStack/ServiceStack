@@ -185,4 +185,5 @@
  - [roryf](https://github.com/roryf) (Rory Fitzpatrick)
  - [stefandevo](https://github.com/stefandevo)
  - [gdassac](https://github.com/gdassac)
+ - [Metal10k](https://github.com/Metal10k)
 	
