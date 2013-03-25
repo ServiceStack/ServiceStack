@@ -170,3 +170,4 @@
  - [anewton](https://github.com/anewton) (Allen Newton)
  - [sami1971](https://github.com/sami1971)
  - [russellchadwick](https://github.com/russellchadwick) (Russell Chadwick)
+ - [cyberzed](https://github.com/cyberzed) (Stefan Daugaard Poulsen)
