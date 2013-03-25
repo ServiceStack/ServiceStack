@@ -484,6 +484,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [pdegenhardt](https://github.com/pdegenhardt) (Phil Degenhardt)
  - [captncraig](https://github.com/captncraig) (Craig Peterson)
  - [abattery](https://github.com/abattery) (Jae sung Chung)
+ - [biliktamas79](https://github.com/biliktamas79)
 
 ***
 
