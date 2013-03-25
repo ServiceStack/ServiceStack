@@ -191,4 +191,5 @@
  - [rossipedia](https://github.com/rossipedia) (Bryan J. Ross)
  - [wimatihomer](https://github.com/wimatihomer) (Wim Pool)
  - [sword-breaker](https://github.com/sword-breaker)
+ - [adebisi-fa](https://github.com/adebisi-fa) (Adebisi Foluso A.)
 	
