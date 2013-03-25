@@ -105,8 +105,12 @@ namespace $rootnamespace$
             {
                 var newId = todos.Count > 0 ? todos.Max(x => x.Id) + 1 : 1;
                 todo.Id = newId;
+                todos.Add(todo);
             }
-            todos.Add(todo);
+            else
+            {
+                existing.PopulateWith(todo);
+            }
             return todo;
         }
 
