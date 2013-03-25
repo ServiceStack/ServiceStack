@@ -184,4 +184,5 @@
  - [bfriesen](https://github.com/bfriesen) (Brian Friesen)
  - [roryf](https://github.com/roryf) (Rory Fitzpatrick)
  - [stefandevo](https://github.com/stefandevo)
+ - [gdassac](https://github.com/gdassac)
 	
