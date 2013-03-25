@@ -1,5 +1,8 @@
 # Contributors
 
+ - [mythz](https://github.com/mythz) (Demis Bellot)
+ - [arxisos](https://github.com/arxisos) (Steffen Müller)
+ - [desunit](https://github.com/desunit) (Sergey Bogdanov)
  - [bman654](https://github.com/bman654) (Brandon Wallace)
  - [iristyle](https://github.com/iristyle) (Ethan Brown)
  - [superlogical](https://github.com/superlogical) (Jake Scott)
@@ -102,6 +105,7 @@
  - [ckasabula](https://github.com/ckasabula) (Chuck Kasabula)
  - [dortzur](https://github.com/dortzur) (Dor Tzur)
  - [allenarthurgay](https://github.com/allenarthurgay) (Allen Gay)
+ - [viceberg](https://github.com/vIceBerg) 
  - [vansha](https://github.com/vansha) (Ivan Korneliuk)
  - [aaronlerch](https://github.com/aaronlerch) (Aaron Lerch)
  - [glikoz](https://github.com/glikoz)
@@ -170,8 +174,8 @@
  - [filipw](https://github.com/filipw) (Filip Wojcieszyn)
  - [ghuntley](https://github.com/ghuntley) (Geoffrey Huntley)
  - [baramuse](https://github.com/baramuse)
- - [pdegenhardt](https://github.com/pdegenhardt) (Phil Degenhardt)
  - [captncraig](https://github.com/captncraig) (Craig Peterson)
+ - [pdegenhardt](https://github.com/pdegenhardt) (Phil Degenhardt)
  - [abattery](https://github.com/abattery) (Jae sung Chung)
  - [biliktamas79](https://github.com/biliktamas79)
  - [garuma](https://github.com/garuma) (Jérémie Laval)
