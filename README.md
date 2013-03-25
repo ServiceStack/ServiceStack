@@ -494,6 +494,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [gdassac](https://github.com/gdassac)
  - [medianick](https://github.com/medianick) (Nick Jones)
  - [Metal10k](https://github.com/Metal10k)
+ - [cmelgarejo](https://github.com/cmelgarejo)
 
 ***
 
