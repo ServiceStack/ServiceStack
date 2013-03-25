@@ -482,6 +482,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [ghuntley](https://github.com/ghuntley) (Geoffrey Huntley)
  - [baramuse](https://github.com/baramuse)
  - [pdegenhardt](https://github.com/pdegenhardt) (Phil Degenhardt)
+ - [captncraig](https://github.com/captncraig) (Craig Peterson)
 
 ***
 
