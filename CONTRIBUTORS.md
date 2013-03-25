@@ -189,4 +189,5 @@
  - [cmelgarejo](https://github.com/cmelgarejo)
  - [skaman](https://github.com/skaman)
  - [rossipedia](https://github.com/rossipedia) (Bryan J. Ross)
+ - [wimatihomer](https://github.com/wimatihomer) (Wim Pool)
 	
