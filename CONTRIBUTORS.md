@@ -171,3 +171,4 @@
  - [sami1971](https://github.com/sami1971)
  - [russellchadwick](https://github.com/russellchadwick) (Russell Chadwick)
  - [cyberzed](https://github.com/cyberzed) (Stefan Daugaard Poulsen)
+ - [filipw](https://github.com/filipw) (Filip Wojcieszyn)
