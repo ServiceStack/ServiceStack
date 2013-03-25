@@ -480,6 +480,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [cyberzed](https://github.com/cyberzed) (Stefan Daugaard Poulsen)
  - [filipw](https://github.com/filipw) (Filip Wojcieszyn)
  - [ghuntley](https://github.com/ghuntley) (Geoffrey Huntley)
+ - [baramuse](https://github.com/baramuse)
 
 ***
 
