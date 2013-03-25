@@ -498,6 +498,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [skaman](https://github.com/skaman)
  - [rossipedia](https://github.com/rossipedia) (Bryan J. Ross)
  - [wimatihomer](https://github.com/wimatihomer) (Wim Pool)
+ - [sword-breaker](https://github.com/sword-breaker)
 
 ***
 
