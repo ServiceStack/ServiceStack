@@ -18,6 +18,7 @@ using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 using ServiceStack.WebHost.IntegrationTests.Services;
+using System.Collections.Generic;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -91,15 +92,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 	public class CustomUserSession : AuthUserSession
 	{
+        public CustomUserSession()
+        {
+            this.Roles = new List<string>();
+            this.Roles.Add("TheRole");
+        }
+
 		public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, System.Collections.Generic.Dictionary<string, string> authInfo)
 		{
-			if (!session.Roles.Contains("TheRole"))
-				session.Roles.Add("TheRole");
-
             if (session.UserName == AuthTests.UserNameWithSessionRedirect)
                 session.ReferrerUrl = AuthTests.SessionRedirectUrl;
-
-			authService.RequestContext.Get<IHttpRequest>().SaveSession(session);
 		}
 	}
 
@@ -126,9 +128,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			public override void Configure(Container container)
 			{
 				Plugins.Add(new AuthFeature(() => new CustomUserSession(),
-					new AuthProvider[] {
-						new CredentialsAuthProvider(), //HTML Form post of UserName/Password credentials
-						new BasicAuthProvider(), //Sign-in with Basic Auth
+					new AuthProvider[] { //Www-Authenticate should contain basic auth, therefore register this provider first
+                        new BasicAuthProvider(), //Sign-in with Basic Auth
+						new CredentialsAuthProvider() //HTML Form post of UserName/Password credentials
 					}));
 
 				container.Register<ICacheClient>(new MemoryCacheClient());
