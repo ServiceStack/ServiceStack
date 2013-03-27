@@ -5,7 +5,7 @@ namespace ServiceStack.ServiceClient.Web
 {
 	internal abstract class RouteMember
 	{
-		public abstract object GetValue(object target);
+		public abstract object GetValue(object target, bool excludeDefault);
 	}
 
 	internal class FieldRouteMember : RouteMember
@@ -17,10 +17,10 @@ namespace ServiceStack.ServiceClient.Web
 			this.field = field;
 		}
 
-		public override object GetValue(object target)
+		public override object GetValue(object target, bool excludeDefault)
 		{
 			var v = field.GetValue(target);
-			if (Equals(v, field.FieldType.GetDefaultValue())) return null;
+			if (excludeDefault && Equals(v, field.FieldType.GetDefaultValue())) return null;
 			return v;
 		}
 	}
@@ -34,10 +34,10 @@ namespace ServiceStack.ServiceClient.Web
 			this.property = property;
 		}
 
-		public override object GetValue(object target)
+		public override object GetValue(object target, bool excludeDefault)
 		{
 			var v = property.GetValue(target, null);
-			if (Equals(v, property.PropertyType.GetDefaultValue())) return null;
+			if (excludeDefault && Equals(v, property.PropertyType.GetDefaultValue())) return null;
 			return v;
 		}
 	}
