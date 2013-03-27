@@ -172,5 +172,13 @@ namespace ServiceStack.Common.Tests
 			var url = new RequestWithValueTypes { Id = 1, Gender2 = Gender.Male }.ToUrl("GET");
 			Assert.That(url, Is.EqualTo("/route/1?gender2=Male"));
 		}
+
+
+		[Test]
+		public void Can_use_default_for_non_nullable_value_types_on_path()
+		{
+			var url = new RequestWithValueTypes { Id = 0 }.ToUrl("GET");
+			Assert.That(url, Is.EqualTo("/route/0"));
+		}
 	}
 }
