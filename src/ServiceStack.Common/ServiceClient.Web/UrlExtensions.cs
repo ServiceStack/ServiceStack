@@ -277,7 +277,7 @@ namespace ServiceStack.ServiceClient.Web
 
             foreach (var queryProperty in propertyMap)
             {
-                var value = queryProperty.Value.GetValue(request);
+                var value = queryProperty.Value.GetValue(request, true);
                 if (value == null)
                 {
                     continue;
