@@ -14,8 +14,6 @@ namespace ServiceStack.ServiceInterface.Validation
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ValidationFeature));
 
-        public static bool Enabled { private set; get; }
-
         /// <summary>
         /// Activate the validation mechanism, so every request DTO with an existing validator
         /// will be validated.
@@ -23,10 +21,8 @@ namespace ServiceStack.ServiceInterface.Validation
         /// <param name="appHost">The app host</param>
         public void Register(IAppHost appHost)
         {
-            if (Enabled) return;
-            Enabled = true;
-            var filter = new ValidationFilters();
-            appHost.RequestFilters.Add(filter.RequestFilter);
+            if(!appHost.RequestFilters.Contains(ValidationFilters.RequestFilter))
+                appHost.RequestFilters.Add(ValidationFilters.RequestFilter);
         }
        
         /// <summary>

@@ -8,6 +8,7 @@ using ServiceStack.FluentValidation;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.ServiceInterface.Validation;
+using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
@@ -96,7 +97,7 @@ namespace ServiceStack.ServiceInterface.Auth
         /// </summary>
         public object Post(Registration request)
         {
-            if (!ValidationFeature.Enabled) //Already gets run
+            if (!EndpointHost.RequestFilters.Contains(ValidationFilters.RequestFilter)) //Already gets run
                 RegistrationValidator.ValidateAndThrow(request, ApplyTo.Post);
 
             AssertUserAuthRepo();
@@ -183,7 +184,7 @@ namespace ServiceStack.ServiceInterface.Auth
         /// </summary>
         public object UpdateUserAuth(Registration request)
         {
-            if (!ValidationFeature.Enabled)
+            if (!EndpointHost.RequestFilters.Contains(ValidationFilters.RequestFilter))
                 RegistrationValidator.ValidateAndThrow(request, ApplyTo.Put);
 
             if (ValidateFn != null)
