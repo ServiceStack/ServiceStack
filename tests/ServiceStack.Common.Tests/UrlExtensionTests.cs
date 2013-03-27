@@ -182,5 +182,13 @@ namespace ServiceStack.Common.Tests
 
             Assert.That(new Uri(serviceEndpoint, actionUrl).ToString(), Is.EqualTo("http://localhost/api/route/1"));
         }
+
+		[Test]
+		public void Can_use_default_for_non_nullable_value_types_on_path()
+		{
+			var url = new RequestWithValueTypes { Id = 0 }.ToUrl("GET");
+			Assert.That(url, Is.EqualTo("/route/0"));
+		}
+
     }
 }
