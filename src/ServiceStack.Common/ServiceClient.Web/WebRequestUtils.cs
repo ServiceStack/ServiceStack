@@ -6,12 +6,16 @@ using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
-using System.Security.Cryptography;
 using ServiceStack.Logging;
-
+#if !NETFX_CORE
+using System.Security.Cryptography;
+#endif
 
 #if NETFX_CORE
 using System.Net.Http.Headers;
+using Windows.Security.Cryptography;
+using Windows.Security.Cryptography.Core;
+using Windows.Storage.Streams;
 #endif
 
 namespace ServiceStack.ServiceClient.Web
@@ -136,6 +140,18 @@ namespace ServiceStack.ServiceClient.Web
                 = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(userName + ":" + password));
         }
 
+        #if NETFX_CORE
+        internal static string CalculateMD5Hash(string input)
+        {
+            var alg = HashAlgorithmProvider.OpenAlgorithm("MD5");
+            IBuffer buff = CryptographicBuffer.ConvertStringToBinary(input, BinaryStringEncoding.Utf8);
+            var hashed = alg.HashData(buff);
+            var res = CryptographicBuffer.EncodeToHexString(hashed);
+            return res.ToLower();
+        }
+        #endif
+
+        #if !NETFX_CORE
 		internal static string CalculateMD5Hash(string input)
 		{
 			// copied/pasted by adamfowleruk
@@ -152,8 +168,9 @@ namespace ServiceStack.ServiceClient.Web
 			}
 			return sb.ToString().ToLower(); // The RFC requires the hex values are lowercase
 		}
+        #endif
 
-		internal static string padNC(int num) 
+        internal static string padNC(int num) 
 		{
 			// by adamfowleruk
 			var pad = "";
