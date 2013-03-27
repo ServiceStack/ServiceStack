@@ -71,13 +71,12 @@ namespace ServiceStack.ServiceInterface.Auth
 
         public override bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Auth request = null)
         {
-            return false;
-            //if (request != null)
-            //{
-            //    if (!LoginMatchesSession(session, request.UserName)) return false;
-            //}
+            if (request != null)
+            {
+                if (!LoginMatchesSession(session, request.UserName)) return false;
+            }
 
-            //return !session.UserAuthName.IsNullOrEmpty();
+            return !session.UserAuthName.IsNullOrEmpty();
         }
 
         public override object Authenticate(IServiceBase authService, IAuthSession session, Auth request)
@@ -85,6 +84,7 @@ namespace ServiceStack.ServiceInterface.Auth
             //new CredentialsAuthValidator().ValidateAndThrow(request);
             return Authenticate(authService, session, request.UserName, request.Password);
         }
+
         protected object Authenticate(IServiceBase authService, IAuthSession session, string userName, string password)
         {
             if (!LoginMatchesSession(session, userName))
