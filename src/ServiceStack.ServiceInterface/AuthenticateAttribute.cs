@@ -76,10 +76,9 @@ namespace ServiceStack.ServiceInterface
 
             using (var cache = req.GetCacheClient())
             {
-                var sessionId = req.GetSessionId();
-                var session = sessionId != null ? cache.GetSession(sessionId) : null;
+                var session = req.GetSession();
 
-                if (session == null || !session.IsAuthenticated)
+                if (session == null || !matchingOAuthConfigs.Any(x => session.IsAuthorized(x.Provider)))
                 {
                     var htmlRedirect = HtmlRedirect ?? AuthService.HtmlRedirect;
                     if (htmlRedirect != null && req.ResponseContentType.MatchesContentType(ContentType.Html))
