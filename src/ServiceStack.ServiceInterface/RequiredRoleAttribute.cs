@@ -15,7 +15,7 @@ namespace ServiceStack.ServiceInterface
     /// can only execute, if the user has specific roles.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = true)]
-    public class RequiredRoleAttribute : RequestFilterAttribute
+    public class RequiredRoleAttribute : AuthenticateAttribute
     {
         public List<string> RequiredRoles { get; set; }
 
@@ -31,14 +31,13 @@ namespace ServiceStack.ServiceInterface
 
         public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
         {
-            AuthenticateAttribute.AuthenticateIfBasicAuth(req, res);
+            base.Execute(req, res, requestDto); //first check if session is authenticated
+            if (res.IsClosed) return; //AuthenticateAttribute already closed the request (ie auth failed)
 
             var session = req.GetSession();
             if (HasAllRoles(req, session)) return;
 
-            res.StatusCode = session != null && session.IsAuthenticated
-                ? (int)HttpStatusCode.Forbidden
-                : (int)HttpStatusCode.Unauthorized;
+            res.StatusCode = (int)HttpStatusCode.Forbidden;
             res.StatusDescription = "Invalid Role";
             res.EndServiceStackRequest();
         }

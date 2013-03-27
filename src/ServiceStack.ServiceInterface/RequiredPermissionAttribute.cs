@@ -13,7 +13,7 @@ namespace ServiceStack.ServiceInterface
     /// can only execute, if the user has specific permissions.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = true)]
-    public class RequiredPermissionAttribute : RequestFilterAttribute
+    public class RequiredPermissionAttribute : AuthenticateAttribute
     {
         public List<string> RequiredPermissions { get; set; }
 
@@ -29,15 +29,14 @@ namespace ServiceStack.ServiceInterface
 
         public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
         {
-            AuthenticateAttribute.AuthenticateIfBasicAuth(req, res);
+            base.Execute(req, res, requestDto); //first check if session is authenticated
+            if (res.IsClosed) return; //AuthenticateAttribute already closed the request (ie auth failed)
 
             var session = req.GetSession();
             if (HasAllPermissions(req, session)) return;
 
-            res.StatusCode = session != null && session.IsAuthenticated
-                ? (int)HttpStatusCode.Forbidden
-                : (int)HttpStatusCode.Unauthorized;
-            res.StatusDescription = "Invalid Permissions";
+            res.StatusCode = (int)HttpStatusCode.Forbidden;
+            res.StatusDescription = "Invalid Permission";
             res.EndServiceStackRequest();
         }
 

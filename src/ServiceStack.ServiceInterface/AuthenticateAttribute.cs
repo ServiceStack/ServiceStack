@@ -16,7 +16,18 @@ namespace ServiceStack.ServiceInterface
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
     public class AuthenticateAttribute : RequestFilterAttribute
     {
+        /// <summary>
+        /// Restrict authentication to a specific <see cref="IAuthProvider"/>.
+        /// For example, if this attribute should only permit access
+        /// if the user is authenticated with <see cref="BasicAuthProvider"/>,
+        /// you should set this property to <see cref="BasicAuthProvider.Name"/>.
+        /// </summary>
         public string Provider { get; set; }
+
+        /// <summary>
+        /// Redirect the client to a specific URL if authentication failed.
+        /// If this property is null, simply `401 Unauthorized` is returned.
+        /// </summary>
         public string HtmlRedirect { get; set; }
 
         public AuthenticateAttribute(ApplyTo applyTo)
@@ -57,15 +68,18 @@ namespace ServiceStack.ServiceInterface
                 return;
             }
 
-            AuthenticateIfDigestAuth(req, res);
-            AuthenticateIfBasicAuth(req, res);
+            if (matchingOAuthConfigs.Any(x => x.Provider == DigestAuthProvider.Name))
+                AuthenticateIfDigestAuth(req, res);
+
+            if (matchingOAuthConfigs.Any(x => x.Provider == BasicAuthProvider.Name))
+                AuthenticateIfBasicAuth(req, res);
 
             using (var cache = req.GetCacheClient())
             {
                 var sessionId = req.GetSessionId();
                 var session = sessionId != null ? cache.GetSession(sessionId) : null;
 
-                if (session == null || !matchingOAuthConfigs.Any(x => session.IsAuthorized(x.Provider)))
+                if (session == null || !session.IsAuthenticated)
                 {
                     var htmlRedirect = HtmlRedirect ?? AuthService.HtmlRedirect;
                     if (htmlRedirect != null && req.ResponseContentType.MatchesContentType(ContentType.Html))
@@ -85,7 +99,6 @@ namespace ServiceStack.ServiceInterface
             }
         }
 
-        //Also shared by RequiredRoleAttribute and RequiredPermissionAttribute
         public static void AuthenticateIfBasicAuth(IHttpRequest req, IHttpResponse res)
         {
             //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
