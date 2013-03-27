@@ -246,7 +246,7 @@ namespace ServiceStack.ServiceClient.Web
             foreach (var variable in this.variablesMap)
             {
                 var property = variable.Value;
-                var value = property.GetValue(request, false);
+                var value = property.GetValue(request);
                 if (value == null)
                 {
                     unmatchedVariables.Add(variable.Key);

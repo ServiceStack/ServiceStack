@@ -5,7 +5,7 @@ namespace ServiceStack.ServiceClient.Web
 {
 	internal abstract class RouteMember
 	{
-		public abstract object GetValue(object target, bool excludeDefault);
+		public abstract object GetValue(object target, bool excludeDefault = false);
 	}
 
 	internal class FieldRouteMember : RouteMember
