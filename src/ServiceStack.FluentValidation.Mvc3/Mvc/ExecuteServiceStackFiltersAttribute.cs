@@ -21,9 +21,8 @@ namespace ServiceStack.Mvc
 			var authAttrs = GetActionAndControllerAttributes<AuthenticateAttribute>(filterContext);
 			if (authAttrs.Count > 0 && ( ssController.AuthSession==null || !ssController.AuthSession.IsAuthenticated))
 			{
-			    var returnUrl = filterContext.HttpContext.Request.Url.PathAndQuery;
-				filterContext.Result = new RedirectResult(ssController.LoginRedirectUrl.Fmt(HttpUtility.UrlEncode(returnUrl)));
-				return;
+                filterContext.Result = ssController.AuthenticationErrorResult;
+                return;
 			}
 
 			var roleAttrs = GetActionAndControllerAttributes<RequiredRoleAttribute>(filterContext);
