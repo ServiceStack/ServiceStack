@@ -120,6 +120,45 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 	}
 
+    public class CustomAuthProvider : AuthProvider
+    {
+        public CustomAuthProvider()
+        {
+            this.Provider = "custom";
+        }
+
+        public override bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Auth request = null)
+        {
+            return false;
+        }
+
+        public override object Authenticate(IServiceBase authService, IAuthSession session, Auth request)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class RequiresCustomAuth
+    {
+        public string Name { get; set; }
+    }
+
+    public class RequiresCustomAuthResponse
+    {
+        public string Result { get; set; }
+
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [Authenticate(Provider="custom")]
+    public class RequiresCustomAuthService : ServiceInterface.Service
+    {
+        public RequiresCustomAuthResponse Any(RequiresCustomAuth request)
+        {
+            return new RequiresCustomAuthResponse { Result = request.Name };
+        }
+    }
+
 	public class AuthTests
 	{
 		private const string ListeningOn = "http://localhost:82/";
@@ -145,7 +184,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				Plugins.Add(new AuthFeature(() => new CustomUserSession(),
 					new AuthProvider[] { //Www-Authenticate should contain basic auth, therefore register this provider first
                         new BasicAuthProvider(), //Sign-in with Basic Auth
-						new CredentialsAuthProvider() //HTML Form post of UserName/Password credentials
+						new CredentialsAuthProvider(), //HTML Form post of UserName/Password credentials
+                        new CustomAuthProvider()
 					}));
 
 				container.Register<ICacheClient>(new MemoryCacheClient());
@@ -235,6 +275,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				Console.WriteLine(webEx.ResponseDto.Dump());
 			}
 		}
+
+        [Test]
+        public void Authenticate_attribute_respects_provider()
+        {
+            try
+            {
+                var client = GetClient();
+                var authResponse = client.Send(new Auth
+                {
+                    provider = CredentialsAuthProvider.Name,
+                    UserName = "user",
+                    Password = "p@55word",
+                    RememberMe = true,
+                });
+
+                var request = new RequiresCustomAuth { Name = "test" };
+                var response = client.Send<RequiresCustomAuthResponse>(request);
+
+                Assert.Fail("Shouldn't be allowed");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+                Console.WriteLine(webEx.ResponseDto.Dump());
+            }
+        }
 
         [Test]
         public void PostFile_with_no_Credentials_throws_UnAuthorized()
