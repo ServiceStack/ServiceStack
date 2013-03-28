@@ -195,6 +195,14 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 				Postcode = "11215",
 			};
 		}
+
+        [Test]
+        public void ValidationFeature_add_request_filter_once()
+        {
+            var old = appHost.RequestFilters.Count; 
+            appHost.LoadPlugin(new ValidationFeature());
+            Assert.That(old, Is.EqualTo(appHost.RequestFilters.Count));
+        }
 		
 		[Test]
 		public void Validates_ValidRequest_request_on_Post()
