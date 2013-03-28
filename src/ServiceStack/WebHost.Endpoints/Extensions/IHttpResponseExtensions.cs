@@ -65,7 +65,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
         {
             if (result == null)
             {
-                ApplyGlobalResponseHeaders(httpRes);                
+                httpRes.EndHttpRequestWithNoContent();
                 return true;
             }
 
