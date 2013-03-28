@@ -261,7 +261,7 @@ current date/year: 2013</p>
 </fieldset>
 ".NormalizeNewLines();
 
-			var expectedHtml = 
+			var expectedHtml =
 @"<fieldset>
     <legend>Edit Product</legend>
     
@@ -269,7 +269,7 @@ current date/year: 2013</p>
         <label for=""ProductID"">ProductID</label>
     </div>
     <div>
-        <input name=""ProductID"" type=""text"" value=""10"" />
+        <input id=""ProductID"" name=""ProductID"" type=""text"" value=""10"" />
     </div>
 </fieldset>
 ".NormalizeNewLines();

@@ -385,7 +385,7 @@ AjaxStack - http://www.ajaxstack.com
 
             var expectedHtml = @"<h1>Generic View Page</h1>
 <h2>Form fields</h2>
-<label for=""FirstName"">FirstName</label> <input name=""FirstName"" type=""text"" value=""Demis"" />".NormalizeNewLines();
+<label for=""FirstName"">FirstName</label> <input id=""FirstName"" name=""FirstName"" type=""text"" value=""Demis"" />".NormalizeNewLines();
 
 
             var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
@@ -415,7 +415,7 @@ AjaxStack - http://www.ajaxstack.com
 
             var expectedHtml = @"<h1>Generic View Page</h1>
 <h2>Form fields</h2>
-<label for=""FirstName"">FirstName</label> <input name=""FirstName"" type=""text"" value=""Demis"" /><h2>Person Table</h2>
+<label for=""FirstName"">FirstName</label> <input id=""FirstName"" name=""FirstName"" type=""text"" value=""Demis"" /><h2>Person Table</h2>
 <table><caption>Demis's Links</caption><thead><tr><th>Name</th><th>Link</th></tr></thead>
 <tbody>
 <tr><td>ServiceStack</td><td>http://www.servicestack.net</td></tr><tr><td>AjaxStack</td><td>http://www.ajaxstack.com</td></tr></tbody>
