@@ -120,7 +120,7 @@ namespace ServiceStack.Api.Swagger
             return new ResourceResponse {
                 ResourcePath = path,
                 BasePath = basePath,
-                Apis = new List<MethodDescription>(paths.Select(FormateMethodDescription).ToArray())
+                Apis = new List<MethodDescription>(paths.Select(FormateMethodDescription).ToArray().OrderBy(md => md.Path))
             };
         }
 
