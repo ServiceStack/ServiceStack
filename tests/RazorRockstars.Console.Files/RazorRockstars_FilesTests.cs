@@ -282,7 +282,7 @@ namespace RazorRockstars.Console.Files
                     ViewPartialChildModel,
                 };
 
-            5.Times(x => containsItems.Add("<input name=\"SomeProperty\" type=\"text\" value=\"value " + x + "\" />"));
+            5.Times(x => containsItems.Add("<input id=\"SomeProperty\" name=\"SomeProperty\" type=\"text\" value=\"value " + x + "\" />"));
 
             Assert200(Host + "/partialmodel", containsItems.ToArray());
         }
