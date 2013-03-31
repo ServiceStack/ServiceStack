@@ -88,7 +88,7 @@ namespace ServiceStack.Html
                 Log.InfoFormat("Starting {0} threads..", threadsToRun);
 
                 threadsToRun.Times(x => {
-                    ThreadPool.QueueUserWorkItem(waitHandle => CompileAllPages());
+                    ThreadPool.QueueUserWorkItem(waitHandle => { try { CompileAllPages(); } catch { } });
                 });
             }
             else
