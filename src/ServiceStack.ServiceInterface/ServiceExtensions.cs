@@ -177,7 +177,10 @@ namespace ServiceStack.ServiceInterface
 
         public static IAuthSession GetSession(this Service service, bool reload = false)
         {
-            return service.RequestContext.Get<IHttpRequest>().GetSession(reload);
+            var req = service.RequestContext.Get<IHttpRequest>();
+            if (req.GetSessionId() == null)
+                service.RequestContext.Get<IHttpResponse>().CreateSessionIds(req);
+            return req.GetSession(reload);
         }
 
         public const string RequestItemsSessionKey = "__session";
