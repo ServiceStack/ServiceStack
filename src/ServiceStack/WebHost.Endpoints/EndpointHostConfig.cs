@@ -79,7 +79,7 @@ namespace ServiceStack.WebHost.Endpoints
                         AllowFileExtensions = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
 						{
 							"js", "css", "htm", "html", "shtm", "txt", "xml", "rss", "csv", 
-							"jpg", "jpeg", "gif", "png", "bmp", "ico", "tif", "tiff", 
+							"jpg", "jpeg", "gif", "png", "bmp", "ico", "tif", "tiff", "svg", 
 							"avi", "divx", "m3u", "mov", "mp3", "mpeg", "mpg", "qt", "vob", "wav", "wma", "wmv", 
 							"flv", "xap", "xaml", 
 						},

@@ -50,6 +50,7 @@ namespace ServiceStack.Common.Web
                 case "png":
                 case "tiff":
                 case "bmp":
+                case "svg":
                     return "image/" + fileExt;
 
                 case "jpg":
