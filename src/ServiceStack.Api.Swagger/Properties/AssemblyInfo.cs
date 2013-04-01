@@ -33,8 +33,8 @@ using System.Runtime.Serialization;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("3.9.42.0")]
-[assembly: AssemblyFileVersion("3.9.42.0")]
+[assembly: AssemblyVersion("3.9.43.0")]
+[assembly: AssemblyFileVersion("3.9.43.0")]
 
 [assembly: ContractNamespace("http://schemas.servicestack.net/types",
     ClrNamespace = "ServiceStack.Api.Swagger")]
