@@ -225,9 +225,10 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			get { return request.Headers; }
 		}
 
+	    private NameValueCollection queryString;
 		public NameValueCollection QueryString
 		{
-			get { return this.request.QueryString; }
+            get { return queryString ?? (queryString = HttpUtility.ParseQueryString(request.Url.Query)); }
 		}
 
 		public NameValueCollection FormData

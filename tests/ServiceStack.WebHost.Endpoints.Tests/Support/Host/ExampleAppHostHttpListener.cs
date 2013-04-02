@@ -227,7 +227,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		/// GET /movies 
 		/// GET /movies/genres/{Genre}
 		/// </summary>
-		public override object OnGet(Movies request)
+		public object Get(Movies request)
 		{
 			var response = new MoviesResponse {
 				Movies = request.Genre.IsNullOrEmpty()
