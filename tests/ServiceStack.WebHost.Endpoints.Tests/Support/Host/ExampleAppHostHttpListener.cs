@@ -221,10 +221,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		public List<Movie> Movies { get; set; }
 	}
 
-	public class MoviesService : RestServiceBase<Movies>
+    public class MoviesService : ServiceInterface.Service
 	{
-		public IDbConnectionFactory DbFactory { get; set; }
-
 		/// <summary>
 		/// GET /movies 
 		/// GET /movies/genres/{Genre}
@@ -233,8 +231,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		{
 			var response = new MoviesResponse {
 				Movies = request.Genre.IsNullOrEmpty()
-					? DbFactory.Run(db => db.Select<Movie>())
-					: DbFactory.Run(db => db.Select<Movie>("Genres LIKE {0}", "%" + request.Genre + "%"))
+					? Db.Select<Movie>()
+					: Db.Select<Movie>("Genres LIKE {0}", "%" + request.Genre + "%")
 			};
 
 			return response;
@@ -257,16 +255,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		public List<Movie> Movies { get; set; }
 	}
 
-	public class MoviesZipService : RestServiceBase<MoviesZip>
+    public class MoviesZipService : ServiceInterface.Service
 	{
 		public IDbConnectionFactory DbFactory { get; set; }
 
-		public override object OnGet(MoviesZip request)
+		public object Get(MoviesZip request)
 		{
-			return OnPost(request);
+			return Post(request);
 		}
 
-		public override object OnPost(MoviesZip request)
+		public object Post(MoviesZip request)
 		{
 			var response = new MoviesZipResponse {
 				Movies = request.Genre.IsNullOrEmpty()
@@ -296,7 +294,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class ResetMoviesService : RestServiceBase<ResetMovies>
+	public class ResetMoviesService : ServiceInterface.Service
 	{
 		public static List<Movie> Top5Movies = new List<Movie>
 		{
@@ -307,15 +305,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 			new Movie { ImdbId = "tt0060196", Title = "The Good, the Bad and the Ugly", Rating = 9.0m, Director = "Sergio Leone", ReleaseDate = new DateTime(1967,12,29), TagLine = "They formed an alliance of hate to steal a fortune in dead man's gold", Genres = new List<string>{"Adventure","Western"}, },
 		};
 
-		public IDbConnectionFactory DbFactory { get; set; }
-
-		public override object OnPost(ResetMovies request)
+		public object Post(ResetMovies request)
 		{
-			DbFactory.Run(db => {
-				const bool overwriteTable = true;
-				db.CreateTable<Movie>(overwriteTable);
-				db.SaveAll(Top5Movies);
-			});
+            const bool overwriteTable = true;
+            Db.CreateTable<Movie>(overwriteTable);
+            Db.SaveAll(Top5Movies);
 
 			return new ResetMoviesResponse();
 		}
