@@ -5,6 +5,7 @@ using System.Net;
 using System.Web;
 using System.Web.UI;
 using ServiceStack.Common.Extensions;
+using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
@@ -12,7 +13,6 @@ using ServiceStack.WebHost.Endpoints.Support.Metadata.Controls;
 
 namespace ServiceStack.WebHost.Endpoints.Metadata
 {
-    using System.Collections.Generic;
     using System.Text;
     using ServiceHost;
 
@@ -102,11 +102,13 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
                         sb.Append("<tr>");
                         var verbs = route.AllowsAllVerbs ? "All Verbs" : route.AllowedVerbs;
-                        
+
                         if (!isSoap)
                         {
+                            var path = "/" + PathUtils.CombinePaths(EndpointHost.Config.ServiceStackHandlerFactoryPath, route.Path);
+
                             sb.AppendFormat("<th>{0}</th>", verbs);
-                            sb.AppendFormat("<th>{0}</th>", route.Path);
+                            sb.AppendFormat("<th>{0}</th>", path);
                         }
                         sb.AppendFormat("<td>{0}</td>", route.Summary);
                         sb.AppendFormat("<td><i>{0}</i></td>", route.Notes);
@@ -187,7 +189,8 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
         protected virtual void RenderOperation(HtmlTextWriter writer, IHttpRequest httpReq, string operationName,
             string requestMessage, string responseMessage, string metadataHtml)
         {
-            var operationControl = new OperationControl {
+            var operationControl = new OperationControl
+            {
                 HttpRequest = httpReq,
                 MetadataConfig = EndpointHost.Config.ServiceEndpointsMetadataConfig,
                 Title = EndpointHost.Config.ServiceName,
