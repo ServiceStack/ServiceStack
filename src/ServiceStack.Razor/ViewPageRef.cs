@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Threading;
 using ServiceStack.Text;
 using ServiceStack.Logging;
@@ -90,6 +91,14 @@ namespace ServiceStack.Razor
                 {
                     Service.Compile(this, this.Contents, PageName);
                     Log.InfoFormat("Compiled {0} in {1}ms", this.FilePath, sw.ElapsedMilliseconds);
+                }
+                catch (TemplateCompilationException tcex)
+                {
+                    var errors = new StringBuilder();
+                    foreach (var error in tcex.Errors)
+                        errors.AppendLine(" -- {0}".Fmt(error));
+                    Log.Error("Error compiling {0} with errors:{1}{2}".Fmt(this.FilePath, Environment.NewLine, errors), tcex);
+                    throw;
                 }
                 catch (Exception ex)
                 {                    
