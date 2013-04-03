@@ -1,4 +1,6 @@
-﻿namespace ServiceStack.Razor.Templating
+﻿//Originally from: https://github.com/NancyFx/Nancy/blob/master/src/Nancy.ViewEngines.Razor/AttributeValue.cs
+
+namespace ServiceStack.Razor.Templating
 {
     using System;
 

@@ -280,8 +280,8 @@ namespace ServiceStack.Razor.Templating
             writer.Write(obj);
         }
 
-        //copied from NancyFx
-
+        #region copied from NancyFx
+        //Originally from: https://github.com/NancyFx/Nancy/blob/master/src/Nancy.ViewEngines.Razor/NancyRazorViewBase.cs
         public virtual void WriteAttribute(string name, Tuple<string, int> prefix, Tuple<string, int> suffix, params AttributeValue[] values)
         {
             var attributeValue = this.BuildAttribute(name, prefix, suffix, values);
@@ -357,8 +357,7 @@ namespace ServiceStack.Razor.Templating
 
             return true;
         }
-
-//End copied from nancyfx
+        #endregion
 
         public int Counter { get; set; }
 
