@@ -89,7 +89,7 @@ namespace ServiceStack.Common
         }
 
         public static bool ContainsAny(this string text, params string[] testMatches)
-        {	
+        {
             foreach (var testMatch in testMatches)
             {
                 if (text.Contains(testMatch)) return true;

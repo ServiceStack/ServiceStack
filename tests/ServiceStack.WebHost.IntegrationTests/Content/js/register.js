@@ -51,7 +51,7 @@
 			{
 				this.model.set({ hasRegistered: true });
 			},
-            unregistered: function (e) {    
+            unregistered: function (e) {
                 this.model.set({ hasRegistered: false });
             },
             render: function ()

@@ -6,7 +6,7 @@ namespace ServiceStack.MiniProfiler.SqlFormatters
     /// NOT IMPLEMENTED - will format statements with paramters in an Oracle friendly way
     /// </summary>
     public class OracleFormatter : ISqlFormatter
-    {        
+    {
         /// <summary>
         /// Does NOTHING, implement me!
         /// </summary>

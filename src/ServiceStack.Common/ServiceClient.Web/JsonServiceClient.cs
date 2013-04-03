@@ -19,7 +19,7 @@ namespace ServiceStack.ServiceClient.Web
         }
 
         public JsonServiceClient(string baseUri) 
-        {			
+        {
             SetBaseUri(baseUri);
         }
 

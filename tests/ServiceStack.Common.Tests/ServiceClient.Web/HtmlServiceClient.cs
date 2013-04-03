@@ -19,7 +19,7 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
         public HtmlServiceClient(string baseUri)
             // Can't call SetBaseUri as that appends the format specific suffixes.
             :base(baseUri, baseUri)
-        {			
+        {
         }
 
         public override string Format

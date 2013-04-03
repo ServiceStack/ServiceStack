@@ -53,7 +53,7 @@ namespace ServiceStack.ServiceInterface
             session.UpdateSession(userAuth);
 
             if (HasAllPermissions(session))
-            {				
+            {
                 req.SaveSession(session);
                 return true;
             }

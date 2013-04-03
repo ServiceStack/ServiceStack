@@ -24,7 +24,7 @@ namespace ServiceStack.MiniProfiler.SqlFormatters
         }
 
         static SqlServerFormatter()
-        {   
+        {
             paramTranslator = new Dictionary<DbType, Func<SqlTimingParameter, string>>
             {
                 {DbType.AnsiString, GetWithLenFormatter("varchar")},

@@ -101,7 +101,7 @@ namespace ServiceStack.Razor
                     throw;
                 }
                 catch (Exception ex)
-                {                    
+                {
                     Log.Error("Error compiling {0}".Fmt(this.FilePath), ex);
                     throw;
                 } 
