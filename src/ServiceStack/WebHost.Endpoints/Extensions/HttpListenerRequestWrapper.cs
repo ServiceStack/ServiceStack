@@ -170,7 +170,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		public string PathInfo
 		{
 			get
-			{				
+			{
 				if (this.pathInfo == null)
 				{
                     var mode = EndpointHost.Config.ServiceStackHandlerFactoryPath;

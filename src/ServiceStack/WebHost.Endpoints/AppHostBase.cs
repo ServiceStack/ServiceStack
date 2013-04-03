@@ -33,7 +33,7 @@ namespace ServiceStack.WebHost.Endpoints
 		}
 
 		protected virtual ServiceManager CreateServiceManager(params Assembly[] assembliesWithServices)
-		{		
+		{
 			return new ServiceManager(assembliesWithServices);
 			//Alternative way to inject Container + Service Resolver strategy
 			//return new ServiceManager(new Container(),

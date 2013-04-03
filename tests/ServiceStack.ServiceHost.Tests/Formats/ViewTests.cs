@@ -47,7 +47,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		{
 			public AppHost()
 			{
-				this.Config = new EndpointHostConfig {					
+				this.Config = new EndpointHostConfig {
 					HtmlReplaceTokens = new Dictionary<string, string>(),
 					IgnoreFormatsInMetadata = new HashSet<string>(),
 				};

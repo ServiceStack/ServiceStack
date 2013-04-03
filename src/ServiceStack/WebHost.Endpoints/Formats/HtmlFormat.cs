@@ -51,7 +51,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 
                 string url = string.Empty;
                 if (httpReq != null)
-                {                    
+                {
                     url = httpReq.AbsoluteUri
                                  .Replace("format=html", "")
                                  .Replace("format=shtm", "")

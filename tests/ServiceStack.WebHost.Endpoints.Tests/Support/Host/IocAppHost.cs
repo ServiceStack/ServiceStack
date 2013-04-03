@@ -89,7 +89,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
         public int Priority { get; set; }
 
         public void RequestFilter(IHttpRequest req, IHttpResponse res, object requestDto)
-        {            
+        {
         }
 
         public IHasRequestFilter Copy()

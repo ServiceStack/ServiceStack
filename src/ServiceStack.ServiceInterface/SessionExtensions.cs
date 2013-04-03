@@ -25,7 +25,7 @@ namespace ServiceStack.ServiceInterface
     /// Configure ServiceStack to have ISession support
     /// </summary>
     public static class SessionExtensions 
-    {        
+    {
         public static string GetSessionId(this IHttpRequest httpReq)
         {
             var sessionOptions = GetSessionOptions(httpReq);

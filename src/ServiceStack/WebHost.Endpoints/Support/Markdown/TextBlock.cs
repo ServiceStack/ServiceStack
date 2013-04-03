@@ -956,7 +956,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
                 base.ReturnType = mi.ReturnType;
             }
             catch (Exception ex)
-            {                
+            {
                 throw;
             }
 
