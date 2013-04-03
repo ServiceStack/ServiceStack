@@ -4,9 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Xml;
 using System.Text;
-using ServiceStack.Common.Utils;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -69,20 +67,34 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
             "ServiceStack.Markdown"                                                                     
         };
 
+        //NOTE: This assumes that the assembly name will always be equal to the namespace
         public static void AddAssembly(string assemblyName)
         {
             if (AssemblyNames.Contains(assemblyName)) return;
             AssemblyNames.Add(assemblyName);
 
-            try
-            {
+            try {
                 var assembly = Assembly.Load(assemblyName);
                 if (!Assemblies.Contains(assembly))
                     Assemblies.Add(assembly);
+            } catch (System.IO.FileNotFoundException) {
+                //Possibly the assembly name differs from the namespace name
+                FindNamespaceInLoadedAssemblies(assemblyName);
+            } catch (Exception ex) {
+                Log.Error("Can't load assembly: " + assemblyName, ex);
             }
-            catch (Exception ex)
-            {
-                Log.Error("Can't load assembly: " + assemblyName, ex);                
+        }
+
+        private static void FindNamespaceInLoadedAssemblies(string assemblyNamespace)
+        {
+            var assemblies = from assembly in AppDomain.CurrentDomain.GetAssemblies()
+                             from type in assembly.GetTypes()
+                             where type.Namespace == assemblyNamespace
+                             select type.Assembly;
+
+            foreach (var a in assemblies) {
+                if (!Assemblies.Contains(a))
+                    Assemblies.Add(a);
             }
         }
 
