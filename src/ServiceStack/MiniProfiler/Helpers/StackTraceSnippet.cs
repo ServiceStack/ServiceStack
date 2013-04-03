@@ -49,10 +49,10 @@ namespace ServiceStack.MiniProfiler.Helpers
             {
                 var index = result.IndexOf(" ", Profiler.Settings.StackMaxLength);		
 	            if (index >= Profiler.Settings.StackMaxLength)		
-	            {		
+	            {
 	                result = result.Substring(0, index);		
-	            }		
-	        }		
+	            }
+	        }
 
 			return result;
 		}

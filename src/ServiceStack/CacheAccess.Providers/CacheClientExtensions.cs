@@ -128,7 +128,7 @@ namespace ServiceStack.CacheAccess.Providers
 
 		public static void ClearCaches(this ICacheClient cacheClient, params string[] cacheKeys)
 		{
-			var allContentTypes = new List<string>(EndpointHost.ContentTypeFilter.ContentTypeFormats.Values) 
+			var allContentTypes = new List<string>(EndpointHost.ContentTypeFilter.ContentTypeFormats.Values)
 			{ ContentType.XmlText, ContentType.JsonText, ContentType.JsvText };
 
 			var allCacheKeys = new List<string>();

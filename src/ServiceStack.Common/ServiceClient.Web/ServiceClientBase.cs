@@ -620,7 +620,7 @@ namespace ServiceStack.ServiceClient.Web
                 if (this.ReadWriteTimeout.HasValue) client.ReadWriteTimeout = (int)this.ReadWriteTimeout.Value.TotalMilliseconds;
                 if (this.credentials != null) client.Credentials = this.credentials;
 
-				if (null != this.authInfo) {	
+				if (null != this.authInfo) {
 					client.AddAuthInfo(this.UserName,this.Password,authInfo);
 				} else {
 					if (this.AlwaysSendBasicAuthHeader) client.AddBasicAuth(this.UserName, this.Password);

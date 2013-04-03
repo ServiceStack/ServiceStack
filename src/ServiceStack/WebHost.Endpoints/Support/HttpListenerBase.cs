@@ -60,7 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		}
 
 		protected virtual ServiceManager CreateServiceManager(params Assembly[] assembliesWithServices)
-		{		
+		{
 			return new ServiceManager(assembliesWithServices);
 		}
 

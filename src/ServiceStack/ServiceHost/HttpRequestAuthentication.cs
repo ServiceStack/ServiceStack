@@ -40,7 +40,7 @@ namespace ServiceStack.ServiceHost
             auth = auth.Substring(auth.IndexOf(' '));
             parts = auth.Split(',');
             try 
-	        {	        
+	        {
                 var result = new Dictionary<string, string>();
                 foreach (var item in parts)
                 {

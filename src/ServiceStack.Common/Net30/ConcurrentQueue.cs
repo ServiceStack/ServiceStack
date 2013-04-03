@@ -125,7 +125,7 @@ namespace ServiceStack.Common.Net30
 
                 if (oldHead == head) {
                     // Empty case ?
-                    if (oldHead == oldTail) {	
+                    if (oldHead == oldTail) {
                         // This should be false then
                         if (oldNext != null) {
                             // If not then the linked list is mal formed, update tail
