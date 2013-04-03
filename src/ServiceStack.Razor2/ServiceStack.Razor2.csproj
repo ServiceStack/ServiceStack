@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{D73274AE-006B-4CEE-BA60-0ECF5873048D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ServiceStack.Razor2</RootNamespace>
+    <AssemblyName>ServiceStack.Razor2</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ServiceStack.Text">
+      <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Razor.Unofficial">
+      <HintPath>..\packages\System.Web.Razor.Unofficial.2.0.2\lib\net40\System.Web.Razor.Unofficial.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Compilation\CompilerServiceBase.cs" />
+    <Compile Include="Compilation\CompilerServices.cs" />
+    <Compile Include="Compilation\CSharp\CSharpDirectCompilerService.cs" />
+    <Compile Include="Compilation\RazorDynamicObject.cs" />
+    <Compile Include="Compilation\TypeContext.cs" />
+    <Compile Include="CSharpRazorBuildProvider.cs" />
+    <Compile Include="DynamicRequestObject.cs" />
+    <Compile Include="ErrorViewPage.cs" />
+    <Compile Include="IRazorTemplate.cs" />
+    <Compile Include="Language.cs" />
+    <Compile Include="MicrosoftCSharpReferenceStub.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RazorFormat.cs" />
+    <Compile Include="RazorHandler.cs" />
+    <Compile Include="Templating\AttributeValue.cs" />
+    <Compile Include="Templating\IRazorViewEngine.cs" />
+    <Compile Include="Templating\ITemplate.cs" />
+    <Compile Include="Templating\ITemplateOfT.cs" />
+    <Compile Include="Templating\RequireNamespacesAttribute.cs" />
+    <Compile Include="Templating\TemplateBase.cs" />
+    <Compile Include="Templating\TemplateCompilationException.cs" />
+    <Compile Include="Templating\TemplateParsingException.cs" />
+    <Compile Include="Templating\TemplateService.cs" />
+    <Compile Include="Templating\TemplateService.ServiceStack.cs" />
+    <Compile Include="Templating\TemplateWriter.cs" />
+    <Compile Include="ViewPage.cs" />
+    <Compile Include="ViewPageBase.cs" />
+    <Compile Include="ViewPageRef.cs" />
+    <Compile Include="ViewPage`1.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
+      <Project>{982416db-c143-4028-a0c3-cf41892d18d3}</Project>
+      <Name>ServiceStack.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
+      <Project>{42e1c8c0-a163-44cc-92b1-8f416f2c0b01}</Project>
+      <Name>ServiceStack.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
+      <Project>{5a315f92-80d2-4c60-a5a4-22e027ac7e7e}</Project>
+      <Name>ServiceStack.ServiceInterface</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack\ServiceStack.csproj">
+      <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>
+      <Name>ServiceStack</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ServiceStack\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
