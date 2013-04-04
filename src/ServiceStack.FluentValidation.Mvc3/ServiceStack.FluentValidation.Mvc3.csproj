@@ -47,6 +47,9 @@
     <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\GlobalAssemblyInfo.cs">
+      <Link>Properties\GlobalAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="CustomizeValidatorAttribute.cs" />
     <Compile Include="FluentValidationModelMetadataProvider.cs" />
     <Compile Include="FluentValidationModelValidator.cs" />
