@@ -48,6 +48,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\GlobalAssemblyInfo.cs">
+      <Link>Properties\GlobalAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="GoogleOpenIdOAuthProvider.cs" />
     <Compile Include="MyOpenIdOAuthProvider.cs" />
     <Compile Include="OpenIdOAuthProvider.cs" />
