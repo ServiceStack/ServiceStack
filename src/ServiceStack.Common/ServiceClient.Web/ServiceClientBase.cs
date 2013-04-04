@@ -460,9 +460,15 @@ namespace ServiceStack.ServiceClient.Web
 						WebHeaderCollection headers = ((HttpWebResponse) webEx.Response).Headers;
 						var doAuthHeader = headers[ServiceStack.Common.Web.HttpHeaders.WwwAuthenticate];
 						// check value of WWW-Authenticate header
-						this.authInfo = new ServiceStack.ServiceClient.Web.AuthenticationInfo(doAuthHeader);
-
-						client.AddAuthInfo(this.UserName,this.Password,authInfo);
+            if (doAuthHeader == null)
+            {
+              client.AddBasicAuth(this.UserName, this.Password);
+            }
+            else
+            {
+              this.authInfo = new ServiceStack.ServiceClient.Web.AuthenticationInfo(doAuthHeader);
+              client.AddAuthInfo(this.UserName, this.Password, authInfo);
+            }
 					}
 
 
