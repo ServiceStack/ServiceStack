@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Web;
 using ServiceStack.Common.Web;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
@@ -123,7 +122,7 @@ namespace ServiceStack.ServiceHost
 		public static Dictionary<string, string> CookiesAsDictionary(this IHttpResponse httpRes)
 		{
 			var map = new Dictionary<string, string>();
-			var aspNet = httpRes.OriginalResponse as HttpResponse;
+			var aspNet = httpRes.OriginalResponse as System.Web.HttpResponse;
 			if (aspNet != null)
 			{
 				foreach (var name in aspNet.Cookies.AllKeys)

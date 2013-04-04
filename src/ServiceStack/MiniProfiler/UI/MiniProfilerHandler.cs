@@ -2,16 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Web;
 using System.Text;
+using System.Web;
 using ServiceStack.Text;
-using ServiceStack.Common;
 using ServiceStack.MiniProfiler.Helpers;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
-//using System.Web.Routing;
+using HttpRequestWrapper = ServiceStack.WebHost.Endpoints.Extensions.HttpRequestWrapper;
+using HttpResponseWrapper = ServiceStack.WebHost.Endpoints.Extensions.HttpResponseWrapper;
 
 namespace ServiceStack.MiniProfiler.UI
 {
