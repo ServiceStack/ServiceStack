@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Xml.Schema;
 using ServiceStack.ServiceHost;
@@ -22,7 +21,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 		
 		public string OperationName { get; set; }
     	
-    	public override void Execute(HttpContext context)
+    	public override void Execute(System.Web.HttpContext context)
     	{
 			ProcessRequest(
 				new HttpRequestWrapper(OperationName, context.Request),
