@@ -200,9 +200,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 			object memberExprValue;
 			if (ScopeArgs.TryGetValue(this.varName, out memberExprValue))
 			{
-				valueFn = this.ReferencesSelf
-					? Convert.ToString
-					: DataBinder.CompileToString(memberExprValue.GetType(), modelMemberExpr);
+				InitializeValueFn(memberExprValue);
 			}
 			else
 			{
@@ -210,6 +208,13 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 			}
 		}
 
+        private void InitializeValueFn(object memberExprValue)
+        {
+            valueFn = this.ReferencesSelf 
+                ? Convert.ToString 
+                : DataBinder.CompileToString(memberExprValue.GetType(), modelMemberExpr);
+        }
+        
 		public override void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
 			object memberExprValue;
@@ -236,7 +241,10 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 					textWriter.Write(memberExprValue);
 					return;
 				}
-
+                if (valueFn == null)
+                {
+                    InitializeValueFn(memberExprValue);
+                }
 				var strValue = this.ReferencesSelf
 					? Convert.ToString(memberExprValue)
 					: valueFn(memberExprValue);
