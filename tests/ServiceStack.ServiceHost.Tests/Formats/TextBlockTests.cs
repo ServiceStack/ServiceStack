@@ -5,6 +5,7 @@ using NUnit.Framework;
 using ServiceStack.Common.Utils;
 using ServiceStack.WebHost.Endpoints.Formats;
 using ServiceStack.WebHost.Endpoints.Support.Markdown;
+using ServiceStack.ServiceHost.Tests.Formats_Razor;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
 {
@@ -38,6 +39,24 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			Assert.That(statements[0].Condition, Is.EqualTo("var link in Model.Links"));
 			Assert.That(statements[0].Statement, Is.EqualTo("  - @link.Name - @link.Href\r\n"));
 		}
+
+        [Test]
+        public void Does_handle_foreach_when_enumerable_is_empty_first_time()
+        {
+            var content = (string)dynamicListPageContent.Clone();
+            var markdownPage = new MarkdownPage(new MarkdownFormat(), dynamicListPagePath, "", content);
+            markdownPage.Compile();
+            var model = new Person { Links = new List<Link>() };
+            var scopeArgs = new Dictionary<string, object> { { "Model", model } };
+            markdownPage.RenderToHtml(scopeArgs);             // First time the list is empty
+
+            var expected = "A new list item";
+            model.Links.Add(new Link { Name = expected } );
+            var html = markdownPage.RenderToHtml(scopeArgs);  // Second time the list has 1 item
+
+            Console.WriteLine(html);
+            Assert.That(html, Contains.Substring(expected));
+        }
 
 		[Test]
 		public void Does_replace_multiple_statements_with_expr_placeholders()
