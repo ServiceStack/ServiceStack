@@ -12,7 +12,7 @@ namespace ServiceStack.Html
 {
     public class TemplateProvider
     {
-        public int CompileInParallelWithNoOfThreads { get; set; }
+        public int? CompileInParallelWithNoOfThreads { get; set; }
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(TemplateProvider));
 
@@ -82,7 +82,7 @@ namespace ServiceStack.Html
 
             if (compileInParallel)
             {
-                var threadsToRun = Math.Min(CompileInParallelWithNoOfThreads, compilePages.Count);
+                var threadsToRun = Math.Min(CompileInParallelWithNoOfThreads.GetValueOrDefault(), compilePages.Count);
                 if (threadsToRun <= runningThreads) return;
 
                 Log.InfoFormat("Starting {0} threads..", threadsToRun);
