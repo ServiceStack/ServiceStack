@@ -1,6 +1,4 @@
-﻿using System;
-using System.Globalization;
-using ServiceStack.Markdown;
+﻿using ServiceStack.Markdown;
 
 namespace ServiceStack.Html
 {
@@ -15,14 +13,8 @@ namespace ServiceStack.Html
 
 		public new TModel Model
 		{
-			get
-			{
-				return (TModel)base.Model;
-			}
-			set
-			{
-				SetModel(value);
-			}
+			get { return (TModel)base.Model; }
+			set { SetModel(value); }
 		}
 
 		public override ModelMetadata ModelMetadata
@@ -35,10 +27,7 @@ namespace ServiceStack.Html
 
 				return result;
 			}
-			set
-			{
-				base.ModelMetadata = value;
-			}
+			set { base.ModelMetadata = value; }
 		}
 
 		protected override void SetModel(object value)
@@ -57,23 +46,5 @@ namespace ServiceStack.Html
 				throw exception;
 			}
 		}
-	}
-
-	internal static class Error
-	{
-		public static InvalidOperationException ViewDataDictionary_WrongTModelType(Type valueType, Type modelType)
-		{
-			string message = String.Format(CultureInfo.CurrentCulture, MvcResources.ViewDataDictionary_WrongTModelType,
-				valueType, modelType);
-			return new InvalidOperationException(message);
-		}
-
-		public static InvalidOperationException ViewDataDictionary_ModelCannotBeNull(Type modelType)
-		{
-			string message = String.Format(CultureInfo.CurrentCulture, MvcResources.ViewDataDictionary_ModelCannotBeNull,
-				modelType);
-			return new InvalidOperationException(message);
-		}
-
 	}
 }

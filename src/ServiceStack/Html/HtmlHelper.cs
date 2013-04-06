@@ -1,14 +1,4 @@
-﻿/* ****************************************************************************
- *
- * Copyright (c) Microsoft Corporation. All rights reserved.
- *
- * This software is subject to the Microsoft Public License (Ms-PL). 
- * A copy of the license can be found in the license.htm file included 
- * in this distribution.
- *
- * You must not remove this notice, or any other, from this software.
- *
- * ***************************************************************************/
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -25,38 +15,6 @@ using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
 namespace ServiceStack.Html
 {
-	[Flags]
-	public enum HttpVerbs
-	{
-		Get = 1 << 0,
-		Post = 1 << 1,
-		Put = 1 << 2,
-		Delete = 1 << 3,
-		Head = 1 << 4
-	}
-
-	public enum InputType
-	{
-		CheckBox,
-		Hidden,
-		Password,
-		Radio,
-		Text
-	}
-
-	public class HtmlHelper<TModel> : HtmlHelper
-	{
-		private ViewDataDictionary<TModel> viewData;
-		public new ViewDataDictionary<TModel> ViewData
-		{
-			get 
-            { 
-                return base.ViewData as ViewDataDictionary<TModel> 
-                    ?? new ViewDataDictionary<TModel>((TModel)base.ViewData.Model); 
-            }
-		}
-	}
-
 	public class HtmlHelper
 	{
 		public static List<Type> HtmlExtensions = new List<Type> 

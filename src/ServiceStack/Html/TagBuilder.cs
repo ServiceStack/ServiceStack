@@ -1,102 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq.Expressions;
 using System.Text;
 using System.Web;
-using ServiceStack.Markdown;
 
 namespace ServiceStack.Html
 {
-	public static class MvcResources
-	{
-		public const string ViewMasterPage_RequiresViewPage = "View MasterPage Requires ViewPage";
-		public const string MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword = "The 'inherits' keyword is not allowed when a '{0}' keyword is used.";
-		public const string MvcRazorCodeParser_OnlyOneModelStatementIsAllowed = "Only one '{0}' statement is allowed in a file.";
-		public const string MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName = "The '{0}' keyword must be followed by a type name on the same line.";
-
-		public const string HtmlHelper_TextAreaParameterOutOfRange = "TextArea Parameter Out Of Range";
-		public const string ValueProviderResult_ConversionThrew = "Conversion Threw";
-		public const string ValueProviderResult_NoConverterExists = "No Converter Exists";
-		public const string ViewDataDictionary_WrongTModelType = "Wrong Model Type";
-		public const string ViewDataDictionary_ModelCannotBeNull = "Model Cannot Be Null";
-		public const string Common_PropertyNotFound = "Property Not Found";
-		public const string Common_NullOrEmpty = "Required field";
-		public const string HtmlHelper_InvalidHttpVerb = "Invalid HTTP Verb";
-		public const string HtmlHelper_InvalidHttpMethod = "Invalid HTTP Method";
-		public const string TemplateHelpers_TemplateLimitations = "Unsupported Template Limitations";
-		public const string ExpressionHelper_InvalidIndexerExpression = "Invalid Indexer Expression";
-	}
-
-	public enum TagRenderMode
-	{
-		Normal,
-		StartTag,
-		EndTag,
-		SelfClosing
-	}
-
-	public class MvcHtmlString
-	{
-		private delegate MvcHtmlString MvcHtmlStringCreator(string value);
-		private static readonly MvcHtmlStringCreator _creator = GetCreator();
-
-		// imporant: this declaration must occur after the _creator declaration
-		public static readonly MvcHtmlString Empty = Create(String.Empty);
-
-		private readonly string _value;
-
-		protected MvcHtmlString(string value)
-		{
-			_value = value ?? String.Empty;
-		}
-
-		public static MvcHtmlString Create(string value)
-		{
-			return _creator(value);
-		}
-
-		// in .NET 4, we dynamically create a type that subclasses MvcHtmlString and implements IHtmlString
-		private static MvcHtmlStringCreator GetCreator()
-		{
-			var iHtmlStringType = typeof(HttpContext).Assembly.GetType("System.Web.IHtmlString");
-			if (iHtmlStringType != null)
-			{
-				// first, create the dynamic type
-				var dynamicType = DynamicTypeGenerator.GenerateType("DynamicMvcHtmlString", typeof(MvcHtmlString), new[] { iHtmlStringType });
-
-				// then, create the delegate to instantiate the dynamic type
-				var valueParamExpr = Expression.Parameter(typeof(string), "value");
-				var newObjExpr = Expression.New(dynamicType.GetConstructor(new[] { typeof(string) }), valueParamExpr);
-				var lambdaExpr = Expression.Lambda<MvcHtmlStringCreator>(newObjExpr, valueParamExpr);
-				return lambdaExpr.Compile();
-			}
-			else
-			{
-				// disabling 0618 allows us to call the MvcHtmlString() constructor
-#pragma warning disable 0618
-				return value => new MvcHtmlString(value);
-#pragma warning restore 0618
-			}
-		}
-
-		public static bool IsNullOrEmpty(MvcHtmlString value)
-		{
-			return (value == null || value._value.Length == 0);
-		}
-
-		// IHtmlString.ToHtmlString()
-		public string ToHtmlString()
-		{
-			return _value;
-		}
-
-		public override string ToString()
-		{
-			return _value;
-		}
-	}
-
 	public class TagBuilder
 	{
 		private const string IdAttributeDotReplacement = "_";

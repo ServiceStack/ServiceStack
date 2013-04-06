@@ -86,6 +86,7 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Data" />
     <Reference Include="System.Runtime.Serialization">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
@@ -96,10 +97,6 @@
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Data.DataSetExtensions">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="ServiceStack.Text">
       <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
@@ -121,6 +118,21 @@
     <Compile Include="Configuration\ConfigUtils.cs" />
     <Compile Include="Configuration\DictionarySettings.cs" />
     <Compile Include="Configuration\ISettings.cs" />
+    <Compile Include="Html\EmptyModelMetadataProvider.cs" />
+    <Compile Include="Html\Error.cs" />
+    <Compile Include="Html\HtmlHelper`1.cs" />
+    <Compile Include="Html\HttpVerbs.cs" />
+    <Compile Include="Html\InputType.cs" />
+    <Compile Include="Html\IResolver.cs" />
+    <Compile Include="Html\ModelError.cs" />
+    <Compile Include="Html\ModelErrorCollection.cs" />
+    <Compile Include="Html\ModelState.cs" />
+    <Compile Include="Html\ModelStateDictionary.cs" />
+    <Compile Include="Html\MvcHtmlString.cs" />
+    <Compile Include="Html\MvcResources.cs" />
+    <Compile Include="Html\PocoMetadataProvider.cs" />
+    <Compile Include="Html\TagRenderMode.cs" />
+    <Compile Include="Html\ValueProviderResult.cs" />
     <Compile Include="HttpExtensions.cs" />
     <Compile Include="MetadataTypesHandler.cs" />
     <Compile Include="PredefinedRoutesFeature.cs" />
@@ -208,7 +220,7 @@
     <Compile Include="WebHost.Endpoints\ActionContext.cs" />
     <Compile Include="WebHost.Endpoints\AppHostExtensions.cs" />
     <Compile Include="Markdown\CachedExpressionCompiler.cs" />
-    <Compile Include="Markdown\DynamicTypeGenerator.cs" />
+    <Compile Include="Html\DynamicTypeGenerator.cs" />
     <Compile Include="Markdown\ExpressionHelper.cs" />
     <Compile Include="Html\HtmlHelper.cs" />
     <Compile Include="Html\DisplayTextExtensions.cs" />
