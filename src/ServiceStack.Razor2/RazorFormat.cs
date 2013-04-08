@@ -66,6 +66,8 @@ namespace ServiceStack.Razor
 
         public Func<string, IEnumerable<ViewPageRef>> FindRazorPagesFn { get; set; }
 
+        public Func<object, IHttpRequest, ViewPageRef> ResolveViewFn { get; set; }
+
         public IVirtualPathProvider VirtualPathProvider { get; set; }
 
         public HashSet<string> TemplateNamespaces { get; set; }
@@ -103,6 +105,7 @@ namespace ServiceStack.Razor
         public RazorFormat()
         {
             this.FindRazorPagesFn = FindRazorPages;
+            this.ResolveViewFn = GetViewPageByResponse;
             this.ReplaceTokens = new Dictionary<string, string>();
             this.TemplateNamespaces = new HashSet<string> {
                 "System",
@@ -222,7 +225,7 @@ namespace ServiceStack.Razor
         public bool ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, object dto)
         {
             ViewPageRef razorPage;
-            if ((razorPage = GetViewPageByResponse(dto, httpReq)) == null)
+            if ((razorPage = ResolveViewFn(dto, httpReq)) == null)
                 return false;
 
             if (WatchForModifiedPages)
@@ -666,13 +669,7 @@ namespace ServiceStack.Razor
             if (!ContentPages.TryGetValue(filePath, out razorPage))
                 throw new InvalidDataException(ErrorPageNotFound.FormatWith(filePath));
 
-            return RenderStaticPage(razorPage);
-        }
-
-        private string RenderStaticPage(ViewPageRef markdownPage)
-        {
-            var template = ExecuteTemplate((object)null,
-                markdownPage.PageName, markdownPage.Template);
+            var template = ExecuteTemplate((object)null, razorPage.PageName, razorPage.Template);
 
             return template.Result;
         }
