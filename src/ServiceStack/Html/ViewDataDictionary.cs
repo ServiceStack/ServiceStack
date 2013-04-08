@@ -8,7 +8,6 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Html
 {
-	// TODO: Unit test ModelState interaction with VDD
 	public class ViewDataDictionary : IDictionary<string, object>
 	{
 		private readonly Dictionary<string, object> innerDictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
