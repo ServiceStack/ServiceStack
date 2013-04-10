@@ -169,7 +169,18 @@ namespace ServiceStack.Razor
                 if (catchAllPathsNotFound.Contains(pathInfo))
                     return null;
 
-                razorPage = FindByPathInfo(pathInfo);
+                try
+                {
+                    razorPage = FindByPathInfo( pathInfo );
+                }
+                catch(TemplateCompilationException tcex)
+                {
+                    if ( appHost.Config.DebugMode && tcex.HttpCompileException != null )
+                    {
+                        throw tcex.HttpCompileException;
+                    }
+                    throw;
+                }
 
                 if (WatchForModifiedPages)
                     ReloadIfNeeeded(razorPage);
