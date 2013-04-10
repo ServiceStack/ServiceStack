@@ -139,7 +139,10 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
         {
             get
             {
-                return remoteIp ?? (remoteIp = XForwardedFor ?? (XRealIp ?? request.UserHostAddress));
+                return remoteIp ?? 
+                    (remoteIp = XForwardedFor ?? 
+                                (XRealIp ?? 
+                                ((request.RemoteEndPoint != null) ? request.RemoteEndPoint.ToString() : null)));
             }
         }
 
