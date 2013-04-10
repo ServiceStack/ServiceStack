@@ -1,10 +1,12 @@
-﻿using ServiceStack.Common;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using ServiceStack.Common;
 
-namespace ServiceStack.Markdown
+namespace ServiceStack.Html
 {
 	internal static class CachedExpressionCompiler
 	{

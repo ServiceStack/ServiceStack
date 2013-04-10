@@ -1,14 +1,4 @@
-﻿/* ****************************************************************************
- *
- * Copyright (c) Microsoft Corporation. All rights reserved.
- *
- * This software is subject to the Microsoft Public License (Ms-PL). 
- * A copy of the license can be found in the license.htm file included 
- * in this distribution.
- *
- * You must not remove this notice, or any other, from this software.
- *
- * ***************************************************************************/
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -18,47 +8,24 @@ using System.Linq;
 using System.Reflection;
 using System.Web;
 using ServiceStack.Common.Web;
-using ServiceStack.Markdown;
+using ServiceStack.Html.AntiXsrf;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
 namespace ServiceStack.Html
 {
-	[Flags]
-	public enum HttpVerbs
-	{
-		Get = 1 << 0,
-		Post = 1 << 1,
-		Put = 1 << 2,
-		Delete = 1 << 3,
-		Head = 1 << 4
-	}
-
-	public enum InputType
-	{
-		CheckBox,
-		Hidden,
-		Password,
-		Radio,
-		Text
-	}
-
-	public class HtmlHelper<TModel> : HtmlHelper
-	{
-		private ViewDataDictionary<TModel> viewData;
-		public new ViewDataDictionary<TModel> ViewData
-		{
-			get 
-            { 
-                return base.ViewData as ViewDataDictionary<TModel> 
-                    ?? new ViewDataDictionary<TModel>((TModel)base.ViewData.Model); 
-            }
-		}
-	}
-
 	public class HtmlHelper
-	{
+    {
+        public static readonly string ValidationInputCssClassName = "input-validation-error";
+        public static readonly string ValidationInputValidCssClassName = "input-validation-valid";
+        public static readonly string ValidationMessageCssClassName = "field-validation-error";
+        public static readonly string ValidationMessageValidCssClassName = "field-validation-valid";
+        public static readonly string ValidationSummaryCssClassName = "validation-summary-errors";
+        public static readonly string ValidationSummaryValidCssClassName = "validation-summary-valid";
+#if NET_4_0
+        private DynamicViewDataDictionary _dynamicViewDataDictionary;
+#endif
 		public static List<Type> HtmlExtensions = new List<Type> 
 		{
 			typeof(DisplayTextExtensions),
@@ -91,16 +58,6 @@ namespace ServiceStack.Html
 	    public MarkdownPage MarkdownPage { get; protected set; }
 		public Dictionary<string, object> ScopeArgs { get; protected set; }
 	    private ViewDataDictionary viewData;
-
-	    public virtual ViewDataDictionary ViewData
-	    {
-	        get
-	        {
-	            return viewData ??
-	                   (viewData = new ViewDataDictionary());
-	        }
-	        protected set { viewData = value; }
-	    }
 
         public void SetState(HtmlHelper htmlHelper)
         {
@@ -171,12 +128,41 @@ namespace ServiceStack.Html
             return null;
         }
 
-        public MvcHtmlString Raw(object content)
-		{
-			if (content == null) return null;
-			var strContent = content as string;
-            return MvcHtmlString.Create(strContent ?? content.ToString()); //MvcHtmlString
-		}
+        public static bool ClientValidationEnabled
+        {
+            get { return ViewContext.GetClientValidationEnabled(); }
+            set { ViewContext.SetClientValidationEnabled(value); }
+        }
+
+        internal Func<string, ModelMetadata, IEnumerable<ModelClientValidationRule>> ClientValidationRuleFactory { get; set; }
+
+        public static bool UnobtrusiveJavaScriptEnabled
+        {
+            get { return ViewContext.GetUnobtrusiveJavaScriptEnabled(); }
+            set { ViewContext.SetUnobtrusiveJavaScriptEnabled(value); }
+        }
+
+#if NET_4_0
+        public dynamic ViewBag
+        {
+            get
+            {
+                if (_dynamicViewDataDictionary == null) {
+                    _dynamicViewDataDictionary = new DynamicViewDataDictionary(() => ViewData);
+                }
+                return _dynamicViewDataDictionary;
+            }
+        }
+#endif
+        public ViewContext ViewContext { get; private set; }
+
+	    public ViewDataDictionary ViewData
+	    {
+	        get { return viewData ?? (viewData = new ViewDataDictionary()); }
+	        protected set { viewData = value; }
+	    }
+
+        public IViewDataContainer ViewDataContainer { get; internal set; }
 
 		public static RouteValueDictionary AnonymousObjectToHtmlAttributes(object htmlAttributes)
 		{
@@ -193,6 +179,29 @@ namespace ServiceStack.Html
 			return result;
 		}
 
+        public MvcHtmlString AntiForgeryToken()
+        {
+            return MvcHtmlString.Create(AntiForgery.GetHtml().ToString());
+        }
+
+        public MvcHtmlString AntiForgeryToken(string salt)
+        {
+            if (!String.IsNullOrEmpty(salt)) {
+                throw new NotSupportedException("This method is deprecated. Use the AntiForgeryToken() method instead. To specify custom data to be embedded within the token, use the static AntiForgeryConfig.AdditionalDataProvider property.");
+            }
+
+            return AntiForgeryToken();
+        }
+
+        public MvcHtmlString AntiForgeryToken(string salt, string domain, string path)
+        {
+            if (!String.IsNullOrEmpty(salt) || !String.IsNullOrEmpty(domain) || !String.IsNullOrEmpty(path)) {
+                throw new NotSupportedException("This method is deprecated. Use the AntiForgeryToken() method instead. To specify a custom domain for the generated cookie, use the <httpCookies> configuration element. To specify custom data to be embedded within the token, use the static AntiForgeryConfig.AdditionalDataProvider property.");
+            }
+
+            return AntiForgeryToken();
+        }
+
 		public string AttributeEncode(string value)
 		{
 			return !string.IsNullOrEmpty(value) ? HttpUtility.HtmlAttributeEncode(value) : String.Empty;
@@ -203,37 +212,34 @@ namespace ServiceStack.Html
 			return AttributeEncode(Convert.ToString(value, CultureInfo.InvariantCulture));
 		}
 
-		public string Encode(string value)
-		{
-			return !string.IsNullOrEmpty(value) ? HttpUtility.HtmlEncode(value) : String.Empty;
-		}
+        public void EnableClientValidation()
+        {
+            EnableClientValidation(enabled: true);
+        }
+
+        public void EnableClientValidation(bool enabled)
+        {
+            ViewContext.ClientValidationEnabled = enabled;
+        }
+
+        public void EnableUnobtrusiveJavaScript()
+        {
+            EnableUnobtrusiveJavaScript(enabled: true);
+        }
+
+        public void EnableUnobtrusiveJavaScript(bool enabled)
+        {
+            ViewContext.UnobtrusiveJavaScriptEnabled = enabled;
+        }
+
+        public string Encode(string value)
+        {
+            return (!String.IsNullOrEmpty(value)) ? HttpUtility.HtmlEncode(value) : String.Empty;
+        }
 
 		public string Encode(object value)
 		{
 			return htmlEncoder(value);
-		}
-
-		internal object GetModelStateValue(string key, Type destinationType)
-		{
-            ModelState modelState;
-			if (ViewData.ModelState.TryGetValue(key, out modelState))
-			{
-				if (modelState.Value != null)
-				{
-					return modelState.Value.ConvertTo(destinationType, null /* culture */);
-				}
-			}
-			return null;
-		}
-
-		internal string EvalString(string key)
-		{
-			return Convert.ToString(ViewData.Eval(key), CultureInfo.CurrentCulture);
-		}
-
-		internal bool EvalBoolean(string key)
-		{
-			return Convert.ToBoolean(ViewData.Eval(key), CultureInfo.InvariantCulture);
 		}
 
 		// method used if HttpUtility.HtmlEncode(object) method does not exist
@@ -249,6 +255,61 @@ namespace ServiceStack.Html
 			return TypeHelpers.CreateDelegate<HtmlEncoder>(TypeHelpers.SystemWebAssembly, "System.Web.HttpUtility", "HtmlEncode", null)
 				?? EncodeLegacy;
 		}
+
+        internal string EvalString(string key)
+        {
+            return Convert.ToString(ViewData.Eval(key), CultureInfo.CurrentCulture);
+        }
+
+        internal string EvalString(string key, string format)
+        {
+            return Convert.ToString(ViewData.Eval(key, format), CultureInfo.CurrentCulture);
+        }
+
+        public string FormatValue(object value, string format)
+        {
+            return ViewDataDictionary.FormatValueInternal(value, format);
+        }
+
+        internal bool EvalBoolean(string key)
+        {
+            return Convert.ToBoolean(ViewData.Eval(key), CultureInfo.InvariantCulture);
+        }
+
+        public static string GenerateIdFromName(string name)
+        {
+            return GenerateIdFromName(name, TagBuilder.IdAttributeDotReplacement);
+        }
+
+        public static string GenerateIdFromName(string name, string idAttributeDotReplacement)
+        {
+            if (name == null) {
+                throw new ArgumentNullException("name");
+            }
+
+            if (idAttributeDotReplacement == null) {
+                throw new ArgumentNullException("idAttributeDotReplacement");
+            }
+
+            // TagBuilder.CreateSanitizedId returns null for empty strings, return String.Empty instead to avoid breaking change
+            if (name.Length == 0) {
+                return String.Empty;
+            }
+
+            return TagBuilder.CreateSanitizedId(name, idAttributeDotReplacement);
+        }
+
+        public static string GetFormMethodString(FormMethod method)
+        {
+            switch (method) {
+                case FormMethod.Get:
+                    return "get";
+                case FormMethod.Post:
+                    return "post";
+                default:
+                    return "post";
+            }
+        }
 
 		public static string GetInputTypeString(InputType inputType)
 		{
@@ -269,26 +330,79 @@ namespace ServiceStack.Html
 			}
 		}
 
-		public MvcHtmlString HttpMethodOverride(HttpVerbs httpVerb)
-		{
-			string httpMethod;
-			switch (httpVerb)
-			{
-				case HttpVerbs.Delete:
-					httpMethod = "DELETE";
-					break;
-				case HttpVerbs.Head:
-					httpMethod = "HEAD";
-					break;
-				case HttpVerbs.Put:
-					httpMethod = "PUT";
-					break;
-				default:
-					throw new ArgumentException(MvcResources.HtmlHelper_InvalidHttpVerb, "httpVerb");
-			}
+        internal object GetModelStateValue(string key, Type destinationType)
+        {
+            ModelState modelState;
+            if (ViewData.ModelState.TryGetValue(key, out modelState)) {
+                if (modelState.Value != null) {
+                    return modelState.Value.ConvertTo(destinationType, null /* culture */);
+                }
+            }
+            return null;
+        }
 
-			return HttpMethodOverride(httpMethod);
-		}
+        public IDictionary<string, object> GetUnobtrusiveValidationAttributes(string name)
+        {
+            return GetUnobtrusiveValidationAttributes(name, metadata: null);
+        }
+
+        // Only render attributes if unobtrusive client-side validation is enabled, and then only if we've
+        // never rendered validation for a field with this name in this form. Also, if there's no form context,
+        // then we can't render the attributes (we'd have no <form> to attach them to).
+        public IDictionary<string, object> GetUnobtrusiveValidationAttributes(string name, ModelMetadata metadata)
+        {
+            Dictionary<string, object> results = new Dictionary<string, object>();
+
+            //TODO: Awaiting implementation of ViewContext setter
+            /*
+            // The ordering of these 3 checks (and the early exits) is for performance reasons.
+            if (!ViewContext.UnobtrusiveJavaScriptEnabled) {
+                return results;
+            }
+
+            FormContext formContext = ViewContext.GetFormContextForClientValidation();
+            if (formContext == null) {
+                return results;
+            }
+
+            string fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(name);
+            if (formContext.RenderedField(fullName)) {
+                return results;
+            }
+
+            formContext.RenderedField(fullName, true);
+
+            IEnumerable<ModelClientValidationRule> clientRules = ClientValidationRuleFactory(name, metadata);
+            UnobtrusiveValidationAttributesGenerator.GetValidationAttributes(clientRules, results);
+            */
+            return results;
+        }
+
+        public MvcHtmlString HttpMethodOverride(HttpVerbs httpVerb)
+        {
+            string httpMethod;
+            switch (httpVerb) {
+                case HttpVerbs.Delete:
+                    httpMethod = "DELETE";
+                    break;
+                case HttpVerbs.Head:
+                    httpMethod = "HEAD";
+                    break;
+                case HttpVerbs.Put:
+                    httpMethod = "PUT";
+                    break;
+                case HttpVerbs.Patch:
+                    httpMethod = "PATCH";
+                    break;
+                case HttpVerbs.Options:
+                    httpMethod = "OPTIONS";
+                    break;
+                default:
+                    throw new ArgumentException(MvcResources.HtmlHelper_InvalidHttpVerb, "httpVerb");
+            }
+
+            return HttpMethodOverride(httpMethod);
+        }
 
 		public MvcHtmlString HttpMethodOverride(string httpMethod)
 		{
@@ -302,12 +416,19 @@ namespace ServiceStack.Html
 				throw new ArgumentException(MvcResources.HtmlHelper_InvalidHttpMethod, "httpMethod");
 			}
 
-			var tagBuilder = new TagBuilder("input");
+			TagBuilder tagBuilder = new TagBuilder("input");
 			tagBuilder.Attributes["type"] = "hidden";
 			tagBuilder.Attributes["name"] = HttpHeaders.XHttpMethodOverride;
 			tagBuilder.Attributes["value"] = httpMethod;
 
-			return tagBuilder.ToMvcHtmlString(TagRenderMode.SelfClosing);
+			return tagBuilder.ToHtmlString(TagRenderMode.SelfClosing);
+		}
+
+        public MvcHtmlString Raw(object content)
+		{
+			if (content == null) return null;
+			var strContent = content as string;
+            return MvcHtmlString.Create(strContent ?? content.ToString()); //MvcHtmlString
 		}
 	}
 

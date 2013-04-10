@@ -1,14 +1,4 @@
-﻿/* ****************************************************************************
- *
- * Copyright (c) Microsoft Corporation. All rights reserved.
- *
- * This software is subject to the Microsoft Public License (Ms-PL). 
- * A copy of the license can be found in the license.htm file included 
- * in this distribution.
- *
- * You must not remove this notice, or any other, from this software.
- *
- * ***************************************************************************/
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -16,9 +6,8 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using ServiceStack.Html;
 
-namespace ServiceStack.Markdown
+namespace ServiceStack.Html
 {
 	public static class ExpressionHelper
 	{
@@ -33,14 +22,14 @@ namespace ServiceStack.Markdown
 		public static string GetExpressionText(LambdaExpression expression)
 		{
 			// Split apart the expression string for property/field accessors to create its name
-			var nameParts = new Stack<string>();
+            Stack<string> nameParts = new Stack<string>();
 			Expression part = expression.Body;
 
 			while (part != null)
 			{
 				if (part.NodeType == ExpressionType.Call)
 				{
-					var methodExpression = (MethodCallExpression)part;
+                    MethodCallExpression methodExpression = (MethodCallExpression)part;
 
 					if (!IsSingleArgumentIndexer(methodExpression))
 					{
@@ -50,28 +39,24 @@ namespace ServiceStack.Markdown
 					nameParts.Push(
 						GetIndexerInvocation(
 							methodExpression.Arguments.Single(),
-							expression.Parameters.ToArray()
-						)
-					);
+							expression.Parameters.ToArray()));
 
 					part = methodExpression.Object;
 				}
 				else if (part.NodeType == ExpressionType.ArrayIndex)
 				{
-					var binaryExpression = (BinaryExpression)part;
+                    BinaryExpression binaryExpression = (BinaryExpression)part;
 
 					nameParts.Push(
 						GetIndexerInvocation(
 							binaryExpression.Right,
-							expression.Parameters.ToArray()
-						)
-					);
+							expression.Parameters.ToArray()));
 
 					part = binaryExpression.Left;
 				}
 				else if (part.NodeType == ExpressionType.MemberAccess)
 				{
-					var memberExpressionPart = (MemberExpression)part;
+                    MemberExpression memberExpressionPart = (MemberExpression)part;
 					nameParts.Push("." + memberExpressionPart.Member.Name);
 					part = memberExpressionPart.Expression;
 				}
@@ -122,10 +107,8 @@ namespace ServiceStack.Markdown
 						CultureInfo.CurrentCulture,
 						MvcResources.ExpressionHelper_InvalidIndexerExpression,
 						expression,
-						parameters[0].Name
-					),
-					ex
-				);
+						parameters[0].Name),
+					ex);
 			}
 
 			return "[" + Convert.ToString(func(null), CultureInfo.InvariantCulture) + "]";
@@ -133,7 +116,7 @@ namespace ServiceStack.Markdown
 
 		internal static bool IsSingleArgumentIndexer(Expression expression)
 		{
-			var methodExpression = expression as MethodCallExpression;
+            MethodCallExpression methodExpression = expression as MethodCallExpression;
 			if (methodExpression == null || methodExpression.Arguments.Count != 1)
 			{
 				return false;

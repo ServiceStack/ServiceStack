@@ -184,7 +184,7 @@ namespace ServiceStack.Html
 			// in case the value being rendered is something like "\r\nHello".
 			tagBuilder.SetInnerText(Environment.NewLine + value);
 
-			return tagBuilder.ToMvcHtmlString(TagRenderMode.Normal);
+			return tagBuilder.ToHtmlString(TagRenderMode.Normal);
 		}
 	}
 }
