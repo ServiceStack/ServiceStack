@@ -1,5 +1,6 @@
 ﻿using System.CodeDom.Compiler;
 using System.Web.Razor.Parser.SyntaxTree;
+using ServiceStack.Common.Extensions;
 using ServiceStack.Razor.Templating;
 using ServiceStack.Text;
 using System;
@@ -10,7 +11,6 @@ using System.Linq;
 using System.Reflection;
 using System.Web.Razor;
 using System.Web.Razor.Generator;
-using System.Web.Razor.Parser;
 
 namespace ServiceStack.Razor.Compilation
 {
@@ -95,7 +95,8 @@ namespace ServiceStack.Razor.Compilation
                 GenerateInMemory = true,
                 GenerateExecutable = false,
                 IncludeDebugInformation = false,
-                CompilerOptions = "/target:library /optimize",                
+                CompilerOptions = "/target:library /optimize",
+                TempFiles = { KeepFiles = true }
             };
 
             var assemblies = CompilerServices
@@ -120,17 +121,32 @@ namespace ServiceStack.Razor.Compilation
 				}
 			}
 
-            return CodeDomProvider.CompileAssemblyFromDom(@params, compileUnit);
+            var results = CodeDomProvider.CompileAssemblyFromDom( @params, compileUnit );
+
+            //Tricky: Don't forget to cleanup. 
+            // Simply setting KeepFiles = false and then calling
+            // dispose on the parent TempFilesCollection won't
+            // clean up. So, create a new collection and
+            // explicitly mark the files for deletion.
+            var tempFilesMarkedForDeletion = new TempFileCollection(null);
+            @params.TempFiles
+                   .OfType<string>()
+                   .ForEach( file => tempFilesMarkedForDeletion.AddFile( file, false ) );
+
+            using ( tempFilesMarkedForDeletion )
+            {
+                if ( results.Errors != null && results.Errors.HasErrors )
+                {
+                    throw new TemplateCompilationException( results );
+                }
+
+                return results;
+            }
         }
 
         public Type CompileType(TypeContext context)
         {
             var results = Compile(context);
-
-            if (results.Errors != null && results.Errors.Count > 0)
-            {
-                throw new TemplateCompilationException(results.Errors);
-            }
 
             return results.CompiledAssembly.GetType("CompiledRazorTemplates.Dynamic." + context.ClassName);
         }
