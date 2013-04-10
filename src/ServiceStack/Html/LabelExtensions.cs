@@ -66,7 +66,7 @@ namespace ServiceStack.Html
 			var tag = new TagBuilder("label");
 			tag.Attributes.Add("for", TagBuilder.CreateSanitizedId(htmlFieldName));
 			tag.SetInnerText(resolvedLabelText);
-			return tag.ToMvcHtmlString(TagRenderMode.Normal);
+			return tag.ToHtmlString(TagRenderMode.Normal);
 		}
 	}
 }

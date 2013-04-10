@@ -19,5 +19,9 @@ namespace ServiceStack.Html
 			return new InvalidOperationException(message);
 		}
 
+        public static ArgumentException ParameterCannotBeNullOrEmpty(string parameterName)
+        {
+            return new ArgumentException(MvcResources.Common_NullOrEmpty, parameterName);
+        }
 	}
 }

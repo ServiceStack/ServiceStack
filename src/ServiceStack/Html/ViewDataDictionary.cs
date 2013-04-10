@@ -14,6 +14,7 @@ namespace ServiceStack.Html
 		private object model;
 		private ModelMetadata modelMetadata;
 		private ModelStateDictionary modelState;
+        private TemplateInfo _templateMetadata;
 
 		public ViewDataDictionary() : this((object)null) { }
 
@@ -158,17 +159,20 @@ namespace ServiceStack.Html
 			}
 		}
 
-		//public TemplateInfo TemplateInfo {
-		//    get {
-		//        if (_templateMetadata == null) {
-		//            _templateMetadata = new TemplateInfo();
-		//        }
-		//        return _templateMetadata;
-		//    }
-		//    set {
-		//        _templateMetadata = value;
-		//    }
-		//}
+        public TemplateInfo TemplateInfo
+        {
+            get
+            {
+                if (_templateMetadata == null) {
+                    _templateMetadata = new TemplateInfo();
+                }
+                return _templateMetadata;
+            }
+            set
+            {
+                _templateMetadata = value;
+            }
+        }
 
 		public ICollection<object> Values
 		{
@@ -232,6 +236,19 @@ namespace ServiceStack.Html
 				return String.Format(CultureInfo.CurrentCulture, format, value);
 			}
 		}
+
+        internal static string FormatValueInternal(object value, string format)
+        {
+            if (value == null) {
+                return String.Empty;
+            }
+
+            if (String.IsNullOrEmpty(format)) {
+                return Convert.ToString(value, CultureInfo.CurrentCulture);
+            } else {
+                return String.Format(CultureInfo.CurrentCulture, format, value);
+            }
+        }
 
 		public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
 		{

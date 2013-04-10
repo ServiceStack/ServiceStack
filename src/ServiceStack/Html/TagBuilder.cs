@@ -8,7 +8,7 @@ namespace ServiceStack.Html
 {
 	public class TagBuilder
 	{
-		private const string IdAttributeDotReplacement = "_";
+		public const string IdAttributeDotReplacement = "_";
 
 		private const string AttributeFormat = @" {0}=""{1}""";
 		private const string ElementFormatEndTag = "</{0}>";
@@ -127,6 +127,22 @@ namespace ServiceStack.Html
 			return sb.ToString();
 		}
 
+        private void AppendAttributes(StringBuilder sb)
+        {
+            foreach (var attribute in Attributes) {
+                string key = attribute.Key;
+                if (String.Equals(key, "id", StringComparison.Ordinal /* case-sensitive */) && String.IsNullOrEmpty(attribute.Value)) {
+                    continue; // DevDiv Bugs #227595: don't output empty IDs
+                }
+                string value = HttpUtility.HtmlAttributeEncode(attribute.Value);
+                sb.Append(' ')
+                    .Append(key)
+                    .Append("=\"")
+                    .Append(value)
+                    .Append('"');
+            }
+        }
+
 		public void MergeAttribute(string key, string value)
 		{
 			MergeAttribute(key, value, false /* replaceExisting */);
@@ -168,7 +184,7 @@ namespace ServiceStack.Html
 			InnerHtml = HttpUtility.HtmlEncode(innerText);
 		}
 
-		internal MvcHtmlString ToMvcHtmlString(TagRenderMode renderMode)
+		internal MvcHtmlString ToHtmlString(TagRenderMode renderMode)
 		{
 			return MvcHtmlString.Create(ToString(renderMode));
 		}
@@ -180,18 +196,38 @@ namespace ServiceStack.Html
 
 		public string ToString(TagRenderMode renderMode)
 		{
-			switch (renderMode)
-			{
-				case TagRenderMode.StartTag:
-					return String.Format(CultureInfo.InvariantCulture, ElementFormatStartTag, TagName, GetAttributesString());
-				case TagRenderMode.EndTag:
-					return String.Format(CultureInfo.InvariantCulture, ElementFormatEndTag, TagName);
-				case TagRenderMode.SelfClosing:
-					return String.Format(CultureInfo.InvariantCulture, ElementFormatSelfClosing, TagName, GetAttributesString());
-				default:
-					return String.Format(CultureInfo.InvariantCulture, ElementFormatNormal, TagName, GetAttributesString(), InnerHtml);
-			}
-		}
+            StringBuilder sb = new StringBuilder();
+            switch (renderMode) {
+                case TagRenderMode.StartTag:
+                    sb.Append('<')
+                        .Append(TagName);
+                    AppendAttributes(sb);
+                    sb.Append('>');
+                    break;
+                case TagRenderMode.EndTag:
+                    sb.Append("</")
+                        .Append(TagName)
+                        .Append('>');
+                    break;
+                case TagRenderMode.SelfClosing:
+                    sb.Append('<')
+                        .Append(TagName);
+                    AppendAttributes(sb);
+                    sb.Append(" />");
+                    break;
+                default:
+                    sb.Append('<')
+                        .Append(TagName);
+                    AppendAttributes(sb);
+                    sb.Append('>')
+                        .Append(InnerHtml)
+                        .Append("</")
+                        .Append(TagName)
+                        .Append('>');
+                    break;
+            }
+            return sb.ToString();
+        }
 
 		// Valid IDs are defined in http://www.w3.org/TR/html401/types.html#type-id
 		private static class Html401IdUtil
