@@ -146,35 +146,40 @@ namespace ServiceStack.Razor
 		public IRazorTemplate GetRazorTemplate()
 		{
 			return Service.GetTemplate(this.PageName);
-		}		
-		
-		public string RenderToHtml()
-		{
-			return RenderToString((object)null);
-		}
-		
-		public string RenderToHtml<T>(T model)
-		{
-			return RenderToString(model);
-		}
-		
-		public string RenderToString<T>(T model)
-		{
-			var template = ExecuteTemplate(model);
-			return template.Result;
 		}
 
-        public IRazorTemplate ExecuteTemplate<T>(T model)
-        {
-            return RazorFormat.ExecuteTemplate(model, this.PageName, this.Template);
-        }
 
-        public IRazorTemplate InitTemplate<T>(T model)
-        {
-            var templateService = RazorFormat.GetTemplateService(PageName);
-            var template = templateService.GetTemplate(PageName);
-            templateService.InitTemplate(model, template);
-            return template;
-        }
+        //DS Commenting out to simplify 'Find all references' as these seem to be called only from unit tests in razor v1
+        //DS Should these be permanently removed? 
+        #region Unit test support
+        //public string RenderToHtml()
+        //{
+        //    return RenderToString((object)null);
+        //}
+		
+        //public string RenderToHtml<T>(T model)
+        //{
+        //    return RenderToString(model);
+        //}
+		
+        //public string RenderToString<T>(T model)
+        //{
+        //    var template = ExecuteTemplate(model);
+        //    return template.Result;
+        //}
+
+        //public IRazorTemplate ExecuteTemplate<T>(T model)
+        //{
+        //    return RazorFormat.ExecuteTemplate(model, this.PageName, this.Template);
+        //}
+
+        //public IRazorTemplate InitTemplate<T>(T model)
+        //{
+        //    var templateService = RazorFormat.GetTemplateService(PageName);
+        //    var template = templateService.GetTemplate(PageName);
+        //    templateService.InitTemplate(model, template);
+        //    return template;
+        //}
+        #endregion
     }
 }

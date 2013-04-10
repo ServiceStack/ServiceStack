@@ -1,18 +1,7 @@
-﻿/* ****************************************************************************
- *
- * Copyright (c) Microsoft Corporation. All rights reserved.
- *
- * This software is subject to the Microsoft Public License (Ms-PL). 
- * A copy of the license can be found in the license.htm file included 
- * in this distribution.
- *
- * You must not remove this notice, or any other, from this software.
- *
- * ***************************************************************************/
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
 using System.Linq.Expressions;
-using ServiceStack.Markdown;
 
 namespace ServiceStack.Html
 {

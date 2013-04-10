@@ -17,7 +17,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Security;
 
-namespace ServiceStack.Markdown
+namespace ServiceStack.Html
 {
 	internal static class DynamicTypeGenerator
 	{

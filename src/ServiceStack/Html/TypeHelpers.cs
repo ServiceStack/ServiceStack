@@ -10,6 +10,8 @@
  *
  * ***************************************************************************/
 
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -18,7 +20,7 @@ using System.Reflection;
 using System.Threading;
 using System.Web;
 
-namespace ServiceStack.Markdown
+namespace ServiceStack.Html
 {
 	internal delegate bool TryGetValueDelegate(object dictionary, string key, out object value);
 

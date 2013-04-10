@@ -86,6 +86,7 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Data" />
     <Reference Include="System.Runtime.Serialization">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
@@ -93,13 +94,10 @@
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Abstractions" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Data.DataSetExtensions">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="ServiceStack.Text">
       <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
@@ -121,6 +119,53 @@
     <Compile Include="Configuration\ConfigUtils.cs" />
     <Compile Include="Configuration\DictionarySettings.cs" />
     <Compile Include="Configuration\ISettings.cs" />
+    <Compile Include="Html\AntiXsrf\AntiForgery.cs" />
+    <Compile Include="Html\AntiXsrf\AntiForgeryConfig.cs" />
+    <Compile Include="Html\AntiXsrf\AntiForgeryConfigWrapper.cs" />
+    <Compile Include="Html\AntiXsrf\AntiForgeryToken.cs" />
+    <Compile Include="Html\AntiXsrf\AntiForgeryTokenSerializer.cs" />
+    <Compile Include="Html\AntiXsrf\AntiForgeryTokenStore.cs" />
+    <Compile Include="Html\AntiXsrf\AntiForgeryWorker.cs" />
+    <Compile Include="Html\AntiXsrf\BinaryBlob.cs" />
+    <Compile Include="Html\AntiXsrf\ClaimUidExtractor.cs" />
+    <Compile Include="Html\AntiXsrf\HttpAntiForgeryException.cs" />
+    <Compile Include="Html\AntiXsrf\IAntiForderyConfig.cs" />
+    <Compile Include="Html\AntiXsrf\IAntiForgeryAdditionalDataProvider.cs" />
+    <Compile Include="Html\AntiXsrf\IAntiForgeryTokenSerializer.cs" />
+    <Compile Include="Html\AntiXsrf\IClaimUidExtractor.cs" />
+    <Compile Include="Html\AntiXsrf\ICryptoSystem.cs" />
+    <Compile Include="Html\AntiXsrf\ITokenStore.cs" />
+    <Compile Include="Html\AntiXsrf\ITokenValidator.cs" />
+    <Compile Include="Html\AntiXsrf\MachineKey45CryptoSystem.cs" />
+    <Compile Include="Html\AntiXsrf\TokenValidator.cs" />
+    <Compile Include="Html\Claims\Claim.cs" />
+    <Compile Include="Html\Claims\ClaimsIdentity.cs" />
+    <Compile Include="Html\Claims\ClaimsIdentityConverter.cs" />
+    <Compile Include="Html\DynamicViewDataDictionary.cs" />
+    <Compile Include="Html\EmptyModelMetadataProvider.cs" />
+    <Compile Include="Html\Error.cs" />
+    <Compile Include="Html\FieldValidationMetadata.cs" />
+    <Compile Include="Html\FormContext.cs" />
+    <Compile Include="Html\FormMethod.cs" />
+    <Compile Include="Html\HtmlHelper`1.cs" />
+    <Compile Include="Html\HttpVerbs.cs" />
+    <Compile Include="Html\InputType.cs" />
+    <Compile Include="Html\IResolver.cs" />
+    <Compile Include="Html\IViewDataContainer.cs" />
+    <Compile Include="Html\ModelClientValidationRule.cs" />
+    <Compile Include="Html\ModelError.cs" />
+    <Compile Include="Html\ModelErrorCollection.cs" />
+    <Compile Include="Html\ModelState.cs" />
+    <Compile Include="Html\ModelStateDictionary.cs" />
+    <Compile Include="Html\MvcHtmlString.cs" />
+    <Compile Include="Html\MvcResources.cs" />
+    <Compile Include="Html\PocoMetadataProvider.cs" />
+    <Compile Include="Html\ScopeStorage.cs" />
+    <Compile Include="Html\TagRenderMode.cs" />
+    <Compile Include="Html\TemplateInfo.cs" />
+    <Compile Include="Html\UnobtrusiveValidationAttributesGenerator.cs" />
+    <Compile Include="Html\ValueProviderResult.cs" />
+    <Compile Include="Html\ViewContext.cs" />
     <Compile Include="HttpExtensions.cs" />
     <Compile Include="MetadataTypesHandler.cs" />
     <Compile Include="PredefinedRoutesFeature.cs" />
@@ -207,9 +252,9 @@
     <Compile Include="VirtualPath\VirtualPathExtension.cs" />
     <Compile Include="WebHost.Endpoints\ActionContext.cs" />
     <Compile Include="WebHost.Endpoints\AppHostExtensions.cs" />
-    <Compile Include="Markdown\CachedExpressionCompiler.cs" />
-    <Compile Include="Markdown\DynamicTypeGenerator.cs" />
-    <Compile Include="Markdown\ExpressionHelper.cs" />
+    <Compile Include="Html\CachedExpressionCompiler.cs" />
+    <Compile Include="Html\DynamicTypeGenerator.cs" />
+    <Compile Include="Html\ExpressionHelper.cs" />
     <Compile Include="Html\HtmlHelper.cs" />
     <Compile Include="Html\DisplayTextExtensions.cs" />
     <Compile Include="Html\InputExtensions.cs" />
@@ -221,7 +266,7 @@
     <Compile Include="Html\ModelMetadataProviders.cs" />
     <Compile Include="Html\RouteValueDictionary.cs" />
     <Compile Include="Html\TagBuilder.cs" />
-    <Compile Include="Markdown\TypeHelpers.cs" />
+    <Compile Include="Html\TypeHelpers.cs" />
     <Compile Include="Html\UrlHelper.cs" />
     <Compile Include="Html\ViewDataDictionary.cs" />
     <Compile Include="Html\ViewDataDictionary`1.cs" />
