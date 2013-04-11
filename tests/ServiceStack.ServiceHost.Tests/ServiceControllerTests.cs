@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Reflection;
+using Funq;
 using NUnit.Framework;
 using ServiceStack.ServiceHost.Tests.Support;
+using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceHost.Tests
@@ -171,6 +174,41 @@ namespace ServiceStack.ServiceHost.Tests
                 () => controller.RegisterRestPaths(typeof(UsesQueryString)));
 
             EndpointHostConfig.SkipRouteValidation = true;
+        }
+
+        [Test]
+        public void Service_with_generic_IGet_marker_interface_can_be_registered_without_DefaultRequestAttribute()
+        {
+            var appHost = new AppHost();
+
+            var routes = (ServiceRoutes) appHost.Routes;
+            Assert.That(routes.RestPaths.Count, Is.EqualTo(0));
+
+            appHost.RegisterService<GetMarkerService>("/route");
+
+            Assert.That(routes.RestPaths.Count, Is.EqualTo(1));
+        }
+    }
+
+    public class GetRequest {}
+
+    public class GetRequestResponse {}
+
+    [DefaultRequest(typeof(GetRequest))]
+    public class GetMarkerService : ServiceInterface.Service
+    {
+        public object Get(GetRequest request)
+        {
+            return new GetRequestResponse();
+        }
+    }
+
+    public class AppHost : AppHostHttpListenerBase
+    {
+        public AppHost() : base("Test", typeof(AppHost).Assembly) {}
+
+        public override void Configure(Container container)
+        {
         }
     }
 }
