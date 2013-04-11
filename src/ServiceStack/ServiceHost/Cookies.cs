@@ -64,7 +64,7 @@ namespace ServiceStack.ServiceHost
             var httpCookie = new HttpCookie(cookie.Name, cookie.Value) {
                 Path = cookie.Path,
                 Expires = cookie.Expires,
-                HttpOnly = true,
+                HttpOnly = !EndpointHost.Config.AllowNonHttpOnlyCookies || cookie.HttpOnly,
                 Secure = cookie.Secure
             };
             if (!string.IsNullOrEmpty(cookie.Domain))
