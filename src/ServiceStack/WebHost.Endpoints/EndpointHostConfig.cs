@@ -63,6 +63,7 @@ namespace ServiceStack.WebHost.Endpoints
                         MetadataRedirectPath = null,
                         DefaultContentType = null,
                         AllowJsonpRequests = true,
+                        AllowNonHttpOnlyCookies = false,
                         DebugMode = false,
                         DefaultDocuments = new List<string> {
 							"default.htm",
@@ -169,6 +170,7 @@ namespace ServiceStack.WebHost.Endpoints
             this.DefaultJsonpCacheExpiration = instance.DefaultJsonpCacheExpiration;
             this.MetadataVisibility = instance.MetadataVisibility;
             this.Return204NoContentForEmptyResponse = Return204NoContentForEmptyResponse;
+            this.AllowNonHttpOnlyCookies = instance.AllowNonHttpOnlyCookies;
         }
 
         public static string GetAppConfigPath()
@@ -416,6 +418,8 @@ namespace ServiceStack.WebHost.Endpoints
 
         public TimeSpan DefaultJsonpCacheExpiration { get; set; }
         public bool Return204NoContentForEmptyResponse { get; set; }
+
+        public bool AllowNonHttpOnlyCookies { get; set; }
 
         private string defaultOperationNamespace;
         public string DefaultOperationNamespace
