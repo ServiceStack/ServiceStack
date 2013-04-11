@@ -172,5 +172,22 @@ namespace ServiceStack.ServiceHost.Tests
 
             EndpointHostConfig.SkipRouteValidation = true;
         }
-    }
+
+        [Test]
+        public void Service_with_generic_IGet_marker_interface_can_be_registered_without_DefaultRequestAttribute()
+        {
+            var serviceManager = new ServiceManager(null, new ServiceController(() => new Type[] {}));
+            serviceManager.Init();
+
+            var genericMarkerType = serviceManager.RegisterService(typeof (GetMarkerService));
+
+            Assert.That(genericMarkerType, Is.Not.Null);
+            Assert.That(genericMarkerType.IsGenericType);
+            var requestType = genericMarkerType.GetGenericArguments()[0];
+            Assert.That(requestType, Is.EqualTo(typeof(GetRequest)));
+
+            var serviceExecutor = serviceManager.ServiceController.GetService(typeof (GetRequest));
+            Assert.That(serviceExecutor, Is.Not.Null);
+        }
+	}
 }

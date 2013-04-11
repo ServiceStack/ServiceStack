@@ -124,7 +124,15 @@ namespace ServiceStack.ServiceHost
                 {
                     this.ServiceController.RegisterNService(typeFactory, serviceType);
                     this.Container.RegisterAutoWiredType(serviceType);
-                    return null;
+
+                    genericServiceType = serviceType.GetTypeWithGenericTypeDefinitionOf(typeof(IAny<>)) ??
+                        serviceType.GetTypeWithGenericTypeDefinitionOf(typeof(IGet<>)) ??
+                        serviceType.GetTypeWithGenericTypeDefinitionOf(typeof(IPost<>)) ??
+                        serviceType.GetTypeWithGenericTypeDefinitionOf(typeof(IPut<>)) ??
+                        serviceType.GetTypeWithGenericTypeDefinitionOf(typeof(IDelete<>)) ??
+                        serviceType.GetTypeWithGenericTypeDefinitionOf(typeof(IPatch<>)) ??
+                        serviceType.GetTypeWithGenericTypeDefinitionOf(typeof(IOptions<>));
+                    return genericServiceType;
                 }
 
                 throw new ArgumentException("Type {0} is not a Web Service that inherits IService<> or IService".Fmt(serviceType.FullName));
