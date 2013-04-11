@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace ServiceStack.Common.Utils
@@ -63,7 +64,7 @@ namespace ServiceStack.Common.Utils
 
         internal static string CombinePaths(StringBuilder sb, params string[] paths)
         {
-            foreach (var path in paths)
+            foreach (var path in paths.Where(p => !String.IsNullOrEmpty(p)))
             {
                 if (sb.Length > 0)
                     sb.Append("/");
