@@ -1,12 +1,12 @@
 ﻿//Originally from: https://github.com/NancyFx/Nancy/blob/master/src/Nancy.ViewEngines.Razor/AttributeValue.cs
 
-namespace ServiceStack.Razor.Templating
-{
-    using System;
+using System;
 
+namespace ServiceStack.Razor2.Templating
+{
     /// <summary>
-    /// Class to represent attribute values and, more imporantly, 
-    /// decypher them from tuple madness slightly.
+    /// Class to represent attribute values and, more importantly, 
+    /// decipher them from tuple madness slightly.
     /// </summary>
     public class AttributeValue
     {

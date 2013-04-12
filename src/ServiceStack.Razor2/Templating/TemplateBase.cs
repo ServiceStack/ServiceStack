@@ -5,9 +5,9 @@ using ServiceStack.Html;
 using System;
 using System.IO;
 using System.Text;
-using ServiceStack.Razor.Compilation;
+using ServiceStack.Razor2.Compilation;
 
-namespace ServiceStack.Razor.Templating
+namespace ServiceStack.Razor2.Templating
 {
     /// <summary>
     /// Defines an attribute that marks the presence of a dynamic model in a template.

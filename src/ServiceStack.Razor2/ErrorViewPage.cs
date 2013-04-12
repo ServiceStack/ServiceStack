@@ -1,9 +1,9 @@
 using System;
 using System.Text;
-using ServiceStack.Razor.Templating;
+using ServiceStack.Razor2.Templating;
 using ServiceStack.Text;
 
-namespace ServiceStack.Razor
+namespace ServiceStack.Razor2
 {
     //The type or namespace name 'Html' does not exist in the namespace 'ServiceStack.Markdown' (are you missing an assembly reference?)
     public class ErrorViewPage : ViewPageRef

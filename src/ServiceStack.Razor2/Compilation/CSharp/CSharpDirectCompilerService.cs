@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Web.Razor;
-using System.Web.Razor.Parser;
 using Microsoft.CSharp;
 
-namespace ServiceStack.Razor.Compilation.CSharp
+namespace ServiceStack.Razor2.Compilation.CSharp
 {
 	/// <summary>
     /// Defines a direct compiler service for the C# syntax.
