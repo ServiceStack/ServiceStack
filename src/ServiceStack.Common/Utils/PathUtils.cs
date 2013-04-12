@@ -65,6 +65,9 @@ namespace ServiceStack.Common.Utils
         {
             foreach (var path in paths)
             {
+                if (string.IsNullOrEmpty(path))
+                    continue;
+                
                 if (sb.Length > 0)
                     sb.Append("/");
 
