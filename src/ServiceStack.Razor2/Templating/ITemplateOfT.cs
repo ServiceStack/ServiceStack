@@ -1,4 +1,4 @@
-﻿namespace ServiceStack.Razor.Templating
+﻿namespace ServiceStack.Razor2.Templating
 {
     /// <summary>
     /// Defines the required contract for implementing a template with a model.

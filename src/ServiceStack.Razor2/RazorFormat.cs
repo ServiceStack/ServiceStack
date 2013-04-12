@@ -7,14 +7,14 @@ using ServiceStack.Common;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
-using ServiceStack.Razor.Templating;
+using ServiceStack.Razor2.Templating;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 
-namespace ServiceStack.Razor
+namespace ServiceStack.Razor2
 {
     public enum RazorPageType
     {
@@ -24,7 +24,7 @@ namespace ServiceStack.Razor
         Template = 4,
     }
 
-    public class RazorFormat : IRazorViewEngine, IPlugin, IRazorPlugin
+    public class RazorFormat : IRazorViewEngine, IPlugin, IRazor2Plugin
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(RazorFormat));
 
@@ -110,7 +110,7 @@ namespace ServiceStack.Razor
                 "System.Collections.Generic",
                 "System.Linq",
                 "ServiceStack.Html",
-                "ServiceStack.Razor",
+                "ServiceStack.Razor2",
             };
             this.RazorExtensionBaseTypes = new Dictionary<string, Type>(StringComparer.CurrentCultureIgnoreCase) {
 				{"cshtml", typeof(ViewPage<>) },

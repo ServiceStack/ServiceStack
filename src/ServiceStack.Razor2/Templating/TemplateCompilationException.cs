@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Web;
 
-namespace ServiceStack.Razor.Templating
+namespace ServiceStack.Razor2.Templating
 {
 	/// <summary>
     /// Defines an exception that occurs during compilation of a template.

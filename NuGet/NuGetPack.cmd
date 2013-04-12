@@ -2,7 +2,7 @@ nuget pack ServiceStack\servicestack.nuspec -symbols
 nuget pack ServiceStack.Common\servicestack.common.nuspec -symbols
 nuget pack ServiceStack.Mvc\servicestack.mvc.nuspec -symbols
 nuget pack ServiceStack.Api.Swagger\servicestack.api.swagger.nuspec -symbols
-nuget pack ServiceStack.Razor\servicestack.razor.nuspec -symbols
+nuget pack ServiceStack.Razor2\servicestack.razor2.nuspec -symbols
 
 nuget pack ServiceStack.Host.AspNet\servicestack.host.aspnet.nuspec
 nuget pack ServiceStack.Host.Mvc\servicestack.host.mvc.nuspec

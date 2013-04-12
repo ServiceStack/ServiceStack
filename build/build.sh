@@ -91,8 +91,8 @@ buildComponent ServiceStack ServiceStack.Plugins.MsgPack
 buildComponent ServiceStack ServiceStack.ServiceInterface
 buildComponent ServiceStack ServiceStack.Plugins.ProtoBuf
 buildComponent ServiceStack ServiceStack.FluentValidation.Mvc3
-buildComponent ServiceStack ServiceStack.Razor
-cp "$LIB_DIR"/ServiceStack.Razor.dll ServiceStack.Redis/"$MONO_DIR"/tests/
+buildComponent ServiceStack ServiceStack.Razor2
+cp "$LIB_DIR"/ServiceStack.Razor2.dll ServiceStack.Redis/"$MONO_DIR"/tests/
 cp "$LIB_DIR"/ServiceStack.ServiceInterface.dll ServiceStack.Redis/"$MONO_DIR"/tests/
 cp "$LIB_DIR"/ServiceStack.ServiceInterface.dll ServiceStack.Text/"$MONO_DIR"/tests/
 

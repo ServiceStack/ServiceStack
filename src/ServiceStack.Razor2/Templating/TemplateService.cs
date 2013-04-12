@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using ServiceStack.Razor.Compilation;
-using ServiceStack.Razor.Compilation.CSharp;
+using ServiceStack.Razor2.Compilation;
+using ServiceStack.Razor2.Compilation.CSharp;
 
-namespace ServiceStack.Razor.Templating
+namespace ServiceStack.Razor2.Templating
 {
 	/// <summary>
     /// Defines a templating service.

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ServiceStack.Razor.Templating
+namespace ServiceStack.Razor2.Templating
 {
 	/// <summary>
     /// Allows base templates to define required namespaces that will be automatically be
@@ -11,7 +11,7 @@ namespace ServiceStack.Razor.Templating
     public class RequireNamespacesAttribute : Attribute
     {
         /// <summary>
-        /// Initialises a new instance of <see cref="RequireNamespacesAttribute"/>
+        /// Initializes a new instance of <see cref="RequireNamespacesAttribute"/>
         /// </summary>
         /// <param name="namespaces">The set of namespaces to include.</param>
         public RequireNamespacesAttribute(params string[] namespaces)
