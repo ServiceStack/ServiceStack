@@ -33,7 +33,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771
 		..\NuGet\ServiceStack\servicestack.nuspec = ..\NuGet\ServiceStack\servicestack.nuspec
 		..\NuGet\ServiceStack.Plugins.MsgPack\servicestack.plugins.msgpack.nuspec = ..\NuGet\ServiceStack.Plugins.MsgPack\servicestack.plugins.msgpack.nuspec
 		..\NuGet\ServiceStack.Plugins.ProtoBuf\servicestack.plugins.protobuf.nuspec = ..\NuGet\ServiceStack.Plugins.ProtoBuf\servicestack.plugins.protobuf.nuspec
-		..\NuGet\ServiceStack.Razor\servicestack.razor.nuspec = ..\NuGet\ServiceStack.Razor\servicestack.razor.nuspec
+		..\NuGet\ServiceStack.Razor2\servicestack.razor2.nuspec = ..\NuGet\ServiceStack.Razor2\servicestack.razor2.nuspec
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack", "ServiceStack\ServiceStack.csproj", "{680A1709-25EB-4D52-A87F-EE03FFD94BAA}"
@@ -47,8 +47,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.FluentValidation.Mvc3", "ServiceStack.FluentValidation.Mvc3\ServiceStack.FluentValidation.Mvc3.csproj", "{672F2DFE-4EE8-498B-B449-23E9E7F6961C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Plugins.ProtoBuf", "ServiceStack.Plugins.ProtoBuf\ServiceStack.Plugins.ProtoBuf.csproj", "{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Razor", "ServiceStack.Razor\ServiceStack.Razor.csproj", "{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorRockstars.Console.Files", "..\tests\RazorRockstars.Console.Files\RazorRockstars.Console.Files.csproj", "{1A5796C5-8AB6-4676-AC20-83594AED1798}"
 EndProject
@@ -471,35 +469,6 @@ Global
 		{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}.Release|x86.ActiveCfg = Release|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.Debug|x86.Build.0 = Debug|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.MonoDebug|Any CPU.ActiveCfg = Debug|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.MonoDebug|Any CPU.Build.0 = Debug|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.MonoDebug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.MonoDebug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.MonoDebug|x86.ActiveCfg = Debug|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.MonoDebug|x86.Build.0 = Debug|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.MonoRelease|Any CPU.ActiveCfg = Debug|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.MonoRelease|Any CPU.Build.0 = Debug|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.MonoRelease|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.MonoRelease|Mixed Platforms.Build.0 = Debug|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.MonoRelease|x86.ActiveCfg = Debug|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.MonoRelease|x86.Build.0 = Debug|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.MonoTouch|Any CPU.ActiveCfg = Debug|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.MonoTouch|Any CPU.Build.0 = Debug|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.MonoTouch|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.MonoTouch|Mixed Platforms.Build.0 = Debug|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.MonoTouch|x86.ActiveCfg = Debug|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.MonoTouch|x86.Build.0 = Debug|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.Release|x86.ActiveCfg = Release|Any CPU
-		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.Release|x86.Build.0 = Release|Any CPU
 		{1A5796C5-8AB6-4676-AC20-83594AED1798}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{1A5796C5-8AB6-4676-AC20-83594AED1798}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{1A5796C5-8AB6-4676-AC20-83594AED1798}.Debug|Mixed Platforms.Build.0 = Debug|x86

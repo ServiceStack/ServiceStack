@@ -6,7 +6,7 @@ using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
-using ServiceStack.Razor;
+using ServiceStack.Razor2;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.WebHost.Endpoints;

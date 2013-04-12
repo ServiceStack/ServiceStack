@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
-namespace ServiceStack.Razor.Compilation
+namespace ServiceStack.Razor2.Compilation
 {
 	/// <summary>
     /// Provides service methods for compilation.

@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using ServiceStack.Razor;
+using ServiceStack.Razor2;
 using ServiceStack.VirtualPath;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor

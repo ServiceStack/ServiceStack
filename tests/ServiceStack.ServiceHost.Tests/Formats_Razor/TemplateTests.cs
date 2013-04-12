@@ -7,7 +7,7 @@ using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Html;
 using ServiceStack.Markdown;
-using ServiceStack.Razor;
+using ServiceStack.Razor2;
 using ServiceStack.ServiceHost.Tests.Formats;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;

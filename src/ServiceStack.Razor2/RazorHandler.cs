@@ -4,7 +4,7 @@ using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 
-namespace ServiceStack.Razor
+namespace ServiceStack.Razor2
 {
     public class RazorHandler : EndpointHandlerBase
     {

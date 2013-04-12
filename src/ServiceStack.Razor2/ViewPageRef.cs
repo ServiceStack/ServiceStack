@@ -1,15 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Text;
 using System.Threading;
+using ServiceStack.Razor2.Templating;
 using ServiceStack.Text;
 using ServiceStack.Logging;
-using ServiceStack.Razor.Templating;
 using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
-namespace ServiceStack.Razor
+namespace ServiceStack.Razor2
 {
     public class ViewPageRef : IViewPage
     {

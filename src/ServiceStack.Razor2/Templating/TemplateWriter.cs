@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
 using ServiceStack.DataAnnotations;
-using ServiceStack.Razor.Compilation;
+using ServiceStack.Razor2.Compilation;
 
-namespace ServiceStack.Razor.Templating
+namespace ServiceStack.Razor2.Templating
 {
 	/// <summary>
     /// Defines a template writer used for helper templates.
@@ -14,7 +14,7 @@ namespace ServiceStack.Razor.Templating
         private readonly Action<TextWriter> writerDelegate;
 
         /// <summary>
-        /// Initialises a new instance of <see cref="TemplateWriter"/>.
+        /// Initializes a new instance of <see cref="TemplateWriter"/>.
         /// </summary>
         /// <param name="writer">The writer delegate used to write using the specified <see cref="TextWriter"/>.</param>
         public TemplateWriter(Action<TextWriter> writer)
