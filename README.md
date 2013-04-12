@@ -134,7 +134,7 @@ host of functionality for free, out of the box without any configuration require
 If you have [NuGet](http://nuget.org) installed, the easiest way to get started is to install ServiceStack via NuGet:
 
 ServiceStack with Razor Support: Create an empty ASP.NET Web or Console Application and (.NET 4.0+)
-![Install-Pacakage ServiceStack.Razor](http://www.servicestack.net/img/nuget-servicestack.razor.png)
+![Install-Pacakage ServiceStack.Razor2](http://www.servicestack.net/img/nuget-servicestack.razor.png)
 
 ServiceStack binaries only: Minimal installation of ServiceStack containing only the core-binaries (.NET 3.5+)
 ![Install-Pacakage ServiceStack](http://www.servicestack.net/img/nuget-servicestack.png)

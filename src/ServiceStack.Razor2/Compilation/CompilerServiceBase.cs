@@ -209,7 +209,7 @@ namespace ServiceStack.Razor2.Compilation
                 GeneratedClassContext = new GeneratedClassContext(
                     "Execute", "Write", "WriteLiteral",
                     "WriteTo", "WriteLiteralTo",
-                    "ServiceStack.Razor.Templating.TemplateWriter",
+                    "ServiceStack.Razor2.Templating.TemplateWriter",
                     "WriteSection")
                     {
                         ResolveUrlMethodName = "Href"

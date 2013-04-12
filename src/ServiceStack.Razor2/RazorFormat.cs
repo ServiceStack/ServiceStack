@@ -24,7 +24,7 @@ namespace ServiceStack.Razor2
         Template = 4,
     }
 
-    public class RazorFormat : IRazorViewEngine, IPlugin, IRazorPlugin
+    public class RazorFormat : IRazorViewEngine, IPlugin, IRazor2Plugin
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(RazorFormat));
 
