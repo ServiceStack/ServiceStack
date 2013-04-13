@@ -124,12 +124,12 @@ namespace ServiceStack.ServiceInterface
 
         private static void AddRoute(this IServiceRoutes routes, Type requestType, string allowedVerbs)
         {
-            routes.Add(requestType, requestType.Name, allowedVerbs);
+            routes.Add(requestType, "/" + requestType.Name, allowedVerbs);
 
             var hasIdField = requestType.GetProperty(IdUtils.IdField) != null;
             if (!hasIdField) return;
 
-            var routePath = requestType.Name + "/{" + IdUtils.IdField + "}";
+            var routePath = "/" + requestType.Name + "/{" + IdUtils.IdField + "}";
             routes.Add(requestType, routePath, allowedVerbs);
         }
 
