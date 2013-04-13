@@ -8,7 +8,7 @@ using ServiceStack.Common;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
-using ServiceStack.Razor;
+using ServiceStack.Razor2;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.WebHost.Endpoints;

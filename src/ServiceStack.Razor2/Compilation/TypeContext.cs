@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ServiceStack.Razor.Compilation
+namespace ServiceStack.Razor2.Compilation
 {
     /// <summary>
     /// Defines a type context used for compilation.
@@ -9,7 +9,7 @@ namespace ServiceStack.Razor.Compilation
     public class TypeContext
     {
         /// <summary>
-        /// Initialises a new instance of <see cref="TypeContext"/>.
+        /// Initializes a new instance of <see cref="TypeContext"/>.
         /// </summary>
         public TypeContext()
         {

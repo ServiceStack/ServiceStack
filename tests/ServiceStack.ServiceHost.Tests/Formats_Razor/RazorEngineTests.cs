@@ -1,6 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
-using ServiceStack.Razor;
+using ServiceStack.Razor2;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 {

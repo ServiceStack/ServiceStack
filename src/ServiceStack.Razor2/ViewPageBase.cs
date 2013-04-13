@@ -7,7 +7,7 @@ using ServiceStack.Common.Web;
 using ServiceStack.Html;
 using ServiceStack.Messaging;
 using ServiceStack.OrmLite;
-using ServiceStack.Razor.Templating;
+using ServiceStack.Razor2.Templating;
 using ServiceStack.Redis;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
@@ -15,7 +15,7 @@ using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.WebHost.Endpoints;
 
-namespace ServiceStack.Razor
+namespace ServiceStack.Razor2
 {
     public abstract class ViewPageBase<TModel>
         : TemplateBase<TModel>, IRazorTemplate, ICloneable

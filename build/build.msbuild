@@ -77,7 +77,7 @@
       <StackExpressFiles Include="$(SrcDir)/ServiceStack.ServiceInterface/bin/$(Configuration)/ServiceStack.pdb"></StackExpressFiles>
       <StackExpressFiles Include="$(SrcDir)/ServiceStack.ServiceInterface/bin/$(Configuration)/ServiceStack.xml"></StackExpressFiles>
 
-      <StackExpressRazorFiles Include="$(SrcDir)/ServiceStack.Razor/bin/$(Configuration)/ServiceStack.Razor.*"></StackExpressRazorFiles>
+      <StackExpressRazorFiles Include="$(SrcDir)/ServiceStack.Razor2/bin/$(Configuration)/ServiceStack.Razor2.*"></StackExpressRazorFiles>
 
       <StackExpressCommonFiles Include="$(SrcDir)/ServiceStack.Common/bin/$(Configuration)/ServiceStack.Common.*"></StackExpressCommonFiles>
       <StackExpressCommonFiles Include="$(SrcDir)/ServiceStack.Common/bin/$(Configuration)/ServiceStack.Interfaces.*"></StackExpressCommonFiles>
@@ -108,15 +108,15 @@
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack/stackexpress.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
             LogStandardErrorAsError="true" />
 
-    <!-- StackExpress.Razor -->
+    <!-- StackExpress.Razor2 -->
 
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Razor/ServiceStack.Razor.csproj"
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Razor2/ServiceStack.Razor2.csproj"
              Targets="Build"
              Properties="BuildPackage=true;Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <Copy SourceFiles="%(StackExpressRazorFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Razor/lib/net40" />
+    <Copy SourceFiles="%(StackExpressRazorFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Razor2/lib/net40" />
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Razor/stackexpress.razor.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Razor2/stackexpress.Razor2.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
             LogStandardErrorAsError="true" />
 
     <!-- StackExpress.Common -->

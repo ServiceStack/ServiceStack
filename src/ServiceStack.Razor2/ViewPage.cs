@@ -4,10 +4,10 @@ using System.Web;
 using System.Globalization;
 using ServiceStack.Html;
 using ServiceStack.MiniProfiler;
-using ServiceStack.Razor.Templating;
+using ServiceStack.Razor2.Templating;
 using ServiceStack.ServiceHost;
 
-namespace ServiceStack.Razor
+namespace ServiceStack.Razor2
 {
 	public abstract class ViewPage : ViewPageBase<DynamicRequestObject>
 	{

@@ -1,4 +1,4 @@
-﻿namespace ServiceStack.Razor
+﻿namespace ServiceStack.Razor2
 {
     /// <summary>
     /// Defines the supported languages.

@@ -190,7 +190,7 @@ namespace ServiceStack.WebHost.Endpoints
             return File.Exists(configPath) ? configPath : null;
         }
 
-        const string NamespacesAppSettingsKey = "servicestack.razor.namespaces";
+        const string NamespacesAppSettingsKey = "servicestack.razor2.namespaces";
         private static HashSet<string> razorNamespaces;
         public static HashSet<string> RazorNamespaces
         {
@@ -213,7 +213,7 @@ namespace ServiceStack.WebHost.Endpoints
                                     .ForEach(x => razorNamespaces.Add(x.AnyAttribute("namespace").Value));
                 }
 
-                //E.g. <add key="servicestack.razor.namespaces" value="System,ServiceStack.Text" />
+                //E.g. <add key="servicestack.razor2.namespaces" value="System,ServiceStack.Text" />
                 if (ConfigUtils.GetNullableAppSetting(NamespacesAppSettingsKey) != null)
                 {
                     ConfigUtils.GetListFromAppSetting(NamespacesAppSettingsKey)

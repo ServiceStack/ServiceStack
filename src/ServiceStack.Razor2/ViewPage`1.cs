@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using ServiceStack.Html;
-using ServiceStack.Razor.Templating;
+using ServiceStack.Razor2.Templating;
 using ServiceStack.ServiceHost;
 
-namespace ServiceStack.Razor
+namespace ServiceStack.Razor2
 {
     public abstract class ViewPage<TModel> : ViewPageBase<TModel>
     {
