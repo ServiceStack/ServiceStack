@@ -1,7 +1,7 @@
 ﻿using System.CodeDom.Compiler;
 using System.Web.Razor.Parser.SyntaxTree;
 using ServiceStack.Common.Extensions;
-using ServiceStack.Razor.Templating;
+using ServiceStack.Razor2.Templating;
 using ServiceStack.Text;
 using System;
 using System.CodeDom;
@@ -12,7 +12,7 @@ using System.Reflection;
 using System.Web.Razor;
 using System.Web.Razor.Generator;
 
-namespace ServiceStack.Razor.Compilation
+namespace ServiceStack.Razor2.Compilation
 {
     /// <summary>
     /// Provides a base implementation of a compiler service.
@@ -152,7 +152,7 @@ namespace ServiceStack.Razor.Compilation
         }
 
         /// <summary>
-        /// Generates any required contructors for the specified type.
+        /// Generates any required constructors for the specified type.
         /// </summary>
         /// <param name="constructors">The set of constructors.</param>
         /// <param name="codeType">The code type declaration.</param>
@@ -209,7 +209,7 @@ namespace ServiceStack.Razor.Compilation
                 GeneratedClassContext = new GeneratedClassContext(
                     "Execute", "Write", "WriteLiteral",
                     "WriteTo", "WriteLiteralTo",
-                    "ServiceStack.Razor.Templating.TemplateWriter",
+                    "ServiceStack.Razor2.Templating.TemplateWriter",
                     "WriteSection")
                     {
                         ResolveUrlMethodName = "Href"

@@ -1,7 +1,7 @@
 ﻿using System.Dynamic;
 using ServiceStack.ServiceHost;
 
-namespace ServiceStack.Razor
+namespace ServiceStack.Razor2
 {
     public class DynamicRequestObject : DynamicObject
     {

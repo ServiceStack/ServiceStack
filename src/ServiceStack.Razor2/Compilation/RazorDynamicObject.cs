@@ -4,7 +4,7 @@ using System.Dynamic;
 using ServiceStack.Html;
 using ServiceStack.Text;
 
-namespace ServiceStack.Razor.Compilation
+namespace ServiceStack.Razor2.Compilation
 {
     /// <summary>
     /// Defines a dynamic object.

@@ -6,7 +6,7 @@ using ServiceStack.Html;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Extensions;
 
-namespace ServiceStack.Razor.Templating
+namespace ServiceStack.Razor2.Templating
 {
     public partial class TemplateService
 	{

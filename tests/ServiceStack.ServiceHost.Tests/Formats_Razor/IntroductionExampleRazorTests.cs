@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Common.Utils;
-using ServiceStack.Razor;
+using ServiceStack.Razor2;
 using ServiceStack.ServiceHost.Tests.Formats;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;

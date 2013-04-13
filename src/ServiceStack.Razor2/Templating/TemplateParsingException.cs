@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Web.Razor.Parser.SyntaxTree;
 
-namespace ServiceStack.Razor.Templating
+namespace ServiceStack.Razor2.Templating
 {
 	/// <summary>
     /// Defines an exception that occurs during parsing of a template.
@@ -9,7 +9,7 @@ namespace ServiceStack.Razor.Templating
     public class TemplateParsingException : Exception
     {
         /// <summary>
-        /// Initialises a new instance of <see cref="TemplateParsingException"/>
+        /// Initializes a new instance of <see cref="TemplateParsingException"/>
         /// </summary>
         internal TemplateParsingException(RazorError error)
             : base(error.Message)
@@ -19,12 +19,12 @@ namespace ServiceStack.Razor.Templating
         }
 
         /// <summary>
-        /// Gets the column the parsing error occured.
+        /// Gets the column the parsing error occurred.
         /// </summary>
         public int Column { get; private set; }
 
         /// <summary>
-        /// Gets the line the parsing error occured.
+        /// Gets the line the parsing error occurred.
         /// </summary>
         public int Line { get; private set; }
     }

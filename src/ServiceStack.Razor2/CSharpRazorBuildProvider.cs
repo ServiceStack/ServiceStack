@@ -1,4 +1,4 @@
-//Orignally from: https://github.com/NancyFx/Nancy/blob/master/src/Nancy.ViewEngines.Razor.BuildProviders/NancyCSharpRazorBuildProvider.cs
+//Originally from: https://github.com/NancyFx/Nancy/blob/master/src/Nancy.ViewEngines.Razor.BuildProviders/NancyCSharpRazorBuildProvider.cs
 
 using System;
 using System.CodeDom;
@@ -8,7 +8,7 @@ using System.Web.Compilation;
 using System.Web.Razor;
 using ServiceStack.Logging;
 
-namespace ServiceStack.Razor
+namespace ServiceStack.Razor2
 {
     [BuildProviderAppliesTo(BuildProviderAppliesTo.Code | BuildProviderAppliesTo.Web)]
 	public class CSharpRazorBuildProvider : BuildProvider
