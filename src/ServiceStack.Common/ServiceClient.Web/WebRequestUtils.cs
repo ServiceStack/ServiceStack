@@ -151,7 +151,7 @@ namespace ServiceStack.ServiceClient.Web
         }
         #endif
 
-        #if !NETFX_CORE
+        #if !NETFX_CORE && !SILVERLIGHT
 		internal static string CalculateMD5Hash(string input)
 		{
 			// copied/pasted by adamfowleruk
@@ -181,6 +181,7 @@ namespace ServiceStack.ServiceClient.Web
 			return ret;
 		}
 
+#if !SILVERLIGHT
 		internal static void AddAuthInfo(this WebRequest client,string userName,string password,AuthenticationInfo authInfo) {
 			
 			if ("basic".Equals (authInfo.method)) {
@@ -219,7 +220,7 @@ namespace ServiceStack.ServiceClient.Web
 			client.Headers [ServiceStack.Common.Web.HttpHeaders.Authorization] = header;
 
 		}
-
+#endif
         /// <summary>
         /// Naming convention for the request's Response DTO
         /// </summary>

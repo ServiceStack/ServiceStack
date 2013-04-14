@@ -111,7 +111,7 @@ namespace ServiceStack.ServiceHost
 		/// </value>
 		public string Verbs { get; set; }
 
-#if NETFX_CORE || WINDOWS_PHONE
+#if NETFX_CORE || WINDOWS_PHONE || SILVERLIGHT
         /// <summary>
         /// Required when using a TypeDescriptor to make it unique
         /// </summary>

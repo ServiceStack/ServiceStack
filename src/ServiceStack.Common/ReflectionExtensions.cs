@@ -41,7 +41,7 @@ namespace ServiceStack.Common
             return assembly.GetCustomAttributes()
                 .OfType<DebuggableAttribute>()
                 .Any();
-#elif WINDOWS_PHONE
+#elif WINDOWS_PHONE || SILVERLIGHT
             return assembly.GetCustomAttributes(false)
                 .OfType<DebuggableAttribute>()
                 .Any();

@@ -8,7 +8,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.ServiceClient.Web
 {
-#if !NETFX_CORE && !WINDOWS_PHONE
+#if !NETFX_CORE && !WINDOWS_PHONE && !SILVERLIGHT
     [Serializable]
 #endif
     public class WebServiceException
@@ -17,7 +17,7 @@ namespace ServiceStack.ServiceClient.Web
         public WebServiceException() { }
         public WebServiceException(string message) : base(message) { }
         public WebServiceException(string message, Exception innerException) : base(message, innerException) { }
-#if !NETFX_CORE && !WINDOWS_PHONE
+#if !NETFX_CORE && !WINDOWS_PHONE && !SILVERLIGHT
         public WebServiceException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 #endif
 
