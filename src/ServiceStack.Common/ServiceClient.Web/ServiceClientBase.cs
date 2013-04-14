@@ -93,7 +93,7 @@ namespace ServiceStack.ServiceClient.Web
         /// <summary>
         /// Gets the collection of headers to be added to outgoing requests.
         /// </summary>
-#if NETFX_CORE || WINDOWS_PHONE
+#if NETFX_CORE || WINDOWS_PHONE || SILVERLIGHT
         public Dictionary<string, string> Headers { get; private set; } 
 #else
         public NameValueCollection Headers { get; private set; }
@@ -118,7 +118,7 @@ namespace ServiceStack.ServiceClient.Web
                 LocalHttpWebResponseFilter = this.LocalHttpWebResponseFilter
             };
             this.StoreCookies = true; //leave
-#if NETFX_CORE || WINDOWS_PHONE
+#if NETFX_CORE || WINDOWS_PHONE || SILVERLIGHT
             this.Headers = new Dictionary<string, string>();
 #else
             this.Headers = new NameValueCollection();

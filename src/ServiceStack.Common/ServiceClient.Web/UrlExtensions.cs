@@ -97,7 +97,7 @@ namespace ServiceStack.ServiceClient.Web
             var restRoutes = requestType.AttributesOfType<RouteAttribute>()
                 .Select(attr => new RestRoute(requestType, attr.Path, attr.Verbs))
                 .ToList();
-#elif WINDOWS_PHONE
+#elif WINDOWS_PHONE || SILVERLIGHT
             var restRoutes = requestType.AttributesOfType<RouteAttribute>()
                 .Select(attr => new RestRoute(requestType, attr.Path, attr.Verbs))
                 .ToList();
