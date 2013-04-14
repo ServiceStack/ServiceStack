@@ -57,6 +57,9 @@
     <Reference Include="System.Windows.Browser" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\GlobalAssemblyInfo.cs">
+      <Link>GlobalAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="..\ServiceStack.Common\ActionExecExtensions.cs">
       <Link>ActionExecExtensions.cs</Link>
     </Compile>
@@ -110,9 +113,6 @@
     </Compile>
     <Compile Include="..\ServiceStack.Common\Extensions\ITranslatorExtensions.cs">
       <Link>Extensions\ITranslatorExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Common\Extensions\ReflectionExtensions.cs">
-      <Link>Extensions\ReflectionExtensions.cs</Link>
     </Compile>
     <Compile Include="..\ServiceStack.Common\Extensions\StringExtensions.cs">
       <Link>Extensions\StringExtensions.cs</Link>
@@ -243,6 +243,9 @@
     <Compile Include="..\ServiceStack.Common\ServiceClient.Web\JsvServiceClient.cs">
       <Link>ServiceClient.Web\JsvServiceClient.cs</Link>
     </Compile>
+    <Compile Include="..\ServiceStack.Common\ServiceClient.Web\RouteMember.cs">
+      <Link>ServiceClient.Web\RouteMember.cs</Link>
+    </Compile>
     <Compile Include="..\ServiceStack.Common\ServiceClient.Web\ServiceClientBase.cs">
       <Link>ServiceClient.Web\ServiceClientBase.cs</Link>
     </Compile>
@@ -251,6 +254,9 @@
     </Compile>
     <Compile Include="..\ServiceStack.Common\ServiceClient.Web\Soap12ServiceClient.cs">
       <Link>ServiceClient.Web\Soap12ServiceClient.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Common\ServiceClient.Web\UrlExtensions.cs">
+      <Link>ServiceClient.Web\UrlExtensions.cs</Link>
     </Compile>
     <Compile Include="..\ServiceStack.Common\ServiceClient.Web\WcfServiceClient.cs">
       <Link>ServiceClient.Web\WcfServiceClient.cs</Link>
@@ -378,6 +384,9 @@
     <Compile Include="..\ServiceStack.Common\Utils\ReflectionUtils.cs">
       <Link>Utils\ReflectionUtils.cs</Link>
     </Compile>
+    <Compile Include="..\ServiceStack.Common\Utils\ResponseStatusUtils.cs">
+      <Link>Utils\ResponseStatusUtils.cs</Link>
+    </Compile>
     <Compile Include="..\ServiceStack.Common\Web\CompressedFileResult.cs">
       <Link>Web\CompressedFileResult.cs</Link>
     </Compile>
@@ -392,9 +401,6 @@
     </Compile>
     <Compile Include="..\ServiceStack.Common\Web\EndPoint.cs">
       <Link>Web\EndPoint.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Common\Web\EndpointType.cs">
-      <Link>Web\EndpointType.cs</Link>
     </Compile>
     <Compile Include="..\ServiceStack.Common\Web\HttpError.cs">
       <Link>Web\HttpError.cs</Link>
@@ -446,7 +452,7 @@
       <FlavorProperties GUID="{A1591282-1198-4647-A2B1-27E5FF5F6F3B}">
         <SilverlightProjectProperties />
       </FlavorProperties>
-      <UserProperties ProjectLinkerExcludeFilter="\\?desktop(\\.*)?$;\\?silverlight(\\.*)?$;\.desktop;\.silverlight;\.xaml;^service references(\\.*)?$;\.clientconfig;^web references(\\.*)?$" ProjectLinkReference="982416db-c143-4028-a0c3-cf41892d18d3" />
+      <UserProperties ProjectLinkReference="982416db-c143-4028-a0c3-cf41892d18d3" ProjectLinkerExcludeFilter="\\?desktop(\\.*)?$;\\?silverlight(\\.*)?$;\.desktop;\.silverlight;\.xaml;^service references(\\.*)?$;\.clientconfig;^web references(\\.*)?$" />
     </VisualStudio>
   </ProjectExtensions>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -57,6 +57,9 @@
     <Reference Include="System.Windows.Browser" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\GlobalAssemblyInfo.cs">
+      <Link>GlobalAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="..\ServiceStack.Interfaces\CacheAccess\ICacheClearable.cs">
       <Link>CacheAccess\ICacheClearable.cs</Link>
     </Compile>
@@ -528,11 +531,14 @@
     <Compile Include="..\ServiceStack.Interfaces\ServiceHost\RestServiceAttribute.cs">
       <Link>ServiceHost\RestServiceAttribute.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\ServiceAttribute.cs">
-      <Link>ServiceHost\ServiceAttribute.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\RouteAttribute.cs">
+      <Link>ServiceHost\RouteAttribute.cs</Link>
     </Compile>
     <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\CollectionTypes.cs">
       <Link>ServiceInterface.ServiceModel\CollectionTypes.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\ErrorResponse.cs">
+      <Link>ServiceInterface.ServiceModel\ErrorResponse.cs</Link>
     </Compile>
     <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\ICacheByDateModified.cs">
       <Link>ServiceInterface.ServiceModel\ICacheByDateModified.cs</Link>
@@ -545,6 +551,9 @@
     </Compile>
     <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\IHasResponseStatus.cs">
       <Link>ServiceInterface.ServiceModel\IHasResponseStatus.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\IResponseStatusConvertible.cs">
+      <Link>ServiceInterface.ServiceModel\IResponseStatusConvertible.cs</Link>
     </Compile>
     <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\Property.cs">
       <Link>ServiceInterface.ServiceModel\Property.cs</Link>

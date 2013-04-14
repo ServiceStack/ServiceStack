@@ -102,7 +102,7 @@ namespace ServiceStack.Common
             stream.Close(); //For documentation purposes. In reality it won't call this Ext method.
 #endif
         }
-
+#if !SILVERLIGHT
         public static string ToMd5Hash(this Stream stream)
         {
             var hash = MD5.Create().ComputeHash(stream);
@@ -124,6 +124,6 @@ namespace ServiceStack.Common
             }
             return sb.ToString();
         }
-
+#endif
     }
 }

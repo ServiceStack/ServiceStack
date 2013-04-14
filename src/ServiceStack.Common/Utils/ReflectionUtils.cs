@@ -391,7 +391,7 @@ namespace ServiceStack.Common.Utils
             var genericCollectionType =
                 type.GetTypeInfo().ImplementedInterfaces
                     .FirstOrDefault(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof (ICollection<>));
-#elif WINDOWS_PHONE
+#elif WINDOWS_PHONE || SILVERLIGHT
             var genericCollectionType =
                 type.GetInterfaces()
                     .FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof (ICollection<>));
