@@ -3,7 +3,7 @@
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Plugins.MsgPack</id>
     <title>Message Pack support for ServiceStack. Includes typed MsgPack Client</title>
-    <version>3.9.43</version>
+    <version>3.9.44</version>
     <authors>Demis Bellot</authors>
     <owners>Demis Bellot</owners>
     <summary>MsgPack Format Serializer ContentType ServiceClients for ServiceStack</summary>

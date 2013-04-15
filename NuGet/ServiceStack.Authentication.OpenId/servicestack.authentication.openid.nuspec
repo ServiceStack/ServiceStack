@@ -3,7 +3,7 @@
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Authentication.OpenId</id> 
     <title>OpenId Auth Providers for ServiceStack - inc. Google, Yahoo, MyOpenId</title>
-    <version>3.9.43</version> 
+    <version>3.9.44</version> 
     <authors>Demis Bellot</authors> 
     <owners>Demis Bellot</owners>
     <summary>OpenId Auth Providers for ServiceStack - inc. Google, Yahoo, MyOpenId</summary>

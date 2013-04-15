@@ -3,7 +3,7 @@
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Host.AspNet</id>
     <title>Starter ASP.NET Website Template - ServiceStack at /</title>
-    <version>3.9.43</version> 
+    <version>3.9.44</version> 
     <authors>Demis Bellot</authors> 
     <owners>Demis Bellot</owners>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>
