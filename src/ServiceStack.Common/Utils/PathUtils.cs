@@ -81,6 +81,13 @@ namespace ServiceStack.Common.Utils
         {
             return CombinePaths(new StringBuilder(), paths);
         }
+
+        public static string AssertDir(this string dirPath)
+        {
+            if (!Directory.Exists(dirPath))
+                Directory.CreateDirectory(dirPath);
+            return dirPath;
+        }
     }
 
 
