@@ -60,7 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
                     url += url.Contains("?") ? "&" : "?";
                 }
 
-                var now = DateTime.UtcNow;
+                var now = DateTime.Now;
                 string requestName = string.Empty;
                 if (httpReq != null) requestName = httpReq.OperationName ?? dto.GetType().Name;
 
