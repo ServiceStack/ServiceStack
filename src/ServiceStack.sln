@@ -62,8 +62,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Razor2", "Serv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Mvc.Tests", "..\tests\ServiceStack.Mvc.Tests\ServiceStack.Mvc.Tests.csproj", "{F89B1845-5B1E-4EF2-873F-5FFDBF56E365}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Mvc.Stubs.Tests", "..\tests\ServiceStack.Mvc.Stubs.Tests\ServiceStack.Mvc.Stubs.Tests.csproj", "{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -648,31 +646,6 @@ Global
 		{F89B1845-5B1E-4EF2-873F-5FFDBF56E365}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{F89B1845-5B1E-4EF2-873F-5FFDBF56E365}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{F89B1845-5B1E-4EF2-873F-5FFDBF56E365}.Release|x86.ActiveCfg = Release|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.MonoDebug|Any CPU.ActiveCfg = Debug|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.MonoDebug|Any CPU.Build.0 = Debug|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.MonoDebug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.MonoDebug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.MonoDebug|x86.ActiveCfg = Debug|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.MonoRelease|Any CPU.ActiveCfg = Release|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.MonoRelease|Any CPU.Build.0 = Release|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.MonoRelease|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.MonoRelease|Mixed Platforms.Build.0 = Release|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.MonoRelease|x86.ActiveCfg = Release|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.MonoTouch|Any CPU.Build.0 = Release|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.MonoTouch|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.MonoTouch|Mixed Platforms.Build.0 = Release|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.MonoTouch|x86.ActiveCfg = Release|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.Release|Any CPU.Build.0 = Release|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -690,7 +663,6 @@ Global
 		{1A5796C5-8AB6-4676-AC20-83594AED1798} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{F89B1845-5B1E-4EF2-873F-5FFDBF56E365} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
-		{60E9BDF4-38C8-4EEC-AB69-7128C6A35601} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = ..\tests\RazorRockstars.Console\RazorRockstars.Console.csproj
