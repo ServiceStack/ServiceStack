@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using Funq;
 using ServiceStack.FluentValidation;
+using ServiceStack.FluentValidation.Results;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
@@ -13,6 +14,8 @@ namespace ServiceStack.ServiceInterface.Validation
     public class ValidationFeature : IPlugin
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ValidationFeature));
+
+        public Func<ValidationResult, object, object> ErrorResponseFilter { get; set; }
 
         /// <summary>
         /// Activate the validation mechanism, so every request DTO with an existing validator

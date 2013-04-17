@@ -233,6 +233,12 @@ namespace ServiceStack.WebHost.Endpoints
             ServiceManager = config.ServiceManager; //reset operations
         }
 
+        public static T GetPlugin<T>() where T : IPlugin
+        {
+            if (!pluginsLoaded) return default(T);
+            return (T)Plugins.First(x => x is T);
+        }
+
         public static void AddPlugin(params IPlugin[] plugins)
         {
             if (pluginsLoaded)
