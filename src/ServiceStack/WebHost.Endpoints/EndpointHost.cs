@@ -235,7 +235,6 @@ namespace ServiceStack.WebHost.Endpoints
 
         public static T GetPlugin<T>() where T : class, IPlugin 
         {
-            if (!pluginsLoaded) return null;
             return Plugins.FirstOrDefault(x => x is T) as T;
         }
 
