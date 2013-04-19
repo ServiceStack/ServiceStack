@@ -854,6 +854,16 @@ namespace ServiceStack.ServiceClient.Web
             asyncClient.SendAsync(HttpMethods.Put, GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
         }
 
+        public virtual void PatchAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            PatchAsync(request.ToUrl(HttpMethods.Patch, Format), request, onSuccess, onError);
+        }
+
+        public virtual void PatchAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            asyncClient.SendAsync(HttpMethods.Patch, GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
+        }
+
         public virtual void CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             if (!HttpMethods.HasVerb(httpVerb))
