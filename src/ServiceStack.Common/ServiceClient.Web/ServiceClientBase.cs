@@ -106,17 +106,16 @@ namespace ServiceStack.ServiceClient.Web
         protected ServiceClientBase()
         {
             this.HttpMethod = DefaultHttpMethod;
-            this.CookieContainer = new CookieContainer();
             asyncClient = new AsyncServiceClient {
                 ContentType = ContentType,
                 StreamSerializer = SerializeToStream,
                 StreamDeserializer = StreamDeserializer,
-                CookieContainer = this.CookieContainer,
                 UserName = this.UserName,
                 Password = this.Password,
                 LocalHttpWebRequestFilter = this.LocalHttpWebRequestFilter,
                 LocalHttpWebResponseFilter = this.LocalHttpWebResponseFilter
             };
+            this.CookieContainer = new CookieContainer();
             this.StoreCookies = true; //leave
 #if NETFX_CORE || WINDOWS_PHONE || SILVERLIGHT
             this.Headers = new Dictionary<string, string>();
