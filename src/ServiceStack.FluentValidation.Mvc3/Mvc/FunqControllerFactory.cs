@@ -7,24 +7,36 @@ using System.Web.Mvc;
 using System.Web.Routing;
 using Funq;
 using ServiceStack.ServiceHost;
+using System.Collections.Generic;
 
 namespace ServiceStack.Mvc
 {
-	public class FunqControllerFactory : DefaultControllerFactory
+    public class FunqControllerFactory : DefaultControllerFactory
 	{
 		private readonly ContainerResolveCache funqBuilder;
 
-		public FunqControllerFactory(Container container)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FunqControllerFactory" /> class.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        /// <param name="assemblies">The assemblies to reflect for IController discovery.</param>
+        public FunqControllerFactory(Container container, params Assembly[] assemblies)
 		{
 			this.funqBuilder = new ContainerResolveCache(container);
 
-			// Also register all the controller types as transient
-			var controllerTypes =
-                (from type in Assembly.GetCallingAssembly().GetTypes()
-				 where typeof(IController).IsAssignableFrom(type)
-				 select type).ToList();
+            // aggregate the local and external assemblies for processing (unless ignored)
+            IEnumerable<Assembly> targetAssemblies = assemblies.Concat(new[] { Assembly.GetCallingAssembly() });
 
-			container.RegisterAutoWiredTypes(controllerTypes);
+            foreach (var assembly in targetAssemblies)
+            {
+                // Also register all the controller types as transient
+                var controllerTypes =
+                    (from type in assembly.GetTypes()
+                     where typeof(IController).IsAssignableFrom(type)
+                     select type).ToList();
+
+                container.RegisterAutoWiredTypes(controllerTypes);
+            }
 		}
 
 		protected override IController GetControllerInstance(

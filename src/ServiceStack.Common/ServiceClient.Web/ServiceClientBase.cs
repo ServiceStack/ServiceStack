@@ -321,7 +321,12 @@ namespace ServiceStack.ServiceClient.Web
             set { asyncClient.StoreCookies = storeCookies = value; }
         }
 
-        public CookieContainer CookieContainer { get; set; }
+        private CookieContainer _cookieContainer;
+        public CookieContainer CookieContainer
+        {
+            get { return _cookieContainer; }
+            set { asyncClient.CookieContainer = _cookieContainer = value; }
+        }
 
         private bool allowAutoRedirect = true;
         public bool AllowAutoRedirect

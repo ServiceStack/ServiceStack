@@ -12,7 +12,6 @@ namespace ServiceStack.ServiceHost
     {
         readonly IHttpResponse httpRes;
         private static readonly DateTime Session = DateTime.MinValue;
-        private static readonly DateTime Permanent = DateTime.UtcNow.AddYears(20);
         private const string RootPath = "/";
 
         public Cookies(IHttpResponse httpRes)
@@ -26,7 +25,7 @@ namespace ServiceStack.ServiceHost
         public void AddPermanentCookie(string cookieName, string cookieValue, bool? secureOnly = null)
         {
             var cookie = new Cookie(cookieName, cookieValue, RootPath) {
-                Expires = Permanent,
+                Expires = DateTime.UtcNow.AddYears(20)
             };
             if (secureOnly != null)
             {

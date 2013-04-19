@@ -1,5 +1,7 @@
-﻿using ServiceStack.ServiceHost;
+﻿using System.Linq;
+using ServiceStack.ServiceHost;
 using ServiceStack.FluentValidation;
+using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.ServiceInterface.Validation
@@ -23,6 +25,12 @@ namespace ServiceStack.ServiceInterface.Validation
 
             var errorResponse = DtoUtils.CreateErrorResponse(
                 requestDto, validationResult.ToErrorResult());
+
+            var validationFeature = EndpointHost.GetPlugin<ValidationFeature>();
+            if (validationFeature != null && validationFeature.ErrorResponseFilter != null)
+            {
+                errorResponse = validationFeature.ErrorResponseFilter(validationResult, errorResponse);
+            }
 
             res.WriteToResponse(req, errorResponse);
         }
