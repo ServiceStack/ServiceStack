@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Net;
+using System.Web;
 using ServiceStack.Common.Web;
 using ServiceStack.Service;
 using ServiceStack.ServiceHost;
@@ -45,14 +47,19 @@ namespace ServiceStack.ServiceInterface
     }
 
 
-    public class RangeResult : IStreamWriter, IHasOptions, IRequiresHttpRequest
+    public class RangeResult : IStreamWriter, IRequiresHttpRequest, IHttpResult
     {
         private readonly int? end;
         private readonly FileInfo file;
         private readonly int start;
 
-        public RangeResult(FileInfo file, string contentType)
+        public RangeResult(FileInfo file, string contentType = null)
         {
+            Status = 206;
+            StatusCode = HttpStatusCode.PartialContent;
+            StatusDescription = "Partial Content";
+            ContentType = contentType ?? MimeTypes.GetMimeType(file.Name);
+
             this.file = file;
             start =
                 (int)
@@ -60,33 +67,86 @@ namespace ServiceStack.ServiceInterface
                      ? HttpRequest.Items[RangeRequestFeature.RangeStartItemsKey]
                      : 0);
             end = (int?)
-                (HttpRequest.Items.ContainsKey(RangeRequestFeature.RangeEndItemsKey)
-                     ? HttpRequest.Items[RangeRequestFeature.RangeStartItemsKey]
-                     : null);
+                  (HttpRequest.Items.ContainsKey(RangeRequestFeature.RangeEndItemsKey)
+                       ? HttpRequest.Items[RangeRequestFeature.RangeStartItemsKey]
+                       : null);
 
-            Options = new Dictionary<string, string>
+            Headers = new Dictionary<string, string>
                 {
                     {HttpHeaders.ContentType, contentType},
                     {HttpHeaders.ContentLength, file.Length.ToString()},
                     {"Accept-Ranges", "bytes"}
                 };
-            if (end.HasValue)
+
+            if (!end.HasValue)
                 end = (int) file.Length - 1;
 
-            Options.Add("Content-Range",
+            Headers.Add("Content-Range",
                         "bytes {0}-{1}/{2}".Fmt(start, end, file.Length));
         }
 
-        public IDictionary<string, string> Options { get; set; }
+        public IDictionary<string, string> Options
+        {
+            get { return Headers; }
+        }
 
+        public int Status { get; set; }
+        public HttpStatusCode StatusCode { get; set; }
+        public string StatusDescription { get; set; }
+        public string ContentType { get; set; }
+
+        public Dictionary<string, string> Headers { get; set; }
+
+        public object Response { get; set; }
+        public IContentTypeWriter ResponseFilter { get; set; }
+        public IRequestContext RequestContext { get; set; }
         public IHttpRequest HttpRequest { get; set; }
 
         public void WriteTo(Stream responseStream)
         {
             using (FileStream fs = file.OpenRead())
             {
-                fs.WriteTo(responseStream);
-                responseStream.Flush();
+                var buffer = new byte[0x1000]; //new byte[BufferSize];
+                long totalToSend = end.Value - start;
+                long bytesRemaining = totalToSend;
+                int count;
+
+                fs.Seek(start, SeekOrigin.Begin);
+
+                while (bytesRemaining > 0)
+                {
+                    if (bytesRemaining <= buffer.Length)
+                        count = fs.Read(buffer, 0,
+                                        (bytesRemaining <= int.MaxValue) ? (int) bytesRemaining : int.MaxValue);
+                    else
+                        count = fs.Read(buffer, 0, buffer.Length);
+
+                    /* Would be nice if we could do this */
+                    //if (!response.IsClientConnected)
+                    //{
+                    //    
+                    //    break;
+                    //}
+
+                    try
+                    {
+                        responseStream.Write(buffer, 0, count);
+                        responseStream.Flush();
+                        bytesRemaining -= count;
+                    }
+                    catch (HttpException httpException)
+                    {
+                       /* in Asp.Net we can call HttpResponseBase.IsClientConnected
+                        * to see if the client broke off the connection
+                        * and stop avoid trying to flush the response stream.
+                        * I'm not quite I can do the same here without some invasive changes,
+                        * so instead I'll swallow the exception that IIS throws.*/
+
+                        if (httpException.Message ==
+                            "An error occurred while communicating with the remote host. The error code is 0x80070057.")
+                            break;
+                    }
+                }
             }
         }
     }
