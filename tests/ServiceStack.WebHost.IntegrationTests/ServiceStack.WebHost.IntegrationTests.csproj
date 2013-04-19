@@ -22,6 +22,8 @@
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\src\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -66,8 +68,8 @@
     <Reference Include="Mono.Data.Sqlite">
       <HintPath>..\..\lib\tests\Mono.Data.Sqlite.dll</HintPath>
     </Reference>
-    <Reference Include="protobuf-net">
-      <HintPath>..\..\lib\tests\protobuf-net.dll</HintPath>
+    <Reference Include="protobuf-net, Version=2.0.0.621, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <HintPath>..\..\src\packages\protobuf-net.2.0.0.621\lib\net35\protobuf-net.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.OrmLite">
       <HintPath>..\..\lib\ServiceStack.OrmLite.dll</HintPath>
@@ -297,6 +299,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="packages.config" />
     <None Include="Properties\DataSources\ServiceStack.ServiceInterface.ServiceModel.ResponseStatus.datasource" />
     <None Include="README.md" />
     <None Include="webpage.forbidden" />
@@ -343,4 +346,5 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
 </Project>
