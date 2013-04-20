@@ -22,6 +22,11 @@ namespace ServiceStack.ServiceInterface
             return resolver ?? EndpointHost.AppHost;
         }
 
+        public virtual IAppHost GetAppHost()
+        {
+            return (resolver as IAppHost) ?? EndpointHost.AppHost;
+        }
+
         public virtual Service SetResolver(IResolver resolver)
         {
             this.resolver = resolver;
