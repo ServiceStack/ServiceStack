@@ -138,25 +138,40 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
                         var partialContent = httpResult as IPartialContentResult;
                         if (partialContent != null)
                         {
+                            //you can happily set the Content-Length header in Asp.Net
+                            //but HttpListener will complain if you do - you have to set ContentLength64 on the response.
+                            var httpListenerResponse = response as HttpListenerResponseWrapper;
+
                             long rangeStart;
                             long? rangeEnd;
                             long contentLength = partialContent.GetContentLength();
-                            partialContent.Headers.Add("Content-Length", contentLength.ToString());
                             if (TryParseRangeHeader(partialContent.RequestContext, out rangeStart, out rangeEnd))
                             {
+                                if (rangeEnd == null)
+                                    rangeEnd = contentLength - 1;
                                 partialContent.Start = rangeStart;
-                                partialContent.End = rangeEnd ?? contentLength - 1;
+                                partialContent.End = rangeEnd.Value;
                                 partialContent.Headers.Add("Content-Range",
                                                            "bytes {0}-{1}/{2}".Fmt(rangeStart,
-                                                                                   rangeEnd ?? contentLength - 1,
+                                                                                   rangeEnd,
                                                                                    contentLength));
                                 partialContent.Status = 206; //Partial Content response to range request
+
+                                if (httpListenerResponse == null)
+                                    partialContent.Headers.Add("Content-Length", (rangeEnd - rangeStart + 1).ToString());
+                                else
+                                    httpListenerResponse.SetContentLength((rangeEnd.Value - rangeStart + 1));
                             }
                             else
                             {
                                 partialContent.Start = 0;
                                 partialContent.End = contentLength - 1;
                                 partialContent.Status = 200; //OK response to non-range request
+
+                                if (httpListenerResponse == null)
+                                    partialContent.Headers.Add("Content-Length", (contentLength).ToString());
+                                else
+                                    httpListenerResponse.SetContentLength(contentLength);
                             }
                         }
 
@@ -452,7 +467,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
             rangeEnd = null;
 
             string rangeHeader = requestContext.GetHeader("Range");
-            if (rangeHeader != null)
+            if (!string.IsNullOrEmpty(rangeHeader))
             {
                 //rangeHeader should be of the format "bytes=0-" or "bytes=0-12345" or "bytes=123-456"
                 string[] range = rangeHeader.SplitOnFirst("=")[1].SplitOnFirst("-");

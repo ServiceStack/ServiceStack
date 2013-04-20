@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Web;
 using ServiceStack.Common.Web;
+using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 
@@ -16,6 +17,7 @@ namespace ServiceStack.ServiceInterface
         private PartialContentResult(string contentType)
         {
             if (contentType == null) throw new ArgumentNullException("contentType");
+
             ContentType = contentType;
 
             Headers = new Dictionary<string, string>
@@ -69,9 +71,16 @@ namespace ServiceStack.ServiceInterface
         {
             if (file != null)
             {
-                using (FileStream fs = file.OpenRead())
+                using (var fs = file.OpenRead())
                 {
-                    WriteTo(fs, responseStream);
+                    if (End != file.Length - 1)
+                        WriteTo(fs, responseStream);
+                    else
+                    {
+                        fs.WriteTo(responseStream);
+                        responseStream.Flush();
+                    }
+                        
                 }
                 return;
             }
@@ -92,7 +101,7 @@ namespace ServiceStack.ServiceInterface
                 throw new InvalidOperationException(
                     "Sending Range Responses requires a seekable stream eg. FileStream or MemoryStream");
 
-
+            
             long totalBytesToSend = End - Start + 1;
             var buffer = new byte[0x1000]; //new byte[BufferSize];
             long bytesRemaining = totalBytesToSend;
@@ -101,22 +110,18 @@ namespace ServiceStack.ServiceInterface
 
             while (bytesRemaining > 0)
             {
+           
                 int count;
                 if (bytesRemaining <= buffer.Length)
                     count = inputStream.Read(buffer, 0,
-                                             (bytesRemaining <= int.MaxValue) ? (int) bytesRemaining : int.MaxValue);
+                                             (bytesRemaining <= int.MaxValue) ? (int)bytesRemaining : int.MaxValue);
                 else
                     count = inputStream.Read(buffer, 0, buffer.Length);
 
-                /* Would be nice if we could do this */
-                //if (!response.IsClientConnected)
-                //{
-                //    
-                //    break;
-                //}
-
+             
                 try
                 {
+                    //Log.DebugFormat("Writing {0} to response",System.Text.Encoding.UTF8.GetString(buffer));
                     responseStream.Write(buffer, 0, count);
                     responseStream.Flush();
                     bytesRemaining -= count;

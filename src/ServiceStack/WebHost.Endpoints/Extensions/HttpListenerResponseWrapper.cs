@@ -109,6 +109,12 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
             get;
             private set;
         }
+
+        public void SetContentLength(long contentLength)
+        {
+            //workaround: HttpListener throws "The parameter is incorrect" exceptions when we try to set the Content-Length header
+            response.ContentLength64 = contentLength;
+        }
     }
 
 }
