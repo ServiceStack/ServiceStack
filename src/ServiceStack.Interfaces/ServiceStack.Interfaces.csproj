@@ -476,6 +476,7 @@
     </Compile>
     <Compile Include="ServiceHost\ApiAttribute.cs" />
     <Compile Include="ServiceHost\ApiMemberAttribute.cs" />
+    <Compile Include="ServiceHost\IPartialContentResult.cs" />
     <Compile Include="ServiceHost\IRestOptionsService.cs" />
     <Compile Include="ServiceHost\IService.cs" />
     <Compile Include="ServiceHost\IExpress.cs" />
