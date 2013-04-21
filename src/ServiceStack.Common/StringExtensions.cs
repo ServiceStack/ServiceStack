@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using ServiceStack.Common.Utils;
 using ServiceStack.Text;
 using ServiceStack.Text.Common;
+using ServiceStack.Common.Extensions;
 
 namespace ServiceStack.Common
 {
@@ -43,7 +44,7 @@ namespace ServiceStack.Common
 
         public static bool IsEmpty(this string value)
         {
-            return String.IsNullOrEmpty(value);
+            return String.IsNullOrEmpty(value.Trim());
         }
 
         public static bool IsNullOrEmpty(this string value)
@@ -175,7 +176,7 @@ namespace ServiceStack.Common
 
         public static int ToInt(this string text)
         {
-            return int.Parse(text);
+            return text.To<int>();
         }
 
         public static int ToInt(this string text, int defaultValue)
@@ -186,7 +187,7 @@ namespace ServiceStack.Common
 
         public static long ToInt64(this string text)
         {
-            return long.Parse(text);
+            return text.To<long>();
         }
 
         public static long ToInt64(this string text, long defaultValue)
