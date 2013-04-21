@@ -410,8 +410,9 @@ namespace ServiceStack.CacheAccess.Providers
 					}
 				}
 			}
-			catch
+			catch (Exception ex)
 			{
+				Log.Error(string.Format("Error trying to remove items from cache with this {0} pattern", pattern), ex);
 			}
 		}
 	}
