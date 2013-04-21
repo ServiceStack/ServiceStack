@@ -44,7 +44,7 @@ namespace ServiceStack.Common
 
         public static bool IsEmpty(this string value)
         {
-            return String.IsNullOrEmpty(value.Trim());
+            return String.IsNullOrEmpty(value);
         }
 
         public static bool IsNullOrEmpty(this string value)
