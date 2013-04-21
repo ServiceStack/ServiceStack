@@ -108,6 +108,7 @@ namespace ServiceStack.WebHost.Endpoints
                         DefaultJsonpCacheExpiration = new TimeSpan(0, 20, 0),
                         MetadataVisibility = EndpointAttributes.Any,
                         Return204NoContentForEmptyResponse = true,
+                        AllowPartialResponses = true,
                     };
 
                     if (instance.ServiceStackHandlerFactoryPath == null)
@@ -171,6 +172,7 @@ namespace ServiceStack.WebHost.Endpoints
             this.MetadataVisibility = instance.MetadataVisibility;
             this.Return204NoContentForEmptyResponse = Return204NoContentForEmptyResponse;
             this.AllowNonHttpOnlyCookies = instance.AllowNonHttpOnlyCookies;
+            this.AllowPartialResponses = instance.AllowPartialResponses;
         }
 
         public static string GetAppConfigPath()
@@ -418,6 +420,7 @@ namespace ServiceStack.WebHost.Endpoints
 
         public TimeSpan DefaultJsonpCacheExpiration { get; set; }
         public bool Return204NoContentForEmptyResponse { get; set; }
+        public bool AllowPartialResponses { get; set; }
 
         public bool AllowNonHttpOnlyCookies { get; set; }
 

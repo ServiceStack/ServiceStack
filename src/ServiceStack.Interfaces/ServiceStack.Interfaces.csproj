@@ -476,7 +476,6 @@
     </Compile>
     <Compile Include="ServiceHost\ApiAttribute.cs" />
     <Compile Include="ServiceHost\ApiMemberAttribute.cs" />
-    <Compile Include="ServiceHost\IPartialContentResult.cs" />
     <Compile Include="ServiceHost\IRestOptionsService.cs" />
     <Compile Include="ServiceHost\IService.cs" />
     <Compile Include="ServiceHost\IExpress.cs" />
@@ -610,6 +609,7 @@
     <Compile Include="ServiceInterface.ServiceModel\ResponseStatus.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Service\IPartialWriter.cs" />
     <Compile Include="Service\IOneWayClient.cs">
       <SubType>Code</SubType>
     </Compile>

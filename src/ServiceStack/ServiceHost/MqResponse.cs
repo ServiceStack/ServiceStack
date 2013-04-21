@@ -67,5 +67,7 @@ namespace ServiceStack.ServiceHost
         public void Flush() {}
 
         public bool IsClosed { get; set; }
+
+        public void SetContentLength(long contentLength) {}
     }
 }

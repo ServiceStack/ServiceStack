@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Specialized;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using ServiceStack.Common.Web;
@@ -115,5 +116,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Mocks
 			get;
 			private set;
 		}
+
+	    public void SetContentLength(long contentLength)
+	    {
+	        Headers[HttpHeaders.ContentLength] = contentLength.ToString(CultureInfo.InvariantCulture);
+	    }
 	}
 }

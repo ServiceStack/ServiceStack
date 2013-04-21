@@ -141,6 +141,7 @@
     <Compile Include="PartialContentResultTests.cs" />
     <Compile Include="ServiceClientsBuiltInResponseTests.cs" />
     <Compile Include="ServiceSetupTests.cs" />
+    <Compile Include="Support\Services\FailingService.cs" />
     <Compile Include="UniqueRequestTests.cs" />
     <Compile Include="SendOneWayTests.cs" />
     <Compile Include="Support\Services\EndpointAccessService.cs" />
@@ -268,14 +269,21 @@
       <Link>sqlite3.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="TestExistingDir\textfile.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="webpage.forbidden">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="webpage.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="TestExistingDir\default.html" />
-    <Content Include="TestExistingDir\upload.html" />
+    <Content Include="TestExistingDir\default.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestExistingDir\upload.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

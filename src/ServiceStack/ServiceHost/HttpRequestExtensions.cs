@@ -112,18 +112,12 @@ namespace ServiceStack.ServiceHost
 			return hostName;
 		}
 
-		public static string GetPhysicalPath( this IHttpRequest httpReq )
+		public static string GetPhysicalPath(this IHttpRequest httpReq)
 		{
-			string res;
-
-			var aspNetReq = httpReq as HttpRequestWrapper;
-			if( aspNetReq != null ) {
-				res = aspNetReq.Request.PhysicalPath;
-			}
-			else {
-
-				res = EndpointHostConfig.Instance.WebHostPhysicalPath.CombineWith( httpReq.PathInfo );
-			}
+		    var aspNetReq = httpReq as HttpRequestWrapper;
+			var res = aspNetReq != null 
+                ? aspNetReq.Request.PhysicalPath 
+                : EndpointHostConfig.Instance.WebHostPhysicalPath.CombineWith(httpReq.PathInfo);
 
 			return res;
 		}
@@ -266,6 +260,5 @@ namespace ServiceStack.ServiceHost
             if (ex is HttpError) return ((HttpError)ex).ErrorCode;
             return ex.GetType().Name;
         }
-        
 	}
 }

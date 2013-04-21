@@ -49,7 +49,13 @@ namespace ServiceStack.Common.Web
         public const string AllowMethods = "Access-Control-Allow-Methods";
 
         public const string AllowHeaders = "Access-Control-Allow-Headers";
-        
+
         public const string AllowCredentials = "Access-Control-Allow-Credentials";
+
+        public const string AcceptRanges = "Accept-Ranges";
+
+        public const string ContentRange = "Content-Range";
+
+        public const string Range = "Range";
     }
 }

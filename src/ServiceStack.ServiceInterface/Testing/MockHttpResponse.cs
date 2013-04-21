@@ -55,5 +55,7 @@ namespace ServiceStack.ServiceInterface.Testing
         }
 
         public bool IsClosed { get; private set; }
+
+        public void SetContentLength(long contentLength) {}
     }
 }

@@ -49,5 +49,7 @@ namespace ServiceStack.ServiceHost
         /// Gets a value indicating whether this instance is closed.
         /// </summary>
         bool IsClosed { get; }
+
+        void SetContentLength(long contentLength);
     }
 }
