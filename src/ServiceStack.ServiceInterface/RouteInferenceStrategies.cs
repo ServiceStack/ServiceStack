@@ -6,9 +6,11 @@ using ServiceStack.Common.Utils;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
 
-namespace ServiceStack.ServiceInterface {
-	
-	public static class RouteInferenceStrategies {
+namespace ServiceStack.ServiceInterface
+{
+
+	public static class RouteInferenceStrategies
+	{
 
 		public static readonly List<Type> AttributesToMatch = (new[] {
 			typeof(PrimaryKeyAttribute)
@@ -20,15 +22,17 @@ namespace ServiceStack.ServiceInterface {
 		}).ToList();
 
 
-		public static string FromRequestTypeName(Type requestType) {
+		public static string FromRequestTypeName(Type requestType)
+		{
 			return "/{0}".FormatWith(requestType.Name);
 		}
 
-		public static string FromAttributes(Type requestType) {
+		public static string FromAttributes(Type requestType)
+		{
 			var membersWithAttribute = (from p in requestType.GetPublicProperties()
-																	let attributes = p.CustomAttributes(inherit: false).Cast<Attribute>()
-																	where attributes.Any(a => AttributesToMatch.Contains(a.GetType()))
-																	select "{{{0}}}".FormatWith(p.Name)).ToList();
+										let attributes = p.CustomAttributes(inherit: false).Cast<Attribute>()
+										where attributes.Any(a => AttributesToMatch.Contains(a.GetType()))
+										select "{{{0}}}".FormatWith(p.Name)).ToList();
 
 			if (membersWithAttribute.Count == 0) return null;
 
@@ -37,11 +41,12 @@ namespace ServiceStack.ServiceInterface {
 			return membersWithAttribute.Join("/");
 		}
 
-		public static string FromPropertyNames(Type requestType) {
+		public static string FromPropertyNames(Type requestType)
+		{
 			var membersWithName = (from property in requestType.GetPublicProperties().Select(p => p.Name)
-														 from name in PropertyNamesToMatch
-														 where property.Equals(name, StringComparison.InvariantCultureIgnoreCase)
-														 select "{{{0}}}".FormatWith(property)).ToList();
+								   from name in PropertyNamesToMatch
+								   where property.Equals(name, StringComparison.InvariantCultureIgnoreCase)
+								   select "{{{0}}}".FormatWith(property)).ToList();
 
 			if (membersWithName.Count == 0) return null;
 
@@ -50,5 +55,4 @@ namespace ServiceStack.ServiceInterface {
 			return membersWithName.Join("/");
 		}
 	}
-
 }

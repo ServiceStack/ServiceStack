@@ -138,17 +138,18 @@ namespace ServiceStack.ServiceInterface
 
         private static void AddRoute(this IServiceRoutes routes, Type requestType, string allowedVerbs)
         {
-					var strategies = EndpointHost.Config.RouteInferenceStrategies;
-					var calculatedRoutes = new List<string>();
+			var strategies = EndpointHost.Config.RouteInferenceStrategies;
+			var calculatedRoutes = new List<string>();
 
-					foreach (var strategy in strategies) {
-						var route = strategy(requestType);
-						if (!route.IsNullOrEmpty()) calculatedRoutes.Add(route);
-					}
+			foreach (var strategy in strategies)
+			{
+				var route = strategy(requestType);
+				if (!route.IsNullOrEmpty()) calculatedRoutes.Add(route);
+			}
 
-					calculatedRoutes.Distinct().ExecAll(route =>
-						routes.Add(requestType, route, allowedVerbs)
-					);
+			calculatedRoutes.Distinct().ExecAll(route =>
+				routes.Add(requestType, route, allowedVerbs)
+			);
         }
 
         public static IServiceRoutes Add<TRequest>(this IServiceRoutes routes, string restPath, ApplyTo verbs)
