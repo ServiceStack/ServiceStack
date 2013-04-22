@@ -138,7 +138,7 @@ namespace ServiceStack.ServiceInterface
 
         private static void AddRoute(this IServiceRoutes routes, Type requestType, string allowedVerbs)
         {
-					var strategies = EndpointHostConfig.Instance.RouteInferenceStrategies;
+					var strategies = EndpointHost.Config.RouteInferenceStrategies;
 					var calculatedRoutes = new List<string>();
 
 					foreach (var strategy in strategies) {

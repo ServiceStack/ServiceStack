@@ -32,7 +32,7 @@ namespace ServiceStack.ServiceInterface {
 
 			if (membersWithAttribute.Count == 0) return null;
 
-			membersWithAttribute.Insert(0, "/{0}".FormatWith(requestType.Name));
+			membersWithAttribute.Insert(0, FromRequestTypeName(requestType));
 
 			return membersWithAttribute.Join("/");
 		}
@@ -45,7 +45,7 @@ namespace ServiceStack.ServiceInterface {
 
 			if (membersWithName.Count == 0) return null;
 
-			membersWithName.Insert(0, "/{0}".FormatWith(requestType.Name));
+			membersWithName.Insert(0, FromRequestTypeName(requestType));
 
 			return membersWithName.Join("/");
 		}
