@@ -21,8 +21,8 @@ namespace ServiceStack.ServiceInterface
 				//add the known default strategies.
 				//Would have preferred this to be defined on the EndpointHostConfig as a "sensible default", but doing 
 				//so would create cyclical references on dependent assemblies.
-				if (EndpointHostConfig.Instance.RouteInferenceStrategies.Count == 0)
-					EndpointHostConfig.Instance.RouteInferenceStrategies.AddRange(new Func<Type,string>[] {
+				if (EndpointHost.Config.RouteInferenceStrategies.Count == 0)
+					EndpointHost.Config.RouteInferenceStrategies.AddRange(new Func<Type,string>[] {
 						RouteInferenceStrategies.FromRequestTypeName,
 						RouteInferenceStrategies.FromAttributes,
 						RouteInferenceStrategies.FromPropertyNames
