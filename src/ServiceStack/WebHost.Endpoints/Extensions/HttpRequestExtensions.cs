@@ -570,7 +570,6 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
                 }
             }
         }
-
 	}
     
 }

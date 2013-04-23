@@ -609,6 +609,7 @@
     <Compile Include="ServiceInterface.ServiceModel\ResponseStatus.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Service\IPartialWriter.cs" />
     <Compile Include="Service\IOneWayClient.cs">
       <SubType>Code</SubType>
     </Compile>

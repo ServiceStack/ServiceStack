@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Net;
-using System.Text;
 using System.Web;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
@@ -19,6 +18,13 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
         public static bool WriteToOutputStream(IHttpResponse response, object result, byte[] bodyPrefix, byte[] bodySuffix)
         {
+            var partialResult = result as IPartialWriter;
+            if (partialResult != null && EndpointHost.Config.AllowPartialResponses && partialResult.IsPartialRequest)
+            {
+                partialResult.WritePartialTo(response);
+                return true;
+            }
+
             var streamWriter = result as IStreamWriter;
             if (streamWriter != null)
             {
@@ -412,12 +418,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
                 }
             }
 
-            var listenerRes = httpRes.OriginalResponse as HttpListenerResponse;
-            if (listenerRes != null)
-            {
-                listenerRes.ContentLength64 = 0;
-            }
-
+            httpRes.SetContentLength(0);
             httpRes.EndServiceStackRequest();
         }
 

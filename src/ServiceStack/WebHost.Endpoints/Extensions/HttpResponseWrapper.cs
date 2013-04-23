@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO;
 using System.Web;
 using ServiceStack.ServiceHost;
@@ -94,6 +95,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
         {
             get;
             private set;
+        }
+
+        public void SetContentLength(long contentLength)
+        {
+            response.Headers.Add("Content-Length", contentLength.ToString(CultureInfo.InvariantCulture));
         }
     }
 }

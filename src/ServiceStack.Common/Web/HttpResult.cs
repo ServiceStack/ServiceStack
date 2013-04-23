@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Text;
+using System.Web;
 using ServiceStack.Service;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -10,7 +12,7 @@ using ServiceStack.Text;
 namespace ServiceStack.Common.Web
 {
     public class HttpResult
-        : IHttpResult, IStreamWriter
+        : IHttpResult, IStreamWriter, IPartialWriter
     {
         public HttpResult()
             : this((object)null, null)
@@ -47,16 +49,14 @@ namespace ServiceStack.Common.Web
             this.StatusCode = statusCode;
         }
 
-        public HttpResult(FileInfo fileResponse)
-            : this(fileResponse, false, MimeTypes.GetMimeType(fileResponse.Name)) { }
-
         public HttpResult(FileInfo fileResponse, bool asAttachment)
-            : this(fileResponse, asAttachment, MimeTypes.GetMimeType(fileResponse.Name)) { }
+            : this(fileResponse, MimeTypes.GetMimeType(fileResponse.Name), asAttachment) { }
 
-        public HttpResult(FileInfo fileResponse, bool asAttachment, string contentType)
-            : this(null, contentType, HttpStatusCode.OK)
+        public HttpResult(FileInfo fileResponse, string contentType=null, bool asAttachment=false)
+            : this(null, contentType ?? MimeTypes.GetMimeType(fileResponse.Name), HttpStatusCode.OK)
         {
             this.FileInfo = fileResponse;
+            this.AllowsPartialResponse = true;
 
             if (!asAttachment) return;
 
@@ -76,13 +76,22 @@ namespace ServiceStack.Common.Web
         public HttpResult(Stream responseStream, string contentType)
             : this(null, contentType, HttpStatusCode.OK)
         {
+            this.AllowsPartialResponse = true;
             this.ResponseStream = responseStream;
         }
 
         public HttpResult(string responseText, string contentType)
             : this(null, contentType, HttpStatusCode.OK)
         {
+            this.AllowsPartialResponse = true;
             this.ResponseText = responseText;
+        }
+
+        public HttpResult(byte[] responseBytes, string contentType)
+            : this(null, contentType, HttpStatusCode.OK)
+        {
+            this.AllowsPartialResponse = true;
+            this.ResponseStream = new MemoryStream(responseBytes);
         }
 
         public string ResponseText { get; private set; }
@@ -94,6 +103,20 @@ namespace ServiceStack.Common.Web
         public string ContentType { get; set; }
 
         public Dictionary<string, string> Headers { get; private set; }
+
+        private bool allowsPartialResponse;
+        public bool AllowsPartialResponse
+        {
+            set
+            {
+                allowsPartialResponse = value;
+                if (allowsPartialResponse)
+                    this.Headers.Add(HttpHeaders.AcceptRanges, "bytes");
+                else
+                    this.Headers.Remove(HttpHeaders.AcceptRanges);
+            }
+            get { return allowsPartialResponse; }
+        }
 
         public DateTime LastModified
         {
@@ -163,8 +186,8 @@ namespace ServiceStack.Common.Web
 
         public HttpStatusCode StatusCode
         {
-            get { return (HttpStatusCode) Status; }
-            set { Status = (int) value; }
+            get { return (HttpStatusCode)Status; }
+            set { Status = (int)value; }
         }
 
         public string StatusDescription { get; set; }
@@ -195,11 +218,7 @@ namespace ServiceStack.Common.Web
             {
                 this.ResponseStream.WriteTo(responseStream);
                 responseStream.Flush();
-                try
-                {
-                    this.ResponseStream.Dispose();
-                }
-                catch { /*ignore*/ }
+                DisposeStream();
 
                 return;
             }
@@ -232,9 +251,68 @@ namespace ServiceStack.Common.Web
             ResponseFilter.SerializeToStream(this.RequestContext, this.Response, responseStream);
         }
 
+        public bool IsPartialRequest
+        {
+            get { return AllowsPartialResponse && RequestContext.GetHeader(HttpHeaders.Range) != null && GetContentLength() != null; }
+        }
+
+        public void WritePartialTo(IHttpResponse response)
+        {
+            var contentLength = GetContentLength().GetValueOrDefault(int.MaxValue); //Safe as guarded by IsPartialRequest
+            var rangeHeader = RequestContext.GetHeader(HttpHeaders.Range);
+
+            long rangeStart, rangeEnd;
+            rangeHeader.ExtractHttpRanges(contentLength, out rangeStart, out rangeEnd);
+
+            response.AddHttpRangeResponseHeaders(rangeStart, rangeEnd, contentLength);
+
+            var outputStream = response.OutputStream;
+            if (FileInfo != null)
+            {
+                using (var fs = FileInfo.OpenRead())
+                {
+                    if (rangeEnd != FileInfo.Length - 1)
+                    {
+                        fs.WritePartialTo(outputStream, rangeStart, rangeEnd);
+                    }
+                    else
+                    {
+                        fs.WriteTo(outputStream);
+                        outputStream.Flush();
+                    }
+                }
+            }
+            else if (ResponseStream != null)
+            {
+                ResponseStream.WritePartialTo(outputStream, rangeStart, rangeEnd);
+                DisposeStream();
+            }
+            else if (ResponseText != null)
+            {
+                using (var ms = new MemoryStream(Encoding.UTF8.GetBytes(ResponseText)))
+                {
+                    ms.WritePartialTo(outputStream, rangeStart, rangeEnd);
+                }
+            }
+            else
+                throw new InvalidOperationException("Neither file, stream nor text were set when attempting to write to the Response Stream.");
+        }
+
+        public long? GetContentLength()
+        {
+            if (FileInfo != null)
+                return FileInfo.Length;
+            if (ResponseStream != null)
+                return ResponseStream.Length;
+            if (ResponseText != null)
+                return ResponseText.Length;
+            return null;
+        }
+
         public static HttpResult Status201Created(object response, string newLocationUri)
         {
-            return new HttpResult(response) {
+            return new HttpResult(response)
+            {
                 StatusCode = HttpStatusCode.Created,
                 Headers =
                 {
@@ -243,15 +321,28 @@ namespace ServiceStack.Common.Web
             };
         }
 
-        public static HttpResult Redirect(string newLocationUri, HttpStatusCode redirectStatus=HttpStatusCode.Found)
+        public static HttpResult Redirect(string newLocationUri, HttpStatusCode redirectStatus = HttpStatusCode.Found)
         {
-            return new HttpResult {
+            return new HttpResult
+            {
                 StatusCode = redirectStatus,
                 Headers =
                 {
                     { HttpHeaders.Location, newLocationUri },
                 }
             };
+        }
+
+        public void DisposeStream()
+        {
+            try
+            {
+                if (ResponseStream != null)
+                {
+                    this.ResponseStream.Dispose();
+                }
+            }
+            catch { /*ignore*/ }
         }
     }
 }

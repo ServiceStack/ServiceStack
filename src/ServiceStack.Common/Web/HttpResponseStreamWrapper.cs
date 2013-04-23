@@ -73,5 +73,7 @@ namespace ServiceStack.Common.Web
         }
 
         public bool IsClosed { get; private set; }
+
+        public void SetContentLength(long contentLength) {}
     }
 }
