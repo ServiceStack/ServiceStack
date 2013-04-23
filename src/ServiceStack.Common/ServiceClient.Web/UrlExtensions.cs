@@ -197,15 +197,17 @@ namespace ServiceStack.ServiceClient.Web
             this.queryProperties = GetQueryProperties(type);
             foreach (var variableName in GetUrlVariables(path))
             {
-	            RouteMember propertyInfo;
-	            if (!this.queryProperties.TryGetValue(variableName, out propertyInfo))
-	            {
-		            this.AppendError("Variable '{0}' does not match any property.".Fmt(variableName));
-		            continue;
-	            }
+                var safeVarName = variableName.TrimEnd('*');
 
-				this.variablesMap[variableName] = propertyInfo;
-		        this.queryProperties.Remove(variableName);
+                RouteMember propertyInfo;
+                if (!this.queryProperties.TryGetValue(safeVarName, out propertyInfo))
+                {
+	                this.AppendError("Variable '{0}' does not match any property.".Fmt(variableName));
+	                continue;
+                }
+
+                this.queryProperties.Remove(safeVarName);
+                this.variablesMap[variableName] = propertyInfo;
             }
         }
 
