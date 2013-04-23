@@ -78,6 +78,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Contracts, Version=1.0.0.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL" />
     <Reference Include="protobuf-net, Version=2.0.0.621, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\src\packages\protobuf-net.2.0.0.621\lib\net35\protobuf-net.dll</HintPath>
@@ -89,6 +90,7 @@
       <HintPath>..\..\lib\ServiceStack.OrmLite.Sqlite.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -138,6 +140,11 @@
     <Compile Include="EncodingTests.cs" />
     <Compile Include="ExceptionHandling2Tests.cs" />
     <Compile Include="IntegrationTests\MovieSoap11Tests.cs" />
+    <Compile Include="RouteInferenceTests.cs" />
+    <Compile Include="ServiceClientsBuiltInResponseTests.cs" />
+    <Compile Include="ServiceSetupTests.cs" />
+    <Compile Include="Support\Services\TestRestService.cs" />
+    <Compile Include="Support\Types\KeyAttribute.cs" />
     <Compile Include="PartialContentResultTests.cs" />
     <Compile Include="ServiceClientsBuiltInResponseTests.cs" />
     <Compile Include="ServiceSetupTests.cs" />
