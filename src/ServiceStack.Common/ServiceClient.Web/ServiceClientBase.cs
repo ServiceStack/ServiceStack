@@ -785,6 +785,26 @@ namespace ServiceStack.ServiceClient.Web
         }
 #endif
 
+        public byte[] DownloadBytes( IReturn request, string httpMethod = "GET", string acceptContentType = "*/*")
+        {
+            var url = new Uri(new Uri(BaseUri), request.ToUrl(httpMethod)).AbsoluteUri;
+            return DownloadBytes(url, httpMethod, acceptContentType);
+        }
+
+        public byte[] DownloadBytes( string url, string httpMethod = "GET", string acceptContentType = "*/*")
+        {
+            if (url == null) throw new ArgumentNullException("url");
+
+            var requestFilter = HttpWebRequestFilter;
+            requestFilter += LocalHttpWebRequestFilter;
+
+            var responseFilter = HttpWebResponseFilter;
+            responseFilter += LocalHttpWebResponseFilter;
+
+            var bytes = url.GetBytesFromUrl(acceptContentType, requestFilter, responseFilter);
+            return bytes;
+        }
+
         public virtual void SendOneWay(object request)
         {
             var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
