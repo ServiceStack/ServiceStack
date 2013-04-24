@@ -19,7 +19,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
         public static bool WriteToOutputStream(IHttpResponse response, object result, byte[] bodyPrefix, byte[] bodySuffix)
         {
             var partialResult = result as IPartialWriter;
-            if (partialResult != null && EndpointHost.Config.AllowPartialResponses && partialResult.IsPartialRequest)
+            if (EndpointHost.Config.AllowPartialResponses && partialResult != null && partialResult.IsPartialRequest)
             {
                 partialResult.WritePartialTo(response);
                 return true;
