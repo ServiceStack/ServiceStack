@@ -105,7 +105,7 @@ namespace ServiceStack.Api.Swagger
             var map = EndpointHost.ServiceManager.ServiceController.RestPathMap;
             var paths = new List<RestPath>();
 
-            var basePath = EndpointHost.Config.ForceHttps ? httpReq.GetParentPathUrl().ToHttps() : httpReq.GetParentPathUrl();
+            var basePath = EndpointHost.Config.UseHttpsLinks ? httpReq.GetParentPathUrl().ToHttps() : httpReq.GetParentPathUrl();
 
 			if (basePath.ToLower().EndsWith(SwaggerResourcesService.RESOURCE_PATH))
 			{

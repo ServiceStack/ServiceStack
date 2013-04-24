@@ -64,7 +64,7 @@ namespace ServiceStack.WebHost.Endpoints
                         DefaultContentType = null,
                         AllowJsonpRequests = true,
                         AllowNonHttpOnlyCookies = false,
-                        ForceHttps = false,
+                        UseHttpsLinks = false,
                         DebugMode = false,
                         DefaultDocuments = new List<string> {
 							"default.htm",
@@ -429,7 +429,7 @@ namespace ServiceStack.WebHost.Endpoints
 
         public bool AllowNonHttpOnlyCookies { get; set; }
 
-        public bool ForceHttps { get; set; }
+        public bool UseHttpsLinks { get; set; }
 
         private string defaultOperationNamespace;
         public string DefaultOperationNamespace
