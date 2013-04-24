@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
+using ServiceStack.Common.Extensions;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
 
@@ -104,7 +105,7 @@ namespace ServiceStack.Api.Swagger
             var map = EndpointHost.ServiceManager.ServiceController.RestPathMap;
             var paths = new List<RestPath>();
 
-			var basePath = httpReq.GetParentPathUrl();
+            var basePath = EndpointHost.Config.UseHttpsLinks ? httpReq.GetParentPathUrl().ToHttps() : httpReq.GetParentPathUrl();
 
 			if (basePath.ToLower().EndsWith(SwaggerResourcesService.RESOURCE_PATH))
 			{
