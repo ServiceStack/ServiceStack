@@ -1,28 +1,239 @@
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Dynamic;
+using System.Globalization;
+using System.IO;
+using System.Text;
+using System.Web;
 using ServiceStack.CacheAccess;
 using ServiceStack.Common.Web;
 using ServiceStack.Html;
 using ServiceStack.Messaging;
+using ServiceStack.MiniProfiler;
 using ServiceStack.OrmLite;
-using ServiceStack.Razor2.Templating;
 using ServiceStack.Redis;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.WebHost.Endpoints;
+using IHtmlString = System.Web.IHtmlString;
+
 
 namespace ServiceStack.Razor2
 {
-    public abstract class ViewPageBase<TModel>
-        : TemplateBase<TModel>, IRazorTemplate, ICloneable
+    /// <summary>
+    /// Class to represent attribute values and, more importantly, 
+    /// decipher them from tuple madness slightly.
+    /// </summary>
+    public class AttributeValue
     {
-        public abstract Type ModelType { get; }
+        public Tuple<string, int> Prefix { get; private set; }
 
-        public abstract void Init(IRazorViewEngine viewEngine, ViewDataDictionary viewData, IHttpRequest httpReq, IHttpResponse httpRes);
+        public Tuple<object, int> Value { get; private set; }
+
+        public bool IsLiteral { get; private set; }
+
+        public AttributeValue( Tuple<string, int> prefix, Tuple<object, int> value, bool isLiteral )
+        {
+            this.Prefix = prefix;
+            this.Value = value;
+            this.IsLiteral = isLiteral;
+        }
+
+        public static implicit operator AttributeValue( Tuple<Tuple<string, int>, Tuple<object, int>, bool> value )
+        {
+            return new AttributeValue( value.Item1, value.Item2, value.Item3 );
+        }
+
+        public static implicit operator AttributeValue( Tuple<Tuple<string, int>, Tuple<string, int>, bool> value )
+        {
+            return new AttributeValue(
+                value.Item1, new Tuple<object, int>( value.Item2.Item1, value.Item2.Item2 ), value.Item3 );
+        }
+    }
+
+    //Should handle all razor rendering functionality
+    public abstract class RenderingPage
+    {
+        public IHttpRequest Request { get; set; }
+
+        public IHttpResponse Response { get; set; }
+
+        public StreamWriter Output { get; set; }
+
+        public dynamic ViewBag = new ExpandoObject();
+
+
+        //overridden by the RazorEngine when razor generates code.
+        public abstract void Execute();
+
+        //No HTML encoding
+        public virtual void WriteLiteral( string str )
+        {
+            this.Output.Write( str );
+        }
+
+        //With HTML encoding
+        public virtual void Write( object obj )
+        {
+            this.Output.Write( HtmlEncode( obj ) );
+        }
+
+        //With HTML encoding
+        public virtual void WriteTo( TextWriter writer, HelperResult value )
+        {
+            if( value != null )
+            {
+                value.WriteTo( writer );
+            }
+        }
+
+        public virtual void WriteLiteralTo( TextWriter writer, HelperResult value )
+        {
+            if( value != null )
+            {
+                value.WriteTo( writer );
+            }
+        }
+        public void WriteLiteralTo( TextWriter writer, string literal )
+        {
+            if( literal == null )
+                return;
+
+            writer.Write( literal );
+        }
+
+        public virtual bool IsSectionDefined( string sectionName )
+        {
+            //return this.childSections.ContainsKey(sectionName);
+            return false;
+        }
+
+        public virtual void DefineSection( string sectionName, Action action )
+        {
+            //this.Sections.Add(sectionName, action);
+        }
+
+        private static string HtmlEncode( object value )
+        {
+            if( value == null )
+            {
+                return null;
+            }
+
+            var str = value as System.Web.IHtmlString;
+
+            return str != null ? str.ToHtmlString() : HttpUtility.HtmlEncode( Convert.ToString( value, CultureInfo.CurrentCulture ) );
+        }
+
+
+        public virtual void WriteAttribute( string name, Tuple<string, int> prefix, Tuple<string, int> suffix, params AttributeValue[] values )
+        {
+            var attributeValue = this.BuildAttribute( name, prefix, suffix, values );
+            this.WriteLiteral( attributeValue );
+        }
+
+        public virtual void WriteAttributeTo( TextWriter writer, string name, Tuple<string, int> prefix, Tuple<string, int> suffix, params AttributeValue[] values )
+        {
+            var attributeValue = this.BuildAttribute( name, prefix, suffix, values );
+            WriteLiteralTo( writer, attributeValue );
+        }
+
+        private string BuildAttribute( string name, Tuple<string, int> prefix, Tuple<string, int> suffix,
+                                      params AttributeValue[] values )
+        {
+            var writtenAttribute = false;
+            var attributeBuilder = new StringBuilder( prefix.Item1 );
+
+            foreach( var value in values )
+            {
+                if( this.ShouldWriteValue( value.Value.Item1 ) )
+                {
+                    var stringValue = this.GetStringValue( value );
+                    var valuePrefix = value.Prefix.Item1;
+
+                    if( !string.IsNullOrEmpty( valuePrefix ) )
+                    {
+                        attributeBuilder.Append( valuePrefix );
+                    }
+
+                    attributeBuilder.Append( stringValue );
+                    writtenAttribute = true;
+                }
+            }
+
+            attributeBuilder.Append( suffix.Item1 );
+
+            var renderAttribute = writtenAttribute || values.Length == 0;
+
+            if( renderAttribute )
+            {
+                return attributeBuilder.ToString();
+            }
+
+            return string.Empty;
+        }
+
+
+        private string GetStringValue( AttributeValue value )
+        {
+            if( value.IsLiteral )
+            {
+                return (string)value.Value.Item1;
+            }
+
+            if( value.Value.Item1 is IHtmlString )
+            {
+                return ( (IHtmlString)value.Value.Item1 ).ToHtmlString();
+            }
+
+            //if (value.Value.Item1 is DynamicDictionaryValue) {
+            //    var dynamicValue = (DynamicDictionaryValue)value.Value.Item1;
+            //    return dynamicValue.HasValue ? dynamicValue.Value.ToString() : string.Empty;
+            //}
+
+            return value.Value.Item1.ToString();
+        }
+        private bool ShouldWriteValue( object value )
+        {
+            if( value == null )
+            {
+                return false;
+            }
+
+            if( value is bool )
+            {
+                var boolValue = (bool)value;
+
+                return boolValue;
+            }
+
+            return true;
+        }
+
+    }
+
+    public interface IHasModel
+    {
+        Type ModelType { get; }
+
+        void SetModel( object o );
+    }
+
+    public abstract class ViewPageBase<TModel> : RenderingPage, IHasModel where TModel : class 
+    {
+        public TModel Model { get; set; }
+        public abstract Type ModelType { get; }
+        public void SetModel( object o )
+        {
+            this.Model = o as TModel;
+        }
+
+        public virtual void Init( ViewDataDictionary viewData, IHttpRequest httpReq, IHttpResponse httpRes )
+        {
+            
+        }
 
         public UrlHelper Url = new UrlHelper();
 
@@ -40,10 +251,6 @@ namespace ServiceStack.Razor2
         {
             return this.AppHost.TryResolve<T>();
         }
-
-        public IHttpRequest Request { get; set; }
-
-        public IHttpResponse Response { get; set; }
 
         public object ModelError { get; set; } 
 
@@ -157,8 +364,6 @@ namespace ServiceStack.Razor2
         
         public string Layout { get; set; }
 
-        public Dictionary<string, object> ScopeArgs { get; set; }
-
         public string Href(string url)
         {
             return Url.Content(url);
@@ -167,7 +372,7 @@ namespace ServiceStack.Razor2
         public void Prepend(string contents)
         {
             if (contents == null) return;
-            Builder.Insert(0, contents);
+            //Builder.Insert(0, contents);
         }
     }
 }
