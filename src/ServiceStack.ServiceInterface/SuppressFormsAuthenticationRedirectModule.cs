@@ -21,7 +21,8 @@ namespace ServiceStack.ServiceInterface
 
         public virtual void Init(HttpApplication context)
         {
-            PathToSupress = "/api";
+            if (string.IsNullOrEmpty(PathToSupress))
+                PathToSupress = "/api";
             context.PostReleaseRequestState += OnPostReleaseRequestState;
             context.EndRequest += OnEndRequest;  //not needed if .net 4.5 
         }
