@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.Contracts;
 using ServiceStack.Common;
 using ServiceStack.DataAnnotations;
 using ServiceStack.ServiceInterface;
@@ -55,13 +54,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 
 	public static class ObjectExtensions
 	{
-
 		public static string AsTypeString(this object request)
 		{
-			Contract.Requires<ArgumentNullException>(request != null);
-			Contract.Ensures(!Contract.Result<string>().IsNullOrEmpty());
+            if(request != null) throw new ArgumentNullException();
 
-			return request.GetType().ToTypeString() + "\n" + request.Dump();
+			var result = request.GetType().ToTypeString() + "\n" + request.Dump();
+            if (result.IsNullOrEmpty()) throw new ArgumentNullException();
+
+            return result;
 		}
 
 	}
