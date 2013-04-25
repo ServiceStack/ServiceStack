@@ -25,7 +25,7 @@ namespace ServiceStack.Razor2.Managers
         /// </summary>
         protected FileSystemWatcher FileSystemWatcher;
 
-        protected Dictionary<string, RazorPage> Pages = new Dictionary<string, RazorPage>( StringComparer.InvariantCultureIgnoreCase );
+        protected Dictionary<string, RazorPage> Pages = new Dictionary<string, RazorPage>(StringComparer.InvariantCultureIgnoreCase);
 
         protected ViewConfig Config { get; set; }
 
@@ -34,7 +34,7 @@ namespace ServiceStack.Razor2.Managers
 
         protected IVirtualPathProvider PathProvider = null;
 
-        public ViewManager( IAppHost appHost, ViewConfig viewConfig )
+        public ViewManager(IAppHost appHost, ViewConfig viewConfig)
         {
             this.AppHost = appHost;
             this.Config = viewConfig;
@@ -44,7 +44,7 @@ namespace ServiceStack.Razor2.Managers
             ScanForRazorPages();
 
             //setup the file system watcher for page invalidation
-            this.FileSystemWatcher = new FileSystemWatcher( this.AppHost.Config.WebHostPhysicalPath,  "*.*" )
+            this.FileSystemWatcher = new FileSystemWatcher(this.AppHost.Config.WebHostPhysicalPath, "*.*")
                 {
                     IncludeSubdirectories = true,
                     //NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.FileName | NotifyFilters.LastWrite
@@ -60,26 +60,26 @@ namespace ServiceStack.Razor2.Managers
 
         private void ScanForRazorPages()
         {
-            var pattern = Path.ChangeExtension( "*", this.Config.RazorFileExtension );
+            var pattern = Path.ChangeExtension("*", this.Config.RazorFileExtension);
 
-            var files = this.PathProvider.GetAllMatchingFiles( pattern )
-                            .Where( IsWatchedFile ); 
+            var files = this.PathProvider.GetAllMatchingFiles(pattern)
+                            .Where(IsWatchedFile);
             // you can override IsWatchedFile to filter
 
-            files.ForEach( TrackRazorPage );
+            files.ForEach(TrackRazorPage);
         }
 
-        protected virtual void TrackRazorPage( IVirtualFile file )
+        protected virtual void TrackRazorPage(IVirtualFile file)
         {
             //get the base type.
             var pageBaseType = this.Config.PageBaseType;
 
-            var transformer = new RazorViewPageTransformer( pageBaseType );
+            var transformer = new RazorViewPageTransformer(pageBaseType);
 
             //create a RazorPage
             var page = new RazorPage
                 {
-                    PageHost = new RazorPageHost( PathProvider, file, transformer, new CSharpCodeProvider(), new Dictionary<string, string>() ),
+                    PageHost = new RazorPageHost(PathProvider, file, transformer, new CSharpCodeProvider(), new Dictionary<string, string>()),
                     IsValid = false,
                     File = file
                 };
@@ -88,102 +88,102 @@ namespace ServiceStack.Razor2.Managers
             AddRazorPage(page);
         }
 
-        protected virtual void AddRazorPage( RazorPage page )
+        protected virtual void AddRazorPage(RazorPage page)
         {
-            var pagePath = GetDictionaryPagePath( page.PageHost.File );
+            var pagePath = GetDictionaryPagePath(page.PageHost.File);
 
-            this.Pages.Add( pagePath, page );
+            this.Pages.Add(pagePath, page);
         }
 
-        public virtual RazorPage GetRazorView( string path )
+        public virtual RazorPage GetRazorView(string path)
         {
             RazorPage page;
-            this.Pages.TryGetValue( path, out page );
+            this.Pages.TryGetValue(path, out page);
             return page;
         }
 
-        protected virtual bool IsWatchedFile( IVirtualFile file )
+        protected virtual bool IsWatchedFile(IVirtualFile file)
         {
-            return this.Config.RazorFileExtension.EndsWith( file.Extension, StringComparison.InvariantCultureIgnoreCase );
+            return this.Config.RazorFileExtension.EndsWith(file.Extension, StringComparison.InvariantCultureIgnoreCase);
         }
 
 
-        protected virtual string GetDictionaryPagePath( string relativePath )
+        protected virtual string GetDictionaryPagePath(string relativePath)
         {
-            if ( relativePath.ToLowerInvariant().StartsWith( "/views/" ) )
+            if (relativePath.ToLowerInvariant().StartsWith("/views/"))
             {
                 //re-write the /views path
                 //so we can uniquely get views by
                 //ResponseDTO/RequestDTO type.
                 //PageResolver:NormalizePath()
                 //knows how to resolve DTO views.
-                return "/views/" + Path.GetFileName( relativePath );
+                return "/views/" + Path.GetFileName(relativePath);
             }
             return relativePath;
         }
-        protected virtual string GetDictionaryPagePath( IVirtualFile file )
+        protected virtual string GetDictionaryPagePath(IVirtualFile file)
         {
-            return GetDictionaryPagePath( file.VirtualPath );
+            return GetDictionaryPagePath(file.VirtualPath);
         }
 
         #region FileSystemWatcher Handlers
 
-        protected virtual string GetRelativePath( string ospath )
+        protected virtual string GetRelativePath(string ospath)
         {
             var relative = ospath
-                .Replace( this.AppHost.Config.WebHostPhysicalPath, "" )
-                .Replace( this.PathProvider.RealPathSeparator, "/" );
+                .Replace(this.AppHost.Config.WebHostPhysicalPath, "")
+                .Replace(this.PathProvider.RealPathSeparator, "/");
             return relative;
         }
         protected virtual IVirtualFile GetVirutalFile(string ospath)
         {
-            var relative = GetRelativePath( ospath );
-            return this.PathProvider.GetFile( relative );
+            var relative = GetRelativePath(ospath);
+            return this.PathProvider.GetFile(relative);
         }
 
 
-        protected virtual void FileSystemWatcher_Renamed( object sender, RenamedEventArgs e )
+        protected virtual void FileSystemWatcher_Renamed(object sender, RenamedEventArgs e)
         {
-            var oldPagePath = this.GetDictionaryPagePath( this.GetRelativePath( e.OldFullPath ) );
+            var oldPagePath = this.GetDictionaryPagePath(this.GetRelativePath(e.OldFullPath));
 
-            if ( !this.Pages.Remove( oldPagePath ) )
+            if (!this.Pages.Remove(oldPagePath))
             {
                 Debugger.Break();
             }
 
-            var newFile = this.GetVirutalFile( e.FullPath );
-            if ( !IsWatchedFile( newFile ) ) return;
+            var newFile = this.GetVirutalFile(e.FullPath);
+            if (!IsWatchedFile(newFile)) return;
 
-            this.TrackRazorPage( newFile );
+            this.TrackRazorPage(newFile);
         }
 
-        protected virtual void FileSystemWatcher_Deleted( object sender, FileSystemEventArgs e )
+        protected virtual void FileSystemWatcher_Deleted(object sender, FileSystemEventArgs e)
         {
-            var file = this.GetVirutalFile( e.FullPath );
-            if( !IsWatchedFile( file ) ) return;
+            var file = this.GetVirutalFile(e.FullPath);
+            if (!IsWatchedFile(file)) return;
 
-            var pathPage = GetDictionaryPagePath( file );
+            var pathPage = GetDictionaryPagePath(file);
 
-            this.Pages.Remove( pathPage );
+            this.Pages.Remove(pathPage);
         }
 
-        protected virtual void FileSystemWatcher_Created( object sender, FileSystemEventArgs e )
+        protected virtual void FileSystemWatcher_Created(object sender, FileSystemEventArgs e)
         {
-            var file = this.GetVirutalFile( e.FullPath );
-            if( !IsWatchedFile( file ) ) return;
+            var file = this.GetVirutalFile(e.FullPath);
+            if (!IsWatchedFile(file)) return;
 
-            this.TrackRazorPage( file );
+            this.TrackRazorPage(file);
         }
 
-        protected virtual void FileSystemWatcher_Changed( object sender, FileSystemEventArgs e )
+        protected virtual void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
         {
-            var file = this.GetVirutalFile( e.FullPath );
-            if( !IsWatchedFile( file ) ) return;
+            var file = this.GetVirutalFile(e.FullPath);
+            if (!IsWatchedFile(file)) return;
 
-            var pagePath = GetDictionaryPagePath( file );
+            var pagePath = GetDictionaryPagePath(file);
 
             RazorPage page;
-            if ( this.Pages.TryGetValue( pagePath, out page ) && page.IsValid )
+            if (this.Pages.TryGetValue(pagePath, out page) && page.IsValid)
             {
                 page.IsValid = false;
             }
@@ -204,7 +204,7 @@ namespace ServiceStack.Razor2.Managers
 
         protected virtual void ReadBasePageTypeFromConfig()
         {
-            
+
         }
 
         public virtual string RazorFileExtension { get; set; }

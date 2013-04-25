@@ -85,6 +85,7 @@
     <Compile Include="RazorFormat.cs" />
     <Compile Include="Managers\RazorPage.cs" />
     <Compile Include="Managers\ViewManager.cs" />
+    <Compile Include="RazorHandler.cs" />
     <Compile Include="ViewPage.cs" />
     <Compile Include="ViewPageBase.cs" />
     <Compile Include="ViewPageOfTModel.cs" />

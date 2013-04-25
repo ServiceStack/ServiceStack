@@ -146,7 +146,7 @@ namespace ServiceStack.RazorHostTests
         {
             Plugins.Add( new RazorFormat()
                 {
-                    TemplateProvider = {CompileInParallelWithNoOfThreads = 0}
+                    //TemplateProvider = {CompileInParallelWithNoOfThreads = 0}
                 } );
 
             container.Register(new DataSource());
