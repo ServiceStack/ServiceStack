@@ -16,7 +16,7 @@ using HttpResponseWrapper = ServiceStack.WebHost.Endpoints.Extensions.HttpRespon
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
-    public class SoapHandler : EndpointHandlerBase, IOneWay, ISyncReply
+    public abstract class SoapHandler : EndpointHandlerBase, IOneWay, ISyncReply
     {
         public SoapHandler(EndpointAttributes soapType)
         {
@@ -35,11 +35,15 @@ namespace ServiceStack.WebHost.Endpoints.Support
             ExecuteMessage(requestMsg, endpointAttributes, httpRequest, httpResponse);
         }
 
+        protected abstract Message GetRequestMessageFromStream(Stream requestStream);
+
         public Message Send(Message requestMsg)
         {
-            return Send(requestMsg, null, null);
-        }
+            var endpointAttributes = EndpointAttributes.Reply | this.HandlerAttributes;
 
+            return ExecuteMessage(requestMsg, endpointAttributes, null, null);
+        }
+        
         protected Message Send(Message requestMsg, IHttpRequest httpRequest, IHttpResponse httpResponse)
         {
             var endpointAttributes = EndpointAttributes.Reply | this.HandlerAttributes;
@@ -57,19 +61,25 @@ namespace ServiceStack.WebHost.Endpoints.Support
                 : Message.CreateMessage(requestMsg.Version, requestType.Name + "Response", response);
         }
 
-        protected Message ExecuteMessage(Message requestMsg, EndpointAttributes endpointAttributes, IHttpRequest httpRequest, IHttpResponse httpResponse)
+        protected Message ExecuteMessage(Message message, EndpointAttributes endpointAttributes, IHttpRequest httpRequest, IHttpResponse httpResponse)
         {
-            var soapFeatue = endpointAttributes.ToSoapFeature();
-            EndpointHost.Config.AssertFeatures(soapFeatue);
+            var soapFeature = endpointAttributes.ToSoapFeature();
+            EndpointHost.Config.AssertFeatures(soapFeature);
 
-            string requestXml;
-            using (var reader = requestMsg.GetReaderAtBodyContents())
-            {
-                requestXml = reader.ReadOuterXml();
-            }
+            var preHttpReq = HttpContext.Current != null
+                    ? new HttpRequestWrapper(HttpContext.Current.Request)
+                    : httpRequest;
+            var httpRes = HttpContext.Current != null
+                ? new HttpResponseWrapper(HttpContext.Current.Response)
+                : httpResponse;
 
+            if (EndpointHost.ApplyPreRequestFilters(preHttpReq, httpRes))
+                return PrepareEmptyResponse(message, preHttpReq);
+
+            var requestMsg = message ?? GetRequestMessageFromStream(preHttpReq.InputStream);
+            string requestXml = GetRequestXml(requestMsg);
             var requestType = GetRequestType(requestMsg, requestXml);
-            if (!EndpointHost.Metadata.CanAccess(endpointAttributes, soapFeatue.ToFormat(), requestType.Name))
+            if (!EndpointHost.Metadata.CanAccess(endpointAttributes, soapFeature.ToFormat(), requestType.Name))
                 throw EndpointHost.Config.UnauthorizedAccess(endpointAttributes);
 
             try
@@ -84,12 +94,6 @@ namespace ServiceStack.WebHost.Endpoints.Support
                 var httpReq = HttpContext.Current != null
                     ? new HttpRequestWrapper(requestType.Name, HttpContext.Current.Request)
                     : httpRequest;
-                var httpRes = HttpContext.Current != null
-                    ? new HttpResponseWrapper(HttpContext.Current.Response)
-                    : httpResponse;
-
-                if (EndpointHost.ApplyPreRequestFilters(httpReq, httpRes))
-                    return EmptyResponse(requestMsg, requestType);
 
                 var hasRequestFilters = EndpointHost.RequestFilters.Count > 0
                     || FilterAttributeCache.GetRequestFilterAttributes(request.GetType()).Any();
@@ -119,6 +123,24 @@ namespace ServiceStack.WebHost.Endpoints.Support
                     + requestType
                     + ", xml body: " + requestXml, ex);
             }
+        }
+
+        private Message PrepareEmptyResponse(Message message, IHttpRequest httpRequest)
+        {
+            var requestMessage = message ?? GetRequestMessageFromStream(httpRequest.InputStream);
+            string requestXml = GetRequestXml(requestMessage);
+            var requestType = GetRequestType(requestMessage, requestXml);
+            return EmptyResponse(requestMessage, requestType);
+        }
+
+        private static string GetRequestXml(Message requestMsg)
+        {
+            string requestXml;
+            using (var reader = requestMsg.GetReaderAtBodyContents())
+            {
+                requestXml = reader.ReadOuterXml();
+            }
+            return requestXml;
         }
 
         protected static Message GetSoap12RequestMessage(Stream inputStream)
