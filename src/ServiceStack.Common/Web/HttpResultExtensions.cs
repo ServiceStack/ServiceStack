@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Net;
-using System.Web;
 using ServiceStack.Text;
 using ServiceStack.Common.Utils;
 using ServiceStack.ServiceHost;
@@ -116,7 +115,7 @@ namespace ServiceStack.Common.Web
             response.StatusCode = (int)HttpStatusCode.PartialContent;
             response.SetContentLength(rangeEnd - rangeStart + 1);
         }
-
+        
         /// <summary>
         /// Writes partial range as specified by start-end, from fromStream to toStream.
         /// </summary>
@@ -145,7 +144,7 @@ namespace ServiceStack.Common.Web
                     toStream.Flush();
                     bytesRemaining -= count;
                 }
-                catch (HttpException httpException)
+                catch (Exception httpException)
                 {
                     /* in Asp.Net we can call HttpResponseBase.IsClientConnected
                         * to see if the client broke off the connection
