@@ -94,6 +94,9 @@ namespace ServiceStack.Common.Web
                     return "video/mpeg";
 
                 case "avi":
+                case "mp4":
+                case "ogg":
+                case "webm":
                     return "video/" + fileExt;
 
                 case "rtf":
