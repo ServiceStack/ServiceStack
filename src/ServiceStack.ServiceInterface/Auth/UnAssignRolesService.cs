@@ -7,7 +7,7 @@ using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
-    public class UnAssignRoles
+    public class UnAssignRoles : IReturn<UnAssignRolesResponse>
     {
         public UnAssignRoles()
         {
