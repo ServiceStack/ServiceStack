@@ -297,7 +297,7 @@ namespace ServiceStack.Authentication.OpenId
                 if (response.Culture != null)
                     map["Culture"] = response.Culture.TwoLetterISOLanguageName;
             }
-            catch (System.Globalization.CultureNotFoundException ex)
+            catch (Exception ex) //CultureNotFoundException (.NET 4.5)
             {
                 map["Culture"] = "en";
             }
