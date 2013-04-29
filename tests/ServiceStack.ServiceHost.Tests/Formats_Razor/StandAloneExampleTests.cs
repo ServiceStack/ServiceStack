@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using NUnit.Framework;
-using ServiceStack.Razor2;
+﻿using NUnit.Framework;
+using ServiceStack.Razor;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;
@@ -20,9 +16,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
             {
                 //DefaultBaseType = typeof(CustomRazorBasePage<>), //Change custom base ViewPage
                 VirtualPathProvider = new InMemoryVirtualPathProvider(new BasicAppHost()),
-                TemplateProvider = { CompileInParallelWithNoOfThreads = 0 },                
             };
-            razor.Init();
 
             razor.AddPage("Hello @Model.Name! Welcome to Razor!");
             var html = razor.RenderToHtml(new { Name = "World" });

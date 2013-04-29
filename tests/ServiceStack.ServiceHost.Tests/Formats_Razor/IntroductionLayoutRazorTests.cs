@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
 using ServiceStack.Html;
-using ServiceStack.Razor2;
-using ServiceStack.Razor2.Templating;
+using ServiceStack.Razor;
 using ServiceStack.ServiceHost.Tests.Formats;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.VirtualPath;
@@ -48,9 +47,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		{
             base.RazorFormat = new RazorFormat {
                 VirtualPathProvider = new InMemoryVirtualPathProvider(new BasicAppHost()),
-                TemplateProvider = { CompileInParallelWithNoOfThreads = 0 },
             };
-            base.RazorFormat.Init();
         }
 
 		[Test]
@@ -311,7 +308,7 @@ current date/year: 2013</p>
 				new Product("DVD", 11.99m),
 			};
 
-            RazorFormat.TemplateService.TemplateBaseType = typeof(CustomViewBase<>);
+            RazorFormat.PageBaseType = typeof(CustomViewBase<>);
 
 			var html = RenderToHtml(pageTemplate, products);
 
@@ -338,7 +335,7 @@ current date/year: 2013</p>
 
 </fieldset>".NormalizeNewLines();
 
-			RazorFormat.DefaultBaseType = typeof(CustomBaseClass<>);
+			RazorFormat.PageBaseType = typeof(CustomBaseClass<>);
 
 			var html = RenderToHtml(pageTemplate, new Product("Pen", 1.99m));
 

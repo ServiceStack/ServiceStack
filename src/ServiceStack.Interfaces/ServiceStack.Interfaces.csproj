@@ -226,6 +226,7 @@
     <Compile Include="DataAnnotations\IndexAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="DataAnnotations\MetaAttribute.cs" />
     <Compile Include="DataAnnotations\ReferencesAttribute.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using ServiceStack.Common.Utils;
-using ServiceStack.Razor2;
+using ServiceStack.Razor;
 using ServiceStack.ServiceHost.Tests.Formats;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 {
@@ -47,11 +45,10 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         public void SetUp()
         {
             RazorFormat = new RazorFormat {
-                DefaultBaseType = typeof(CustomRazorBasePage<>),
+                PageBaseType = typeof(CustomRazorBasePage<>),
                 VirtualPathProvider = new InMemoryVirtualPathProvider(new BasicAppHost()),
-                TemplateProvider = { CompileInParallelWithNoOfThreads = 0 },
             };
-            RazorFormat.Init();            
+            //RazorFormat.Init();            
         }
 
 		[Test]

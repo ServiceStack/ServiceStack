@@ -100,6 +100,7 @@
     <Content Include="Pages\Dir\_Layout.cshtml" />
     <None Include="Pages\MPage1.md" />
     <Content Include="Pages\Page1.cshtml" />
+    <Content Include="Pages\Hrefs.cshtml" />
     <None Include="Pages\_Layout.shtml" />
     <None Include="Pages\Dir\_Layout.shtml" />
     <Content Include="Views\Shared\HtmlReport.cshtml" />
@@ -108,6 +109,7 @@
     <Content Include="Views\ViewState.cshtml" />
     <Content Include="Views\_RawUrlPartial.cshtml" />
     <Content Include="Views\Shared\_ViewStateLayout.cshtml" />
+    <Content Include="Views\Nested\Views\NestedRazorPartial.cshtml" />
     <None Include="Views\Shared\MarkdownPartial.md" />
     <Content Include="Views\Shared\RazorPartial.cshtml" />
     <Content Include="Views\Shared\RazorPartialModel.cshtml" />
@@ -153,9 +155,9 @@
       <Project>{6B751A07-75D4-4A9D-B3A0-EEA27808E64C}</Project>
       <Name>ServiceStack.Plugins.MsgPack</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Razor2\ServiceStack.Razor2.csproj">
+    <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj">
       <Project>{d73274ae-006b-4cee-ba60-0ecf5873048d}</Project>
-      <Name>ServiceStack.Razor2</Name>
+      <Name>ServiceStack.Razor</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
       <Project>{5a315f92-80d2-4c60-a5a4-22e027ac7e7e}</Project>

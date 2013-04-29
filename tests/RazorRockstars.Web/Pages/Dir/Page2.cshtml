@@ -1,6 +1,5 @@
-﻿@inherits ViewPage
-
-﻿@{
+﻿@using ServiceStack.Razor
+@{
     ViewBag.Title = "Page2";
     int age = 0;
     var hasAge = Request.QueryString["Age"] != null && int.TryParse(Model.Age, out age);

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Web;
@@ -53,6 +54,7 @@ namespace ServiceStack.Html
 
         public IHttpRequest HttpRequest { get; set; }
         public IHttpResponse HttpResponse { get; set; }
+        public StreamWriter Writer { get; set; }
         public IViewEngine ViewEngine { get; set; }
 
 	    public MarkdownPage MarkdownPage { get; protected set; }
@@ -67,6 +69,17 @@ namespace ServiceStack.Html
             HttpResponse = htmlHelper.HttpResponse;
             ScopeArgs = htmlHelper.ScopeArgs;
             viewData = htmlHelper.ViewData;
+        }
+
+        public void Init(IViewEngine viewEngine, IHttpRequest httpReq, IHttpResponse httpRes, StreamWriter writer, 
+            Dictionary<string, object> scopeArgs = null, ViewDataDictionary viewData = null)
+        {
+            ViewEngine = viewEngine;
+            HttpRequest = httpReq;
+            HttpResponse = httpRes;
+            Writer = writer;
+            //ScopeArgs = scopeArgs;
+            //this.viewData = viewData;
         }
 
 	    private static int counter = 0;
@@ -109,7 +122,7 @@ namespace ServiceStack.Html
             try
             {
                 this.viewData = new ViewDataDictionary(model);
-                var result = ViewEngine.RenderPartial(viewName, model, this.RenderHtml, this);
+                var result = ViewEngine.RenderPartial(viewName, model, this.RenderHtml, Writer, this);
                 return MvcHtmlString.Create(result);
             }
             finally

@@ -138,7 +138,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
                 {
                     if (pathInfo.EndsWith(".md"))
                     {
-                        pathInfo = pathInfo.EndsWith(DefaultPage + ".md", StringComparison.InvariantCultureIgnoreCase)
+                        pathInfo = pathInfo.EndsWithIgnoreCase(DefaultPage + ".md")
                             ? pathInfo.Substring(0, pathInfo.Length - (DefaultPage + ".md").Length)
                             : pathInfo.WithoutExtension();
 
@@ -199,10 +199,17 @@ namespace ServiceStack.WebHost.Endpoints.Formats
             return GetViewPage(viewName, httpReq) != null;
         }
 
-        public string RenderPartial(string pageName, object model, bool renderHtml, HtmlHelper htmlHelper = null)
+        public string RenderPartial(string pageName, object model, bool renderHtml, StreamWriter writer, HtmlHelper htmlHelper = null)
         {
             var markdownPage = ReloadIfNeeded(GetViewPage(pageName, htmlHelper.GetHttpRequest()));
-            return RenderDynamicPage(markdownPage, pageName, model, renderHtml, false);
+            var output = RenderDynamicPage(markdownPage, pageName, model, renderHtml, false);
+            
+            if (writer != null)
+            {
+                writer.Write(output);
+                return null;
+            }
+            return output;
         }
 
         public MarkdownPage GetViewPage(string viewName, IHttpRequest httpReq)

@@ -1,12 +1,12 @@
 using System.Collections.Generic;
-using ServiceStack.Razor2;
+using ServiceStack.Razor;
 using ServiceStack.VirtualPath;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 {
     public static class MarkdownFormatExtensions
     {
-        public static void AddFileAndView(this RazorFormat razorFormat, ViewPageRef viewPage)
+        public static void AddFileAndView(this RazorFormat razorFormat, ViewPage viewPage)
         {
             var pathProvider = (InMemoryVirtualPathProvider)razorFormat.VirtualPathProvider;
             pathProvider.AddFile(viewPage.FilePath, viewPage.Contents);

@@ -58,11 +58,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Authentication
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Api.Swagger", "ServiceStack.Api.Swagger\ServiceStack.Api.Swagger.csproj", "{01D3F057-7984-498F-8B0A-EB375701E204}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Razor2", "ServiceStack.Razor2\ServiceStack.Razor2.csproj", "{D73274AE-006B-4CEE-BA60-0ECF5873048D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Razor", "ServiceStack.Razor\ServiceStack.Razor.csproj", "{D73274AE-006B-4CEE-BA60-0ECF5873048D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Mvc.Tests", "..\tests\ServiceStack.Mvc.Tests\ServiceStack.Mvc.Tests.csproj", "{F89B1845-5B1E-4EF2-873F-5FFDBF56E365}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Razor2.Tests", "..\tests\ServiceStack.Razor2.Tests\ServiceStack.Razor2.Tests.csproj", "{7F42298E-7DEA-458B-B7BC-057A7229A7CF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Razor.Tests", "..\tests\ServiceStack.Razor.Tests\ServiceStack.Razor.Tests.csproj", "{7F42298E-7DEA-458B-B7BC-057A7229A7CF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
