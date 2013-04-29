@@ -131,22 +131,28 @@ namespace ServiceStack.Razor.Managers
             
             using (var writer = new StreamWriter(httpRes.OutputStream, UTF8EncodingWithoutBom))
             {
-                var page = CreateRazorPageInstance(httpReq, httpRes, dto, razorView, writer);
-                var layoutAttr = page.GetType().GetCustomAttributes(typeof(MetaAttribute), true)
-                    .Cast<MetaAttribute>()
-                    .FirstOrDefault(x => x.Name == "Layout");
-
-                var layout = httpReq.GetItem("Template") as string
-                    ?? (layoutAttr != null ? layoutAttr.Value : null) 
-                    ?? DefaultLayoutName;
+                var page = CreateRazorPageInstance(httpReq, httpRes, dto, razorView);
 
                 var includeLayout = !(httpReq.GetParam("format") ?? "").Contains("bare");
                 if (includeLayout)
                 {
-                    var layoutView = this.viewManager.GetRazorViewByName(layout, httpReq, dto);
-                    var layoutPage = CreateRazorPageInstance(httpReq, httpRes, dto, layoutView, writer);
-                    layoutPage.ChildPage = page;
-                    layoutPage.WriteTo(writer);
+                    using (var ms = new MemoryStream())
+                    using (var childWriter = new StreamWriter(ms, UTF8EncodingWithoutBom))
+                    {
+                        //child page needs to execute before master template to populate ViewBags, sections, etc
+                        page.WriteTo(childWriter);
+
+                        var layout = httpReq.GetItem("Template") as string
+                            ?? page.Layout
+                            ?? DefaultLayoutName;
+
+                        var layoutView = this.viewManager.GetRazorViewByName(layout, httpReq, dto);
+                        var layoutPage = CreateRazorPageInstance(httpReq, httpRes, dto, layoutView);
+
+                        var childBody = ms.ToArray().FromUtf8Bytes();
+                        layoutPage.SetChildPage(page, childBody);
+                        layoutPage.WriteTo(writer);
+                    }
                 }
                 else
                 {
@@ -157,7 +163,7 @@ namespace ServiceStack.Razor.Managers
 
         private IRazorViewPage ExecuteRazorPage(IHttpRequest request, IHttpResponse response, object dto, RazorPage razorPage, StreamWriter writer)
         {
-            var page = CreateRazorPageInstance(request, response, dto, razorPage, writer);
+            var page = CreateRazorPageInstance(request, response, dto, razorPage);
 
             //execute the page.
             page.WriteTo(writer);
@@ -165,7 +171,7 @@ namespace ServiceStack.Razor.Managers
             return page;
         }
 
-        private IRazorViewPage CreateRazorPageInstance(IHttpRequest request, IHttpResponse response, object dto, RazorPage razorPage, StreamWriter writer)
+        private IRazorViewPage CreateRazorPageInstance(IHttpRequest request, IHttpResponse response, object dto, RazorPage razorPage)
         {
             buildManager.EnsureCompiled(razorPage, response);
 
@@ -178,7 +184,7 @@ namespace ServiceStack.Razor.Managers
             //else, EnsureCompiled() ensures we have a page type to work with so, create an instance of the page
             var page = (IRazorViewPage) razorPage.ActivateInstance();
 
-            page.Init(viewEngine: this, httpReq: request, httpRes: response, writer: writer);
+            page.Init(viewEngine: this, httpReq: request, httpRes: response);
 
             //deserialize the model.
             PrepareAndSetModel(page, request, dto);
@@ -214,13 +220,15 @@ namespace ServiceStack.Razor.Managers
             throw new NotImplementedException();
         }
 
-        public virtual string RenderPartial(string pageName, object model, bool renderHtml, StreamWriter writer, HtmlHelper htmlHelper = null)
+        public virtual string RenderPartial(string pageName, object model, bool renderHtml, StreamWriter writer, HtmlHelper htmlHelper)
         {
             var httpReq = htmlHelper.HttpRequest;
             var razorPage = this.viewManager.GetRazorViewByName(pageName, httpReq, model);
             if (razorPage != null)
             {
-                ExecuteRazorPage(httpReq, htmlHelper.HttpResponse, model, razorPage, writer);
+                var page = CreateRazorPageInstance(httpReq, htmlHelper.HttpResponse, model, razorPage);
+                page.ParentPage = htmlHelper.RazorPage;
+                page.WriteTo(writer);
             }
             else
             {
@@ -228,6 +236,7 @@ namespace ServiceStack.Razor.Managers
                 {
                     if (viewEngine == this || !viewEngine.HasView(pageName, httpReq)) continue;
                     viewEngine.RenderPartial(pageName, model, renderHtml, writer, htmlHelper);
+                    return null;
                 }
                 writer.Write("<!--{0} not found-->".Fmt(pageName));
             }

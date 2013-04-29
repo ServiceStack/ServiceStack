@@ -22,7 +22,7 @@ namespace ServiceStack.Razor
         }
     }
 
-    public class DynamicDictionary : System.Dynamic.DynamicObject
+    public class DynamicDictionary : System.Dynamic.DynamicObject, IViewBag
     {
         readonly Dictionary<string, object> dictionary = new Dictionary<string, object>();
         private RenderingPage page;
@@ -48,11 +48,18 @@ namespace ServiceStack.Razor
             var name = binder.Name.ToLower();
             if (!dictionary.TryGetValue(name, out result))
             {
-                if (page != null && page.ChildPage != null)
+                if (page != null)
                 {
-                    var childViewBag = (DynamicDictionary) page.ChildPage.ViewBag;
-                    childViewBag.TryGetItem(name, out result);
+                    if (page.ChildPage != null)
+                    {
+                        page.ChildPage.TypedViewBag.TryGetItem(name, out result);
+                    }
+                    else if (page.ParentPage != null)
+                    {
+                        page.ParentPage.TypedViewBag.TryGetItem(name, out result);
+                    }
                 }
+
             }
 
             return true;
@@ -60,7 +67,11 @@ namespace ServiceStack.Razor
 
         public bool TryGetItem(string name, out object result)
         {
-            return this.dictionary.TryGetValue(name, out result);
+            if (this.dictionary.TryGetValue(name, out result))
+                return true;
+ 
+            return page.ChildPage != null 
+                && page.ChildPage.TypedViewBag.TryGetItem(name, out result);
         }
 
         public override bool TrySetMember(System.Dynamic.SetMemberBinder binder, object value)

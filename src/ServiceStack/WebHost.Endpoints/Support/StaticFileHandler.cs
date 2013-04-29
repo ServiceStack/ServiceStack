@@ -160,12 +160,12 @@ namespace ServiceStack.WebHost.Endpoints.Support
                     {
                         rangeHeader.ExtractHttpRanges(contentLength, out rangeStart, out rangeEnd);
                         r.AddHttpRangeResponseHeaders(rangeStart: rangeStart, rangeEnd: rangeEnd, contentLength: contentLength);
+                        r.SetContentLength(contentLength); //throws with ASP.NET webdev server non-IIS pipelined mode
                     }
                     else
                     {
                         rangeStart = 0;
                         rangeEnd = contentLength - 1;
-                        r.SetContentLength(contentLength);
                     }
                     var outputStream = r.OutputStream;
                     using (var fs = fi.OpenRead())

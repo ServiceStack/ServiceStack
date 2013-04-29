@@ -64,7 +64,14 @@ namespace ServiceStack.Razor
 
         public dynamic ViewBag { get; set; }
 
+        public IViewBag TypedViewBag
+        {
+            get { return (IViewBag)ViewBag; }
+        }
+
+        public IRazorViewPage ParentPage { get; set; }
         public IRazorViewPage ChildPage { get; set; }
+        public string ChildBody { get; set; }
 
         public Dictionary<string, Action> childSections = new Dictionary<string, Action>();
 
@@ -111,16 +118,6 @@ namespace ServiceStack.Razor
                 return;
 
             writer.Write(literal);
-        }
-
-        public virtual bool IsSectionDefined(string sectionName)
-        {
-            return this.childSections.ContainsKey(sectionName);
-        }
-
-        public virtual void DefineSection(string sectionName, Action action)
-        {
-            this.childSections.Add(sectionName, action);
         }
 
         private static string HtmlEncode(object value)
@@ -219,14 +216,30 @@ namespace ServiceStack.Razor
             return true;
         }
 
+        public void SetChildPage(IRazorViewPage childPage, string childBody)
+        {
+            this.ChildPage = childPage;
+            this.ChildBody = childBody;
+        }
+
         public object RenderBody()
         {
-            if (ChildPage != null)
+            if (ChildBody != null)
             {
-                ChildPage.WriteTo(this.Output);
+                Output.Write(ChildBody);
             }
 
             return null;
+        }
+
+        public virtual bool IsSectionDefined(string sectionName)
+        {
+            return this.childSections.ContainsKey(sectionName);
+        }
+
+        public virtual void DefineSection(string sectionName, Action action)
+        {
+            this.childSections.Add(sectionName, action);
         }
 
         public object RenderSection(string sectionName)
@@ -236,7 +249,29 @@ namespace ServiceStack.Razor
             {
                 section();
             }
+            else if (this.ChildPage != null)
+            {
+                this.ChildPage.RenderSection(sectionName, Output);
+            }
             return null;
+        }
+        
+        public void RenderSection(string sectionName, StreamWriter writer)
+        {
+            Action section;
+            if (childSections.TryGetValue(sectionName, out section))
+            {
+                var hold = Output;
+                try
+                {
+                    Output = writer;
+                    section();
+                }
+                finally
+                {
+                    Output = hold;
+                }
+            }
         }
     }
 

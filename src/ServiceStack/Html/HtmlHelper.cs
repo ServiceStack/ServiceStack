@@ -57,7 +57,8 @@ namespace ServiceStack.Html
         public StreamWriter Writer { get; set; }
         public IViewEngine ViewEngine { get; set; }
 
-	    public MarkdownPage MarkdownPage { get; protected set; }
+        public IRazorViewPage RazorPage { get; protected set; }
+        public MarkdownPage MarkdownPage { get; protected set; }
 		public Dictionary<string, object> ScopeArgs { get; protected set; }
 	    private ViewDataDictionary viewData;
 
@@ -71,13 +72,13 @@ namespace ServiceStack.Html
             viewData = htmlHelper.ViewData;
         }
 
-        public void Init(IViewEngine viewEngine, IHttpRequest httpReq, IHttpResponse httpRes, StreamWriter writer, 
+        public void Init(IViewEngine viewEngine, IHttpRequest httpReq, IHttpResponse httpRes, IRazorViewPage razorPage, 
             Dictionary<string, object> scopeArgs = null, ViewDataDictionary viewData = null)
         {
             ViewEngine = viewEngine;
             HttpRequest = httpReq;
             HttpResponse = httpRes;
-            Writer = writer;
+            RazorPage = razorPage;
             //ScopeArgs = scopeArgs;
             //this.viewData = viewData;
         }

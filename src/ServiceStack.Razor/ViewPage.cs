@@ -5,16 +5,6 @@ using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Razor
 {
-    //[References(typeof(RenderingPage))]
-    public interface IRazorViewPage
-    {
-        dynamic ViewBag { get; }
-        string Layout { get; set; }
-        IRazorViewPage ChildPage { get; set; }
-        void Init(IViewEngine viewEngine, IHttpRequest httpReq, IHttpResponse httpRes, StreamWriter writer);
-        void WriteTo(StreamWriter writer);
-    }
-
     public abstract class ViewPage : ViewPageBase<dynamic>, IRazorViewPage
 	{
 		public HtmlHelper Html = new HtmlHelper();
@@ -44,19 +34,18 @@ namespace ServiceStack.Razor
         //    this.Model = new DynamicRequestObject(httpReq);
         //}
 
-        public void Init(IViewEngine viewEngine, IHttpRequest httpReq, IHttpResponse httpRes, StreamWriter writer)
+        public void Init(IViewEngine viewEngine, IHttpRequest httpReq, IHttpResponse httpRes)
         {
             base.Request = httpReq;
             base.Response = httpRes;
 
-            Html.Init(viewEngine: viewEngine, httpReq: httpReq, httpRes: httpRes, writer: writer);
+            Html.Init(viewEngine: viewEngine, httpReq: httpReq, httpRes: httpRes, razorPage:this);
         }
 
         public void WriteTo(StreamWriter writer)
         {
-            this.Output = writer;
+            this.Output = Html.Writer = writer;
             this.Execute();
-            this.Output.Flush();
         }
 	}
 
@@ -69,19 +58,18 @@ namespace ServiceStack.Razor
             get { return Html; }
         }
 
-        public void Init(IViewEngine viewEngine, IHttpRequest httpReq, IHttpResponse httpRes, StreamWriter writer)
+        public void Init(IViewEngine viewEngine, IHttpRequest httpReq, IHttpResponse httpRes)
         {
             base.Request = httpReq;
             base.Response = httpRes;
 
-            Html.Init(viewEngine: viewEngine, httpReq: httpReq, httpRes: httpRes, writer: writer);
+            Html.Init(viewEngine: viewEngine, httpReq: httpReq, httpRes: httpRes, razorPage: this);
         }
 
         public void WriteTo(StreamWriter writer)
         {
-            this.Output = writer;
+            this.Output = Html.Writer = writer;
             this.Execute();
-            //this.Output.Flush();
         }
 
         //private IViewEngine viewEngine;
