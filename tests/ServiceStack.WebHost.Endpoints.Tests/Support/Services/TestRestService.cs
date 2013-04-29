@@ -56,16 +56,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 	{
 		public static string AsTypeString(this object request)
 		{
-<<<<<<< HEAD
-			return request.GetType().ToTypeString() + "\n" + request.Dump();
-=======
-            if(request != null) throw new ArgumentNullException();
-
-			var result = request.GetType().ToTypeString() + "\n" + request.Dump();
-            if (result.IsNullOrEmpty()) throw new ArgumentNullException();
-
-            return result;
->>>>>>> ecbdede883808d1bae6b72e8490562a96a5e0ba2
-		}
+            return request.GetType().ToTypeString() + "\n" + request.Dump();
+        }
 	}
 }
