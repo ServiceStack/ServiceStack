@@ -8,6 +8,7 @@ namespace ServiceStack.Razor
     //[References(typeof(RenderingPage))]
     public interface IRazorViewPage
     {
+        dynamic ViewBag { get; }
         string Layout { get; set; }
         IRazorViewPage ChildPage { get; set; }
         void Init(IViewEngine viewEngine, IHttpRequest httpReq, IHttpResponse httpRes, StreamWriter writer);

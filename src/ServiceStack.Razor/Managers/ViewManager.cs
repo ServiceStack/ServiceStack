@@ -159,11 +159,17 @@ namespace ServiceStack.Razor.Managers
             if (request != null)
             {
                 var contextRelativePath = NormalizePath(request, dto);
-                var contextParentDir = (contextRelativePath ?? "").SplitOnLast('/').First();
 
-                var relativePath = CombinePaths(contextParentDir, htmlPageName);
-                if (this.Pages.TryGetValue(relativePath, out page))
-                    return page;
+                string contextParentDir = contextRelativePath;
+                do
+                {
+                    contextParentDir = (contextParentDir ?? "").SplitOnLast('/').First();
+
+                    var relativePath = CombinePaths(contextParentDir, htmlPageName);
+                    if (this.Pages.TryGetValue(relativePath, out page))
+                        return page;
+
+                } while (!string.IsNullOrEmpty(contextParentDir));
             }
 
             //var sharedPath = "/view/shared/{0}".Fmt(htmlPageName);

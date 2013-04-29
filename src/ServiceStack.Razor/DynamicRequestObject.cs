@@ -25,6 +25,14 @@ namespace ServiceStack.Razor
     public class DynamicDictionary : System.Dynamic.DynamicObject
     {
         readonly Dictionary<string, object> dictionary = new Dictionary<string, object>();
+        private RenderingPage page;
+
+        public DynamicDictionary() {}
+
+        public DynamicDictionary(RenderingPage page)
+        {
+            this.page = page;
+        }
 
         public int Count
         {
@@ -36,11 +44,23 @@ namespace ServiceStack.Razor
 
         public override bool TryGetMember(System.Dynamic.GetMemberBinder binder, out object result)
         {
+            result = null;
             var name = binder.Name.ToLower();
             if (!dictionary.TryGetValue(name, out result))
-                result = null;
+            {
+                if (page != null && page.ChildPage != null)
+                {
+                    var childViewBag = (DynamicDictionary) page.ChildPage.ViewBag;
+                    childViewBag.TryGetItem(name, out result);
+                }
+            }
 
             return true;
+        }
+
+        public bool TryGetItem(string name, out object result)
+        {
+            return this.dictionary.TryGetValue(name, out result);
         }
 
         public override bool TrySetMember(System.Dynamic.SetMemberBinder binder, object value)

@@ -111,11 +111,13 @@ namespace ServiceStack.Razor.Managers
             return true;
         }
 
-        private void ResolveAndExecuteRazorPage(IHttpRequest httpReq, IHttpResponse httpRes, object dto)
+        public void ResolveAndExecuteRazorPage(IHttpRequest httpReq, IHttpResponse httpRes, object dto, RazorPage razorView=null)
         {
-            var viewName = httpReq.GetItem("View") as string;
-            var razorView = viewName != null ? this.viewManager.GetRazorViewByName(viewName) : null;
-
+            if (razorView == null)
+            {
+                var viewName = httpReq.GetItem("View") as string;
+                razorView = viewName != null ? this.viewManager.GetRazorViewByName(viewName) : null;
+            }
             if (razorView == null)
             {
                 razorView = this.viewManager.GetRazorView(httpReq, dto);

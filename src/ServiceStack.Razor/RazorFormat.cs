@@ -62,24 +62,19 @@ namespace ServiceStack.Razor
             this.PageResolver = new PageResolver(appHost, this, this.ViewManager, this.BuildManager);
         }
 
-        public ViewPage FindByPathInfo(string pathInfo)
+        public RazorPage FindByPathInfo(string pathInfo)
         {
-            throw new NotImplementedException();
+            return ViewManager.GetRazorViewByPathInfo(pathInfo);
         }
 
-        public void ProcessRazorPage(IHttpRequest httpReq, ViewPage contentPage, object model, IHttpResponse httpRes)
+        public void ProcessRazorPage(IHttpRequest httpReq, RazorPage contentPage, object model, IHttpResponse httpRes)
         {
-            throw new NotImplementedException();
-        }
-
-        public void ReloadIfNeeeded(ViewPage contentPage)
-        {
-            throw new NotImplementedException();
+            PageResolver.ResolveAndExecuteRazorPage(httpReq, httpRes, model, contentPage);
         }
 
         public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, object dto)
         {
-            throw new NotImplementedException();
+            PageResolver.ProcessRequest(httpReq, httpRes, dto);
         }
     }
 

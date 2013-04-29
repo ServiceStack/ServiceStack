@@ -62,11 +62,16 @@ namespace ServiceStack.Razor
 
         public StreamWriter Output { get; set; }
 
-        public dynamic ViewBag = new DynamicDictionary();
+        public dynamic ViewBag { get; set; }
 
         public IRazorViewPage ChildPage { get; set; }
 
-        public Dictionary<string, Action> childSections = new Dictionary<string, Action>(); 
+        public Dictionary<string, Action> childSections = new Dictionary<string, Action>();
+
+        protected RenderingPage()
+        {
+            this.ViewBag = new DynamicDictionary(this);
+        }
 
         //overridden by the RazorEngine when razor generates code.
         public abstract void Execute();
@@ -221,6 +226,16 @@ namespace ServiceStack.Razor
                 ChildPage.WriteTo(this.Output);
             }
 
+            return null;
+        }
+
+        public object RenderSection(string sectionName)
+        {
+            Action section;
+            if (childSections.TryGetValue(sectionName, out section))
+            {
+                section();
+            }
             return null;
         }
     }
