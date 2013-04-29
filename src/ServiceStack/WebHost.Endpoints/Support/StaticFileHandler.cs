@@ -141,50 +141,55 @@ namespace ServiceStack.WebHost.Endpoints.Support
                     r.AddHeaderLastModified(fi.LastWriteTime);
                     r.ContentType = MimeTypes.GetMimeType(fileName);
 
-                    var rangeHeader = request.Headers[HttpHeaders.Range];
-                    var isRangeRequest = rangeHeader == null;
-                    if (isRangeRequest)
+                    if (fileName.EqualsIgnoreCase(this.DefaultFilePath))
                     {
-                        if (fileName.EqualsIgnoreCase(this.DefaultFilePath))
-                        {
-                            if (fi.LastWriteTime > this.DefaultFileModified)
-                                SetDefaultFile(this.DefaultFilePath); //reload
+                        if (fi.LastWriteTime > this.DefaultFileModified)
+                            SetDefaultFile(this.DefaultFilePath); //reload
 
-                            r.OutputStream.Write(this.DefaultFileContents, 0, this.DefaultFileContents.Length);
-                            r.Close();
-                            return;
-                        }
+                        r.OutputStream.Write(this.DefaultFileContents, 0, this.DefaultFileContents.Length);
+                        r.Close();
+                        return;
+                    }
 
-                        if (!Env.IsMono)
-                        {
-                            r.TransmitFile(fileName);
-                        }
-                        else
-                        {
-                            r.WriteFile(fileName);
-                        }
+                    if (EndpointHost.Config.AllowPartialResponses)
+                        r.AddHeader(HttpHeaders.AcceptRanges, "bytes");
+                    long contentLength = fi.Length;
+                    long rangeStart, rangeEnd;
+                    var rangeHeader = request.Headers[HttpHeaders.Range];
+                    if (EndpointHost.Config.AllowPartialResponses && rangeHeader != null)
+                    {
+                        rangeHeader.ExtractHttpRanges(contentLength, out rangeStart, out rangeEnd);
+                        r.AddHttpRangeResponseHeaders(rangeStart: rangeStart, rangeEnd: rangeEnd, contentLength: contentLength);
                     }
                     else
                     {
-                        long contentLength = fi.Length;
-                        long rangeStart, rangeEnd;
-                        rangeHeader.ExtractHttpRanges(contentLength, out rangeStart, out rangeEnd);
-                        r.AddHttpRangeResponseHeaders(rangeStart:rangeStart, rangeEnd:rangeEnd, contentLength:contentLength);
-
-                        var outputStream = r.OutputStream;
-                        using (var fs = fi.OpenRead())
+                        rangeStart = 0;
+                        rangeEnd = contentLength - 1;
+                        r.SetContentLength(contentLength);
+                    }
+                    var outputStream = r.OutputStream;
+                    using (var fs = fi.OpenRead())
+                    {
+                        if (rangeStart != 0 || rangeEnd != fi.Length - 1)
                         {
-                            if (rangeEnd != fi.Length - 1)
-                            {
-                                fs.WritePartialTo(outputStream, rangeStart, rangeEnd);
-                            }
-                            else
-                            {
-                                fs.WriteTo(outputStream);
-                                outputStream.Flush();
-                            }
+                            fs.WritePartialTo(outputStream, rangeStart, rangeEnd);
+                        }
+                        else
+                        {
+                            fs.WriteTo(outputStream);
+                            outputStream.Flush();
                         }
                     }
+                }
+                catch (System.Net.HttpListenerException ex)
+                {
+                    if (ex.ErrorCode == 1229)
+                        return;
+                    //Error: 1229 is "An operation was attempted on a nonexistent network connection"
+                    //This exception occures when http stream is terminated by web browser because user
+                    //seek video forward and new http request will be sent by browser
+                    //with attribute in header "Range: bytes=newSeekPosition-"
+                    throw;
                 }
                 catch (Exception ex)
                 {

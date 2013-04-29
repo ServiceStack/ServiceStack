@@ -284,7 +284,7 @@ namespace ServiceStack.ServiceClient.Web
 
         public TResponse Send<TResponse>(IReturn<TResponse> request)
         {
-            throw new NotImplementedException();
+            return Send<TResponse>((object)request);
         }
 
         public void Send(IReturnVoid request)

@@ -291,8 +291,17 @@ namespace ServiceStack.Authentication.OpenId
                 map["BirthDateRaw"] = response.BirthDateRaw;
             if (!response.Country.IsNullOrEmpty())
                 map["Country"] = response.Country;
-            if (response.Culture != null)
-                map["Culture"] = response.Culture.TwoLetterISOLanguageName;
+
+            try
+            {
+                if (response.Culture != null)
+                    map["Culture"] = response.Culture.TwoLetterISOLanguageName;
+            }
+            catch (Exception ex) //CultureNotFoundException (.NET 4.5)
+            {
+                map["Culture"] = "en";
+            }
+
             if (!response.Email.IsNullOrEmpty())
                 map["Email"] = response.Email;
             if (!response.FullName.IsNullOrEmpty())
