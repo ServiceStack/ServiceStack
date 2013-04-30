@@ -46,6 +46,7 @@ namespace ServiceStack.Razor
         {
             this.Output = Html.Writer = writer;
             this.Execute();
+            this.Output.Flush();
         }
 	}
 
@@ -70,6 +71,7 @@ namespace ServiceStack.Razor
         {
             this.Output = Html.Writer = writer;
             this.Execute();
+            this.Output.Flush();
         }
 
         //private IViewEngine viewEngine;

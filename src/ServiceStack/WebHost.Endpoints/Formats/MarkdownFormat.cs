@@ -207,6 +207,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
             if (writer != null)
             {
                 writer.Write(output);
+                writer.Flush();
                 return null;
             }
             return output;

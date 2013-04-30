@@ -266,6 +266,7 @@ namespace ServiceStack.Razor
                 {
                     Output = writer;
                     section();
+                    Output.Flush();
                 }
                 finally
                 {
