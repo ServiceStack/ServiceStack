@@ -19,9 +19,9 @@ namespace ServiceStack.ServiceInterface
 
         public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
         {
-            if (!string.IsNullOrEmpty(View))
+            if (!string.IsNullOrEmpty(View) && string.IsNullOrEmpty(req.Items["View"] as string))
                 req.Items["View"] = View;
-            if (!string.IsNullOrEmpty(Template))
+            if (!string.IsNullOrEmpty(Template) && string.IsNullOrEmpty(req.Items["Template"] as string))
                 req.Items["Template"] = Template;
         }
     }

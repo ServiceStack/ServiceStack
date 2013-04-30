@@ -98,35 +98,37 @@ namespace ServiceStack.Razor.Managers
         /// allow another view engine to attempt to process it. If no view engines can process the DTO,
         /// HtmlFormat will simply handle it itself.
         /// </summary>
-        public virtual bool ProcessRequest(IHttpRequest request, IHttpResponse response, object dto)
+        public virtual bool ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, object dto)
         {
             //for compatibility
             var httpResult = dto as IHttpResult;
             if (httpResult != null)
                 dto = httpResult.Response;
 
-            ResolveAndExecuteRazorPage(request, response, dto);
+            ResolveAndExecuteRazorPage(httpReq, httpRes, dto);
 
-            response.EndServiceStackRequest();
+            httpRes.EndServiceStackRequest();
             return true;
         }
 
         public void ResolveAndExecuteRazorPage(IHttpRequest httpReq, IHttpResponse httpRes, object dto, RazorPage razorView=null)
         {
-            if (razorView == null)
+            var viewName = httpReq.GetItem("View") as string;
+            if (razorView == null && viewName != null)
             {
-                var viewName = httpReq.GetItem("View") as string;
-                razorView = viewName != null ? this.viewManager.GetRazorViewByName(viewName) : null;
+                razorView = this.viewManager.GetRazorViewByName(viewName);
             }
+            else
+            {
+                razorView = razorView
+                    ?? this.viewManager.GetRazorViewByName(httpReq.OperationName) //Request DTO
+                    ?? this.viewManager.GetRazorView(httpReq, dto);  // Response DTO
+            }
+
             if (razorView == null)
             {
-                razorView = this.viewManager.GetRazorView(httpReq, dto);
-
-                if (razorView == null)
-                {
-                    httpRes.StatusCode = (int)HttpStatusCode.NotFound;
-                    return;
-                }
+                httpRes.StatusCode = (int)HttpStatusCode.NotFound;
+                return;
             }
             
             using (var writer = new StreamWriter(httpRes.OutputStream, UTF8EncodingWithoutBom))

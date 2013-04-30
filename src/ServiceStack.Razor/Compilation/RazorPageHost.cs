@@ -2,6 +2,7 @@
 using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,8 +14,10 @@ using System.Web.Razor.Parser.SyntaxTree;
 using System.Web.Razor.Text;
 using ServiceStack.Common.Extensions;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.MiniProfiler;
+using ServiceStack.Text;
 
 namespace ServiceStack.Razor.Compilation
 {
@@ -270,21 +273,40 @@ namespace ServiceStack.Razor.Compilation
         public override ParserBase DecorateCodeParser(ParserBase incomingCodeParser)
         {
             if (incomingCodeParser is System.Web.Razor.Parser.CSharpCodeParser)
-                return new CSharpCodeParser();
+                return new ServiceStackCSharpCodeParser();
 
             return base.DecorateCodeParser(incomingCodeParser);
         }
     }
 
-    public class CSharpCodeParser : System.Web.Razor.Parser.CSharpCodeParser
+    public class ServiceStackCSharpRazorCodeGenerator : CSharpRazorCodeGenerator
     {
+        private const string DefaultModelTypeName = "dynamic";
+        private const string HiddenLinePragma = "#line hidden";
+
+        public ServiceStackCSharpRazorCodeGenerator(string className, string rootNamespaceName, string sourceFileName, RazorEngineHost host)
+            : base(className, rootNamespaceName, sourceFileName, host)
+        {
+        }
+
+        protected override void Initialize(CodeGeneratorContext context)
+        {
+            base.Initialize(context);
+
+            context.GeneratedClass.Members.Insert(0, new CodeSnippetTypeMember(HiddenLinePragma));
+        }
+    }
+
+    public class ServiceStackCSharpCodeParser : System.Web.Razor.Parser.CSharpCodeParser
+    {
+        private const string ModelKeyword = "model";
         private const string GenericTypeFormatString = "{0}<{1}>";
         private SourceLocation? _endInheritsLocation;
         private bool _modelStatementFound;
 
-        public CSharpCodeParser()
+        public ServiceStackCSharpCodeParser()
         {
-            MapDirectives(ModelDirective, "model");
+            MapDirectives(ModelDirective, ModelKeyword);
         }
 
         protected override void InheritsDirective()
@@ -302,34 +324,44 @@ namespace ServiceStack.Razor.Compilation
         {
             if (_modelStatementFound && _endInheritsLocation.HasValue)
             {
-                Context.OnError(_endInheritsLocation.Value, "The 'inherits' keyword is not allowed when a 'model' keyword is used.");
+                Context.OnError(_endInheritsLocation.Value, String.Format(CultureInfo.CurrentCulture, MvcResources.MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword, ModelKeyword));
             }
         }
 
         protected virtual void ModelDirective()
         {
             // Verify we're on the right keyword and accept
-            AssertDirective("model");
+            AssertDirective(ModelKeyword);
             AcceptAndMoveNext();
 
             SourceLocation endModelLocation = CurrentLocation;
-            //BaseTypeDirective("The 'model' keyword must be followed by a type name on the same line.", CreateModelCodeGenerator);
+
+            BaseTypeDirective(string.Format(CultureInfo.CurrentCulture,
+                              MvcResources.MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName, ModelKeyword),
+                CreateModelCodeGenerator);
 
             if (_modelStatementFound)
             {
-                Context.OnError(endModelLocation, "Only one 'model' statement is allowed in a file.");
+                Context.OnError(endModelLocation, String.Format(CultureInfo.CurrentCulture, 
+                    MvcResources.MvcRazorCodeParser_OnlyOneModelStatementIsAllowed, ModelKeyword));
             }
 
             _modelStatementFound = true;
+
             CheckForInheritsAndModelStatements();
         }
 
+        private SpanCodeGenerator CreateModelCodeGenerator(string model)
+        {
+            return new SetModelTypeCodeGenerator(model, GenericTypeFormatString);
+        }
+    
         protected override void LayoutDirective()
         {
             AssertDirective(SyntaxConstants.CSharp.LayoutKeyword);
             AcceptAndMoveNext();
             _endInheritsLocation = CurrentLocation;
-            BaseTypeDirective("The 'layout' keyword must be followed by the layout name on the same line.", CreateLayoutCodeGenerator);
+            BaseTypeDirective(MvcResources.MvcRazorCodeParser_OnlyOneModelStatementIsAllowed.Fmt("layout"), CreateLayoutCodeGenerator);
         }
 
         private SpanCodeGenerator CreateLayoutCodeGenerator(string layoutPath)
@@ -370,13 +402,51 @@ namespace ServiceStack.Razor.Compilation
 
             public override bool Equals(object obj)
             {
-                SetLayoutCodeGenerator other = obj as SetLayoutCodeGenerator;
+                var other = obj as SetLayoutCodeGenerator;
                 return other != null && String.Equals(other.LayoutPath, LayoutPath, StringComparison.Ordinal);
             }
 
             public override int GetHashCode()
             {
                 return LayoutPath.GetHashCode();
+            }
+        }
+
+        internal class SetModelTypeCodeGenerator : SetBaseTypeCodeGenerator
+        {
+            private readonly string _genericTypeFormat;
+
+            public SetModelTypeCodeGenerator(string modelType, string genericTypeFormat)
+                : base(modelType)
+            {
+                _genericTypeFormat = genericTypeFormat;
+            }
+
+            protected override string ResolveType(CodeGeneratorContext context, string baseType)
+            {
+                return String.Format(
+                    CultureInfo.InvariantCulture,
+                    _genericTypeFormat,
+                    context.Host.DefaultBaseClass,
+                    baseType);
+            }
+
+            public override bool Equals(object obj)
+            {
+                var other = obj as SetModelTypeCodeGenerator;
+                return other != null &&
+                       base.Equals(obj) &&
+                       String.Equals(_genericTypeFormat, other._genericTypeFormat, StringComparison.Ordinal);
+            }
+
+            public override int GetHashCode()
+            {
+                return (base.GetHashCode() + _genericTypeFormat).GetHashCode();
+            }
+
+            public override string ToString()
+            {
+                return "Model:" + BaseType;
             }
         }
     }

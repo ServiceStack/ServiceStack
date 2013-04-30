@@ -8,14 +8,16 @@ namespace ServiceStack.Html
 	{
 		public string Content(string url)
 		{
-            if (url != null && url.StartsWith("~/"))
-            {
-                return EndpointHost.AppHost.Config.ServiceStackHandlerFactoryPath == null
-                    ? url.Substring(1)
-                    : "/{0}{1}".Fmt(EndpointHost.AppHost.Config.ServiceStackHandlerFactoryPath, url.Substring(1));                
-            }
+		    return VirtualPathUtility.ToAbsolute(url);
 
-			return url;
+		    //if (url != null && url.StartsWith("~/"))
+		    //{
+		    //    return EndpointHost.AppHost.Config.ServiceStackHandlerFactoryPath == null
+		    //        ? url.Substring(1)
+		    //        : "/{0}{1}".Fmt(EndpointHost.AppHost.Config.ServiceStackHandlerFactoryPath, url.Substring(1));                
+		    //}
+
+		    //return url;
 		}
 	}
 }
