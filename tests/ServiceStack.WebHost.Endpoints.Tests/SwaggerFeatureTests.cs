@@ -197,7 +197,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             appHost.LoadPlugin(new CorsFeature("http://localhost:50000"));
 
-            Debug.WriteLine("ListeningOn: " + ListeningOn);
+            Debug.WriteLine(ListeningOn + "resources");
             Thread.Sleep(TimeSpan.FromMinutes(5));
         }
 

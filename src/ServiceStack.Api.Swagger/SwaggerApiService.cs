@@ -165,6 +165,7 @@ namespace ServiceStack.Api.Swagger
                                                                                                   {"int32", "int"},
                                                                                                   {"int64", "int"},
                                                                                                   {"int", "int"},
+                                                                                                  {"byte", "byte"},
                                                                                                   {"bool", "bool"},
                                                                                                   {"boolean", "bool"},
                                                                                                   {"string", "string"},
@@ -269,7 +270,11 @@ namespace ServiceStack.Api.Swagger
                 if (i.IsGenericType && i.GetGenericTypeDefinition() == typeof (IReturn<>))
                 {
                     var returnType = i.GetGenericArguments()[0];
-                    if (IsListType(returnType))
+                    if (returnType.IsArray)
+                    {
+                        return string.Format("List[{0}]", GetSwaggerTypeName(returnType.GetElementType()));
+                    }
+                    else if (IsListType(returnType))
                     {
                         // Handle IReturn<List<SomeClass>>
                         var listItemType = returnType.GetGenericArguments()[0];
