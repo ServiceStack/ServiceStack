@@ -323,8 +323,8 @@ namespace ServiceStack.ServiceHost
 						+ variableName + " on " + RequestType.Name);
 				}
 
-				var value = requestComponents[i];
-				if (i == this.TotalComponentsCount - 1)
+                var value = requestComponents.Length > 1 ? requestComponents[i] : null; //wildcard has arg mismatch
+				if (value != null && i == this.TotalComponentsCount - 1)
 				{
 					var sb = new StringBuilder(value);
 					for (var j = i + 1; j < requestComponents.Length; j++)

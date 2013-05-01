@@ -168,7 +168,7 @@ namespace ServiceStack.ServiceClient.Web
         public static Func<object, string> FormatVariable = value =>
         {
             var valueString = value as string;
-            return valueString != null ? Uri.EscapeDataString(valueString) : FormatValue(value).Trim('"');
+            return valueString != null ? Uri.EscapeDataString(valueString) : FormatValue(value ?? "").Trim('"');
         };
 
         [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:FieldsMustBePrivate", Justification = "Using field is just easier.")]
@@ -249,7 +249,8 @@ namespace ServiceStack.ServiceClient.Web
             {
                 var property = variable.Value;
                 var value = property.GetValue(request);
-                if (value == null)
+                var isWildCard = variable.Key.EndsWith("*");
+                if (value == null && !isWildCard)
                 {
                     unmatchedVariables.Add(variable.Key);
                     continue;
