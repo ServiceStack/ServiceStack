@@ -46,15 +46,28 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			Assert.That(request.Bool, Is.EqualTo(true));
 		}
 
-		[Test]
-		public void Can_call_WildCardRequest_with_alternate_matching_WildCard_defined()
-		{
-			var request = (WildCardRequest)GetRequest("/wildcard/1/aPath/edit");
-			Assert.That(request.Id, Is.EqualTo(1));
-			Assert.That(request.Path, Is.EqualTo("aPath"));
-			Assert.That(request.Action, Is.EqualTo("edit"));
-			Assert.That(request.RemainingPath, Is.Null);
-		}
+        [Test]
+        public void Can_get_empty_BasicWildcard()
+        {
+            var request = GetRequest<BasicWildcard>("/path");
+            Assert.That(request.Tail, Is.Null);
+            request = GetRequest<BasicWildcard>("/path/");
+            Assert.That(request.Tail, Is.Null);
+            request = GetRequest<BasicWildcard>("/path/a");
+            Assert.That(request.Tail, Is.EqualTo("a"));
+            request = GetRequest<BasicWildcard>("/path/a/b/c");
+            Assert.That(request.Tail, Is.EqualTo("a/b/c"));
+        }
+
+        [Test]
+        public void Can_call_WildCardRequest_with_alternate_matching_WildCard_defined()
+        {
+            var request = (WildCardRequest)GetRequest("/wildcard/1/aPath/edit");
+            Assert.That(request.Id, Is.EqualTo(1));
+            Assert.That(request.Path, Is.EqualTo("aPath"));
+            Assert.That(request.Action, Is.EqualTo("edit"));
+            Assert.That(request.RemainingPath, Is.Null);
+        }
 
 		[Test]
 		public void Can_call_WildCardRequest_WildCard_mapping()

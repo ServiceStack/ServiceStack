@@ -493,6 +493,11 @@ namespace ServiceStack.ServiceInterface.Testing
             return response;
         }
 
+        public T GetRequest<T>(string pathInfo)
+        {
+            return (T) GetRequest(pathInfo);
+        }
+
         public object GetRequest(string pathInfo)
         {
             var urlParts = new UrlParts(pathInfo);
