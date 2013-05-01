@@ -1,0 +1,20 @@
+﻿@inherits ServiceStack.Razor.ViewPage<ServiceStack.Razor.Tests.FooResponse>
+@using System
+@using ServiceStack.Razor.Tests
+@using ServiceStack.Common
+@using ServiceStack.WebHost.Endpoints
+
+<div>
+    <h4>/Views/Foo</h4>
+    The time is: @DateTime.Now
+    <h4>Foo Was Here!</h4>
+    <h4>He said: @Model.FooSaid</h4>
+
+    <form method="POST">
+        @Html.TextBox( "foo" )
+        <button name="cmdGo" value="123">Go Button</button>
+    </form>
+
+    obob
+    <button>Button out of form</button>
+</div>

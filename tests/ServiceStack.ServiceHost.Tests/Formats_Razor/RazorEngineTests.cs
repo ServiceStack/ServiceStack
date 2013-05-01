@@ -1,6 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
-using ServiceStack.Razor2;
+using ServiceStack.Razor;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 {
@@ -14,8 +14,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			mvcRazorFormat = new RazorFormat { DefaultBaseType = typeof(CustomRazorBasePage<>) };
-			mvcRazorFormat.Init();
+			mvcRazorFormat = new RazorFormat { PageBaseType = typeof(CustomRazorBasePage<>) };
 		}
 
 		[SetUp]

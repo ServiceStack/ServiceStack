@@ -6,8 +6,7 @@ using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Html;
-using ServiceStack.Markdown;
-using ServiceStack.Razor2;
+using ServiceStack.Razor;
 using ServiceStack.ServiceHost.Tests.Formats;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
@@ -33,7 +32,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		public List<string> Labels { get; set; }
 	}
 
-	public class CustomViewBase<T> : ViewPage<T>
+	public class CustomViewBase<T> : ViewPage<T> where T : class
 	{
 		public CustomMarkdownHelper Ext = new CustomMarkdownHelper();
 		public ExternalProductHelper Prod = new ExternalProductHelper();
@@ -86,6 +85,11 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		{
 			return string.Join(separator, parts);
 		}
+
+	    public override void Execute()
+	    {
+	        throw new NotImplementedException();
+	    }
 	}
 
 	public class CustomMarkdownHelper

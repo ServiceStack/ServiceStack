@@ -83,7 +83,7 @@ namespace ServiceStack.WebHost.Endpoints
 							"js", "css", "htm", "html", "shtm", "txt", "xml", "rss", "csv", 
 							"jpg", "jpeg", "gif", "png", "bmp", "ico", "tif", "tiff", "svg", 
 							"avi", "divx", "m3u", "mov", "mp3", "mpeg", "mpg", "qt", "vob", "wav", "wma", "wmv", 
-							"flv", "xap", "xaml", 
+							"flv", "xap", "xaml", "ogg", "mp4", "webm", 
 						},
                         DebugAspNetHostEnvironment = Env.IsMono ? "FastCGI" : "IIS7",
                         DebugHttpListenerHostEnvironment = Env.IsMono ? "XSP" : "WebServer20",
@@ -195,7 +195,7 @@ namespace ServiceStack.WebHost.Endpoints
             return File.Exists(configPath) ? configPath : null;
         }
 
-        const string NamespacesAppSettingsKey = "servicestack.razor2.namespaces";
+        const string NamespacesAppSettingsKey = "servicestack.razor.namespaces";
         private static HashSet<string> razorNamespaces;
         public static HashSet<string> RazorNamespaces
         {
@@ -218,7 +218,7 @@ namespace ServiceStack.WebHost.Endpoints
                                     .ForEach(x => razorNamespaces.Add(x.AnyAttribute("namespace").Value));
                 }
 
-                //E.g. <add key="servicestack.razor2.namespaces" value="System,ServiceStack.Text" />
+                //E.g. <add key="servicestack.razor.namespaces" value="System,ServiceStack.Text" />
                 if (ConfigUtils.GetNullableAppSetting(NamespacesAppSettingsKey) != null)
                 {
                     ConfigUtils.GetListFromAppSetting(NamespacesAppSettingsKey)

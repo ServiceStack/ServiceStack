@@ -5,6 +5,12 @@ using ServiceStack.Text;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
+using System.Runtime.Serialization;
+using ServiceStack.Service;
+using ServiceStack.Messaging;
+using System.ServiceModel.Channels;
+using System;
+using System.Diagnostics;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -81,6 +87,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class BufferedRequestLoggerTests
     {
         private BufferedRequestAppHost appHost;
+        MyRequest request = new MyRequest { Data = "RequestData" };
 
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
@@ -100,21 +107,52 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_see_RequestBody_in_RequestLogger_when_EnableRequestBodyTracking()
         {
+            var logBody = Run(new JsonServiceClient(Config.ServiceStackBaseUri));
+            Assert.That(appHost.LastRequestBody, Is.EqualTo(request.ToJson()));
+            Assert.That(logBody, Is.EqualTo(request.ToJson()));
+        }
+
+        [Test]
+        public void Can_see_RequestBody_in_RequestLogger_when_EnableRequestBodyTracking_Soap12()
+        {
+            const string soap12start = @"<s:Envelope xmlns:s=""http://www.w3.org/2003/05/soap-envelope"" xmlns:a=""http://www.w3.org/2005/08/addressing""><s:Header><a:Action s:mustUnderstand=""1"">MyRequest</a:Action><a:MessageID>urn:uuid:";
+            const string soap12end = "<Data>RequestData</Data></MyRequest></s:Body></s:Envelope>";
+
+            var logBody = Run(new Soap12ServiceClient(Config.ServiceStackBaseUri));
+
+            Assert.That(appHost.LastRequestBody, Is.StringStarting(soap12start));
+            Assert.That(appHost.LastRequestBody, Is.StringEnding(soap12end));
+            Assert.That(logBody, Is.StringStarting(soap12start));
+            Assert.That(logBody, Is.StringEnding(soap12end));
+        }
+
+
+        [Test]
+        public void Can_see_RequestBody_in_RequestLogger_when_EnableRequestBodyTracking_Soap11()
+        {
+            const string soap11 = @"<s:Envelope xmlns:s=""http://schemas.xmlsoap.org/soap/envelope/""><s:Body><MyRequest xmlns=""http://schemas.servicestack.net/types"" xmlns:i=""http://www.w3.org/2001/XMLSchema-instance""><Data>RequestData</Data></MyRequest></s:Body></s:Envelope>";
+
+            var logBody = Run(new Soap11ServiceClient(Config.ServiceStackBaseUri));
+            Assert.That(appHost.LastRequestBody, Is.EqualTo(soap11));
+            Assert.That(logBody, Is.EqualTo(soap11));
+        }
+
+        
+        string Run(IServiceClient client)
+        {
+            var requestLogger = appHost.TryResolve<IRequestLogger>();
             appHost.LastRequestBody = null;
             appHost.UseBufferredStream = false;
 
-            var client = new JsonServiceClient(Config.ServiceStackBaseUri);
-            var request = new MyRequest { Data = "RequestData" };
+            var response = client.Send(request);
+            //Debug.WriteLine(appHost.LastRequestBody);
 
-            var response = client.Post(request);
-
-            Assert.That(appHost.LastRequestBody, Is.EqualTo(request.ToJson()));
             Assert.That(response.Data, Is.EqualTo(request.Data));
 
-            var requestLogger = appHost.TryResolve<IRequestLogger>();
-            var lastEntry = requestLogger.GetLatestLogs(1);
-            Assert.That(lastEntry[0].RequestBody, Is.EqualTo(request.ToJson()));
+            var lastEntry = requestLogger.GetLatestLogs(int.MaxValue);
+            return lastEntry[lastEntry.Count - 1].RequestBody;
         }
+        
     }
 
     public class BufferedRequestAppHost : AppHostHttpListenerBase
@@ -139,8 +177,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    [DataContract]
     public class MyRequest : IReturn<MyRequest>
     {
+        [DataMember]
         public string Data { get; set; }
     }
 

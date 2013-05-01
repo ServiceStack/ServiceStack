@@ -142,11 +142,9 @@
     <Compile Include="IntegrationTests\MovieSoap11Tests.cs" />
     <Compile Include="RouteInferenceTests.cs" />
     <Compile Include="ServiceClientsBuiltInResponseTests.cs" />
-    <Compile Include="ServiceSetupTests.cs" />
     <Compile Include="Support\Services\TestRestService.cs" />
     <Compile Include="Support\Types\KeyAttribute.cs" />
     <Compile Include="PartialContentResultTests.cs" />
-    <Compile Include="ServiceClientsBuiltInResponseTests.cs" />
     <Compile Include="ServiceSetupTests.cs" />
     <Compile Include="Support\Services\FailingService.cs" />
     <Compile Include="UniqueRequestTests.cs" />

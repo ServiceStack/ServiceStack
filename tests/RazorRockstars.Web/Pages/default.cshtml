@@ -1,6 +1,6 @@
-﻿@inherits ViewPage<Rockstars> 
+﻿@inherits ServiceStack.Razor.ViewPage<Rockstars> 
 
-﻿@{
+@{
     ViewBag.Title = "Page with typed 'Rockstars' model and no C# controller";
     var rockstars = Model.Age.HasValue 
         ? Db.Select<Rockstar>(q => q.Age == Model.Age.Value)

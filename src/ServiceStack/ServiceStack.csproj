@@ -150,6 +150,7 @@
     <Compile Include="Html\HtmlHelper`1.cs" />
     <Compile Include="Html\HttpVerbs.cs" />
     <Compile Include="Html\InputType.cs" />
+    <Compile Include="Html\IRazorViewPage.cs" />
     <Compile Include="Html\IResolver.cs" />
     <Compile Include="Html\IViewDataContainer.cs" />
     <Compile Include="Html\ModelClientValidationRule.cs" />
