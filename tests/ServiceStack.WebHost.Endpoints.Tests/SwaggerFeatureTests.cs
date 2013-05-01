@@ -245,7 +245,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test, TestCaseSource("RestClients")]
-        public void Should_restrieve_service_parameters(IRestClient client)
+        public void Should_retrieve_service_parameters(IRestClient client)
         {
             var resource = client.Get<ResourceResponse>("/resource/swagger");
             Assert.That(resource.BasePath, Is.EqualTo(BaseUrl));
