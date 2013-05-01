@@ -24,6 +24,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [ServiceHost.Api]
+    [Route("/swaggerModels/{UrlParam}", "POST")]
+    public class SwaggerModelsRequest : IReturn<SwaggerFeatureResponse>
+    {
+        [ApiMember(Name = "UrlParam", Description = "URL parameter",
+            ParameterType = "path", DataType = "string", IsRequired = true)]
+        public string UrlParam { get; set; }
+
+        [ApiMember(Name = "RequestBody", Description = "The request body",
+            ParameterType = "body", DataType = "SwaggerModelsRequest", IsRequired = true)]
+        [System.ComponentModel.Description("Name description")]
+        public string Name { get; set; }
+
+        [System.ComponentModel.Description("NestedModel description")]
+        public SwaggerNestedModel NestedModel { get; set;} 
+    }
+
+    public class SwaggerNestedModel
+    {
+        [System.ComponentModel.Description("NestedProperty description")]
+        public bool NestedProperty { get; set;}
+    }
+
+    [ServiceHost.Api]
     [Route("/swagger2/NameIsNotSetRequest", "GET")]
     public class NameIsNotSetRequest
     {
@@ -113,6 +136,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public object Get(NameIsNotSetRequest request)
         {
             return 0;
+        }
+
+        public object Post(SwaggerModelsRequest request)
+        {
+            return new SwaggerFeatureResponse { IsSuccess = true };
         }
     }
 
@@ -247,6 +275,64 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(postOperation.Summary, Is.EqualTo("POST Summary"));
             Assert.That(postOperation.Notes, Is.EqualTo("POST Notes"));
             Assert.That(postOperation.HttpMethod, Is.EqualTo("POST"));
+        }
+
+        [Test, TestCaseSource("RestClients")]
+        public void Should_retrieve_response_class_name(IRestClient client)
+        {
+            var resource = client.Get<ResourceResponse>("/resource/swaggerModels");
+            Assert.That(resource.Apis, Is.Not.Empty);
+
+            var postOperation = resource.Apis.SelectMany(api => api.Operations).Single(t => t.HttpMethod == "POST");
+            postOperation.PrintDump();
+            Assert.That(postOperation.ResponseClass, Is.EqualTo(typeof(SwaggerFeatureResponse).Name));
+        }
+
+        [Test, TestCaseSource("RestClients")]
+        public void Should_retrieve_response_model(IRestClient client)
+        {
+            var resource = client.Get<ResourceResponse>("/resource/swaggerModels");
+            Assert.That(resource.Models, Is.Not.Empty);
+
+            Assert.That(resource.Models.ContainsKey(typeof(SwaggerFeatureResponse).Name), Is.True);
+            var responseClassModel = resource.Models[typeof(SwaggerFeatureResponse).Name];
+            responseClassModel.PrintDump();
+
+            Assert.That(responseClassModel.Id, Is.EqualTo(typeof(SwaggerFeatureResponse).Name));
+            Assert.That(responseClassModel.Properties, Is.Not.Empty);
+            Assert.That(responseClassModel.Properties.ContainsKey("IsSuccess"), Is.True);
+            Assert.That(responseClassModel.Properties["IsSuccess"].Type, Is.EqualTo("bool"));
+        }
+
+        [Test, TestCaseSource("RestClients")]
+        public void Should_retrieve_request_body_model(IRestClient client)
+        {
+            var resource = client.Get<ResourceResponse>("/resource/swaggerModels");
+            Assert.That(resource.Models, Is.Not.Empty);
+            resource.Models.PrintDump();
+
+            Assert.That(resource.Models.ContainsKey(typeof(SwaggerModelsRequest).Name), Is.True);
+            var requestClassModel = resource.Models[typeof(SwaggerModelsRequest).Name];
+
+            Assert.That(requestClassModel.Id, Is.EqualTo(typeof(SwaggerModelsRequest).Name));
+            Assert.That(requestClassModel.Properties, Is.Not.Empty);
+
+            Assert.That(requestClassModel.Properties.ContainsKey("UrlParam"), Is.False);
+
+            Assert.That(requestClassModel.Properties.ContainsKey("Name"), Is.True);
+            Assert.That(requestClassModel.Properties["Name"].Type, Is.EqualTo("string"));
+            Assert.That(requestClassModel.Properties["Name"].Description, Is.EqualTo("Name description"));
+
+            Assert.That(requestClassModel.Properties.ContainsKey("NestedModel"), Is.True);
+            Assert.That(requestClassModel.Properties["NestedModel"].Type, Is.EqualTo("SwaggerNestedModel"));
+            Assert.That(requestClassModel.Properties["NestedModel"].Description, Is.EqualTo("NestedModel description"));
+
+            Assert.That(resource.Models.ContainsKey(typeof(SwaggerNestedModel).Name), Is.True);
+            var nestedClassModel = resource.Models[typeof(SwaggerNestedModel).Name];
+
+            Assert.That(nestedClassModel.Properties.ContainsKey("NestedProperty"), Is.True);
+            Assert.That(nestedClassModel.Properties["NestedProperty"].Type, Is.EqualTo("bool"));
+            Assert.That(nestedClassModel.Properties["NestedProperty"].Description, Is.EqualTo("NestedProperty description"));
         }
     }
 }
