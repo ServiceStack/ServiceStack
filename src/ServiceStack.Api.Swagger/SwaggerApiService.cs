@@ -208,7 +208,7 @@ namespace ServiceStack.Api.Swagger
                 var allApiDocAttributes = prop
                     .GetCustomAttributes(typeof(ApiMemberAttribute), true)
                     .OfType<ApiMemberAttribute>()
-                    .Where(attr => attr.Name.Equals(prop.Name, StringComparison.InvariantCultureIgnoreCase))
+                    .Where(attr => prop.Name.Equals(attr.Name, StringComparison.InvariantCultureIgnoreCase))
                     .ToList();
                 var apiDoc = allApiDocAttributes.FirstOrDefault(attr => attr.ParameterType == "body");
 
