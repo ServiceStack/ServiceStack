@@ -28,9 +28,8 @@ namespace ServiceStack.Razor.Managers
         private readonly IAppHost appHost;
         private readonly IRazorConfig config;
         private readonly ViewManager viewManager;
-        private readonly BuildManager buildManager;
 
-        public PageResolver(IAppHost appHost, IRazorConfig config, ViewManager viewManager, BuildManager buildManager)
+        public PageResolver(IAppHost appHost, IRazorConfig config, ViewManager viewManager)
         {
             this.RequestName = "Razor_PageResolver";
 
@@ -38,7 +37,6 @@ namespace ServiceStack.Razor.Managers
 
             this.config = config;
             this.viewManager = viewManager;
-            this.buildManager = buildManager;
 
             this.appHost.CatchAllHandlers.Add(OnCatchAll);
             this.appHost.ViewEngines.Add(this);
@@ -163,19 +161,21 @@ namespace ServiceStack.Razor.Managers
             }
         }
 
-        private IRazorViewPage ExecuteRazorPage(IHttpRequest request, IHttpResponse response, object dto, RazorPage razorPage, StreamWriter writer)
+        public void EnsureCompiled(RazorPage page, IHttpResponse response)
         {
-            var page = CreateRazorPageInstance(request, response, dto, razorPage);
+            if (page == null) return;
+            if (page.IsValid) return;
 
-            //execute the page.
-            page.WriteTo(writer);
+            var type = page.PageHost.Compile();
 
-            return page;
+            page.PageType = type;
+
+            page.IsValid = true;
         }
 
         private IRazorViewPage CreateRazorPageInstance(IHttpRequest request, IHttpResponse response, object dto, RazorPage razorPage)
         {
-            buildManager.EnsureCompiled(razorPage, response);
+            EnsureCompiled(razorPage, response);
 
             //don't proceed any further, the background compiler found there was a problem compiling the page, so throw instead
             if (razorPage.CompileException != null)
