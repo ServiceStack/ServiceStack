@@ -52,7 +52,6 @@
     </Compile>
     <Compile Include="CSharpRazorBuildProvider.cs" />
     <Compile Include="json\DynamicJson.cs" />
-    <Compile Include="Managers\BuildManager.cs" />
     <Compile Include="Compilation\CompilerServices.cs" />
     <Compile Include="Compilation\CodeTransformers\AddPageVirtualPathAttribute.cs" />
     <Compile Include="Compilation\CodeTransformers\AggregateCodeTransformer.cs" />
@@ -66,6 +65,7 @@
     <Compile Include="Compilation\CodeTransformers\RewriteLinePragmas.cs" />
     <Compile Include="Compilation\CodeTransformers\SetTypeNamespace.cs" />
     <Compile Include="Compilation\CodeTransformers\SetTypeVisibility.cs" />
+    <Compile Include="Managers\FileSystemWatcherLiveReload.cs" />
     <Compile Include="Managers\RazorGen\MvcHelperTransformer.cs" />
     <Compile Include="Managers\RazorGen\MvcViewTransformer.cs" />
     <Compile Include="Managers\RazorGen\RazorViewPageTransformer.cs" />
@@ -79,7 +79,6 @@
     <Compile Include="Compilation\IRazorCodeTransformer.cs" />
     <Compile Include="Compilation\IRazorHost.cs" />
     <Compile Include="Compilation\RazorPageHost.cs" />
-    <Compile Include="Compilation\RazorRuntime.cs" />
     <Compile Include="DynamicRequestObject.cs" />
     <Compile Include="Managers\PageResolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -20,6 +20,7 @@ namespace ServiceStack.Razor
             this.RazorFileExtension = ".cshtml";
             this.DefaultPageName = "default.cshtml";
             this.PageBaseType = typeof(ViewPage);
+            this.LiveReloadFactory = CreateLiveReload;
 
             Deny = new List<Predicate<string>> {
                 DenyPathsWithLeading_,
@@ -30,8 +31,12 @@ namespace ServiceStack.Razor
         public string RazorFileExtension { get; set; }
         public Type PageBaseType { get; set; }
         public string DefaultPageName { get; set; }
+        public string ScanRootPath { get; set; }
+        public bool? EnableLiveReload { get; set; }
         public List<Predicate<string>> Deny { get; set; }
         public IVirtualPathProvider VirtualPathProvider { get; set; }
+        public ILiveReload LiveReload { get; set; }
+        public Func<ViewManager, ILiveReload> LiveReloadFactory { get; set; }
 
         static bool DenyPathsWithLeading_(string path)
         {
@@ -42,7 +47,6 @@ namespace ServiceStack.Razor
 
         //managers
         protected ViewManager ViewManager;
-        protected BuildManager BuildManager;
         protected PageResolver PageResolver;
 
         public void Register(IAppHost appHost)
@@ -56,10 +60,23 @@ namespace ServiceStack.Razor
             Instance = this;
 
             this.AppHost = appHost;
+            this.ScanRootPath = this.ScanRootPath ?? appHost.Config.WebHostPhysicalPath;
             var virtualPathProvider = VirtualPathProvider ?? appHost.VirtualPathProvider;
             this.ViewManager = new ViewManager(appHost, this, virtualPathProvider);
-            this.BuildManager = new BuildManager(appHost, this);
-            this.PageResolver = new PageResolver(appHost, this, this.ViewManager, this.BuildManager);
+            this.PageResolver = new PageResolver(appHost, this, this.ViewManager);
+            
+            this.ViewManager.Init();
+
+            if (this.EnableLiveReload.GetValueOrDefault(appHost.Config.DebugMode))
+            {
+                this.LiveReload = LiveReloadFactory(this.ViewManager);
+                this.LiveReload.StartWatching(this.ScanRootPath);
+            }
+        }
+
+        static ILiveReload CreateLiveReload(ViewManager viewManager)
+        {
+            return new FileSystemWatcherLiveReload(viewManager);
         }
 
         public RazorPage FindByPathInfo(string pathInfo)
@@ -83,6 +100,7 @@ namespace ServiceStack.Razor
         string RazorFileExtension { get; set; }
         Type PageBaseType { get; set; }
         string DefaultPageName { get; set; }
+        string ScanRootPath { get; set; }
         List<Predicate<string>> Deny { get; set; }
     }
 
