@@ -360,7 +360,6 @@ namespace ServiceStack.Razor.Compilation
         {
             AssertDirective(SyntaxConstants.CSharp.LayoutKeyword);
             AcceptAndMoveNext();
-            _endInheritsLocation = CurrentLocation;
             BaseTypeDirective(MvcResources.MvcRazorCodeParser_OnlyOneModelStatementIsAllowed.Fmt("layout"), CreateLayoutCodeGenerator);
         }
 
