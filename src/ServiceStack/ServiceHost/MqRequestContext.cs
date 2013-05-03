@@ -14,13 +14,16 @@ namespace ServiceStack.ServiceHost
         public MqRequest Request { get; set; }
         public MqResponse Response { get; set; }
 
+        public MqRequestContext()
+            : this(null, new Message()) {}
+
         public MqRequestContext(IResolver resolver, IMessage message)
         {
             this.Resolver = resolver;
             this.Message = message;
             this.ContentType = this.ResponseContentType = Common.Web.ContentType.Json;
             if (message.Body != null)
-                this.PathInfo = "/json/asynconeway/" + OperationName;
+                this.PathInfo = "/json/oneway/" + OperationName;
             
             this.Request = new MqRequest(this);
             this.Response = new MqResponse(this);

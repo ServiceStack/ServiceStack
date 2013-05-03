@@ -271,6 +271,11 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			}
 
 			public bool IsClosed { get; private set; }
+
+		    public void SetContentLength(long contentLength)
+		    {
+		        Headers[HttpHeaders.ContentLength] = contentLength.ToString();
+		    }
 		}
 
 		[Test]

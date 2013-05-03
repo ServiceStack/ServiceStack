@@ -27,7 +27,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		}
 	}
 
-	public class CustomBaseClass<T> : ViewPage<T>
+    public class CustomBaseClass<T> : ViewPage<T> where T : class
 	{
 		public MvcHtmlString Field(string fieldName, string fieldValue)
 		{
@@ -37,6 +37,10 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
 			return MvcHtmlString.Create(sb.ToString());
 		}
+
+        public override void Execute()
+        {            
+        }
 	}
 
 	[TestFixture]
@@ -48,6 +52,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
             base.RazorFormat = new RazorFormat {
                 VirtualPathProvider = new InMemoryVirtualPathProvider(new BasicAppHost()),
             };
+            RazorFormat.Init();
         }
 
 		[Test]
@@ -74,7 +79,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 </html>".NormalizeNewLines();
 
 			var pageTemplate = 
-@"@{ Layout = ""websiteTemplate.cshtml""; }
+@"@layout websiteTemplate
 
 <h1>About this Site</h1>
 
@@ -120,7 +125,7 @@ current date/year: 2013</p>
             RazorFormat.AddFileAndTemplate("websiteTemplate.cshtml", websiteTemplate);
 			var dynamicPage = AddViewPage(PageName, @"C:\path\to\page-tpl", pageTemplate);
 
-			var template = dynamicPage.RenderToHtml();
+            var template = RazorFormat.RenderToHtml(dynamicPage);
 
 			Console.WriteLine(template);
 			Assert.That(template, Is.EqualTo(expectedHtml));
@@ -235,7 +240,7 @@ current date/year: 2013</p>
                 PageName, @"C:\path\to\page-tpl.cshtml", pageTemplate, "websiteTemplate.cshtml");
 
 
-			var html = dynamicPage.RenderToHtml();
+            var html = RazorFormat.RenderToHtml(dynamicPage);
 
 			Console.WriteLine(html);
 			Assert.That(html, Is.EqualTo(expectedHtml));

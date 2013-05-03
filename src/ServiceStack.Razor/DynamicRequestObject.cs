@@ -7,16 +7,29 @@ namespace ServiceStack.Razor
 {
     public class DynamicRequestObject : DynamicDictionary
     {
-        public IHttpRequest httpReq { get; set; }
+        private readonly IHttpRequest httpReq;
+        private readonly IDictionary<string, object> model;
 
         public DynamicRequestObject() { }
-        public DynamicRequestObject(IHttpRequest httpReq)
+        public DynamicRequestObject(IHttpRequest httpReq, object model=null)
         {
             this.httpReq = httpReq;
+            if (model != null)
+            {
+                this.model = new RouteValueDictionary(model);
+            }
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
+            if (model != null)
+            {
+                if (model.TryGetValue(binder.Name, out result))
+                {
+                    return true;
+                }
+            }
+
             result = httpReq.GetParam(binder.Name);
             return result != null || base.TryGetMember(binder, out result);
         }
@@ -24,8 +37,8 @@ namespace ServiceStack.Razor
 
     public class DynamicDictionary : System.Dynamic.DynamicObject, IViewBag
     {
-        readonly Dictionary<string, object> dictionary = new Dictionary<string, object>();
-        private RenderingPage page;
+        protected readonly Dictionary<string, object> dictionary = new Dictionary<string, object>();
+        private readonly RenderingPage page;
 
         public DynamicDictionary() {}
 
