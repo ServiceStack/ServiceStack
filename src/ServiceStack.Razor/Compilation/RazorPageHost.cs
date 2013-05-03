@@ -32,7 +32,9 @@ namespace ServiceStack.Razor.Compilation
             "System.IO",
             "System.Linq",
             "System.Net",
-            "System.Text"
+            "System.Text",
+            "ServiceStack.Text",
+            "ServiceStack.Html",
         };
 
         private readonly IRazorCodeTransformer _codeTransformer;
@@ -217,10 +219,20 @@ namespace ServiceStack.Razor.Compilation
                                 sourceCode = System.IO.File.ReadAllText(tempFile);
                             }
                         }
-
                     }
                     throw new HttpCompileException(results, sourceCode);
                 }
+
+#if DEBUG
+                foreach (string tempFile in @params.TempFiles)
+                {
+                    if (tempFile.EndsWith(".cs"))
+                    {
+                        var sourceCode = System.IO.File.ReadAllText(tempFile);
+                        //sourceCode.Print();
+                    }
+                }
+#endif
 
                 return results.CompiledAssembly.GetTypes().First();
             }
@@ -433,11 +445,9 @@ namespace ServiceStack.Razor.Compilation
 
             protected override string ResolveType(CodeGeneratorContext context, string baseType)
             {
-                return String.Format(
-                    CultureInfo.InvariantCulture,
-                    _genericTypeFormat,
-                    context.Host.DefaultBaseClass,
-                    baseType);
+                var typeString = string.Format(
+                    CultureInfo.InvariantCulture, _genericTypeFormat, context.Host.DefaultBaseClass, baseType);
+                return typeString;
             }
 
             public override bool Equals(object obj)

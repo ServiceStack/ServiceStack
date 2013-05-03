@@ -12,7 +12,7 @@ namespace ServiceStack.Razor.Compilation.CodeTransformers
 
         protected override IEnumerable<RazorCodeTransformerBase> CodeTransformers
         {
-            get { return _transformers; ; }
+            get { return _transformers; }
         }
 
         public override void Initialize(RazorPageHost razorHost, IDictionary<string, string> directives)

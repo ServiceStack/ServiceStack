@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Razor.Managers;
@@ -13,6 +14,8 @@ namespace ServiceStack.Razor
 {
     public class RazorFormat : IPlugin, IRazorPlugin, IRazorConfig
     {
+        public const string TemplatePlaceHolder = "@RenderBody()";
+
         private static readonly ILog Log = LogManager.GetLogger(typeof(RazorFormat));
         public static RazorFormat Instance;
 
@@ -38,7 +41,7 @@ namespace ServiceStack.Razor
         public List<Predicate<string>> Deny { get; set; }
         public IVirtualPathProvider VirtualPathProvider { get; set; }
         public ILiveReload LiveReload { get; set; }
-        public Func<ViewManager, ILiveReload> LiveReloadFactory { get; set; }
+        public Func<RazorViewManager, ILiveReload> LiveReloadFactory { get; set; }
         public RenderPartialDelegate RenderPartialFn { get; set; }
 
         static bool DenyPathsWithLeading_(string path)
@@ -49,8 +52,8 @@ namespace ServiceStack.Razor
         public bool WatchForModifiedPages { get; set; }
 
         //managers
-        protected ViewManager ViewManager;
-        protected PageResolver PageResolver;
+        protected RazorViewManager ViewManager;
+        protected RazorPageResolver PageResolver;
 
         public void Register(IAppHost appHost)
         {
@@ -71,8 +74,9 @@ namespace ServiceStack.Razor
 
             if (this.RenderPartialFn == null)
             {
-                this.RenderPartialFn = (pageName, model, renderHtml, writer, htmlHelper, httpReq) => {
-                    foreach (var viewEngine in appHost.ViewEngines) 
+                this.RenderPartialFn = (pageName, model, renderHtml, writer, htmlHelper, httpReq) =>
+                {
+                    foreach (var viewEngine in appHost.ViewEngines)
                     {
                         if (viewEngine == PageResolver || !viewEngine.HasView(pageName, httpReq)) continue;
                         return viewEngine.RenderPartial(pageName, model, renderHtml, writer, htmlHelper);
@@ -94,8 +98,8 @@ namespace ServiceStack.Razor
 
             Instance = this;
 
-            this.ViewManager = new ViewManager(this, VirtualPathProvider);
-            this.PageResolver = new PageResolver(this, this.ViewManager);
+            this.ViewManager = new RazorViewManager(this, VirtualPathProvider);
+            this.PageResolver = new RazorPageResolver(this, this.ViewManager);
 
             this.ViewManager.Init();
 
@@ -107,14 +111,14 @@ namespace ServiceStack.Razor
             return this;
         }
 
-        static ILiveReload CreateLiveReload(ViewManager viewManager)
+        static ILiveReload CreateLiveReload(RazorViewManager viewManager)
         {
             return new FileSystemWatcherLiveReload(viewManager);
         }
 
         public RazorPage FindByPathInfo(string pathInfo)
         {
-            return ViewManager.GetRazorViewByPathInfo(pathInfo);
+            return ViewManager.GetPageByPathInfo(pathInfo);
         }
 
         public void ProcessRazorPage(IHttpRequest httpReq, RazorPage contentPage, object model, IHttpResponse httpRes)
@@ -129,7 +133,17 @@ namespace ServiceStack.Razor
 
         public RazorPage AddPage(string filePath)
         {
-            return ViewManager.AddRazorPage(filePath);
+            return ViewManager.AddPage(filePath);
+        }
+
+        public RazorPage GetPageByName(string pageName)
+        {
+            return ViewManager.GetPageByName(pageName);
+        }
+
+        public RazorPage GetPageByPathInfo(string pathInfo)
+        {
+            return ViewManager.GetPageByPathInfo(pathInfo);
         }
 
         public RazorPage CreatePage(string razorContents)
@@ -144,29 +158,49 @@ namespace ServiceStack.Razor
             var tmpPath = "/__tmp/{0}.cshtml".Fmt(Guid.NewGuid().ToString("N"));
             writableFileProvider.AddFile(tmpPath, razorContents);
 
-            return ViewManager.AddRazorPage(tmpPath);
+            return ViewManager.AddPage(tmpPath);
         }
 
-        public string RenderToHtml(string filePath, object dto = null)
+        public string RenderToHtml(string filePath, object model = null, string layout = null)
         {
-            var razorView = ViewManager.GetRazorView(filePath);
+            var razorView = ViewManager.GetPage(filePath);
             if (razorView == null)
                 throw new FileNotFoundException("Razor file not found", filePath);
 
-            return RenderToHtml(razorView, dto);
+            return RenderToHtml(razorView, model: model, layout: layout);
         }
 
-        public string RenderToHtml(RazorPage razorPage, object dto = null)
+        public string CreateAndRenderToHtml(string razorContents, object model = null, string layout = null)
+        {
+            var page = CreatePage(razorContents);
+            return RenderToHtml(page, model: model, layout: layout);
+        }
+
+        public string RenderToHtml(RazorPage razorPage, object model = null, string layout = null)
+        {
+            IRazorView razorView;
+            return RenderToHtml(razorPage, out razorView, model: model, layout: layout);
+        }
+
+        public string RenderToHtml(RazorPage razorPage, out IRazorView razorView, object model = null, string layout = null)
         {
             if (razorPage == null)
                 throw new ArgumentNullException("razorPage");
 
             var mqContext = new MqRequestContext();
+
+            var httpReq = new MqRequest(mqContext);
+            if (layout != null)
+            {
+                httpReq.Items[RazorPageResolver.LayoutKey] = layout;
+            }
+
             var httpRes = new MqResponse(mqContext);
-            PageResolver.ResolveAndExecuteRazorPage(
-                httpReq: new MqRequest(mqContext),
+
+            razorView = PageResolver.ResolveAndExecuteRazorPage(
+                httpReq: httpReq,
                 httpRes: httpRes,
-                dto: dto,
+                model: model,
                 razorPage: razorPage);
 
             var ms = (MemoryStream)httpRes.OutputStream;

@@ -80,12 +80,13 @@
     <Compile Include="Compilation\IRazorHost.cs" />
     <Compile Include="Compilation\RazorPageHost.cs" />
     <Compile Include="DynamicRequestObject.cs" />
-    <Compile Include="Managers\PageResolver.cs" />
+    <Compile Include="Managers\RazorPageResolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RazorFormat.cs" />
     <Compile Include="Managers\RazorPage.cs" />
-    <Compile Include="Managers\ViewManager.cs" />
+    <Compile Include="Managers\RazorViewManager.cs" />
     <Compile Include="RazorHandler.cs" />
+    <Compile Include="RazorPageExtensions.cs" />
     <Compile Include="ViewPage.cs" />
     <Compile Include="ViewPageBase.cs" />
   </ItemGroup>

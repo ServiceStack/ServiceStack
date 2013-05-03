@@ -5,34 +5,14 @@ using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Razor
 {
-    public abstract class ViewPage : ViewPageBase<dynamic>, IRazorViewPage
+    public abstract class ViewPage : ViewPageBase<dynamic>, IRazorView
 	{
 		public HtmlHelper Html = new HtmlHelper();
 
-        //private IViewEngine viewEngine;
-        //public override IViewEngine ViewEngine
-        //{
-        //    get { return viewEngine; }
-        //    set
-        //    {
-        //        Html.ViewEngine = viewEngine = value;
-        //    }
-        //}
-		
-        //public new dynamic Model { get; set; }
-		
 		public override Type ModelType
 		{
 			get { return typeof(DynamicRequestObject); }
 		}
-		
-        //public override void Init(IRazorViewEngine viewEngine, ViewDataDictionary viewData, IHttpRequest httpReq, IHttpResponse httpRes)
-        //{
-        //    this.Request = httpReq;
-        //    this.Response = httpRes;
-        //    Html.Init(httpReq, httpRes, viewEngine, viewData, null);
-        //    this.Model = new DynamicRequestObject(httpReq);
-        //}
 
         public void Init(IViewEngine viewEngine, IHttpRequest httpReq, IHttpResponse httpRes)
         {
@@ -40,6 +20,12 @@ namespace ServiceStack.Razor
             base.Response = httpRes;
 
             Html.Init(viewEngine: viewEngine, httpReq: httpReq, httpRes: httpRes, razorPage:this);
+        }
+
+        public override void SetModel(object o)
+        {
+            base.SetModel(o);
+            Html.SetModel(o);
         }
 
         public void WriteTo(StreamWriter writer)
@@ -50,7 +36,7 @@ namespace ServiceStack.Razor
         }
 	}
 
-    public abstract class ViewPage<TModel> : ViewPageBase<TModel>, IRazorViewPage where TModel : class
+    public abstract class ViewPage<TModel> : ViewPageBase<TModel>, IRazorView where TModel : class
     {
         public HtmlHelper<TModel> Html = new HtmlHelper<TModel>();
 
@@ -67,22 +53,18 @@ namespace ServiceStack.Razor
             Html.Init(viewEngine: viewEngine, httpReq: httpReq, httpRes: httpRes, razorPage: this);
         }
 
+        public override void SetModel(object o)
+        {
+            base.SetModel(o);
+            Html.SetModel(o);
+        }
+
         public void WriteTo(StreamWriter writer)
         {
             this.Output = Html.Writer = writer;
             this.Execute();
             this.Output.Flush();
         }
-
-        //private IViewEngine viewEngine;
-        //public override IViewEngine ViewEngine
-        //{
-        //    get { return viewEngine; }
-        //    set
-        //    {
-        //        Html.ViewEngine = viewEngine = value;
-        //    }
-        //}
 
         public override Type ModelType
         {
