@@ -16,6 +16,7 @@ using ServiceStack.Common.Extensions;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Html;
 using ServiceStack.IO;
+using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Text;
 
@@ -23,6 +24,8 @@ namespace ServiceStack.Razor.Compilation
 {
     public class RazorPageHost : RazorEngineHost, IRazorHost
     {
+        private static ILog log = LogManager.GetLogger(typeof(RazorPageHost));
+
         private static readonly IEnumerable<string> _defaultImports = new[] {
             "System",
             "System.Collections.Generic",
@@ -81,7 +84,7 @@ namespace ServiceStack.Razor.Compilation
                 templateTypeName: typeof(HelperResult).FullName,
                 defineSectionMethodName: "DefineSection",
                 beginContextMethodName: "BeginContext",
-                endContextMethodName: "EndContext"                
+                endContextMethodName: "EndContext"
                 )
                 {
                     ResolveUrlMethodName = "Href",
@@ -149,10 +152,16 @@ namespace ServiceStack.Razor.Compilation
             return results;
         }
 
-        public Dictionary<string,string> DebugSourceFiles = new Dictionary<string, string>(); 
+        public Dictionary<string, string> DebugSourceFiles = new Dictionary<string, string>();
 
         public Type Compile()
         {
+            Type forceLoadOfRuntimeBinder = typeof(Microsoft.CSharp.RuntimeBinder.Binder);
+            if (forceLoadOfRuntimeBinder == null)
+            {
+                log.Warn("Force load of .NET 4.0+ RuntimeBinder in Microsoft.CSharp.dll");
+            }
+
             var razorResults = Generate();
 
             var @params = new CompilerParameters
@@ -164,7 +173,6 @@ namespace ServiceStack.Razor.Compilation
                     TempFiles = { KeepFiles = true }
                 };
 
-            Type forceLoadOfRuntimeBinder = Type.GetType("Microsoft.CSharp.RuntimeBinder.Binder");
             var assemblies = CompilerServices
                 .GetLoadedAssemblies()
                 .Where(a => !a.IsDynamic)
@@ -178,16 +186,7 @@ namespace ServiceStack.Razor.Compilation
 
             OnCodeCompletion();
 
-            foreach (string tempFile in @params.TempFiles)
-            {
-                if (tempFile.EndsWith(".cs"))
-                {
-                    var src = System.IO.File.ReadAllText(tempFile);
-                    DebugSourceFiles[DefaultClassName] = src;
-                }
-            }
-
-            var tempFilesMarkedForDeletion = new TempFileCollection(null);
+            var tempFilesMarkedForDeletion = new TempFileCollection(null); 
             @params.TempFiles
                    .OfType<string>()
                    .ForEach(file => tempFilesMarkedForDeletion.AddFile(file, false));
@@ -205,9 +204,20 @@ namespace ServiceStack.Razor.Compilation
                                             .FileName;
 
                     var sourceCode = "";
-                    if (System.IO.File.Exists(sourceFile))
+                    if (!string.IsNullOrEmpty(sourceFile) && System.IO.File.Exists(sourceFile))
                     {
                         sourceCode = System.IO.File.ReadAllText(sourceFile);
+                    }
+                    else
+                    {
+                        foreach (string tempFile in @params.TempFiles)
+                        {
+                            if (tempFile.EndsWith(".cs"))
+                            {
+                                sourceCode = System.IO.File.ReadAllText(tempFile);
+                            }
+                        }
+
                     }
                     throw new HttpCompileException(results, sourceCode);
                 }
@@ -342,7 +352,7 @@ namespace ServiceStack.Razor.Compilation
 
             if (_modelStatementFound)
             {
-                Context.OnError(endModelLocation, String.Format(CultureInfo.CurrentCulture, 
+                Context.OnError(endModelLocation, String.Format(CultureInfo.CurrentCulture,
                     MvcResources.MvcRazorCodeParser_OnlyOneModelStatementIsAllowed, ModelKeyword));
             }
 
@@ -355,7 +365,7 @@ namespace ServiceStack.Razor.Compilation
         {
             return new SetModelTypeCodeGenerator(model, GenericTypeFormatString);
         }
-    
+
         protected override void LayoutDirective()
         {
             AssertDirective(SyntaxConstants.CSharp.LayoutKeyword);

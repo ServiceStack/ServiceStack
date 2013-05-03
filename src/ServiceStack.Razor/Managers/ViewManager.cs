@@ -11,7 +11,6 @@ using ServiceStack.Razor.Compilation;
 using ServiceStack.Razor.Managers.RazorGen;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.Razor.Managers
@@ -29,13 +28,10 @@ namespace ServiceStack.Razor.Managers
 
         protected IRazorConfig Config { get; set; }
 
-        protected IAppHost AppHost { get; set; }
-
         protected IVirtualPathProvider PathProvider = null;
 
-        public ViewManager(IAppHost appHost, IRazorConfig viewConfig, IVirtualPathProvider virtualPathProvider)
+        public ViewManager(IRazorConfig viewConfig, IVirtualPathProvider virtualPathProvider)
         {
-            this.AppHost = appHost;
             this.Config = viewConfig;
             this.PathProvider = virtualPathProvider;
         }
@@ -53,10 +49,23 @@ namespace ServiceStack.Razor.Managers
                             .Where(IsWatchedFile);
 
             // you can override IsWatchedFile to filter
-            files.ForEach(TrackRazorPage);
+            files.ForEach(x => TrackRazorPage(x));
         }
 
-        public virtual void TrackRazorPage(IVirtualFile file)
+        public virtual RazorPage AddRazorPage(string filePath)
+        {
+            var newFile = GetVirutalFile(filePath);
+            return AddRazorPage(newFile);
+        }
+
+        public virtual RazorPage AddRazorPage(IVirtualFile file)
+        {
+            return IsWatchedFile(file) 
+                ? TrackRazorPage(file)
+                : null;
+        }
+
+        public virtual RazorPage TrackRazorPage(IVirtualFile file)
         {
             //get the base type.
             var pageBaseType = this.Config.PageBaseType;
@@ -73,9 +82,11 @@ namespace ServiceStack.Razor.Managers
 
             //add it to our pages dictionary.
             AddRazorPage(page);
+            
+            return page;
         }
 
-        protected virtual void AddRazorPage(RazorPage page)
+        protected virtual RazorPage AddRazorPage(RazorPage page)
         {
             var pagePath = GetDictionaryPagePath(page.PageHost.File);
 
@@ -87,6 +98,8 @@ namespace ServiceStack.Razor.Managers
                 var viewName = pagePath.SplitOnLast('.').First().SplitOnLast('/').Last();
                 ViewNamesMap[viewName] = pagePath;
             }
+
+            return page;
         }
 
         public virtual RazorPage GetRazorView(string absolutePath)
@@ -162,6 +175,7 @@ namespace ServiceStack.Razor.Managers
             return page;
         }
 
+        static char[] InvalidFileChars = new[]{'<','>','`'}; //Anonymous or Generic type names
         private string NormalizePath(IHttpRequest request, object dto)
         {
             if (dto != null && !(dto is DynamicRequestObject)) // this is for a view inside /views
@@ -180,7 +194,11 @@ namespace ServiceStack.Razor.Managers
                     viewName = request.OperationName;
                 }
 
-                return CombinePaths("views", Path.ChangeExtension(viewName, Config.RazorFileExtension));
+                var isInvalidName = viewName.IndexOfAny(InvalidFileChars) >= 0;
+                if (!isInvalidName)
+                {
+                    return CombinePaths("views", Path.ChangeExtension(viewName, Config.RazorFileExtension));
+                }
             }
 
             // path/to/dir/default.cshtml
@@ -194,7 +212,7 @@ namespace ServiceStack.Razor.Managers
 
         public virtual bool IsWatchedFile(IVirtualFile file)
         {
-            return this.Config.RazorFileExtension.EndsWith(file.Extension, StringComparison.InvariantCultureIgnoreCase);
+            return this.Config.RazorFileExtension.EndsWithIgnoreCase(file.Extension);
         }
 
         public virtual string GetDictionaryPagePath(string relativePath)
@@ -220,6 +238,9 @@ namespace ServiceStack.Razor.Managers
 
         public virtual string GetRelativePath(string ospath)
         {
+            if (Config.ScanRootPath == null)
+                return ospath;
+
             var relative = ospath
                 .Replace(Config.ScanRootPath, "")
                 .Replace(this.PathProvider.RealPathSeparator, "/");

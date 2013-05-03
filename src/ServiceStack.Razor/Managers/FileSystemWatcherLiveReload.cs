@@ -63,10 +63,7 @@ namespace ServiceStack.Razor.Managers
                     Debugger.Break();
                 }
 
-                var newFile = views.GetVirutalFile(e.FullPath);
-                if (!views.IsWatchedFile(newFile)) return;
-
-                views.TrackRazorPage(newFile);
+                views.AddRazorPage(e.FullPath);
             }
             catch (Exception ex)
             {
@@ -95,10 +92,7 @@ namespace ServiceStack.Razor.Managers
         {
             try
             {
-                var file = views.GetVirutalFile(e.FullPath);
-                if (!views.IsWatchedFile(file)) return;
-
-                views.TrackRazorPage(file);
+                views.AddRazorPage(e.FullPath);
             }
             catch (Exception ex)
             {

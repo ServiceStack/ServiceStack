@@ -6,16 +6,16 @@ using System.Text;
 using System.Web;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
-using ServiceStack.DataAnnotations;
 using ServiceStack.Html;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.Razor.Managers
 {
+    public delegate string RenderPartialDelegate(string pageName, object model, bool renderHtml, StreamWriter writer = null, HtmlHelper htmlHelper = null, IHttpRequest httpReq = null);
+
     /// <summary>
     /// A common hook into ServiceStack and the hosting infrastructure used to resolve requests.
     /// </summary>
@@ -25,24 +25,19 @@ namespace ServiceStack.Razor.Managers
 
         private static readonly UTF8Encoding UTF8EncodingWithoutBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier:false);
 
-        private readonly IAppHost appHost;
         private readonly IRazorConfig config;
         private readonly ViewManager viewManager;
+        public RenderPartialDelegate RenderPartialFn { get; set; }
 
-        public PageResolver(IAppHost appHost, IRazorConfig config, ViewManager viewManager)
+        public PageResolver(IRazorConfig config, ViewManager viewManager)
         {
             this.RequestName = "Razor_PageResolver";
 
-            this.appHost = appHost;
-
             this.config = config;
             this.viewManager = viewManager;
-
-            this.appHost.CatchAllHandlers.Add(OnCatchAll);
-            this.appHost.ViewEngines.Add(this);
         }
 
-        private IHttpHandler OnCatchAll(string httpmethod, string pathInfo, string filepath)
+        public IHttpHandler CatchAllHandler(string httpmethod, string pathInfo, string filepath)
         {
             //does not have a .cshtml extension
             var ext = Path.GetExtension(pathInfo);
@@ -63,7 +58,7 @@ namespace ServiceStack.Razor.Managers
                     ? pathInfo.Substring(0, pathInfo.Length - config.DefaultPageName.Length)
                     : pathInfo.WithoutExtension();
 
-                var webHostUrl = appHost.Config.WebHostUrl;
+                var webHostUrl = config.WebHostUrl;
                 return new RedirectHttpHandler
                 {
                     AbsoluteUrl = webHostUrl.IsNullOrEmpty()
@@ -109,21 +104,21 @@ namespace ServiceStack.Razor.Managers
             return true;
         }
 
-        public void ResolveAndExecuteRazorPage(IHttpRequest httpReq, IHttpResponse httpRes, object dto, RazorPage razorView=null)
+        public void ResolveAndExecuteRazorPage(IHttpRequest httpReq, IHttpResponse httpRes, object dto, RazorPage razorPage=null)
         {
             var viewName = httpReq.GetItem("View") as string;
-            if (razorView == null && viewName != null)
+            if (razorPage == null && viewName != null)
             {
-                razorView = this.viewManager.GetRazorViewByName(viewName);
+                razorPage = this.viewManager.GetRazorViewByName(viewName);
             }
             else
             {
-                razorView = razorView
+                razorPage = razorPage
                     ?? this.viewManager.GetRazorViewByName(httpReq.OperationName) //Request DTO
                     ?? this.viewManager.GetRazorView(httpReq, dto);  // Response DTO
             }
 
-            if (razorView == null)
+            if (razorPage == null)
             {
                 httpRes.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
@@ -131,7 +126,7 @@ namespace ServiceStack.Razor.Managers
             
             using (var writer = new StreamWriter(httpRes.OutputStream, UTF8EncodingWithoutBom))
             {
-                var page = CreateRazorPageInstance(httpReq, httpRes, dto, razorView);
+                var page = CreateRazorPageInstance(httpReq, httpRes, dto, razorPage);
 
                 var includeLayout = !(httpReq.GetParam("format") ?? "").Contains("bare");
                 if (includeLayout)
@@ -147,17 +142,19 @@ namespace ServiceStack.Razor.Managers
                             ?? DefaultLayoutName;
 
                         var layoutView = this.viewManager.GetRazorViewByName(layout, httpReq, dto);
-                        var layoutPage = CreateRazorPageInstance(httpReq, httpRes, dto, layoutView);
+                        if (layoutView != null)
+                        {
+                            var layoutPage = CreateRazorPageInstance(httpReq, httpRes, dto, layoutView);
 
-                        var childBody = ms.ToArray().FromUtf8Bytes();
-                        layoutPage.SetChildPage(page, childBody);
-                        layoutPage.WriteTo(writer);
+                            var childBody = ms.ToArray().FromUtf8Bytes();
+                            layoutPage.SetChildPage(page, childBody);
+                            layoutPage.WriteTo(writer);
+                            return;
+                        }
                     }
                 }
-                else
-                {
-                    page.WriteTo(writer);                    
-                }
+
+                page.WriteTo(writer);
             }
         }
 
@@ -173,9 +170,9 @@ namespace ServiceStack.Razor.Managers
             page.IsValid = true;
         }
 
-        private IRazorViewPage CreateRazorPageInstance(IHttpRequest request, IHttpResponse response, object dto, RazorPage razorPage)
+        private IRazorViewPage CreateRazorPageInstance(IHttpRequest httpReq, IHttpResponse httpRes, object dto, RazorPage razorPage)
         {
-            EnsureCompiled(razorPage, response);
+            EnsureCompiled(razorPage, httpRes);
 
             //don't proceed any further, the background compiler found there was a problem compiling the page, so throw instead
             if (razorPage.CompileException != null)
@@ -186,10 +183,10 @@ namespace ServiceStack.Razor.Managers
             //else, EnsureCompiled() ensures we have a page type to work with so, create an instance of the page
             var page = (IRazorViewPage) razorPage.ActivateInstance();
 
-            page.Init(viewEngine: this, httpReq: request, httpRes: response);
+            page.Init(viewEngine: this, httpReq: httpReq, httpRes: httpRes);
 
             //deserialize the model.
-            PrepareAndSetModel(page, request, dto);
+            PrepareAndSetModel(page, httpReq, dto);
         
             return page;
         }
@@ -200,7 +197,7 @@ namespace ServiceStack.Razor.Managers
             if (hasModel == null) return;
 
             if (hasModel.ModelType == typeof (DynamicRequestObject))
-                dto = new DynamicRequestObject(httpReq);
+                dto = new DynamicRequestObject(httpReq, dto);
 
             var model = dto ?? DeserializeHttpRequest(hasModel.ModelType, httpReq, httpReq.ContentType);
 
@@ -234,17 +231,17 @@ namespace ServiceStack.Razor.Managers
             }
             else
             {
-                foreach (var viewEngine in appHost.ViewEngines)
+                if (RenderPartialFn != null)
                 {
-                    if (viewEngine == this || !viewEngine.HasView(pageName, httpReq)) continue;
-                    viewEngine.RenderPartial(pageName, model, renderHtml, writer, htmlHelper);
-                    return null;
+                    RenderPartialFn(pageName, model, renderHtml, writer, htmlHelper, httpReq);
                 }
-                writer.Write("<!--{0} not found-->".Fmt(pageName));
+                else
+                {
+                    writer.Write("<!--No RenderPartialFn, skipping {0}-->".Fmt(pageName));                    
+                }
             }
             return null;
         }
-
     }
 
 }
