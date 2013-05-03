@@ -19,9 +19,9 @@ namespace ServiceStack.Razor.Managers
     /// This view manager is responsible for keeping track of all the 
     /// available Razor views and states of Razor pages.
     /// </summary>
-    public class ViewManager
+    public class RazorViewManager
     {
-        public static ILog Log = LogManager.GetLogger(typeof(ViewManager));
+        public static ILog Log = LogManager.GetLogger(typeof(RazorViewManager));
 
         public Dictionary<string, RazorPage> Pages = new Dictionary<string, RazorPage>(StringComparer.InvariantCultureIgnoreCase);
         protected Dictionary<string, string> ViewNamesMap = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
@@ -30,7 +30,7 @@ namespace ServiceStack.Razor.Managers
 
         protected IVirtualPathProvider PathProvider = null;
 
-        public ViewManager(IRazorConfig viewConfig, IVirtualPathProvider virtualPathProvider)
+        public RazorViewManager(IRazorConfig viewConfig, IVirtualPathProvider virtualPathProvider)
         {
             this.Config = viewConfig;
             this.PathProvider = virtualPathProvider;
@@ -49,23 +49,23 @@ namespace ServiceStack.Razor.Managers
                             .Where(IsWatchedFile);
 
             // you can override IsWatchedFile to filter
-            files.ForEach(x => TrackRazorPage(x));
+            files.ForEach(x => TrackPage(x));
         }
 
-        public virtual RazorPage AddRazorPage(string filePath)
+        public virtual RazorPage AddPage(string filePath)
         {
             var newFile = GetVirutalFile(filePath);
-            return AddRazorPage(newFile);
+            return AddPage(newFile);
         }
 
-        public virtual RazorPage AddRazorPage(IVirtualFile file)
+        public virtual RazorPage AddPage(IVirtualFile file)
         {
             return IsWatchedFile(file) 
-                ? TrackRazorPage(file)
+                ? TrackPage(file)
                 : null;
         }
 
-        public virtual RazorPage TrackRazorPage(IVirtualFile file)
+        public virtual RazorPage TrackPage(IVirtualFile file)
         {
             //get the base type.
             var pageBaseType = this.Config.PageBaseType;
@@ -81,12 +81,12 @@ namespace ServiceStack.Razor.Managers
             };
 
             //add it to our pages dictionary.
-            AddRazorPage(page);
+            AddPage(page);
             
             return page;
         }
 
-        protected virtual RazorPage AddRazorPage(RazorPage page)
+        protected virtual RazorPage AddPage(RazorPage page)
         {
             var pagePath = GetDictionaryPagePath(page.PageHost.File);
 
@@ -102,14 +102,14 @@ namespace ServiceStack.Razor.Managers
             return page;
         }
 
-        public virtual RazorPage GetRazorView(string absolutePath)
+        public virtual RazorPage GetPage(string absolutePath)
         {
             RazorPage page;
             this.Pages.TryGetValue(absolutePath, out page);
             return page;
         }
 
-        public virtual RazorPage GetRazorViewByPathInfo(string pathInfo)
+        public virtual RazorPage GetPageByPathInfo(string pathInfo)
         {
             RazorPage page;
             if (this.Pages.TryGetValue(pathInfo, out page))
@@ -124,15 +124,15 @@ namespace ServiceStack.Razor.Managers
             return null;
         }
 
-        public virtual RazorPage GetRazorView(IHttpRequest request, object dto)
+        public virtual RazorPage GetPage(IHttpRequest request, object dto)
         {
             var normalizePath = NormalizePath(request, dto);
-            return GetRazorView(normalizePath);
+            return GetPage(normalizePath);
         }
 
-        public virtual RazorPage GetRazorViewByName(string pageName)
+        public virtual RazorPage GetPageByName(string pageName)
         {
-            return GetRazorViewByName(pageName, null, null);
+            return GetPageByName(pageName, null, null);
         }
 
         private static string CombinePaths(params string[] paths)
@@ -143,7 +143,7 @@ namespace ServiceStack.Razor.Managers
             return combinedPath;
         }
 
-        public virtual RazorPage GetRazorViewByName(string pageName, IHttpRequest request, object dto)
+        public virtual RazorPage GetPageByName(string pageName, IHttpRequest request, object dto)
         {
             RazorPage page = null;
             var htmlPageName = Path.ChangeExtension(pageName, Config.RazorFileExtension);

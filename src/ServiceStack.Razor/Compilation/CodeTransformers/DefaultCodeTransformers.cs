@@ -1,7 +1,10 @@
 ﻿using System;
 using System.CodeDom;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Web.Razor.Generator;
+using ServiceStack.Text;
 
 namespace ServiceStack.Razor.Compilation.CodeTransformers
 {
@@ -85,20 +88,51 @@ namespace ServiceStack.Razor.Compilation.CodeTransformers
 
     public class SetBaseType : RazorCodeTransformerBase
     {
+        private const string DefaultModelTypeName = "dynamic";
+        private readonly bool isGenericType;
+
         private readonly string _typeName;
-        public SetBaseType(string typeName)
+        public SetBaseType(string typeName, bool isGenericType=true)
         {
-            _typeName = typeName;
+            _typeName = typeName.SplitOnLast("`")[0]; //get clean generic name without 'GenericType`1' n args suffix
+            this.isGenericType = isGenericType;
         }
 
         public SetBaseType(Type type)
-            : this(type.FullName)
+            : this(type.FullName, type.IsGenericType)
         {
         }
 
         public override void Initialize(RazorPageHost razorHost, IDictionary<string, string> directives)
         {
+            base.Initialize(razorHost, directives);
+
+            //string baseClass = razorHost.DefaultBaseClass;
             razorHost.DefaultBaseClass = _typeName;
+
+            // The CSharpRazorCodeGenerator decides to generate line pragmas based on if the file path is available. 
+            //Set it to an empty string if we do not want to generate them.
+
+            //var path = razorHost.EnableLinePragmas ? razorHost.File.RealPath : String.Empty;
+            //razorHost.CodeGenerator = new CSharpRazorCodeGenerator(razorHost.DefaultClassName, razorHost.DefaultNamespace, path, razorHost)
+            //{
+            //    GenerateLinePragmas = razorHost.EnableLinePragmas
+            //};
+            //razorHost.Parser = new ServiceStackCSharpCodeParser();
+        }
+
+        public override void ProcessGeneratedCode(CodeCompileUnit codeCompileUnit, CodeNamespace generatedNamespace, CodeTypeDeclaration generatedClass, CodeMemberMethod executeMethod)
+        {
+            base.ProcessGeneratedCode(codeCompileUnit, generatedNamespace, generatedClass, executeMethod);
+            if (generatedClass.BaseTypes.Count > 0)
+            {
+                var codeTypeReference = generatedClass.BaseTypes[0];
+                if (!codeTypeReference.BaseType.Contains('<') && isGenericType)
+                {
+                    // Use the default model if it wasn't specified by the user.
+                    codeTypeReference.BaseType += '<' + DefaultModelTypeName + '>';
+                }
+            }
         }
     }
 

@@ -69,8 +69,8 @@ namespace ServiceStack.Razor
             get { return (IViewBag)ViewBag; }
         }
 
-        public IRazorViewPage ParentPage { get; set; }
-        public IRazorViewPage ChildPage { get; set; }
+        public IRazorView ParentPage { get; set; }
+        public IRazorView ChildPage { get; set; }
         public string ChildBody { get; set; }
 
         public Dictionary<string, Action> childSections = new Dictionary<string, Action>();
@@ -216,7 +216,7 @@ namespace ServiceStack.Razor
             return true;
         }
 
-        public void SetChildPage(IRazorViewPage childPage, string childBody)
+        public void SetChildPage(IRazorView childPage, string childBody)
         {
             this.ChildPage = childPage;
             this.ChildBody = childBody;
@@ -299,9 +299,10 @@ namespace ServiceStack.Razor
 
         public TModel Model { get; set; }
         public abstract Type ModelType { get; }
-        public void SetModel(object o)
+        
+        public virtual void SetModel(object o)
         {
-            this.Model = o as TModel;
+            this.Model = o as TModel;            
         }
 
         public UrlHelper Url = new UrlHelper();

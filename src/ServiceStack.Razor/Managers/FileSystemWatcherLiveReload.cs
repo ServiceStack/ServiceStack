@@ -20,9 +20,9 @@ namespace ServiceStack.Razor.Managers
         /// system watcher will invalidate pages and queue them for recompilation.
         /// </summary>
         protected FileSystemWatcher FileSystemWatcher;
-        private readonly ViewManager views;
+        private readonly RazorViewManager views;
 
-        public FileSystemWatcherLiveReload(ViewManager views)
+        public FileSystemWatcherLiveReload(RazorViewManager views)
         {
             this.views = views;
         }
@@ -63,7 +63,7 @@ namespace ServiceStack.Razor.Managers
                     Debugger.Break();
                 }
 
-                views.AddRazorPage(e.FullPath);
+                views.AddPage(e.FullPath);
             }
             catch (Exception ex)
             {
@@ -92,7 +92,7 @@ namespace ServiceStack.Razor.Managers
         {
             try
             {
-                views.AddRazorPage(e.FullPath);
+                views.AddPage(e.FullPath);
             }
             catch (Exception ex)
             {

@@ -57,22 +57,12 @@ namespace ServiceStack.Html
         public StreamWriter Writer { get; set; }
         public IViewEngine ViewEngine { get; set; }
 
-        public IRazorViewPage RazorPage { get; protected set; }
+        public IRazorView RazorPage { get; protected set; }
         public MarkdownPage MarkdownPage { get; protected set; }
 		public Dictionary<string, object> ScopeArgs { get; protected set; }
 	    private ViewDataDictionary viewData;
 
-        public void SetState(HtmlHelper htmlHelper)
-        {
-            if (htmlHelper == null) return;
-
-            HttpRequest = htmlHelper.HttpRequest;
-            HttpResponse = htmlHelper.HttpResponse;
-            ScopeArgs = htmlHelper.ScopeArgs;
-            viewData = htmlHelper.ViewData;
-        }
-
-        public void Init(IViewEngine viewEngine, IHttpRequest httpReq, IHttpResponse httpRes, IRazorViewPage razorPage, 
+        public void Init(IViewEngine viewEngine, IHttpRequest httpReq, IHttpResponse httpRes, IRazorView razorPage, 
             Dictionary<string, object> scopeArgs = null, ViewDataDictionary viewData = null)
         {
             ViewEngine = viewEngine;
@@ -80,7 +70,7 @@ namespace ServiceStack.Html
             HttpResponse = httpRes;
             RazorPage = razorPage;
             //ScopeArgs = scopeArgs;
-            //this.viewData = viewData;
+            this.viewData = viewData;
         }
 
 	    private static int counter = 0;
@@ -175,6 +165,11 @@ namespace ServiceStack.Html
 	        get { return viewData ?? (viewData = new ViewDataDictionary()); }
 	        protected set { viewData = value; }
 	    }
+
+        public void SetModel(object model)
+        {
+            viewData = new ViewDataDictionary(model);
+        }
 
         public IViewDataContainer ViewDataContainer { get; internal set; }
 
@@ -444,7 +439,7 @@ namespace ServiceStack.Html
 			var strContent = content as string;
             return MvcHtmlString.Create(strContent ?? content.ToString()); //MvcHtmlString
 		}
-	}
+    }
 
 	public static class HtmlHelperExtensions
 	{

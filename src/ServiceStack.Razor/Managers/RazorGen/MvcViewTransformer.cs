@@ -54,9 +54,11 @@ namespace ServiceStack.Razor.Managers.RazorGen
             // The CSharpRazorCodeGenerator decides to generate line pragmas based on if the file path is available. Set it to an empty string if we 
             // do not want to generate them.
             string path = razorHost.EnableLinePragmas ? razorHost.File.RealPath : String.Empty;
-            razorHost.CodeGenerator = new CSharpRazorCodeGenerator(razorHost.DefaultClassName, razorHost.DefaultNamespace, path, razorHost);
-            razorHost.CodeGenerator.GenerateLinePragmas = razorHost.EnableLinePragmas;
-//            razorHost.Parser = new MvcCSharpRazorCodeParser();
+            razorHost.CodeGenerator = new CSharpRazorCodeGenerator(razorHost.DefaultClassName, razorHost.DefaultNamespace, path, razorHost)
+            {
+                GenerateLinePragmas = razorHost.EnableLinePragmas
+            };
+            //razorHost.Parser = new MvcCSharpRazorCodeParser();
         }
 
         public override void ProcessGeneratedCode(CodeCompileUnit codeCompileUnit, CodeNamespace generatedNamespace, CodeTypeDeclaration generatedClass, CodeMemberMethod executeMethod)
@@ -67,7 +69,7 @@ namespace ServiceStack.Razor.Managers.RazorGen
                 var codeTypeReference = (CodeTypeReference)generatedClass.BaseTypes[0];
                 if (_isSpecialPage)
                 {
-//                    codeTypeReference.BaseType = typeof(ViewStartPage).FullName;
+                    //                    codeTypeReference.BaseType = typeof(ViewStartPage).FullName;
                 }
                 else if (!codeTypeReference.BaseType.Contains('<'))
                 {

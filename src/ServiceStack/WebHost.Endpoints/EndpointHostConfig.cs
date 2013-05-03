@@ -225,8 +225,8 @@ namespace ServiceStack.WebHost.Endpoints
                         .ForEach(x => razorNamespaces.Add(x));
                 }
 
-                log.Debug("Loaded Razor Namespaces: in {0}: {1}: {2}"
-                    .Fmt(configPath, "~/Web.config".MapHostAbsolutePath(), razorNamespaces.Dump()));
+                //log.Debug("Loaded Razor Namespaces: in {0}: {1}: {2}"
+                //    .Fmt(configPath, "~/Web.config".MapHostAbsolutePath(), razorNamespaces.Dump()));
 
                 return razorNamespaces;
             }
