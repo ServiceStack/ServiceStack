@@ -78,6 +78,10 @@
     <Reference Include="System.Web.ApplicationServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\..\lib\sqlite3.dll">
+      <Link>sqlite3.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="App.config" />
     <Content Include="default.cshtml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -118,10 +122,6 @@
     <Content Include="Views\Shared\SimpleLayout2.cshtml" />
     <None Include="Views\Shared\_Layout.shtml" />
     <None Include="Views\Shared\HtmlReport.shtml" />
-    <Content Include="..\..\lib\tests\sqlite3.dll">
-      <Link>sqlite3.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="README.txt" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
