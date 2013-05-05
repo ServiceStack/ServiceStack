@@ -18,6 +18,7 @@ using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Markdown;
 using ServiceStack.ServiceHost;
+using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
@@ -101,7 +102,11 @@ namespace ServiceStack.WebHost.Endpoints
 						},
                         AppendUtf8CharsetOnContentTypes = new HashSet<string> { ContentType.Json, },
                         RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>>(),
-												RouteInferenceStrategies = new List<Func<Type, string>>(),
+                        RouteNamingConventions = new List<RouteNamingConventionDelegate> {
+					        RouteNamingConvention.WithRequestDtoName,
+					        RouteNamingConvention.WithMatchingAttributes,
+					        RouteNamingConvention.WithMatchingPropertyNames
+                        },
                         CustomHttpHandlers = new Dictionary<HttpStatusCode, IServiceStackHttpHandler>(),
                         GlobalHtmlErrorHttpHandler = null,
                         MapExceptionToStatusCode = new Dictionary<Type, int>(),
@@ -165,7 +170,7 @@ namespace ServiceStack.WebHost.Endpoints
             this.AddMaxAgeForStaticMimeTypes = instance.AddMaxAgeForStaticMimeTypes;
             this.AppendUtf8CharsetOnContentTypes = instance.AppendUtf8CharsetOnContentTypes;
             this.RawHttpHandlers = instance.RawHttpHandlers;
-						this.RouteInferenceStrategies = instance.RouteInferenceStrategies;
+            this.RouteNamingConventions = instance.RouteNamingConventions;
             this.CustomHttpHandlers = instance.CustomHttpHandlers;
             this.GlobalHtmlErrorHttpHandler = instance.GlobalHtmlErrorHttpHandler;
             this.MapExceptionToStatusCode = instance.MapExceptionToStatusCode;
@@ -414,7 +419,7 @@ namespace ServiceStack.WebHost.Endpoints
 
         public List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers { get; set; }
 
-				public List<Func<Type, string>> RouteInferenceStrategies { get; set; }
+        public List<RouteNamingConventionDelegate> RouteNamingConventions { get; set; }
 
         public Dictionary<HttpStatusCode, IServiceStackHttpHandler> CustomHttpHandlers { get; set; }
         public IServiceStackHttpHandler GlobalHtmlErrorHttpHandler { get; set; }

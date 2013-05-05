@@ -24,6 +24,14 @@ namespace ServiceStack.ServiceInterface.Testing
             VirtualPathProvider = new FileSystemVirtualPathProvider(this, "~".MapServerPath());
         }
 
+        public static void LoadTestHost(Assembly assembly=null)
+        {
+            var appHost = new BasicAppHost();
+            assembly = assembly ?? Assembly.GetCallingAssembly();
+
+            EndpointHost.ConfigureHost(appHost, "Test BasicAppHost", new ServiceManager(assembly));
+        }
+
         public void RegisterAs<T, TAs>() where T : TAs
         {
             this.Container.RegisterAs<T, TAs>();
