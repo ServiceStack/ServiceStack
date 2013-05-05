@@ -123,35 +123,38 @@ namespace ServiceStack.Razor.Compilation
 
         public GeneratorResults Generate()
         {
-            _codeTransformer.Initialize(this, _directives);
-
-            // Create the engine
-            var engine = new RazorTemplateEngine(this);
-
-            // Generate code 
-            GeneratorResults results = null;
-            try
+            lock (this)
             {
-                using (var stream = File.OpenRead())
-                using (var reader = new StreamReader(stream, Encoding.Default, detectEncodingFromByteOrderMarks: true))
+                _codeTransformer.Initialize(this, _directives);
+
+                // Create the engine
+                var engine = new RazorTemplateEngine(this);
+
+                // Generate code 
+                GeneratorResults results = null;
+                try
                 {
-                    results = engine.GenerateCode(reader, className: DefaultClassName, rootNamespace: DefaultNamespace, sourceFileName: this.File.RealPath);
+                    using (var stream = File.OpenRead())
+                    using (var reader = new StreamReader(stream, Encoding.Default, detectEncodingFromByteOrderMarks: true))
+                    {
+                        results = engine.GenerateCode(reader, className: DefaultClassName, rootNamespace: DefaultNamespace, sourceFileName: this.File.RealPath);
+                    }
                 }
-            }
-            catch (Exception e)
-            {
-                OnGenerateError(4, e.Message, 1, 1);
-                //Returning null signifies that generation has failed
-                return null;
-            }
+                catch (Exception e)
+                {
+                    OnGenerateError(4, e.Message, 1, 1);
+                    //Returning null signifies that generation has failed
+                    return null;
+                }
 
-            // Output errors
-            foreach (RazorError error in results.ParserErrors)
-            {
-                OnGenerateError(4, error.Message, (uint)error.Location.LineIndex + 1, (uint)error.Location.CharacterIndex + 1);
-            }
+                // Output errors
+                foreach (RazorError error in results.ParserErrors)
+                {
+                    OnGenerateError(4, error.Message, (uint)error.Location.LineIndex + 1, (uint)error.Location.CharacterIndex + 1);
+                }
 
-            return results;
+                return results;
+            }
         }
 
         public Dictionary<string, string> DebugSourceFiles = new Dictionary<string, string>();

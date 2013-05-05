@@ -272,6 +272,7 @@ namespace RazorRockstars.Web
                     }
                     catch (Exception ex) {
                         errors.Add(ex);
+                        Assert.Fail("#" + count + "  - " + ex.Message + ":: " + ex.GetResponseBody());
                     }
                 }));
 
