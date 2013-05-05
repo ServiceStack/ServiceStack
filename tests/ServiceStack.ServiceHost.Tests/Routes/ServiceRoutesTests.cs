@@ -9,10 +9,18 @@ namespace ServiceStack.ServiceHost.Tests.Routes
     [TestFixture]
     public class ServiceRoutesTests
     {
+        BasicAppHost loadAppHost;
+
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
-            BasicAppHost.LoadTestHost();
+            loadAppHost = new BasicAppHost().Init();
+        }
+
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            loadAppHost.Dispose();
         }
 
         [Test]

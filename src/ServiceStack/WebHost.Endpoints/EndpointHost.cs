@@ -437,5 +437,10 @@ namespace ServiceStack.WebHost.Endpoints
             }
             catch (Exception ex) { }
         }
+
+        public static void Dispose()
+        {
+            AppHost = null;
+        }
     }
 }

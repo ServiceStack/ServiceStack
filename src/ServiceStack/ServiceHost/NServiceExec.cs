@@ -17,7 +17,15 @@ namespace ServiceStack.ServiceHost
     {
         static NServiceRequestExec()
         {
-            NServiceExec<TService>.CreateServiceRunnersFor<TRequest>();
+            try
+            {
+                NServiceExec<TService>.CreateServiceRunnersFor<TRequest>();
+            }
+            catch (Exception ex)
+            {
+                ex.Message.Print();
+                throw;
+            }
         }
 
         public object Execute(IRequestContext requestContext, object instance, object request)

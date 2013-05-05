@@ -12,6 +12,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         [Test]
         public void Simple_static_example()
         {
+            RazorFormat.Instance = null;
             var razor = new RazorFormat {
                 VirtualPathProvider = new InMemoryVirtualPathProvider(new BasicAppHost()),
                 EnableLiveReload = false,
