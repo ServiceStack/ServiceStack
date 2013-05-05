@@ -40,6 +40,8 @@ namespace ServiceStack.Razor
     {
         public HtmlHelper<TModel> Html = new HtmlHelper<TModel>();
 
+        public int Counter { get; set; }
+
         public HtmlHelper HtmlHelper
         {
             get { return Html; }

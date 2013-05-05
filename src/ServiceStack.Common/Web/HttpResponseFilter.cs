@@ -167,8 +167,8 @@ namespace ServiceStack.Common.Web
                     };
                     responseWriter(requestContext, response, httpRes);
 
-                    ms.Position = 0;
-                    var result = new StreamReader(ms, UTF8EncodingWithoutBom).ReadToEnd();
+                    var bytes = ms.ToArray();
+                    var result = bytes.FromUtf8Bytes();
 
                     httpRes.ForceClose(); //Manually close the OutputStream
 

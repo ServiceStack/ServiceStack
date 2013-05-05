@@ -50,8 +50,8 @@ namespace ServiceStack.ServiceInterface.Testing
 
         public string ReadAsString()
         {
-            this.OutputStream.Position = 0;
-            return this.OutputStream.ReadFully().FromUtf8Bytes();
+            var bytes = ((MemoryStream)OutputStream).ToArray();
+            return bytes.FromUtf8Bytes();
         }
 
         public bool IsClosed { get; private set; }

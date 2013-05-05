@@ -35,13 +35,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Mono.Data.Sqlite">
+      <HintPath>..\..\lib\Mono.Data.Sqlite.dll</HintPath>
+    </Reference>
     <Reference Include="MsgPack, Version=0.3.0.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="ServiceStack.OrmLite, Version=3.9.9.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\ServiceStack.OrmLite.dll</HintPath>
     </Reference>
-    <Reference Include="ServiceStack.OrmLite.SqliteNET">
-      <HintPath>..\..\lib\x64\ServiceStack.OrmLite.SqliteNET.dll</HintPath>
+    <Reference Include="ServiceStack.OrmLite.Sqlite">
+      <HintPath>..\..\lib\ServiceStack.OrmLite.Sqlite.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -93,6 +96,10 @@
     <None Include="Views\CachedAllReqstars.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Content Include="..\..\lib\sqlite3.dll">
+      <Link>sqlite3.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Views\PartialModel.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
