@@ -71,7 +71,7 @@ namespace ServiceStack.Common.Utils
                 if (sb.Length > 0)
                     sb.Append("/");
 
-                sb.Append(path.TrimStart('/', '\\'));
+                sb.Append(path.Trim('/', '\\'));
             }
 
             return sb.ToString();

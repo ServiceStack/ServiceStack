@@ -53,13 +53,13 @@ namespace RazorRockstars.Console.Files
         {
             Thread.Sleep(TimeSpan.FromMinutes(10));
         }
-        
+
         [Test]
         public void Does_not_use_same_razor_page_instance()
         {
             var html = GetRazorInstanceHtml();
             Assert.That(html, Is.StringContaining("<h5>Counter: 1</h5>"));
-            
+
             html = GetRazorInstanceHtml();
             Assert.That(html, Is.StringContaining("<h5>Counter: 1</h5>"));
         }
@@ -67,19 +67,20 @@ namespace RazorRockstars.Console.Files
         private static string GetRazorInstanceHtml()
         {
             var razorFormat = RazorFormat.Instance;
-            var mockReq = new MockHttpRequest {OperationName = "RazorInstance"};
+            var mockReq = new MockHttpRequest { OperationName = "RazorInstance" };
             var mockRes = new MockHttpResponse();
-            var dto = new RockstarsResponse {Results = Rockstar.SeedData.ToList()};
+            var dto = new RockstarsResponse { Results = Rockstar.SeedData.ToList() };
             razorFormat.ProcessRequest(mockReq, mockRes, dto);
             var html = mockRes.ReadAsString();
             return html;
         }
-        
+
         public static string AcceptContentType = "*/*";
         public void Assert200(string url, params string[] containsItems)
         {
             url.Print();
-            var text = url.GetStringFromUrl(AcceptContentType, responseFilter:r => {
+            var text = url.GetStringFromUrl(AcceptContentType, responseFilter: r =>
+            {
                 if (r.StatusCode != HttpStatusCode.OK)
                     Assert.Fail(url + " did not return 200 OK");
             });
@@ -95,7 +96,8 @@ namespace RazorRockstars.Console.Files
         public void Assert200UrlContentType(string url, string contentType)
         {
             url.Print();
-            url.GetStringFromUrl(AcceptContentType, responseFilter:r => {
+            url.GetStringFromUrl(AcceptContentType, responseFilter: r =>
+            {
                 if (r.StatusCode != HttpStatusCode.OK)
                     Assert.Fail(url + " did not return 200 OK: " + r.StatusCode);
                 if (!r.ContentType.StartsWith(contentType))
