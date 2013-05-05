@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Dynamic;
 using ServiceStack.Html;
 using ServiceStack.ServiceHost;
@@ -9,11 +10,19 @@ namespace ServiceStack.Razor
     {
         private readonly IHttpRequest httpReq;
         private readonly IDictionary<string, object> model;
+        private readonly object originalModel;
+
+        public static readonly Dictionary<string, Func<object, object>> ExtensionMethods = new Dictionary<string, Func<object, object>>
+            {
+                {"AsRaw", o => o.AsRaw()},
+                {"AsRawJson", o => o.AsRawJson()},
+            };
 
         public DynamicRequestObject() { }
-        public DynamicRequestObject(IHttpRequest httpReq, object model=null)
+        public DynamicRequestObject(IHttpRequest httpReq, object model = null)
         {
             this.httpReq = httpReq;
+            this.originalModel = model;
             if (model != null)
             {
                 this.model = new RouteValueDictionary(model);
@@ -22,15 +31,23 @@ namespace ServiceStack.Razor
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
+            var name = binder.Name;
             if (model != null)
             {
-                if (model.TryGetValue(binder.Name, out result))
+                if (model.TryGetValue(name, out result))
                 {
+                    return true;
+                }
+
+                Func<object, object> modelFn;
+                if (ExtensionMethods.TryGetValue(name, out modelFn))
+                {
+                    result = (Func<object>)(() => modelFn(originalModel ?? model));
                     return true;
                 }
             }
 
-            result = httpReq.GetParam(binder.Name);
+            result = httpReq.GetParam(name);
             return result != null || base.TryGetMember(binder, out result);
         }
     }
@@ -40,7 +57,7 @@ namespace ServiceStack.Razor
         protected readonly Dictionary<string, object> dictionary = new Dictionary<string, object>();
         private readonly RenderingPage page;
 
-        public DynamicDictionary() {}
+        public DynamicDictionary() { }
 
         public DynamicDictionary(RenderingPage page)
         {
@@ -82,8 +99,8 @@ namespace ServiceStack.Razor
         {
             if (this.dictionary.TryGetValue(name, out result))
                 return true;
- 
-            return page.ChildPage != null 
+
+            return page.ChildPage != null
                 && page.ChildPage.TypedViewBag.TryGetItem(name, out result);
         }
 
