@@ -216,7 +216,6 @@
     <Compile Include="RequiredPermissionAttribute.cs" />
     <Compile Include="ResponseFilterAttribute.cs" />
     <Compile Include="RoleNames.cs" />
-    <Compile Include="RouteInferenceStrategies.cs" />
     <Compile Include="Service.cs" />
     <Compile Include="ServiceExtensions.cs" />
     <Compile Include="RestServiceBase.cs" />

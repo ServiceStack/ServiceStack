@@ -19,8 +19,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[TestFixtureSetUp]
 		public void InferRoutes()
 		{
-			RouteInferenceStrategies.PropertyNamesToMatch.Add("Key");
-			RouteInferenceStrategies.AttributesToMatch.Add(typeof(KeyAttribute));
+			RouteNamingConvention.PropertyNamesToMatch.Add("Key");
+			RouteNamingConvention.AttributesToMatch.Add(typeof(KeyAttribute));
 			routes.AddFromAssembly(typeof(RouteInferenceTests).Assembly);
 		}
 

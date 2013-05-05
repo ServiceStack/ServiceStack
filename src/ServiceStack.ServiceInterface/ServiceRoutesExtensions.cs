@@ -14,20 +14,6 @@ namespace ServiceStack.ServiceInterface
 {
     public static class ServiceRoutesExtensions
     {
-
-			static ServiceRoutesExtensions() {
-
-				//If no inference strategies are explicitly defined before the first IServiceRoutes extention is called, 
-				//add the known default strategies.
-				//Would have preferred this to be defined on the EndpointHostConfig as a "sensible default", but doing 
-				//so would create cyclical references on dependent assemblies.
-				if (EndpointHost.Config.RouteInferenceStrategies.Count == 0)
-					EndpointHost.Config.RouteInferenceStrategies.AddRange(new Func<Type,string>[] {
-						RouteInferenceStrategies.FromRequestTypeName,
-						RouteInferenceStrategies.FromAttributes,
-						RouteInferenceStrategies.FromPropertyNames
-					});
-			}
         /// <summary>
         ///     Scans the supplied Assemblies to infer REST paths and HTTP verbs.
         /// </summary>
@@ -138,18 +124,10 @@ namespace ServiceStack.ServiceInterface
 
         private static void AddRoute(this IServiceRoutes routes, Type requestType, string allowedVerbs)
         {
-			var strategies = EndpointHost.Config.RouteInferenceStrategies;
-			var calculatedRoutes = new List<string>();
-
-			foreach (var strategy in strategies)
-			{
-				var route = strategy(requestType);
-				if (!route.IsNullOrEmpty()) calculatedRoutes.Add(route);
-			}
-
-			calculatedRoutes.Distinct().ExecAll(route =>
-				routes.Add(requestType, route, allowedVerbs)
-			);
+            foreach (var strategy in EndpointHost.Config.RouteNamingConventions)
+            {
+                strategy(routes, requestType, allowedVerbs);
+            }
         }
 
         public static IServiceRoutes Add<TRequest>(this IServiceRoutes routes, string restPath, ApplyTo verbs)

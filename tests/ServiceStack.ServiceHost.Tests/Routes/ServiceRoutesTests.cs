@@ -1,12 +1,20 @@
 ﻿using System.Linq;
 using NUnit.Framework;
 using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceHost.Tests.Routes
 {
     [TestFixture]
     public class ServiceRoutesTests
     {
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
+        {
+            BasicAppHost.LoadTestHost();
+        }
+
         [Test]
         public void Can_Register_NewApi_Routes_From_Assembly()
         {
@@ -15,7 +23,7 @@ namespace ServiceStack.ServiceHost.Tests.Routes
 
             RestPath restWithAllMethodsRoute =
                 (from r in routes.RestPaths
-                 where r.Path == "NewApiRequestDto"
+                 where r.Path == "/NewApiRequestDto"
                  select r).FirstOrDefault();
 
             Assert.That(restWithAllMethodsRoute, Is.Not.Null);
@@ -28,7 +36,7 @@ namespace ServiceStack.ServiceHost.Tests.Routes
 
             RestPath restWithAllMethodsRoute2 =
                 (from r in routes.RestPaths
-                 where r.Path == "NewApiRequestDto2"
+                 where r.Path == "/NewApiRequestDto2"
                  select r).FirstOrDefault();
 
             Assert.That(restWithAllMethodsRoute2, Is.Not.Null);
@@ -47,14 +55,14 @@ namespace ServiceStack.ServiceHost.Tests.Routes
             routes.AddFromAssembly(typeof(NewApiRequestDtoWithIdService).Assembly);
 
             var route = (from r in routes.RestPaths
-                         where r.Path == "NewApiRequestDtoWithId"
+                         where r.Path == "/NewApiRequestDtoWithId"
                          select r).FirstOrDefault();
 
             Assert.That(route, Is.Not.Null);
             Assert.That(route.AllowedVerbs, Is.Null);
 
             route = (from r in routes.RestPaths
-                     where r.Path == "NewApiRequestDtoWithId/{Id}"
+                     where r.Path == "/NewApiRequestDtoWithId/{Id}"
                      select r).FirstOrDefault();
 
             Assert.That(route, Is.Not.Null);
@@ -68,14 +76,14 @@ namespace ServiceStack.ServiceHost.Tests.Routes
 			routes.AddFromAssembly(typeof(NewApiRequestDtoWithFieldIdService).Assembly);
 
 			var route = (from r in routes.RestPaths
-						 where r.Path == "NewApiRequestDtoWithFieldId"
+						 where r.Path == "/NewApiRequestDtoWithFieldId"
 						 select r).FirstOrDefault();
 
 			Assert.That(route, Is.Not.Null);
 			Assert.That(route.AllowedVerbs, Is.Null);
 
 			route = (from r in routes.RestPaths
-					 where r.Path == "NewApiRequestDtoWithFieldId/{Id}"
+					 where r.Path == "/NewApiRequestDtoWithFieldId/{Id}"
 					 select r).FirstOrDefault();
 
 			Assert.That(route, Is.Not.Null);
@@ -90,7 +98,7 @@ namespace ServiceStack.ServiceHost.Tests.Routes
 
             RestPath restWithAllMethodsRoute =
                 (from r in routes.RestPaths
-                 where r.Path == "OldApiRequestDto2"
+                 where r.Path == "/OldApiRequestDto2"
                  select r).FirstOrDefault();
 
             Assert.That(restWithAllMethodsRoute, Is.Not.Null);
@@ -110,7 +118,7 @@ namespace ServiceStack.ServiceHost.Tests.Routes
 
             RestPath restWithAFewMethodsRoute =
                 (from r in routes.RestPaths
-                 where r.Path == "OldApiRequestDto"
+                 where r.Path == "/OldApiRequestDto"
                  select r).FirstOrDefault();
 
             Assert.That(restWithAFewMethodsRoute, Is.Not.Null);
