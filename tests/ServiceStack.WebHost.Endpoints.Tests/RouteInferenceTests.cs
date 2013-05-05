@@ -4,6 +4,7 @@ using ServiceStack.Common;
 using ServiceStack.DataAnnotations;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Types;
@@ -15,14 +16,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	public class RouteInferenceTests
 	{
 		ServiceRoutes routes = new ServiceRoutes();
+        BasicAppHost loadAppHost;
 
 		[TestFixtureSetUp]
 		public void InferRoutes()
 		{
-			RouteNamingConvention.PropertyNamesToMatch.Add("Key");
-			RouteNamingConvention.AttributesToMatch.Add(typeof(KeyAttribute));
+            loadAppHost = new BasicAppHost().Init();
+            
+            RouteNamingConvention.PropertyNamesToMatch.Add("Key");
+			RouteNamingConvention.AttributeNamesToMatch.Add(typeof(KeyAttribute).Name);
 			routes.AddFromAssembly(typeof(RouteInferenceTests).Assembly);
 		}
+
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            loadAppHost.Dispose();
+        }
 
 		[Test]
 		public void Should_infer_route_from_RequestDTO_type()
