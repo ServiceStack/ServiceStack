@@ -41,6 +41,7 @@ namespace ServiceStack.Razor.Tests
             this.Routes.Add<HelloRequest>("/hello");
             this.Routes.Add<HelloRequest>("/hello/{Name}");
             this.Routes.Add<FooRequest>("/Foo/{WhatToSay}");
+            this.Routes.Add<DefaultViewFooRequest>("/DefaultViewFoo/{WhatToSay}");
         }
 
         private void SimpleRequestFilter(IHttpRequest req, IHttpResponse res, object obj)
