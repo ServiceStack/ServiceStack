@@ -8,6 +8,7 @@ using System.Runtime.Serialization;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Common;
+using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.OrmLite;
@@ -105,6 +106,21 @@ namespace RazorRockstars.Console.Files
             Id = id;
             Age = age;
         }
+    }
+
+    [Route("/modelerror")]
+    [Route("/modelerror/{StatusCode}")]
+    [Route("/modelerror/{StatusCode}/{Message}")]
+    public class ModelError : IReturn<ModelErrorResponse>
+    {
+        public int? StatusCode { get; set; }
+        public string Message { get; set; }
+    }
+
+    public class ModelErrorResponse
+    {
+        public string Result { get; set; }
+        public ResponseStatus ResponseStatus { get; set; }
     }
 
     public class RoutelessReqstar : IReturn<RoutelessReqstar>
@@ -224,6 +240,18 @@ namespace RazorRockstars.Console.Files
         public RichRequest Get(RichRequest request)
         {
             return request;
+        }
+
+        public object Any(ModelError request)
+        {
+            if (request.StatusCode.HasValue)
+            {
+                throw new HttpError(
+                    request.StatusCode.Value,
+                    typeof(ArgumentException).Name,
+                    request.Message);
+            }
+            throw new ArgumentException(request.Message + " was triggered by client");
         }
     }
 

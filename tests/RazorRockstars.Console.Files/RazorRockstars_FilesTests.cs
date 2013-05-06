@@ -105,6 +105,41 @@ namespace RazorRockstars.Console.Files
             });
         }
 
+        public void AssertStatus(string url, HttpStatusCode statusCode, params string[] containsItems)
+        {
+            url.Print();
+            try
+            {
+                var text = url.GetStringFromUrl(AcceptContentType, responseFilter: r =>
+                {
+                    if (r.StatusCode != statusCode)
+                        Assert.Fail("'{0}' returned {1} expected {2}".Fmt(url, r.StatusCode, statusCode));
+                });
+            }
+            catch (WebException webEx)
+            {
+                if (webEx != null && webEx.Status == WebExceptionStatus.ProtocolError)
+                {
+                    var errorResponse = ((HttpWebResponse)webEx.Response);
+                    if (errorResponse.StatusCode != statusCode)
+                        Assert.Fail("'{0}' returned {1} expected {2}".Fmt(url, errorResponse.StatusCode, statusCode));
+                    var errorBody = webEx.GetResponseBody();
+                    errorBody.Print();
+
+                    foreach (var item in containsItems)
+                    {
+                        if (!errorBody.Contains(item))
+                        {
+                            Assert.Fail(item + " was not found in " + url);
+                        }
+                    }
+                    return;
+                }
+
+                throw;
+            }
+        }
+
         static string ViewRockstars = "<!--view:Rockstars.cshtml-->";
         static string ViewRockstars2 = "<!--view:Rockstars2.cshtml-->";
         static string ViewRockstars3 = "<!--view:Rockstars3.cshtml-->";
@@ -295,6 +330,25 @@ namespace RazorRockstars.Console.Files
             Assert200(Host + "/partialmodel", Template_PartialModel, ViewPartialChildModel, "PathInfo: <b>/partialmodel</b>");
         }
 
+        [Test]
+        public void Does_return_populated_error_page()
+        {
+            AssertStatus(Host + "/modelerror?message=Custom_Error_Message", HttpStatusCode.BadRequest,
+                Template_HtmlReport,
+                "<!--view:ModelError.cshtml-->",
+                "<p>ResponseStatus: ArgumentException</p>",
+                "<p>ResponseStatus: Custom_Error_Message was triggered by client</p>");
+        }
+
+        [Test]
+        public void Does_return_populated_error_page_with_custom_status()
+        {
+            AssertStatus(Host + "/modelerror/417?message=Custom_Error_Message_Only", HttpStatusCode.ExpectationFailed,
+                Template_HtmlReport,
+                "<!--view:ModelError.cshtml-->",
+                "<p>ResponseStatus: ArgumentException</p>",
+                "<p>ResponseStatus: Custom_Error_Message_Only</p>");
+        }
     }
 }
 
