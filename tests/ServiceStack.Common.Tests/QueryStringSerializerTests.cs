@@ -24,7 +24,7 @@ namespace ServiceStack.Common.Tests
             var restPath = new RestPath(typeof(TestRequest), "/service", "GET");
             var restHandler = new RestHandler { RestPath = restPath };
 
-            var requestString = "ListOfA=[{ListOfB:[{Property:prop1},{Property:prop2}]}]";
+            var requestString = "ListOfA={ListOfB:[{Property:prop1},{Property:prop2}]}";
             NameValueCollection queryString = HttpUtility.ParseQueryString(requestString);
             var httpReq = new HttpRequestMock("service", "GET", "application/json", "service", queryString, new MemoryStream(), new NameValueCollection());
 
@@ -39,7 +39,7 @@ namespace ServiceStack.Common.Tests
         {
             var testRequest = new TestRequest { ListOfA = new List<A> { new A { ListOfB = new List<B> { new B { Property = "prop1" }, new B { Property = "prop2" } } } } };
             var str = QueryStringSerializer.SerializeToString(testRequest);
-            Assert.That(str, Is.EqualTo("ListOfA=[{ListOfB:[{Property:prop1},{Property:prop2}]}]"));
+            Assert.That(str, Is.EqualTo("ListOfA={ListOfB:[{Property:prop1},{Property:prop2}]}"));
         }
 
         public class TestService : ServiceInterface.Service
