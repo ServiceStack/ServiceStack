@@ -9,6 +9,7 @@ MD ..\NuGet\ServiceStack\lib\net35
 MD ..\NuGet\ServiceStack.Api.Swagger\lib\net35
 MD ..\NuGet\ServiceStack.Common\lib\net35
 MD ..\NuGet\ServiceStack.Mvc\lib\net40
+MD ..\NuGet\ServiceStack.Razor\lib\net40
 MD ..\NuGet\ServiceStack.Authentication.OpenId\lib\net35
 MD ..\NuGet\ServiceStack.Plugins.ProtoBuf\lib\net35
 MD ..\NuGet\ServiceStack.Plugins.MsgPack\lib\net40

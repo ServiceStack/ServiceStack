@@ -29,6 +29,7 @@
     <copyright>servicestack.net 2012 and contributors</copyright>
     <dependencies>
       <dependency id="ServiceStack" />
+      <dependency id="System.Web.Razor.Unofficial" />
     </dependencies>
   </metadata>
   <files>
