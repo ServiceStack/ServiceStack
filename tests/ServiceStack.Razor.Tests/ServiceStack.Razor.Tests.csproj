@@ -88,6 +88,7 @@
     <Content Include="NoController.cshtml" />
     <Content Include="Views\Foobar\FooResponse.cshtml" />
     <Content Include="default4.cshtml" />
+    <Content Include="Views\Foobar\DefaultViewFoo.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
