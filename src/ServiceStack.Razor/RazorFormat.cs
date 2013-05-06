@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
@@ -62,9 +63,17 @@ namespace ServiceStack.Razor
             this.WebHostUrl = WebHostUrl ?? appHost.Config.WebHostUrl;
             this.EnableLiveReload = this.EnableLiveReload ?? appHost.Config.DebugMode;
 
-            Init();
+            try
+            {
+                Init();
 
-            BindToAppHost(appHost);
+                BindToAppHost(appHost);
+            }
+            catch (Exception ex)
+            {
+                ex.StackTrace.PrintDump();
+                throw;
+            }
         }
 
         private void BindToAppHost(IAppHost appHost)
@@ -93,7 +102,11 @@ namespace ServiceStack.Razor
             if (Instance != null)
             {
                 Log.Warn("RazorFormat plugin should only be initialized once");
-                return this;
+
+                if (ViewManager != null && PageResolver != null)
+                    return this;
+
+                Log.Warn("Incomplete initialization, RazorFormat.Instance set but ViewManager/PageResolver is null");
             }
 
             Instance = this;
