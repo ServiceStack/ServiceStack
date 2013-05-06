@@ -42,7 +42,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 				AutoLogin = autoLogin,
 			};
 
-			ServiceClient.Send<RegistrationResponse>(newUserRegistration);
+			ServiceClient.Send(newUserRegistration);
 
 			return newUserRegistration;
 		}
@@ -55,7 +55,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
 			try
 			{
-				var response = ServiceClient.Send<AssignRolesResponse>(
+				var response = ServiceClient.Send(
 				new AssignRoles {
 					UserName = newUser.UserName,
 					Roles = { RoleName1, RoleName2 },
@@ -80,7 +80,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
 			var client = AuthenticateWithAdminUser();
 
-			var response = client.Send<AssignRolesResponse>(
+			var response = client.Send(
 				new AssignRoles {
 					UserName = newUser.UserName,
 					Roles = { RoleName1, RoleName2 },
@@ -100,14 +100,14 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
 			var client = AuthenticateWithAdminUser();
 
-			client.Send<AssignRolesResponse>(
+			client.Send(
 			new AssignRoles {
 				UserName = newUser.UserName,
 				Roles = new List<string> { RoleName1, RoleName2 },
 				Permissions = new List<string> { Permission1, Permission2 }
 			});
 
-			var response = client.Send<UnAssignRolesResponse>(
+			var response = client.Send(
 			new UnAssignRoles {
 				UserName = newUser.UserName,
 				Roles = { RoleName1 },
@@ -127,7 +127,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
 			try
 			{
-				ServiceClient.Send<ContentManagerOnlyResponse>(new ContentManagerOnly());
+				ServiceClient.Send(new ContentManagerOnly());
 				Assert.Fail("Should not be allowed - no roles");
 			}
 			catch (WebServiceException webEx)
@@ -139,7 +139,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
 			var client = AuthenticateWithAdminUser();
 
-			client.Send<AssignRolesResponse>(
+			client.Send(
 				new AssignRoles {
 					UserName = newUser.UserName,
 					Roles = new List<string> { RoleName1 },
@@ -149,7 +149,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
 			try
 			{
-				newUserClient.Send<ContentManagerOnlyResponse>(new ContentManagerOnly());
+				newUserClient.Send(new ContentManagerOnly());
 				Assert.Fail("Should not be allowed - wrong roles");
 			}
 			catch (WebServiceException webEx)
@@ -159,7 +159,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 				//Assert.That(webEx.StatusDescription, Is.EqualTo("Invalid Role"));
 			}
 
-			var assignResponse = client.Send<AssignRolesResponse>(
+			var assignResponse = client.Send(
 				new AssignRoles {
 					UserName = newUser.UserName,
 					Roles = new List<string> { ContentManager },
@@ -167,7 +167,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
 			Assert.That(assignResponse.AllRoles, Is.EquivalentTo(new[] { RoleName1, ContentManager }));
 
-			var response = newUserClient.Send<ContentManagerOnlyResponse>(new ContentManagerOnly());
+			var response = newUserClient.Send(new ContentManagerOnly());
 
 			Assert.That(response.Result, Is.EqualTo("Haz Access"));
 		}
@@ -179,7 +179,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
 			try
 			{
-				ServiceClient.Send<ContentPermissionOnlyResponse>(new ContentPermissionOnly());
+				ServiceClient.Send(new ContentPermissionOnly());
 				Assert.Fail("Should not be allowed - no permissions");
 			}
 			catch (WebServiceException webEx)
@@ -191,7 +191,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
 			var client = AuthenticateWithAdminUser();
 
-			client.Send<AssignRolesResponse>(
+			client.Send(
 				new AssignRoles {
 					UserName = newUser.UserName,
 					Permissions = new List<string> { RoleName1 },
@@ -201,7 +201,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
 			try
 			{
-				newUserClient.Send<ContentPermissionOnlyResponse>(new ContentPermissionOnly());
+				newUserClient.Send(new ContentPermissionOnly());
 				Assert.Fail("Should not be allowed - wrong permissions");
 			}
 			catch (WebServiceException webEx)
@@ -211,7 +211,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 				//Assert.That(webEx.StatusDescription, Is.EqualTo("Invalid Permissions"));
 			}
 
-			var assignResponse = client.Send<AssignRolesResponse>(
+			var assignResponse = client.Send(
 				new AssignRoles {
 					UserName = newUser.UserName,
 					Permissions = new List<string> { ContentPermission },
@@ -219,7 +219,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
 			Assert.That(assignResponse.AllPermissions, Is.EquivalentTo(new[] { RoleName1, ContentPermission }));
 
-			var response = newUserClient.Send<ContentPermissionOnlyResponse>(new ContentPermissionOnly());
+			var response = newUserClient.Send(new ContentPermissionOnly());
 
 			Assert.That(response.Result, Is.EqualTo("Haz Access"));
 		}

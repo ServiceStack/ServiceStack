@@ -19,8 +19,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		{
 			get
 			{
-				return serviceClient
-					?? (serviceClient = new JsonServiceClient(BaseUri));
+				return serviceClient ?? (serviceClient = new JsonServiceClient(BaseUri));
 			}
 		}
 
@@ -36,12 +35,12 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			};
 			try
 			{
-				ServiceClient.Send<RegistrationResponse>(registration);
+				ServiceClient.Send(registration);
 			}
 			catch (WebServiceException ex)
 			{
-				Console.WriteLine("Error while creating Admin User: " + ex.Message);
-				Console.WriteLine(ex.ResponseDto.Dump());
+				("Error while creating Admin User: " + ex.Message).Print();
+				ex.ResponseDto.PrintDump();
 			}
 			return registration;
 		}
@@ -49,7 +48,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		public JsonServiceClient Login(string userName, string password)
 		{
 			var client = new JsonServiceClient(BaseUri);
-			client.Send<AuthResponse>(new Auth {
+			client.Send(new Auth {
 				UserName = userName,
 				Password = password,
 				RememberMe = true,
@@ -62,7 +61,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		{
 			var registration = CreateAdminUser();
 			var adminServiceClient = new JsonServiceClient(BaseUri);
-			adminServiceClient.Send<AuthResponse>(new Auth {
+			adminServiceClient.Send(new Auth {
 				UserName = registration.UserName,
 				Password = registration.Password,
 				RememberMe = true,
