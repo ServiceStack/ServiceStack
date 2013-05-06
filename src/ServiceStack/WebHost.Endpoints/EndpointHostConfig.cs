@@ -587,7 +587,7 @@ namespace ServiceStack.WebHost.Endpoints
             {
                 CustomHttpHandlers.TryGetValue(errorStatus, out httpHandler);
             }
-            return GlobalHtmlErrorHttpHandler ?? httpHandler;
+            return httpHandler ?? GlobalHtmlErrorHttpHandler;
         }
 
         public IHttpHandler GetCustomErrorHttpHandler(HttpStatusCode errorStatus)
