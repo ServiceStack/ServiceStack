@@ -5,17 +5,14 @@ using System.IO;
 using Moq;
 using NUnit.Framework;
 using ServiceStack.Common.Utils;
-using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.SqlServer;
-using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.Redis;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.Testing;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Common.Tests.OAuth
 {

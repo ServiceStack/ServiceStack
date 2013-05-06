@@ -166,10 +166,6 @@
     <Compile Include="UseCase\Services\StoreCustomersService.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\..\lib\tests\sqlite3.dll">
-      <Link>sqlite3.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <None Include="AppData\ALFKI.json" />
     <None Include="Views\Shared\DynamicTplShared.cshtml" />
     <None Include="Views\Shared\DynamicShared.cshtml" />
@@ -181,6 +177,10 @@
     <None Include="Views\Template\Customer.md" />
     <None Include="Views\Template\CustomerDetailsResponse.md" />
     <None Include="AppData\Template\_Layout.cshtml" />
+    <Content Include="..\..\lib\sqlite3.dll">
+      <Link>sqlite3.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="AppData\Template\_Layout.shtml" />
     <Content Include="AppData\NoTemplate\_Layout.shtml" />
     <Content Include="Views\Shared\alt-template.shtml" />
