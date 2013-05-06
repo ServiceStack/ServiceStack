@@ -302,7 +302,13 @@ namespace ServiceStack.Razor
         
         public virtual void SetModel(object o)
         {
-            this.Model = o as TModel;            
+            var viewModel = o as TModel;
+            this.Model = viewModel;
+
+            if (viewModel == null)
+            {
+                this.ModelError = o;
+            }
         }
 
         public UrlHelper Url = new UrlHelper();
