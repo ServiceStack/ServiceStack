@@ -1,4 +1,5 @@
 ﻿using ServiceStack.ServiceHost;
+using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.Razor.Tests
 {
@@ -39,6 +40,16 @@ namespace ServiceStack.Razor.Tests
         public string FooSaid { get; set; }
     }
 
+    public class DefaultViewFooRequest
+    {
+        public string WhatToSay { get; set; }
+    }
+
+    public class DefaultViewFooResponse
+    {
+        public string FooSaid { get; set; }
+    }
+
     public class FooController : ServiceInterface.Service, IGet<FooRequest>, IPost<FooRequest>
     {
         public object Get( FooRequest request )
@@ -49,6 +60,12 @@ namespace ServiceStack.Razor.Tests
         public object Post( FooRequest request )
         {
             return new FooResponse { FooSaid = string.Format( "POST: {0}", request.WhatToSay ) };            
+        }
+
+        [DefaultView("DefaultViewFoo")]
+        public object Get(DefaultViewFooRequest request)
+        {
+            return new DefaultViewFooResponse { FooSaid = string.Format("GET: {0}", request.WhatToSay) };
         }
     }
 }
