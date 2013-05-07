@@ -9,7 +9,7 @@ namespace ServiceStack.ServiceHost
         /// <summary>
         /// The status code of a response
         /// </summary>
-        public HttpStatusCode StatusCode { get; set; }
+        public int StatusCode { get; set; }
 
         /// <summary>
         /// The description of a response status code
@@ -17,6 +17,12 @@ namespace ServiceStack.ServiceHost
         public string Description { get; set; }
 
         public ApiResponseAttribute(HttpStatusCode statusCode, string description)
+        {
+            StatusCode = (int)statusCode;
+            Description = description;
+        }
+
+        public ApiResponseAttribute(int statusCode, string description)
         {
             StatusCode = statusCode;
             Description = description;
