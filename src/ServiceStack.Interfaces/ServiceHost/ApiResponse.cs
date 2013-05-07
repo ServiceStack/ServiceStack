@@ -11,15 +11,15 @@ namespace ServiceStack.ServiceHost
         /// </summary>
         public HttpStatusCode StatusCode { get; set; }
 
-		/// <summary>
-		/// The description of a response status code
-		/// </summary>
-		public string Description { get; set; }
+        /// <summary>
+        /// The description of a response status code
+        /// </summary>
+        public string Description { get; set; }
 
         public ApiResponseAttribute(HttpStatusCode statusCode, string description)
         {
             StatusCode = statusCode;
-	        Description = description;
+            Description = description;
         }
     }
 }
