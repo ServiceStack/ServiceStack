@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace ServiceStack.CacheAccess
 {
 	/// <summary>
-	/// A common interface implementation that is implemeneted by most cache providers
+	/// A common interface implementation that is implemented by most cache providers
 	/// </summary>
 	public interface ICacheClient 
 		: IDisposable
@@ -94,6 +94,7 @@ namespace ServiceStack.CacheAccess
 		/// </summary>
 		void FlushAll();
 
+		/// <summary>
 		/// Retrieves multiple items from the cache. 
 		/// The default value of T is set for all keys that do not exist.
 		/// </summary>
