@@ -39,7 +39,10 @@ COPY ..\src\ServiceStack.Plugins.ProtoBuf\bin\%BUILD%\ServiceStack.Plugins.Proto
 COPY ..\lib\MsgPack.dll ..\NuGet\ServiceStack.Plugins.MsgPack\lib\net40
 COPY ..\src\ServiceStack.Plugins.MsgPack\bin\%BUILD%\ServiceStack.Plugins.MsgPack.* ..\NuGet\ServiceStack.Plugins.MsgPack\lib\net40
 
+RMDIR ..\NuGet\ServiceStack.Api.Swagger\content\swagger-ui /s /q
+MD ..\NuGet\ServiceStack.Api.Swagger\content\swagger-ui
 COPY ..\src\ServiceStack.Api.Swagger\bin\%BUILD%\ServiceStack.Api.Swagger.* ..\NuGet\ServiceStack.Api.Swagger\lib\net35
+XCOPY /E ..\src\ServiceStack.Api.Swagger\swagger-ui ..\NuGet\ServiceStack.Api.Swagger\content\swagger-ui
 
 
 COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\*.* ..\..\chaweet\api\lib
@@ -73,3 +76,5 @@ COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\*.* ..\..\SocialApiBootstr
 COPY ..\src\ServiceStack.FluentValidation.Mvc3\bin\%BUILD%\ServiceStack.FluentValidation.Mvc3.* ..\..\SocialApiBootstrap\lib
 COPY ..\..\ServiceStack.OrmLite\NuGet\ServiceStack.OrmLite.SqlServer\lib\*.* ..\..\SocialApiBootstrap\lib
 COPY ..\..\ServiceStack.Redis\NuGet\lib\net35\*.* ..\..\SocialApiBootstrap\lib
+
+
