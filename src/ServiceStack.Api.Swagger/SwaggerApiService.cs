@@ -72,11 +72,11 @@ namespace ServiceStack.Api.Swagger
         [DataMember(Name = "responseClass")]
         public string ResponseClass { get; set; }
         [DataMember(Name = "errorResponses")]
-        public List<ErrorResponse> ErrorResponses { get; set; }
+        public List<ErrorResponseStatus> ErrorResponses { get; set; }
     }
 
     [DataContract]
-    public class ErrorResponse
+    public class ErrorResponseStatus
     {
         [DataMember(Name = "code")]
         public int StatusCode { get; set; }
@@ -300,12 +300,12 @@ namespace ServiceStack.Api.Swagger
             return null;
         }
 
-        private static List<ErrorResponse> GetMethodResponseCodes(Type requestType)
+        private static List<ErrorResponseStatus> GetMethodResponseCodes(Type requestType)
         {
             return requestType
                 .GetCustomAttributes(typeof (ApiResponseAttribute), true)
                 .OfType<ApiResponseAttribute>()
-                .Select(x => new ErrorResponse {
+                .Select(x => new ErrorResponseStatus {
                     StatusCode = (int)x.StatusCode,
                     Reason = x.Description
                 }).ToList();
