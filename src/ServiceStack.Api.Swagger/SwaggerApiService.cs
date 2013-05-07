@@ -71,7 +71,18 @@ namespace ServiceStack.Api.Swagger
         public List<MethodOperationParameter> Parameters { get; set; }
         [DataMember(Name = "responseClass")]
         public string ResponseClass { get; set; }
+		[DataMember(Name = "errorResponses")]
+		public List<ErrorResponse> ErrorResponses { get; set; }
     }
+
+	[DataContract]
+	public class ErrorResponse
+	{
+		[DataMember(Name = "code")]
+		public int StatusCode { get; set; }
+		[DataMember(Name = "reason")]
+		public string Reason { get; set; }
+	}
 
     [DataContract]
     public class ModelProperty
@@ -289,6 +300,17 @@ namespace ServiceStack.Api.Swagger
             return null;
         }
 
+		private static List<ErrorResponse> GetMethodResponseCodes(Type requestType)
+		{
+			return requestType
+				.GetCustomAttributes(typeof (ApiResponseAttribute), true)
+				.OfType<ApiResponseAttribute>()
+				.Select(x => new ErrorResponse {
+					StatusCode = (int)x.StatusCode,
+					Reason = x.Description
+				}).ToList();
+		}
+
         private MethodDescription FormateMethodDescription(RestPath restPath, Dictionary<string, SwaggerModel> models)
         {
             var verbs = new List<string>();
@@ -303,7 +325,7 @@ namespace ServiceStack.Api.Swagger
                 verbs.AddRange(restPath.AllowedVerbs.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries));
 
             var nickName = nicknameCleanerRegex.Replace(restPath.Path, "");
-
+			
             var md = new MethodDescription {
                 Path = restPath.Path,
                 Description = summary,
@@ -314,7 +336,8 @@ namespace ServiceStack.Api.Swagger
                         Summary = summary,
                         Notes = notes,
                         Parameters = ParseParameters(verb, restPath.RequestType),
-                        ResponseClass = GetResponseClass(restPath, models)
+                        ResponseClass = GetResponseClass(restPath, models),
+                        ErrorResponses = GetMethodResponseCodes(restPath.RequestType)
                     }).ToList()
             };
             return md;
