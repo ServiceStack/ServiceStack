@@ -216,4 +216,5 @@
  - [alexandryz](https://github.com/alexandryz) (Alexandr Zaozerskiy)
  - [mistobaan](https://github.com/mistobaan) (Fabrizio Milo)
  - [niemyjski](https://github.com/niemyjski) (Blake Niemyjski)
+ - [alexandernyquist](https://github.com/alexandernyquist) (Alexander Nyquist)
 	
