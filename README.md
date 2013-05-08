@@ -513,6 +513,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [chappoo](https://github.com/chappoo) (Steve Chapman)
  - [julrichkieffer](https://github.com/julrichkieffer) (Julrich Kieffer)
  - [adamclarsen](https://github.com/adamclarsen) (Adam Larsen)
+ - [joero74](https://github.com/joero74) (Joerg Rosenkranz)
 
 ***
 
