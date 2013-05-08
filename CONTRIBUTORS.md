@@ -202,4 +202,5 @@
  - [nhhagen](https://github.com/nhhagen) (Niels Henrik Hagen)
  - [daggmano](https://github.com/daggmano) (Darren Oster)
  - [chappoo](https://github.com/chappoo) (Steve Chapman)
+ - [julrichkieffer](https://github.com/julrichkieffer) (Julrich Kieffer)
 	
