@@ -209,4 +209,5 @@
  - [chrismcv](https://github.com/chrismcv) (Chris McVittie)
  - [marcioalthmann](https://github.com/marcioalthmann) (Márcio Fábio Althmann)
  - [mmertsock](https://github.com/mmertsock)
+ - [johnkamau](https://github.com/johnkamau) (John Kamau)
 	
