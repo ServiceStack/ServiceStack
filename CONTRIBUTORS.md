@@ -211,4 +211,5 @@
  - [mmertsock](https://github.com/mmertsock)
  - [johnkamau](https://github.com/johnkamau) (John Kamau)
  - [uhaciogullari](https://github.com/uhaciogullari) (Ufuk Hacıoğulları)
+ - [davybrion](https://github.com/davybrion) (Davy Brion)
 	
