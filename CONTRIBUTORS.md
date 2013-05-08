@@ -215,4 +215,5 @@
  - [aleshi](https://github.com/aleshi) (Alexander Shiryaev)
  - [alexandryz](https://github.com/alexandryz) (Alexandr Zaozerskiy)
  - [mistobaan](https://github.com/mistobaan) (Fabrizio Milo)
+ - [niemyjski](https://github.com/niemyjski) (Blake Niemyjski)
 	
