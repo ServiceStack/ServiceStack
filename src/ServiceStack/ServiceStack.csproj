@@ -298,6 +298,7 @@
     <Compile Include="WebHost.Endpoints\Extensions\HttpListenerRequestWrapper.cs" />
     <Compile Include="WebHost.Endpoints\AppDelegates.cs" />
     <Compile Include="WebHost.Endpoints\ActionHandler.cs" />
+    <Compile Include="WebHost.Endpoints\RequestBindingException.cs" />
     <Compile Include="WebHost.Endpoints\Support\Markdown\Evaluator.cs" />
     <Compile Include="WebHost.Endpoints\Support\Markdown\ITemplateWriter.cs" />
     <Compile Include="WebHost.Endpoints\Support\Markdown\Markdown.cs" />
