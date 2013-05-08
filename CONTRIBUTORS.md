@@ -214,4 +214,5 @@
  - [davybrion](https://github.com/davybrion) (Davy Brion)
  - [aleshi](https://github.com/aleshi) (Alexander Shiryaev)
  - [alexandryz](https://github.com/alexandryz) (Alexandr Zaozerskiy)
+ - [mistobaan](https://github.com/mistobaan) (Fabrizio Milo)
 	
