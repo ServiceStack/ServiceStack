@@ -196,4 +196,5 @@
  - [ivanfioravanti](https://github.com/ivanfioravanti) (Ivan Fioravanti)
  - [inhibition](https://github.com/inhibition) (Keith Hassen)
  - [joshearl](https://github.com/joshearl) (Josh Earl)
+ - [friism](https://github.com/friism) (Michael Friis)
 	
