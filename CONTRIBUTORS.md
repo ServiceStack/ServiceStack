@@ -208,4 +208,5 @@
  - [ddotlic](https://github.com/ddotlic) (Drazen Dotlic)
  - [chrismcv](https://github.com/chrismcv) (Chris McVittie)
  - [marcioalthmann](https://github.com/marcioalthmann) (Márcio Fábio Althmann)
+ - [mmertsock](https://github.com/mmertsock)
 	
