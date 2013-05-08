@@ -220,4 +220,5 @@
  - [mcduck76](https://github.com/mcduck76)
  - [kojoru](https://github.com/kojoru)
  - [jeremy-bridges](https://github.com/jeremy-bridges) (Jeremy Bridges)
+ - [andreabalducci](https://github.com/andreabalducci) (Andrea Balducci)
 	
