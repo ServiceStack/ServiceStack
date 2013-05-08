@@ -201,4 +201,5 @@
  - [bchavez](https://github.com/bchavez) (Brian Chavez)
  - [nhhagen](https://github.com/nhhagen) (Niels Henrik Hagen)
  - [daggmano](https://github.com/daggmano) (Darren Oster)
+ - [chappoo](https://github.com/chappoo) (Steve Chapman)
 	
