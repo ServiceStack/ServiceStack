@@ -522,6 +522,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [uhaciogullari](https://github.com/uhaciogullari) (Ufuk Hacıoğulları)
  - [davybrion](https://github.com/davybrion) (Davy Brion)
  - [aleshi](https://github.com/aleshi) (Alexander Shiryaev)
+ - [alexandryz](https://github.com/alexandryz) (Alexandr Zaozerskiy)
 
 ***
 
