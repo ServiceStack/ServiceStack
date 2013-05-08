@@ -506,6 +506,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [inhibition](https://github.com/inhibition) (Keith Hassen)
  - [joshearl](https://github.com/joshearl) (Josh Earl)
  - [friism](https://github.com/friism) (Michael Friis)
+ - [corkupine](https://github.com/corkupine)
 
 ***
 
