@@ -116,6 +116,7 @@
     <Compile Include="Auth\CredentialsAuthProvider.cs" />
     <Compile Include="Auth\DigestAuthProvider.cs" />
     <Compile Include="Auth\DigestAuthFunctions.cs" />
+    <Compile Include="Auth\DropboxAuthProvider.cs" />
     <Compile Include="Auth\DropboxOAuthAuthorizer.cs" />
     <Compile Include="Auth\FacebookAuthProvider.cs" />
     <Compile Include="Auth\IAuthProvider.cs" />
