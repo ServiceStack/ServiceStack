@@ -96,24 +96,24 @@ namespace ServiceStack.WebHost.Endpoints
             var requestType = restPath.RequestType;
             using (Profiler.Current.Step("Deserialize Request"))
             {
-	            try
-	            {
-					var requestDto = GetCustomRequestFromBinder(httpReq, requestType);
-					if (requestDto != null) return requestDto;
+                try
+                {
+                    var requestDto = GetCustomRequestFromBinder(httpReq, requestType);
+                    if (requestDto != null) return requestDto;
 
-					var requestParams = httpReq.GetRequestParams();
-					requestDto = CreateContentTypeRequest(httpReq, requestType, httpReq.ContentType);
+                    var requestParams = httpReq.GetRequestParams();
+                    requestDto = CreateContentTypeRequest(httpReq, requestType, httpReq.ContentType);
 
-					return restPath.CreateRequest(httpReq.PathInfo, requestParams, requestDto);
-	            }
-				catch (SerializationException e)
-	            {
-					throw new RequestBindingException("Unable to bind request", e);
-	            }
-				catch(ArgumentException e)
-				{
-					throw new RequestBindingException("Unable to bind request", e);
-				}
+                    return restPath.CreateRequest(httpReq.PathInfo, requestParams, requestDto);
+                }
+                catch (SerializationException e)
+                {
+                    throw new RequestBindingException("Unable to bind request", e);
+                }
+                catch (ArgumentException e)
+                {
+                    throw new RequestBindingException("Unable to bind request", e);
+                }
             }
         }
 
