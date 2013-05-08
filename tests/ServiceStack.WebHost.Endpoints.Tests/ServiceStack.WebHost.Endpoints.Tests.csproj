@@ -140,6 +140,7 @@
     <Compile Include="EncodingTests.cs" />
     <Compile Include="ExceptionHandling2Tests.cs" />
     <Compile Include="IntegrationTests\MovieSoap11Tests.cs" />
+    <Compile Include="RestHandlerTests.cs" />
     <Compile Include="RouteInferenceTests.cs" />
     <Compile Include="ServiceClientsBuiltInResponseTests.cs" />
     <Compile Include="Support\Services\TestRestService.cs" />
