@@ -195,4 +195,5 @@
  - [mbischoff](https://github.com/mbischoff) (M. Bischoff)
  - [ivanfioravanti](https://github.com/ivanfioravanti) (Ivan Fioravanti)
  - [inhibition](https://github.com/inhibition) (Keith Hassen)
+ - [joshearl](https://github.com/joshearl) (Josh Earl)
 	
