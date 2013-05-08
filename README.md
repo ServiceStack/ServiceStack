@@ -507,6 +507,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [joshearl](https://github.com/joshearl) (Josh Earl)
  - [friism](https://github.com/friism) (Michael Friis)
  - [corkupine](https://github.com/corkupine)
+ - [bchavez](https://github.com/bchavez) (Brian Chavez)
 
 ***
 
