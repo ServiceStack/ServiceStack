@@ -30,15 +30,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
-using System.Text;
 using System.Net;
-using System.Web;
 using System.Security.Cryptography;
+using System.Text;
+using System.Web;
 using ServiceStack.ServiceModel;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
+    
     //
     // Configuration information for an OAuth client
     //
@@ -161,24 +163,32 @@ namespace ServiceStack.ServiceInterface.Auth
             var wc = new WebClient();
             headers.Add("oauth_signature", OAuthUtils.PercentEncode(oauth_signature));
             wc.Headers[HttpRequestHeader.Authorization] = HeadersToOAuth(headers);
+            
+            var requestTokenResult = new NameValueCollection();
 
             try
             {
-                var result = HttpUtility.ParseQueryString(wc.UploadString(new Uri(provider.RequestTokenUrl), ""));
-
-                if (result["oauth_callback_confirmed"] != null)
-                {
-                    RequestToken = result["oauth_token"];
-                    RequestTokenSecret = result["oauth_token_secret"];
-
-                    return true;
-                }
+                requestTokenResult = HttpUtility.ParseQueryString(wc.UploadString(new Uri(provider.RequestTokenUrl), ""));
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
                 // fallthrough for errors
             }
+
+            return AcquireRequestToken(requestTokenResult);
+        }
+
+        protected virtual bool AcquireRequestToken(NameValueCollection requestTokenResult)
+        {
+            if (requestTokenResult["oauth_callback_confirmed"] != null)
+            {
+                this.RequestToken = requestTokenResult["oauth_token"];
+                this.RequestTokenSecret = requestTokenResult["oauth_token_secret"];
+
+                return true;
+            }
+
             return false;
         }
 
