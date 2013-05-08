@@ -199,4 +199,5 @@
  - [friism](https://github.com/friism) (Michael Friis)
  - [corkupine](https://github.com/corkupine)
  - [bchavez](https://github.com/bchavez) (Brian Chavez)
+ - [nhhagen](https://github.com/nhhagen) (Niels Henrik Hagen)
 	
