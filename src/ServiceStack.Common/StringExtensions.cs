@@ -36,6 +36,16 @@ namespace ServiceStack.Common
             return RegexSplitCamelCase.Replace(value, " $1").TrimStart();
         }
 
+        public static string ToCamelCase(this string value)
+        {
+            return Text.StringExtensions.ToCamelCase(value);
+        }
+
+        public static string ToLowercaseUnderscore(this string value)
+        {
+            return Text.StringExtensions.ToLowercaseUnderscore(value);
+        }
+
         public static string ToInvariantUpper(this char value)
         {
 #if NETFX_CORE

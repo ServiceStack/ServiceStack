@@ -18,6 +18,7 @@ using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Markdown;
 using ServiceStack.ServiceHost;
+using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
@@ -63,6 +64,8 @@ namespace ServiceStack.WebHost.Endpoints
                         MetadataRedirectPath = null,
                         DefaultContentType = null,
                         AllowJsonpRequests = true,
+                        AllowNonHttpOnlyCookies = false,
+                        UseHttpsLinks = false,
                         DebugMode = false,
                         DefaultDocuments = new List<string> {
 							"default.htm",
@@ -81,7 +84,7 @@ namespace ServiceStack.WebHost.Endpoints
 							"js", "css", "htm", "html", "shtm", "txt", "xml", "rss", "csv", 
 							"jpg", "jpeg", "gif", "png", "bmp", "ico", "tif", "tiff", "svg", 
 							"avi", "divx", "m3u", "mov", "mp3", "mpeg", "mpg", "qt", "vob", "wav", "wma", "wmv", 
-							"flv", "xap", "xaml", 
+							"flv", "xap", "xaml", "ogg", "mp4", "webm", 
 						},
                         DebugAspNetHostEnvironment = Env.IsMono ? "FastCGI" : "IIS7",
                         DebugHttpListenerHostEnvironment = Env.IsMono ? "XSP" : "WebServer20",
@@ -99,6 +102,11 @@ namespace ServiceStack.WebHost.Endpoints
 						},
                         AppendUtf8CharsetOnContentTypes = new HashSet<string> { ContentType.Json, },
                         RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>>(),
+                        RouteNamingConventions = new List<RouteNamingConventionDelegate> {
+					        RouteNamingConvention.WithRequestDtoName,
+					        RouteNamingConvention.WithMatchingAttributes,
+					        RouteNamingConvention.WithMatchingPropertyNames
+                        },
                         CustomHttpHandlers = new Dictionary<HttpStatusCode, IServiceStackHttpHandler>(),
                         GlobalHtmlErrorHttpHandler = null,
                         MapExceptionToStatusCode = new Dictionary<Type, int>(),
@@ -107,6 +115,7 @@ namespace ServiceStack.WebHost.Endpoints
                         DefaultJsonpCacheExpiration = new TimeSpan(0, 20, 0),
                         MetadataVisibility = EndpointAttributes.Any,
                         Return204NoContentForEmptyResponse = true,
+                        AllowPartialResponses = true,
                     };
 
                     if (instance.ServiceStackHandlerFactoryPath == null)
@@ -161,6 +170,7 @@ namespace ServiceStack.WebHost.Endpoints
             this.AddMaxAgeForStaticMimeTypes = instance.AddMaxAgeForStaticMimeTypes;
             this.AppendUtf8CharsetOnContentTypes = instance.AppendUtf8CharsetOnContentTypes;
             this.RawHttpHandlers = instance.RawHttpHandlers;
+            this.RouteNamingConventions = instance.RouteNamingConventions;
             this.CustomHttpHandlers = instance.CustomHttpHandlers;
             this.GlobalHtmlErrorHttpHandler = instance.GlobalHtmlErrorHttpHandler;
             this.MapExceptionToStatusCode = instance.MapExceptionToStatusCode;
@@ -169,6 +179,8 @@ namespace ServiceStack.WebHost.Endpoints
             this.DefaultJsonpCacheExpiration = instance.DefaultJsonpCacheExpiration;
             this.MetadataVisibility = instance.MetadataVisibility;
             this.Return204NoContentForEmptyResponse = Return204NoContentForEmptyResponse;
+            this.AllowNonHttpOnlyCookies = instance.AllowNonHttpOnlyCookies;
+            this.AllowPartialResponses = instance.AllowPartialResponses;
         }
 
         public static string GetAppConfigPath()
@@ -218,8 +230,8 @@ namespace ServiceStack.WebHost.Endpoints
                         .ForEach(x => razorNamespaces.Add(x));
                 }
 
-                log.Debug("Loaded Razor Namespaces: in {0}: {1}: {2}"
-                    .Fmt(configPath, "~/Web.config".MapHostAbsolutePath(), razorNamespaces.Dump()));
+                //log.Debug("Loaded Razor Namespaces: in {0}: {1}: {2}"
+                //    .Fmt(configPath, "~/Web.config".MapHostAbsolutePath(), razorNamespaces.Dump()));
 
                 return razorNamespaces;
             }
@@ -407,6 +419,8 @@ namespace ServiceStack.WebHost.Endpoints
 
         public List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers { get; set; }
 
+        public List<RouteNamingConventionDelegate> RouteNamingConventions { get; set; }
+
         public Dictionary<HttpStatusCode, IServiceStackHttpHandler> CustomHttpHandlers { get; set; }
         public IServiceStackHttpHandler GlobalHtmlErrorHttpHandler { get; set; }
         public Dictionary<Type, int> MapExceptionToStatusCode { get; set; }
@@ -416,6 +430,11 @@ namespace ServiceStack.WebHost.Endpoints
 
         public TimeSpan DefaultJsonpCacheExpiration { get; set; }
         public bool Return204NoContentForEmptyResponse { get; set; }
+        public bool AllowPartialResponses { get; set; }
+
+        public bool AllowNonHttpOnlyCookies { get; set; }
+
+        public bool UseHttpsLinks { get; set; }
 
         private string defaultOperationNamespace;
         public string DefaultOperationNamespace
@@ -568,7 +587,7 @@ namespace ServiceStack.WebHost.Endpoints
             {
                 CustomHttpHandlers.TryGetValue(errorStatus, out httpHandler);
             }
-            return GlobalHtmlErrorHttpHandler ?? httpHandler;
+            return httpHandler ?? GlobalHtmlErrorHttpHandler;
         }
 
         public IHttpHandler GetCustomErrorHttpHandler(HttpStatusCode errorStatus)

@@ -1,4 +1,4 @@
-﻿@inherits ViewPage<RockstarsResponse>
+﻿@model RockstarsResponse
 
 @{
     ViewBag.Title = Model.Aged.HasValue ? "{0} year old rockstars".Fmt(Model.Aged) : "All Rockstars";

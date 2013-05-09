@@ -1,6 +1,6 @@
-﻿@inherits ViewPage<Rockstars> 
+﻿@inherits ServiceStack.Razor.ViewPage<Rockstars> 
 
-﻿@{
+@{
     Layout = "SimpleLayout";
     ViewBag.Title = "Page with typed 'Rockstars' model and no C# controller";
     var rockstars = Model.Age.HasValue 

@@ -190,5 +190,27 @@ namespace ServiceStack.Common.Tests
 			Assert.That(url, Is.EqualTo("/route/0"));
 		}
 
+        [Route("/images/{ImagePath*}")]
+        public class WildCardPath : IReturn<object>
+        {
+            public string ImagePath { get; set; }
+        }
+
+        [Test]
+        public void Can_generate_route_with_WildCard_path()
+        {
+            var request = new WildCardPath { ImagePath = "this/that/theother.jpg" };
+            var url = request.ToUrl("GET");
+            Assert.That(url, Is.EqualTo("/images/" + Uri.EscapeDataString(request.ImagePath)));
+        }
+
+        [Test]
+        public void Can_generate_empty_route_with_WildCard_path()
+        {
+            var request = new WildCardPath();
+            var url = request.ToUrl("GET");
+            Assert.That(url, Is.EqualTo("/images/"));
+        }
+
     }
 }

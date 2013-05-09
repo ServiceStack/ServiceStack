@@ -1,13 +1,13 @@
 ﻿@inherits ViewPage<Rockstars> 
 
-﻿@{
+@{
     Layout = "SimpleLayout";
     ViewBag.Title = "Page with typed 'Rockstars' model and no C# controller";
     var rockstars = Model.Age.HasValue 
         ? Db.Select<Rockstar>(q => q.Age == Model.Age.Value)
         : Db.Select<Rockstar>();
     var title = Model.Age.HasValue ? "{0} year old rockstars".Fmt(Model.Age) : "All Rockstars";
-}
+} 
 
 <div id="content-page">
     

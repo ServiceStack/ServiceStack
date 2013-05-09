@@ -1,5 +1,6 @@
 using System.Net;
 using ServiceStack.Common.Web;
+using ServiceStack.Razor.Managers;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
@@ -9,7 +10,7 @@ namespace ServiceStack.Razor
     public class RazorHandler : EndpointHandlerBase
     {
         public RazorFormat RazorFormat { get; set; }
-        public ViewPageRef RazorPage { get; set; }
+        public RazorPage RazorPage { get; set; }
         public object Model { get; set; }
 
         public string PathInfo { get; set; }
@@ -33,19 +34,12 @@ namespace ServiceStack.Razor
                 return;
             }
 
-            if (RazorFormat.WatchForModifiedPages)
-                RazorFormat.ReloadIfNeeeded(contentPage);
-
-            //Add good caching support
-            //if (httpReq.DidReturn304NotModified(contentPage.GetLastModified(), httpRes))
-            //    return;
-
             var model = Model;
             if (model == null)
                 httpReq.Items.TryGetValue("Model", out model);
             if (model == null)
             {
-                var modelType = RazorPage != null ? RazorPage.GetRazorTemplate().ModelType : null;
+                var modelType = RazorPage != null ? RazorPage.ModelType : null;
                 model = modelType == null || modelType == typeof(DynamicRequestObject)
                     ? null
                     : DeserializeHttpRequest(modelType, httpReq, httpReq.ContentType);

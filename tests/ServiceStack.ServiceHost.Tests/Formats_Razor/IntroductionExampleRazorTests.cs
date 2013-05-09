@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using ServiceStack.Common.Utils;
 using ServiceStack.Razor;
 using ServiceStack.ServiceHost.Tests.Formats;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 {
@@ -46,12 +44,11 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         [SetUp]
         public void SetUp()
         {
+            RazorFormat.Instance = null;
             RazorFormat = new RazorFormat {
-                DefaultBaseType = typeof(CustomRazorBasePage<>),
+                PageBaseType = typeof(CustomRazorBasePage<>),
                 VirtualPathProvider = new InMemoryVirtualPathProvider(new BasicAppHost()),
-                TemplateProvider = { CompileInParallelWithNoOfThreads = 0 },
-            };
-            RazorFormat.Init();            
+            }.Init();
         }
 
 		[Test]
@@ -73,9 +70,9 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 <p>Checkout <a href=""/Product/Details/10"">this product</a></p>
 ".NormalizeNewLines();
 
-			var html = RenderToHtml(template, new { name = "Demis", productId = 10 });
+			var html = RazorFormat.CreateAndRenderToHtml(template, model:new { name = "Demis", productId = 10 });
 
-			Console.WriteLine(html);
+		    html.Print();
 			Assert.That(html, Is.EqualTo(expectedHtml));
 		}
 
@@ -99,9 +96,9 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 </ul>
 ".NormalizeNewLines();
 
-			var html = RenderToHtml(template, productArgs);
+            var html = RazorFormat.CreateAndRenderToHtml(template, model: productArgs);
 
-			Console.WriteLine(html);
+			html.Print();
 			Assert.That(html, Is.EqualTo(expectedHtml));
 		}
 
@@ -120,10 +117,10 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 <p>We have products for you!</p>
 ".NormalizeNewLines();
 
-			var html = RenderToHtml(template, productArgs);
+            var html = RazorFormat.CreateAndRenderToHtml(template, model: productArgs);
 
-			Console.WriteLine(html);
-			Assert.That(html, Is.EqualTo(expectedHtml));
+            html.Print();
+            Assert.That(html, Is.EqualTo(expectedHtml));
 		}
 
 		[Test]
@@ -138,13 +135,14 @@ var message = ""Number is "" + number;
 ".NormalizeNewLines();
 
 			var expectedHtml = @"
+
 <p>Your Message: Number is 1</p>
 ".NormalizeNewLines();
 
-			var html = RenderToHtml(template, productArgs);
+            var html = RazorFormat.CreateAndRenderToHtml(template, model: productArgs);
 
-			Console.WriteLine(html);
-			Assert.That(html, Is.EqualTo(expectedHtml));
+            html.Print();
+            Assert.That(html, Is.EqualTo(expectedHtml));
 		}
 
 
@@ -159,10 +157,10 @@ var message = ""Number is "" + number;
 @"<p>Send mail to demis.bellot@gmail.com telling him the time: 02/06/2011 06:38:34.</p>
 ".NormalizeNewLines();
 
-			var html = RenderToHtml(template, productArgs);
+            var html = RazorFormat.CreateAndRenderToHtml(template, model:productArgs);
 
-			Console.WriteLine(html);
-			Assert.That(html, Is.StringMatching(expectedHtml.Substring(0, expectedHtml.Length - 25)));
+            html.Print();
+            Assert.That(html, Is.StringMatching(expectedHtml.Substring(0, expectedHtml.Length - 25)));
 		}
 
 
@@ -184,10 +182,10 @@ multi-line text block and
 the date: 02/06/2013 06:42:45</p>
 ".NormalizeNewLines();
 
-			var html = RenderToHtml(template, productArgs);
+            var html = RazorFormat.CreateAndRenderToHtml(template, model: productArgs);
 
-			Console.WriteLine(html);
-			Assert.That(html, Is.StringMatching(expectedHtml.Substring(0, expectedHtml.Length - 25)));
+            html.Print();
+            Assert.That(html, Is.StringMatching(expectedHtml.Substring(0, expectedHtml.Length - 25)));
 		}
 
 		[Test]
@@ -201,7 +199,7 @@ the date: 02/06/2013 06:42:45</p>
 @"<p>Some Content &lt;span&gt;html&lt;/span&gt;</p>
 ".NormalizeNewLines();
 
-			var html = RenderToHtml(template, new { stringContainingHtml = "<span>html</span>"});
+            var html = RazorFormat.CreateAndRenderToHtml(template, new { stringContainingHtml = "<span>html</span>" });
 
             html.Print();
 			Assert.That(html, Is.EqualTo(expectedHtml));

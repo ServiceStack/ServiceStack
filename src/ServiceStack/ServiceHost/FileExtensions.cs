@@ -43,5 +43,13 @@ namespace ServiceStack.ServiceHost
 				&& !relativeOrAbsolutePath.StartsWith("/") 
 				&& !relativeOrAbsolutePath.StartsWith("\\");
 		}
+
+        public static byte[] ReadFully(this FileInfo file)
+        {
+            using (var fs = file.OpenRead())
+            {
+                return fs.ReadFully();
+            }
+        }
 	}
 }

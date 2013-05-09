@@ -1,7 +1,5 @@
-using System;
 using System.Runtime.Serialization;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -30,12 +28,22 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public string Result { get; set; }
 	}
 
-	public class WildCardRequestService 
-		: ServiceBase<WildCardRequest>
+    [Route("/path/{Tail*}")]
+    public class BasicWildcard
+    {
+        public string Tail { get; set; }
+    }
+    
+	public class WildCardRequestService : ServiceStack.ServiceInterface.Service
 	{
-		protected override object Run(WildCardRequest request)
-		{
-			return request;
-		}
-	}
+        public object Get(WildCardRequest request)
+        {
+            return request;
+        }
+
+        public object Get(BasicWildcard request)
+        {
+            return request;
+        }
+    }
 }

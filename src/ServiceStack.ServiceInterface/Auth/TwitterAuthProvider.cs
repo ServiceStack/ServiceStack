@@ -27,8 +27,12 @@ namespace ServiceStack.ServiceInterface.Auth
                 if (tokens.UserId != null)
                 {
                     var json = AuthHttpGateway.DownloadTwitterUserInfo(tokens.UserId);
-                    var obj = JsonObject.Parse(json);
-                    tokens.DisplayName = obj.Get("name");
+                    var objs = JsonObject.ParseArray(json);
+                    if (objs.Count > 0)
+                    {
+                        var obj = objs[0];
+                        tokens.DisplayName = obj.Get("name");
+                    }
                 }
 
                 LoadUserOAuthProvider(userSession, tokens);

@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
+using ServiceStack.Common;
 using ServiceStack.IO;
 using ServiceStack.Text;
 
@@ -41,7 +43,7 @@ namespace ServiceStack.VirtualPath
         {
             using (var stream = OpenRead())
             {
-                return MD5.Create().ComputeHash(stream).ToString();
+                return stream.ToMd5Hash();
             }
         }
 

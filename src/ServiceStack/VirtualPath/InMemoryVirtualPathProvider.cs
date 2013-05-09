@@ -2,16 +2,22 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using ServiceStack.Common;
 using ServiceStack.IO;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.VirtualPath
 {
+    public interface IWriteableVirtualPathProvider
+    {
+        void AddFile(string filePath, string contents);
+    }
+
     /// <summary>
     /// In Memory repository for files. Useful for testing.
     /// </summary>
-    public class InMemoryVirtualPathProvider : AbstractVirtualPathProviderBase
+    public class InMemoryVirtualPathProvider : AbstractVirtualPathProviderBase, IWriteableVirtualPathProvider
     {
         public InMemoryVirtualPathProvider(IAppHost appHost)
             : base(appHost)
@@ -108,7 +114,16 @@ namespace ServiceStack.VirtualPath
 
         protected override IEnumerable<IVirtualFile> GetMatchingFilesInDir(string globPattern)
         {
-            throw new NotImplementedException();
+            var matchingFilesInBackingDir = EnumerateFiles(globPattern).Cast<IVirtualFile>();
+            return matchingFilesInBackingDir;
+        }
+
+        public IEnumerable<InMemoryVirtualFile> EnumerateFiles(string pattern)
+        {
+            return from dir in dirs 
+                   from file in files 
+                   where file.Name.Glob(pattern) 
+                   select file;
         }
 
         protected override IVirtualDirectory GetDirectoryFromBackingDirectoryOrDefault(string directoryName)

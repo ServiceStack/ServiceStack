@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 using Funq;
 using ServiceStack.Authentication.OpenId;
 using ServiceStack.CacheAccess;
@@ -11,7 +10,6 @@ using ServiceStack.Messaging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.MiniProfiler.Data;
 using ServiceStack.OrmLite;
-using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.Plugins.ProtoBuf;
 using ServiceStack.Redis;
 using ServiceStack.Redis.Messaging;
@@ -22,7 +20,6 @@ using ServiceStack.Api.Swagger;
 using ServiceStack.ServiceInterface.Validation;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Support.Markdown;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests
@@ -33,9 +30,7 @@ namespace ServiceStack.WebHost.IntegrationTests
             : AppHostBase
         {
             public AppHost()
-                : base("ServiceStack WebHost IntegrationTests", typeof(Reverse).Assembly)
-            {
-            }
+                : base("ServiceStack WebHost IntegrationTests", typeof(Reverse).Assembly) {}
 
             public override void Configure(Container container)
             {
@@ -126,8 +121,6 @@ namespace ServiceStack.WebHost.IntegrationTests
             private void ConfigureAuth(Funq.Container container)
             {
                 Routes
-                    .Add<Auth>("/auth")
-                    .Add<Auth>("/auth/{provider}")
                     .Add<Registration>("/register");
 
                 var appSettings = new AppSettings();

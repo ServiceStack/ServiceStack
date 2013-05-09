@@ -93,7 +93,7 @@ namespace ServiceStack.ServiceClient.Web
         /// <summary>
         /// Gets the collection of headers to be added to outgoing requests.
         /// </summary>
-#if NETFX_CORE || WINDOWS_PHONE
+#if NETFX_CORE || WINDOWS_PHONE || SILVERLIGHT
         public Dictionary<string, string> Headers { get; private set; } 
 #else
         public NameValueCollection Headers { get; private set; }
@@ -106,19 +106,18 @@ namespace ServiceStack.ServiceClient.Web
         protected ServiceClientBase()
         {
             this.HttpMethod = DefaultHttpMethod;
-            this.CookieContainer = new CookieContainer();
             asyncClient = new AsyncServiceClient {
                 ContentType = ContentType,
                 StreamSerializer = SerializeToStream,
                 StreamDeserializer = StreamDeserializer,
-                CookieContainer = this.CookieContainer,
                 UserName = this.UserName,
                 Password = this.Password,
                 LocalHttpWebRequestFilter = this.LocalHttpWebRequestFilter,
                 LocalHttpWebResponseFilter = this.LocalHttpWebResponseFilter
             };
+            this.CookieContainer = new CookieContainer();
             this.StoreCookies = true; //leave
-#if NETFX_CORE || WINDOWS_PHONE
+#if NETFX_CORE || WINDOWS_PHONE || SILVERLIGHT
             this.Headers = new Dictionary<string, string>();
 #else
             this.Headers = new NameValueCollection();
@@ -321,7 +320,12 @@ namespace ServiceStack.ServiceClient.Web
             set { asyncClient.StoreCookies = storeCookies = value; }
         }
 
-        public CookieContainer CookieContainer { get; set; }
+        private CookieContainer _cookieContainer;
+        public CookieContainer CookieContainer
+        {
+            get { return _cookieContainer; }
+            set { asyncClient.CookieContainer = _cookieContainer = value; }
+        }
 
         private bool allowAutoRedirect = true;
         public bool AllowAutoRedirect
@@ -848,6 +852,16 @@ namespace ServiceStack.ServiceClient.Web
         public virtual void PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             asyncClient.SendAsync(HttpMethods.Put, GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
+        }
+
+        public virtual void PatchAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            PatchAsync(request.ToUrl(HttpMethods.Patch, Format), request, onSuccess, onError);
+        }
+
+        public virtual void PatchAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            asyncClient.SendAsync(HttpMethods.Patch, GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
         }
 
         public virtual void CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)

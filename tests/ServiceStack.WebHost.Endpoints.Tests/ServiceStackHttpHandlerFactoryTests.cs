@@ -64,6 +64,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             EndpointHost.Config = new EndpointHostConfig("ServiceName", new ServiceManager(GetType().Assembly)) {
                 RawHttpHandlers = new List<Func<IHttpRequest,IHttpHandler>>(),
+				RouteNamingConventions = new List<RouteNamingConventionDelegate>(),
                 CustomHttpHandlers = new Dictionary<HttpStatusCode, IServiceStackHttpHandler>(),
                 WebHostPhysicalPath = "~/".MapServerPath()
             };

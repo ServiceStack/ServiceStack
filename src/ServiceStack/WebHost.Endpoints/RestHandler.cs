@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.Serialization;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
@@ -95,14 +96,24 @@ namespace ServiceStack.WebHost.Endpoints
             var requestType = restPath.RequestType;
             using (Profiler.Current.Step("Deserialize Request"))
             {
+                try
+                {
+                    var requestDto = GetCustomRequestFromBinder(httpReq, requestType);
+                    if (requestDto != null) return requestDto;
 
-                var requestDto = GetCustomRequestFromBinder(httpReq, requestType);
-                if (requestDto != null) return requestDto;
+                    var requestParams = httpReq.GetRequestParams();
+                    requestDto = CreateContentTypeRequest(httpReq, requestType, httpReq.ContentType);
 
-                var requestParams = httpReq.GetRequestParams();
-                requestDto = CreateContentTypeRequest(httpReq, requestType, httpReq.ContentType);
-
-                return restPath.CreateRequest(httpReq.PathInfo, requestParams, requestDto);
+                    return restPath.CreateRequest(httpReq.PathInfo, requestParams, requestDto);
+                }
+                catch (SerializationException e)
+                {
+                    throw new RequestBindingException("Unable to bind request", e);
+                }
+                catch (ArgumentException e)
+                {
+                    throw new RequestBindingException("Unable to bind request", e);
+                }
             }
         }
 

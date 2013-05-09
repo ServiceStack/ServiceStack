@@ -1,6 +1,7 @@
-Join the [google group](http://groups.google.com/group/servicestack) or
-follow [@demisbellot](http://twitter.com/demisbellot) and [@ServiceStack](http://twitter.com/servicestack)
-for twitter updates. You can also join a growing crowd of ServiceStack users on [JabbR](http://jabbr.net/#/rooms/servicestack) if you want to chat.
+See [www.servicestack.net](http://www.servicestack.net/) for an overview.
+
+Join the [ServiceStack Google+ Community](https://plus.google.com/u/0/communities/112445368900682590445) or
+follow [@ServiceStack](http://twitter.com/servicestack) for project updates. You can also join a growing crowd of ServiceStack users on [JabbR](http://jabbr.net/#/rooms/servicestack) if you want to chat.
 
 Service Stack is a high-performance .NET web services framework _(including a number of high-performance sub-components: see below)_ 
 that simplifies the development of XML, JSON, JSV and WCF SOAP [Web Services](https://github.com/ServiceStack/ServiceStack/wiki/Service-Stack-Web-Services). 
@@ -133,7 +134,7 @@ host of functionality for free, out of the box without any configuration require
 If you have [NuGet](http://nuget.org) installed, the easiest way to get started is to install ServiceStack via NuGet:
 
 ServiceStack with Razor Support: Create an empty ASP.NET Web or Console Application and (.NET 4.0+)
-![Install-Pacakage ServiceStack.Razor](http://www.servicestack.net/img/nuget-servicestack.razor.png)
+![Install-Pacakage ServiceStack.Razor2](http://www.servicestack.net/img/nuget-servicestack.razor.png)
 
 ServiceStack binaries only: Minimal installation of ServiceStack containing only the core-binaries (.NET 3.5+)
 ![Install-Pacakage ServiceStack](http://www.servicestack.net/img/nuget-servicestack.png)
@@ -500,6 +501,35 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [wimatihomer](https://github.com/wimatihomer) (Wim Pool)
  - [sword-breaker](https://github.com/sword-breaker)
  - [adebisi-fa](https://github.com/adebisi-fa) (Adebisi Foluso A.)
+ - [mbischoff](https://github.com/mbischoff) (M. Bischoff)
+ - [ivanfioravanti](https://github.com/ivanfioravanti) (Ivan Fioravanti)
+ - [inhibition](https://github.com/inhibition) (Keith Hassen)
+ - [joshearl](https://github.com/joshearl) (Josh Earl)
+ - [friism](https://github.com/friism) (Michael Friis)
+ - [corkupine](https://github.com/corkupine)
+ - [bchavez](https://github.com/bchavez) (Brian Chavez)
+ - [nhhagen](https://github.com/nhhagen) (Niels Henrik Hagen)
+ - [daggmano](https://github.com/daggmano) (Darren Oster)
+ - [chappoo](https://github.com/chappoo) (Steve Chapman)
+ - [julrichkieffer](https://github.com/julrichkieffer) (Julrich Kieffer)
+ - [adamclarsen](https://github.com/adamclarsen) (Adam Larsen)
+ - [joero74](https://github.com/joero74) (Joerg Rosenkranz)
+ - [ddotlic](https://github.com/ddotlic) (Drazen Dotlic)
+ - [chrismcv](https://github.com/chrismcv) (Chris McVittie)
+ - [marcioalthmann](https://github.com/marcioalthmann) (Márcio Fábio Althmann)
+ - [mmertsock](https://github.com/mmertsock)
+ - [johnkamau](https://github.com/johnkamau) (John Kamau)
+ - [uhaciogullari](https://github.com/uhaciogullari) (Ufuk Hacıoğulları)
+ - [davybrion](https://github.com/davybrion) (Davy Brion)
+ - [aleshi](https://github.com/aleshi) (Alexander Shiryaev)
+ - [alexandryz](https://github.com/alexandryz) (Alexandr Zaozerskiy)
+ - [mistobaan](https://github.com/mistobaan) (Fabrizio Milo)
+ - [niemyjski](https://github.com/niemyjski) (Blake Niemyjski)
+ - [alexandernyquist](https://github.com/alexandernyquist) (Alexander Nyquist)
+ - [mcduck76](https://github.com/mcduck76)
+ - [kojoru](https://github.com/kojoru)
+ - [jeremy-bridges](https://github.com/jeremy-bridges) (Jeremy Bridges)
+ - [andreabalducci](https://github.com/andreabalducci) (Andrea Balducci)
 
 ***
 

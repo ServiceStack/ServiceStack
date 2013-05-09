@@ -464,6 +464,7 @@
     <Compile Include="Web\SerializationContext.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Extensions\CustomExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">

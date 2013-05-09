@@ -53,13 +53,13 @@ namespace RazorRockstars.Console.Files
         {
             Thread.Sleep(TimeSpan.FromMinutes(10));
         }
-        
+
         [Test]
         public void Does_not_use_same_razor_page_instance()
         {
             var html = GetRazorInstanceHtml();
             Assert.That(html, Is.StringContaining("<h5>Counter: 1</h5>"));
-            
+
             html = GetRazorInstanceHtml();
             Assert.That(html, Is.StringContaining("<h5>Counter: 1</h5>"));
         }
@@ -67,19 +67,20 @@ namespace RazorRockstars.Console.Files
         private static string GetRazorInstanceHtml()
         {
             var razorFormat = RazorFormat.Instance;
-            var mockReq = new MockHttpRequest {OperationName = "RazorInstance"};
+            var mockReq = new MockHttpRequest { OperationName = "RazorInstance" };
             var mockRes = new MockHttpResponse();
-            var dto = new RockstarsResponse {Results = Rockstar.SeedData.ToList()};
+            var dto = new RockstarsResponse { Results = Rockstar.SeedData.ToList() };
             razorFormat.ProcessRequest(mockReq, mockRes, dto);
             var html = mockRes.ReadAsString();
             return html;
         }
-        
+
         public static string AcceptContentType = "*/*";
         public void Assert200(string url, params string[] containsItems)
         {
             url.Print();
-            var text = url.GetStringFromUrl(AcceptContentType, responseFilter:r => {
+            var text = url.GetStringFromUrl(AcceptContentType, responseFilter: r =>
+            {
                 if (r.StatusCode != HttpStatusCode.OK)
                     Assert.Fail(url + " did not return 200 OK");
             });
@@ -95,12 +96,48 @@ namespace RazorRockstars.Console.Files
         public void Assert200UrlContentType(string url, string contentType)
         {
             url.Print();
-            url.GetStringFromUrl(AcceptContentType, responseFilter:r => {
+            url.GetStringFromUrl(AcceptContentType, responseFilter: r =>
+            {
                 if (r.StatusCode != HttpStatusCode.OK)
                     Assert.Fail(url + " did not return 200 OK: " + r.StatusCode);
                 if (!r.ContentType.StartsWith(contentType))
                     Assert.Fail(url + " did not return contentType " + contentType);
             });
+        }
+
+        public void AssertStatus(string url, HttpStatusCode statusCode, params string[] containsItems)
+        {
+            url.Print();
+            try
+            {
+                var text = url.GetStringFromUrl(AcceptContentType, responseFilter: r =>
+                {
+                    if (r.StatusCode != statusCode)
+                        Assert.Fail("'{0}' returned {1} expected {2}".Fmt(url, r.StatusCode, statusCode));
+                });
+            }
+            catch (WebException webEx)
+            {
+                if (webEx != null && webEx.Status == WebExceptionStatus.ProtocolError)
+                {
+                    var errorResponse = ((HttpWebResponse)webEx.Response);
+                    if (errorResponse.StatusCode != statusCode)
+                        Assert.Fail("'{0}' returned {1} expected {2}".Fmt(url, errorResponse.StatusCode, statusCode));
+                    var errorBody = webEx.GetResponseBody();
+                    errorBody.Print();
+
+                    foreach (var item in containsItems)
+                    {
+                        if (!errorBody.Contains(item))
+                        {
+                            Assert.Fail(item + " was not found in " + url);
+                        }
+                    }
+                    return;
+                }
+
+                throw;
+            }
         }
 
         static string ViewRockstars = "<!--view:Rockstars.cshtml-->";
@@ -293,6 +330,25 @@ namespace RazorRockstars.Console.Files
             Assert200(Host + "/partialmodel", Template_PartialModel, ViewPartialChildModel, "PathInfo: <b>/partialmodel</b>");
         }
 
+        [Test]
+        public void Does_return_populated_error_page()
+        {
+            AssertStatus(Host + "/modelerror?message=Custom_Error_Message", HttpStatusCode.BadRequest,
+                Template_HtmlReport,
+                "<!--view:ModelError.cshtml-->",
+                "<p>ResponseStatus: ArgumentException</p>",
+                "<p>ResponseStatus: Custom_Error_Message was triggered by client</p>");
+        }
+
+        [Test]
+        public void Does_return_populated_error_page_with_custom_status()
+        {
+            AssertStatus(Host + "/modelerror/417?message=Custom_Error_Message_Only", HttpStatusCode.ExpectationFailed,
+                Template_HtmlReport,
+                "<!--view:ModelError.cshtml-->",
+                "<p>ResponseStatus: ArgumentException</p>",
+                "<p>ResponseStatus: Custom_Error_Message_Only</p>");
+        }
     }
 }
 

@@ -11,10 +11,17 @@ namespace ServiceStack.Api.Swagger
         /// </summary>
         public string ResourceFilterPattern { get; set; }
 
+        public bool UseCamelCaseModelPropertyNames { get; set; }
+
+        public bool UseLowercaseUnderscoreModelPropertyNames { get; set; }
+
         public void Register(IAppHost appHost)
         {
             if (ResourceFilterPattern != null)
                 SwaggerResourcesService.resourceFilterRegex = new Regex(ResourceFilterPattern, RegexOptions.Compiled);
+
+            SwaggerApiService.UseCamelCaseModelPropertyNames = UseCamelCaseModelPropertyNames;
+            SwaggerApiService.UseLowercaseUnderscoreModelPropertyNames = UseLowercaseUnderscoreModelPropertyNames;
 
             appHost.RegisterService(typeof(SwaggerResourcesService), new[] { "/resources" });
             appHost.RegisterService(typeof(SwaggerApiService), new[] { SwaggerResourcesService.RESOURCE_PATH + "/{Name*}" });

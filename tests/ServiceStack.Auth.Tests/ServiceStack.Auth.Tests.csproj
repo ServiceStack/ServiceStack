@@ -64,7 +64,7 @@
       <Name>ServiceStack.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj">
-      <Project>{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}</Project>
+      <Project>{d73274ae-006b-4cee-ba60-0ecf5873048d}</Project>
       <Name>ServiceStack.Razor</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
@@ -102,9 +102,8 @@
     <EmbeddedResource Include="Views\Rockstars.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\..\lib\tests\sqlite3.dll">
+    <Content Include="..\..\lib\sqlite3.dll">
       <Link>sqlite3.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 </Project>

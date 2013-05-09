@@ -1,10 +1,11 @@
-﻿using ServiceStack.ServiceInterface;
+﻿using ServiceStack.ServiceHost;
+using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.WebHost.IntegrationTests.Tests;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
-	public class ContentManagerOnly
+    public class ContentManagerOnly : IReturn<ContentManagerOnlyResponse>
 	{
 		public string Name { get; set; }
 	}
@@ -24,7 +25,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		}
 	}
 
-	public class ContentPermissionOnly
+    public class ContentPermissionOnly : IReturn<ContentPermissionOnlyResponse>
 	{
 		public string Name { get; set; }
 	}

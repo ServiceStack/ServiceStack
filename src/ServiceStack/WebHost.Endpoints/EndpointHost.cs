@@ -233,6 +233,11 @@ namespace ServiceStack.WebHost.Endpoints
             ServiceManager = config.ServiceManager; //reset operations
         }
 
+        public static T GetPlugin<T>() where T : class, IPlugin 
+        {
+            return Plugins.FirstOrDefault(x => x is T) as T;
+        }
+
         public static void AddPlugin(params IPlugin[] plugins)
         {
             if (pluginsLoaded)
@@ -431,6 +436,11 @@ namespace ServiceStack.WebHost.Endpoints
                 }
             }
             catch (Exception ex) { }
+        }
+
+        public static void Dispose()
+        {
+            AppHost = null;
         }
     }
 }

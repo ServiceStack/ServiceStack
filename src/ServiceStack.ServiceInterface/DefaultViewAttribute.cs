@@ -20,9 +20,17 @@ namespace ServiceStack.ServiceInterface
         public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
         {
             if (!string.IsNullOrEmpty(View))
-                req.Items["View"] = View;
+            {
+                object currentView;
+                if (!req.Items.TryGetValue("View", out currentView) || string.IsNullOrEmpty(currentView as string))
+                    req.Items["View"] = View;
+            }
             if (!string.IsNullOrEmpty(Template))
-                req.Items["Template"] = Template;
+            {
+                object currentTemplate;
+                if (!req.Items.TryGetValue("Template", out currentTemplate) || string.IsNullOrEmpty(currentTemplate as string))
+                    req.Items["Template"] = Template;
+            }
         }
     }
 }

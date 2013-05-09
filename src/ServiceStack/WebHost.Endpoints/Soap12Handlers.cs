@@ -7,18 +7,28 @@ using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints
 {
-    public class Soap12Handlers : SoapHandler
+    public class Soap12Handler : SoapHandler
+    {
+        public Soap12Handler(EndpointAttributes soapType) : base(soapType) { }
+
+        protected override System.ServiceModel.Channels.Message GetRequestMessageFromStream(System.IO.Stream requestStream)
+        {
+            return GetSoap12RequestMessage(requestStream);
+        }
+    }
+
+    public class Soap12Handlers : Soap12Handler
     {
         public Soap12Handlers() : base(EndpointAttributes.Soap12) { }
     }
 
-    public class Soap12AsyncOneWayHandler : SoapHandler
+    public class Soap12AsyncOneWayHandler : Soap12Handler
     {
         public Soap12AsyncOneWayHandler() : base(EndpointAttributes.Soap12) { }
     }
 
     public class Soap12MessageAsyncOneWayHttpHandler
-        : SoapHandler, IHttpHandler
+        : Soap12Handler, IHttpHandler
     {
         public Soap12MessageAsyncOneWayHttpHandler() : base(EndpointAttributes.Soap12) { }
 
@@ -31,12 +41,11 @@ namespace ServiceStack.WebHost.Endpoints
                 return;
             }
 
-            var requestMessage = GetSoap12RequestMessage(context.Request.InputStream);
-            SendOneWay(requestMessage);
+            SendOneWay(null);
         }
     }
 
-    public class Soap12MessageSyncReplyHttpHandler : SoapHandler, IHttpHandler
+    public class Soap12MessageSyncReplyHttpHandler : Soap12Handler, IHttpHandler
     {
         public Soap12MessageSyncReplyHttpHandler() : base(EndpointAttributes.Soap12) { }
 
@@ -49,8 +58,7 @@ namespace ServiceStack.WebHost.Endpoints
                 return;
             }
 
-            var requestMessage = GetSoap12RequestMessage(context.Request.InputStream);
-            var responseMessage = Send(requestMessage);
+            var responseMessage = Send(null);
 
             context.Response.ContentType = GetSoapContentType(context.Request.ContentType);
             using (var writer = XmlWriter.Create(context.Response.OutputStream))
@@ -68,8 +76,7 @@ namespace ServiceStack.WebHost.Endpoints
                 return;
             }
 
-            var requestMessage = GetSoap12RequestMessage(httpReq.InputStream);
-            var responseMessage = Send(requestMessage, httpReq, httpRes);
+            var responseMessage = Send(null, httpReq, httpRes);
 
             httpRes.ContentType = GetSoapContentType(httpReq.ContentType);
             using (var writer = XmlWriter.Create(httpRes.OutputStream))

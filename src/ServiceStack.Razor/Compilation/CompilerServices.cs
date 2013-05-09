@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 
 namespace ServiceStack.Razor.Compilation
 {
-	/// <summary>
+    /// <summary>
     /// Provides service methods for compilation.
     /// </summary>
     public static class CompilerServices
@@ -26,10 +25,10 @@ namespace ServiceStack.Razor.Compilation
                 throw new ArgumentNullException("type");
 
             return (type.IsClass
-                    && type.IsSealed
-                    && type.BaseType == typeof(object)
-                    && type.Name.StartsWith("<>")
-                    && type.IsDefined(typeof(CompilerGeneratedAttribute), true));
+                     && type.IsSealed
+                     && type.BaseType == typeof(object)
+                     && type.Name.StartsWith("<>")
+                     && type.IsDefined(typeof(CompilerGeneratedAttribute), true));
         }
 
         /// <summary>
@@ -43,17 +42,8 @@ namespace ServiceStack.Razor.Compilation
                 throw new ArgumentNullException("type");
 
             return (DynamicType.IsAssignableFrom(type)
-                    || ExpandoType.IsAssignableFrom(type)
-                    || IsAnonymousType(type));
-        }
-
-        /// <summary>
-        /// Generates a random class name.
-        /// </summary>
-        /// <returns>A new random class name.</returns>
-        public static string GenerateClassName()
-        {
-            return Regex.Replace(Guid.NewGuid().ToString("N"), @"[^A-Za-z]*", "");
+                     || ExpandoType.IsAssignableFrom(type)
+                     || IsAnonymousType(type));
         }
 
         /// <summary>
