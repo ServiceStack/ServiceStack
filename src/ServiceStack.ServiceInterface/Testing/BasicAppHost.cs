@@ -115,7 +115,7 @@ namespace ServiceStack.ServiceInterface.Testing
 
                 if (disposing)
                 {
-                    if (EndpointHost.Config.ServiceManager != null)
+                    if (EndpointHost.Config != null && EndpointHost.Config.ServiceManager != null)
                     {
                         EndpointHost.Config.ServiceManager.Dispose();
                     }
