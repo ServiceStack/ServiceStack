@@ -115,6 +115,7 @@
     <Compile Include="AppData\NorthwindCustomers.cs" />
     <Compile Include="AppData\FormatHelpers.cs" />
     <Compile Include="AppData\NorthwindHelpers.cs" />
+    <Compile Include="BasicAppHostTests.cs" />
     <Compile Include="Formats\MarkdownFormatExtensions.cs" />
     <Compile Include="Formats_Razor\CustomRazorBasePage.cs" />
     <Compile Include="Formats_Razor\IntroductionExampleRazorTests.cs" />
