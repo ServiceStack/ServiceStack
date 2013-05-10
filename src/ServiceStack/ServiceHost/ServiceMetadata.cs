@@ -175,17 +175,17 @@ namespace ServiceStack.ServiceHost
 
         public List<string> GetAllOperationNames()
         {
-            return Operations.Select(x => x.RequestType.Name).ToList();
+            return Operations.Select(x => x.RequestType.Name).OrderBy(operation => operation).ToList();
         }
 
         public List<string> GetOperationNamesForMetadata(IHttpRequest httpReq)
         {
-            return Operations.Select(x => x.RequestType.Name).ToList();
+            return GetAllOperationNames();
         }
 
         public List<string> GetOperationNamesForMetadata(IHttpRequest httpReq, Format format)
         {
-            return Operations.Select(x => x.RequestType.Name).ToList();
+            return GetAllOperationNames();
         }
 
         public bool IsVisible(IHttpRequest httpReq, Operation operation)
