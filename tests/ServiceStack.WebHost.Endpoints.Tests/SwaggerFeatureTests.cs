@@ -24,6 +24,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [ServiceHost.Api]
+    [Route("/swaggerGetList/{Name}", "GET")]
+    public class SwaggerGetListRequest : IReturn<List<SwaggerFeatureResponse>>
+    {
+        public string Name { get; set; }
+    }
+
+    [ServiceHost.Api]
+    [Route("/swaggerGetArray/{Name}", "GET")]
+    public class SwaggerGetArrayRequest : IReturn<SwaggerFeatureResponse[]>
+    {
+        public string Name { get; set; }
+    }
+    
+    [ServiceHost.Api]
     [Route("/swaggerModels/{UrlParam}", "POST")]
     public class SwaggerModelsRequest : IReturn<SwaggerFeatureResponse>
     {
@@ -37,13 +51,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Name { get; set; }
 
         [System.ComponentModel.Description("NestedModel description")]
-        public SwaggerNestedModel NestedModel { get; set;} 
+        public SwaggerNestedModel NestedModel { get; set;}
+
+        public List<SwaggerNestedModel2> ListProperty { get; set; }
+
+        public SwaggerNestedModel3[] ArrayProperty { get; set; }
     }
 
     public class SwaggerNestedModel
     {
         [System.ComponentModel.Description("NestedProperty description")]
         public bool NestedProperty { get; set;}
+    }
+
+    public class SwaggerNestedModel2
+    {
+        [System.ComponentModel.Description("NestedProperty2 description")]
+        public bool NestedProperty2 { get; set;}
+    }
+
+    public class SwaggerNestedModel3
+    {
+        [System.ComponentModel.Description("NestedProperty3 description")]
+        public bool NestedProperty3 { get; set;}
     }
 
     [ServiceHost.Api]
@@ -141,6 +171,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public object Post(SwaggerModelsRequest request)
         {
             return new SwaggerFeatureResponse { IsSuccess = true };
+        }
+
+        public object Get(SwaggerGetListRequest request)
+        {
+            return new List<SwaggerFeatureResponse> { new SwaggerFeatureResponse { IsSuccess = true } };
+        }
+
+        public object Get(SwaggerGetArrayRequest request)
+        {
+            return new[] { new SwaggerFeatureResponse { IsSuccess = true } };
         }
     }
 
@@ -289,6 +329,30 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test, TestCaseSource("RestClients")]
+        public void Should_retrieve_list_response_type_info(IRestClient client)
+        {
+            var resource = client.Get<ResourceResponse>("/resource/swaggerGetList");
+            Assert.That(resource.Apis, Is.Not.Empty);
+
+            var operation = resource.Apis.SelectMany(api => api.Operations).Single(t => t.HttpMethod == "GET");
+            operation.PrintDump();
+            Assert.That(operation.ResponseClass, Is.EqualTo("List[SwaggerFeatureResponse]"));
+            Assert.That(resource.Models.ContainsKey("SwaggerFeatureResponse"));
+        }
+
+        [Test, TestCaseSource("RestClients")]
+        public void Should_retrieve_array_response_type_info(IRestClient client)
+        {
+            var resource = client.Get<ResourceResponse>("/resource/swaggerGetArray");
+            Assert.That(resource.Apis, Is.Not.Empty);
+
+            var operation = resource.Apis.SelectMany(api => api.Operations).Single(t => t.HttpMethod == "GET");
+            operation.PrintDump();
+            Assert.That(operation.ResponseClass, Is.EqualTo("List[SwaggerFeatureResponse]"));
+            Assert.That(resource.Models.ContainsKey("SwaggerFeatureResponse"));
+        }
+
+        [Test, TestCaseSource("RestClients")]
         public void Should_retrieve_response_model(IRestClient client)
         {
             var resource = client.Get<ResourceResponse>("/resource/swaggerModels");
@@ -333,6 +397,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(nestedClassModel.Properties.ContainsKey("NestedProperty"), Is.True);
             Assert.That(nestedClassModel.Properties["NestedProperty"].Type, Is.EqualTo("bool"));
             Assert.That(nestedClassModel.Properties["NestedProperty"].Description, Is.EqualTo("NestedProperty description"));
+        }
+
+        [Test, TestCaseSource("RestClients")]
+        public void Should_retrieve_list_property_model(IRestClient client)
+        {
+            var resource = client.Get<ResourceResponse>("/resource/swaggerModels");
+            Assert.That(resource.Models.ContainsKey(typeof(SwaggerModelsRequest).Name), Is.True);
+            var requestClassModel = resource.Models[typeof(SwaggerModelsRequest).Name];
+
+            Assert.That(requestClassModel.Properties.ContainsKey("ListProperty"), Is.True);
+            Assert.That(requestClassModel.Properties["ListProperty"].Type, Is.EqualTo("Array"));
+            Assert.That(requestClassModel.Properties["ListProperty"].Items["$ref"], Is.EqualTo(typeof(SwaggerNestedModel2).Name));
+            Assert.That(resource.Models.ContainsKey(typeof(SwaggerNestedModel2).Name), Is.True);
+        }
+
+        [Test, TestCaseSource("RestClients")]
+        public void Should_retrieve_array_property_model(IRestClient client)
+        {
+            var resource = client.Get<ResourceResponse>("/resource/swaggerModels");
+            Assert.That(resource.Models.ContainsKey(typeof(SwaggerModelsRequest).Name), Is.True);
+            var requestClassModel = resource.Models[typeof(SwaggerModelsRequest).Name];
+
+            Assert.That(requestClassModel.Properties.ContainsKey("ArrayProperty"), Is.True);
+            Assert.That(requestClassModel.Properties["ArrayProperty"].Type, Is.EqualTo("Array"));
+            Assert.That(requestClassModel.Properties["ArrayProperty"].Items["$ref"], Is.EqualTo(typeof(SwaggerNestedModel3).Name));
+            Assert.That(resource.Models.ContainsKey(typeof(SwaggerNestedModel3).Name), Is.True);
         }
     }
 }
