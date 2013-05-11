@@ -6,6 +6,7 @@ using System.Text;
 using ServiceStack.Common;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceHost
 {
@@ -347,7 +348,7 @@ namespace ServiceStack.ServiceHost
 				}
 			}
 
-			return this.typeDeserializer.PopulateFromMap(fromInstance, requestKeyValuesMap);
+            return this.typeDeserializer.PopulateFromMap(fromInstance, requestKeyValuesMap, EndpointHostConfig.Instance.IgnoreWarningsOnPropertyNames);
 		}
 
 		public override int GetHashCode()
