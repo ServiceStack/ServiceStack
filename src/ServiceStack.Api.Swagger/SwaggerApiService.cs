@@ -258,7 +258,7 @@ namespace ServiceStack.Api.Swagger
                 if (apiDoc != null)
                     modelProp.Description = apiDoc.Description;
 
-                var allowableValues = prop.GetCustomAttributes(typeof(SwaggerAllowableValuesAttribute), true).OfType<SwaggerAllowableValuesAttribute>().FirstOrDefault();
+                var allowableValues = prop.GetCustomAttributes(typeof(ApiAllowableValuesAttribute), true).OfType<ApiAllowableValuesAttribute>().FirstOrDefault();
                 if (allowableValues != null)
                     modelProp.AllowableValues = GetAllowableValue(allowableValues);
 
@@ -343,7 +343,7 @@ namespace ServiceStack.Api.Swagger
             return md;
         }
 
-		private static ParameterAllowableValues GetAllowableValue(SwaggerAllowableValuesAttribute attr)
+		private static ParameterAllowableValues GetAllowableValue(ApiAllowableValuesAttribute attr)
 		{
 			if (attr != null)
 			{
@@ -361,12 +361,12 @@ namespace ServiceStack.Api.Swagger
         {
             var properties = operationType.GetProperties();
             var paramAttrs = new Dictionary<string, ApiMemberAttribute[]>();
-			var allowableParams = new List<SwaggerAllowableValuesAttribute>();
+			var allowableParams = new List<ApiAllowableValuesAttribute>();
 
 			foreach (var property in properties)
 			{
                 paramAttrs[property.Name] = (ApiMemberAttribute[])property.GetCustomAttributes(typeof(ApiMemberAttribute), true);
-				allowableParams.AddRange(property.GetCustomAttributes(typeof(SwaggerAllowableValuesAttribute), true).Cast<SwaggerAllowableValuesAttribute>().ToArray());
+				allowableParams.AddRange(property.GetCustomAttributes(typeof(ApiAllowableValuesAttribute), true).Cast<ApiAllowableValuesAttribute>().ToArray());
 			}
 
             var methodOperationParameters = new List<MethodOperationParameter>();
