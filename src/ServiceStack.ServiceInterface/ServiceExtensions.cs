@@ -197,23 +197,18 @@ namespace ServiceStack.ServiceInterface
 
             using (var cache = httpReq.GetCacheClient())
             {
-                var session = GetSession(cache, httpReq.GetSessionId());
-                if (session != null)
-                    httpReq.Items.Add(RequestItemsSessionKey, session);
+                var sessionId = httpReq.GetSessionId();
+                var session = cache.Get<IAuthSession>(SessionFeature.GetSessionKey(sessionId));
+                if (session == null)
+                {
+                    session = AuthService.CurrentSessionFactory();
+                    session.Id = sessionId;
+                    session.CreatedAt = session.LastModified = DateTime.UtcNow;
+                    session.OnCreated(httpReq);
+                }
+                httpReq.Items.Add(RequestItemsSessionKey, session);
                 return session;
             }
-        }
-
-        public static IAuthSession GetSession(this ICacheClient cache, string sessionId)
-        {
-            var session = cache.Get<IAuthSession>(SessionFeature.GetSessionKey(sessionId));
-            if (session == null)
-            {
-                session = AuthService.CurrentSessionFactory();
-                session.Id = sessionId;
-                session.CreatedAt = session.LastModified = DateTime.UtcNow;
-            }
-            return session;
         }
 
         public static object RunAction<TService, TRequest>(

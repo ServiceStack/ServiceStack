@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
@@ -30,5 +31,6 @@ namespace ServiceStack.ServiceInterface.Auth
         void OnRegistered(IServiceBase registrationService);
         void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, Dictionary<string, string> authInfo);
         void OnLogout(IServiceBase authService);
+        void OnCreated(IHttpRequest httpReq);
     }
 }

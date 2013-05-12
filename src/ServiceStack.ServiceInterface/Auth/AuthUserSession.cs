@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
@@ -66,6 +67,7 @@ namespace ServiceStack.ServiceInterface.Auth
         public virtual void OnRegistered(IServiceBase registrationService) {}
         public virtual void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, Dictionary<string, string> authInfo) {}
         public virtual void OnLogout(IServiceBase authService) {}
+        public virtual void OnCreated(IHttpRequest httpReq) {}
     }
 
     public static class AuthSessionExtensions
