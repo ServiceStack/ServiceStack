@@ -194,6 +194,7 @@
     <Compile Include="StringExtensionTests.cs" />
     <Compile Include="ReflectionUtilTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StringMapTypeDeserializerTests.cs" />
     <Compile Include="Text\AdhocJsTests.cs" />
     <Compile Include="OAuth\OAuthUserSessionTestsBase.cs" />
     <Compile Include="UrlExtensionTests.cs" />

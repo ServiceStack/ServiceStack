@@ -16,7 +16,7 @@ namespace ServiceStack.ServiceModel.Serialization
     /// </summary>
     public class StringMapTypeDeserializer
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(StringMapTypeDeserializer));
+        private static ILog Log = LogManager.GetLogger(typeof(StringMapTypeDeserializer));
 
         internal class PropertySerializerEntry
         {
@@ -34,6 +34,11 @@ namespace ServiceStack.ServiceModel.Serialization
         private readonly Type type;
         private readonly Dictionary<string, PropertySerializerEntry> propertySetterMap
             = new Dictionary<string, PropertySerializerEntry>(Text.StringExtensions.InvariantComparerIgnoreCase());
+
+        internal StringMapTypeDeserializer(Type type, ILog log) : this(type)
+        {
+            Log = log;
+        }
 
         public StringMapTypeDeserializer(Type type)
         {
@@ -69,7 +74,7 @@ namespace ServiceStack.ServiceModel.Serialization
 
         }
 
-        public object PopulateFromMap(object instance, IDictionary<string, string> keyValuePairs)
+        public object PopulateFromMap(object instance, IDictionary<string, string> keyValuePairs, List<string> ignoredWarningsOnPropertyNames = null)
         {
             string propertyName = null;
             string propertyTextValue = null;
@@ -86,9 +91,10 @@ namespace ServiceStack.ServiceModel.Serialization
 
                     if (!propertySetterMap.TryGetValue(propertyName, out propertySerializerEntry))
                     {
-                        if (propertyName != "format" && propertyName != "callback" && propertyName != "debug")
+                        var ignoredProperty = propertyName.ToLowerInvariant();
+                        if (ignoredWarningsOnPropertyNames == null || !ignoredWarningsOnPropertyNames.Contains(ignoredProperty))
                         {
-                            Log.WarnFormat("Property '{0}' does not exist on type '{1}'", propertyName, type.FullName);
+                            Log.WarnFormat("Property '{0}' does not exist on type '{1}'", ignoredProperty, type.FullName);
                         }
                         continue;
                     }
@@ -129,7 +135,7 @@ namespace ServiceStack.ServiceModel.Serialization
 
         public object CreateFromMap(IDictionary<string, string> keyValuePairs)
         {
-            return PopulateFromMap(null, keyValuePairs);
+            return PopulateFromMap(null, keyValuePairs, null);
         }
     }
 }

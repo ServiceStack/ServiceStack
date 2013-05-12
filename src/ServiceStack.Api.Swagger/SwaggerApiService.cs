@@ -195,11 +195,20 @@ namespace ServiceStack.Api.Swagger
                 : type.Name;
         }
 
+        private static Type GetListElementType(Type type)
+        {
+            if (type.IsArray) return type.GetElementType();
+
+            if (!type.IsGenericType) return null;
+            var genericType = type.GetGenericTypeDefinition();
+            if (genericType == typeof(List<>) || genericType == typeof(IList<>) || genericType == typeof(IEnumerable<>))
+                return type.GetGenericArguments()[0];
+            return null;
+        }
+
         private static bool IsListType(Type type)
         {
-            if (!type.IsGenericType) return false;
-            var genericType = type.GetGenericTypeDefinition();
-            return genericType == typeof(List<>) || genericType == typeof(IList<>) || genericType == typeof(IEnumerable<>);
+            return GetListElementType(type) != null;
         }
 
         private static void ParseModel(IDictionary<string, SwaggerModel> models, Type modelType)
@@ -232,7 +241,7 @@ namespace ServiceStack.Api.Swagger
                 if (IsListType(propertyType))
                 {
                     modelProp.Type = "Array";
-                    var listItemType = propertyType.GetGenericArguments()[0];
+                    var listItemType = GetListElementType(propertyType);
                     modelProp.Items = new Dictionary<string, string> {
                                               {IsSwaggerScalarType(listItemType) ? "type" : "$ref", GetSwaggerTypeName(listItemType)}
                                           };
@@ -281,14 +290,10 @@ namespace ServiceStack.Api.Swagger
                 if (i.IsGenericType && i.GetGenericTypeDefinition() == typeof (IReturn<>))
                 {
                     var returnType = i.GetGenericArguments()[0];
-                    if (returnType.IsArray)
+                    // Handle IReturn<List<SomeClass>> or IReturn<SomeClass[]>
+                    if (IsListType(returnType))
                     {
-                        return string.Format("List[{0}]", GetSwaggerTypeName(returnType.GetElementType()));
-                    }
-                    else if (IsListType(returnType))
-                    {
-                        // Handle IReturn<List<SomeClass>>
-                        var listItemType = returnType.GetGenericArguments()[0];
+                        var listItemType = GetListElementType(returnType);
                         ParseModel(models, listItemType);
                         return string.Format("List[{0}]", GetSwaggerTypeName(listItemType));
                     }

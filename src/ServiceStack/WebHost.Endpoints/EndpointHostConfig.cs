@@ -116,6 +116,9 @@ namespace ServiceStack.WebHost.Endpoints
                         MetadataVisibility = EndpointAttributes.Any,
                         Return204NoContentForEmptyResponse = true,
                         AllowPartialResponses = true,
+                        IgnoreWarningsOnPropertyNames = new List<string>() {
+                            "format", "callback", "debug", "_"
+                        }
                     };
 
                     if (instance.ServiceStackHandlerFactoryPath == null)
@@ -181,6 +184,7 @@ namespace ServiceStack.WebHost.Endpoints
             this.Return204NoContentForEmptyResponse = Return204NoContentForEmptyResponse;
             this.AllowNonHttpOnlyCookies = instance.AllowNonHttpOnlyCookies;
             this.AllowPartialResponses = instance.AllowPartialResponses;
+            this.IgnoreWarningsOnPropertyNames = instance.IgnoreWarningsOnPropertyNames;
         }
 
         public static string GetAppConfigPath()
@@ -388,6 +392,8 @@ namespace ServiceStack.WebHost.Endpoints
         public string DebugAspNetHostEnvironment { get; set; }
         public string DebugHttpListenerHostEnvironment { get; set; }
         public List<string> DefaultDocuments { get; private set; }
+
+        public List<string> IgnoreWarningsOnPropertyNames { get; private set; }
 
         public HashSet<string> IgnoreFormatsInMetadata { get; set; }
 

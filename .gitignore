@@ -37,6 +37,7 @@ App_Data/
 build/*.dll
 *.user
 *.userprefs
+packages/
 
 release/latest/
 *.nupkg

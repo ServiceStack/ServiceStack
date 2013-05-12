@@ -29,3 +29,5 @@ using System.Runtime.Serialization;
 
 [assembly: ContractNamespace("http://schemas.servicestack.net/types",
  ClrNamespace = "ServiceStack.Common.ServiceModel")]
+
+[assembly: InternalsVisibleTo("ServiceStack.Common.Tests")]
