@@ -72,6 +72,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CheckBoxService.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -89,6 +90,7 @@
     <Content Include="Views\Foobar\FooResponse.cshtml" />
     <Content Include="default4.cshtml" />
     <Content Include="Views\Foobar\DefaultViewFoo.cshtml" />
+    <Content Include="Views\CheckBoxData.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
