@@ -232,5 +232,14 @@ namespace ServiceStack.Html
 		{
 			return FindKeysWithPrefix(dictionary, prefix).Any();
 		}
+
+        public static TValue GetOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue @default)
+        {
+            TValue value;
+            if (dict.TryGetValue(key, out value)) {
+                return value;
+            }
+            return @default;
+        }
 	}
 }

@@ -39,5 +39,9 @@ namespace ServiceStack.Html
         public static string UnobtrusiveJavascript_ValidationTypeMustBeLegal = "Validation type names in unobtrusive client validation rules must consist of only lowercase letters. Invalid name: &quot;{0}&quot;, client rule type: {1}";
         public static string UnobtrusiveJavascript_ValidationParameterCannotBeEmpty = "Validation parameter names in unobtrusive client validation rules cannot be empty. Client rule type: {0}";
         public static string UnobtrusiveJavascript_ValidationParameterMustBeLegal = "Validation parameter names in unobtrusive client validation rules must start with a lowercase letter and consist of only lowercase letters or digits. Validation parameter name: {0}, client rule type: {1}"; 
+        public static string Common_ValueNotValidForProperty;
+        public static string HtmlHelper_MissingSelectData;
+        public static string HtmlHelper_WrongSelectDataType;
+        public static string HtmlHelper_SelectExpressionNotEnumerable; 
     }
 }
