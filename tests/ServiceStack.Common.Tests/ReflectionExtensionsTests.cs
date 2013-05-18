@@ -28,6 +28,11 @@ namespace ServiceStack.Common.Tests
 		public ArrayOfString FromUserFileTypes { get; set; }
 	}
 
+    public class TestClassC
+    {
+        public IList<string> FromStringList { get; protected set; }
+    }
+
 	[TestFixture]
 	public class ReflectionExtensionsTests
 	{
@@ -58,6 +63,20 @@ namespace ServiceStack.Common.Tests
 			var fromTestB = testB.TranslateTo<TestClassA>();
 			AssertAreEqual(fromTestB, testB);
 		}
+
+        [Test]
+        public void Can_translate_generic_list_does_ignore_protected_setters()
+        {
+            var values = new[] { "A", "B", "C" };
+            var testA = new TestClassA
+            {
+                ToStringList = new List<string>(values),
+            };
+
+            var fromTestA = testA.TranslateTo<TestClassC>();
+            Assert.NotNull(fromTestA);
+            Assert.IsNull(fromTestA.FromStringList);
+        }
 
 		private static void AssertAreEqual(TestClassA testA, TestClassB testB)
 		{
