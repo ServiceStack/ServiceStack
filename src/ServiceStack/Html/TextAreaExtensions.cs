@@ -158,13 +158,16 @@ namespace ServiceStack.Html
 			}
 
 			TagBuilder tagBuilder = new TagBuilder("textarea");
+            tagBuilder.GenerateId(fullName);
 			tagBuilder.MergeAttributes(htmlAttributes, true);
 			tagBuilder.MergeAttributes(rowsAndColumns, rowsAndColumns != implicitRowsAndColumns);  // Only force explicit rows/cols
 			tagBuilder.MergeAttribute("name", fullName, true);
 
 			// If there are any errors for a named field, we add the CSS attribute.
 			ModelState modelState;
-			htmlHelper.ViewData.ModelState.TryGetValue(fullName, out modelState);
+            if (htmlHelper.ViewData.ModelState.TryGetValue(fullName, out modelState) && modelState.Errors.Count > 0) {
+                tagBuilder.AddCssClass(HtmlHelper.ValidationInputCssClassName);
+            }
 
 			string value;
 			if (modelState != null && modelState.Value != null)
