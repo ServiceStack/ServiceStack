@@ -102,25 +102,33 @@ namespace ServiceStack.Razor.Managers
             if (httpResult != null)
                 dto = httpResult.Response;
 
-            ResolveAndExecuteRazorPage(httpReq, httpRes, dto);
+            var existingRazorPage = FindRazorPage(httpReq, dto);
+            if (existingRazorPage == null)
+            {
+                return false;
+            }
+
+            ResolveAndExecuteRazorPage(httpReq, httpRes, dto, existingRazorPage);
 
             httpRes.EndServiceStackRequest();
             return true;
         }
 
-        public IRazorView ResolveAndExecuteRazorPage(IHttpRequest httpReq, IHttpResponse httpRes, object model, RazorPage razorPage=null)
+        private RazorPage FindRazorPage(IHttpRequest httpReq, object model)
         {
             var viewName = httpReq.GetItem(ViewKey) as string;
-            if (razorPage == null && viewName != null)
+            if (viewName != null)
             {
-                razorPage = this.viewManager.GetPageByName(viewName);
+                return this.viewManager.GetPageByName(viewName);
             }
-            else
-            {
-                razorPage = razorPage
-                    ?? this.viewManager.GetPageByName(httpReq.OperationName) //Request DTO
-                    ?? this.viewManager.GetPage(httpReq, model);  // Response DTO
-            }
+            var razorPage = this.viewManager.GetPageByName(httpReq.OperationName) //Request DTO
+                         ?? this.viewManager.GetPage(httpReq, model); // Response DTO
+            return razorPage;
+        }
+
+        public IRazorView ResolveAndExecuteRazorPage(IHttpRequest httpReq, IHttpResponse httpRes, object model, RazorPage razorPage=null)
+        {
+            razorPage = razorPage ?? FindRazorPage(httpReq, model);
 
             if (razorPage == null)
             {
