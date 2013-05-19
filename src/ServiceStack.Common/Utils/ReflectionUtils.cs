@@ -144,7 +144,7 @@ namespace ServiceStack.Common.Utils
                     }
                     else
                     {
-                        if (propertyInfo.CanWrite)
+                        if (propertyInfo.CanWrite && propertyInfo.GetSetMethod() != null)
                         {
                             map[info.Name] = new AssignmentMember(propertyInfo.PropertyType, propertyInfo);
                             continue;

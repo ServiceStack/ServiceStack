@@ -184,6 +184,11 @@ namespace ServiceStack.Html
 			InnerHtml = HttpUtility.HtmlEncode(innerText);
 		}
 
+        internal MvcHtmlString ToMvcHtmlString(TagRenderMode renderMode)
+        {
+            return ToHtmlString(renderMode);
+        }
+
 		internal MvcHtmlString ToHtmlString(TagRenderMode renderMode)
 		{
 			return MvcHtmlString.Create(ToString(renderMode));

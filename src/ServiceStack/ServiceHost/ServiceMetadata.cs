@@ -405,12 +405,16 @@ namespace ServiceStack.ServiceHost
 
         public static List<ApiMemberAttribute> GetApiMembers(this Type operationType)
         {
-            var attrs = operationType
-                .GetMembers(BindingFlags.Instance | BindingFlags.Public)
-                .SelectMany(x =>
-                    x.GetCustomAttributes(typeof(ApiMemberAttribute), true).OfType<ApiMemberAttribute>()
-                )
-                .ToList();
+            var members = operationType.GetMembers(BindingFlags.Instance | BindingFlags.Public);
+            List<ApiMemberAttribute> attrs = new List<ApiMemberAttribute>();
+            foreach (var member in members)
+            {
+                var memattr = member.GetCustomAttributes(typeof(ApiMemberAttribute), true)
+                    .OfType<ApiMemberAttribute>()
+                    .Select(x => { x.Name = x.Name ?? member.Name; return x; });
+
+                attrs.AddRange(memattr);
+            }
 
             return attrs;
         }

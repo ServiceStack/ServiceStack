@@ -14,7 +14,7 @@ namespace ServiceStack.Html
 	public static class InputExtensions
 	{
         // CheckBox
-
+        #region CheckBox
         public static MvcHtmlString CheckBox(this HtmlHelper htmlHelper, string name)
         {
             return CheckBox(htmlHelper, name, htmlAttributes: (object)null);
@@ -94,9 +94,9 @@ namespace ServiceStack.Html
                                format: null,
                                htmlAttributes: attributes);
         }
-
+        #endregion
         // Hidden
-
+        #region Hidden
         public static MvcHtmlString Hidden(this HtmlHelper htmlHelper, string name)
         {
             return Hidden(htmlHelper, name, value: null, htmlAttributes: null);
@@ -168,9 +168,9 @@ namespace ServiceStack.Html
                                format: null,
                                htmlAttributes: htmlAttributes);
         }
-
+        #endregion
 		// Password
-
+        #region Password
         public static MvcHtmlString Password(this HtmlHelper htmlHelper, string name)
         {
             return Password(htmlHelper, name, value: null);
@@ -228,9 +228,9 @@ namespace ServiceStack.Html
                                format: null,
                                htmlAttributes: htmlAttributes);
         }
-
+        #endregion
 		// RadioButton
-
+        #region RadioButton
         public static MvcHtmlString RadioButton(this HtmlHelper htmlHelper, string name, object value)
         {
             return RadioButton(htmlHelper, name, value, htmlAttributes: (object)null);
@@ -348,9 +348,9 @@ namespace ServiceStack.Html
                                format: null,
                                htmlAttributes: attributes);
         }
-
+        #endregion
 		// TextBox
-
+        #region TextBox
 		public static MvcHtmlString TextBox(this HtmlHelper htmlHelper, string name)
 		{
             return TextBox(htmlHelper, name, value: null);
@@ -446,9 +446,22 @@ namespace ServiceStack.Html
                                format: format,
                                htmlAttributes: htmlAttributes);
         }
+        #endregion
+        // ReturnUrl
+        #region ReturnUrl
+        public static MvcHtmlString ReturnUrl(this HtmlHelper htmlHelper, string name = "ReturnUrl")
+        {
+            string returnUrl = null;
+            var req = htmlHelper.GetHttpRequest();
+            if (req != null) {
+                returnUrl = req.FormData.Get(name) ?? req.QueryString.Get(name) ?? req.Headers.Get("Referer");
+            }
 
+            return Hidden(htmlHelper, name, returnUrl);
+        }
+        #endregion
 		// Helper methods
-
+        #region Common Helpers
         private static MvcHtmlString InputHelper(HtmlHelper htmlHelper, InputType inputType, ModelMetadata metadata, string name, object value, bool useViewData, bool isChecked, bool setId, bool isExplicitValue, string format, IDictionary<string, object> htmlAttributes)
         {
             //string fullName = htmlHelper.ViewContext.ViewData.TemplateInfo.GetFullHtmlFieldName(name);
@@ -537,5 +550,6 @@ namespace ServiceStack.Html
 		{
 			return dictionary == null ? new RouteValueDictionary() : new RouteValueDictionary(dictionary);
 		}
+        #endregion
 	}
 }

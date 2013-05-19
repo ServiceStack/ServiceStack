@@ -1,0 +1,14 @@
+﻿@inherits ServiceStack.Razor.ViewPage<ServiceStack.Razor.Tests.CheckBoxData>
+@using System
+
+<div>
+    <h4>Html CheckBox Helper</h4>
+    <h4>/Views/CheckBox</h4>
+    The time is: @DateTime.Now
+
+    <form method="POST" action="/checkbox">
+        @Html.CheckBoxFor(x => x.BooleanValue) Boolean Value
+        <br />
+        <input type="submit" value="Submit"/>
+    </form>
+</div>
