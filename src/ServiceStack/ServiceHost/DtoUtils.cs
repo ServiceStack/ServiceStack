@@ -162,7 +162,7 @@ namespace ServiceStack.ServiceHost
             if (EndpointHost.DebugMode)
             {
                 // View stack trace in tests and on the client
-                responseStatus.StackTrace = GetRequestErrorBody(request) + ex;
+                responseStatus.StackTrace = GetRequestErrorBody(request) + "\n" + ex;
             }
 
             Log.Error("ServiceBase<TRequest>::Service Exception", ex);
