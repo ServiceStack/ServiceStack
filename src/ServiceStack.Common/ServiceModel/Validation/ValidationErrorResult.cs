@@ -124,5 +124,18 @@ namespace ServiceStack.Validation
                 this.ErrorMessage = this.ErrorCode.ToEnglish();
             }
         }
+
+		/// <summary>
+		/// Merge errors from another <see cref="ValidationErrorResult"/>
+		/// </summary>
+		/// <param name="result"></param>
+		public void Merge(ValidationErrorResult result)
+		{
+			if (result != null) {
+				foreach (var e in result.Errors) {
+					Errors.Add(e);
+				}
+			}
+		}
     }
 }
