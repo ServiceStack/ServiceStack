@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 using System.IO;
 using System.Web;
@@ -99,7 +100,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
         public void SetContentLength(long contentLength)
         {
-            response.Headers.Add("Content-Length", contentLength.ToString(CultureInfo.InvariantCulture));
+            try
+            {
+                response.Headers.Add("Content-Length", contentLength.ToString(CultureInfo.InvariantCulture));
+            }
+            catch (PlatformNotSupportedException /*ignore*/) { } //This operation requires IIS integrated pipeline mode.
         }
     }
 }

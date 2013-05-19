@@ -255,7 +255,7 @@ namespace RazorRockstars.Web
 
         public void Any(Headers request)
         {
-            base.Request.Headers["X-Response"] = request.Text;
+            base.Response.AddHeader("X-Response", request.Text);
         }
 
         public string Any(Strings request)
@@ -275,7 +275,6 @@ namespace RazorRockstars.Web
     }
 
 
-    [Explicit("Find out why dev server doesn't handle multiple requests")]
     [TestFixture]
     public class ReqStarsServiceTests
     {
@@ -291,35 +290,28 @@ namespace RazorRockstars.Web
         {
             LogManager.LogFactory = new ConsoleLogFactory();
             startedAt = Stopwatch.StartNew();
-            appHost = new AppHost {
-                EnableRazor = false, //Uncomment for faster tests!
-            };
-            appHost.Plugins.Add(new MsgPackFormat());
-            appHost.Init();
-            EndpointHost.Config.DebugMode = true;
         }
 
-        private IDbConnection db;
+        //private IDbConnection db;
 
         [SetUp]
         public void SetUp()
         {
-            db = appHost.TryResolve<IDbConnectionFactory>().OpenDbConnection();
-            db.DropAndCreateTable<Reqstar>();
-            db.Insert(ReqstarsService.SeedData);
+            var client = new JsonServiceClient(BaseUri);
+            client.Get(new ResetReqstar());
         }
 
         [TearDown]
         public void TearDown()
         {
-            db.Dispose();
+            //db.Dispose();
         }
 
         [TestFixtureTearDown]
         public void TestFixtureTearDown()
         {
             "Time Taken {0}ms".Fmt(startedAt.ElapsedMilliseconds).Print();
-            appHost.Dispose();
+            //appHost.Dispose();
         }
 
         protected static IRestClient[] RestClients = 
@@ -428,7 +420,7 @@ namespace RazorRockstars.Web
             catch (WebServiceException webEx)
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo(400));
-                Assert.That(webEx.StatusDescription, Is.EqualTo("ArgumentException"));
+                Assert.That(webEx.StatusDescription, Is.EqualTo("Bad Request"));
 
                 Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo("ArgumentException"));
                 Assert.That(webEx.ResponseStatus.Message, Is.EqualTo("Invalid Age"));
@@ -519,12 +511,23 @@ namespace RazorRockstars.Web
 
         public class EmptyResponse { }
 
+        public List<Reqstar> GetAllReqstars(IRestClient client)
+        {
+            var response = client.Get(new AllReqstars());
+            return response;
+        }
+
+        public List<Reqstar> GetAllReqstars(IServiceClient client)
+        {
+            return client.Send(new AllReqstars());
+        }
+
         [Test, TestCaseSource("RestClients")]
         public void Can_DELETE_Reqstar(IRestClient client)
         {
             var response = client.Delete<EmptyResponse>("/reqstars/1/delete");
 
-            var reqstarsLeft = db.Select<Reqstar>();
+            var reqstarsLeft = GetAllReqstars(client);
 
             Assert.That(reqstarsLeft.Count,
                 Is.EqualTo(ReqstarsService.SeedData.Length - 1));
@@ -535,7 +538,7 @@ namespace RazorRockstars.Web
         {
             client.Send(new DeleteReqstar { Id = 1 });
 
-            var reqstarsLeft = db.Select<Reqstar>();
+            var reqstarsLeft = GetAllReqstars(client);
 
             Assert.That(reqstarsLeft.Count,
                 Is.EqualTo(ReqstarsService.SeedData.Length - 1));
@@ -546,7 +549,7 @@ namespace RazorRockstars.Web
         {
             client.Delete(new DeleteReqstar { Id = 1 });
 
-            var reqstarsLeft = db.Select<Reqstar>();
+            var reqstarsLeft = GetAllReqstars(client);
 
             Assert.That(reqstarsLeft.Count,
                 Is.EqualTo(ReqstarsService.SeedData.Length - 1));
@@ -607,7 +610,7 @@ namespace RazorRockstars.Web
             catch (WebServiceException webEx)
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo(400));
-                Assert.That(webEx.StatusDescription, Is.EqualTo("ArgumentException"));
+                Assert.That(webEx.StatusDescription, Is.EqualTo("Bad Request"));
 
                 Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo("ArgumentException"));
                 Assert.That(webEx.ResponseStatus.Message, Is.EqualTo("Age is required"));
@@ -619,11 +622,9 @@ namespace RazorRockstars.Web
         [Test, TestCaseSource("RestClients")]
         public void Can_GET_ResetReqstars(IRestClient client)
         {
-            db.DeleteAll<Reqstar>();
-
             var response = client.Get<EmptyResponse>("/reqstars/reset");
 
-            var reqstarsLeft = db.Select<Reqstar>();
+            var reqstarsLeft = GetAllReqstars(client);
 
             Assert.That(reqstarsLeft.Count, Is.EqualTo(ReqstarsService.SeedData.Length));
         }
@@ -631,11 +632,9 @@ namespace RazorRockstars.Web
         [Test, TestCaseSource("ServiceClients")]
         public void Can_SEND_ResetReqstars_PrettyTypedApi(IServiceClient client)
         {
-            db.DeleteAll<Reqstar>();
-
             client.Send(new ResetReqstar());
 
-            var reqstarsLeft = db.Select<Reqstar>();
+            var reqstarsLeft = GetAllReqstars(client);
 
             Assert.That(reqstarsLeft.Count, Is.EqualTo(ReqstarsService.SeedData.Length));
         }
@@ -643,11 +642,9 @@ namespace RazorRockstars.Web
         [Test, TestCaseSource("RestClients")]
         public void Can_GET_ResetReqstars_PrettyRestApi(IRestClient client)
         {
-            db.DeleteAll<Reqstar>();
-
             client.Get(new ResetReqstar());
 
-            var reqstarsLeft = db.Select<Reqstar>();
+            var reqstarsLeft = GetAllReqstars(client);
 
             Assert.That(reqstarsLeft.Count, Is.EqualTo(ReqstarsService.SeedData.Length));
         }

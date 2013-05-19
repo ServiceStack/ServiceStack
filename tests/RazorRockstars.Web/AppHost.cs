@@ -6,6 +6,7 @@ using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
+using ServiceStack.Plugins.MsgPack;
 using ServiceStack.Razor;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
@@ -18,16 +19,26 @@ namespace RazorRockstars.Web
     {
         public AppHost() : base("Test Razor", typeof(AppHost).Assembly) { }
 
-        public bool EnableRazor = true;
-
         public override void Configure(Container container)
         {
-            if (EnableRazor)
-                Plugins.Add(new RazorFormat());
+            Plugins.Add(new RazorFormat());
+            Plugins.Add(new MsgPackFormat());
 
             container.Register<IDbConnectionFactory>(
                 new OrmLiteConnectionFactory(":memory:", false, SqliteDialect.Provider));
 
+            InitData(container);
+
+            SetConfig(new EndpointHostConfig {
+                DebugMode = true,
+                CustomHttpHandlers = {
+                  { HttpStatusCode.ExpectationFailed, new RazorHandler("/expectationfailed") }
+                }
+            });
+        }
+
+        public static void InitData(Container container)
+        {
             using (var db = container.Resolve<IDbConnectionFactory>().OpenDbConnection())
             {
                 db.CreateTableIfNotExists<Rockstar>();
@@ -36,12 +47,6 @@ namespace RazorRockstars.Web
                 db.DropAndCreateTable<Reqstar>();
                 db.Insert(ReqstarsService.SeedData);
             }
-
-            SetConfig(new EndpointHostConfig {
-                CustomHttpHandlers = {
-                  { HttpStatusCode.ExpectationFailed, new RazorHandler("/expectationfailed") }
-                }
-            });
         }
     }
 
