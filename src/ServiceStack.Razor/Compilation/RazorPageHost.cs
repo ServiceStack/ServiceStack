@@ -50,7 +50,7 @@ namespace ServiceStack.Razor.Compilation
                               IRazorCodeTransformer codeTransformer,
                               CodeDomProvider codeDomProvider,
                               IDictionary<string, string> directives)
-            : base(RazorCodeLanguage.GetLanguageByExtension(".cshtml"))
+            : base(new CSharpRazorCodeLanguage())
         {
             this.PathProvider = pathProvider;
             this.File = file;
@@ -142,15 +142,15 @@ namespace ServiceStack.Razor.Compilation
                 }
                 catch (Exception e)
                 {
-                    OnGenerateError(4, e.Message, 1, 1);
-                    //Returning null signifies that generation has failed
-                    return null;
+                    throw new HttpParseException(e.Message, e, this.File.VirtualPath, null, 1);
                 }
 
-                // Output errors
-                foreach (RazorError error in results.ParserErrors)
+                //Throw the first parser message to generate the YSOD
+                //TODO: Is there a way to output all errors at once?
+                if  (results.ParserErrors.Count > 0)
                 {
-                    OnGenerateError(4, error.Message, (uint)error.Location.LineIndex + 1, (uint)error.Location.CharacterIndex + 1);
+                    var error = results.ParserErrors[0];
+                    throw new HttpParseException(error.Message, null, this.File.VirtualPath, null, error.Location.LineIndex + 1);
                 }
 
                 return results;
@@ -188,8 +188,6 @@ namespace ServiceStack.Razor.Compilation
 
             //Compile the code
             var results = _codeDomProvider.CompileAssemblyFromDom(@params, razorResults.GeneratedCode);
-
-            OnCodeCompletion();
 
             var tempFilesMarkedForDeletion = new TempFileCollection(null); 
             @params.TempFiles
@@ -258,7 +256,6 @@ namespace ServiceStack.Razor.Compilation
                 _codeDomProvider.GenerateCodeFromCompileUnit(razorResults.GeneratedCode, writer, options);
                 writer.WriteLine("#pragma warning restore 1591");
 
-                OnCodeCompletion();
                 writer.Flush();
 
                 // Perform output transformations and return
@@ -278,15 +275,6 @@ namespace ServiceStack.Razor.Compilation
             var codeGenerator = CodeGenerator ?? base.DecorateCodeGenerator(incomingCodeGenerator);
             codeGenerator.GenerateLinePragmas = EnableLinePragmas;
             return codeGenerator;
-        }
-
-        private void OnGenerateError(uint errorCode, string errorMessage, uint lineNumber, uint columnNumber)
-        {
-            throw new HttpCompileException(errorMessage);
-        }
-
-        private void OnCodeCompletion()
-        {
         }
 
         protected virtual string GetClassName()
