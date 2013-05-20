@@ -158,5 +158,10 @@ namespace ServiceStack.ServiceHost
         {
             get { return null; }
         }
+
+        public System.Uri UrlReferrer
+        {
+            get { return null; }
+        }
     }
 }

@@ -151,5 +151,10 @@ namespace ServiceStack.ServiceHost.Tests
 		{
 			throw new NotImplementedException();
 		}
-	}
+
+        public Uri UrlReferrer
+        {
+            get { throw new NotImplementedException(); }
+        }
+    }
 }
