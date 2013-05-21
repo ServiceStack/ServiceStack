@@ -125,5 +125,7 @@ namespace ServiceStack.ServiceInterface.Testing
             var sessionId = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
             this.Cookies[SessionFeature.SessionId] = new Cookie(SessionFeature.SessionId, sessionId);
         }
+
+        public Uri UrlReferrer { get { return null; } }
     }
 }

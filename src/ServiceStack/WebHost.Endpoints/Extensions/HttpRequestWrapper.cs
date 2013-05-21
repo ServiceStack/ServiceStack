@@ -293,6 +293,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
         {
             get { return physicalFilePath; }
         }
+
+        public Uri UrlReferrer
+        {
+            get { return request.UrlReferrer; }
+        }
     }
 
 }

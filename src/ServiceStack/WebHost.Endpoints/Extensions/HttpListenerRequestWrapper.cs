@@ -1266,6 +1266,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				return path.Substring(path.LastIndexOf('\\') + 1);
 			}
 		}
-	}
+
+        public Uri UrlReferrer
+        {
+            get { return request.UrlReferrer; }
+        }
+    }
 
 }

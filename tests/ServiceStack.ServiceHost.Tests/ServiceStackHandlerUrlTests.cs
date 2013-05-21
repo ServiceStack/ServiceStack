@@ -61,6 +61,7 @@ namespace ServiceStack.ServiceHost.Tests
 			public string RawUrl { get; private set; }
 			public string AbsoluteUri { get; set; }
 			public string UserHostAddress { get; private set; }
+            public Uri UrlReferrer { get; private set; }
 
             public string RemoteIp { get; set; }
             public string XForwardedFor { get; set; }

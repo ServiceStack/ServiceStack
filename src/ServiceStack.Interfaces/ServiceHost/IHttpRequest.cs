@@ -105,6 +105,11 @@ namespace ServiceStack.ServiceHost
         IFile[] Files { get; }
 
         string ApplicationFilePath { get; }
+
+        /// <summary>
+        /// The value of the Referrer, null if not available
+        /// </summary>
+        Uri UrlReferrer { get; }
     }
 }
 #endif

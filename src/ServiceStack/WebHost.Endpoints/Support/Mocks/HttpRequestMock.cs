@@ -120,5 +120,10 @@ namespace ServiceStack.WebHost.Endpoints.Support.Mocks
 		{
 			get { throw new NotImplementedException(); }
 		}
-	}
+
+        public Uri UrlReferrer
+        {
+            get { throw new NotImplementedException(); }
+        }
+    }
 }
