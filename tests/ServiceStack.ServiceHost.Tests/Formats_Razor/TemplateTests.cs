@@ -152,6 +152,59 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         }
 
         [Test]
+        public void Can_Use_HtmlHelper_In_Page()
+        {
+            const string pageSource = "@Html.TextBox(\"textBox\")";
+            var page = RazorFormat.CreatePage(pageSource);
+
+            var output = RazorFormat.RenderToHtml(page, model: templateArgs);
+
+            Assert.That(output, Is.EqualTo(@"<input id=""textBox"" name=""textBox"" type=""text"" value="""" />"));
+        }
+
+        [Test]
+        public void Can_Use_Model_Directive_With_HtmlHelper()
+        {
+            string pageSource = "@model " + typeof(Person).FullName + @"
+@Html.TextBoxFor(a => a.FirstName)"; 
+
+            var page = RazorFormat.CreatePage(pageSource);
+            var output = RazorFormat.RenderToHtml(page, model: templateArgs);
+            output.Print();
+
+            Assert.That(output, Is.EqualTo(@"<input id=""FirstName"" name=""FirstName"" type=""text"" value=""Demis"" />"));
+        }
+
+        [Test]
+        public void Can_Access_ViewData()
+        {
+            const string val = "Hello";
+            const string pageSource = @"@{ Html.ViewData[""X""] = """ + val + @"""; }
+@Html.ViewData[""X""]
+";
+
+            var page = RazorFormat.CreatePage(pageSource);
+            var output = RazorFormat.RenderToHtml(page, model: templateArgs).Trim();
+            output.Print();
+
+            Assert.That(output, Is.EqualTo(val));
+        }
+
+        [Test]
+        public void Can_Access_ViewBag_From_Layout()
+        {
+            const string val = "Hello";
+            const string pageSource = @"@{ ViewBag.X = """ + val + @"""; }@ViewBag.X";
+
+            var page = RazorFormat.CreatePage(pageSource);
+            RazorFormat.AddFileAndPage(staticTemplatePath, @"<title>@ViewBag.X</title><body>@RenderBody()</body>");
+            var output = RazorFormat.RenderToHtml(page, model: templateArgs).Trim();
+            output.Print();
+
+            Assert.That(output, Is.EqualTo(@"<title>Hello</title><body>Hello</body>"));
+        }
+
+        [Test]
         public void Can_Render_RazorTemplate()
         {
             const string mockContents = "[Replaced with Template]";
