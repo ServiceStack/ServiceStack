@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using ServiceStack.Markdown;
 using ServiceStack.Text;
 
 namespace ServiceStack.Html
