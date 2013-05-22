@@ -56,29 +56,29 @@ namespace ServiceStack.ServiceInterface
             if (AuthService.AuthProviders == null) throw new InvalidOperationException("The AuthService must be initialized by calling "
                  + "AuthService.Init to use an authenticate attribute");
 
-            var matchingOAuthConfigs = AuthService.AuthProviders.Where(x =>
+            var matchingAuthConfigs = AuthService.AuthProviders.Where(x =>
                 this.Provider.IsNullOrEmpty()
                 || x.Provider == this.Provider).ToList();
 
-            if (matchingOAuthConfigs.Count == 0)
+            if (matchingAuthConfigs.Count == 0)
             {
-                res.WriteError(req, requestDto, "No OAuth Configs found matching {0} provider"
+                res.WriteError(req, requestDto, "No auth configs found matching {0} provider"
                     .Fmt(this.Provider ?? "any"));
                 res.EndServiceStackRequest();
                 return;
             }
 
-            if (matchingOAuthConfigs.Any(x => x.Provider == DigestAuthProvider.Name))
+            if (matchingAuthConfigs.Any(x => x.Provider == DigestAuthProvider.Name))
                 AuthenticateIfDigestAuth(req, res);
 
-            if (matchingOAuthConfigs.Any(x => x.Provider == BasicAuthProvider.Name))
+            if (matchingAuthConfigs.Any(x => x.Provider == BasicAuthProvider.Name))
                 AuthenticateIfBasicAuth(req, res);
 
             using (var cache = req.GetCacheClient())
             {
                 var session = req.GetSession();
 
-                if (session == null || !matchingOAuthConfigs.Any(x => session.IsAuthorized(x.Provider)))
+                if (session == null || !matchingAuthConfigs.Any(x => session.IsAuthorized(x.Provider)))
                 {
                     var htmlRedirect = HtmlRedirect ?? AuthService.HtmlRedirect;
                     if (htmlRedirect != null && req.ResponseContentType.MatchesContentType(ContentType.Html))
@@ -86,14 +86,14 @@ namespace ServiceStack.ServiceInterface
                         var url = htmlRedirect;
                         if (url.SafeSubstring(0, 2) == "~/")
                         {
-                            url = req.GetBaseUrl().CombineWith(url.Substring(2));
+                            url = System.Web.VirtualPathUtility.ToAbsolute(url);
                         }
                         url = url.AddQueryParam("redirect", req.AbsoluteUri);
                         res.RedirectToUrl(url);
                         return;
                     }
 
-                    AuthProvider.HandleFailedAuth(matchingOAuthConfigs[0], session, req, res);
+                    AuthProvider.HandleFailedAuth(matchingAuthConfigs[0], session, req, res);
                 }
             }
         }
