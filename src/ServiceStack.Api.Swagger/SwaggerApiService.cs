@@ -95,6 +95,8 @@ namespace ServiceStack.Api.Swagger
         public Dictionary<string, string> Items { get; set; }
         [DataMember(Name = "allowableValues")]
         public ParameterAllowableValues AllowableValues { get; set; }
+		[DataMember(Name = "required")]
+		public bool Required { get; set; }
     }
 
     [DataContract]
@@ -190,9 +192,16 @@ namespace ServiceStack.Api.Swagger
 
         private static string GetSwaggerTypeName(Type type)
         {
-            return ClrTypesToSwaggerScalarTypes.ContainsKey(type.Name.ToLowerInvariant())
-                ? ClrTypesToSwaggerScalarTypes[type.Name.ToLowerInvariant()]
-                : type.Name;
+	        Type lookupType = type;
+
+			if (IsNullable(type))
+			{
+				lookupType = type.GetGenericArguments()[0];
+			}
+
+			return ClrTypesToSwaggerScalarTypes.ContainsKey(lookupType.Name.ToLowerInvariant())
+				? ClrTypesToSwaggerScalarTypes[lookupType.Name.ToLowerInvariant()]
+				: lookupType.Name;
         }
 
         private static Type GetListElementType(Type type)
@@ -210,6 +219,11 @@ namespace ServiceStack.Api.Swagger
         {
             return GetListElementType(type) != null;
         }
+
+		private static bool IsNullable(Type type)
+		{
+			return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+		}
 
         private static void ParseModel(IDictionary<string, SwaggerModel> models, Type modelType)
         {
@@ -236,7 +250,7 @@ namespace ServiceStack.Api.Swagger
                 if (allApiDocAttributes.Any() && apiDoc == null) continue;
 
                 var propertyType = prop.PropertyType;
-                var modelProp = new ModelProperty { Type = GetSwaggerTypeName(propertyType) };
+                var modelProp = new ModelProperty { Type = GetSwaggerTypeName(propertyType), Required = !IsNullable(propertyType)};
 
                 if (IsListType(propertyType))
                 {
@@ -305,7 +319,7 @@ namespace ServiceStack.Api.Swagger
             return null;
         }
 
-        private static List<ErrorResponseStatus> GetMethodResponseCodes(Type requestType)
+		private static List<ErrorResponseStatus> GetMethodResponseCodes(Type requestType)
         {
             return requestType
                 .GetCustomAttributes(typeof (ApiResponseAttribute), true)
