@@ -451,8 +451,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test, TestCaseSource("RestClients")]
 		public void Should_retrieve_valid_nullable_fields(IRestClient client)
 		{
-			var resource = client.Get<ResourceResponse>("/resource/swgnull" +
-														"");
+			var resource = client.Get<ResourceResponse>("/resource/swgnull");
 			Assert.That(resource.Models.ContainsKey(typeof(NullableInRequest).Name), Is.True);
 			var requestClassModel = resource.Models[typeof(NullableInRequest).Name];
 

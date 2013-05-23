@@ -192,12 +192,7 @@ namespace ServiceStack.Api.Swagger
 
         private static string GetSwaggerTypeName(Type type)
         {
-	        Type lookupType = type;
-
-			if (IsNullable(type))
-			{
-				lookupType = type.GetGenericArguments()[0];
-			}
+			var lookupType = Nullable.GetUnderlyingType(type) ?? type;
 
 			return ClrTypesToSwaggerScalarTypes.ContainsKey(lookupType.Name.ToLowerInvariant())
 				? ClrTypesToSwaggerScalarTypes[lookupType.Name.ToLowerInvariant()]
