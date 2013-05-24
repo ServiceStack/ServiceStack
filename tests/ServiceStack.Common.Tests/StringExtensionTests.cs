@@ -114,5 +114,15 @@ namespace ServiceStack.Common.Tests
             
             Assert.That(actual, Is.EquivalentTo(expected));
         }
+
+	    [Test]
+	    public void Does_combine_paths()
+	    {
+            Assert.That("/".CombineWith("/some/other/path"), Is.EqualTo("/some/other/path"));
+            Assert.That("a".CombineWith("/some/other/path"), Is.EqualTo("a/some/other/path"));
+            Assert.That("a/".CombineWith("/some/other/path"), Is.EqualTo("a/some/other/path"));
+            Assert.That("/a".CombineWith("/some/other/path"), Is.EqualTo("/a/some/other/path"));
+            Assert.That("/a/".CombineWith("/some/other/path"), Is.EqualTo("/a/some/other/path"));
+        }
 	}
 }
