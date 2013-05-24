@@ -118,6 +118,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Name { get; set; }
     }
 
+	public class NullableResponse
+	{
+		[System.ComponentModel.Description("NestedProperty2 description")]
+		public bool NestedProperty2 { get; set; }
+
+		public int? Optional { get; set; }
+	}
+
+	[ServiceHost.Api]
+	[Route("/swgnull/", "GET")]
+	public class NullableInRequest : IReturn<NullableResponse>
+	{
+		[ApiMember]
+		public int? Position { get; set; }
+	}
+	
+	public class NullableService : ServiceInterface.Service
+	{
+		public object Get(NullableInRequest request)
+		{
+			return null;
+		}
+	}
 
 
     public class SwaggerFeatureResponse
@@ -424,5 +447,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(requestClassModel.Properties["ArrayProperty"].Items["$ref"], Is.EqualTo(typeof(SwaggerNestedModel3).Name));
             Assert.That(resource.Models.ContainsKey(typeof(SwaggerNestedModel3).Name), Is.True);
         }
+
+		[Test, TestCaseSource("RestClients")]
+		public void Should_retrieve_valid_nullable_fields(IRestClient client)
+		{
+			var resource = client.Get<ResourceResponse>("/resource/swgnull");
+			Assert.That(resource.Models.ContainsKey(typeof(NullableInRequest).Name), Is.True);
+			var requestClassModel = resource.Models[typeof(NullableInRequest).Name];
+
+			Assert.That(requestClassModel.Properties.ContainsKey("Position"), Is.True);
+			Assert.That(requestClassModel.Properties["Position"].Type, Is.EqualTo("int"));
+			Assert.That(resource.Models.ContainsKey(typeof(NullableResponse).Name), Is.True);
+
+			var responseModel = resource.Models[typeof (NullableResponse).Name];
+			Assert.That(responseModel.Properties.ContainsKey("Optional"), Is.True);
+			Assert.That(responseModel.Properties["Optional"].Required, Is.False);
+			Assert.That(responseModel.Properties["Optional"].Type, Is.EqualTo("int"));
+			Assert.That(responseModel.Properties["NestedProperty2"].Required, Is.True);
+		}
     }
 }
