@@ -5,7 +5,6 @@ follow [@ServiceStack](http://twitter.com/servicestack) for project updates. You
 
 Service Stack is a high-performance .NET web services framework _(including a number of high-performance sub-components: see below)_ 
 that simplifies the development of XML, JSON, JSV and WCF SOAP [Web Services](https://github.com/ServiceStack/ServiceStack/wiki/Service-Stack-Web-Services). 
-For more info check out [servicestack.net](http://www.servicestack.net).
 
 Simple REST service example
 =========================== 
@@ -109,7 +108,8 @@ That's all the application code required to create a simple REST web service.
 
 ## Getting Started
 
- * **[Read the documentation on the ServiceStack Wiki](https://github.com/ServiceStack/ServiceStack/wiki)**
+ * **[Start with the Getting Started section on the Wiki](https://github.com/ServiceStack/ServiceStack/wiki)**
+ * [Example Apps and Demos](http://stackoverflow.com/questions/15862634/in-what-order-are-the-servicestack-examples-supposed-to-be-grokked/15869816#15869816)
  * [Community resources](https://github.com/ServiceStack/ServiceStack/wiki/Community-Resources)
 
 ## Download
