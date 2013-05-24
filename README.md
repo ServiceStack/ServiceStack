@@ -3,8 +3,8 @@ See [www.servicestack.net](http://www.servicestack.net/) for an overview.
 Join the [ServiceStack Google+ Community](https://plus.google.com/u/0/communities/112445368900682590445) or
 follow [@ServiceStack](http://twitter.com/servicestack) for project updates. You can also join a growing crowd of ServiceStack users on [JabbR](http://jabbr.net/#/rooms/servicestack) if you want to chat.
 
-Service Stack is a high-performance .NET web services framework _(including a number of high-performance sub-components: see below)_ 
-that simplifies the development of XML, JSON, JSV and WCF SOAP [Web Services](https://github.com/ServiceStack/ServiceStack/wiki/Service-Stack-Web-Services). 
+Service Stack is a high-performance .NET web services platform that simplifies the development of high-performance 
+REST (JSON, XML, JSV, HTML, MsgPack, ProtoBuf, CSV) and WCF SOAP [Web Services](https://github.com/ServiceStack/ServiceStack/wiki/Service-Stack-Web-Services). 
 
 Simple REST service example
 =========================== 
