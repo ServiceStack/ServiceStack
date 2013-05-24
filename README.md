@@ -107,23 +107,6 @@ all = restClient.Get(new Todos());						// Count = 0
 
 That's all the application code required to create a simple REST web service.
 
-##Live Demo of Backbone TODO app (running on Linux/MONO):
-
-**[http://www.servicestack.net/Backbone.Todos/](http://www.servicestack.net/Backbone.Todos/)**
-
-Preview links using just the above code sample with (live demo running on Linux):
-
-ServiceStack's strong-typed nature allows it to infer a greater intelligence of your web services and is able to provide a 
-host of functionality for free, out of the box without any configuration required:
-
-  * Host on different formats and endpoints: [XML](http://www.servicestack.net/Backbone.Todos/todos?format=xml), 
-    [JSON](http://www.servicestack.net/Backbone.Todos/todos?format=json), [JSV](http://www.servicestack.net/Backbone.Todos/todos?format=jsv),
-    [CSV](http://www.servicestack.net/Backbone.Todos/todos?format=csv) 
-    
-  * [A HTML5 Report format to view your webservics data in a human-friendly view](http://www.servicestack.net/Backbone.Todos/todos?format=html)
-  
-  * [An auto generated api metadata page, with links to your web service XSD's and WSDL's](http://www.servicestack.net/Backbone.Todos/metadata)
-  
 ## Getting Started
 
  * **[Read the documentation on the ServiceStack Wiki](https://github.com/ServiceStack/ServiceStack/wiki)**
