@@ -176,11 +176,6 @@ which will download and extract the dlls into your local local `lib/` folder.
 
 [Release notes for major releases](https://github.com/ServiceStack/ServiceStack/wiki/Release-Notes)
 
-## Find out More
-
-Follow [@ServiceStack](http://twitter.com/ServiceStack) and 
-[+ServiceStack](https://plus.google.com/u/0/communities/112445368900682590445) for project updates.
-
 ## OSS Libraries used
 
 ServiceStack includes source code of the great libraries below for some of its core functionality. 
@@ -201,6 +196,13 @@ Similar Open source .NET projects for developing or accessing web services inclu
  * [Nancy Fx](http://nancyfx.org) - A Sinatra-inspired lightweight Web Framework for .NET:
  * [Fubu MVC](http://mvc.fubu-project.org) - A "Front Controller" pattern-style MVC framework designed for use in web applications built on ASP.NET:
  * [Rest Sharp](http://restsharp.org) - An open source REST client for .NET
+
+## Find out More
+
+Follow [@ServiceStack](http://twitter.com/ServiceStack) and 
+[+ServiceStack](https://plus.google.com/u/0/communities/112445368900682590445) for project updates.
+
+-----
 
 ## Core Team
 
