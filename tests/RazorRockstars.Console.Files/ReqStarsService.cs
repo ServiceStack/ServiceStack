@@ -83,6 +83,7 @@ namespace RazorRockstars.Console.Files
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public int? Age { get; set; }
+        public bool Alive { get; set; }
 
         public Reqstar() { }
         public Reqstar(int id, string firstName, string lastName, int age)

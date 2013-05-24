@@ -61,6 +61,7 @@ namespace RazorRockstars.Console.Files
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public int? Age { get; set; }
+        public bool Alive { get; set; }
 
         public Rockstar() { }
         public Rockstar(int id, string firstName, string lastName, int age)
@@ -82,6 +83,7 @@ namespace RazorRockstars.Console.Files
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public int? Age { get; set; }
+        public bool Alive { get; set; }
         public string Delete { get; set; }
         public string View { get; set; }
         public string Template { get; set; }
