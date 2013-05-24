@@ -60,7 +60,7 @@ namespace ServiceStack.Razor.Managers
 
                 if (!views.Pages.Remove(oldPagePath))
                 {
-                    Debugger.Break();
+                    //Debugger.Break();
                 }
 
                 views.AddPage(e.FullPath);
