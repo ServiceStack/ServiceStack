@@ -177,8 +177,8 @@ namespace ServiceStack.ServiceHost
                 if (!restPath.Path.StartsWith("/"))
                     throw new ArgumentException("Route '{0}' on '{1}' must start with a '/'".Fmt(restPath.Path, restPath.RequestType.Name));
                 if (restPath.Path.IndexOfAny(InvalidRouteChars) != -1)
-                    throw new ArgumentException("Route '{0}' on '{1}' contains invalid chars. " +
-                                                "See https://github.com/ServiceStack/ServiceStack/wiki/Routing for info on valid routes.".Fmt(restPath.Path, restPath.RequestType.Name));
+                    throw new ArgumentException(("Route '{0}' on '{1}' contains invalid chars. " +
+                                                "See https://github.com/ServiceStack/ServiceStack/wiki/Routing for info on valid routes.").Fmt(restPath.Path, restPath.RequestType.Name));
             }
 
             List<RestPath> pathsAtFirstMatch;

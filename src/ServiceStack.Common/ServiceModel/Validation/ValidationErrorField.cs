@@ -21,14 +21,19 @@ namespace ServiceStack.Validation
             : this(errorCode.ToString(), fieldName, errorMessage) { }
 
         public ValidationErrorField(string errorCode, string fieldName, string errorMessage)
+			: this (errorCode.ToString(), fieldName, errorMessage, null) { }
+
+		public ValidationErrorField(string errorCode, string fieldName, string errorMessage, object attemptedValue)
         {
             this.ErrorCode = errorCode;
             this.FieldName = fieldName;
             this.ErrorMessage = errorMessage ?? errorCode.ToEnglish();
+			this.AttemptedValue = attemptedValue;
         }
 
         public string ErrorCode { get; set; }
         public string ErrorMessage { get; set; }
         public string FieldName { get; set; }
+		public object AttemptedValue { get; set; }
     }
 }

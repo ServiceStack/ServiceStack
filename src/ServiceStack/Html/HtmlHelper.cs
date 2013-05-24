@@ -33,6 +33,7 @@ namespace ServiceStack.Html
 			typeof(InputExtensions),
 			typeof(LabelExtensions),
 			typeof(TextAreaExtensions),
+            typeof(SelectExtensions)
 		};
 
 		public static MethodInfo GetMethod(string methodName)
@@ -168,7 +169,7 @@ namespace ServiceStack.Html
 
         public void SetModel(object model)
         {
-            viewData = new ViewDataDictionary(model);
+			ViewData.Model = model;
         }
 
         public IViewDataContainer ViewDataContainer { get; internal set; }
