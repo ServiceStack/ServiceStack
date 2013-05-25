@@ -24,8 +24,8 @@ namespace ServiceStack.Redis
 		List<string> GetRangeFromSortedList(int startingFrom, int endingAt);
 		void RemoveAll();
 		void Trim(int keepStartingFrom, int keepEndingAt);
-		int RemoveValue(string value);
-		int RemoveValue(string value, int noOfMatches);
+		long RemoveValue(string value);
+		long RemoveValue(string value, int noOfMatches);
 
 		void Prepend(string value);
 		void Append(string value);
