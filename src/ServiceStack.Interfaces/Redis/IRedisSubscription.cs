@@ -8,7 +8,7 @@ namespace ServiceStack.Redis
 		/// <summary>
 		/// The number of active subscriptions this client has
 		/// </summary>
-		int SubscriptionCount { get; }
+		long SubscriptionCount { get; }
 		
 		/// <summary>
 		/// Registered handler called after client *Subscribes* to each new channel
