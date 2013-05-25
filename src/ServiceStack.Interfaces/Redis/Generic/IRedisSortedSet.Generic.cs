@@ -21,7 +21,7 @@ namespace ServiceStack.Redis.Generic
 		T PopItemWithLowestScore();
 		double IncrementItem(T item, double incrementBy);
 		int IndexOf(T item);
-		int IndexOfDescending(T item);
+		long IndexOfDescending(T item);
 		List<T> GetAll();
 		List<T> GetAllDescending();
 		List<T> GetRange(int fromRank, int toRank);
@@ -29,10 +29,10 @@ namespace ServiceStack.Redis.Generic
 		List<T> GetRangeByLowestScore(double fromScore, double toScore, int? skip, int? take);
 		List<T> GetRangeByHighestScore(double fromScore, double toScore);
 		List<T> GetRangeByHighestScore(double fromScore, double toScore, int? skip, int? take);
-		int RemoveRange(int minRank, int maxRank);
-		int RemoveRangeByScore(double fromScore, double toScore);
+		long RemoveRange(int minRank, int maxRank);
+		long RemoveRangeByScore(double fromScore, double toScore);
 		double GetItemScore(T item);
-		int PopulateWithIntersectOf(params IRedisSortedSet<T>[] setIds);
-		int PopulateWithUnionOf(params IRedisSortedSet<T>[] setIds);
+		long PopulateWithIntersectOf(params IRedisSortedSet<T>[] setIds);
+		long PopulateWithUnionOf(params IRedisSortedSet<T>[] setIds);
 	}
 }

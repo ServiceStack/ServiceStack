@@ -27,8 +27,8 @@ namespace ServiceStack.Redis
 		: IBasicPersistenceProvider, ICacheClient
 	{
 		//Basic Redis Connection operations
-		int Db { get; set; }
-		int DbSize { get; }
+		long Db { get; set; }
+		long DbSize { get; }
 		Dictionary<string, string> Info { get; }
 		DateTime LastSave { get; }
 		string Host { get; }
@@ -61,7 +61,7 @@ namespace ServiceStack.Redis
 		List<T> GetValues<T>(List<string> keys);
 		Dictionary<string, string> GetValuesMap(List<string> keys);
 		Dictionary<string, T> GetValuesMap<T>(List<string> keys);
-		int AppendToValue(string key, string value);
+		long AppendToValue(string key, string value);
 		void RenameKey(string fromName, string toName);
 		string GetSubstring(string key, int fromIndex, int toIndex);
 
@@ -118,7 +118,7 @@ namespace ServiceStack.Redis
 		void Watch(params string[] keys);
 		void UnWatch();
 		IRedisSubscription CreateSubscription();
-		int PublishMessage(string toChannel, string message);
+		long PublishMessage(string toChannel, string message);
 
 		#endregion
 
@@ -131,7 +131,7 @@ namespace ServiceStack.Redis
 		void RemoveItemFromSet(string setId, string item);
 		string PopItemFromSet(string setId);
 		void MoveBetweenSets(string fromSetId, string toSetId, string item);
-		int GetSetCount(string setId);
+		long GetSetCount(string setId);
 		bool SetContainsItem(string setId, string item);
 		HashSet<string> GetIntersectFromSets(params string[] setIds);
 		void StoreIntersectFromSets(string intoSetId, params string[] setIds);
@@ -161,9 +161,9 @@ namespace ServiceStack.Redis
         ItemRef BlockingRemoveStartFromLists(string []listIds, TimeSpan? timeOut);
 		string RemoveEndFromList(string listId);
 		void TrimList(string listId, int keepStartingFrom, int keepEndingAt);
-		int RemoveItemFromList(string listId, string value);
-		int RemoveItemFromList(string listId, string value, int noOfMatches);
-		int GetListCount(string listId);
+		long RemoveItemFromList(string listId, string value);
+		long RemoveItemFromList(string listId, string value, int noOfMatches);
+		long GetListCount(string listId);
 		string GetItemFromList(string listId, int listIndex);
 		void SetItemInList(string listId, int listIndex, string value);
 
@@ -196,8 +196,8 @@ namespace ServiceStack.Redis
 		bool SortedSetContainsItem(string setId, string value);
 		double IncrementItemInSortedSet(string setId, string value, double incrementBy);
 		double IncrementItemInSortedSet(string setId, string value, long incrementBy);
-		int GetItemIndexInSortedSet(string setId, string value);
-		int GetItemIndexInSortedSetDesc(string setId, string value);
+		long GetItemIndexInSortedSet(string setId, string value);
+		long GetItemIndexInSortedSetDesc(string setId, string value);
 		List<string> GetAllItemsFromSortedSet(string setId);
 		List<string> GetAllItemsFromSortedSetDesc(string setId);
 		List<string> GetRangeFromSortedSet(string setId, int fromRank, int toRank);
@@ -229,16 +229,16 @@ namespace ServiceStack.Redis
 		IDictionary<string, double> GetRangeWithScoresFromSortedSetByHighestScore(string setId, long fromScore, long toScore);
 		IDictionary<string, double> GetRangeWithScoresFromSortedSetByHighestScore(string setId, double fromScore, double toScore, int? skip, int? take);
 		IDictionary<string, double> GetRangeWithScoresFromSortedSetByHighestScore(string setId, long fromScore, long toScore, int? skip, int? take);
-		int RemoveRangeFromSortedSet(string setId, int minRank, int maxRank);
-		int RemoveRangeFromSortedSetByScore(string setId, double fromScore, double toScore);
-		int RemoveRangeFromSortedSetByScore(string setId, long fromScore, long toScore);
-        int GetSortedSetCount(string setId);
-        int GetSortedSetCount(string setId, string fromStringScore, string toStringScore);
-        int GetSortedSetCount(string setId, long fromScore, long toScore);
-        int GetSortedSetCount(string setId, double fromScore, double toScore);
+		long RemoveRangeFromSortedSet(string setId, int minRank, int maxRank);
+		long RemoveRangeFromSortedSetByScore(string setId, double fromScore, double toScore);
+		long RemoveRangeFromSortedSetByScore(string setId, long fromScore, long toScore);
+		long GetSortedSetCount(string setId);
+		long GetSortedSetCount(string setId, string fromStringScore, string toStringScore);
+		long GetSortedSetCount(string setId, long fromScore, long toScore);
+		long GetSortedSetCount(string setId, double fromScore, double toScore);
 		double GetItemScoreInSortedSet(string setId, string value);
-		int StoreIntersectFromSortedSets(string intoSetId, params string[] setIds);
-		int StoreUnionFromSortedSets(string intoSetId, params string[] setIds);
+		long StoreIntersectFromSortedSets(string intoSetId, params string[] setIds);
+		long StoreUnionFromSortedSets(string intoSetId, params string[] setIds);
 
 		#endregion
 
@@ -249,11 +249,11 @@ namespace ServiceStack.Redis
 		bool SetEntryInHash(string hashId, string key, string value);
 		bool SetEntryInHashIfNotExists(string hashId, string key, string value);
 		void SetRangeInHash(string hashId, IEnumerable<KeyValuePair<string, string>> keyValuePairs);
-		int IncrementValueInHash(string hashId, string key, int incrementBy);
+		long IncrementValueInHash(string hashId, string key, int incrementBy);
 		string GetValueFromHash(string hashId, string key);
 		List<string> GetValuesFromHash(string hashId, params string[] keys);
 		bool RemoveEntryFromHash(string hashId, string key);
-		int GetHashCount(string hashId);
+		long GetHashCount(string hashId);
 		List<string> GetHashKeys(string hashId);
 		List<string> GetHashValues(string hashId);
 		Dictionary<string, string> GetAllEntriesFromHash(string hashId);
@@ -267,11 +267,11 @@ namespace ServiceStack.Redis
         string ExecLuaAsString(string luaBody, string[] keys, string[] args);
         string ExecLuaShaAsString(string sha1, params string[] args);
         string ExecLuaShaAsString(string sha1, string[] keys, string[] args);
-        
-        int ExecLuaAsInt(string luaBody, params string[] args);
-        int ExecLuaAsInt(string luaBody, string[] keys, string[] args);
-        int ExecLuaShaAsInt(string sha1, params string[] args);
-        int ExecLuaShaAsInt(string sha1, string[] keys, string[] args);
+
+		long ExecLuaAsInt(string luaBody, params string[] args);
+		long ExecLuaAsInt(string luaBody, string[] keys, string[] args);
+		long ExecLuaShaAsInt(string sha1, params string[] args);
+		long ExecLuaShaAsInt(string sha1, string[] keys, string[] args);
 
         List<string> ExecLuaAsList(string luaBody, params string[] args);
         List<string> ExecLuaAsList(string luaBody, string[] keys, string[] args);

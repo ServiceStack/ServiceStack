@@ -36,7 +36,7 @@ namespace ServiceStack.Redis.Generic
 		IDisposable AcquireLock();
 		IDisposable AcquireLock(TimeSpan timeOut);
 
-		int Db { get; set; }
+		long Db { get; set; }
 		List<string> GetAllKeys();
 		IRedisSet TypeIdsSet { get; }
 
@@ -86,7 +86,7 @@ namespace ServiceStack.Redis.Generic
 		void RemoveItemFromSet(IRedisSet<T> fromSet, T item);
 		T PopItemFromSet(IRedisSet<T> fromSet);
 		void MoveBetweenSets(IRedisSet<T> fromSet, IRedisSet<T> toSet, T item);
-		int GetSetCount(IRedisSet<T> set);
+		long GetSetCount(IRedisSet<T> set);
 		bool SetContainsItem(IRedisSet<T> set, T item);
 		HashSet<T> GetIntersectFromSets(params IRedisSet<T>[] sets);
 		void StoreIntersectFromSets(IRedisSet<T> intoSet, params IRedisSet<T>[] sets);
@@ -107,9 +107,9 @@ namespace ServiceStack.Redis.Generic
 		T RemoveEndFromList(IRedisList<T> fromList);
 		void RemoveAllFromList(IRedisList<T> fromList);
 		void TrimList(IRedisList<T> fromList, int keepStartingFrom, int keepEndingAt);
-		int RemoveItemFromList(IRedisList<T> fromList, T value);
-		int RemoveItemFromList(IRedisList<T> fromList, T value, int noOfMatches);
-		int GetListCount(IRedisList<T> fromList);
+		long RemoveItemFromList(IRedisList<T> fromList, T value);
+		long RemoveItemFromList(IRedisList<T> fromList, T value, int noOfMatches);
+		long GetListCount(IRedisList<T> fromList);
 		T GetItemFromList(IRedisList<T> fromList, int listIndex);
 		void SetItemInList(IRedisList<T> toList, int listIndex, T value);
         void InsertBeforeItemInList(IRedisList<T> toList, T pivot, T value);
@@ -135,8 +135,8 @@ namespace ServiceStack.Redis.Generic
 		T PopItemWithHighestScoreFromSortedSet(IRedisSortedSet<T> fromSet);
 		bool SortedSetContainsItem(IRedisSortedSet<T> set, T value);
 		double IncrementItemInSortedSet(IRedisSortedSet<T> set, T value, double incrementBy);
-		int GetItemIndexInSortedSet(IRedisSortedSet<T> set, T value);
-		int GetItemIndexInSortedSetDesc(IRedisSortedSet<T> set, T value);
+		long GetItemIndexInSortedSet(IRedisSortedSet<T> set, T value);
+		long GetItemIndexInSortedSetDesc(IRedisSortedSet<T> set, T value);
 		List<T> GetAllItemsFromSortedSet(IRedisSortedSet<T> set);
 		List<T> GetAllItemsFromSortedSetDesc(IRedisSortedSet<T> set);
 		List<T> GetRangeFromSortedSet(IRedisSortedSet<T> set, int fromRank, int toRank);
@@ -160,12 +160,12 @@ namespace ServiceStack.Redis.Generic
 		IDictionary<T, double> GetRangeWithScoresFromSortedSetByHighestScore(IRedisSortedSet<T> set, string fromStringScore, string toStringScore, int? skip, int? take);
 		IDictionary<T, double> GetRangeWithScoresFromSortedSetByHighestScore(IRedisSortedSet<T> set, double fromScore, double toScore);
 		IDictionary<T, double> GetRangeWithScoresFromSortedSetByHighestScore(IRedisSortedSet<T> set, double fromScore, double toScore, int? skip, int? take);
-		int RemoveRangeFromSortedSet(IRedisSortedSet<T> set, int minRank, int maxRank);
-		int RemoveRangeFromSortedSetByScore(IRedisSortedSet<T> set, double fromScore, double toScore);
-		int GetSortedSetCount(IRedisSortedSet<T> set);
+		long RemoveRangeFromSortedSet(IRedisSortedSet<T> set, int minRank, int maxRank);
+		long RemoveRangeFromSortedSetByScore(IRedisSortedSet<T> set, double fromScore, double toScore);
+		long GetSortedSetCount(IRedisSortedSet<T> set);
 		double GetItemScoreInSortedSet(IRedisSortedSet<T> set, T value);
-		int StoreIntersectFromSortedSets(IRedisSortedSet<T> intoSetId, params IRedisSortedSet<T>[] setIds);
-		int StoreUnionFromSortedSets(IRedisSortedSet<T> intoSetId, params IRedisSortedSet<T>[] setIds);
+		long StoreIntersectFromSortedSets(IRedisSortedSet<T> intoSetId, params IRedisSortedSet<T>[] setIds);
+		long StoreUnionFromSortedSets(IRedisSortedSet<T> intoSetId, params IRedisSortedSet<T>[] setIds);
 		
 		//Hash operations
 		bool HashContainsEntry<TKey>(IRedisHash<TKey, T> hash, TKey key);
@@ -174,7 +174,7 @@ namespace ServiceStack.Redis.Generic
 		void SetRangeInHash<TKey>(IRedisHash<TKey, T> hash, IEnumerable<KeyValuePair<TKey, T>> keyValuePairs);
 		T GetValueFromHash<TKey>(IRedisHash<TKey, T> hash, TKey key);
 		bool RemoveEntryFromHash<TKey>(IRedisHash<TKey, T> hash, TKey key);
-		int GetHashCount<TKey>(IRedisHash<TKey, T> hash);
+		long GetHashCount<TKey>(IRedisHash<TKey, T> hash);
 		List<TKey> GetHashKeys<TKey>(IRedisHash<TKey, T> hash);
 		List<T> GetHashValues<TKey>(IRedisHash<TKey, T> hash);
 		Dictionary<TKey, T> GetAllEntriesFromHash<TKey>(IRedisHash<TKey, T> hash);
@@ -185,7 +185,7 @@ namespace ServiceStack.Redis.Generic
 		void DeleteRelatedEntities<TChild>(object parentId);
 		void DeleteRelatedEntity<TChild>(object parentId, object childId);
 		List<TChild> GetRelatedEntities<TChild>(object parentId);
-		int GetRelatedEntitiesCount<TChild>(object parentId);
+		long GetRelatedEntitiesCount<TChild>(object parentId);
 		void AddToRecentsList(T value);
 		List<T> GetLatestFromRecentsList(int skip, int take);
 		List<T> GetEarliestFromRecentsList(int skip, int take);

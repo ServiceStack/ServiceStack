@@ -28,7 +28,7 @@ namespace ServiceStack.Redis
 		void RemoveRangeByScore(double fromScore, double toScore);
 		void StoreFromIntersect(params IRedisSortedSet[] ofSets);
 		void StoreFromUnion(params IRedisSortedSet[] ofSets);
-		int GetItemIndex(string value);
+		long GetItemIndex(string value);
 		double GetItemScore(string value);
 		void IncrementItemScore(string value, double incrementByScore);
 		string PopItemWithHighestScore();

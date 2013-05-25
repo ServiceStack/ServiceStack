@@ -28,8 +28,8 @@ namespace ServiceStack.Redis.Generic
 		List<T> GetRangeFromSortedList(int startingFrom, int endingAt);
 		void RemoveAll();
 		void Trim(int keepStartingFrom, int keepEndingAt);
-		int RemoveValue(T value);
-		int RemoveValue(T value, int noOfMatches);
+		long RemoveValue(T value);
+		long RemoveValue(T value, int noOfMatches);
 
 		void AddRange(IEnumerable<T> values);
 		void Append(T value);
