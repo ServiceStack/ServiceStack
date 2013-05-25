@@ -142,7 +142,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
                 return remoteIp ?? 
                     (remoteIp = XForwardedFor ?? 
                                 (XRealIp ?? 
-                                ((request.RemoteEndPoint != null) ? request.RemoteEndPoint.ToString() : null)));
+                                ((request.RemoteEndPoint != null) ? request.RemoteEndPoint.Address.ToString() : null)));
             }
         }
 
