@@ -112,7 +112,8 @@ namespace ServiceStack.Redis
 	    byte[][] BRPop(string[] listIds, int timeOutSecs);
 		byte[] RPopLPush(string fromListId, string toListId);
 		byte[] BRPopValue(string listId, int timeOutSecs);
-	    byte[][] BRPopValue(string[] listIds, int timeOutSecs);
+        byte[][] BRPopValue(string[] listIds, int timeOutSecs);
+        byte[] BRPopLPush(string fromListId, string toListId, int timeOutSecs);
 
 		//Redis Set operations
 		byte[][] SMembers(string setId);
