@@ -168,7 +168,8 @@ namespace ServiceStack.ServiceClient.Web
         public static Func<object, string> FormatVariable = value =>
         {
             var valueString = value as string;
-            return valueString != null ? Uri.EscapeDataString(valueString) : FormatValue(value ?? "").Trim('"');
+            valueString = valueString ?? FormatValue(value);
+            return Uri.EscapeDataString(valueString);
         };
 
         [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:FieldsMustBePrivate", Justification = "Using field is just easier.")]
@@ -176,7 +177,8 @@ namespace ServiceStack.ServiceClient.Web
         {
             // Perhaps custom formatting needed for DateTimes, lists, etc.
             var valueString = value as string;
-            return valueString != null ? Uri.EscapeDataString(valueString) : FormatValue(value);
+            valueString = valueString ?? FormatValue(value);
+            return Uri.EscapeDataString(valueString);
         };
 
         private const char PathSeparatorChar = '/';

@@ -57,7 +57,23 @@ namespace ServiceStack.ServiceClient.Web
             {
                 var fileName = uploadFileInfo.Name;
 
-                webReq.UploadFile(fileStream, fileName, uploadFileMimeType, acceptContentType:acceptContentType, requestFilter:requestFilter);
+                webReq.UploadFile(fileStream, fileName, uploadFileMimeType, acceptContentType: acceptContentType, requestFilter: requestFilter, method: "POST");
+            }
+
+            return webReq.GetResponse();
+        }
+
+        public static WebResponse PutFileToUrl(this string url,
+            FileInfo uploadFileInfo, string uploadFileMimeType,
+            string acceptContentType = null,
+            Action<HttpWebRequest> requestFilter = null)
+        {
+            var webReq = (HttpWebRequest)WebRequest.Create(url);
+            using (var fileStream = uploadFileInfo.OpenRead())
+            {
+                var fileName = uploadFileInfo.Name;
+
+                webReq.UploadFile(fileStream, fileName, uploadFileMimeType, acceptContentType: acceptContentType, requestFilter: requestFilter, method: "PUT");
             }
 
             return webReq.GetResponse();
@@ -77,11 +93,11 @@ namespace ServiceStack.ServiceClient.Web
         }
 
         public static void UploadFile(this WebRequest webRequest, Stream fileStream, string fileName, string mimeType,
-            string acceptContentType = null, Action<HttpWebRequest> requestFilter = null)
+            string acceptContentType = null, Action<HttpWebRequest> requestFilter = null, string method="POST")
         {
             var httpReq = (HttpWebRequest)webRequest;
             httpReq.UserAgent = Env.ServerUserAgent;
-            httpReq.Method = "POST";
+            httpReq.Method = method;
             httpReq.AllowAutoRedirect = false;
             httpReq.KeepAlive = false;
 
