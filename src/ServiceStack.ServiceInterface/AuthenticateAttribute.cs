@@ -80,7 +80,7 @@ namespace ServiceStack.ServiceInterface
                 var htmlRedirect = HtmlRedirect ?? AuthService.HtmlRedirect;
                 if (htmlRedirect != null && req.ResponseContentType.MatchesContentType(ContentType.Html))
                 {
-                    var url = req.ResolveAbsoluteUrl(htmlRedirect);
+                    var url = htmlRedirect.IsRelativePath() ? req.ResolveAbsoluteUrl(htmlRedirect) : htmlRedirect;
                     url = url.AddQueryParam("redirect", req.AbsoluteUri);
                     res.RedirectToUrl(url);
                     return;
