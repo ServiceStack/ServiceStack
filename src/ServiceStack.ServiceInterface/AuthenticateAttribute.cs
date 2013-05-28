@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Web;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
@@ -87,6 +88,10 @@ namespace ServiceStack.ServiceInterface
                         if (url.SafeSubstring(0, 2) == "~/")
                         {
                             url = req.GetBaseUrl().CombineWith(url.Substring(2));
+                            // req.GetBaseUrl() returns a root relative url (i.e. '/') if absolute url inferring fails.
+                            // Must handle this case and re-include the virtual application path segment.
+                            if (url.SafeSubstring(0, 1) == "/")
+                                url = VirtualPathUtility.ToAbsolute( url.Insert( 0, "~" ) );
                         }
                         url = url.AddQueryParam("redirect", req.AbsoluteUri);
                         res.RedirectToUrl(url);
