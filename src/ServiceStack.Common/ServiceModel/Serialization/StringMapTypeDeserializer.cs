@@ -40,6 +40,15 @@ namespace ServiceStack.ServiceModel.Serialization
             Log = log;
         }
 
+        public ParseStringDelegate GetParseFn(Type propertyType)
+        {
+            //Don't JSV-decode string values for string properties
+            if (propertyType == typeof(string))
+                return s => s;
+
+            return JsvReader.GetParseFn(propertyType);
+        }
+
         public StringMapTypeDeserializer(Type type)
         {
             this.type = type;
@@ -48,7 +57,7 @@ namespace ServiceStack.ServiceModel.Serialization
             {
                 var propertySetFn = JsvDeserializeType.GetSetPropertyMethod(type, propertyInfo);
                 var propertyType = propertyInfo.PropertyType;
-                var propertyParseStringFn = JsvReader.GetParseFn(propertyType);
+                var propertyParseStringFn = GetParseFn(propertyType);
                 var propertySerializer = new PropertySerializerEntry(propertySetFn, propertyParseStringFn) { PropertyType = propertyType };
 
                 var attr = propertyInfo.FirstAttribute<DataMemberAttribute>();

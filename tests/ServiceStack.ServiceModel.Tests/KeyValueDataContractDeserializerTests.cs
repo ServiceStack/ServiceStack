@@ -111,5 +111,13 @@ namespace ServiceStack.ServiceModel.Tests
                 Assert.That(result.LastName, Is.EqualTo("bond"));
             }
         }
+
+        [Test]
+        public void Dont_try_to_decode_as_JSV_strings_for_string_properties()
+        {
+            var valueMap = new Dictionary<string, string> { { "FirstName", "\"this is a \" test" } };
+            var result = (Customer)KeyValueDataContractDeserializer.Instance.Parse(valueMap, typeof(Customer));
+            Assert.That(result.FirstName, Is.EqualTo("\"this is a \" test"));
+        }
     }
 }
