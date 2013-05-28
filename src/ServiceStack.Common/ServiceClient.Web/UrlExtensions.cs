@@ -160,6 +160,8 @@ namespace ServiceStack.ServiceClient.Web
 
         private static string FormatValue(object value)
         {
+            if (value == null) return null;
+
             var jsv = value.ToJsv().Trim(ArrayBrackets);
             return jsv;
         }
@@ -167,6 +169,8 @@ namespace ServiceStack.ServiceClient.Web
         [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:FieldsMustBePrivate", Justification = "Using field is just easier.")]
         public static Func<object, string> FormatVariable = value =>
         {
+            if (value == null) return null;
+
             var valueString = value as string;
             valueString = valueString ?? FormatValue(value);
             return Uri.EscapeDataString(valueString);
@@ -175,6 +179,8 @@ namespace ServiceStack.ServiceClient.Web
         [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:FieldsMustBePrivate", Justification = "Using field is just easier.")]
         public static Func<object, string> FormatQueryParameterValue = value =>
         {
+            if (value == null) return null;
+
             // Perhaps custom formatting needed for DateTimes, lists, etc.
             var valueString = value as string;
             valueString = valueString ?? FormatValue(value);

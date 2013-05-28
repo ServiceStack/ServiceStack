@@ -26,6 +26,8 @@ namespace ServiceStack.WebHost.IntegrationTests
 {
     public class Global : System.Web.HttpApplication
     {
+        private const bool StartMqHost = false; 
+
         public class AppHost
             : AppHostBase
         {
@@ -109,12 +111,14 @@ namespace ServiceStack.WebHost.IntegrationTests
                     DebugMode = true, //Show StackTraces for easier debugging
                 });
 
-                var redisManager = new BasicRedisClientManager();
-                var mqHost = new RedisMqServer(redisManager);
-                mqHost.RegisterHandler<Reverse>(ServiceController.ExecuteMessage);
-                mqHost.Start();
-
-                this.Container.Register((IMessageService)mqHost);
+                if (StartMqHost)
+                {
+                    var redisManager = new BasicRedisClientManager();
+                    var mqHost = new RedisMqServer(redisManager);
+                    mqHost.RegisterHandler<Reverse>(ServiceController.ExecuteMessage);
+                    mqHost.Start();
+                    this.Container.Register((IMessageService)mqHost);
+                }
             }
 
             //Configure ServiceStack Authentication and CustomUserSession

@@ -115,7 +115,7 @@ namespace ServiceStack.Common.Tests
         public void Can_create_url_with_ArrayIds()
         {
             var url = new ArrayIds(1, 2, 3).ToUrl("GET");
-            Assert.That(url, Is.EqualTo("/route/1,2,3"));
+            Assert.That(url, Is.EqualTo("/route/1%2C2%2C3"));
         }
 
         [Test]
@@ -210,6 +210,18 @@ namespace ServiceStack.Common.Tests
             var request = new WildCardPath();
             var url = request.ToUrl("GET");
             Assert.That(url, Is.EqualTo("/images/"));
+        }
+
+        [Test]
+        public void Show_what_uri_escaping_encodes()
+        {
+            //INFO on what needs to be url-encoded
+            //http://stackoverflow.com/a/10385414/85785
+
+            var data = "amp&mod%space comma,dot.colon:semicolon;slash/";
+
+            Assert.That(Uri.EscapeUriString(data), Is.EqualTo("amp&mod%25space%20comma,dot.colon:semicolon;slash/"));
+            Assert.That(Uri.EscapeDataString(data), Is.EqualTo("amp%26mod%25space%20comma%2Cdot.colon%3Asemicolon%3Bslash%2F"));
         }
 
     }

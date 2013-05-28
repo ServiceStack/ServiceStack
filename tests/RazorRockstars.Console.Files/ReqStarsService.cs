@@ -902,7 +902,7 @@ namespace RazorRockstars.Console.Files
                 StringSet = new HashSet<string> { "g", "h", "i" },
             };
 
-            Assert.That(request.ToUrl("GET"), Is.EqualTo("/richrequest?stringList=d,e,f&stringSet=g,h,i&stringArray=a,b,c"));
+            Assert.That(request.ToUrl("GET"), Is.EqualTo("/richrequest?stringList=d,e,f&stringSet=g,h,i&stringArray=a,b,c".Replace(",","%2C")));
 
             var response = client.Get(request);
 
