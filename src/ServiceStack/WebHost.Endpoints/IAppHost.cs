@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.ServiceHost;
-using ServiceStack.VirtualPath;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -120,6 +119,11 @@ namespace ServiceStack.WebHost.Endpoints
         /// Create a service runner for IService actions
         /// </summary>
 	    IServiceRunner<TRequest> CreateServiceRunner<TRequest>(ActionContext actionContext);
+
+        /// <summary>
+        /// Resolve the absolute url for this request
+        /// </summary>
+        string ResolveAbsoluteUrl(string virtualPath, IHttpRequest httpReq);
 	}
 
 	public interface IHasAppHost

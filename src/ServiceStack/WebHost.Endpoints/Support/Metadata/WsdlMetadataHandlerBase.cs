@@ -53,7 +53,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 
 			try
 			{
-				var wsdlTemplate = GetWsdlTemplate(operations, baseUri, optimizeForFlash, httpReq.GetBaseUrl());
+				var wsdlTemplate = GetWsdlTemplate(operations, baseUri, optimizeForFlash, httpReq.ResolveBaseUrl());
 				httpRes.Write(wsdlTemplate.ToString());
 			}
 			catch (Exception ex)

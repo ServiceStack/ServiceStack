@@ -11,7 +11,6 @@ using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
-using ServiceStack.VirtualPath;
 using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.WebHost.Endpoints
@@ -251,6 +250,13 @@ namespace ServiceStack.WebHost.Endpoints
         {
             //cached per service action
             return new ServiceRunner<TRequest>(this, actionContext);
+        }
+
+        public virtual string ResolveAbsoluteUrl(string virtualPath, IHttpRequest httpReq)
+        {
+            return Config.WebHostUrl == null 
+                ? VirtualPathUtility.ToAbsolute(virtualPath) 
+                : httpReq.GetAbsoluteUrl(virtualPath);
         }
 
 	    public virtual void LoadPlugin(params IPlugin[] plugins)

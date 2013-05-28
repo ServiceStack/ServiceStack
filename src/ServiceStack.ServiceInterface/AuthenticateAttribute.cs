@@ -74,27 +74,19 @@ namespace ServiceStack.ServiceInterface
             if (matchingOAuthConfigs.Any(x => x.Provider == BasicAuthProvider.Name))
                 AuthenticateIfBasicAuth(req, res);
 
-            using (var cache = req.GetCacheClient())
+            var session = req.GetSession();
+            if (session == null || !matchingOAuthConfigs.Any(x => session.IsAuthorized(x.Provider)))
             {
-                var session = req.GetSession();
-
-                if (session == null || !matchingOAuthConfigs.Any(x => session.IsAuthorized(x.Provider)))
+                var htmlRedirect = HtmlRedirect ?? AuthService.HtmlRedirect;
+                if (htmlRedirect != null && req.ResponseContentType.MatchesContentType(ContentType.Html))
                 {
-                    var htmlRedirect = HtmlRedirect ?? AuthService.HtmlRedirect;
-                    if (htmlRedirect != null && req.ResponseContentType.MatchesContentType(ContentType.Html))
-                    {
-                        var url = htmlRedirect;
-                        if (url.SafeSubstring(0, 2) == "~/")
-                        {
-                            url = req.GetBaseUrl().CombineWith(url.Substring(2));
-                        }
-                        url = url.AddQueryParam("redirect", req.AbsoluteUri);
-                        res.RedirectToUrl(url);
-                        return;
-                    }
-
-                    AuthProvider.HandleFailedAuth(matchingOAuthConfigs[0], session, req, res);
+                    var url = req.ResolveAbsoluteUrl(htmlRedirect);
+                    url = url.AddQueryParam("redirect", req.AbsoluteUri);
+                    res.RedirectToUrl(url);
+                    return;
                 }
+
+                AuthProvider.HandleFailedAuth(matchingOAuthConfigs[0], session, req, res);
             }
         }
 

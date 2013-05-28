@@ -14,6 +14,7 @@ using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 using ServiceStack.WebHost.Endpoints;
+using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Formats;
 using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
@@ -120,7 +121,12 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		    {
 		        throw new NotImplementedException();
 		    }
-		}
+
+            public virtual string ResolveAbsoluteUrl(string virtualPath, IHttpRequest httpReq)
+            {
+                return httpReq.GetAbsoluteUrl(virtualPath);
+            }
+        }
 
 		public string GetHtml(object dto, string format)
 		{

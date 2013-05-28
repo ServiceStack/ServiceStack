@@ -10,6 +10,7 @@ using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Validation;
 using ServiceStack.VirtualPath;
 using ServiceStack.WebHost.Endpoints;
+using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.ServiceInterface.Testing
 {
@@ -102,6 +103,11 @@ namespace ServiceStack.ServiceInterface.Testing
         public IServiceRunner<TRequest> CreateServiceRunner<TRequest>(ActionContext actionContext)
         {
             throw new NotImplementedException();
+        }
+
+        public virtual string ResolveAbsoluteUrl(string virtualPath, IHttpRequest httpReq)
+        {
+            return httpReq.GetAbsoluteUrl(virtualPath);
         }
     }
 }

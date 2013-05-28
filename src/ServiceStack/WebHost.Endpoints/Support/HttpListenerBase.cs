@@ -458,6 +458,11 @@ namespace ServiceStack.WebHost.Endpoints.Support
             return new ServiceRunner<TRequest>(this, actionContext);
         }
 
+	    public virtual string ResolveAbsoluteUrl(string virtualPath, IHttpRequest httpReq)
+	    {
+            return httpReq.GetAbsoluteUrl(virtualPath);
+	    }
+
 	    public virtual void LoadPlugin(params IPlugin[] plugins)
 		{
 			foreach (var plugin in plugins)
