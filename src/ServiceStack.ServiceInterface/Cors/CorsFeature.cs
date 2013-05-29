@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using ServiceStack.Common.Web;
 using ServiceStack.WebHost.Endpoints;
 
@@ -18,6 +19,7 @@ namespace ServiceStack.ServiceInterface.Cors
         private readonly bool allowCredentials;
 
         private static bool isInstalled = false;
+        private readonly IList<string> allowOriginWhitelist;
 
         /// <summary>
         /// Represents a default constructor with Allow Origin equals to "*", Allowed GET, POST, PUT, DELETE, OPTIONS request and allowed "Content-Type" header.
@@ -29,13 +31,21 @@ namespace ServiceStack.ServiceInterface.Cors
             this.allowedHeaders = allowedHeaders;
             this.allowCredentials = allowCredentials;
         }
+        
+        public CorsFeature(IList<string> allowOriginWhitelist, string allowedMethods = DefaultMethods, string allowedHeaders = DefaultHeaders, bool allowCredentials = false)
+        {
+            this.allowedMethods = allowedMethods;
+            this.allowedHeaders = allowedHeaders;
+            this.allowCredentials = allowCredentials;
+            this.allowOriginWhitelist = allowOriginWhitelist;
+        }
 
         public void Register(IAppHost appHost)
         {
             if (isInstalled) return;
             isInstalled = true;
 
-            if (!string.IsNullOrEmpty(allowedOrigins))
+            if (!string.IsNullOrEmpty(allowedOrigins) && allowOriginWhitelist == null)
                 appHost.Config.GlobalResponseHeaders.Add(HttpHeaders.AllowOrigin, allowedOrigins);
             if (!string.IsNullOrEmpty(allowedMethods))
                 appHost.Config.GlobalResponseHeaders.Add(HttpHeaders.AllowMethods, allowedMethods);
@@ -43,6 +53,18 @@ namespace ServiceStack.ServiceInterface.Cors
                 appHost.Config.GlobalResponseHeaders.Add(HttpHeaders.AllowHeaders, allowedHeaders);
             if (allowCredentials)
                 appHost.Config.GlobalResponseHeaders.Add(HttpHeaders.AllowCredentials, "true");
+
+            if (allowOriginWhitelist != null)
+            {
+                appHost.RequestFilters.Add((httpReq, httpRes, requestDto) =>
+                    {
+                        var origin = httpReq.Headers.Get("Origin");
+                        if (allowOriginWhitelist.Contains(origin))
+                        {
+                            httpRes.AddHeader(HttpHeaders.AllowOrigin, origin);
+                        }
+                    });
+            }
         }
     }
 }
