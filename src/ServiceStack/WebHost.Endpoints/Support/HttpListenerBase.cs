@@ -85,12 +85,30 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 
 			EndpointHost.AfterInit();
-
+            SetAppDomainData();
+            
             var elapsed = DateTime.UtcNow - this.startTime;
 			Log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
 		}
 
 		public abstract void Configure(Container container);
+
+        public virtual void SetAppDomainData()
+        {
+            //Required for Mono to resolve VirtualPathUtility and Url.Content urls
+            var domain = Thread.GetDomain(); // or AppDomain.Current
+            domain.SetData(".appDomain", "1");
+            domain.SetData(".appVPath", "/");
+            domain.SetData(".appPath", domain.BaseDirectory);
+            if (string.IsNullOrEmpty(domain.GetData(".appId") as string))
+            {
+                domain.SetData(".appId", "1");
+            }
+            if (string.IsNullOrEmpty(domain.GetData(".domainId") as string))
+            {
+                domain.SetData(".domainId", "1");
+            }
+        }
 
 		/// <summary>
 		/// Starts the Web Service
