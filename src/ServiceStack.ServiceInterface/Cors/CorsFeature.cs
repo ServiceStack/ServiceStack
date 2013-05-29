@@ -19,7 +19,7 @@ namespace ServiceStack.ServiceInterface.Cors
         private readonly bool allowCredentials;
 
         private static bool isInstalled = false;
-        private readonly IList<string> allowOriginWhitelist;
+        private readonly ICollection<string> allowOriginWhitelist;
 
         /// <summary>
         /// Represents a default constructor with Allow Origin equals to "*", Allowed GET, POST, PUT, DELETE, OPTIONS request and allowed "Content-Type" header.
@@ -32,7 +32,7 @@ namespace ServiceStack.ServiceInterface.Cors
             this.allowCredentials = allowCredentials;
         }
         
-        public CorsFeature(IList<string> allowOriginWhitelist, string allowedMethods = DefaultMethods, string allowedHeaders = DefaultHeaders, bool allowCredentials = false)
+        public CorsFeature(ICollection<string> allowOriginWhitelist, string allowedMethods = DefaultMethods, string allowedHeaders = DefaultHeaders, bool allowCredentials = false)
         {
             this.allowedMethods = allowedMethods;
             this.allowedHeaders = allowedHeaders;
