@@ -588,6 +588,9 @@
     <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\ErrorResponse.cs">
       <Link>ServiceInterface.ServiceModel\ErrorResponse.cs</Link>
     </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\Service\IPartialWriter.cs">
+      <Link>Service\IPartialWriter.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\README.md" />
