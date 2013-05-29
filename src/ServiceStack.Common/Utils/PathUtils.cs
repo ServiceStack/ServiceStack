@@ -68,10 +68,10 @@ namespace ServiceStack.Common.Utils
                 if (string.IsNullOrEmpty(path))
                     continue;
 
-                if (sb.Length > 1 || (sb.Length == 1 && sb[0] != '/'))
+                if (sb[sb.Length - 1] != '/')
                     sb.Append("/");
 
-                sb.Append(path.Trim('/', '\\'));
+                sb.Append(path.Replace('\\', '/').TrimStart('/'));
             }
 
             return sb.ToString();
