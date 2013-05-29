@@ -131,7 +131,31 @@ current date/year: 2013</p>
 			Assert.That(template, Is.EqualTo(expectedHtml));
 		}
 
+		[Test]
+		public void Simple_Nested_Layout_Example()
+		{
+			var websiteTemplate2 =
+				@"<div id=""body2"">@RenderBody()</div>".Replace("\r\n", "").Replace("\t", "");
 
+			var websiteTemplate1 =
+				@"@{Layout=""websiteTemplate2"";}
+				<div id=""body1"">@RenderBody()</div>".Replace("\r\n", "").Replace("\t", "");
+
+			var pageTemplate =
+				@"@{Layout=""websiteTemplate2"";}
+				<h1>@DateTime.Now.Year</h1>".Replace("\r\n", "").Replace("\t", "");
+
+			var expectedHtml = (@"<div id=""body2""><div id=""body1""><h1>" + DateTime.Now.Year + "</h1></div></div>")
+				.Replace("\r\n", "").Replace("\t", "");
+
+			RazorFormat.AddFileAndPage("/views/websiteTemplate2.cshtml", websiteTemplate2);
+			RazorFormat.AddFileAndPage("/views/websiteTemplate1.cshtml", websiteTemplate1);
+			var dynamicPage = RazorFormat.AddFileAndPage(@"/page.cshtml", pageTemplate);
+			var template = RazorFormat.RenderToHtml(dynamicPage);
+			template.Print();
+
+			Assert.That(template, Is.EqualTo(expectedHtml));
+		}
 
 		[Test]
 		public void Layout_MasterPage_Scenarios_Adding_Sections()
