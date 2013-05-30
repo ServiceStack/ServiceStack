@@ -142,7 +142,7 @@ current date/year: 2013</p>
 				<div id=""body1"">@RenderBody()</div>".Replace("\r\n", "").Replace("\t", "");
 
 			var pageTemplate =
-				@"@{Layout=""websiteTemplate2"";}
+				@"@{Layout=""websiteTemplate1"";}
 				<h1>@DateTime.Now.Year</h1>".Replace("\r\n", "").Replace("\t", "");
 
 			var expectedHtml = (@"<div id=""body2""><div id=""body1""><h1>" + DateTime.Now.Year + "</h1></div></div>")
