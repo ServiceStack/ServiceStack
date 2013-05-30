@@ -24,7 +24,7 @@ namespace ServiceStack.ServiceHost
 				return (object)serializedDto;
 
 			byte[] compressedBytes = StreamExtensions.Compress(serializedDto, requestContext.CompressionType);
-			return new CompressedResult(compressedBytes, requestContext.CompressionType, requestContext.ContentType);
+            return new CompressedResult(compressedBytes, requestContext.CompressionType, requestContext.ResponseContentType);
 		}
 
 		/// <summary>
