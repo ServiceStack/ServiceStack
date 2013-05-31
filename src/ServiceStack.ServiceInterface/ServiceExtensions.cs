@@ -111,7 +111,7 @@ namespace ServiceStack.ServiceInterface
         public static ICacheClient GetCacheClient(this IResolver service)
         {
             return service.TryResolve<ICacheClient>()
-                ?? service.TryResolve<IRedisClientsManager>().GetCacheClient()
+                ?? (service.TryResolve<IRedisClientsManager>()!=null ? service.TryResolve<IRedisClientsManager>().GetCacheClient():null)
                 ?? DefaultCache;
         }
 
