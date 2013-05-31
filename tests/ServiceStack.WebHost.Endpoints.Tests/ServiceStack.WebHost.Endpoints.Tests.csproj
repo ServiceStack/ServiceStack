@@ -235,6 +235,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Support\Operations\GetCustomer.cs" />
     <Compile Include="Support\Types\Customer.cs" />
+    <Compile Include="XmlMetaDataHandlerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\ServiceStack.Api.Swagger\ServiceStack.Api.Swagger.csproj">
