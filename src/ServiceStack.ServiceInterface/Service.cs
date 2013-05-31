@@ -73,7 +73,12 @@ namespace ServiceStack.ServiceInterface
         private ICacheClient cache;
         public virtual ICacheClient Cache
         {
-            get { return cache ?? (cache = TryResolve<ICacheClient>()); }
+            get
+            {
+                return cache ??
+                    (cache = TryResolve<ICacheClient>()) ??
+                    (cache = (TryResolve<IRedisClientsManager>() != null ? TryResolve<IRedisClientsManager>().GetCacheClient() : null));
+            }
         }
 
         private IDbConnection db;
