@@ -76,7 +76,7 @@ namespace ServiceStack.Razor.Managers
             try
             {
                 var file = views.GetVirutalFile(e.FullPath);
-                if (!views.IsWatchedFile(file)) return;
+                if (file == null || !views.IsWatchedFile(file)) return;
 
                 var pathPage = views.GetDictionaryPagePath(file);
 
@@ -105,7 +105,7 @@ namespace ServiceStack.Razor.Managers
             try
             {
                 var file = views.GetVirutalFile(e.FullPath);
-                if (!views.IsWatchedFile(file)) return;
+                if (file == null || !views.IsWatchedFile(file)) return;
 
                 var pagePath = views.GetDictionaryPagePath(file);
 
