@@ -33,12 +33,12 @@
 
   <Target Name="Default" DependsOnTargets="$(DoBuildSolutionsDependsOn)" />
 
-  <!--
   <Target Name="TeamCityBuild">
+    <!--
     <Copy SourceFiles="$(BuildSolutionDir)/tests/ServiceStack.Common.Tests/ci.app.config" DestinationFiles="$(BuildSolutionDir)/tests/ServiceStack.Common.Tests/app.config" />
+    -->
     <CallTarget Targets="Default" />
   </Target>
-  -->
 
   <Target Name="UnitTests" DependsOnTargets="$(DoBuildSolutionsDependsOn)">
     <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.ServiceHost.Tests/bin/$(Configuration)/ServiceStack.ServiceHost.Tests.dll $(NUnitConsoleArgs)" />
