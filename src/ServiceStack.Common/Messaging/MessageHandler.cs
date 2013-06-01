@@ -32,6 +32,7 @@ namespace ServiceStack.Messaging
         public int TotalNormalMessagesReceived { get; private set; }
         public int TotalPriorityMessagesReceived { get; private set; }
         public int TotalOutMessagesReceived { get; private set; }
+        public DateTime? LastMessageProcessed { get; private set; }
 
         public string[] ProcessQueueNames { get; set; }
 
@@ -86,6 +87,8 @@ namespace ServiceStack.Messaging
 
                     this.TotalNormalMessagesReceived++;
                     msgsProcessed++;
+                    LastMessageProcessed = DateTime.UtcNow;
+
                     if (doNext != null && !doNext()) return msgsProcessed;
                 }
             }
@@ -102,7 +105,7 @@ namespace ServiceStack.Messaging
         {
             return new MessageHandlerStats(typeof(T).Name,
                 TotalMessagesProcessed, TotalMessagesFailed, TotalRetries, 
-                TotalNormalMessagesReceived, TotalPriorityMessagesReceived);
+                TotalNormalMessagesReceived, TotalPriorityMessagesReceived, LastMessageProcessed);
         }
 
         private void DefaultInExceptionHandler(IMessage<T> message, Exception ex)
