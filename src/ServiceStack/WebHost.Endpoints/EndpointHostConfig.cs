@@ -81,8 +81,8 @@ namespace ServiceStack.WebHost.Endpoints
                         IgnoreFormatsInMetadata = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase),
                         AllowFileExtensions = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
 						{
-							"js", "css", "htm", "html", "shtm", "txt", "xml", "rss", "csv", 
-							"jpg", "jpeg", "gif", "png", "bmp", "ico", "tif", "tiff", "svg", 
+							"js", "css", "htm", "html", "shtm", "txt", "xml", "rss", "csv", "pdf",  
+							"jpg", "jpeg", "gif", "png", "bmp", "ico", "tif", "tiff", "svg",
 							"avi", "divx", "m3u", "mov", "mp3", "mpeg", "mpg", "qt", "vob", "wav", "wma", "wmv", 
 							"flv", "xap", "xaml", "ogg", "mp4", "webm", 
 						},
