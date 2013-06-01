@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.VirtualPath;
 using ServiceStack.WebHost.Endpoints.Formats;
@@ -59,9 +61,16 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 	public static class MarkdownTestExtensions
 	{
-		public static string NormalizeNewLines(this string text)
-		{
-			return text.Replace("\r\n", "\n");
-		}
-	}
+        public static string NormalizeNewLines(this string text)
+        {
+            return text.Replace("\r\n", "\n");
+        }
+    
+        public static string StripLinesAndWhitespace(this string text)
+        {
+            var sb = new StringBuilder();
+            text.Replace("\r\n", "\n").Split('\n').ToList().ConvertAll(x => x.Trim()).ForEach(x => sb.Append(x));
+            return sb.ToString();
+        }
+    }
 }
