@@ -135,7 +135,7 @@ namespace ServiceStack.Razor.Managers
                 httpRes.StatusCode = (int)HttpStatusCode.NotFound;
                 return null;
             }
-            
+
             using (var writer = new StreamWriter(httpRes.OutputStream, UTF8EncodingWithoutBom))
             {
                 var page = CreateRazorPageInstance(httpReq, httpRes, model, razorPage);
@@ -143,34 +143,46 @@ namespace ServiceStack.Razor.Managers
                 var includeLayout = !(httpReq.GetParam(QueryStringFormatKey) ?? "").Contains(NoTemplateFormatValue);
                 if (includeLayout)
                 {
-                    using (var ms = new MemoryStream())
-                    using (var childWriter = new StreamWriter(ms, UTF8EncodingWithoutBom))
+                    var result = ExecuteRazorPageWithLayout(httpReq, httpRes, model, page, () =>
                     {
-                        //child page needs to execute before master template to populate ViewBags, sections, etc
-                        page.WriteTo(childWriter);
+                        return httpReq.GetItem(LayoutKey) as string
+                                       ?? page.Layout
+                                       ?? DefaultLayoutName;
+                    });
 
-                        var layout = httpReq.GetItem(LayoutKey) as string
-                            ?? page.Layout
-                            ?? DefaultLayoutName;
-
-                        var childBody = ms.ToArray().FromUtf8Bytes();
-                        var layoutPage = this.viewManager.GetPageByName(layout, httpReq, model);
-                        if (layoutPage != null)
-                        {
-                            var layoutView = CreateRazorPageInstance(httpReq, httpRes, model, layoutPage);
-
-                            layoutView.SetChildPage(page, childBody);
-                            layoutView.WriteTo(writer);
-                            return layoutView;
-                        }
-
-                        writer.Write(childBody);
-                        return page;
-                    }
+                    writer.Write(result.Item2);
+                    return result.Item1;
                 }
 
                 page.WriteTo(writer);
                 return page;
+            }
+        }
+
+        private Tuple<IRazorView, string> ExecuteRazorPageWithLayout(IHttpRequest httpReq, IHttpResponse httpRes, object model, IRazorView page, Func<string> layout)
+        {
+            using (var ms = new MemoryStream())
+            {
+                using (var childWriter = new StreamWriter(ms, UTF8EncodingWithoutBom))
+                {
+                    //child page needs to execute before master template to populate ViewBags, sections, etc
+                    page.WriteTo(childWriter);
+                    var childBody = ms.ToArray().FromUtf8Bytes();
+
+                    var layoutName = layout();
+                    if (!String.IsNullOrEmpty(layoutName))
+                    {
+                        var layoutPage = this.viewManager.GetPageByName(layoutName, httpReq, model);
+                        if (layoutPage != null)
+                        {
+                            var layoutView = CreateRazorPageInstance(httpReq, httpRes, model, layoutPage);
+                            layoutView.SetChildPage(page, childBody);
+                            return ExecuteRazorPageWithLayout(httpReq, httpRes, model, layoutView, () => layoutView.Layout);
+                        }
+                    }
+
+                    return Tuple.Create(page, childBody);
+                }
             }
         }
 
