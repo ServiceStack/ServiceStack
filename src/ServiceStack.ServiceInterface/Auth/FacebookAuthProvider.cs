@@ -34,15 +34,8 @@ namespace ServiceStack.ServiceInterface.Auth
 
             var code = authService.RequestContext.Get<IHttpRequest>().QueryString["code"];
             var isPreAuthCallback = !code.IsNullOrEmpty();
-
             if (!isPreAuthCallback)
             {
-                if (!request.Continue.IsNullOrEmpty())
-                {
-                    // store the continue url in the session for the return trip
-                    session.ReferrerUrl = request.Continue;
-                }
-
                 var preAuthUrl = PreAuthUrl + "?client_id={0}&redirect_uri={1}&scope={2}"
                     .Fmt(AppId, this.CallbackUrl.UrlEncode(), string.Join(",", Permissions));
 
