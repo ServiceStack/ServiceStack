@@ -115,6 +115,15 @@ namespace ServiceStack.Common.Web
                 case "tgz":
                     return "application/x-compressed";
 
+                case "eot":
+                    return "application/vnd.ms-fontobject";
+
+                case "ttf":
+                    return "application/octet-stream";
+
+                case "woff":
+                    return "application/application/font-woff";
+
                 default:
                     return "application/" + fileExt;
             }
