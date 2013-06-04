@@ -122,7 +122,7 @@ namespace ServiceStack.Common.Web
                     return "application/octet-stream";
 
                 case "woff":
-                    return "application/application/font-woff";
+                    return "application/font-woff";
 
                 default:
                     return "application/" + fileExt;
