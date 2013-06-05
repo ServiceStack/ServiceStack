@@ -1,4 +1,5 @@
-﻿using ServiceStack.ServiceHost;
+﻿using ServiceStack.Common.Web;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.Razor.Tests
@@ -65,6 +66,10 @@ namespace ServiceStack.Razor.Tests
         [DefaultView("DefaultViewFoo")]
         public object Get(DefaultViewFooRequest request)
         {
+            if (request.WhatToSay == "redirect")
+            {
+                return HttpResult.Redirect("/");
+            }
             return new DefaultViewFooResponse { FooSaid = string.Format("GET: {0}", request.WhatToSay) };
         }
     }
