@@ -271,15 +271,7 @@ namespace ServiceStack.Common.Web
             {
                 using (var fs = FileInfo.OpenRead())
                 {
-                    if (rangeEnd != FileInfo.Length - 1)
-                    {
-                        fs.WritePartialTo(outputStream, rangeStart, rangeEnd);
-                    }
-                    else
-                    {
-                        fs.WriteTo(outputStream);
-                        outputStream.Flush();
-                    }
+                    fs.WritePartialTo(outputStream, rangeStart, rangeEnd);
                 }
             }
             else if (ResponseStream != null)
