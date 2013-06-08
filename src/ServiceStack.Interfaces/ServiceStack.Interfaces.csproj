@@ -309,6 +309,7 @@
     <Compile Include="Logging\Support\Logging\ConsoleLogger.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Logging\Support\Logging\StringBuilderLog.cs" />
     <Compile Include="Logging\Support\Logging\DebugLogFactory.cs">
       <SubType>Code</SubType>
     </Compile>
