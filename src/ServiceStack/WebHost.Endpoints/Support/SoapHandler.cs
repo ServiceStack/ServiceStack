@@ -5,6 +5,7 @@ using System.Runtime.Serialization;
 using System.ServiceModel.Channels;
 using System.Web;
 using System.Xml;
+using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
@@ -84,7 +85,6 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
             try
             {
-                httpRequest.Items["SoapMessage"] = requestMsg;
                 var request = DataContractDeserializer.Instance.Parse(requestXml, requestType);
                 var requiresSoapMessage = request as IRequiresSoapMessage;
                 if (requiresSoapMessage != null)
@@ -95,6 +95,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
                 var httpReq = HttpContext.Current != null
                     ? new HttpRequestWrapper(requestType.Name, HttpContext.Current.Request)
                     : httpRequest;
+
+                httpReq.SetItem("SoapMessage", requestMsg);
 
                 var hasRequestFilters = EndpointHost.RequestFilters.Count > 0
                     || FilterAttributeCache.GetRequestFilterAttributes(request.GetType()).Any();
