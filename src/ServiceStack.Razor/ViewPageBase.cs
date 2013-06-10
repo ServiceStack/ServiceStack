@@ -17,6 +17,7 @@ using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 using IHtmlString = System.Web.IHtmlString;
 
@@ -240,6 +241,14 @@ namespace ServiceStack.Razor
         public virtual void DefineSection(string sectionName, Action action)
         {
             this.childSections.Add(sectionName, action);
+        }
+
+        public object RenderSection(string sectionName, bool required)
+        {
+            if (required && !IsSectionDefined(sectionName) && !ChildPage.IsSectionDefined(sectionName))
+                throw new Exception("Required Section {0} is not defined".Fmt(sectionName));
+
+            return RenderSection(sectionName);
         }
 
         public object RenderSection(string sectionName)
