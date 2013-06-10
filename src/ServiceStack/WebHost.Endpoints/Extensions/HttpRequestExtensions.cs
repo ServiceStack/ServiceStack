@@ -358,27 +358,6 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			return EndpointHost.Config.DefaultContentType;
 		}
 
-
-        /// <summary>
-        /// Store an entry in the IHttpRequest.Items Dictionary
-        /// </summary>
-        public static void SetItem(this IHttpRequest httpReq, string key, object value)
-        {
-            if (httpReq != null)
-                httpReq.Items[key] = value;
-        }
-
-        /// <summary>
-        /// Get an entry from the IHttpRequest.Items Dictionary
-        /// </summary>
-        public static object GetItem(this IHttpRequest httpReq, string key)
-        {
-            object value = null;
-            if (httpReq != null)
-                httpReq.Items.TryGetValue(key, out value);
-            return value;
-        }
-
         public static void SetView(this IHttpRequest httpReq, string viewName)
         {
             httpReq.SetItem("View", viewName);
