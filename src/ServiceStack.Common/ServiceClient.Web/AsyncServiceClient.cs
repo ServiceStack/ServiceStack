@@ -144,7 +144,7 @@ namespace ServiceStack.ServiceClient.Web
 #if SILVERLIGHT
                     WebException we = new WebException("The request timed out", ex, WebExceptionStatus.RequestCanceled, null);
 #else
-                    WebException we = new WebException("The request timed out", ex, WebExceptionStatus.Timeout, null);
+                    var we = new WebException("The request timed out", ex, WebExceptionStatus.Timeout, null);
 #endif
                     toReturn = we;
                 }
@@ -196,15 +196,23 @@ namespace ServiceStack.ServiceClient.Web
                 }
                 this.Timer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
                 this.Timer.Dispose();
+                this.Timer = null;
                 this.Dispose();
             }
 #endif
 
             public void Dispose()
             {
-                if (this.BytesData == null) return;
-                this.BytesData.Dispose();
-                this.BytesData = null;
+                if (this.BytesData != null)
+                {
+                    this.BytesData.Dispose();
+                    this.BytesData = null;
+                }
+                if (this.Timer != null)
+                {
+                    this.Timer.Dispose();
+                    this.Timer = null;
+                }
             }
         }
 
