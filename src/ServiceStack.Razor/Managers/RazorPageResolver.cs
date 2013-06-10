@@ -119,7 +119,7 @@ namespace ServiceStack.Razor.Managers
             var viewName = httpReq.GetItem(ViewKey) as string;
             if (viewName != null)
             {
-                return this.viewManager.GetPageByName(viewName);
+                return this.viewManager.GetPageByName(viewName, httpReq, model);
             }
             var razorPage = this.viewManager.GetPageByName(httpReq.OperationName) //Request DTO
                          ?? this.viewManager.GetPage(httpReq, model); // Response DTO

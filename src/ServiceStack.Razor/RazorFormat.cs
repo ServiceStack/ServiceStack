@@ -97,7 +97,7 @@ namespace ServiceStack.Razor
             this.PageResolver.RenderPartialFn = this.RenderPartialFn;
         }
 
-        public RazorFormat Init()
+        public virtual RazorFormat Init()
         {
             if (Instance != null)
             {
@@ -111,8 +111,8 @@ namespace ServiceStack.Razor
 
             Instance = this;
 
-            this.ViewManager = new RazorViewManager(this, VirtualPathProvider);
-            this.PageResolver = new RazorPageResolver(this, this.ViewManager);
+            this.ViewManager = CreateViewManager();
+            this.PageResolver = CreatePageResolver();
 
             this.ViewManager.Init();
 
@@ -122,6 +122,16 @@ namespace ServiceStack.Razor
                 this.LiveReload.StartWatching(this.ScanRootPath);
             }
             return this;
+        }
+
+        public virtual RazorPageResolver CreatePageResolver()
+        {
+            return new RazorPageResolver(this, this.ViewManager);
+        }
+
+        public virtual RazorViewManager CreateViewManager()
+        {
+            return new RazorViewManager(this, VirtualPathProvider);
         }
 
         static ILiveReload CreateLiveReload(RazorViewManager viewManager)
