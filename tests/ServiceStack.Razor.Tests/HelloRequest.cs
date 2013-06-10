@@ -4,9 +4,9 @@ using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.Razor.Tests
 {
-    public class HelloRequest 
+    public class HelloRequest
     {
-        public string Name { get; set; } 
+        public string Name { get; set; }
     }
     public class HelloResponse
     {
@@ -23,7 +23,7 @@ namespace ServiceStack.Razor.Tests
         //}
 
 
-        public object Any( HelloRequest request )
+        public object Any(HelloRequest request)
         {
             //return new HelloResponse { Result = "Hello, " + request.Name };
             return new { Foo = "foo", Password = "pwd", Pw2 = "222", FooMasta = new { Charisma = 10, Mula = 10000000000, Car = "911Turbo" } };
@@ -53,14 +53,14 @@ namespace ServiceStack.Razor.Tests
 
     public class FooController : ServiceInterface.Service, IGet<FooRequest>, IPost<FooRequest>
     {
-        public object Get( FooRequest request )
+        public object Get(FooRequest request)
         {
-            return new FooResponse { FooSaid = string.Format( "GET: {0}", request.WhatToSay ) };
+            return new FooResponse { FooSaid = string.Format("GET: {0}", request.WhatToSay) };
         }
 
-        public object Post( FooRequest request )
+        public object Post(FooRequest request)
         {
-            return new FooResponse { FooSaid = string.Format( "POST: {0}", request.WhatToSay ) };            
+            return new FooResponse { FooSaid = string.Format("POST: {0}", request.WhatToSay) };
         }
 
         [DefaultView("DefaultViewFoo")]
