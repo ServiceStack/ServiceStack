@@ -591,6 +591,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
                 }
             }
         }
-	}
+
+        public static System.ServiceModel.Channels.Message GetSoapMessage(this IHttpRequest httpReq)
+        {
+            return httpReq.Items["_soapmessage"] as System.ServiceModel.Channels.Message;
+        }
+    }
     
 }
