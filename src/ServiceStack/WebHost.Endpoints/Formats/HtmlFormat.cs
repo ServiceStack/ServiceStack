@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Web;
+using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
@@ -36,7 +37,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 		public void SerializeToStream(IRequestContext requestContext, object response, IHttpResponse httpRes)
 		{
             var httpReq = requestContext.Get<IHttpRequest>();
-		    var httpResult = httpReq.Items["HttpResult"] as IHttpResult;
+            var httpResult = httpReq.GetItem("HttpResult") as IHttpResult;
             if (httpResult != null && httpResult.Headers.ContainsKey(HttpHeaders.Location))
                 return;
 
