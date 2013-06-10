@@ -248,6 +248,8 @@ namespace ServiceStack.Common.Web
             if (Template != null)
                 RequestContext.SetItem("Template", Template);
 
+            RequestContext.SetItem("HttpResult", this);
+
             ResponseFilter.SerializeToStream(this.RequestContext, this.Response, responseStream);
         }
 

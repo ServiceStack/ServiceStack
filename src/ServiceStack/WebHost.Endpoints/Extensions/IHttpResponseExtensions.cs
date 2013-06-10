@@ -167,11 +167,6 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
                         }
                     }
 
-                    if (ShouldSkipResponseBody(httpResult))
-                    {
-                        return true;
-                    }
-
                     var disposableResult = result as IDisposable;
                     if (WriteToOutputStream(response, result, bodyPrefix, bodySuffix))
                     {
@@ -267,11 +262,6 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
                     response.EndServiceStackRequest(skipHeaders: true);
                 }
             }
-        }
-
-        private static bool ShouldSkipResponseBody(IHttpResult httpResult)
-        {
-            return httpResult != null && httpResult.Headers.ContainsKey(HttpHeaders.Location);
         }
 
         public static void WriteTextToResponse(this IHttpResponse response, string text, string defaultContentType)

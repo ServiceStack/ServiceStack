@@ -36,6 +36,10 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 		public void SerializeToStream(IRequestContext requestContext, object response, IHttpResponse httpRes)
 		{
             var httpReq = requestContext.Get<IHttpRequest>();
+		    var httpResult = httpReq.Items["HttpResult"] as IHttpResult;
+            if (httpResult != null && httpResult.Headers.ContainsKey(HttpHeaders.Location))
+                return;
+
             if (httpReq != null && AppHost.ViewEngines.Any(x => x.ProcessRequest(httpReq, httpRes, response))) return;
 
 			if (requestContext.ResponseContentType != ContentType.Html && httpReq != null
