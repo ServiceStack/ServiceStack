@@ -143,6 +143,37 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class RequiresAnyPermission
+    {
+        public List<string> Permissions { get; set; }
+
+        public RequiresAnyPermission()
+        {
+            Permissions = new List<string>();
+        }
+    }
+
+    public class RequiresAnyPermissionResponse
+    {
+        public List<string> Result { get; set; }
+
+        public ResponseStatus ResponseStatus { get; set; }
+
+        public RequiresAnyPermissionResponse()
+        {
+            Result = new List<string>();
+        }
+    }
+
+    [RequiresAnyPermission("ThePermission", "ThePermission2")]
+    public class RequiresAnyPermissionService : ServiceInterface.Service
+    {
+        public RequiresAnyPermissionResponse Any(RequiresAnyPermission request)
+        {
+            return new RequiresAnyPermissionResponse { Result = request.Permissions };
+        }
+    }
+
     public class CustomUserSession : AuthUserSession
     {
         public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, System.Collections.Generic.Dictionary<string, string> authInfo)
@@ -778,6 +809,70 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 };
                 var request = new RequiresAnyRole { Roles = roles };
                 var response = client.Send<RequiresAnyRoleResponse>(request);
+                Assert.Fail();
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Forbidden));
+                Console.WriteLine(webEx.ResponseDto.Dump());
+            }
+        }
+
+        [Test]
+        public void Can_call_RequiresAnyPermission_service_with_BasicAuth()
+        {
+            try
+            {
+                var client = GetClientWithUserPassword();
+                var permissions = new List<string>
+                {
+                    "test", "test2"
+                };
+                var request = new RequiresAnyPermission { Permissions = permissions };
+                var response = client.Send<RequiresAnyPermissionResponse>(request);
+                Assert.That(response.Result, Is.EqualTo(request.Permissions));
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.Fail(webEx.Message);
+            }
+        }
+
+        [Test]
+        public void RequiresAnyPermission_service_returns_unauthorized_if_no_basic_auth_header_exists()
+        {
+            try
+            {
+                var client = GetClient();
+                var permissions = new List<string>
+                {
+                    "test", "test2"
+                };
+                var request = new RequiresAnyPermission { Permissions = permissions };
+                var response = client.Send<RequiresAnyPermissionResponse>(request);
+                Assert.Fail();
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+                Console.WriteLine(webEx.ResponseDto.Dump());
+            }
+        }
+
+        [Test]
+        public void RequiresAnyPermission_service_returns_forbidden_if_basic_auth_header_exists()
+        {
+            try
+            {
+                var client = GetClient();
+                ((ServiceClientBase)client).UserName = EmailBasedUsername;
+                ((ServiceClientBase)client).Password = PasswordForEmailBasedAccount;
+                var permissions = new List<string>
+                {
+                    "test", "test2"
+                };
+                var request = new RequiresAnyPermission { Permissions = permissions };
+                var response = client.Send<RequiresAnyPermissionResponse>(request);
                 Assert.Fail();
             }
             catch (WebServiceException webEx)

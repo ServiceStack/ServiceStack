@@ -134,6 +134,7 @@
     <Compile Include="DefaultViewAttribute.cs" />
     <Compile Include="Providers\InMemoryRollingRequestLogger.cs" />
     <Compile Include="Admin\RequestLogsService.cs" />
+    <Compile Include="RequiresAnyPermission.cs" />
     <Compile Include="RequiresAnyRoleAttribute.cs" />
     <Compile Include="RequiredRoleAttribute.cs" />
     <Compile Include="Auth\RegistrationService.cs" />
