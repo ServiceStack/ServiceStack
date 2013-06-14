@@ -25,5 +25,7 @@ namespace ServiceStack.DataAnnotations
 		public List<string> FieldNames { get; set; }
 
 		public bool Unique { get; set; }
+
+	    public string Name { get; set; }
 	}
 }
