@@ -411,6 +411,12 @@
             <param name="successCode">The success code.</param>
             <param name="errorCode">The error code.</param>
         </member>
+        <member name="M:ServiceStack.Validation.ValidationErrorResult.Merge(ServiceStack.Validation.ValidationErrorResult)">
+            <summary>
+            Merge errors from another <see cref="T:ServiceStack.Validation.ValidationErrorResult"/>
+            </summary>
+            <param name="result"></param>
+        </member>
         <member name="P:ServiceStack.Validation.ValidationErrorResult.SuccessCode">
             <summary>
             Gets or sets the success code.
@@ -622,8 +628,21 @@
             <summary>
             Whether the response is an IHttpError or Exception
             </summary>
-            <param name="response"></param>
-            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Common.Web.HttpResultExtensions.ExtractHttpRanges(System.String,System.Int64,System.Int64@,System.Int64@)">
+            <summary>
+            rangeHeader should be of the format "bytes=0-" or "bytes=0-12345" or "bytes=123-456"
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Common.Web.HttpResultExtensions.AddHttpRangeResponseHeaders(ServiceStack.ServiceHost.IHttpResponse,System.Int64,System.Int64,System.Int64)">
+            <summary>
+            Adds 206 PartialContent Status, Content-Range and Content-Length headers
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Common.Web.HttpResultExtensions.WritePartialTo(System.IO.Stream,System.IO.Stream,System.Int64,System.Int64)">
+            <summary>
+            Writes partial range as specified by start-end, from fromStream to toStream.
+            </summary>
         </member>
     </members>
 </doc>
