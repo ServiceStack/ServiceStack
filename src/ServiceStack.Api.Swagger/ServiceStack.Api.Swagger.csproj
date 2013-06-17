@@ -50,6 +50,7 @@
     <Compile Include="SwaggerApiService.cs" />
     <Compile Include="SwaggerFeature.cs" />
     <Compile Include="SwaggerResourcesService.cs" />
+    <Compile Include="SwaggerType.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="swagger-ui\css\hightlight.default.css" />
