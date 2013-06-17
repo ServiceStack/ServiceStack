@@ -19,7 +19,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class SwaggerFeatureRequest
     {
         [ApiMember(Name="Name", Description = "Name Description", 
-            ParameterType = "path", DataType = "string", IsRequired = true)]
+            ParameterType = "path", DataType = SwaggerType.String, IsRequired = true)]
         public string Name { get; set; }
     }
 
@@ -42,7 +42,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class SwaggerModelsRequest : IReturn<SwaggerFeatureResponse>
     {
         [ApiMember(Name = "UrlParam", Description = "URL parameter",
-            ParameterType = "path", DataType = "string", IsRequired = true)]
+            ParameterType = "path", DataType = SwaggerType.String, IsRequired = true)]
         public string UrlParam { get; set; }
 
         [ApiMember(Name = "RequestBody", Description = "The request body",
@@ -388,7 +388,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(responseClassModel.Id, Is.EqualTo(typeof(SwaggerFeatureResponse).Name));
             Assert.That(responseClassModel.Properties, Is.Not.Empty);
             Assert.That(responseClassModel.Properties.ContainsKey("IsSuccess"), Is.True);
-            Assert.That(responseClassModel.Properties["IsSuccess"].Type, Is.EqualTo("bool"));
+            Assert.That(responseClassModel.Properties["IsSuccess"].Type, Is.EqualTo(SwaggerType.Boolean));
         }
 
         [Test, TestCaseSource("RestClients")]
@@ -407,7 +407,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(requestClassModel.Properties.ContainsKey("UrlParam"), Is.False);
 
             Assert.That(requestClassModel.Properties.ContainsKey("Name"), Is.True);
-            Assert.That(requestClassModel.Properties["Name"].Type, Is.EqualTo("string"));
+            Assert.That(requestClassModel.Properties["Name"].Type, Is.EqualTo(SwaggerType.String));
             Assert.That(requestClassModel.Properties["Name"].Description, Is.EqualTo("Name description"));
 
             Assert.That(requestClassModel.Properties.ContainsKey("NestedModel"), Is.True);
@@ -418,7 +418,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var nestedClassModel = resource.Models[typeof(SwaggerNestedModel).Name];
 
             Assert.That(nestedClassModel.Properties.ContainsKey("NestedProperty"), Is.True);
-            Assert.That(nestedClassModel.Properties["NestedProperty"].Type, Is.EqualTo("bool"));
+            Assert.That(nestedClassModel.Properties["NestedProperty"].Type, Is.EqualTo(SwaggerType.Boolean));
             Assert.That(nestedClassModel.Properties["NestedProperty"].Description, Is.EqualTo("NestedProperty description"));
         }
 
@@ -430,7 +430,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var requestClassModel = resource.Models[typeof(SwaggerModelsRequest).Name];
 
             Assert.That(requestClassModel.Properties.ContainsKey("ListProperty"), Is.True);
-            Assert.That(requestClassModel.Properties["ListProperty"].Type, Is.EqualTo("Array"));
+            Assert.That(requestClassModel.Properties["ListProperty"].Type, Is.EqualTo(SwaggerType.Array));
             Assert.That(requestClassModel.Properties["ListProperty"].Items["$ref"], Is.EqualTo(typeof(SwaggerNestedModel2).Name));
             Assert.That(resource.Models.ContainsKey(typeof(SwaggerNestedModel2).Name), Is.True);
         }
@@ -443,7 +443,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var requestClassModel = resource.Models[typeof(SwaggerModelsRequest).Name];
 
             Assert.That(requestClassModel.Properties.ContainsKey("ArrayProperty"), Is.True);
-            Assert.That(requestClassModel.Properties["ArrayProperty"].Type, Is.EqualTo("Array"));
+            Assert.That(requestClassModel.Properties["ArrayProperty"].Type, Is.EqualTo(SwaggerType.Array));
             Assert.That(requestClassModel.Properties["ArrayProperty"].Items["$ref"], Is.EqualTo(typeof(SwaggerNestedModel3).Name));
             Assert.That(resource.Models.ContainsKey(typeof(SwaggerNestedModel3).Name), Is.True);
         }
@@ -456,13 +456,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			var requestClassModel = resource.Models[typeof(NullableInRequest).Name];
 
 			Assert.That(requestClassModel.Properties.ContainsKey("Position"), Is.True);
-			Assert.That(requestClassModel.Properties["Position"].Type, Is.EqualTo("int"));
+			Assert.That(requestClassModel.Properties["Position"].Type, Is.EqualTo(SwaggerType.Int));
 			Assert.That(resource.Models.ContainsKey(typeof(NullableResponse).Name), Is.True);
 
 			var responseModel = resource.Models[typeof (NullableResponse).Name];
 			Assert.That(responseModel.Properties.ContainsKey("Optional"), Is.True);
 			Assert.That(responseModel.Properties["Optional"].Required, Is.False);
-			Assert.That(responseModel.Properties["Optional"].Type, Is.EqualTo("int"));
+			Assert.That(responseModel.Properties["Optional"].Type, Is.EqualTo(SwaggerType.Int));
 			Assert.That(responseModel.Properties["NestedProperty2"].Required, Is.True);
 		}
     }
