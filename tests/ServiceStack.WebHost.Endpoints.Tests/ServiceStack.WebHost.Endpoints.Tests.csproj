@@ -136,6 +136,7 @@
     <Compile Include="BufferedRequestTests.cs" />
     <Compile Include="CachedServiceTests.cs" />
     <Compile Include="CompressionTests.cs" />
+    <Compile Include="RouteTests.cs" />
     <Compile Include="CustomValidationErrorTests.cs" />
     <Compile Include="EncodingTests.cs" />
     <Compile Include="ExceptionHandling2Tests.cs" />

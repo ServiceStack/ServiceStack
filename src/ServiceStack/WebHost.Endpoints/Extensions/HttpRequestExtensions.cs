@@ -173,7 +173,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			var pathInfo = ResolvePathInfoFromMappedPath(fullPath, mode);
 			if (!String.IsNullOrEmpty(pathInfo)) return pathInfo;
 			
-			//Wildcard mode relies on this to find work out the handlerPath
+			//Wildcard mode relies on this to work out the handlerPath
 			pathInfo = ResolvePathInfoFromMappedPath(fullPath, appPath);
 			if (!String.IsNullOrEmpty(pathInfo)) return pathInfo;
 			

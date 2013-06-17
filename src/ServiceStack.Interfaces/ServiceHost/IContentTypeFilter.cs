@@ -5,6 +5,8 @@ namespace ServiceStack.ServiceHost
 	public interface IContentTypeFilter
 		: IContentTypeWriter, IContentTypeReader
 	{
+        string GetFormatContentType(string format);
+
 		Dictionary<string, string> ContentTypeFormats { get; }
 
 		void Register(string contentType,

@@ -326,9 +326,10 @@ namespace ServiceStack.WebHost.Endpoints
             var pathParts = pathInfo.TrimStart('/').Split('/');
             if (pathParts.Length == 0) return NotFoundHttpHandler;
 
-            var restPath = RestHandler.FindMatchingRestPath(httpMethod, pathInfo);
+            string contentType;
+            var restPath = RestHandler.FindMatchingRestPath(httpMethod, pathInfo, out contentType);
             if (restPath != null)
-                return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.Name };
+                return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.Name, ResponseContentType = contentType };
 
             var existingFile = pathParts[0].ToLower();
             if (WebHostRootFileNames.Contains(existingFile))

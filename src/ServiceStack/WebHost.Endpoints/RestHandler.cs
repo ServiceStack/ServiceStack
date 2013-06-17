@@ -20,25 +20,53 @@ namespace ServiceStack.WebHost.Endpoints
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(RestHandler));
 
-        public static IRestPath FindMatchingRestPath(string httpMethod, string pathInfo)
+        public static IRestPath FindMatchingRestPath(string httpMethod, string pathInfo, out string contentType)
         {
             var controller = ServiceManager != null
                 ? ServiceManager.ServiceController
                 : EndpointHost.Config.ServiceController;
 
+            pathInfo = GetSanitizedPathInfo(pathInfo, out contentType);
+
             return controller.GetRestPathForRequest(httpMethod, pathInfo);
+        }
+
+        private static string GetSanitizedPathInfo(string pathInfo, out string contentType)
+        {
+            contentType = null;
+            if (EndpointHost.Config.AllowRouteContentTypeExtensions)
+            {
+                var pos = pathInfo.LastIndexOf('.');
+                if (pos >= 0)
+                {
+                    var format = pathInfo.Substring(pos + 1);
+                    contentType = EndpointHost.ContentTypeFilter.GetFormatContentType(format);
+                    if (contentType != null)
+                    {
+                        pathInfo = pathInfo.Substring(0, pos);
+                    }
+                }
+            }
+            return pathInfo;
         }
 
         public IRestPath GetRestPath(string httpMethod, string pathInfo)
         {
             if (this.RestPath == null)
             {
-                this.RestPath = FindMatchingRestPath(httpMethod, pathInfo);
+                string contentType;
+                this.RestPath = FindMatchingRestPath(httpMethod, pathInfo, out contentType);
+                
+                if (contentType != null)
+                    ResponseContentType = contentType;
             }
             return this.RestPath;
         }
 
         public IRestPath RestPath { get; set; }
+
+        // Set from SSHHF.GetHandlerForPathInfo()
+        public string ResponseContentType { get; set; }
 
         public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
         {
@@ -55,6 +83,9 @@ namespace ServiceStack.WebHost.Endpoints
                 var callback = httpReq.GetJsonpCallback();
                 var doJsonp = EndpointHost.Config.AllowJsonpRequests
                               && !string.IsNullOrEmpty(callback);
+
+                if (ResponseContentType != null)
+                    httpReq.ResponseContentType = ResponseContentType;
 
                 var responseContentType = httpReq.ResponseContentType;
                 EndpointHost.Config.AssertContentType(responseContentType);
@@ -104,7 +135,10 @@ namespace ServiceStack.WebHost.Endpoints
                     var requestParams = httpReq.GetRequestParams();
                     requestDto = CreateContentTypeRequest(httpReq, requestType, httpReq.ContentType);
 
-                    return restPath.CreateRequest(httpReq.PathInfo, requestParams, requestDto);
+
+                    string contentType;
+                    var pathInfo = GetSanitizedPathInfo(httpReq.PathInfo, out contentType);
+                    return restPath.CreateRequest(pathInfo, requestParams, requestDto);
                 }
                 catch (SerializationException e)
                 {

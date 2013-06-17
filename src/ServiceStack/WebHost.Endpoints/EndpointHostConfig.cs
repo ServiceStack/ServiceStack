@@ -64,6 +64,7 @@ namespace ServiceStack.WebHost.Endpoints
                         MetadataRedirectPath = null,
                         DefaultContentType = null,
                         AllowJsonpRequests = true,
+                        AllowRouteContentTypeExtensions = true,
                         AllowNonHttpOnlyCookies = false,
                         UseHttpsLinks = false,
                         DebugMode = false,
@@ -158,6 +159,7 @@ namespace ServiceStack.WebHost.Endpoints
             this.ServiceStackHandlerFactoryPath = instance.ServiceStackHandlerFactoryPath;
             this.DefaultContentType = instance.DefaultContentType;
             this.AllowJsonpRequests = instance.AllowJsonpRequests;
+            this.AllowRouteContentTypeExtensions = instance.AllowRouteContentTypeExtensions;
             this.DebugMode = instance.DebugMode;
             this.DefaultDocuments = instance.DefaultDocuments;
             this.GlobalResponseHeaders = instance.GlobalResponseHeaders;
@@ -357,6 +359,7 @@ namespace ServiceStack.WebHost.Endpoints
                 .Select(handler => handler.Attribute("path").Value)
                 .FirstOrDefault();
         }
+
         private static string EnsureHandlerTypeAttribute(XElement handler)
         {
           if (handler.Attribute("type") != null && !string.IsNullOrEmpty(handler.Attribute("type").Value))
@@ -387,6 +390,7 @@ namespace ServiceStack.WebHost.Endpoints
         public string ServiceName { get; set; }
         public string DefaultContentType { get; set; }
         public bool AllowJsonpRequests { get; set; }
+        public bool AllowRouteContentTypeExtensions { get; set; }
         public bool DebugMode { get; set; }
         public bool DebugOnlyReturnRequestInfo { get; set; }
         public string DebugAspNetHostEnvironment { get; set; }

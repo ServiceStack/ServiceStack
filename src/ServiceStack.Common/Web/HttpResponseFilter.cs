@@ -37,6 +37,22 @@ namespace ServiceStack.Common.Web
 
         public Dictionary<string, string> ContentTypeFormats { get; set; }
 
+        public string GetFormatContentType(string format)
+        {
+            //built-in formats
+            if (format == "json")
+                return ContentType.Json;
+            if (format == "xml")
+                return ContentType.Xml;
+            if (format == "jsv")
+                return ContentType.Jsv;
+
+            string registeredFormats;
+            ContentTypeFormats.TryGetValue(format, out registeredFormats);
+
+            return registeredFormats;
+        }
+
         public void Register(string contentType, StreamSerializerDelegate streamSerializer, StreamDeserializerDelegate streamDeserializer)
         {
             if (contentType.IsNullOrEmpty())
@@ -73,25 +89,7 @@ namespace ServiceStack.Common.Web
         {
             this.ContentTypeDeserializers[contentType] = streamDeserializer;
         }
-
-        public string Serialize(string contentType, object response)
-        {
-            switch (contentType)
-            {
-                case ContentType.Xml:
-                    return XmlSerializer.SerializeToString(response);
-
-                case ContentType.Json:
-                    return JsonDataContractSerializer.Instance.SerializeToString(response);
-
-                case ContentType.Jsv:
-                    return TypeSerializer.SerializeToString(response);
-
-                default:
-                    throw new NotSupportedException("ContentType not supported: " + contentType);
-            }
-        }
-
+        
         public byte[] SerializeToBytes(IRequestContext requestContext, object response)
         {
             var contentType = requestContext.ResponseContentType;
