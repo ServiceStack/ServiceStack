@@ -7,6 +7,7 @@ using System.Web.UI;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Support.Metadata.Controls;
 using HttpRequestWrapper = ServiceStack.WebHost.Endpoints.Extensions.HttpRequestWrapper;
@@ -149,7 +150,10 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
                 }
 
                 sb.Append(@"<div class=""call-info"">");
-                sb.AppendFormat(@"<p>To override the Content-type in your clients HTTP <b>Accept</b> Header, append <b>?format={0}</b></p>", ContentFormat);
+                var overrideExtCopy = EndpointHost.Config.AllowRouteContentTypeExtensions
+                   ? " the <b>.{0}</b> suffix or ".Fmt(ContentFormat)
+                   : "";
+                sb.AppendFormat(@"<p>To override the Content-type in your clients HTTP <b>Accept</b> Header, append {1} <b>?format={0}</b></p>", ContentFormat, overrideExtCopy);
                 if (ContentFormat == "json")
                 {
                     sb.Append("<p>To embed the response in a <b>jsonp</b> callback, append <b>?callback=myCallback</b></p>");
