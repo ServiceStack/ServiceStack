@@ -220,27 +220,5 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
         protected abstract void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, ServiceMetadata metadata);
 
-        //protected virtual string CreateRestPaths(Type operationType)
-        //{
-        //    var paths = GetRestPaths(operationType);
-        //    var restPaths = new StringBuilder();
-        //    foreach (var restPath in paths)
-        //    {
-        //        var verbs = restPath.AllowsAllVerbs ? "All Verbs" : restPath.AllowedVerbs;
-        //        restPaths.AppendLine(verbs + " " + restPath.Path);
-        //    }
-        //    return restPaths.ToString();
-        //}
-
-        //private static List<RestPath> GetRestPaths(Type operationType)
-        //{
-        //    var map = EndpointHost.ServiceManager.ServiceController.RestPathMap;
-        //    var paths = new List<RestPath>();
-        //    foreach (var key in map.Keys)
-        //    {
-        //        paths.AddRange(map[key].Where(x => x.RequestType == operationType));
-        //    }
-        //    return paths;
-        //}
     }
 }

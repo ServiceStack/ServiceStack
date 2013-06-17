@@ -52,7 +52,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     Assert.That(httpRes.ContentType.MatchesContentType(ContentType.Json));
                 });
 
-            Assert.That(response, Is.EqualTo( "{\"Data\":\"foo\"}"));
+            Assert.That(response.ToLower(), Is.EqualTo( "{\"data\":\"foo\"}"));
         }
 
         [Test]
