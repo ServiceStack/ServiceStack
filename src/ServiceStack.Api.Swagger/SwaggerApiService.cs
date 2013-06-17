@@ -174,28 +174,34 @@ namespace ServiceStack.Api.Swagger
             };
         }
 
-        private static readonly Dictionary<string, string> ClrTypesToSwaggerScalarTypes = new Dictionary<string, string> {
-                                                                                                  {"int32", "int"},
-                                                                                                  {"int64", "int"},
-                                                                                                  {"int", "int"},
-                                                                                                  {"byte", "byte"},
-                                                                                                  {"bool", "bool"},
-                                                                                                  {"boolean", "bool"},
-                                                                                                  {"string", "string"},
-                                                                                                  {"datetime", "datetime"}
+        private static readonly Dictionary<Type, string> ClrTypesToSwaggerScalarTypes = new Dictionary<Type, string> {
+                                                                                                  {typeof(byte), SwaggerType.Byte},
+                                                                                                  {typeof(sbyte), SwaggerType.Byte},
+                                                                                                  {typeof(bool), SwaggerType.Boolean},
+                                                                                                  {typeof(short), SwaggerType.Int},
+                                                                                                  {typeof(ushort), SwaggerType.Int},
+                                                                                                  {typeof(int), SwaggerType.Int},
+                                                                                                  {typeof(uint), SwaggerType.Int},
+                                                                                                  {typeof(long), SwaggerType.Long},
+                                                                                                  {typeof(ulong), SwaggerType.Long},
+                                                                                                  {typeof(float), SwaggerType.Float},
+                                                                                                  {typeof(double), SwaggerType.Double},
+                                                                                                  {typeof(decimal), SwaggerType.Double},
+                                                                                                  {typeof(string), SwaggerType.String},
+                                                                                                  {typeof(DateTime), SwaggerType.Date}
                                                                                               };
 
         private static bool IsSwaggerScalarType(Type type)
         {
-            return ClrTypesToSwaggerScalarTypes.ContainsKey(type.Name.ToLowerInvariant()) || type.IsEnum;
+            return ClrTypesToSwaggerScalarTypes.ContainsKey(type) || type.IsEnum;
         }
 
         private static string GetSwaggerTypeName(Type type)
         {
 			var lookupType = Nullable.GetUnderlyingType(type) ?? type;
 
-			return ClrTypesToSwaggerScalarTypes.ContainsKey(lookupType.Name.ToLowerInvariant())
-				? ClrTypesToSwaggerScalarTypes[lookupType.Name.ToLowerInvariant()]
+			return ClrTypesToSwaggerScalarTypes.ContainsKey(lookupType)
+				? ClrTypesToSwaggerScalarTypes[lookupType]
 				: lookupType.Name;
         }
 
@@ -249,7 +255,7 @@ namespace ServiceStack.Api.Swagger
 
                 if (IsListType(propertyType))
                 {
-                    modelProp.Type = "Array";
+                    modelProp.Type = SwaggerType.Array;
                     var listItemType = GetListElementType(propertyType);
                     modelProp.Items = new Dictionary<string, string> {
                                               {IsSwaggerScalarType(listItemType) ? "type" : "$ref", GetSwaggerTypeName(listItemType)}
@@ -258,7 +264,7 @@ namespace ServiceStack.Api.Swagger
                 }
                 else if (propertyType.IsEnum)
                 {
-                    modelProp.Type = "string";
+                    modelProp.Type = SwaggerType.String;
                     modelProp.AllowableValues = new ParameterAllowableValues {
                                                         Values = Enum.GetNames(propertyType),
                                                         ValueType = "LIST"
