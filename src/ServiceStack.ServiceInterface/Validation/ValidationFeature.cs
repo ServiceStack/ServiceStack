@@ -79,7 +79,7 @@ namespace ServiceStack.ServiceInterface.Validation
             var dtoType = baseType.GetGenericArguments()[0];
             var validatorType = typeof(IValidator<>).MakeGenericType(dtoType);
 
-            container.RegisterAutoWiredType(validator, validatorType);
+            container.RegisterAutoWiredType(validator, validatorType, ReuseScope.Hierarchy);
         }
     }
 }
