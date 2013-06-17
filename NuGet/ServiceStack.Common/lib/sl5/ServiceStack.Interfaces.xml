@@ -6,7 +6,7 @@
     <members>
         <member name="T:ServiceStack.CacheAccess.ICacheClient">
             <summary>
-            A common interface implementation that is implemeneted by most cache providers
+            A common interface implementation that is implemented by most cache providers
             </summary>
         </member>
         <member name="M:ServiceStack.CacheAccess.ICacheClient.Remove(System.String)">
@@ -86,7 +86,16 @@
             Invalidates all data on the cache.
             </summary>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:ServiceStack.CacheAccess.ICacheClient.GetAll``1(System.Collections.Generic.IEnumerable{System.String})" -->
+        <member name="M:ServiceStack.CacheAccess.ICacheClient.GetAll``1(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Retrieves multiple items from the cache. 
+            The default value of T is set for all keys that do not exist.
+            </summary>
+            <param name="keys">The list of identifiers for the items to retrieve.</param>
+            <returns>
+            a Dictionary holding all items indexed by their key.
+            </returns>
+        </member>
         <member name="M:ServiceStack.CacheAccess.ICacheClient.SetAll``1(System.Collections.Generic.IDictionary{System.String,``0})">
             <summary>
             Sets multiple items to the cache. 
