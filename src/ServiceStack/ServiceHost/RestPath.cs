@@ -26,7 +26,7 @@ namespace ServiceStack.ServiceHost
 		private readonly string restPath;
 		private readonly string allowedVerbs;
 		private readonly bool allowsAllVerbs;
-		private readonly bool isWildCardPath;
+        public bool IsWildCardPath { get; private set; }
 
 		private readonly string[] literalsToMatch = new string[0];
 
@@ -165,14 +165,14 @@ namespace ServiceStack.ServiceHost
 			if (lastVariableMatchPos != -1)
 			{
 				var lastVariableMatch = this.variablesNames[lastVariableMatchPos];
-				this.isWildCardPath = lastVariableMatch[lastVariableMatch.Length - 1] == WildCardChar;
-				if (this.isWildCardPath)
+				this.IsWildCardPath = lastVariableMatch[lastVariableMatch.Length - 1] == WildCardChar;
+				if (this.IsWildCardPath)
 				{
 					this.variablesNames[lastVariableMatchPos] = lastVariableMatch.Substring(0, lastVariableMatch.Length - 1);
 				}
 			}
 
-			this.FirstMatchHashKey = !this.isWildCardPath
+			this.FirstMatchHashKey = !this.IsWildCardPath
 				? this.PathComponentsCount + PathSeperator + firstLiteralMatch
 				: WildCardChar + PathSeperator + firstLiteralMatch;
 
@@ -243,11 +243,11 @@ namespace ServiceStack.ServiceHost
 		/// <returns></returns>
 		public bool IsMatch(string httpMethod, string[] withPathInfoParts)
 		{
-			if (withPathInfoParts.Length != this.PathComponentsCount && !this.isWildCardPath) return false;
+			if (withPathInfoParts.Length != this.PathComponentsCount && !this.IsWildCardPath) return false;
 			if (!this.allowsAllVerbs && !this.allowedVerbs.Contains(httpMethod)) return false;
 
 			if (!ExplodeComponents(ref withPathInfoParts)) return false;
-			if (this.TotalComponentsCount != withPathInfoParts.Length && !this.isWildCardPath) return false;
+			if (this.TotalComponentsCount != withPathInfoParts.Length && !this.IsWildCardPath) return false;
 
 			for (var i = 0; i < this.TotalComponentsCount; i++)
 			{
@@ -299,7 +299,7 @@ namespace ServiceStack.ServiceHost
 
 			if (requestComponents.Length != this.TotalComponentsCount)
 			{
-				var isValidWildCardPath = this.isWildCardPath
+				var isValidWildCardPath = this.IsWildCardPath
 					&& requestComponents.Length >= this.TotalComponentsCount - 1;
 
 				if (!isValidWildCardPath)

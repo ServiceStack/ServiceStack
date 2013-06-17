@@ -135,9 +135,11 @@ namespace ServiceStack.WebHost.Endpoints
                     var requestParams = httpReq.GetRequestParams();
                     requestDto = CreateContentTypeRequest(httpReq, requestType, httpReq.ContentType);
 
-
                     string contentType;
-                    var pathInfo = GetSanitizedPathInfo(httpReq.PathInfo, out contentType);
+                    var pathInfo = !restPath.IsWildCardPath 
+                        ? GetSanitizedPathInfo(httpReq.PathInfo, out contentType)
+                        : httpReq.PathInfo;
+
                     return restPath.CreateRequest(pathInfo, requestParams, requestDto);
                 }
                 catch (SerializationException e)

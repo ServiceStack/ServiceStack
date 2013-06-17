@@ -211,11 +211,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
                 bool isFilterCalled = false;
-                ServiceClientBase.HttpWebRequestFilter = request =>
-                                                             {
-                                                                 isFilterCalled = true;
-                                                                
-                                                             };
+                ServiceClientBase.HttpWebRequestFilter = request => { isFilterCalled = true; };
 
                 var response = client.PostFile<FileUploadResponse>(
                     ListeningOn + "/fileuploads", uploadFile, MimeTypes.GetMimeType(uploadFile.Name));
