@@ -175,10 +175,18 @@ namespace ServiceStack.Api.Swagger
         }
 
         private static readonly Dictionary<Type, string> ClrTypesToSwaggerScalarTypes = new Dictionary<Type, string> {
-                                                                                                  {typeof(long), SwaggerType.Long},
-                                                                                                  {typeof(int), SwaggerType.Int},
                                                                                                   {typeof(byte), SwaggerType.Byte},
+                                                                                                  {typeof(sbyte), SwaggerType.Byte},
                                                                                                   {typeof(bool), SwaggerType.Boolean},
+                                                                                                  {typeof(short), SwaggerType.Int},
+                                                                                                  {typeof(ushort), SwaggerType.Int},
+                                                                                                  {typeof(int), SwaggerType.Int},
+                                                                                                  {typeof(uint), SwaggerType.Int},
+                                                                                                  {typeof(long), SwaggerType.Long},
+                                                                                                  {typeof(ulong), SwaggerType.Long},
+                                                                                                  {typeof(float), SwaggerType.Float},
+                                                                                                  {typeof(double), SwaggerType.Double},
+                                                                                                  {typeof(decimal), SwaggerType.Double},
                                                                                                   {typeof(string), SwaggerType.String},
                                                                                                   {typeof(DateTime), SwaggerType.Date}
                                                                                               };

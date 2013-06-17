@@ -56,6 +56,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public List<SwaggerNestedModel2> ListProperty { get; set; }
 
         public SwaggerNestedModel3[] ArrayProperty { get; set; }
+
+        public byte ByteProperty { get; set; }
+
+        public long LongProperty { get; set; }
+
+        public float FloatProperty { get; set; }
+
+        public double DoubleProperty { get; set; }
+
+        public decimal DecimalProperty { get; set; }
+
+        public DateTime DateProperty { get; set; }
     }
 
     public class SwaggerNestedModel
@@ -409,6 +421,31 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(requestClassModel.Properties.ContainsKey("Name"), Is.True);
             Assert.That(requestClassModel.Properties["Name"].Type, Is.EqualTo(SwaggerType.String));
             Assert.That(requestClassModel.Properties["Name"].Description, Is.EqualTo("Name description"));
+
+            Assert.That(requestClassModel.Properties.ContainsKey("ByteProperty"));
+            Assert.That(requestClassModel.Properties["ByteProperty"].Type, Is.EqualTo(SwaggerType.Byte));
+            Assert.That(resource.Models.ContainsKey(typeof(byte).Name), Is.False);
+
+            Assert.That(requestClassModel.Properties.ContainsKey("LongProperty"));
+            Assert.That(requestClassModel.Properties["LongProperty"].Type, Is.EqualTo(SwaggerType.Long));
+            Assert.That(resource.Models.ContainsKey(typeof(long).Name), Is.False);
+
+            Assert.That(requestClassModel.Properties.ContainsKey("FloatProperty"));
+            Assert.That(requestClassModel.Properties["FloatProperty"].Type, Is.EqualTo(SwaggerType.Float));
+            Assert.That(resource.Models.ContainsKey(typeof(float).Name), Is.False);
+
+            Assert.That(requestClassModel.Properties.ContainsKey("DoubleProperty"));
+            Assert.That(requestClassModel.Properties["DoubleProperty"].Type, Is.EqualTo(SwaggerType.Double));
+            Assert.That(resource.Models.ContainsKey(typeof(double).Name), Is.False);
+
+            // Swagger has no concept of a "decimal" type
+            Assert.That(requestClassModel.Properties.ContainsKey("DecimalProperty"));
+            Assert.That(requestClassModel.Properties["DecimalProperty"].Type, Is.EqualTo(SwaggerType.Double));
+            Assert.That(resource.Models.ContainsKey(typeof(decimal).Name), Is.False);
+
+            Assert.That(requestClassModel.Properties.ContainsKey("DateProperty"));
+            Assert.That(requestClassModel.Properties["DateProperty"].Type, Is.EqualTo(SwaggerType.Date));
+            Assert.That(resource.Models.ContainsKey(typeof(DateTime).Name), Is.False);
 
             Assert.That(requestClassModel.Properties.ContainsKey("NestedModel"), Is.True);
             Assert.That(requestClassModel.Properties["NestedModel"].Type, Is.EqualTo("SwaggerNestedModel"));
