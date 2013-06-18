@@ -129,11 +129,22 @@ var MiniProfiler = (function ($)
     function deepCloneToPascalCase(obj) {
         return extend(true, {}, obj);
     }
-
     function pascalCase(name) {
         return name && typeof name == "string"
-            ? name.charAt(0).toUpperCase() + name.substr(1)
-            : name;
+        ? fromLowerUnderscore(name.charAt(0).toUpperCase() + name.substr(1))
+        : name;
+    }
+
+    function fromLowerUnderscore(name) {
+        var parts = name.split('_');
+        if (parts.length == 1) return name;
+        var sb = [];
+        for (var i = 0, len = parts.length; i < len; i++) {
+            var part = parts[i];
+            if (part.length == 0) continue;
+            sb.push(part.charAt(0).toUpperCase() + part.substr(1));
+        }
+        return sb.join('');
     }
 
     function extend() { //modified $.extend
