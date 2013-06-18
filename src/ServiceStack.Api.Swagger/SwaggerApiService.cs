@@ -326,8 +326,8 @@ namespace ServiceStack.Api.Swagger
         private static List<ErrorResponseStatus> GetMethodResponseCodes(Type requestType)
         {
             return requestType
-                .GetCustomAttributes(typeof(ApiResponseAttribute), true)
-                .OfType<ApiResponseAttribute>()
+                .GetCustomAttributes(typeof(IApiResponseDescription), true)
+                .OfType<IApiResponseDescription>()
                 .Select(x => new ErrorResponseStatus
                 {
                     StatusCode = (int)x.StatusCode,
