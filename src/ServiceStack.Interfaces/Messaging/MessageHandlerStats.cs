@@ -49,6 +49,8 @@ namespace ServiceStack.Messaging
             TotalRetries += stats.TotalRetries;
             TotalNormalMessagesReceived += stats.TotalNormalMessagesReceived;
             TotalPriorityMessagesReceived += stats.TotalPriorityMessagesReceived;
+            if (LastMessageProcessed == null || stats.LastMessageProcessed < LastMessageProcessed)
+                LastMessageProcessed = stats.LastMessageProcessed;
         }
 
         public override string ToString()
