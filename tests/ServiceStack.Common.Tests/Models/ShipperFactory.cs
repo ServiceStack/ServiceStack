@@ -12,7 +12,7 @@ namespace ServiceStack.Common.Tests.Models
 			return new Shipper {
 				Id = i,
 				CompanyName = "Shipper" + i,
-				DateCreated = new DateTime(i + 1 % 3000, (i % 11) + 1, (i % 27) + 1),
+                DateCreated = new DateTime(i + 1 % 3000, (i % 11) + 1, (i % 27) + 1, 0, 0, 0, DateTimeKind.Utc),
 				ShipperType = (ShipperType)(i % 3),
 				UniqueRef = new Guid(hex + "D148A5-E5F1-4E5A-8C60-52E5A80ACCC6"),
 			};
