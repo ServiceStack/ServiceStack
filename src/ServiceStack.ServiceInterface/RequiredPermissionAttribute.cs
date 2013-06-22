@@ -34,14 +34,8 @@ namespace ServiceStack.ServiceInterface
 
             var session = req.GetSession();
             if (HasAllPermissions(req, session)) return;
-            
-            var htmlRedirect = HtmlRedirect ?? AuthService.HtmlRedirect;
-            if (htmlRedirect != null && req.ResponseContentType.MatchesContentType(ContentType.Html))
-            {
-                var url = req.ResolveAbsoluteUrl(htmlRedirect);
-                res.RedirectToUrl(url);
-                return;
-            }
+
+            if (DoHtmlRedirectIfConfigured(req, res)) return;
 
             res.StatusCode = (int)HttpStatusCode.Forbidden;
             res.StatusDescription = "Invalid Permission";
