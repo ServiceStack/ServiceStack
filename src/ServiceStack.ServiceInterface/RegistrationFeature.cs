@@ -10,7 +10,7 @@ namespace ServiceStack.ServiceInterface
     /// </summary>
     public class RegistrationFeature : IPlugin
     {
-        private string AtRestPath { get; set; }
+        public string AtRestPath { get; set; }
 
         public RegistrationFeature()
         {
