@@ -26,11 +26,15 @@ namespace ServiceStack.ServiceInterface.Auth
 
         protected AuthProvider(IResourceManager appSettings, string authRealm, string oAuthProvider)
         {
-            this.AuthRealm = appSettings.Get("OAuthRealm", authRealm);
+            // Enhancement per https://github.com/ServiceStack/ServiceStack/issues/741
+            this.AuthRealm = appSettings != null ? appSettings.Get("OAuthRealm", authRealm) : authRealm;
 
             this.Provider = oAuthProvider;
-            this.CallbackUrl = appSettings.GetString("oauth.{0}.CallbackUrl".Fmt(oAuthProvider));
-            this.RedirectUrl = appSettings.GetString("oauth.{0}.RedirectUrl".Fmt(oAuthProvider));
+            if (appSettings != null)
+            {
+                this.CallbackUrl = appSettings.GetString("oauth.{0}.CallbackUrl".Fmt(oAuthProvider));
+                this.RedirectUrl = appSettings.GetString("oauth.{0}.RedirectUrl".Fmt(oAuthProvider));
+            }
             this.SessionExpiry = DefaultSessionExpiry;
         }
 
