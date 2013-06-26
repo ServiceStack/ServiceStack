@@ -140,163 +140,217 @@ namespace Funq
             return snapshot.TryGetValue(key, out entry);
         }
 
-	    #region ResolveImpl
+        #region ResolveImpl
 
-		/* All ResolveImpl are essentially equal, except for the type of the factory 
-		 * which is "hardcoded" in each implementation. This slight repetition of 
-		 * code gives us a bit more of perf. gain by avoiding an intermediate 
-		 * func/lambda to call in a generic way as we did before.
-		 */
+        /* All ResolveImpl are essentially equal, except for the type of the factory 
+         * which is "hardcoded" in each implementation. This slight repetition of 
+         * code gives us a bit more of perf. gain by avoiding an intermediate 
+         * func/lambda to call in a generic way as we did before.
+         */
 
-		private TService ResolveImpl<TService>(string name, bool throwIfMissing)
-		{
-			// Would throw if missing as appropriate.
-			var entry = GetEntry<TService, Func<Container, TService>>(name, throwIfMissing);
-			// Return default if not registered and didn't throw above.
-			if (entry == null)
-				return default(TService);
+        private Exception CreateResolveException<TService>(Exception ex)
+        {
+            var errMsg = "Error trying to resolve Service '{0}' or one of its autowired dependencies (see inner exception for details).".Fmt(typeof(TService).FullName);
+            return new Exception(errMsg, ex);
+        }
+
+        private TService ResolveImpl<TService>(string name, bool throwIfMissing)
+        {
+            // Would throw if missing as appropriate.
+            var entry = GetEntry<TService, Func<Container, TService>>(name, throwIfMissing);
+            // Return default if not registered and didn't throw above.
+            if (entry == null)
+                return default(TService);
 
             using (entry.AquireLockIfNeeded())
             {
                 TService instance = entry.Instance;
                 if (instance == null)
                 {
-                    instance = entry.Factory(entry.Container);
-                    entry.InitializeInstance(instance);
+                    try
+                    {
+                        instance = entry.Factory(entry.Container);
+                        entry.InitializeInstance(instance);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw CreateResolveException<TService>(ex);
+                    }
                 }
 
                 return instance;
             }		    
-		}
+        }
 
-		private TService ResolveImpl<TService, TArg>(string name, bool throwIfMissing, TArg arg)
-		{
-			// Would throw if missing as appropriate.
-			var entry = GetEntry<TService, Func<Container, TArg, TService>>(name, throwIfMissing);
-			// Return default if not registered and didn't throw above.
-			if (entry == null)
-				return default(TService);
-
-            using (entry.AquireLockIfNeeded())
-            {
-                TService instance = entry.Instance;
-                if (instance == null)
-                {
-                    instance = entry.Factory(entry.Container, arg);
-                    entry.InitializeInstance(instance);
-                }
-
-                return instance;
-            }		
-		}
-
-		private TService ResolveImpl<TService, TArg1, TArg2>(string name, bool throwIfMissing, TArg1 arg1, TArg2 arg2)
-		{
-			// Would throw if missing as appropriate.
-			var entry = GetEntry<TService, Func<Container, TArg1, TArg2, TService>>(name, throwIfMissing);
-			// Return default if not registered and didn't throw above.
-			if (entry == null)
-				return default(TService);
+        private TService ResolveImpl<TService, TArg>(string name, bool throwIfMissing, TArg arg)
+        {
+            // Would throw if missing as appropriate.
+            var entry = GetEntry<TService, Func<Container, TArg, TService>>(name, throwIfMissing);
+            // Return default if not registered and didn't throw above.
+            if (entry == null)
+                return default(TService);
 
             using (entry.AquireLockIfNeeded())
             {
                 TService instance = entry.Instance;
                 if (instance == null)
                 {
-                    instance = entry.Factory(entry.Container, arg1, arg2);
-                    entry.InitializeInstance(instance);
+                    try
+                    {
+                        instance = entry.Factory(entry.Container, arg);
+                        entry.InitializeInstance(instance);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw CreateResolveException<TService>(ex);
+                    }
                 }
 
                 return instance;
             }		
-		}
+        }
 
-		private TService ResolveImpl<TService, TArg1, TArg2, TArg3>(string name, bool throwIfMissing, TArg1 arg1, TArg2 arg2, TArg3 arg3)
-		{
-			// Would throw if missing as appropriate.
-			var entry = GetEntry<TService, Func<Container, TArg1, TArg2, TArg3, TService>>(name, throwIfMissing);
-			// Return default if not registered and didn't throw above.
-			if (entry == null)
-				return default(TService);
+        private TService ResolveImpl<TService, TArg1, TArg2>(string name, bool throwIfMissing, TArg1 arg1, TArg2 arg2)
+        {
+            // Would throw if missing as appropriate.
+            var entry = GetEntry<TService, Func<Container, TArg1, TArg2, TService>>(name, throwIfMissing);
+            // Return default if not registered and didn't throw above.
+            if (entry == null)
+                return default(TService);
 
             using (entry.AquireLockIfNeeded())
             {
                 TService instance = entry.Instance;
                 if (instance == null)
                 {
-                    instance = entry.Factory(entry.Container, arg1, arg2, arg3);
-                    entry.InitializeInstance(instance);
+                    try
+                    {
+                        instance = entry.Factory(entry.Container, arg1, arg2);
+                        entry.InitializeInstance(instance);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw CreateResolveException<TService>(ex);
+                    }
                 }
 
                 return instance;
             }		
-		}
+        }
 
-		private TService ResolveImpl<TService, TArg1, TArg2, TArg3, TArg4>(string name, bool throwIfMissing, TArg1 arg1, TArg2 arg2, TArg3 arg3, TArg4 arg4)
-		{
-			// Would throw if missing as appropriate.
-			var entry = GetEntry<TService, Func<Container, TArg1, TArg2, TArg3, TArg4, TService>>(name, throwIfMissing);
-			// Return default if not registered and didn't throw above.
-			if (entry == null)
-				return default(TService);
+        private TService ResolveImpl<TService, TArg1, TArg2, TArg3>(string name, bool throwIfMissing, TArg1 arg1, TArg2 arg2, TArg3 arg3)
+        {
+            // Would throw if missing as appropriate.
+            var entry = GetEntry<TService, Func<Container, TArg1, TArg2, TArg3, TService>>(name, throwIfMissing);
+            // Return default if not registered and didn't throw above.
+            if (entry == null)
+                return default(TService);
 
             using (entry.AquireLockIfNeeded())
             {
                 TService instance = entry.Instance;
                 if (instance == null)
                 {
-                    instance = entry.Factory(entry.Container, arg1, arg2, arg3, arg4);
-                    entry.InitializeInstance(instance);
+                    try
+                    { 
+                        instance = entry.Factory(entry.Container, arg1, arg2, arg3);
+                        entry.InitializeInstance(instance);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw CreateResolveException<TService>(ex);
+                    }
                 }
 
                 return instance;
             }		
-		}
+        }
 
-		private TService ResolveImpl<TService, TArg1, TArg2, TArg3, TArg4, TArg5>(string name, bool throwIfMissing, TArg1 arg1, TArg2 arg2, TArg3 arg3, TArg4 arg4, TArg5 arg5)
-		{
-			// Would throw if missing as appropriate.
-			var entry = GetEntry<TService, Func<Container, TArg1, TArg2, TArg3, TArg4, TArg5, TService>>(name, throwIfMissing);
-			// Return default if not registered and didn't throw above.
-			if (entry == null)
-				return default(TService);
+        private TService ResolveImpl<TService, TArg1, TArg2, TArg3, TArg4>(string name, bool throwIfMissing, TArg1 arg1, TArg2 arg2, TArg3 arg3, TArg4 arg4)
+        {
+            // Would throw if missing as appropriate.
+            var entry = GetEntry<TService, Func<Container, TArg1, TArg2, TArg3, TArg4, TService>>(name, throwIfMissing);
+            // Return default if not registered and didn't throw above.
+            if (entry == null)
+                return default(TService);
 
             using (entry.AquireLockIfNeeded())
             {
                 TService instance = entry.Instance;
                 if (instance == null)
                 {
-                    instance = entry.Factory(entry.Container, arg1, arg2, arg3, arg4, arg5);
-                    entry.InitializeInstance(instance);
+                    try
+                    { 
+                        instance = entry.Factory(entry.Container, arg1, arg2, arg3, arg4);
+                        entry.InitializeInstance(instance);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw CreateResolveException<TService>(ex);
+                    }
                 }
 
                 return instance;
             }		
-		}
+        }
 
-		private TService ResolveImpl<TService, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6>(string name, bool throwIfMissing, TArg1 arg1, TArg2 arg2, TArg3 arg3, TArg4 arg4, TArg5 arg5, TArg6 arg6)
-		{
-			// Would throw if missing as appropriate.
-			var entry = GetEntry<TService, Func<Container, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TService>>(name, throwIfMissing);
-			// Return default if not registered and didn't throw above.
-			if (entry == null)
-				return default(TService);
+        private TService ResolveImpl<TService, TArg1, TArg2, TArg3, TArg4, TArg5>(string name, bool throwIfMissing, TArg1 arg1, TArg2 arg2, TArg3 arg3, TArg4 arg4, TArg5 arg5)
+        {
+            // Would throw if missing as appropriate.
+            var entry = GetEntry<TService, Func<Container, TArg1, TArg2, TArg3, TArg4, TArg5, TService>>(name, throwIfMissing);
+            // Return default if not registered and didn't throw above.
+            if (entry == null)
+                return default(TService);
 
             using (entry.AquireLockIfNeeded())
             {
                 TService instance = entry.Instance;
                 if (instance == null)
                 {
-                    instance = entry.Factory(entry.Container, arg1, arg2, arg3, arg4, arg5, arg6);
-                    entry.InitializeInstance(instance);
+                    try
+                    { 
+                        instance = entry.Factory(entry.Container, arg1, arg2, arg3, arg4, arg5);
+                        entry.InitializeInstance(instance);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw CreateResolveException<TService>(ex);
+                    }
                 }
 
                 return instance;
             }		
-		}
+        }
 
-		#endregion
+        private TService ResolveImpl<TService, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6>(string name, bool throwIfMissing, TArg1 arg1, TArg2 arg2, TArg3 arg3, TArg4 arg4, TArg5 arg5, TArg6 arg6)
+        {
+            // Would throw if missing as appropriate.
+            var entry = GetEntry<TService, Func<Container, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TService>>(name, throwIfMissing);
+            // Return default if not registered and didn't throw above.
+            if (entry == null)
+                return default(TService);
 
+            using (entry.AquireLockIfNeeded())
+            {
+                TService instance = entry.Instance;
+                if (instance == null)
+                {
+                    try 
+                    { 
+                        instance = entry.Factory(entry.Container, arg1, arg2, arg3, arg4, arg5, arg6);
+                        entry.InitializeInstance(instance);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw CreateResolveException<TService>(ex);
+                    }
+                }
+
+                return instance;
+            }		
+        }
+
+        #endregion
 		internal void TrackDisposable(object instance)
 		{
             lock (disposables) disposables.Push(new WeakReference(instance));
