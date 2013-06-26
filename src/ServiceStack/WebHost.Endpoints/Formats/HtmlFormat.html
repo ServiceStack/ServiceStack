@@ -55,7 +55,9 @@ A:hover {
     position: relative;
     display: -moz-inline-box;
     display: inline-block;
+    letter-spacing: 0.1em;
 }
+
 * html .ib {
     display: inline;
 }
@@ -90,7 +92,7 @@ DL {
 DT {
   margin: 10px 0 5px 0;
   font: bold 18px Helvetica, Verdana, Arial;
-  width: 200px;
+  min-width: 200px;
   overflow: hidden;
   clear: left;
   float: left;
@@ -269,8 +271,7 @@ var doc = document, win = window,
 
 $.each = function(arr, fn) { $each.call(arr, fn); };
 
-var splitCase = function(t) { return typeof t != 'string' ? t : t.replace(/([A-Z]|[0-9]+)/g, ' $1'); },
-    uniqueKeys = function(m){ var h={}; for (var i=0,len=m.length; i<len; i++) for (var k in m[i]) if (show(k)) h[k] = k; return h; },
+var uniqueKeys = function(m){ var h={}; for (var i=0,len=m.length; i<len; i++) for (var k in m[i]) if (show(k)) h[k] = k; return h; },
     keys = function(o){ var a=[]; for (var k in o) if (show(k)) a.push(k); return a; }
 var tbls = [];
 
@@ -301,7 +302,7 @@ function dmfthm(d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' 
 function show(k) { return typeof k != 'string' || k.substr(0,2) != '__'; }
 function obj(m) {
   var sb = '<dl>';
-  for (var k in m) if (show(k)) sb += '<dt class="ib">' + splitCase(k) + '</dt><dd>' + val(m[k]) + '</dd>';
+  for (var k in m) if (show(k)) sb += '<dt class="ib">' + k + '</dt><dd>' + val(m[k]) + '</dd>';
   sb += '</dl>';
   return sb;
 }
@@ -311,7 +312,7 @@ function arr(m) {
   var sb = '<table id="tbl-' + id + '"><caption></caption><thead><tr>';
   tbls.push(m);
   var i=0;
-  for (var k in h) sb += '<th id="h-' + id + '-' + (i++) + '"><b></b>' + splitCase(k) + '</th>';
+  for (var k in h) sb += '<th id="h-' + id + '-' + (i++) + '"><b></b>' + k + '</th>';
   sb += '</tr></thead><tbody>' + makeRows(h,m) + '</tbody></table>';
   return sb;
 }
