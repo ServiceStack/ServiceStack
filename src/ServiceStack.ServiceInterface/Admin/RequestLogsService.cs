@@ -1,35 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using ServiceStack.Common;
 using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.ServiceInterface.Admin
 {
+    [DataContract]
     public class RequestLogs
     {
-        public int? BeforeSecs { get; set; }
-        public int? AfterSecs { get; set; }
-        public string IpAddress { get; set; }
-        public string ForwardedFor { get; set; }
-        public string UserAuthId { get; set; }
-        public string SessionId { get; set; }
-        public string Referer { get; set; }
-        public string PathInfo { get; set; }
-        public long[] Ids { get; set; }
-        public int? BeforeId { get; set; }
-        public int? AfterId { get; set; }
-        public bool? HasResponse { get; set; }
-        public bool? WithErrors { get; set; }
-        public int Skip { get; set; }
-        public int? Take { get; set; }
-        public bool? EnableSessionTracking { get; set; }
-        public bool? EnableResponseTracking { get; set; }
-        public bool? EnableErrorTracking { get; set; }
-        public TimeSpan? DurationLongerThan { get; set; }
-        public TimeSpan? DurationLessThan { get; set; }
+        [DataMember(Order=1)] public int? BeforeSecs { get; set; }
+        [DataMember(Order=2)] public int? AfterSecs { get; set; }
+        [DataMember(Order=3)] public string IpAddress { get; set; }
+        [DataMember(Order=4)] public string ForwardedFor { get; set; }
+        [DataMember(Order=5)] public string UserAuthId { get; set; }
+        [DataMember(Order=6)] public string SessionId { get; set; }
+        [DataMember(Order=7)] public string Referer { get; set; }
+        [DataMember(Order=8)] public string PathInfo { get; set; }
+        [DataMember(Order=9)] public long[] Ids { get; set; }
+        [DataMember(Order=10)] public int? BeforeId { get; set; }
+        [DataMember(Order=11)] public int? AfterId { get; set; }
+        [DataMember(Order=12)] public bool? HasResponse { get; set; }
+        [DataMember(Order=13)] public bool? WithErrors { get; set; }
+        [DataMember(Order=14)] public int Skip { get; set; }
+        [DataMember(Order=15)] public int? Take { get; set; }
+        [DataMember(Order=16)] public bool? EnableSessionTracking { get; set; }
+        [DataMember(Order=17)] public bool? EnableResponseTracking { get; set; }
+        [DataMember(Order=18)] public bool? EnableErrorTracking { get; set; }
+        [DataMember(Order=19)] public TimeSpan? DurationLongerThan { get; set; }
+        [DataMember(Order=20)] public TimeSpan? DurationLessThan { get; set; }
     }
 
+    [DataContract]
     public class RequestLogsResponse
     {
         public RequestLogsResponse()
@@ -37,9 +40,9 @@ namespace ServiceStack.ServiceInterface.Admin
             this.Results = new List<RequestLogEntry>();
         }
 
-        public List<RequestLogEntry> Results { get; set; }
-        public Dictionary<string, string> Usage { get; set; }
-        public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order=1)] public List<RequestLogEntry> Results { get; set; }
+        [DataMember(Order=2)] public Dictionary<string, string> Usage { get; set; }
+        [DataMember(Order=3)] public ResponseStatus ResponseStatus { get; set; }
     }
 
     public class RequestLogsService : ServiceBase<RequestLogs>
