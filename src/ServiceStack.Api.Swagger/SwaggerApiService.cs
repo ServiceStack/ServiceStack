@@ -361,7 +361,7 @@ namespace ServiceStack.Api.Swagger
                         Nickname = verb.ToLowerInvariant() + nickName,
                         Summary = summary,
                         Notes = notes,
-                        Parameters = ParseParameters(verb, restPath.RequestType),
+                        Parameters = ParseParameters(verb, restPath.RequestType, models),
                         ResponseClass = GetResponseClass(restPath, models),
                         ErrorResponses = GetMethodResponseCodes(restPath.RequestType)
                     }).ToList()
@@ -384,9 +384,9 @@ namespace ServiceStack.Api.Swagger
             return null;
         }
 
-        private static List<MethodOperationParameter> ParseParameters(string verb, Type operationType)
+        private static List<MethodOperationParameter> ParseParameters(string verb, Type operationType, IDictionary<string, SwaggerModel> models)
         {
-            var hasDataContract = operationType.GetCustomAttributes(typeof(DataContractAttribute), inherit:true).Length > 0;
+            var hasDataContract = operationType.GetCustomAttributes(typeof(DataContractAttribute), inherit: true).Length > 0;
 
             var properties = operationType.GetProperties();
             var paramAttrs = new Dictionary<string, ApiMemberAttribute[]>();
@@ -425,6 +425,16 @@ namespace ServiceStack.Api.Swagger
                         Required = member.IsRequired,
                         AllowableValues = GetAllowableValue(allowableParams.FirstOrDefault(attr => attr.Name == member.Name))
                     });
+            }
+
+            if (!ServiceStack.Common.Web.HttpMethods.Get.Equals(verb, StringComparison.OrdinalIgnoreCase) && !methodOperationParameters.Any(p => p.ParamType.Equals("body", StringComparison.OrdinalIgnoreCase)))
+            {
+                ParseModel(models, operationType);
+                methodOperationParameters.Add(new MethodOperationParameter()
+                {
+                    DataType = GetSwaggerTypeName(operationType),
+                    ParamType = "body"
+                });
             }
             return methodOperationParameters;
         }
