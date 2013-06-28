@@ -110,8 +110,8 @@ namespace ServiceStack.Common.Support
 
         public void PopulateWithNonDefaultValues(object to, object from)
         {
-            var nonDefaultPredicate = (Func<object, bool>) (x => 
-                    x != null && !Equals( x, ReflectionUtils.GetDefaultValue(x.GetType()) )
+            var nonDefaultPredicate = (Func<object, Type, bool>) ((x, t) => 
+                    x != null && !Equals( x, ReflectionUtils.GetDefaultValue(t) )
                 );
     
             Populate(to, from, null, nonDefaultPredicate);
@@ -124,7 +124,7 @@ namespace ServiceStack.Common.Support
 
         public void Populate(object to, object from,
             Func<PropertyInfo, bool> propertyInfoPredicate,
-            Func<object, bool> valuePredicate)
+            Func<object, Type, bool> valuePredicate)
         {
             foreach (var assignmentEntry in AssignmentMemberMap)
             {
@@ -143,7 +143,7 @@ namespace ServiceStack.Common.Support
 
                     if (valuePredicate != null)
                     {
-                        if (!valuePredicate(fromValue)) continue;
+                        if (!valuePredicate(fromValue, fromMember.PropertyInfo.PropertyType)) continue;
                     }
 
                     if (fromMember.Type != toMember.Type)
