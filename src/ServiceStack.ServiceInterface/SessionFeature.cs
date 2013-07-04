@@ -16,6 +16,7 @@ namespace ServiceStack.ServiceInterface
         public const string SessionId = "ss-id";
         public const string PermanentSessionId = "ss-pid";
         public const string SessionOptionsKey = "ss-opt";
+		public const string SessionAlreadyAdded = "__SessionAlreadyAdded";
         public const string XUserAuthId = HttpHeaders.XUserAuthId;
 
         private static bool alreadyConfigured;
@@ -31,6 +32,9 @@ namespace ServiceStack.ServiceInterface
 
         public static void AddSessionIdToRequestFilter(IHttpRequest req, IHttpResponse res, object requestDto)
         {
+			// Avoid adding session cookies to response twice.
+			if (req.Items.ContainsKey(SessionAlreadyAdded)) return;
+
             if (req.GetCookieValue(SessionId) == null)
             {
                 res.CreateTemporarySessionId(req);
@@ -39,6 +43,8 @@ namespace ServiceStack.ServiceInterface
             {
                 res.CreatePermanentSessionId(req);
             }
+
+			req.Items[SessionAlreadyAdded] = true;
         }
 
         public static string GetSessionId(IHttpRequest httpReq = null)
