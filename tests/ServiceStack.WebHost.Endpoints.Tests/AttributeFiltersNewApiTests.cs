@@ -296,10 +296,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Prioritized_Request_Filters_are_executed_in_correct_order_using_ServiceClient(IServiceClient client)
         {
             var response = client.Send(new AttributeFilteredNewApi() { RequestFilterExecuted = false });
-            Assert.That(response.AttrsExecuted[0], Is.EqualTo(typeof(PrioritizedDtoFilterTestNewApiAttribute).Name));
-            Assert.That(response.AttrsExecuted[1], Is.EqualTo(typeof(PrioritizedServiceClassFilterTestNewApiAttribute).Name));
-            Assert.That(response.AttrsExecuted[1], Is.EqualTo(typeof(PrioritizedServiceMethodFilterTestNewApiAttribute).Name));
-            Assert.That(response.AttrsExecuted[2], Is.EqualTo(GlobalTestFilterId));
+            Assert.That(response.AttrsExecuted[0], Is.EqualTo(typeof(PrioritizedDtoFilterTestNewApiAttribute).Name), "Prioritized DTO Filter should be first (-20)");
+            Assert.That(response.AttrsExecuted[1], Is.EqualTo(typeof(PrioritizedServiceClassFilterTestNewApiAttribute).Name), "Prioritized Service Class Filter should be second (-10)");
+            Assert.That(response.AttrsExecuted[2], Is.EqualTo(typeof(PrioritizedServiceMethodFilterTestNewApiAttribute).Name), "Prioritized Service Method Filter should be third (-5)");
+            Assert.That(response.AttrsExecuted[3], Is.EqualTo(GlobalTestFilterId),"Global Filter should be fourth");
         }
 
         static IRestClient[] RestClients = 
@@ -366,10 +366,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Prioritized_Request_Filters_are_executed_in_correct_order_using_RestClient(IRestClient client)
         {
             var response = client.Put<AttributeFilteredNewApiResponse>("attributefilterednewapi", new AttributeFilteredNewApi() { RequestFilterExecuted = false });
-            Assert.That(response.AttrsExecuted[0], Is.EqualTo(typeof(PrioritizedDtoFilterTestNewApiAttribute).Name));
-            Assert.That(response.AttrsExecuted[1], Is.EqualTo(typeof(PrioritizedServiceClassFilterTestNewApiAttribute).Name));
-            Assert.That(response.AttrsExecuted[1], Is.EqualTo(typeof(PrioritizedServiceMethodFilterTestNewApiAttribute).Name));
-            Assert.That(response.AttrsExecuted[2], Is.EqualTo(GlobalTestFilterId));
+            Assert.That(response.AttrsExecuted[0], Is.EqualTo(typeof(PrioritizedDtoFilterTestNewApiAttribute).Name), "Prioritized DTO Filter should be first (-20)");
+            Assert.That(response.AttrsExecuted[1], Is.EqualTo(typeof(PrioritizedServiceClassFilterTestNewApiAttribute).Name), "Prioritized Service Class Filter should be second (-10)");
+            Assert.That(response.AttrsExecuted[2], Is.EqualTo(typeof(PrioritizedServiceMethodFilterTestNewApiAttribute).Name), "Prioritized Service Method Filter should be third (-5)");
+            Assert.That(response.AttrsExecuted[3], Is.EqualTo(GlobalTestFilterId), "Global Filter should be fourth");
         }
 
         public class ExecutedFirstNewApiAttribute : RequestFilterAttribute
