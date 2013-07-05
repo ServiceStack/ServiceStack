@@ -37,6 +37,8 @@ namespace ServiceStack.ServiceInterface
             var session = req.GetSession();
             if (HasAllRoles(req, session)) return;
 
+            if (DoHtmlRedirectIfConfigured(req, res)) return;
+
             res.StatusCode = (int)HttpStatusCode.Forbidden;
             res.StatusDescription = "Invalid Role";
             res.EndServiceStackRequest();

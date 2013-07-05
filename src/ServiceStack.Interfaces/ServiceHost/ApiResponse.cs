@@ -3,17 +3,24 @@ using System.Net;
 
 namespace ServiceStack.ServiceHost
 {
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
-    public class ApiResponseAttribute : Attribute
+    public interface IApiResponseDescription
     {
         /// <summary>
         /// The status code of a response
         /// </summary>
-        public int StatusCode { get; set; }
+        int StatusCode { get; }
 
         /// <summary>
         /// The description of a response status code
         /// </summary>
+        string Description { get; }
+    }
+
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
+    public class ApiResponseAttribute : Attribute, IApiResponseDescription
+    {
+        public int StatusCode { get; set; }
+
         public string Description { get; set; }
 
         public ApiResponseAttribute(HttpStatusCode statusCode, string description)

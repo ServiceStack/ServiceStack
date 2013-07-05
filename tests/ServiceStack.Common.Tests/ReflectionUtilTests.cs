@@ -237,6 +237,31 @@ namespace ServiceStack.Common.Tests
 			Assert.That(toObj.DateTime, Is.EqualTo(fromObj.DateTime));
 		}
 
+        [Test]
+        public void Populate_From_Nullable_Properties_With_Non_Default_Values()
+        {
+            var toObj = ModelWithFieldsOfDifferentTypes.Create(1);
+            var fromObj = ModelWithFieldsOfDifferentTypesAsNullables.Create(2);
+
+            var originalToObj = ModelWithFieldsOfDifferentTypes.Create(1);
+
+            fromObj.Name = null;
+            fromObj.Double = default(double);
+            fromObj.Guid = default(Guid);
+            fromObj.Bool = default(bool);
+
+            ReflectionUtils.PopulateWithNonDefaultValues(toObj, fromObj);
+
+            Assert.That(toObj.Name, Is.EqualTo(originalToObj.Name));
+
+            Assert.That(toObj.Double, Is.EqualTo(fromObj.Double));
+            Assert.That(toObj.Guid, Is.EqualTo(fromObj.Guid));
+            Assert.That(toObj.Bool, Is.EqualTo(fromObj.Bool));
+            Assert.That(toObj.Id, Is.EqualTo(fromObj.Id));
+            Assert.That(toObj.LongId, Is.EqualTo(fromObj.LongId));
+            Assert.That(toObj.DateTime, Is.EqualTo(fromObj.DateTime));
+        }
+
 		[Test]
 		public void Translate_Between_Models_of_differrent_types_and_nullables()
 		{

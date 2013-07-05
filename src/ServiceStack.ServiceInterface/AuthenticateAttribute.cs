@@ -77,17 +77,28 @@ namespace ServiceStack.ServiceInterface
             var session = req.GetSession();
             if (session == null || !matchingOAuthConfigs.Any(x => session.IsAuthorized(x.Provider)))
             {
-                var htmlRedirect = HtmlRedirect ?? AuthService.HtmlRedirect;
-                if (htmlRedirect != null && req.ResponseContentType.MatchesContentType(ContentType.Html))
-                {
-                    var url = req.ResolveAbsoluteUrl(htmlRedirect);
-                    url = url.AddQueryParam("redirect", req.AbsoluteUri);
-                    res.RedirectToUrl(url);
-                    return;
-                }
+                if (this.DoHtmlRedirectIfConfigured(req, res, true)) return;
 
                 AuthProvider.HandleFailedAuth(matchingOAuthConfigs[0], session, req, res);
             }
+        }
+
+        protected bool DoHtmlRedirectIfConfigured(IHttpRequest req, IHttpResponse res, bool includeRedirectParam = false)
+        {
+            var htmlRedirect = this.HtmlRedirect ?? AuthService.HtmlRedirect;
+            if (htmlRedirect != null && req.ResponseContentType.MatchesContentType(ContentType.Html))
+            {
+                var url = req.ResolveAbsoluteUrl(htmlRedirect);
+                if (includeRedirectParam)
+                {
+                    url = url.AddQueryParam("redirect", req.AbsoluteUri);
+                }
+
+                res.RedirectToUrl(url);
+                return true;
+            }
+
+            return false;
         }
 
         public static void AuthenticateIfBasicAuth(IHttpRequest req, IHttpResponse res)
