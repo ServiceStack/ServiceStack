@@ -243,7 +243,7 @@ namespace ServiceStack.CacheAccess.Providers
 
 		public long Decrement(string key, uint amount)
 		{
-			return UpdateCounter(key, (int)amount);
+			return UpdateCounter(key, (int)amount * -1);
 		}
 
 		/// <summary>
