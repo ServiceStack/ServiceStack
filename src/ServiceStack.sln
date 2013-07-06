@@ -66,6 +66,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Mvc.Tests", ".
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Razor.Tests", "..\tests\ServiceStack.Razor.Tests\ServiceStack.Razor.Tests.csproj", "{7F42298E-7DEA-458B-B7BC-057A7229A7CF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Plugins.Embedded", "ServiceStack.Plugins.Embedded\ServiceStack.Plugins.Embedded.csproj", "{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -675,6 +677,31 @@ Global
 		{7F42298E-7DEA-458B-B7BC-057A7229A7CF}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{7F42298E-7DEA-458B-B7BC-057A7229A7CF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{7F42298E-7DEA-458B-B7BC-057A7229A7CF}.Release|x86.ActiveCfg = Release|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.MonoDebug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.MonoDebug|Any CPU.Build.0 = Debug|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.MonoDebug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.MonoDebug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.MonoDebug|x86.ActiveCfg = Debug|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.MonoRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.MonoRelease|Any CPU.Build.0 = Release|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.MonoRelease|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.MonoRelease|Mixed Platforms.Build.0 = Release|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.MonoRelease|x86.ActiveCfg = Release|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.MonoTouch|Any CPU.Build.0 = Release|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.MonoTouch|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.MonoTouch|Mixed Platforms.Build.0 = Release|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.MonoTouch|x86.ActiveCfg = Release|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

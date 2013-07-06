@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using ServiceStack.IO;
 using ServiceStack.VirtualPath;
 
 namespace ServiceStack.Plugins.Embedded.VirtualPath

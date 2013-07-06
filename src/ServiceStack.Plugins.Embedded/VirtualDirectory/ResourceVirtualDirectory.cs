@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using ServiceStack.Common.Extensions;
+using ServiceStack.IO;
 using ServiceStack.VirtualPath;
 using ServiceStack.Text;
 
