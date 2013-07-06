@@ -238,12 +238,12 @@ namespace ServiceStack.CacheAccess.Providers
 
 		public long Increment(string key, uint amount)
 		{
-			return UpdateCounter(key, 1);
+			return UpdateCounter(key, (int)amount);
 		}
 
 		public long Decrement(string key, uint amount)
 		{
-			return UpdateCounter(key, -1);
+			return UpdateCounter(key, (int)amount * -1);
 		}
 
 		/// <summary>
