@@ -206,6 +206,10 @@ namespace ServiceStack.ServiceInterface
                     session.CreatedAt = session.LastModified = DateTime.UtcNow;
                     session.OnCreated(httpReq);
                 }
+
+                if (httpReq.Items.ContainsKey(RequestItemsSessionKey))
+                    httpReq.Items.Remove(RequestItemsSessionKey);
+
                 httpReq.Items.Add(RequestItemsSessionKey, session);
                 return session;
             }
