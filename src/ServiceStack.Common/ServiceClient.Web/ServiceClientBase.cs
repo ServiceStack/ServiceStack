@@ -1028,7 +1028,7 @@ namespace ServiceStack.ServiceClient.Web
                 var boundary = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
                 webRequest.ContentType = "multipart/form-data; boundary=" + boundary;
                 boundary = "--" + boundary;
-                var newLine = Environment.NewLine;
+                var newLine = "\r\n";
                 using (var outputStream = webRequest.GetRequestStream())
                 {
 #if !MONOTOUCH
