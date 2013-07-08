@@ -131,7 +131,6 @@
     <Compile Include="AppHostListenerBaseTests.cs" />
     <Compile Include="AsyncRestClientTests.cs" />
     <Compile Include="AsyncServiceClientTests.cs" />
-    <Compile Include="AttributeFiltersNewApiTests.cs" />
     <Compile Include="AttributeFiltersTest.cs" />
     <Compile Include="AuthTests.cs" />
     <Compile Include="BufferedRequestTests.cs" />
