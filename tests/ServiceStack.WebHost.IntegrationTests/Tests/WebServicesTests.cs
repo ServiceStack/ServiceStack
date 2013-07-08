@@ -77,8 +77,16 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 					Is.EqualTo(expectedError));
 			}
 		}
-	}
 
+		[Test]
+		public void Request_items_are_preserved_between_filters()
+		{
+			var client = CreateNewServiceClient();
+			if (client is DirectServiceClient) return;
+			var response = client.Send<RequestItemsResponse>(new RequestItems { });
+			Assert.That(response.Result, Is.EqualTo("MissionSuccess"));
+		}
+	}
 
 	/// <summary>
 	/// Unit tests simulates an in-process ServiceStack host where all services 

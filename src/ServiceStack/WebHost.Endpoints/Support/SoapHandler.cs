@@ -40,9 +40,13 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
         public Message Send(Message requestMsg)
         {
-            var endpointAttributes = EndpointAttributes.Reply | this.HandlerAttributes;
+			HttpContext.Current.ThrowIfNull("HttpContext.Current");
 
-            return ExecuteMessage(requestMsg, endpointAttributes, null, null);
+            var endpointAttributes = EndpointAttributes.Reply | this.HandlerAttributes;
+            var httpRequest = new HttpRequestWrapper(HttpContext.Current.Request);
+            var httpResponse = new HttpResponseWrapper(HttpContext.Current.Response);
+
+            return ExecuteMessage(requestMsg, endpointAttributes, httpRequest, httpResponse);
         }
         
         protected Message Send(Message requestMsg, IHttpRequest httpRequest, IHttpResponse httpResponse)
@@ -64,20 +68,16 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
         protected Message ExecuteMessage(Message message, EndpointAttributes endpointAttributes, IHttpRequest httpRequest, IHttpResponse httpResponse)
         {
+            httpRequest.ThrowIfNull("httpRequest");
+            httpResponse.ThrowIfNull("httpResponse");
+
             var soapFeature = endpointAttributes.ToSoapFeature();
             EndpointHost.Config.AssertFeatures(soapFeature);
 
-            var preHttpReq = HttpContext.Current != null
-                    ? new HttpRequestWrapper(HttpContext.Current.Request)
-                    : httpRequest;
-            var httpRes = HttpContext.Current != null
-                ? new HttpResponseWrapper(HttpContext.Current.Response)
-                : httpResponse;
+            if (EndpointHost.ApplyPreRequestFilters(httpRequest, httpResponse))
+                return PrepareEmptyResponse(message, httpRequest);
 
-            if (EndpointHost.ApplyPreRequestFilters(preHttpReq, httpRes))
-                return PrepareEmptyResponse(message, preHttpReq);
-
-            var requestMsg = message ?? GetRequestMessageFromStream(preHttpReq.InputStream);
+			var requestMsg = message ?? GetRequestMessageFromStream(httpRequest.InputStream);
             string requestXml = GetRequestXml(requestMsg);
             var requestType = GetRequestType(requestMsg, requestXml);
             if (!EndpointHost.Metadata.CanAccess(endpointAttributes, soapFeature.ToFormat(), requestType.Name))
@@ -92,24 +92,20 @@ namespace ServiceStack.WebHost.Endpoints.Support
                     requiresSoapMessage.Message = requestMsg;
                 }
 
-                var httpReq = HttpContext.Current != null
-                    ? new HttpRequestWrapper(requestType.Name, HttpContext.Current.Request)
-                    : httpRequest;
-
-                httpReq.SetItem("SoapMessage", requestMsg);
+                httpRequest.SetItem("SoapMessage", requestMsg);
 
                 var hasRequestFilters = EndpointHost.RequestFilters.Count > 0
                     || FilterAttributeCache.GetRequestFilterAttributes(request.GetType()).Any();
 
-                if (hasRequestFilters && EndpointHost.ApplyRequestFilters(httpReq, httpRes, request))
+                if (hasRequestFilters && EndpointHost.ApplyRequestFilters(httpRequest, httpResponse, request))
                     return EmptyResponse(requestMsg, requestType);
 
-                var response = ExecuteService(request, endpointAttributes, httpReq, httpRes);
+                var response = ExecuteService(request, endpointAttributes, httpRequest, httpResponse);
 
                 var hasResponseFilters = EndpointHost.ResponseFilters.Count > 0
                    || FilterAttributeCache.GetResponseFilterAttributes(response.GetType()).Any();
 
-                if (hasResponseFilters && EndpointHost.ApplyResponseFilters(httpReq, httpRes, response))
+                if (hasResponseFilters && EndpointHost.ApplyResponseFilters(httpRequest, httpResponse, response))
                     return EmptyResponse(requestMsg, requestType);
 
                 var httpResult = response as IHttpResult;
