@@ -148,10 +148,10 @@ extracting them from the published NuGet packages. The url to download a nuget p
     
  So to get the core ServiceStack and ServiceStack.Text libs in OSX/Linux (or using gnu tools for Windows) you can just do:
 
-    wget -O ServiceStack http://packages.nuget.org/api/v1/package/ServiceStack/3.9.54
+    wget -O ServiceStack http://packages.nuget.org/api/v1/package/ServiceStack/3.9.55
     unzip ServiceStack 'lib/*'
     
-    wget -O ServiceStack.Text http://packages.nuget.org/api/v1/package/ServiceStack.Text/3.9.54
+    wget -O ServiceStack.Text http://packages.nuget.org/api/v1/package/ServiceStack.Text/3.9.55
     unzip ServiceStack.Text 'lib/*'
 
 which will download and extract the dlls into your local local `lib/` folder.
