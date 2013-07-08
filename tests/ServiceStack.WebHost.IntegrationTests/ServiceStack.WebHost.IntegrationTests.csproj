@@ -196,6 +196,7 @@
     <Compile Include="Services\EndpointAccessService.cs" />
     <Compile Include="Services\HelloImage.cs" />
     <Compile Include="Services\IocServiceTests.cs" />
+    <Compile Include="Services\RequestItemsService.cs" />
     <Compile Include="Services\SwaggerTestService.cs" />
     <Compile Include="Subpages\Test.aspx.cs">
       <DependentUpon>Test.aspx</DependentUpon>

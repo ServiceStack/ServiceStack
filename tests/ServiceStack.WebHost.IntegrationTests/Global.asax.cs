@@ -38,7 +38,13 @@ namespace ServiceStack.WebHost.IntegrationTests
             {
                 JsConfig.EmitCamelCaseNames = true;
 
+				this.PreRequestFilters.Add((req, res) => {
+					req.Items["_DataSetAtPreRequestFilters"] = true;
+				});
+
                 this.RequestFilters.Add((req, res, dto) => {
+                    req.Items["_DataSetAtRequestFilters"] = true;
+
                     var requestFilter = dto as RequestFilter;
                     if (requestFilter != null)
                     {

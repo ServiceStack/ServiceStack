@@ -30,6 +30,7 @@ namespace ServiceStack.ServiceHost
         public string OperationName
         {
             get { return requestContext.OperationName; }
+            set { requestContext.OperationName = value; }
         }
 
         public string ContentType

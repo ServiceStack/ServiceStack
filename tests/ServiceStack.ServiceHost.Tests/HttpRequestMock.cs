@@ -16,6 +16,7 @@ namespace ServiceStack.ServiceHost.Tests
 		public string OperationName
 		{
 			get { throw new NotImplementedException(); }
+			set { throw new NotImplementedException(); }
 		}
 
 		public string ContentType

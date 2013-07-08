@@ -20,7 +20,7 @@ namespace ServiceStack.ServiceHost
         /// <summary>
         /// The name of the service being called (e.g. Request DTO Name)
         /// </summary>
-        string OperationName { get; }
+        string OperationName { get; set; }
 
         /// <summary>
         /// The request ContentType

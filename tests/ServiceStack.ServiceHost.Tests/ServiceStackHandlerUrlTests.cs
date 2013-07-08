@@ -39,7 +39,7 @@ namespace ServiceStack.ServiceHost.Tests
 				throw new NotImplementedException();
 			}
 
-			public string OperationName { get; private set; }
+			public string OperationName { get; set; }
 			public string ContentType { get; private set; }
 			public string HttpMethod { get; private set; }
 			public string UserAgent { get; set; }

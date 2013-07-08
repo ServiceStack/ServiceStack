@@ -29,9 +29,11 @@ namespace ServiceStack.ServiceHost
             this.Response = new MqResponse(this);
         }
 
+        private string operationName;
         public string OperationName
         {
-            get { return Message.Body != null ? Message.Body.GetType().Name : null; }
+            get { return operationName ?? (operationName = Message.Body != null ? Message.Body.GetType().Name : null); }
+            set { operationName = value; }
         }
 
         public T Get<T>() where T : class
