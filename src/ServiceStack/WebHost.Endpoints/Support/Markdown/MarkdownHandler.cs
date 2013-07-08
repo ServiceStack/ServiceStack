@@ -27,7 +27,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
             if (contentPage == null)
             {
                 httpRes.StatusCode = (int)HttpStatusCode.NotFound;
-                httpRes.EndHttpRequest();
+                httpRes.EndHttpHandlerRequest();
                 return;
             }
 

@@ -71,7 +71,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
         {
             if (result == null)
             {
-                httpRes.EndHttpRequestWithNoContent();
+                httpRes.EndRequestWithNoContent();
                 return true;
             }
 
@@ -118,7 +118,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
                 {
                     if (result == null)
                     {
-                        response.EndHttpRequestWithNoContent();
+                        response.EndRequestWithNoContent();
                         return true;
                     }
 
@@ -314,7 +314,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
                 serializer(serializationCtx, errorDto, httpRes);
             }
             
-            httpRes.EndHttpRequest(skipHeaders: true);
+            httpRes.EndHttpHandlerRequest(skipHeaders: true);
         }
 
         private static bool HandleCustomErrorHandler(this IHttpResponse httpRes, IHttpRequest httpReq,
@@ -372,54 +372,16 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
             }
         }
 
+        [Obsolete("Use EndRequest extension method")]
         public static void EndServiceStackRequest(this HttpResponse httpRes, bool skipHeaders = false)
         {
-            if (!skipHeaders) httpRes.ApplyGlobalResponseHeaders();
-            httpRes.Close();
-            EndpointHost.CompleteRequest();
+            httpRes.EndRequest(skipHeaders);
         }
 
+        [Obsolete("Use EndRequest extension method")]
         public static void EndServiceStackRequest(this IHttpResponse httpRes, bool skipHeaders = false)
         {
-            httpRes.EndHttpRequest(skipHeaders: skipHeaders);
-            EndpointHost.CompleteRequest();
-        }
-
-        public static void EndHttpRequest(this HttpResponse httpRes, bool skipHeaders = false, bool skipClose = false, bool closeOutputStream = false, Action<HttpResponse> afterBody = null)
-        {
-            if (!skipHeaders) httpRes.ApplyGlobalResponseHeaders();
-            if (afterBody != null) afterBody(httpRes);
-            if (closeOutputStream) httpRes.CloseOutputStream();
-            else if (!skipClose) httpRes.Close();
-
-            //skipHeaders used when Apache+mod_mono doesn't like:
-            //response.OutputStream.Flush();
-            //response.Close();
-        }
-
-        public static void EndHttpRequest(this IHttpResponse httpRes, bool skipHeaders = false, bool skipClose = false, Action<IHttpResponse> afterBody = null)
-        {
-            if (!skipHeaders) httpRes.ApplyGlobalResponseHeaders();
-            if (afterBody != null) afterBody(httpRes);
-            if (!skipClose) httpRes.Close();
-
-            //skipHeaders used when Apache+mod_mono doesn't like:
-            //response.OutputStream.Flush();
-            //response.Close();
-        }
-
-        public static void EndHttpRequestWithNoContent(this IHttpResponse httpRes)
-        {
-            if (EndpointHost.Config == null || EndpointHost.Config.Return204NoContentForEmptyResponse)
-            {
-                if (httpRes.StatusCode == (int)HttpStatusCode.OK)
-                {
-                    httpRes.StatusCode = (int)HttpStatusCode.NoContent;
-                }
-            }
-
-            httpRes.SetContentLength(0);
-            httpRes.EndServiceStackRequest();
+            httpRes.EndRequest(skipHeaders);
         }
 
     }
