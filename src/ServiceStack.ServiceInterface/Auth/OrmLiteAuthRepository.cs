@@ -16,10 +16,16 @@ namespace ServiceStack.ServiceInterface.Auth
         public Regex ValidUserNameRegEx = new Regex(@"^(?=.{3,15}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
 
         private readonly IDbConnectionFactory dbFactory;
+        private readonly IHashProvider passwordHasher;
 
         public OrmLiteAuthRepository(IDbConnectionFactory dbFactory)
+            : this(dbFactory, new SaltedHash())
+        { }
+
+        public OrmLiteAuthRepository(IDbConnectionFactory dbFactory, IHashProvider passwordHasher)
         {
             this.dbFactory = dbFactory;
+            this.passwordHasher = passwordHasher;
         }
 
         public void CreateMissingTables()
@@ -61,10 +67,9 @@ namespace ServiceStack.ServiceInterface.Auth
             return dbFactory.Run(db => {
                 AssertNoExistingUser(db, newUser);
 
-                var saltedHash = new SaltedHash();
                 string salt;
                 string hash;
-                saltedHash.GetHashAndSaltString(password, out hash, out salt);
+                passwordHasher.GetHashAndSaltString(password, out hash, out salt);
                 var digestHelper = new DigestAuthFunctions();
                 newUser.DigestHA1Hash = digestHelper.CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
                 newUser.PasswordHash = hash;
@@ -108,8 +113,7 @@ namespace ServiceStack.ServiceInterface.Auth
                 var salt = existingUser.Salt;
                 if (password != null)
                 {
-                    var saltedHash = new SaltedHash();
-                    saltedHash.GetHashAndSaltString(password, out hash, out salt);
+                    passwordHasher.GetHashAndSaltString(password, out hash, out salt);
                 }
                 // If either one changes the digest hash has to be recalculated
                 var digestHash = existingUser.DigestHA1Hash;
@@ -152,8 +156,7 @@ namespace ServiceStack.ServiceInterface.Auth
             userAuth = GetUserAuthByUserName(userName);
             if (userAuth == null) return false;
 
-            var saltedHash = new SaltedHash();
-            if (saltedHash.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
+            if (passwordHasher.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
             {
                 //userId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
                 return true;
