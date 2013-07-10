@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using ServiceStack.Common.Support;
 
@@ -29,19 +30,25 @@ namespace ServiceStack.Common
             var waitHandles = new List<WaitHandle>();
             foreach (var action in actions)
             {
-                var waitHandle = new AutoResetEvent(false);
-                waitHandles.Add(waitHandle);
-                var commandExecsHandler = new ActionExecHandler(action, waitHandle);
+	            var waitHandle = ExecAsync(action);
+	            waitHandles.Add(waitHandle);
+            }
+	        return waitHandles;
+        }
+
+	    public static AutoResetEvent ExecAsync(this Action action)
+	    {
+		    var waitHandle = new AutoResetEvent(false);
+		    var commandExecsHandler = new ActionExecHandler(action, waitHandle);
 #if NETFX_CORE
                 ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction) => commandExecsHandler.Execute()));
 #else
-                ThreadPool.QueueUserWorkItem(x => ((ActionExecHandler)x).Execute(), commandExecsHandler);
+		    ThreadPool.QueueUserWorkItem(x => ((ActionExecHandler) x).Execute(), commandExecsHandler);
 #endif
-            }
-            return waitHandles;
-        }
+		    return waitHandle;
+	    }
 
-        public static bool WaitAll(this List<WaitHandle> waitHandles, int timeoutMs)
+			public static bool WaitAll(this List<WaitHandle> waitHandles, int timeoutMs)
         {
             return WaitAll(waitHandles.ToArray(), timeoutMs);
         }

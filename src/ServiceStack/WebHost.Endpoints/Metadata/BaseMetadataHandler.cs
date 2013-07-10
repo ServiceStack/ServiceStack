@@ -33,7 +33,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
             ProcessOperations(writer, new HttpRequestWrapper(GetType().Name, context.Request), new HttpResponseWrapper(context.Response));
         }
 
-        public virtual void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public virtual void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Action closeAction = null)
         {
             using (var sw = new StreamWriter(httpRes.OutputStream))
             {
@@ -41,6 +41,8 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
                 httpRes.ContentType = "text/html";
                 ProcessOperations(writer, httpReq, httpRes);
             }
+						if (closeAction != null)
+							closeAction();
         }
 
         public virtual string CreateResponse(Type type)

@@ -5,6 +5,7 @@ using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
+using ServiceStack.Plugins.Tasks;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
@@ -21,7 +22,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 		//private static ILog log;
 
 		public IntegrationTestBase()
-			: base("ServiceStack Examples", typeof(RestMovieService).Assembly)
+			: base("ServiceStack Examples", typeof(RestAsyncMovieService).Assembly)
 		{
 			LogManager.LogFactory = new DebugLogFactory();
 			//log = LogManager.GetLogger(GetType());
@@ -40,6 +41,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 
 		public override void Configure(Container container)
 		{
+			LoadPlugin(new TasksFeature());
 			container.Register<IResourceManager>(new ConfigurationResourceManager());
 
 			container.Register(c => new ExampleConfig(c.Resolve<IResourceManager>()));

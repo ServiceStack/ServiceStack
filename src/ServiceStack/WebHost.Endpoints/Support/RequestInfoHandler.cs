@@ -112,7 +112,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public RequestInfoResponse RequestInfo { get; set; }
 
-		public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+		public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Action closeAction = null)
 		{
 			var response = this.RequestInfo ?? GetRequestInfo(httpReq);
 			response.HandlerFactoryArgs = ServiceStackHttpHandlerFactory.DebugLastHandlerArgs;
@@ -126,6 +126,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			var json = JsonSerializer.SerializeToString(response);
 			httpRes.ContentType = ContentType.Json;
 			httpRes.Write(json);
+			if (closeAction != null)
+				closeAction();
 		}
 
 		public void ProcessRequest(HttpContext context)

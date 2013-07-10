@@ -1,10 +1,16 @@
 using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Runtime.Remoting.Messaging;
+using System.Web;
 using ServiceStack.Common.Web;
 using ServiceStack.MiniProfiler;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
+using HttpRequestWrapper = ServiceStack.WebHost.Endpoints.Extensions.HttpRequestWrapper;
+using HttpResponseWrapper = ServiceStack.WebHost.Endpoints.Extensions.HttpResponseWrapper;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -49,29 +55,28 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
-		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Action closeAction = null)
 		{
 			try
 			{
-                EndpointHost.Config.AssertFeatures(format);
+				EndpointHost.Config.AssertFeatures(format);
 
-                if (EndpointHost.ApplyPreRequestFilters(httpReq, httpRes)) return;
+				if (EndpointHost.ApplyPreRequestFilters(httpReq, httpRes)) return;
 
 				httpReq.ResponseContentType = httpReq.GetQueryStringContentType() ?? this.HandlerContentType;
-				var callback = httpReq.QueryString["callback"];
-				var doJsonp = EndpointHost.Config.AllowJsonpRequests
-							  && !string.IsNullOrEmpty(callback);
 
 				var request = CreateRequest(httpReq, operationName);
 				if (EndpointHost.ApplyRequestFilters(httpReq, httpRes, request)) return;
 
 				var response = GetResponse(httpReq, httpRes, request);
-				if (EndpointHost.ApplyResponseFilters(httpReq, httpRes, response)) return;
 
-				if (doJsonp && !(response is CompressedResult))
-					httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
-				else
-					httpRes.WriteToResponse(httpReq, response);
+				if (response is IAsyncResult)
+				{
+					AsyncResultFactory.ProcessAsyncResponse(response as IAsyncResult, result => ProcessResponse(httpReq, httpRes, result, closeAction));
+					return;
+				}
+
+				ProcessResponse(httpReq, httpRes, response, closeAction);
 			}
 			catch (Exception ex)
 			{
@@ -80,5 +85,23 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
+		private static void ProcessResponse(IHttpRequest httpReq, IHttpResponse httpRes, object response, Action closeAction)
+		{
+			if (EndpointHost.ApplyResponseFilters(httpReq, httpRes, response))
+			{
+				if (closeAction != null)
+					closeAction();
+				return;
+			}
+
+			var callback = httpReq.QueryString["callback"];
+			var doJsonp = EndpointHost.Config.AllowJsonpRequests && !string.IsNullOrEmpty(callback);
+			if (doJsonp && !(response is CompressedResult))
+				httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
+			else
+				httpRes.WriteToResponse(httpReq, response);
+			if (closeAction != null)
+				closeAction();
+		}
 	}
 }

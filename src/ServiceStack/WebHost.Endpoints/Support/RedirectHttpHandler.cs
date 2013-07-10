@@ -22,7 +22,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		/// <param name="request"></param>
 		/// <param name="response"></param>
 		/// <param name="operationName"></param>
-		public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
+		/// <param name="closeAction"></param>
+		public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName, Action closeAction = null)
 		{
 			if (string.IsNullOrEmpty(RelativeUrl) && string.IsNullOrEmpty(AbsoluteUrl))
 				throw new ArgumentNullException("RelativeUrl or AbsoluteUrl");
@@ -49,6 +50,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 
             response.EndHttpHandlerRequest(skipClose:true);
+						if (closeAction != null)
+							closeAction();
         }
 
         /// <summary>

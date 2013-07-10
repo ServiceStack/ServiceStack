@@ -24,29 +24,31 @@ namespace ServiceStack.WebHost.Endpoints
             httpRes.OutputStream.Write(bytes, 0, bytes.Length);
         }
 
-        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Action closeAction = null)
         {
             var isDebugRequest = httpReq.RawUrl.ToLower().Contains("debug");
-            if (!isDebugRequest)
-            {
-                base.ProcessRequest(httpReq, httpRes, operationName);
-                return;
-            }
+	        if (!isDebugRequest)
+	        {
+		        base.ProcessRequest(httpReq, httpRes, operationName, closeAction);
+		        return;
+	        }
 
-            try
-            {
-                var request = CreateRequest(httpReq, operationName);
+					try
+	        {
+		        var request = CreateRequest(httpReq, operationName);
 
-                var response = ExecuteService(request,
-                    HandlerAttributes | httpReq.GetAttributes(), httpReq, httpRes);
+		        var response = ExecuteService(request,
+			        HandlerAttributes | httpReq.GetAttributes(), httpReq, httpRes);
 
-                WriteDebugResponse(httpRes, response);
-            }
-            catch (Exception ex)
-            {
-                if (!EndpointHost.Config.WriteErrorsToResponse) throw;
-                HandleException(httpReq, httpRes, operationName, ex);
-            }
+		        WriteDebugResponse(httpRes, response);
+	        }
+	        catch (Exception ex)
+	        {
+		        if (!EndpointHost.Config.WriteErrorsToResponse) throw;
+		        HandleException(httpReq, httpRes, operationName, ex);
+	        }
+	        if (closeAction != null)
+							closeAction();
         }
 
         public static void WriteDebugResponse(IHttpResponse httpRes, object response)

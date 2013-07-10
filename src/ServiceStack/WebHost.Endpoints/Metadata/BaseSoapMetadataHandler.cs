@@ -29,38 +29,46 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 				OperationName);
     	}
 
-		public new void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+		public new void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Action closeAction = null)
     	{
-            if (!AssertAccess(httpReq, httpRes, httpReq.QueryString["op"])) return;
+			if (!AssertAccess(httpReq, httpRes, httpReq.QueryString["op"]))
+			{
+				if (closeAction != null)
+					closeAction();
+				return;
+			}
 
 			var operationTypes = EndpointHost.Metadata.GetAllTypes();
 
-    		if (httpReq.QueryString["xsd"] != null)
-    		{
-				var xsdNo = Convert.ToInt32(httpReq.QueryString["xsd"]);
-                var schemaSet = XsdUtils.GetXmlSchemaSet(operationTypes);
-    			var schemas = schemaSet.Schemas();
-    			var i = 0;
-    			if (xsdNo >= schemas.Count)
-    			{
-    				throw new ArgumentOutOfRangeException("xsd");
-    			}
-    			httpRes.ContentType = "text/xml";
-    			foreach (XmlSchema schema in schemaSet.Schemas())
-    			{
-    				if (xsdNo != i++) continue;
-    				schema.Write(httpRes.OutputStream);
-    				break;
-    			}
-    			return;
-    		}
-
-			using (var sw = new StreamWriter(httpRes.OutputStream))
+			if (httpReq.QueryString["xsd"] != null)
 			{
-				var writer = new HtmlTextWriter(sw);
-				httpRes.ContentType = "text/html";
-				ProcessOperations(writer, httpReq, httpRes);
+				var xsdNo = Convert.ToInt32(httpReq.QueryString["xsd"]);
+				var schemaSet = XsdUtils.GetXmlSchemaSet(operationTypes);
+				var schemas = schemaSet.Schemas();
+				var i = 0;
+				if (xsdNo >= schemas.Count)
+				{
+					throw new ArgumentOutOfRangeException("xsd");
+				}
+				httpRes.ContentType = "text/xml";
+				foreach (XmlSchema schema in schemaSet.Schemas())
+				{
+					if (xsdNo != i++) continue;
+					schema.Write(httpRes.OutputStream);
+					break;
+				}
 			}
+			else
+			{
+				using (var sw = new StreamWriter(httpRes.OutputStream))
+				{
+					var writer = new HtmlTextWriter(sw);
+					httpRes.ContentType = "text/html";
+					ProcessOperations(writer, httpReq, httpRes);
+				}
+			}
+			if (closeAction != null)
+				closeAction();
     	}
 
     	protected override void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, ServiceMetadata metadata)

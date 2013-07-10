@@ -135,6 +135,8 @@
     <Compile Include="BufferedRequestTests.cs" />
     <Compile Include="CachedServiceTests.cs" />
     <Compile Include="CompressionTests.cs" />
+    <Compile Include="IntegrationTests\MovieRestAsyncTests.cs" />
+    <Compile Include="IntegrationTests\RestAsyncMovieService.cs" />
     <Compile Include="RouteTests.cs" />
     <Compile Include="CustomValidationErrorTests.cs" />
     <Compile Include="EncodingTests.cs" />
@@ -253,6 +255,10 @@
     <ProjectReference Include="..\..\src\ServiceStack.Plugins.ProtoBuf\ServiceStack.Plugins.ProtoBuf.csproj">
       <Project>{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}</Project>
       <Name>ServiceStack.Plugins.ProtoBuf</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.Plugins.Tasks\ServiceStack.Plugins.Tasks.csproj">
+      <Project>{77a5be62-9ba1-4704-abda-1cba41041abf}</Project>
+      <Name>ServiceStack.Plugins.Tasks</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
       <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>

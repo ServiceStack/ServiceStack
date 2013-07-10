@@ -1,3 +1,4 @@
+using System;
 using System.Web;
 using System.Xml;
 using ServiceStack.Common.Web;
@@ -67,23 +68,27 @@ namespace ServiceStack.WebHost.Endpoints
             }
         }
 
-        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
-        {
-            if (httpReq.HttpMethod == HttpMethods.Get)
-            {
-                var wsdl = new Soap12WsdlMetadataHandler();
-                wsdl.Execute(httpReq, httpRes);
-                return;
-            }
+	    public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Action closeAction = null)
+	    {
+		    if (httpReq.HttpMethod == HttpMethods.Get)
+		    {
+			    var wsdl = new Soap12WsdlMetadataHandler();
+			    wsdl.Execute(httpReq, httpRes);
+		    }
+		    else
+		    {
+			    var responseMessage = Send(null, httpReq, httpRes);
 
-            var responseMessage = Send(null, httpReq, httpRes);
+			    httpRes.ContentType = GetSoapContentType(httpReq.ContentType);
+			    using (var writer = XmlWriter.Create(httpRes.OutputStream))
+			    {
+				    responseMessage.WriteMessage(writer);
+			    }
+		    }
 
-            httpRes.ContentType = GetSoapContentType(httpReq.ContentType);
-            using (var writer = XmlWriter.Create(httpRes.OutputStream))
-            {
-                responseMessage.WriteMessage(writer);
-            }
-        }
+		    if (closeAction != null)
+			    closeAction();
+	    }
     }
 
 }

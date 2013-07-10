@@ -1,5 +1,7 @@
 using System;
+using System.Runtime.Remoting.Messaging;
 using System.Runtime.Serialization;
+using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
@@ -68,7 +70,7 @@ namespace ServiceStack.WebHost.Endpoints
         // Set from SSHHF.GetHandlerForPathInfo()
         public string ResponseContentType { get; set; }
 
-        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Action closeAction = null)
         {
             try
             {
@@ -80,10 +82,6 @@ namespace ServiceStack.WebHost.Endpoints
 
                 operationName = restPath.RequestType.Name;
 
-                var callback = httpReq.GetJsonpCallback();
-                var doJsonp = EndpointHost.Config.AllowJsonpRequests
-                              && !string.IsNullOrEmpty(callback);
-
                 if (ResponseContentType != null)
                     httpReq.ResponseContentType = ResponseContentType;
 
@@ -94,18 +92,13 @@ namespace ServiceStack.WebHost.Endpoints
                 if (EndpointHost.ApplyRequestFilters(httpReq, httpRes, request)) return;
 
                 var response = GetResponse(httpReq, httpRes, request);
-                if (EndpointHost.ApplyResponseFilters(httpReq, httpRes, response)) return;
 
-                if (responseContentType.Contains("jsv") && !string.IsNullOrEmpty(httpReq.QueryString["debug"]))
-                {
-                    JsvSyncReplyHandler.WriteDebugResponse(httpRes, response);
-                    return;
-                }
-
-                if (doJsonp && !(response is CompressedResult))
-                    httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
-                else
-                    httpRes.WriteToResponse(httpReq, response);
+	            if (response is IAsyncResult)
+	            {
+		            AsyncResultFactory.ProcessAsyncResponse(response as IAsyncResult, result => ProcessResponse(httpReq, httpRes, result, closeAction));
+		            return;
+	            }
+							ProcessResponse(httpReq, httpRes, response, closeAction);
             }
             catch (Exception ex)
             {
@@ -114,7 +107,32 @@ namespace ServiceStack.WebHost.Endpoints
             }
         }
 
-        public override object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request)
+
+
+
+	    private static void ProcessResponse(IHttpRequest httpReq, IHttpResponse httpRes, object response, Action closeAction)
+	    {
+		    if (EndpointHost.ApplyResponseFilters(httpReq, httpRes, response)) return;
+
+		    if (httpReq.ResponseContentType.Contains("jsv") && !string.IsNullOrEmpty(httpReq.QueryString["debug"]))
+		    {
+			    JsvSyncReplyHandler.WriteDebugResponse(httpRes, response);
+					if (closeAction != null)
+						closeAction();
+			    return;
+		    }
+		    var callback = httpReq.GetJsonpCallback();
+		    var doJsonp = EndpointHost.Config.AllowJsonpRequests
+		                  && !string.IsNullOrEmpty(callback);
+		    if (doJsonp && !(response is CompressedResult))
+			    httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
+		    else
+			    httpRes.WriteToResponse(httpReq, response);
+				if (closeAction != null)
+					closeAction();
+	    }
+
+	    public override object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request)
         {
             var requestContentType = ContentType.GetEndpointAttributes(httpReq.ResponseContentType);
 

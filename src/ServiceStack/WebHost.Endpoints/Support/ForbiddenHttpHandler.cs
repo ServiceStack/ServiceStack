@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Web;
 using ServiceStack.Common;
 using ServiceStack.ServiceHost;
@@ -17,7 +18,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		public string DefaultRootFileName { get; set; }
 		public string DefaultHandler { get; set; }
 
-        public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
+        public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName, Action closeAction = null)
         {
             response.ContentType = "text/plain";
             response.StatusCode = 403;
@@ -45,6 +46,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
                 if (!ServiceStackHttpHandlerFactory.DebugLastHandlerArgs.IsNullOrEmpty())
                     r.Write("\nApp.DebugLastHandlerArgs: " + ServiceStackHttpHandlerFactory.DebugLastHandlerArgs);
             });
+				if (closeAction != null)
+					closeAction();
 		}
 
         public void ProcessRequest(HttpContext context)

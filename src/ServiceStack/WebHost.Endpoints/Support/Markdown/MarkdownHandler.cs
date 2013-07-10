@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Formats;
@@ -18,29 +19,32 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
             PathInfo = pathInfo;
         }
 
-        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Action closeAction = null)
         {
             if (MarkdownFormat == null)
                 MarkdownFormat = MarkdownFormat.Instance;
 
             var contentPage = MarkdownPage ?? MarkdownFormat.FindByPathInfo(PathInfo);
-            if (contentPage == null)
-            {
-                httpRes.StatusCode = (int)HttpStatusCode.NotFound;
-                httpRes.EndHttpHandlerRequest();
-                return;
-            }
+	        if (contentPage == null)
+	        {
+		        httpRes.StatusCode = (int) HttpStatusCode.NotFound;
+		        httpRes.EndHttpHandlerRequest();
+	        }
+	        else
+	        {
+		        MarkdownFormat.ReloadModifiedPageAndTemplates(contentPage);
 
-            MarkdownFormat.ReloadModifiedPageAndTemplates(contentPage);
+		        if (httpReq.DidReturn304NotModified(contentPage.GetLastModified(), httpRes))
+			        return;
 
-            if (httpReq.DidReturn304NotModified(contentPage.GetLastModified(), httpRes))
-                return;
+		        var model = Model;
+		        if (model == null)
+			        httpReq.Items.TryGetValue("Model", out model);
 
-            var model = Model;
-            if (model == null)
-                httpReq.Items.TryGetValue("Model", out model);
-
-            MarkdownFormat.ProcessMarkdownPage(httpReq, contentPage, model, httpRes);
+		        MarkdownFormat.ProcessMarkdownPage(httpReq, contentPage, model, httpRes);
+	        }
+					if (closeAction != null)
+						closeAction();
         }
 
         public override object CreateRequest(IHttpRequest request, string operationName)

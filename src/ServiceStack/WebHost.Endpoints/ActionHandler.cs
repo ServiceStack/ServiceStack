@@ -18,7 +18,7 @@ namespace ServiceStack.WebHost.Endpoints
             OperationName = operationName;
         }
 
-        public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Action closeAction = null)
         {
             if (Action == null)
                 throw new Exception("Action was not supplied to ActionHandler");
@@ -28,6 +28,8 @@ namespace ServiceStack.WebHost.Endpoints
 
             var response = Action(httpReq, httpRes);
             httpRes.WriteToResponse(httpReq, response);
+						if (closeAction != null)
+							closeAction();
         }
 
         public void ProcessRequest(HttpContext context)

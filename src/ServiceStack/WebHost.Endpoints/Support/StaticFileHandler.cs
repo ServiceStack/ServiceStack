@@ -77,7 +77,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 		}
 
-        public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
+        public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName, Action closeAction = null)
 		{
             response.EndHttpHandlerRequest(skipClose: true, afterBody: r => {
                 var fileName = request.GetPhysicalPath();
@@ -197,6 +197,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
                     throw new HttpException(403, "Forbidden.");
                 }
             });
+						if (closeAction != null)
+							closeAction();
 		}
 
 	    static Dictionary<string, string> CreateFileIndex(string appFilePath)
