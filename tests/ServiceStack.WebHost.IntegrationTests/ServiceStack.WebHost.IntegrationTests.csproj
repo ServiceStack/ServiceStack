@@ -69,8 +69,9 @@
     <Reference Include="Mono.Data.Sqlite">
       <HintPath>..\..\lib\tests\Mono.Data.Sqlite.dll</HintPath>
     </Reference>
-    <Reference Include="protobuf-net, Version=2.0.0.621, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
-      <HintPath>..\..\src\packages\protobuf-net.2.0.0.621\lib\net35\protobuf-net.dll</HintPath>
+    <Reference Include="protobuf-net, Version=2.0.0.640, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\src\packages\protobuf-net.2.0.0.640\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.OrmLite">
       <HintPath>..\..\lib\ServiceStack.OrmLite.dll</HintPath>
@@ -196,6 +197,7 @@
     <Compile Include="Services\EndpointAccessService.cs" />
     <Compile Include="Services\HelloImage.cs" />
     <Compile Include="Services\IocServiceTests.cs" />
+    <Compile Include="Services\RequestItemsService.cs" />
     <Compile Include="Services\SwaggerTestService.cs" />
     <Compile Include="Subpages\Test.aspx.cs">
       <DependentUpon>Test.aspx</DependentUpon>

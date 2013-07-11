@@ -46,7 +46,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		    response.ContentType = "text/plain";
 			response.StatusCode = 404;
-            response.EndHttpRequest(skipClose: true, afterBody: r => r.Write(text.ToString()));
+            response.EndHttpHandlerRequest(skipClose: true, afterBody: r => r.Write(text.ToString()));
 		}
 
 		public void ProcessRequest(HttpContext context)
@@ -111,7 +111,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			response.ContentType = "text/plain";
 			response.StatusCode = 404;
-            response.EndHttpRequest(skipClose:true, afterBody: r => r.Write(sb.ToString()));
+            response.EndHttpHandlerRequest(skipClose:true, afterBody: r => r.Write(sb.ToString()));
 		}
 
 		public bool IsReusable

@@ -134,18 +134,18 @@ namespace ServiceStack.Common.Utils
 
         public static string CreateUrn<T>(object id)
         {
-            return string.Format("urn:{0}:{1}", typeof(T).Name.ToLower(), id);
+            return string.Format("urn:{0}:{1}", typeof(T).Name.ToLowerInvariant(), id);
         }
 
         public static string CreateUrn(Type type, object id)
         {
-            return string.Format("urn:{0}:{1}", type.Name.ToLower(), id);
+            return string.Format("urn:{0}:{1}", type.Name.ToLowerInvariant(), id);
         }
 
         public static string CreateUrn<T>(this T entity)
         {
             var id = GetId(entity);
-            return string.Format("urn:{0}:{1}", typeof(T).Name.ToLower(), id);
+            return string.Format("urn:{0}:{1}", typeof(T).Name.ToLowerInvariant(), id);
         }
 
         public static string CreateCacheKeyPath<T>(string idValue)

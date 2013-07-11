@@ -153,6 +153,11 @@
             Gets or sets a value indicating if the framework should always convert <see cref="T:System.DateTime"/> to UTC format instead of local time. 
             </summary>
         </member>
+        <member name="F:ServiceStack.Text.JsConfig.sAssumeUtc">
+            <summary>
+            Gets or sets a value indicating if the framework should always assume <see cref="T:System.DateTime"/> is in UTC format if Kind is Unspecified. 
+            </summary>
+        </member>
         <member name="F:ServiceStack.Text.JsConfig.sEscapeUnicode">
             <summary>
             Gets or sets a value indicating if unicode symbols should be serialized as "\uXXXX".

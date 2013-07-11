@@ -379,6 +379,21 @@ namespace ServiceStack.WebHost.Endpoints.Support
             return service;
         }
 
+        public static T ResolveService<T>(HttpListenerRequest httpReq, HttpListenerResponse httpRes)
+            where T : class, IRequiresRequestContext
+        {
+            return ResolveService<T>(httpReq.ToRequest(), httpRes.ToResponse());
+        }
+
+        public static T ResolveService<T>(IHttpRequest httpReq, IHttpResponse httpRes) where T : class, IRequiresRequestContext
+        {
+            if (Instance == null) throw new InvalidOperationException("AppHostBase is not initialized.");
+            var service = Instance.Container.Resolve<T>();
+            if (service == null) return null;
+            service.RequestContext = new HttpRequestContext(httpReq, httpRes, null);
+            return service;
+        }
+
         protected IServiceController ServiceController
         {
             get

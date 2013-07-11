@@ -222,6 +222,43 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class CustomAuthenticateAttribute : ServiceStack.ServiceInterface.AuthenticateAttribute
+    {
+        public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+        {
+            //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)
+            SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
+
+            req.Items["TriedMyOwnAuthFirst"] = true; // let's simulate some sort of auth _before_ relaying to base class.
+
+            base.Execute(req, res, requestDto);
+        }
+    }
+
+    public class CustomAuthAttr
+    {
+        public string Name { get; set; }
+    }
+
+    public class CustomAuthAttrResponse
+    {
+        public string Result { get; set; }
+
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [CustomAuthenticate]
+    public class CustomAuthAttrService : ServiceInterface.Service
+    {
+        public CustomAuthAttrResponse Any(CustomAuthAttr request)
+        {
+            if (!Request.Items.ContainsKey("TriedMyOwnAuthFirst"))
+                throw new InvalidOperationException("TriedMyOwnAuthFirst not present.");
+
+            return new CustomAuthAttrResponse { Result = request.Name };
+        }
+    }
+
     public class AuthTests
     {
         private const string ListeningOn = "http://localhost:82/";
@@ -880,6 +917,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Forbidden));
                 Console.WriteLine(webEx.ResponseDto.Dump());
             }
+        }
+
+        [Test]
+        public void Calling_AddSessionIdToRequest_from_a_custom_auth_attribute_does_not_duplicate_session_cookies()
+        {
+            WebHeaderCollection headers = null;
+            var client = GetClientWithUserPassword();
+            ((ServiceClientBase)client).AlwaysSendBasicAuthHeader = true;
+            ((ServiceClientBase)client).LocalHttpWebResponseFilter = x => headers = x.Headers;
+            var response = client.Send<CustomAuthAttrResponse>(new CustomAuthAttr() { Name = "Hi You" });
+            Assert.That(response.Result, Is.EqualTo("Hi You"));
+            Assert.That(
+                System.Text.RegularExpressions.Regex.Matches(headers["Set-Cookie"], "ss-id=").Count,
+                Is.EqualTo(1)
+            );
         }
     }
 }

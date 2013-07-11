@@ -48,7 +48,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				response.AddHeader(HttpHeaders.Location, absoluteUrl);
 			}
 
-            response.EndHttpRequest(skipClose:true);
+            response.EndHttpHandlerRequest(skipClose:true);
         }
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
                 response.AddHeader(HttpHeaders.Location, absoluteUrl);
 			}
 
-            response.EndHttpRequest(closeOutputStream:true);
+            response.EndHttpHandlerRequest(closeOutputStream:true);
 		}
 
 		public bool IsReusable

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ServiceStack.Api.Swagger
+namespace ServiceStack.ServiceHost
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class ApiAllowableValuesAttribute : Attribute

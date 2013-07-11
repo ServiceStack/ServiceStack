@@ -67,17 +67,23 @@ namespace ServiceStack.WebHost.Endpoints.Support
             var soapFeature = endpointAttributes.ToSoapFeature();
             EndpointHost.Config.AssertFeatures(soapFeature);
 
-            var preHttpReq = HttpContext.Current != null
+            var httpReq = HttpContext.Current != null && httpRequest == null
                     ? new HttpRequestWrapper(HttpContext.Current.Request)
                     : httpRequest;
-            var httpRes = HttpContext.Current != null
+            var httpRes = HttpContext.Current != null && httpResponse == null
                 ? new HttpResponseWrapper(HttpContext.Current.Response)
                 : httpResponse;
 
-            if (EndpointHost.ApplyPreRequestFilters(preHttpReq, httpRes))
-                return PrepareEmptyResponse(message, preHttpReq);
+            if (httpReq == null)
+                throw new ArgumentNullException("httpRequest");
 
-            var requestMsg = message ?? GetRequestMessageFromStream(preHttpReq.InputStream);
+            if (httpRes == null)
+                throw new ArgumentNullException("httpResponse");
+
+            if (EndpointHost.ApplyPreRequestFilters(httpReq, httpRes))
+                return PrepareEmptyResponse(message, httpReq);
+
+            var requestMsg = message ?? GetRequestMessageFromStream(httpReq.InputStream);
             string requestXml = GetRequestXml(requestMsg);
             var requestType = GetRequestType(requestMsg, requestXml);
             if (!EndpointHost.Metadata.CanAccess(endpointAttributes, soapFeature.ToFormat(), requestType.Name))
@@ -92,10 +98,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
                     requiresSoapMessage.Message = requestMsg;
                 }
 
-                var httpReq = HttpContext.Current != null
-                    ? new HttpRequestWrapper(requestType.Name, HttpContext.Current.Request)
-                    : httpRequest;
-
+                httpReq.OperationName = requestType.Name;
                 httpReq.SetItem("SoapMessage", requestMsg);
 
                 var hasRequestFilters = EndpointHost.RequestFilters.Count > 0

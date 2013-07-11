@@ -103,8 +103,7 @@ namespace ServiceStack.ServiceClient.Web
         /// <param name="correlationState">Correlation state data.</param>
         public void AfterReceiveReply(ref Message reply, object correlationState)
         {
-            HttpResponseMessageProperty httpResponse =
-                reply.Properties[HttpResponseMessageProperty.Name] as HttpResponseMessageProperty;
+            var httpResponse = reply.Properties[HttpResponseMessageProperty.Name] as HttpResponseMessageProperty;
 
             if (httpResponse != null)
             {
