@@ -594,6 +594,9 @@
     <Compile Include="..\..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\IResponseStatusConvertible.cs">
       <Link>ServiceInterface.ServiceModel\IResponseStatusConvertible.cs</Link>
     </Compile>
+    <Compile Include="..\..\ServiceStack.Interfaces\Service\IPartialWriter.cs">
+      <Link>Service\IPartialWriter.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\..\ServiceStack.Interfaces\Redis\Redis-annotated.png">
