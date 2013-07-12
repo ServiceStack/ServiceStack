@@ -2,6 +2,7 @@ using System;
 using System.Linq.Expressions;
 using System.Reflection;
 using NUnit.Framework;
+using System.Diagnostics;
 
 namespace ServiceStack.Common.Tests.Expressions
 {
@@ -35,6 +36,35 @@ namespace ServiceStack.Common.Tests.Expressions
 			var addMethodCall = (MethodCallExpression) callAddMethodExpr.Body;
 			Assert.That(addMethodCall.Method.Name, Is.EqualTo("AddMethod"));
 		}
+
+		[Test]
+		public void Simple_func_timing_tests()
+		{
+                // 1/5 as expensive as expression
+			var stopWatch = new Stopwatch();
+			stopWatch.Start();
+			Func<int, int> add = x => x + x;
+
+			Assert.That(add(4), Is.EqualTo(4 + 4));
+			stopWatch.Stop();
+			Console.WriteLine("Delegate took: {0}ms", stopWatch.ElapsedMilliseconds);
+		}
+
+		[Test]
+		public void Simple_expression_timing_tests()
+		{
+             	//5 times more expensive than Func
+			var stopWatch = new Stopwatch();
+			stopWatch.Start();
+			Expression<Func<int, int>> addExpr = x => x + 4;
+
+			Func<int, int> addFromExpr = addExpr.Compile();
+
+			Assert.That(addFromExpr(4), Is.EqualTo(4 + 4));
+			stopWatch.Stop();
+			Console.WriteLine("Delegate took: {0}ms", stopWatch.ElapsedMilliseconds);
+		}
+
 
 		public static int StaticAdd(int a)
 		{
