@@ -755,7 +755,7 @@ namespace ServiceStack.ServiceClient.Web
         }
 #endif
 
-        private string GetUrl(string relativeOrAbsoluteUrl)
+        public virtual string GetUrl(string relativeOrAbsoluteUrl)
         {
             return relativeOrAbsoluteUrl.StartsWith("http:")
                 || relativeOrAbsoluteUrl.StartsWith("https:")
