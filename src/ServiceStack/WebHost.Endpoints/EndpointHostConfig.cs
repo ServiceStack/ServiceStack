@@ -187,6 +187,7 @@ namespace ServiceStack.WebHost.Endpoints
             this.AllowNonHttpOnlyCookies = instance.AllowNonHttpOnlyCookies;
             this.AllowPartialResponses = instance.AllowPartialResponses;
             this.IgnoreWarningsOnPropertyNames = instance.IgnoreWarningsOnPropertyNames;
+            this.PreExecuteServiceFilter = PreExecuteServiceFilter;
         }
 
         public static string GetAppConfigPath()
@@ -607,6 +608,10 @@ namespace ServiceStack.WebHost.Endpoints
             var httpHandler = ssHandler as IHttpHandler;
             return httpHandler ?? new ServiceStackHttpHandler(ssHandler);
         }
-	}
+
+        public Action<object, IHttpRequest, IHttpResponse> PreExecuteServiceFilter { get; set; }
+
+        public Action<object, IHttpRequest, IHttpResponse> PostExecuteServiceFilter { get; set; }
+    }
 
 }

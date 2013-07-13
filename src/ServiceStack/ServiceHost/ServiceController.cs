@@ -354,8 +354,24 @@ namespace ServiceStack.ServiceHost
 
                 try
                 {
+                    if (EndpointHost.Config != null && EndpointHost.Config.PreExecuteServiceFilter != null)
+                    {
+                        EndpointHost.Config.PreExecuteServiceFilter(service, 
+                            requestContext.Get<IHttpRequest>(),
+                            requestContext.Get<IHttpResponse>());
+                    }
+
                     //Executes the service and returns the result
                     var response = serviceExec(requestContext, dto);
+
+                    if (EndpointHost.Config != null && EndpointHost.Config.PostExecuteServiceFilter != null)
+                    {
+                        EndpointHost.Config.PostExecuteServiceFilter(service, 
+                            requestContext.Get<IHttpRequest>(),
+                            requestContext.Get<IHttpResponse>());
+
+                    }
+
                     return response;
                 }
                 finally
