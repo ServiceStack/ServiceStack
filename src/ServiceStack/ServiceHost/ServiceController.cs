@@ -168,7 +168,7 @@ namespace ServiceStack.ServiceHost
                     {
                         if (EndpointHost.Config.FallbackRestPath != null)
                             throw new NotSupportedException(string.Format(
-                                "Config.FallbackRestPath is already defined. Only 1 [DefaultRoute] is allowed."));
+                                "Config.FallbackRestPath is already defined. Only 1 [FallbackRoute] is allowed."));
 
                         EndpointHost.Config.FallbackRestPath = (httpMethod, pathInfo, filePath) =>
                         {
