@@ -258,6 +258,18 @@ namespace RazorRockstars.Web
             AssertStatus(Host + "/throw/404/CustomErrorMessage", HttpStatusCode.NotFound);
         }
 
+        [Test]
+        public void Does_allow_matching_fallback_route()
+        {
+            Assert200(Host + "/fallback", "\"Path\":\"fallback\"");
+        }
+
+        [Test]
+        public void Does_not_handle_non_matching_fallback_route()
+        {
+            AssertStatus(Host + "/fallback/extrapath", HttpStatusCode.NotFound);
+        }
+
 	    [Test]
 	    public void Test_multithread_errors()
 	    {

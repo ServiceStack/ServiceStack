@@ -129,4 +129,16 @@ namespace ServiceStack.ServiceHost
         }
 #endif
     }
+
+
+    /// <summary>
+    /// Fallback routes have the lowest precedence, i.e. after normal Routes, static files or any matching Catch All Handlers.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
+    public class FallbackRouteAttribute : RouteAttribute
+    {
+        public FallbackRouteAttribute(string path) : base(path) {}
+
+        public FallbackRouteAttribute(string path, string verbs) : base(path, verbs) {}
+    }
 }

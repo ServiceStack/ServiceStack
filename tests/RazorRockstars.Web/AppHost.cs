@@ -109,8 +109,21 @@ namespace RazorRockstars.Web
         public string Name { get; set; }
     }
 
+    [FallbackRoute("/{Path}")]
+    public class Fallback
+    {
+        public string Path { get; set; }
+        public string PathInfo { get; set; }
+    }
+
     public class RockstarsService : Service
     {
+        public object Any(Fallback request)
+        {
+            request.PathInfo = base.Request.PathInfo;
+            return request;
+        }
+
         public object Get(Rockstars request)
         {
             if (request.Delete == "reset")

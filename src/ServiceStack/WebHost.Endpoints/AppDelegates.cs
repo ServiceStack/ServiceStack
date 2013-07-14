@@ -12,4 +12,6 @@ namespace ServiceStack.WebHost.Endpoints
         IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Exception ex);
 
     public delegate object HandleServiceExceptionDelegate(object request, Exception ex);
+
+    public delegate RestPath FallbackRestPathDelegate(string httpMethod, string pathInfo, string filePath);
 }

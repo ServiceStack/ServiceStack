@@ -187,7 +187,9 @@ namespace ServiceStack.WebHost.Endpoints
             this.AllowNonHttpOnlyCookies = instance.AllowNonHttpOnlyCookies;
             this.AllowPartialResponses = instance.AllowPartialResponses;
             this.IgnoreWarningsOnPropertyNames = instance.IgnoreWarningsOnPropertyNames;
-            this.PreExecuteServiceFilter = PreExecuteServiceFilter;
+            this.PreExecuteServiceFilter = instance.PreExecuteServiceFilter;
+            this.PostExecuteServiceFilter = instance.PostExecuteServiceFilter;
+            this.FallbackRestPath = instance.FallbackRestPath;
         }
 
         public static string GetAppConfigPath()
@@ -612,6 +614,8 @@ namespace ServiceStack.WebHost.Endpoints
         public Action<object, IHttpRequest, IHttpResponse> PreExecuteServiceFilter { get; set; }
 
         public Action<object, IHttpRequest, IHttpResponse> PostExecuteServiceFilter { get; set; }
+
+        public FallbackRestPathDelegate FallbackRestPath { get; set; }
     }
 
 }

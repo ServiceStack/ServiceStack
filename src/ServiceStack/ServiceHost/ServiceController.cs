@@ -160,6 +160,26 @@ namespace ServiceStack.ServiceHost
             foreach (RouteAttribute attr in attrs)
             {
                 var restPath = new RestPath(requestType, attr.Path, attr.Verbs, attr.Summary, attr.Notes);
+
+                var defaultAttr = attr as FallbackRouteAttribute;
+                if (defaultAttr != null)
+                {
+                    if (EndpointHost.Config != null)
+                    {
+                        if (EndpointHost.Config.FallbackRestPath != null)
+                            throw new NotSupportedException(string.Format(
+                                "Config.FallbackRestPath is already defined. Only 1 [DefaultRoute] is allowed."));
+
+                        EndpointHost.Config.FallbackRestPath = (httpMethod, pathInfo, filePath) =>
+                        {
+                            var pathInfoParts = RestPath.GetPathPartsForMatching(pathInfo);
+                            return restPath.IsMatch(httpMethod, pathInfoParts) ? restPath : null;
+                        };
+                    }
+                    
+                    continue;
+                }
+
                 if (!restPath.IsValid)
                     throw new NotSupportedException(string.Format(
                         "RestPath '{0}' on Type '{1}' is not Valid", attr.Path, requestType.Name));

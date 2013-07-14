@@ -43,9 +43,9 @@ using HttpResponseWrapper = ServiceStack.WebHost.Endpoints.Extensions.HttpRespon
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
-	class StaticFileHandler : IHttpHandler, IServiceStackHttpHandler
+    public class StaticFileHandler : IHttpHandler, IServiceStackHttpHandler
 	{
-		private static readonly ILog log = LogManager.GetLogger(typeof (StaticFileHandler));
+		private static readonly ILog log = LogManager.GetLogger(typeof(StaticFileHandler));
 
 		public void ProcessRequest(HttpContext context)
 		{

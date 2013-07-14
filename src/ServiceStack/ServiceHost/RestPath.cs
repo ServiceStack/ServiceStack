@@ -324,7 +324,7 @@ namespace ServiceStack.ServiceHost
 						+ variableName + " on " + RequestType.Name);
 				}
 
-                var value = requestComponents.Length > 1 ? requestComponents[i] : null; //wildcard has arg mismatch
+                var value = requestComponents.Length > i ? requestComponents[i] : null; //wildcard has arg mismatch
 				if (value != null && i == this.TotalComponentsCount - 1)
 				{
 					var sb = new StringBuilder(value);
