@@ -164,6 +164,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 	        padding: 5px;
 	        margin-right: 15px;
 	        white-space: pre-wrap;
+            overflow:auto;
         }}
         .example .value {{
 	        color: blue;
