@@ -48,7 +48,8 @@ namespace ServiceStack.WebHost.Endpoints
             {
                 if (instance == null)
                 {
-                    instance = new EndpointHostConfig {
+                    instance = new EndpointHostConfig
+                    {
                         MetadataTypesConfig = new MetadataTypesConfig(
                             addDefaultXmlNamespace: "http://schemas.servicestack.net/types"),
                         WsdlServiceNamespace = "http://schemas.servicestack.net/types",
@@ -57,6 +58,9 @@ namespace ServiceStack.WebHost.Endpoints
                             <h3><a href=""https://github.com/ServiceStack/ServiceStack/wiki/Clients-overview"">Clients Overview</a></h3>",
                         MetadataOperationPageBodyHtml = @"<br />
                             <h3><a href=""https://github.com/ServiceStack/ServiceStack/wiki/Clients-overview"">Clients Overview</a></h3>",
+                        MetadataCustomPath = "Views/Templates/Metadata/",
+                        UseCustomMetadataTemplates = false,
+
                         LogFactory = new NullLogFactory(),
                         EnableAccessRestrictions = true,
                         WebHostPhysicalPath = "~".MapServerPath(),
@@ -148,6 +152,8 @@ namespace ServiceStack.WebHost.Endpoints
             this.WsdlSoapActionNamespace = instance.WsdlSoapActionNamespace;
             this.MetadataPageBodyHtml = instance.MetadataPageBodyHtml;
             this.MetadataOperationPageBodyHtml = instance.MetadataOperationPageBodyHtml;
+            this.MetadataCustomPath = instance.MetadataCustomPath;
+            this.UseCustomMetadataTemplates = instance.UseCustomMetadataTemplates;
             this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
             this.ServiceEndpointsMetadataConfig = instance.ServiceEndpointsMetadataConfig;
             this.LogFactory = instance.LogFactory;
@@ -389,6 +395,8 @@ namespace ServiceStack.WebHost.Endpoints
 
         public string MetadataPageBodyHtml { get; set; }
         public string MetadataOperationPageBodyHtml { get; set; }
+        public string MetadataCustomPath { get; set; }
+        public bool UseCustomMetadataTemplates { get; set; }
 
         public string ServiceName { get; set; }
         public string DefaultContentType { get; set; }

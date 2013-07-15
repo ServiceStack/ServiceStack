@@ -15,12 +15,26 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
 
         static HtmlTemplates()
         {
-            IndexOperationsTemplate = LoadHtmlTemplate("IndexOperations.html");
-            OperationControlTemplate = LoadHtmlTemplate("OperationControl.html");
-            OperationsControlTemplate = LoadHtmlTemplate("OperationsControl.html");
+            var CustomPath = EndpointHost.Config.UseCustomMetadataTemplates;
+
+                IndexOperationsTemplate = CustomPath ? LoadExternal("IndexOperations.html") : LoadEmbeddedHtmlTemplate("IndexOperations.html");
+                OperationControlTemplate = CustomPath ? LoadExternal("OperationControl.html") : LoadEmbeddedHtmlTemplate("OperationControl.html");
+                OperationsControlTemplate = CustomPath ? LoadExternal("OperationsControl.html") : LoadEmbeddedHtmlTemplate("OperationsControl.html");
         }
 
-        private static string LoadHtmlTemplate(string templateName)
+        private static string LoadExternal(string templateName)
+        {
+            try
+            {
+                return File.ReadAllText(Path.Combine(EndpointHost.AppHost.VirtualPathProvider.RootDirectory.RealPath + "/" + EndpointHost.Config.MetadataCustomPath, templateName));
+            }
+            catch (Exception ex)
+            {
+                return LoadEmbeddedHtmlTemplate(templateName);
+            }
+        }
+
+        private static string LoadEmbeddedHtmlTemplate(string templateName)
         {
             string _resourceNamespace = typeof(HtmlTemplates).Namespace + ".Html.";
             var stream = typeof(HtmlTemplates).Assembly.GetManifestResourceStream(_resourceNamespace + templateName);
