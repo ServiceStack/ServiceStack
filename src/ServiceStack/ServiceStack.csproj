@@ -303,6 +303,7 @@
     <Compile Include="WebHost.Endpoints\Extensions\HttpListenerRequestWrapper.cs" />
     <Compile Include="WebHost.Endpoints\AppDelegates.cs" />
     <Compile Include="WebHost.Endpoints\ActionHandler.cs" />
+    <Compile Include="WebHost.Endpoints\Support\Templates\HtmlTemplates.cs" />
     <Compile Include="WebHost.Endpoints\RequestBindingException.cs" />
     <Compile Include="WebHost.Endpoints\Support\Markdown\Evaluator.cs" />
     <Compile Include="WebHost.Endpoints\Support\Markdown\ITemplateWriter.cs" />
@@ -411,6 +412,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Funq\License.txt" />
+    <EmbeddedResource Include="WebHost.Endpoints\Support\Templates\Html\OperationControl.html" />
+    <EmbeddedResource Include="WebHost.Endpoints\Support\Templates\Html\OperationsControl.html" />
+    <EmbeddedResource Include="WebHost.Endpoints\Support\Templates\Html\IndexOperations.html" />
     <EmbeddedResource Include="WebHost.Endpoints\Formats\HtmlFormat.html" />
     <None Include="MiniProfiler\UI\jquery.tmpl.beta1.js.orig" />
     <None Include="MiniProfiler\UI\jquery.1.6.2.js.orig" />
