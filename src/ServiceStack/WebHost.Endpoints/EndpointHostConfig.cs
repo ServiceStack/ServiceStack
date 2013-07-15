@@ -82,7 +82,8 @@ namespace ServiceStack.WebHost.Endpoints
 							"default.aspx",
 							"default.ashx",
 						},
-                        GlobalResponseHeaders = new Dictionary<string, string> { { "X-Powered-By", Env.ServerUserAgent } },
+                        DisableServiceStackVersionHeader = false,
+                        GlobalResponseHeaders = new Dictionary<string, string>(),
                         IgnoreFormatsInMetadata = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase),
                         AllowFileExtensions = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
 						{
@@ -155,6 +156,7 @@ namespace ServiceStack.WebHost.Endpoints
             this.MetadataCustomPath = instance.MetadataCustomPath;
             this.UseCustomMetadataTemplates = instance.UseCustomMetadataTemplates;
             this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
+            this.DisableServiceStackVersionHeader = instance.DisableServiceStackVersionHeader;
             this.ServiceEndpointsMetadataConfig = instance.ServiceEndpointsMetadataConfig;
             this.LogFactory = instance.LogFactory;
             this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
@@ -168,7 +170,6 @@ namespace ServiceStack.WebHost.Endpoints
             this.AllowRouteContentTypeExtensions = instance.AllowRouteContentTypeExtensions;
             this.DebugMode = instance.DebugMode;
             this.DefaultDocuments = instance.DefaultDocuments;
-            this.GlobalResponseHeaders = instance.GlobalResponseHeaders;
             this.IgnoreFormatsInMetadata = instance.IgnoreFormatsInMetadata;
             this.AllowFileExtensions = instance.AllowFileExtensions;
             this.EnableFeatures = instance.EnableFeatures;
@@ -196,6 +197,13 @@ namespace ServiceStack.WebHost.Endpoints
             this.PreExecuteServiceFilter = instance.PreExecuteServiceFilter;
             this.PostExecuteServiceFilter = instance.PostExecuteServiceFilter;
             this.FallbackRestPath = instance.FallbackRestPath;
+            this.GlobalResponseHeaders = instance.GlobalResponseHeaders;
+
+            if (!this.DisableServiceStackVersionHeader)
+            {
+                this.GlobalResponseHeaders.Add("X-Powered-By", Env.ServerUserAgent);
+            }
+            
         }
 
         public static string GetAppConfigPath()
@@ -400,6 +408,7 @@ namespace ServiceStack.WebHost.Endpoints
 
         public string ServiceName { get; set; }
         public string DefaultContentType { get; set; }
+        public bool DisableServiceStackVersionHeader { get; set; }
         public bool AllowJsonpRequests { get; set; }
         public bool AllowRouteContentTypeExtensions { get; set; }
         public bool DebugMode { get; set; }
@@ -458,6 +467,7 @@ namespace ServiceStack.WebHost.Endpoints
         public bool UseHttpsLinks { get; set; }
 
         private string defaultOperationNamespace;
+
         public string DefaultOperationNamespace
         {
             get
