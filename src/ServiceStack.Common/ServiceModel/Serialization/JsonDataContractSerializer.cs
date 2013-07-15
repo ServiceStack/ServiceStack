@@ -25,7 +25,7 @@ namespace ServiceStack.ServiceModel.Serialization
             if (TextSerializer != null)
                 return TextSerializer.SerializeToString(obj);
 
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX && !ANDROIDINDIE
             if (!UseBcl)
                 return JsonSerializer.SerializeToString(obj);
 
@@ -59,7 +59,7 @@ namespace ServiceStack.ServiceModel.Serialization
             {
                 TextSerializer.SerializeToStream(obj, stream);
             }
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX && !ANDROIDINDIE
             else if (UseBcl)
             {
                 var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(obj.GetType());
