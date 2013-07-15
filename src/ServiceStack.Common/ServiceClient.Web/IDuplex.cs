@@ -1,4 +1,4 @@
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX && !ANDROIDINDIE
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 

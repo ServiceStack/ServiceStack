@@ -20,7 +20,7 @@ namespace ServiceStack.ServiceModel.Serialization
             if (TextSerializer != null)
                 return TextSerializer.DeserializeFromString(json, returnType);
 
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX && !ANDROIDINDIE
             if (!UseBcl)
                 return JsonSerializer.DeserializeFromString(json, returnType);
 
@@ -60,7 +60,7 @@ namespace ServiceStack.ServiceModel.Serialization
             if (TextSerializer != null)
                 return TextSerializer.DeserializeFromStream<T>(stream);
 
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX && !ANDROIDINDIE
             if (UseBcl)
             {
                 var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(typeof(T));
@@ -75,7 +75,7 @@ namespace ServiceStack.ServiceModel.Serialization
             if (TextSerializer != null)
                 return TextSerializer.DeserializeFromStream(type, stream);
 
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX && !ANDROIDINDIE
             if (UseBcl)
             {
                 var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(type);

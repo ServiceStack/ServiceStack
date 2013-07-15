@@ -6,7 +6,7 @@ using ServiceStack.ServiceHost;
 namespace ServiceStack.ServiceClient.Web
 {
 
-#if SILVERLIGHT || MONOTOUCH || XBOX
+#if SILVERLIGHT || MONOTOUCH || XBOX || ANDROIDINDIE
 
     public class Soap11ServiceClient : IServiceClient
     {
