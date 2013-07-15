@@ -15,11 +15,20 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
 
         static HtmlTemplates()
         {
-            var CustomPath = EndpointHost.Config.UseCustomMetadataTemplates;
+            var UseCustomPath = EndpointHost.Config.UseCustomMetadataTemplates;
 
-                IndexOperationsTemplate = CustomPath ? LoadExternal("IndexOperations.html") : LoadEmbeddedHtmlTemplate("IndexOperations.html");
-                OperationControlTemplate = CustomPath ? LoadExternal("OperationControl.html") : LoadEmbeddedHtmlTemplate("OperationControl.html");
-                OperationsControlTemplate = CustomPath ? LoadExternal("OperationsControl.html") : LoadEmbeddedHtmlTemplate("OperationsControl.html");
+            if (UseCustomPath)
+            {
+                IndexOperationsTemplate = LoadExternal("IndexOperations.html");
+                OperationControlTemplate = LoadExternal("OperationControl.html");
+                OperationsControlTemplate = LoadExternal("OperationsControl.html");
+            }
+            else
+            {
+                IndexOperationsTemplate = LoadEmbeddedHtmlTemplate("IndexOperations.html");
+                OperationControlTemplate = LoadEmbeddedHtmlTemplate("OperationControl.html");
+                OperationsControlTemplate = LoadEmbeddedHtmlTemplate("OperationsControl.html");
+            }
         }
 
         private static string LoadExternal(string templateName)
