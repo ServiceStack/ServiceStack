@@ -1,3 +1,4 @@
+using System;
 using System.Net;
 using System.Web;
 using ServiceStack.Common.Web;
@@ -8,14 +9,14 @@ namespace ServiceStack.WebHost.Endpoints.Support
 	public class IndexPageHttpHandler
 		: IServiceStackHttpHandler, IHttpHandler
 	{
-
 		/// <summary>
 		/// Non ASP.NET requests
 		/// </summary>
 		/// <param name="request"></param>
 		/// <param name="response"></param>
 		/// <param name="operationName"></param>
-		public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
+		/// <param name="closeAction"></param>
+		public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName, Action closeAction = null)
 		{
 			var defaultUrl = EndpointHost.Config.ServiceEndpointsMetadataConfig.DefaultMetadataUri;
 
@@ -31,6 +32,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				response.StatusCode = (int)HttpStatusCode.Redirect;
 				response.AddHeader(HttpHeaders.Location, defaultUrl);
 			}
+			if (closeAction != null)
+				closeAction();
 		}
 
         /// <summary>

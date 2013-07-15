@@ -1,3 +1,4 @@
+using System;
 using System.Net;
 using ServiceStack.Common.Web;
 using ServiceStack.Razor.Managers;
@@ -20,7 +21,7 @@ namespace ServiceStack.Razor
             PathInfo = pathInfo;
         }
 
-        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Action closeAction = null)
         {
             httpRes.ContentType = ContentType.Html;
             if (RazorFormat == null)
@@ -31,6 +32,8 @@ namespace ServiceStack.Razor
             {
                 httpRes.StatusCode = (int)HttpStatusCode.NotFound;
                 httpRes.EndHttpHandlerRequest();
+								if (closeAction != null)
+									closeAction();
                 return;
             }
 
@@ -46,6 +49,8 @@ namespace ServiceStack.Razor
             }
 
             RazorFormat.ProcessRazorPage(httpReq, contentPage, model, httpRes);
+						if (closeAction != null)
+							closeAction();
         }
 
         public override object CreateRequest(IHttpRequest request, string operationName)

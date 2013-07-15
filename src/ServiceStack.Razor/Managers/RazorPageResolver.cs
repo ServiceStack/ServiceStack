@@ -81,12 +81,14 @@ namespace ServiceStack.Razor.Managers
         /// <summary>
         /// This is called by the hosting environment via CatchAll usually for content pages.
         /// </summary>
-        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Action closeAction = null)
         {
             httpRes.ContentType = ContentType.Html;
 
             ResolveAndExecuteRazorPage(httpReq, httpRes, null);
             httpRes.EndServiceStackRequest(skipHeaders: true);
+	          if (closeAction != null)
+		          closeAction();
         }
 
         /// <summary>

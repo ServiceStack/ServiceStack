@@ -49,7 +49,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
         public abstract object CreateRequest(IHttpRequest request, string operationName);
         public abstract object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request);
 
-        public virtual void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public virtual void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Action closeAction = null)
         {
             throw new NotImplementedException();
         }

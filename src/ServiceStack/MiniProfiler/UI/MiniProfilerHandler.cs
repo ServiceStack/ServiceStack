@@ -144,7 +144,7 @@ namespace ServiceStack.MiniProfiler.UI
 				null);
 		}
 
-		public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+		public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Action closeAction = null)
 		{
 			var path = httpReq.PathInfo;
 
@@ -168,6 +168,8 @@ namespace ServiceStack.MiniProfiler.UI
 			}
 
 			httpRes.Write(output);
+			if (closeAction != null)
+				closeAction();
 		}
 
 		/// <summary>

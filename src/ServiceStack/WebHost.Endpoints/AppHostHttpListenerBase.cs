@@ -54,8 +54,7 @@ namespace ServiceStack.WebHost.Endpoints
 				{
 					httpReq.OperationName = operationName = restHandler.RestPath.RequestType.Name;
 				}
-				serviceStackHandler.ProcessRequest(httpReq, httpRes, operationName);
-				httpRes.Close();
+				serviceStackHandler.ProcessRequest(httpReq, httpRes, operationName, httpRes.Close);
 				return;
 			}
 

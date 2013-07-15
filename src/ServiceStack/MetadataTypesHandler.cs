@@ -29,7 +29,7 @@ namespace ServiceStack
                 GetType().Name);
         }
 
-        public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Action closeAction = null)
         {
             var metadata = new MetadataTypes
             {
@@ -111,6 +111,8 @@ namespace ServiceStack
             httpRes.ContentType = "application/x-ssz-metatypes";
             var encJson = CryptUtils.Encrypt(EndpointHostConfig.PublicKey, json, RsaKeyLengths.Bit2048);
             httpRes.Write(encJson);
+						if (closeAction != null)
+							closeAction();
         }
     }
 

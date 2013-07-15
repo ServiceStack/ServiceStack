@@ -24,7 +24,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		public string DefaultRootFileName { get; set; }
 		public string DefaultHandler { get; set; }
 
-		public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
+		public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName, Action closeAction = null)
 		{
             Log.ErrorFormat("{0} Request not found: {1}", request.UserHostAddress, request.RawUrl);
 
@@ -47,6 +47,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		    response.ContentType = "text/plain";
 			response.StatusCode = 404;
             response.EndHttpHandlerRequest(skipClose: true, afterBody: r => r.Write(text.ToString()));
+						if (closeAction != null)
+							closeAction();
 		}
 
 		public void ProcessRequest(HttpContext context)
