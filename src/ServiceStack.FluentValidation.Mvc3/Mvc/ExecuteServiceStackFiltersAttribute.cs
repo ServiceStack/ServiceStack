@@ -21,14 +21,16 @@ namespace ServiceStack.Mvc
 			var authAttrs = GetActionAndControllerAttributes<AuthenticateAttribute>(filterContext);
 			if (authAttrs.Count > 0 && ( ssController.AuthSession==null || !ssController.AuthSession.IsAuthenticated))
 			{
-                filterContext.Result = ssController.AuthenticationErrorResult;
-                return;
+				filterContext.Result = ssController.AuthenticationErrorResult;
+				return;
 			}
 
 			var roleAttrs = GetActionAndControllerAttributes<RequiredRoleAttribute>(filterContext);
+			var anyRoleAttrs = GetActionAndControllerAttributes<RequiresAnyRoleAttribute>(filterContext);
 			var permAttrs = GetActionAndControllerAttributes<RequiredPermissionAttribute>(filterContext);
+			var anyPermAttrs = GetActionAndControllerAttributes<RequiresAnyPermissionAttribute>(filterContext);
 
-			if (roleAttrs.Count == 0 && permAttrs.Count == 0) return;
+			if (roleAttrs.Count + anyRoleAttrs.Count + permAttrs.Count + anyPermAttrs.Count == 0) return;
 
 			var httpReq = HttpContext.Current.Request.ToRequest();
 			var userAuthRepo = httpReq.TryResolve<IUserAuthRepository>();
@@ -40,8 +42,22 @@ namespace ServiceStack.Mvc
 				return;
 			}
 
+			var hasAnyRole = anyRoleAttrs.All(x => x.HasAnyRoles(httpReq, ssController.AuthSession, userAuthRepo));
+			if (!hasAnyRole)
+			{
+				filterContext.Result = ssController.AuthorizationErrorResult;
+				return;
+			}
+
 			var hasPermssions = permAttrs.All(x => x.HasAllPermissions(httpReq, ssController.AuthSession, userAuthRepo));
 			if (!hasPermssions)
+			{
+				filterContext.Result = ssController.AuthorizationErrorResult;
+				return;
+			}
+
+			var hasAnyPermission = anyPermAttrs.All(x => x.HasAnyPermissions(httpReq, ssController.AuthSession, userAuthRepo));
+			if (!hasAnyPermission)
 			{
 				filterContext.Result = ssController.AuthorizationErrorResult;
 				return;
