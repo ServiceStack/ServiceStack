@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using NUnit.Framework;
-using ServiceStack.Common.Extensions;
 using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests
@@ -130,6 +129,36 @@ namespace ServiceStack.Common.Tests
             Assert.That("/a".CombineWith("some", "other", "path/"), Is.EqualTo("/a/some/other/path/"));
             
             Assert.That("".CombineWith("some", "other", "path/"), Is.EqualTo("some/other/path/"));
+        }
+
+        [Test]
+        public void ToHttps_is_idempotent()
+        {
+            Assert.That("https://host.example.com/path".ToHttps().ToHttps(), Is.EqualTo("https://host.example.com/path"));
+        }
+
+        [Test]
+        public void ToHttps_replaces_http_with_https()
+        {
+            Assert.That("http://host.example.com/path".ToHttps(), Is.EqualTo("https://host.example.com/path"));
+        }
+
+        [Test]
+        public void ToHttps_only_replaces_http_at_beginning_of_string()
+        {
+            Assert.That("http://host.example.com/http/path".ToHttps(), Is.EqualTo("https://host.example.com/http/path"));
+        }
+
+        [Test]
+        public void ToHttps_ignores_whitespace_at_beginning_of_string()
+        {
+            Assert.That("  http://host.example.com".ToHttps(), Is.EqualTo("https://host.example.com"));
+        }
+
+        [Test]
+        public void ToHttps_is_not_case_sensitive()
+        {
+            Assert.That("HTTP://HOST.EXAMPLE.COM".ToHttps(), Is.EqualTo("https://HOST.EXAMPLE.COM"));
         }
 	}
 }

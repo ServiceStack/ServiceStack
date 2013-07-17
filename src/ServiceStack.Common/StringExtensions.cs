@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Reflection;
 using ServiceStack.Common.Utils;
 using ServiceStack.Text;
 using ServiceStack.Text.Common;
@@ -12,13 +11,17 @@ namespace ServiceStack.Common
 {
     public static class StringExtensions
     {
-        static readonly Regex RegexSplitCamelCase = new Regex("([A-Z]|[0-9]+)", 
+
 #if !SILVERLIGHT && !MONOTOUCH && !XBOX
-            RegexOptions.Compiled
+        private const RegexOptions PlatformRegexOptions = RegexOptions.Compiled;
 #else
-            RegexOptions.None
+        private const RegexOptions PlatformRegexOptions = RegexOptions.None;
 #endif
-        );
+
+        private static readonly Regex InvalidVarCharsRegex = new Regex(@"[^A-Za-z0-9]", PlatformRegexOptions);
+        private static readonly Regex RegexSplitCamelCaseRegex = new Regex("([A-Z]|[0-9]+)", PlatformRegexOptions);
+        private static readonly Regex HttpRegex = new Regex(@"^http://",
+            PlatformRegexOptions | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
         public static T ToEnum<T>(this string value)
         {
@@ -33,7 +36,7 @@ namespace ServiceStack.Common
 
         public static string SplitCamelCase(this string value)
         {
-            return RegexSplitCamelCase.Replace(value, " $1").TrimStart();
+            return RegexSplitCamelCaseRegex.Replace(value, " $1").TrimStart();
         }
 
         public static string ToCamelCase(this string value)
@@ -59,6 +62,15 @@ namespace ServiceStack.Common
         {
             var ucWords = camelCase.SplitCamelCase().ToLower();
             return ucWords[0].ToInvariantUpper() + ucWords.Substring(1);
+        }
+
+        public static string ToHttps(this string url)
+        {
+            if (url == null)
+            {
+                throw new ArgumentNullException("url");
+            }
+            return HttpRegex.Replace(url.Trim(), "https://");
         }
 
         public static bool IsEmpty(this string value)
@@ -107,18 +119,10 @@ namespace ServiceStack.Common
             return false;
         }
 
-        private static readonly Regex InvalidVarCharsRegEx = new Regex(@"[^A-Za-z0-9]",
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
-            RegexOptions.Compiled
-#else
- RegexOptions.None
-#endif
-        );
-
         public static string SafeVarName(this string text)
         {
             if (String.IsNullOrEmpty(text)) return null;
-            return InvalidVarCharsRegEx.Replace(text, "_");
+            return InvalidVarCharsRegex.Replace(text, "_");
         }
 
         public static string Join(this List<string> items)

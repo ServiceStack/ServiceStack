@@ -71,10 +71,5 @@ namespace ServiceStack.Common.Extensions
         {
             return Proxy.Join(items, delimeter);
         }
-
-        public static string ToHttps(this string value)
-        {
-            return value.Replace("http", "https");
-        }
     }
 }
