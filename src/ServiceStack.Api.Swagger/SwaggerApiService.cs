@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -148,11 +149,17 @@ namespace ServiceStack.Api.Swagger
             var map = EndpointHost.ServiceManager.ServiceController.RestPathMap;
             var paths = new List<RestPath>();
 
-            var basePath = EndpointHost.Config.UseHttpsLinks ? httpReq.GetParentPathUrl().ToHttps() : httpReq.GetParentPathUrl();
-
-            if (basePath.ToLower().EndsWith(SwaggerResourcesService.RESOURCE_PATH))
+            var basePath = EndpointHost.Config.WebHostUrl;
+            if (basePath == null)
             {
-                basePath = basePath.Substring(0, basePath.ToLower().LastIndexOf(SwaggerResourcesService.RESOURCE_PATH));
+                basePath = EndpointHost.Config.UseHttpsLinks
+                    ? httpReq.GetParentPathUrl().ToHttps()
+                    : httpReq.GetParentPathUrl();
+            }
+
+            if (basePath.EndsWith(SwaggerResourcesService.RESOURCE_PATH, StringComparison.OrdinalIgnoreCase))
+            {
+                basePath = basePath.Substring(0, basePath.LastIndexOf(SwaggerResourcesService.RESOURCE_PATH, StringComparison.OrdinalIgnoreCase));
             }
 
             foreach (var key in map.Keys)

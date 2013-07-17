@@ -48,10 +48,18 @@ namespace ServiceStack.Api.Swagger
 
         public object Get(Resources request)
         {
+            var basePath = EndpointHost.Config.WebHostUrl;
+            if (basePath == null)
+            {
+                basePath = EndpointHost.Config.UseHttpsLinks
+                    ? Request.GetParentPathUrl().ToHttps()
+                    : Request.GetParentPathUrl();
+            }
+
             var result = new ResourcesResponse
             {
                 SwaggerVersion = "1.1",
-                BasePath = EndpointHost.Config.UseHttpsLinks ? Request.GetParentPathUrl().ToHttps() : Request.GetParentPathUrl(),
+                BasePath = basePath,
                 Apis = new List<RestService>()
             };
             var operations = EndpointHost.Metadata;

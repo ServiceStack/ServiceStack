@@ -320,6 +320,80 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test, TestCaseSource("RestClients")]
+        public void Should_use_webhosturl_as_resources_base_path_when_configured(IRestClient client)
+        {
+            const string webHostUrl = "https://host.example.com/_api";
+            try
+            {
+                appHost.Config.WebHostUrl = webHostUrl;
+
+                var resources = client.Get<ResourcesResponse>("/resources");
+                resources.PrintDump();
+
+                Assert.That(resources.BasePath, Is.EqualTo(webHostUrl));
+            }
+            finally
+            {
+                appHost.Config.WebHostUrl = null;
+            }
+        }
+
+        [Test, TestCaseSource("RestClients")]
+        public void Should_use_webhosturl_as_resource_base_path_when_configured(IRestClient client)
+        {
+            const string webHostUrl = "https://host.example.com/_api";
+            try
+            {
+                appHost.Config.WebHostUrl = webHostUrl;
+
+                var resource = client.Get<ResourceResponse>("/resource/swagger");
+                resource.PrintDump();
+
+                Assert.That(resource.BasePath, Is.EqualTo(webHostUrl));
+            }
+            finally
+            {
+                appHost.Config.WebHostUrl = null;
+            }
+        }
+
+        [Test, TestCaseSource("RestClients")]
+        public void Should_use_https_for_resources_basepath_when_usehttpslinks_config_is_true(IRestClient client)
+        {
+            try
+            {
+                appHost.Config.UseHttpsLinks = true;
+
+                var resources = client.Get<ResourcesResponse>("/resources");
+                resources.PrintDump();
+
+                Assert.That(resources.BasePath.ToLowerInvariant(), Is.StringStarting("https"));
+            }
+            finally
+            {
+                appHost.Config.UseHttpsLinks = false;
+            }
+        }
+
+        [Test, TestCaseSource("RestClients")]
+        public void Should_use_https_for_resource_basepath_when_usehttpslinks_config_is_true(IRestClient client)
+        {
+            try
+            {
+                appHost.Config.UseHttpsLinks = true;
+
+                var resource = client.Get<ResourceResponse>("/resource/swagger");
+                resource.PrintDump();
+
+                Assert.That(resource.BasePath.ToLowerInvariant(), Is.StringStarting("https"));
+            }
+            finally
+            {
+                appHost.Config.UseHttpsLinks = false;
+            }
+        }
+
+        [Test, TestCaseSource("RestClients")]
         public void Should_retrieve_service_parameters(IRestClient client)
         {
             var resource = client.Get<ResourceResponse>("/resource/swagger");
