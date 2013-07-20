@@ -68,6 +68,8 @@ namespace ServiceStack.Api.Swagger
 
                 CreateRestPaths(result.Apis, operationType, operationName);
             }
+
+            result.Apis = result.Apis.OrderBy(a => a.Path).ToList();
             return result;
         }
 
