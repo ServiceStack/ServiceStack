@@ -44,9 +44,16 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 
 		public void Render(HtmlTextWriter output)
 		{
-            var renderedTemplate = HtmlTemplates.Format(HtmlTemplates.OperationControlTemplate, 
-				Title, 
-				HttpRequest.GetParentAbsolutePath().ToParentPath() + MetadataConfig.DefaultMetadataUri,
+			// use a fully qualified path if WebHostUrl is set
+			string baseUrl = HttpRequest.GetParentAbsolutePath();
+			if (EndpointHost.Config.WebHostUrl != null)
+			{
+				baseUrl = EndpointHost.Config.WebHostUrl.CombineWith(baseUrl);
+			}
+
+			var renderedTemplate = HtmlTemplates.Format(HtmlTemplates.OperationControlTemplate, 
+				Title,
+				baseUrl.CombineWith(MetadataConfig.DefaultMetadataUri),
 				ContentFormat.ToUpper(), 
 				OperationName,
 				HttpRequestTemplate, 

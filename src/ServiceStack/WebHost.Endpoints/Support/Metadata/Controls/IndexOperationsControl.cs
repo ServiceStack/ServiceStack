@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
+using ServiceStack.Common;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Support.Templates;
@@ -22,11 +23,17 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
         {
             var show = EndpointHost.DebugMode; //Always show in DebugMode
 
-            var parentPath = HttpRequest.GetParentAbsolutePath();
+            // use a fully qualified path if WebHostUrl is set
+            string baseUrl = HttpRequest.GetParentAbsolutePath();
+            if (EndpointHost.Config.WebHostUrl != null)
+            {
+                baseUrl = EndpointHost.Config.WebHostUrl.CombineWith(baseUrl);
+            }
+           
             var opTemplate = new StringBuilder("<tr><th>{0}</th>");
             foreach (var config in MetadataConfig.AvailableFormatConfigs)
             {
-                var uri = parentPath + config.DefaultMetadataUri;
+                var uri = baseUrl.CombineWith(config.DefaultMetadataUri);
                 if (MetadataConfig.IsVisible(HttpRequest, config.Format.ToFormat(), operation))
                 {
                     show = true;
