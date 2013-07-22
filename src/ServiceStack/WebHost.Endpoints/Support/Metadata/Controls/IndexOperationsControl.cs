@@ -86,7 +86,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
                 debugOnlyInfo.AppendLine("</ul>");
             }
 
-			var renderedTemplate = string.Format(
+            var renderedTemplate = HtmlTemplates.Format(
 				HtmlTemplates.IndexOperationsTemplate, 
                 this.Title, 
                 this.MetadataPageBodyHtml, 

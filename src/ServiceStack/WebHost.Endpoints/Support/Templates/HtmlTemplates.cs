@@ -1,57 +1,77 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Reflection;
 using System.IO;
+using ServiceStack.Common.Utils;
 
 namespace ServiceStack.WebHost.Endpoints.Support.Templates
 {
     public static class HtmlTemplates
     {
-        public static string IndexOperationsTemplate;
-        public static string OperationControlTemplate;
-        public static string OperationsControlTemplate;
+        private static string indexOperationsTemplate;
+        public static string IndexOperationsTemplate
+        {
+            get
+            {
+                return indexOperationsTemplate ??
+                       (indexOperationsTemplate = LoadEmbeddedHtmlTemplate("IndexOperations.html"));
+            }
+            set { indexOperationsTemplate = value; }
+        }
 
-        private const string IndexOperationsFileName = "IndexOperations.html";
-        private const string OperationControlFileName = "OperationControl.html";
-        private const string OperationsControlFileName = "OperationsControl.html";
+        private static string operationControlTemplate;
+        public static string OperationControlTemplate
+        {
+            get
+            {
+                return operationControlTemplate ??
+                       (operationControlTemplate = LoadEmbeddedHtmlTemplate("OperationControl.html"));
+            }
+            set { operationControlTemplate = value; }
+        }
+
+        private static string operationsControlTemplate;
+        public static string OperationsControlTemplate
+        {
+            get
+            {
+                return operationsControlTemplate ??
+                       (operationsControlTemplate = LoadEmbeddedHtmlTemplate("OperationsControl.html"));
+            }
+            set { operationsControlTemplate = value; }
+        }
 
 
         static HtmlTemplates()
         {
-            var UseCustomPath = EndpointHost.Config.UseCustomMetadataTemplates;
-
-            if (UseCustomPath)
+            if (EndpointHost.Config.UseCustomMetadataTemplates)
             {
-                IndexOperationsTemplate = LoadExternal(IndexOperationsFileName);
-                OperationControlTemplate = LoadExternal(OperationControlFileName);
-                OperationsControlTemplate = LoadExternal(OperationsControlFileName);
-            }
-            else
-            {
-                IndexOperationsTemplate = LoadEmbeddedHtmlTemplate(IndexOperationsFileName);
-                OperationControlTemplate = LoadEmbeddedHtmlTemplate(OperationControlFileName);
-                OperationsControlTemplate = LoadEmbeddedHtmlTemplate(OperationsControlFileName);
+                TryLoadExternal("IndexOperations.html", ref indexOperationsTemplate);
+                TryLoadExternal("OperationControl.html", ref operationControlTemplate);
+                TryLoadExternal("OperationsControl.html", ref operationsControlTemplate);
             }
         }
 
-        private static string LoadExternal(string templateName)
+        private static bool TryLoadExternal(string templateName, ref string template)
         {
             try
             {
-                return File.ReadAllText(Path.Combine(EndpointHost.AppHost.VirtualPathProvider.RootDirectory.RealPath + "/" + EndpointHost.Config.MetadataCustomPath, templateName));
+                var staticFilePath = PathUtils.CombinePaths(
+                    EndpointHost.AppHost.VirtualPathProvider.RootDirectory.RealPath, 
+                    EndpointHost.Config.MetadataCustomPath, 
+                    templateName);
+
+                template = File.ReadAllText(staticFilePath);
+                return true;
             }
             catch (Exception ex)
             {
-                return LoadEmbeddedHtmlTemplate(templateName);
+                return false;
             }
         }
 
         private static string LoadEmbeddedHtmlTemplate(string templateName)
         {
-            string _resourceNamespace = typeof(HtmlTemplates).Namespace + ".Html.";
-            var stream = typeof(HtmlTemplates).Assembly.GetManifestResourceStream(_resourceNamespace + templateName);
+            var resourceNamespace = typeof(HtmlTemplates).Namespace + ".Html.";
+            var stream = typeof(HtmlTemplates).Assembly.GetManifestResourceStream(resourceNamespace + templateName);
             if (stream == null)
             {
                 throw new FileNotFoundException(
@@ -62,6 +82,15 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
             {
                 return streamReader.ReadToEnd();
             }
+        }
+
+        public static string Format(string template, params object[] args)
+        {
+            for (int i = 0; i < args.Length; i++)
+            {
+                template = template.Replace(@"{" + i + "}", args[i].ToString());
+            }
+            return template;
         }
 
     }
