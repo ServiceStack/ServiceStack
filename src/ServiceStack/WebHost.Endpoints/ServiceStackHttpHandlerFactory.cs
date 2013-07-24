@@ -165,9 +165,11 @@ namespace ServiceStack.WebHost.Endpoints
             if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
             {
                 //Exception calling context.Request.Url on Apache+mod_mono
-                var absoluteUrl = Env.IsMono ? url.ToParentPath() : context.Request.GetApplicationUrl();
                 if (ApplicationBaseUrl == null)
+                {
+                    var absoluteUrl = Env.IsMono ? url.ToParentPath() : context.Request.GetApplicationUrl();
                     SetApplicationBaseUrl(absoluteUrl);
+                }
 
                 //e.g. CatchAllHandler to Process Markdown files
                 var catchAllHandler = GetCatchAllHandlerIfAny(httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());

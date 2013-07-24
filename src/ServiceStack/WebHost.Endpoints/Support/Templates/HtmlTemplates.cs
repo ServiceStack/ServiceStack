@@ -55,8 +55,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
             try
             {
                 var staticFilePath = PathUtils.CombinePaths(
-                    EndpointHost.AppHost.VirtualPathProvider.RootDirectory.RealPath, 
-                    EndpointHost.Config.MetadataCustomPath, 
+                    EndpointHost.AppHost.VirtualPathProvider.RootDirectory.RealPath,
+                    EndpointHost.Config.MetadataCustomPath,
                     templateName);
 
                 template = File.ReadAllText(staticFilePath);
@@ -83,15 +83,5 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
                 return streamReader.ReadToEnd();
             }
         }
-
-        public static string Format(string template, params object[] args)
-        {
-            for (int i = 0; i < args.Length; i++)
-            {
-                template = template.Replace(@"{" + i + "}", args[i].ToString());
-            }
-            return template;
-        }
-
     }
 }
