@@ -4,6 +4,8 @@ namespace ServiceStack.WebHost.Endpoints
 {
     public class ServiceEndpointsMetadataConfig
     {
+        private ServiceEndpointsMetadataConfig() { }
+
         /// <summary>
         /// Changes the links for the servicestack/metadata page
         /// </summary>
