@@ -88,8 +88,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
         {
             for (int i = 0; i < args.Length; i++)
             {
-                var currentValue = args[i] ?? String.Empty;
-                template = template.Replace(@"{" + i + "}", currentValue.ToString());
+                template = template.Replace(@"{" + i + "}", (args[i] ?? "").ToString());
             }
             return template;
         }
