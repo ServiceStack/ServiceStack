@@ -10,19 +10,12 @@ namespace ServiceStack.Common.Tests
     [TestFixture]
     public class CryptUtilsTest
     {
-        [TestFixtureSetUp]
-        public void Setup()
-        {
-
-            CryptConfig.length = RsaKeyLengths.Bit1024;
-            CryptConfig.keyPair = CryptConfig.CreatePublicAndPrivateKeyPair();
-            //RsaKeyLengths.Bit1024;
-        }
-
-
         [TestCase]
         public void CanEncryptWithStringExtension()
         {
+            CryptUtils.Length = RsaKeyLengths.Bit1024;
+            CryptUtils.KeyPair = CryptUtils.CreatePublicAndPrivateKeyPair();
+
             string TestStart = "Mr. Watson--come here--I want to see you.";
             string Encrypted;
             string Decrypted;
@@ -32,6 +25,20 @@ namespace ServiceStack.Common.Tests
 
             Decrypted = Encrypted.Decrypt();
             Assert.AreEqual(Decrypted, TestStart);
+
+        }
+
+        [TestCase]
+        [Test, ExpectedException(typeof(ArgumentNullException))]
+        public void CanEncryptWithStringExtensionFailsWithoutKeyPair()
+        {
+            CryptUtils.Length = RsaKeyLengths.Bit1024;
+            CryptUtils.KeyPair = null;
+            string TestStart = "Mr. Watson--come here--I want to see you.";
+            string Encrypted;
+
+            Encrypted = TestStart.Encrypt();
+                      
 
         }
     }

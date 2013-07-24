@@ -19,28 +19,6 @@ namespace ServiceStack.Common
     }
 
     /// <summary>
-    /// Configuration for CryptUtils
-    /// </summary>
-    public static class CryptConfig
-    {
-        public static RsaKeyLengths length;
-        public static RsaKeyPair keyPair;
-        /// <summary>
-        /// Create Public and Private Key Pair. Can be used to seed CryptConfig. (Not required)
-        /// </summary>        
-        /// <returns>RsaKeyPair</returns>
-        public static RsaKeyPair CreatePublicAndPrivateKeyPair()
-        {
-            var rsaProvider = new RSACryptoServiceProvider((int)length);
-            return new RsaKeyPair
-            {
-                PrivateKey = rsaProvider.ToXmlString(true),
-                PublicKey = rsaProvider.ToXmlString(false),
-            };
-        }
-    }
-
-    /// <summary>
     /// Useful .NET Encryption Utils from:
     /// http://andrewlocatelliwoodcock.com/2011/08/01/implementing-rsa-asymmetric-public-private-key-encryption-in-c-encrypting-under-the-public-key/
     /// </summary>
@@ -49,14 +27,21 @@ namespace ServiceStack.Common
 
         public static string Encrypt(this string data)
         {
-            return Encrypt(CryptConfig.keyPair.PublicKey, data, CryptConfig.length);
+            if (KeyPair != null)
+                return Encrypt(KeyPair.PublicKey, data, Length);
+            else throw new ArgumentNullException("No KeyPair given for encryption in CryptUtils");
         }
 
         public static string Decrypt(this string data)
         {
-            return Decrypt(CryptConfig.keyPair.PrivateKey, data, CryptConfig.length);
+            if (KeyPair !=null)
+                return Decrypt(KeyPair.PrivateKey, data, Length);
+            else throw new ArgumentNullException("No KeyPair given for encryption in CryptUtils");
         }
 
+        public static RsaKeyLengths Length;
+        public static RsaKeyPair KeyPair;
+        
 
         /// <summary>
         /// Encrypt an arbitrary string of data under the supplied public key
@@ -177,6 +162,20 @@ namespace ServiceStack.Common
         public static RsaKeyPair CreatePublicAndPrivateKeyPair(RsaKeyLengths length = RsaKeyLengths.Bit2048)
         {
             var rsaProvider = new RSACryptoServiceProvider((int)length);
+            return new RsaKeyPair
+            {
+                PrivateKey = rsaProvider.ToXmlString(true),
+                PublicKey = rsaProvider.ToXmlString(false),
+            };
+        }
+
+        /// <summary>
+        /// Create Public and Private Key Pair based on settings already in static class.
+        /// </summary>        
+        /// <returns>RsaKeyPair</returns>
+        public static RsaKeyPair CreatePublicAndPrivateKeyPair()
+        {
+            var rsaProvider = new RSACryptoServiceProvider((int)Length);            
             return new RsaKeyPair
             {
                 PrivateKey = rsaProvider.ToXmlString(true),
