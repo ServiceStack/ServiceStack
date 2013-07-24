@@ -19,7 +19,7 @@ namespace ServiceStack.Common
 #endif
 
         private static readonly Regex InvalidVarCharsRegex = new Regex(@"[^A-Za-z0-9]", PlatformRegexOptions);
-        private static readonly Regex RegexSplitCamelCaseRegex = new Regex("([A-Z]|[0-9]+)", PlatformRegexOptions);
+        private static readonly Regex SplitCamelCaseRegex = new Regex("([A-Z]|[0-9]+)", PlatformRegexOptions);
         private static readonly Regex HttpRegex = new Regex(@"^http://",
             PlatformRegexOptions | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
@@ -36,7 +36,7 @@ namespace ServiceStack.Common
 
         public static string SplitCamelCase(this string value)
         {
-            return RegexSplitCamelCaseRegex.Replace(value, " $1").TrimStart();
+            return SplitCamelCaseRegex.Replace(value, " $1").TrimStart();
         }
 
         public static string ToCamelCase(this string value)
