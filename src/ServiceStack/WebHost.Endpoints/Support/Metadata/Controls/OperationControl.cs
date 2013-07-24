@@ -44,7 +44,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 
 		public void Render(HtmlTextWriter output)
 		{
-            var renderedTemplate = HtmlTemplates.Format(HtmlTemplates.OperationControlTemplate, 
+            var renderedTemplate = string.Format(HtmlTemplates.OperationControlTemplate, 
 				Title, 
 				HttpRequest.GetParentAbsolutePath().ToParentPath() + MetadataConfig.DefaultMetadataUri,
 				ContentFormat.ToUpper(), 
