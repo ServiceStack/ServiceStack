@@ -1,23 +1,31 @@
 using System.IO;
 using System.Web.UI;
+using Funq;
 using NUnit.Framework;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.WebHost.Endpoints.Support.Metadata.Controls;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
+using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
+    public class OperationTestsAppHost : AppHostHttpListenerBase
+    {
+        public OperationTestsAppHost() : base(typeof(GetCustomer).Name, typeof(GetCustomer).Assembly) { }
+        public override void Configure(Container container) { }
+    }
+
 	[TestFixture]
 	public class OperationTests : MetadataTestBase
 	{
-	    private AppHost _appHost;
+        private OperationTestsAppHost _appHost;
 	    private OperationControl _operationControl;
 
         [TestFixtureSetUp]
         public void OnTestFixtureSetUp()
         {
-            _appHost = new AppHost();
+            _appHost = new OperationTestsAppHost();
             _appHost.Init();
 
             _operationControl = new OperationControl
@@ -32,6 +40,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 OperationName = "operationname",
                 MetadataHtml = "<p>Operation</p>"
             };
+        }
+
+        [TestFixtureTearDown]
+        public void OnTestFixtureTearDown()
+        {
+            _appHost.Dispose();
+        }
+
+        [TearDown]
+        public void OnTearDown()
+        {
+            _appHost.Config.WebHostUrl = null;
         }
 
         [Test]
@@ -49,8 +69,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void OperationControl_render_creates_link_back_to_main_page_using_relative_uri_when_WebHostUrl_not_set()
         {
-            _appHost.Config.WebHostUrl = null;
-
             var stringWriter = new StringWriter();
             _operationControl.Render(new HtmlTextWriter(stringWriter));
 
