@@ -102,6 +102,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response2.Results[typeof(FunqRequestScope).Name], Is.EqualTo(2));
             Assert.That(response2.Results[typeof(FunqNoneScope).Name], Is.EqualTo(4));
 
+            Thread.Sleep(WaitForRequestCleanup);
+
             Assert.That(FunqRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
             Assert.That(AltRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
         }

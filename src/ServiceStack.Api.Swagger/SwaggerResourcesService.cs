@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
+using ServiceStack.Common;
 using ServiceStack.Common.Extensions;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
@@ -48,10 +49,18 @@ namespace ServiceStack.Api.Swagger
 
         public object Get(Resources request)
         {
+            var basePath = EndpointHost.Config.WebHostUrl;
+            if (basePath == null)
+            {
+                basePath = EndpointHost.Config.UseHttpsLinks
+                    ? Request.GetParentPathUrl().ToHttps()
+                    : Request.GetParentPathUrl();
+            }
+
             var result = new ResourcesResponse
             {
                 SwaggerVersion = "1.1",
-                BasePath = EndpointHost.Config.UseHttpsLinks ? Request.GetParentPathUrl().ToHttps() : Request.GetParentPathUrl(),
+                BasePath = basePath,
                 Apis = new List<RestService>()
             };
             var operations = EndpointHost.Metadata;
