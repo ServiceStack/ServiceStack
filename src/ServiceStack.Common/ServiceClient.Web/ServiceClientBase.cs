@@ -1018,11 +1018,11 @@ namespace ServiceStack.ServiceClient.Web
 
         public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request)
         {
-			using (FileStream fileStream = fileToUpload.OpenRead())
-			{
-				return PostFileWithRequest<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, request);
+            using (FileStream fileStream = fileToUpload.OpenRead())
+            {
+                return PostFileWithRequest<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, request);
 
-			}
+            }
         }
 
         public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request)
@@ -1093,10 +1093,10 @@ namespace ServiceStack.ServiceClient.Web
 
         public virtual TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
         {
-			using (FileStream fileStream = fileToUpload.OpenRead())
-			{
-				return PostFile<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, mimeType);
-			}
+            using (FileStream fileStream = fileToUpload.OpenRead())
+            {
+                return PostFile<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, mimeType);
+            }
         }
 
         public virtual TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)

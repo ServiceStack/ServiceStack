@@ -322,7 +322,8 @@ namespace ServiceStack.ServiceClient.Web
             }
 #endif
 
-            var requestState = new RequestState<TResponse> {
+            var requestState = new RequestState<TResponse>
+            {
                 HttpMethod = httpMethod,
                 Url = requestUri,
 #if SILVERLIGHT && !WINDOWS_PHONE && !NETFX_CORE
@@ -601,7 +602,8 @@ namespace ServiceStack.ServiceClient.Web
                 Log.DebugFormat("Status Code : {0}", errorResponse.StatusCode);
                 Log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
 
-                var serviceEx = new WebServiceException(errorResponse.StatusDescription) {
+                var serviceEx = new WebServiceException(errorResponse.StatusDescription)
+                {
                     StatusCode = (int)errorResponse.StatusCode,
                 };
 
@@ -629,7 +631,8 @@ namespace ServiceStack.ServiceClient.Web
                 {
                     // Oh, well, we tried
                     Log.Debug(string.Format("WebException Reading Response Error: {0}", innerEx.Message), innerEx);
-                    requestState.HandleError(default(TResponse), new WebServiceException(errorResponse.StatusDescription, innerEx) {
+                    requestState.HandleError(default(TResponse), new WebServiceException(errorResponse.StatusDescription, innerEx)
+                    {
                         StatusCode = (int)errorResponse.StatusCode,
                     });
                 }
