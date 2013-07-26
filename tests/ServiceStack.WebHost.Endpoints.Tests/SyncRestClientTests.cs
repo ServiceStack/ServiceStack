@@ -261,7 +261,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class JsvSyncRestClientTests : SyncRestClientTests
     {
         public JsvSyncRestClientTests()
-            : base(8091)
+            : base(8093)
         {
         }
 
