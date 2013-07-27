@@ -46,14 +46,14 @@ namespace ServiceStack.ServiceInterface.Auth
         public virtual string RefIdStr { get; set; }
         public virtual Dictionary<string, string> Meta { get; set; }
 
-        public T Get<T>()
+        public virtual T Get<T>()
         {
             string str = null;
             if (Meta != null) Meta.TryGetValue(typeof(T).Name, out str);
             return str == null ? default(T) : TypeSerializer.DeserializeFromString<T>(str);
         }
 
-        public void Set<T>(T value)
+        public virtual void Set<T>(T value)
         {
             if (Meta == null) Meta = new Dictionary<string, string>();
             Meta[typeof(T).Name] = TypeSerializer.SerializeToString(value);
@@ -139,14 +139,14 @@ namespace ServiceStack.ServiceInterface.Auth
         public virtual string RefIdStr { get; set; }
         public virtual Dictionary<string, string> Meta { get; set; }
 
-        public T Get<T>()
+        public virtual T Get<T>()
         {
             string str = null;
             if (Meta != null) Meta.TryGetValue(typeof(T).Name, out str);
             return str == null ? default(T) : TypeSerializer.DeserializeFromString<T>(str);
         }
 
-        public void Set<T>(T value)
+        public virtual void Set<T>(T value)
         {
             if (Meta == null) Meta = new Dictionary<string, string>();
             Meta[typeof(T).Name] = TypeSerializer.SerializeToString(value);
