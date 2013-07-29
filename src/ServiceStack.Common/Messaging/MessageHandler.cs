@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text;
 using ServiceStack.Common;
 using ServiceStack.Logging;
@@ -24,6 +25,7 @@ namespace ServiceStack.Messaging
         private readonly Func<IMessage<T>, object> processMessageFn;
         private readonly Action<IMessage<T>, Exception> processInExceptionFn;
         public Func<string, IOneWayClient> ReplyClientFactory { get; set; }
+        public string[] PublishResponseWhitelist { get; set; }
         private readonly int retryCount;
 
         public int TotalMessagesProcessed { get; private set; }
@@ -152,12 +154,20 @@ namespace ServiceStack.Messaging
                 }
                 else
                 {
-                    //If there is a response send it to the typed response OutQ
+                    var responseType = response.GetType();
+
+                    var publishAllResponses = PublishResponseWhitelist == null;
+                    if (!publishAllResponses)
+                    {
+                        var inWhitelist = PublishResponseWhitelist.Any(publishResponse => responseType.Name == publishResponse);
+                        if (!inWhitelist) return;
+                    }
+
+                    //If there is a response send it to the typed response InQ
                     var mqReplyTo = message.ReplyTo;
 
                     if (mqReplyTo == null)
                     {
-                        var responseType = response.GetType();
                         // Leave as-is to work around a Mono 2.6.7 compiler bug
                         if (!StringExtensions.IsUserType(responseType)) return;
                         mqReplyTo = new QueueNames(responseType).In;
@@ -176,7 +186,6 @@ namespace ServiceStack.Messaging
                             Log.Error("Could not send response to '{0}' with client '{1}'"
                                 .Fmt(mqReplyTo, replyClient.GetType().Name), ex);
 
-                            var responseType = response.GetType();
                             // Leave as-is to work around a Mono 2.6.7 compiler bug
                             if (!StringExtensions.IsUserType(responseType)) return;
 
