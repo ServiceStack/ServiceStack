@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Web;
+using System.Collections.Generic;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
@@ -335,11 +336,29 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
         private static ErrorResponse ToErrorResponse(this Exception ex)
         {
+            List<ResponseError> errors = null;
+
+            // For some exception types, we'll need to extract additional information in debug mode
+            // (for example, so people can fix errors in their pages).
+            if(EndpointHost.DebugMode)
+            {
+                var compileEx = ex as HttpCompileException;
+                if (compileEx != null && compileEx.Results.Errors.HasErrors)
+                {
+                    errors = new List<ResponseError>();
+                    foreach (var err in compileEx.Results.Errors)
+                    {
+                        errors.Add(new ResponseError { Message = err.ToString() });
+                    }
+                }
+            }
+
             var dto = new ErrorResponse {
                 ResponseStatus = new ResponseStatus {
                     ErrorCode = ex.ToErrorCode(),
                     Message = ex.Message,
                     StackTrace = EndpointHost.DebugMode ? ex.StackTrace : null,
+                    Errors = errors
                 }
             };
             return dto;
