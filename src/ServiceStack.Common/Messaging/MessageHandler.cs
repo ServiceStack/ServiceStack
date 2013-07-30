@@ -25,7 +25,7 @@ namespace ServiceStack.Messaging
         private readonly Func<IMessage<T>, object> processMessageFn;
         private readonly Action<IMessage<T>, Exception> processInExceptionFn;
         public Func<string, IOneWayClient> ReplyClientFactory { get; set; }
-        public string[] PublishResponseWhitelist { get; set; }
+        public string[] PublishResponsesWhitelist { get; set; }
         private readonly int retryCount;
 
         public int TotalMessagesProcessed { get; private set; }
@@ -156,10 +156,10 @@ namespace ServiceStack.Messaging
                 {
                     var responseType = response.GetType();
 
-                    var publishAllResponses = PublishResponseWhitelist == null;
+                    var publishAllResponses = PublishResponsesWhitelist == null;
                     if (!publishAllResponses)
                     {
-                        var inWhitelist = PublishResponseWhitelist.Any(publishResponse => responseType.Name == publishResponse);
+                        var inWhitelist = PublishResponsesWhitelist.Any(publishResponse => responseType.Name == publishResponse);
                         if (!inWhitelist) return;
                     }
 
