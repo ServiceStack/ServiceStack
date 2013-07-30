@@ -132,13 +132,9 @@ Otherwise if you want to host ServiceStack Side-by-Side with MVC: Hosted at `/ap
 
 _Note: the binary packages are provided as-is - there is no commercial support available for ServiceStack_
 
-To help get started you should also clone the ServiceStack.Examples projects (includes dlls, demos and starter templates):
+### Examples
 
-    git clone git://github.com/ServiceStack/ServiceStack.Examples.git
-
-Alternatively if you want keep up with the latest version and not use NuGet, simply clone this repo:
-
-    git clone git://github.com/ServiceStack/ServiceStack.git
+**The [Definitive list of Example Projects, Use-Cases, Demos, Starter Templates](http://stackoverflow.com/a/15869816)**
     
 ## Download published NuGet binaries without NuGet
 
