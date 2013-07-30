@@ -122,14 +122,6 @@ ServiceStack with Razor Support: Create an empty ASP.NET Web or Console Applicat
 ServiceStack binaries only: Minimal installation of ServiceStack containing only the core-binaries (.NET 3.5+)
 ![Install-Pacakage ServiceStack](http://www.servicestack.net/img/nuget-servicestack.png)
 
-#### Starter templates with pre-configured AppHost and basic Hello World REST services
-
-If you just want ServiceStack hosted at `/` - Create an empty ASP.NET Web Application and
-![Install-Pacakage ServiceStack.Host.Mvc](http://www.servicestack.net/img/nuget-servicestack.host.aspnet.png)
-
-Otherwise if you want to host ServiceStack Side-by-Side with MVC: Hosted at `/api` - Create an empty MVC Web Application and
-![Install-Pacakage ServiceStack.Host.Mvc](http://www.servicestack.net/img/nuget-servicestack.host.mvc.png)
-
 _Note: the binary packages are provided as-is - there is no commercial support available for ServiceStack_
 
 ### Examples
