@@ -130,6 +130,8 @@ If you just want ServiceStack hosted at `/` - Create an empty ASP.NET Web Applic
 Otherwise if you want to host ServiceStack Side-by-Side with MVC: Hosted at `/api` - Create an empty MVC Web Application and
 ![Install-Pacakage ServiceStack.Host.Mvc](http://www.servicestack.net/img/nuget-servicestack.host.mvc.png)
 
+_Note: the binary packages are provided as-is - there is no commercial support available for ServiceStack_
+
 To help get started you should also clone the ServiceStack.Examples projects (includes dlls, demos and starter templates):
 
     git clone git://github.com/ServiceStack/ServiceStack.Examples.git
