@@ -10,6 +10,7 @@ namespace ServiceStack.Messaging
 
         public Func<IMessage, IMessage> RequestFilter { get; set; }
         public Func<object, object> ResponseFilter { get; set; }
+        public string[] PublishResponsesWhitelist { get; set; }
 
         private readonly Func<IMessage<T>, object> processMessageFn;
         private readonly Action<IMessage<T>, Exception> processExceptionFn;
@@ -20,7 +21,7 @@ namespace ServiceStack.Messaging
         {
         }
 
-        public MessageHandlerFactory(IMessageService messageService, 
+        public MessageHandlerFactory(IMessageService messageService,
             Func<IMessage<T>, object> processMessageFn,
             Action<IMessage<T>, Exception> processExceptionEx)
         {
@@ -40,14 +41,16 @@ namespace ServiceStack.Messaging
         {
             if (this.RequestFilter == null && this.ResponseFilter == null)
             {
-                return new MessageHandler<T>(messageService, processMessageFn, 
-                    processExceptionFn, this.RetryCount);
+                return new MessageHandler<T>(messageService, processMessageFn, processExceptionFn, this.RetryCount)
+                {
+                    PublishResponsesWhitelist = PublishResponsesWhitelist,
+                };
             }
 
-            return new MessageHandler<T>(messageService, msg => 
+            return new MessageHandler<T>(messageService, msg =>
                 {
                     if (this.RequestFilter != null)
-                        msg = (IMessage<T>) this.RequestFilter(msg);
+                        msg = (IMessage<T>)this.RequestFilter(msg);
 
                     var result = this.processMessageFn(msg);
 
@@ -56,7 +59,10 @@ namespace ServiceStack.Messaging
 
                     return result;
                 },
-                processExceptionFn, this.RetryCount);
+                processExceptionFn, this.RetryCount)
+            {
+                PublishResponsesWhitelist = PublishResponsesWhitelist,
+            };
         }
     }
 }
