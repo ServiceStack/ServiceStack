@@ -123,7 +123,7 @@ ServiceStack binaries only: Minimal installation of ServiceStack containing only
 ServiceStack with Razor Support: Create an empty ASP.NET Web or Console Application and (.NET 4.0+)
 ![Install-Pacakage ServiceStack.Razor2](http://www.servicestack.net/img/nuget-servicestack.razor.png)
 
-_Note: the binary packages are provided as-is - there is no commercial support available for ServiceStack_
+_Note: the binary packages are provided as-is - no direct or commercial support is available for ServiceStack_
 
 ### Examples
 
