@@ -1,7 +1,8 @@
 See [www.servicestack.net](http://www.servicestack.net/) for an overview.
 
 Join the [ServiceStack Google+ Community](https://plus.google.com/u/0/communities/112445368900682590445) or
-follow [@ServiceStack](http://twitter.com/servicestack) for project updates. You can also join a growing crowd of ServiceStack users on [JabbR](http://jabbr.net/#/rooms/servicestack) if you want to chat.
+follow [@ServiceStack](http://twitter.com/servicestack) for project updates. 
+You can catch some community members hanging out on [JabbR](http://jabbr.net/#/rooms/servicestack).
 
 Service Stack is a high-performance .NET web services platform that simplifies the development of high-performance 
 REST (JSON, XML, JSV, HTML, MsgPack, ProtoBuf, CSV) and WCF SOAP [Web Services](https://github.com/ServiceStack/ServiceStack/wiki/Service-Stack-Web-Services). 
@@ -116,27 +117,17 @@ That's all the application code required to create a simple REST web service.
 
 If you have [NuGet](http://nuget.org) installed, the easiest way to get started is to install ServiceStack via NuGet:
 
-ServiceStack with Razor Support: Create an empty ASP.NET Web or Console Application and (.NET 4.0+)
-![Install-Pacakage ServiceStack.Razor2](http://www.servicestack.net/img/nuget-servicestack.razor.png)
-
 ServiceStack binaries only: Minimal installation of ServiceStack containing only the core-binaries (.NET 3.5+)
 ![Install-Pacakage ServiceStack](http://www.servicestack.net/img/nuget-servicestack.png)
 
-#### Starter templates with pre-configured AppHost and basic Hello World REST services
+ServiceStack with Razor Support: Create an empty ASP.NET Web or Console Application and (.NET 4.0+)
+![Install-Pacakage ServiceStack.Razor2](http://www.servicestack.net/img/nuget-servicestack.razor.png)
 
-If you just want ServiceStack hosted at `/` - Create an empty ASP.NET Web Application and
-![Install-Pacakage ServiceStack.Host.Mvc](http://www.servicestack.net/img/nuget-servicestack.host.aspnet.png)
+_Note: the binary packages are provided as-is - there is no commercial support available for ServiceStack_
 
-Otherwise if you want to host ServiceStack Side-by-Side with MVC: Hosted at `/api` - Create an empty MVC Web Application and
-![Install-Pacakage ServiceStack.Host.Mvc](http://www.servicestack.net/img/nuget-servicestack.host.mvc.png)
+### Examples
 
-To help get started you should also clone the ServiceStack.Examples projects (includes dlls, demos and starter templates):
-
-    git clone git://github.com/ServiceStack/ServiceStack.Examples.git
-
-Alternatively if you want keep up with the latest version and not use NuGet, simply clone this repo:
-
-    git clone git://github.com/ServiceStack/ServiceStack.git
+**The [Definitive list of Example Projects, Use-Cases, Demos, Starter Templates](http://stackoverflow.com/a/15869816)**
     
 ## Download published NuGet binaries without NuGet
 
@@ -155,7 +146,7 @@ extracting them from the published NuGet packages. The url to download a nuget p
     unzip ServiceStack.Text 'lib/*'
 
 which will download and extract the dlls into your local local `lib/` folder.
-    
+
 
 [Release notes for major releases](https://github.com/ServiceStack/ServiceStack/wiki/Release-Notes)
 
@@ -189,7 +180,7 @@ Follow [@ServiceStack](http://twitter.com/ServiceStack) and
 
 ## Core Team
 
- - [mythz](https://github.com/mythz) (Demis Bellot) / [@demisbellot](https://twitter.com/demisbellot)
+ - [mythz](https://github.com/mythz) (Demis Bellot)
  - [arxisos](https://github.com/arxisos) (Steffen Müller) / [@arxisos](https://twitter.com/arxisos)
  - [desunit](https://github.com/desunit) (Sergey Bogdanov) / [@desunit](https://twitter.com/desunit)
 
