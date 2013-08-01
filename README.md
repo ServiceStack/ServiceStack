@@ -7,6 +7,8 @@ You can catch some community members hanging out on [JabbR](http://jabbr.net/#/r
 Service Stack is a high-performance .NET web services platform that simplifies the development of high-performance 
 REST (JSON, XML, JSV, HTML, MsgPack, ProtoBuf, CSV) and WCF SOAP [Web Services](https://github.com/ServiceStack/ServiceStack/wiki/Service-Stack-Web-Services). 
 
+_Note: the source code is provided as-is - no direct or commercial support is available for ServiceStack_
+
 Simple REST service example
 =========================== 
 
