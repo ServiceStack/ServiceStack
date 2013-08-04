@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Threading;
+using System.Web;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.CacheAccess;
@@ -268,6 +269,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public const string UserNameWithSessionRedirect = "user2";
         public const string PasswordForSessionRedirect = "p@55word2";
         public const string SessionRedirectUrl = "specialLandingPage.html";
+        public const string LoginUrl = "specialLoginPage.html";
+        public const string WebHostUrl = "http://mydomain.com";
         private const string EmailBasedUsername = "user@email.com";
         private const string PasswordForEmailBasedAccount = "p@55word3";
 
@@ -281,12 +284,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             public override void Configure(Container container)
             {
+                SetConfig(new EndpointHostConfig { WebHostUrl = WebHostUrl });
+
                 Plugins.Add(new AuthFeature(() => new CustomUserSession(),
-                    new AuthProvider[] { //Www-Authenticate should contain basic auth, therefore register this provider first
+                    new IAuthProvider[] { //Www-Authenticate should contain basic auth, therefore register this provider first
                         new BasicAuthProvider(), //Sign-in with Basic Auth
 						new CredentialsAuthProvider(), //HTML Form post of UserName/Password credentials
                         new CustomAuthProvider()
-					}));
+					}, "~/" + LoginUrl));
 
                 container.Register<ICacheClient>(new MemoryCacheClient());
                 userRep = new InMemoryAuthRepository();
@@ -715,6 +720,50 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Assert.That(webEx.ErrorMessage, Is.EqualTo("unicorn nuggets"));
             }
+        }
+
+        [Test]
+        public void Html_clients_receive_redirect_to_login_page_when_accessing_unauthenticated()
+        {
+            var client = (ServiceClientBase)GetHtmlClient();
+            client.AllowAutoRedirect = false;
+            string lastResponseLocationHeader = null;
+            client.LocalHttpWebResponseFilter = response =>
+            {
+                lastResponseLocationHeader = response.Headers["Location"];
+            };
+
+            var request = new Secured { Name = "test" };
+            client.Send<SecureResponse>(request);
+
+            var locationUri = new Uri(lastResponseLocationHeader);
+            Assert.That(locationUri.AbsolutePath, Contains.Substring(LoginUrl));
+        }
+
+        [Test]
+        public void Html_clients_receive_secured_url_attempt_in_login_page_redirect_query_string()
+        {
+            var client = (ServiceClientBase)GetHtmlClient();
+            client.AllowAutoRedirect = false;
+            string lastResponseLocationHeader = null;
+            client.LocalHttpWebResponseFilter = response =>
+            {
+                lastResponseLocationHeader = response.Headers["Location"];
+            };
+
+            var request = new Secured { Name = "test" };
+            client.Send<SecureResponse>(request);
+
+            var locationUri = new Uri(lastResponseLocationHeader);
+            var queryString = HttpUtility.ParseQueryString(locationUri.Query);
+            var redirectQueryString = queryString["redirect"];
+            var redirectUri = new Uri(redirectQueryString);
+
+            // Should contain the url attempted to access before the redirect to the login page.
+            Assert.That(redirectUri.AbsolutePath, Contains.Substring("/secured").IgnoreCase);
+            // Should also obey the WebHostUrl setting.
+            var schemeAndHost = redirectUri.Scheme + "://" + redirectUri.Authority;
+            Assert.That(schemeAndHost, Contains.Substring(WebHostUrl).IgnoreCase);
         }
 
         [Test]
