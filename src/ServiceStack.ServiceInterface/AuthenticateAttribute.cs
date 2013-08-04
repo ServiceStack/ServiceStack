@@ -91,10 +91,7 @@ namespace ServiceStack.ServiceInterface
                 var url = req.ResolveAbsoluteUrl(htmlRedirect);
                 if (includeRedirectParam)
                 {
-                    // Adding req.AbsoluteUri directly ignores EndpointHostConfig.WebHostUrl settings, causing
-                    // problems when the current request comes from a reverse proxy.
-                    var appRelativeRequestPath = req.PathInfo.Insert(0, "~");
-                    var absoluteRequestPath = req.ResolveAbsoluteUrl(appRelativeRequestPath);
+                    var absoluteRequestPath = req.ResolveAbsoluteUrl("~" + req.PathInfo);
                     url = url.AddQueryParam("redirect", absoluteRequestPath);
                 }
 
