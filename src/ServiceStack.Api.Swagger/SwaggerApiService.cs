@@ -161,10 +161,10 @@ namespace ServiceStack.Api.Swagger
             {
                 basePath = basePath.Substring(0, basePath.LastIndexOf(SwaggerResourcesService.RESOURCE_PATH, StringComparison.OrdinalIgnoreCase));
             }
-
+            var meta = EndpointHost.Metadata;
             foreach (var key in map.Keys)
             {
-                paths.AddRange(map[key].Where(x => x.Path == path || x.Path.StartsWith(path + "/")));
+                paths.AddRange(map[key].Where(x => (x.Path == path || x.Path.StartsWith(path + "/") && meta.IsVisible(Request, Format.Json, x.RequestType.Name))));
             }
 
             var models = new Dictionary<string, SwaggerModel>();
