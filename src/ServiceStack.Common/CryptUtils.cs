@@ -24,6 +24,25 @@ namespace ServiceStack.Common
     /// </summary>
     public static class CryptUtils
     {
+
+        public static string Encrypt(this string data)
+        {
+            if (KeyPair != null)
+                return Encrypt(KeyPair.PublicKey, data, Length);
+            else throw new ArgumentNullException("No KeyPair given for encryption in CryptUtils");
+        }
+
+        public static string Decrypt(this string data)
+        {
+            if (KeyPair !=null)
+                return Decrypt(KeyPair.PrivateKey, data, Length);
+            else throw new ArgumentNullException("No KeyPair given for encryption in CryptUtils");
+        }
+
+        public static RsaKeyLengths Length;
+        public static RsaKeyPair KeyPair;
+        
+
         /// <summary>
         /// Encrypt an arbitrary string of data under the supplied public key
         /// </summary>
@@ -139,11 +158,26 @@ namespace ServiceStack.Common
 
             return Encoding.Unicode.GetString(arrayList.ToArray(typeof(byte)) as byte[]);
         }
-        
+
         public static RsaKeyPair CreatePublicAndPrivateKeyPair(RsaKeyLengths length = RsaKeyLengths.Bit2048)
         {
             var rsaProvider = new RSACryptoServiceProvider((int)length);
-            return new RsaKeyPair {
+            return new RsaKeyPair
+            {
+                PrivateKey = rsaProvider.ToXmlString(true),
+                PublicKey = rsaProvider.ToXmlString(false),
+            };
+        }
+
+        /// <summary>
+        /// Create Public and Private Key Pair based on settings already in static class.
+        /// </summary>        
+        /// <returns>RsaKeyPair</returns>
+        public static RsaKeyPair CreatePublicAndPrivateKeyPair()
+        {
+            var rsaProvider = new RSACryptoServiceProvider((int)Length);            
+            return new RsaKeyPair
+            {
                 PrivateKey = rsaProvider.ToXmlString(true),
                 PublicKey = rsaProvider.ToXmlString(false),
             };
