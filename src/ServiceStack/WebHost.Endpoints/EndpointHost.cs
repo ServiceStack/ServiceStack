@@ -8,6 +8,7 @@ using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Html;
 using ServiceStack.IO;
+using ServiceStack.Messaging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.ServiceHost;
 using ServiceStack.VirtualPath;
@@ -183,6 +184,13 @@ namespace ServiceStack.WebHost.Endpoints
                 {
                     Container.Register<ICacheClient>(new MemoryCacheClient());
                 }
+            }
+
+            var registeredMqService = AppHost.TryResolve<IMessageService>();
+            var registeredMqFactory = AppHost.TryResolve<IMessageFactory>();
+            if (registeredMqService != null && registeredMqFactory == null)
+            {
+                Container.Register(c => registeredMqService.MessageFactory);
             }
 
             ReadyAt = DateTime.UtcNow;
