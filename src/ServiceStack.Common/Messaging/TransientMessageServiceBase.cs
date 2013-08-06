@@ -58,6 +58,11 @@ namespace ServiceStack.Messaging
             return total;
         }
 
+        public List<Type> RegisteredTypes
+        {
+            get { return handlerMap.Keys.ToList(); }
+        }
+
         public string GetStatus()
         {
             return isRunning ? "Started" : "Stopped";

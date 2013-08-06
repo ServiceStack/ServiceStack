@@ -64,6 +64,11 @@ namespace ServiceStack.Messaging.Rcon
             return null;
         }
 
+        public List<Type> RegisteredTypes
+        {
+            get { return messageHandlers.Keys.ToList(); }
+        }
+
         /// <summary>
         /// Get Total Current Stats for all Message Handlers
         /// </summary>

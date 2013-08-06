@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace ServiceStack.Messaging
 {
@@ -33,6 +34,11 @@ namespace ServiceStack.Messaging
         /// </summary>
         /// <returns></returns>
         IMessageHandlerStats GetStats();
+
+        /// <summary>
+        /// Get a list of all message types registered on this MQ Host
+        /// </summary>
+        List<Type> RegisteredTypes { get; }
 
         /// <summary>
         /// Get the status of the service. Potential Statuses: Disposed, Stopped, Stopping, Starting, Started
