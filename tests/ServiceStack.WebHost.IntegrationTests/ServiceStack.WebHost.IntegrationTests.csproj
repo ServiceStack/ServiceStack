@@ -193,6 +193,7 @@
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="Services\CachedProtoBufEmailService.cs" />
+    <Compile Include="Services\ReturnsVoidService.cs" />
     <Compile Include="Services\CustomHeadersService.cs" />
     <Compile Include="Services\EndpointAccessService.cs" />
     <Compile Include="Services\HelloImage.cs" />
