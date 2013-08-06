@@ -74,6 +74,7 @@ namespace ServiceStack.Api.Swagger
                 if (operationType == null) continue;
                 if (operationType == typeof(Resources) || operationType == typeof(ResourceRequest))
                     continue;
+                if (!operations.IsVisible(Request, Format.Json, operationName)) continue;
 
                 CreateRestPaths(result.Apis, operationType, operationName);
             }
