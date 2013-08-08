@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Web;
 using System.Xml;
@@ -10,6 +11,7 @@ using ServiceStack.Common.Web;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.ServiceModel.Support;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Utils;
 using HttpRequestWrapper = ServiceStack.WebHost.Endpoints.Extensions.HttpRequestWrapper;
@@ -91,7 +93,12 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
             try
             {
-                var request = DataContractDeserializer.Instance.Parse(requestXml, requestType);
+                var useXmlSerializerRequest = requestType.HasAttribute<XmlSerializerFormatAttribute>();
+
+                var request = useXmlSerializerRequest
+                                  ? XmlSerializableDeserializer.Instance.Parse(requestXml, requestType)
+                                  : DataContractDeserializer.Instance.Parse(requestXml, requestType);
+                
                 var requiresSoapMessage = request as IRequiresSoapMessage;
                 if (requiresSoapMessage != null)
                 {
@@ -119,6 +126,13 @@ namespace ServiceStack.WebHost.Endpoints.Support
                 if (httpResult != null)
                     response = httpResult.Response;
 
+                var useXmlSerializerResponse = response.GetType().HasAttribute<XmlSerializerFormatAttribute>();
+                
+                if (useXmlSerializerResponse)
+                    return requestMsg.Headers.Action == null
+                        ? Message.CreateMessage(requestMsg.Version, null, response, new XmlSerializerWrapper(response.GetType()))
+                        : Message.CreateMessage(requestMsg.Version, requestType.Name + "Response", response, new XmlSerializerWrapper(response.GetType()));
+                
                 return requestMsg.Headers.Action == null
                     ? Message.CreateMessage(requestMsg.Version, null, response)
                     : Message.CreateMessage(requestMsg.Version, requestType.Name + "Response", response);
