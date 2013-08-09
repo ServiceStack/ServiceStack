@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using System.Text;
@@ -67,7 +68,7 @@ namespace ServiceStack.WebHost.Endpoints
         private readonly AutoResetEvent _listenForNextRequest = new AutoResetEvent(false);
         private readonly ThreadPoolManager _threadPoolManager;
         private readonly ILog _log = LogManager.GetLogger(typeof(HttpListenerBase));
-
+        private bool _reservedUrl = false;
 
         protected AppHostHttpListenerLongRunningBase(int poolSize = 500) { _threadPoolManager = new ThreadPoolManager(poolSize); }
 
@@ -121,16 +122,34 @@ namespace ServiceStack.WebHost.Endpoints
                 return;
 
             if (Listener == null)
-            {
                 Listener = new HttpListener();
-            }
 
             Listener.Prefixes.Add(urlBase);
 
             IsStarted = true;
-            Listener.Start();
+
+            try
+            {
+                Listener.Start();
+            }
+            catch (HttpListenerException ex)
+            {
+                // only attempt to reserve URL to ACL if WinNT and ErrorCode is 5
+                if (Environment.OSVersion.Platform != PlatformID.Win32NT || ex.ErrorCode != 5)
+                    throw ex;
+
+                // reserve specified Url using NETSH and set flag
+                AddURLReservationToACL(urlBase);
+                _reservedUrl = true;
+
+                Listener.Start();
+            }
 
             ThreadPool.QueueUserWorkItem(Listen);
+
+            // remove Url Reservation if one was made
+            if (_reservedUrl)
+                RemoveURLReservationFromACL(urlBase);
         }
 
         // Loop here to begin processing of new requests.
@@ -235,6 +254,35 @@ namespace ServiceStack.WebHost.Endpoints
 
                                _threadPoolManager.Free();
                            }).Start();
+        }
+
+        private static void AddURLReservationToACL(string urlBase)
+        {
+            var args = string.Format(@"http add urlacl url={0} user={1}\{2} listen=yes", urlBase, Environment.UserDomainName, Environment.UserName);
+
+            var psi = new ProcessStartInfo("netsh", args)
+            {
+                Verb = "runas",
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                UseShellExecute = true
+            };
+
+            Process.Start(psi).WaitForExit();
+        }
+
+        private static void RemoveURLReservationFromACL(string urlBase)
+        {
+            var args = string.Format(@"http delete urlacl url={0}", urlBase);
+
+            var psi = new ProcessStartInfo("netsh", args)
+            {
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                UseShellExecute = true
+            };
+
+            Process.Start(psi).WaitForExit();
         }
     }
 }
