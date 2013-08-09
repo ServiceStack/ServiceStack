@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -36,6 +37,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		protected HttpListener Listener;
 		protected bool IsStarted = false;
+	    protected bool reservedUrl = false;
 
 		private readonly DateTime startTime;
 
@@ -110,35 +112,60 @@ namespace ServiceStack.WebHost.Endpoints.Support
             }
         }
 
-		/// <summary>
-		/// Starts the Web Service
-		/// </summary>
-		/// <param name="urlBase">
-		/// A Uri that acts as the base that the server is listening on.
-		/// Format should be: http://127.0.0.1:8080/ or http://127.0.0.1:8080/somevirtual/
-		/// Note: the trailing slash is required! For more info see the
-		/// HttpListener.Prefixes property on MSDN.
-		/// </param>
 		public virtual void Start(string urlBase)
 		{
-			// *** Already running - just leave it in place
-			if (this.IsStarted)
-				return;
-
-			if (this.Listener == null)
-			{
-				this.Listener = new HttpListener();
-			}
-
-            EndpointHost.Config.ServiceStackHandlerFactoryPath = HttpListenerRequestWrapper.GetHandlerPathIfAny(urlBase);
-
-			this.Listener.Prefixes.Add(urlBase);
-
-			this.IsStarted = true;
-			this.Listener.Start();
-
-			ThreadPool.QueueUserWorkItem(Listen);
+		    Start(urlBase, Listen);
 		}
+
+        /// <summary>
+        /// Starts the Web Service
+        /// </summary>
+        /// <param name="urlBase">
+        /// A Uri that acts as the base that the server is listening on.
+        /// Format should be: http://127.0.0.1:8080/ or http://127.0.0.1:8080/somevirtual/
+        /// Note: the trailing slash is required! For more info see the
+        /// HttpListener.Prefixes property on MSDN.
+        /// </param>
+        protected void Start(string urlBase, WaitCallback listenCallback)
+	    {
+            // *** Already running - just leave it in place
+	        if (this.IsStarted)
+	            return;
+
+	        if (this.Listener == null)
+	            Listener = new HttpListener();
+
+	        EndpointHost.Config.ServiceStackHandlerFactoryPath = HttpListenerRequestWrapper.GetHandlerPathIfAny(urlBase);
+
+	        Listener.Prefixes.Add(urlBase);
+
+	        IsStarted = true;
+
+	        try
+	        {
+	            Listener.Start();
+	        }
+	        catch (HttpListenerException ex)
+	        {
+	            var attemptUrlReservation = Environment.OSVersion.Platform == PlatformID.Win32NT && ex.ErrorCode == 5;
+	            if (attemptUrlReservation)
+	            {
+	                AddUrlReservationToAcl(urlBase);
+	                reservedUrl = true;
+
+	                Listener.Start();
+	                return;
+	            }
+
+	            throw ex;
+	        }
+
+	        ThreadPool.QueueUserWorkItem(listenCallback);
+
+	        // remove Url Reservation if one was made
+	        if (reservedUrl)
+	            RemoveUrlReservationFromAcl(urlBase);
+	    }
 
 	    private bool IsListening
 	    {
@@ -148,13 +175,13 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		// Loop here to begin processing of new requests.
 		private void Listen(object state)
 		{
-			while (this.IsListening)
+			while (IsListening)
 			{
-				if (this.Listener == null) return;
+				if (Listener == null) return;
 
 				try
 				{
-					this.Listener.BeginGetContext(ListenerCallback, this.Listener);
+					Listener.BeginGetContext(ListenerCallback, Listener);
 					ListenForNextRequest.WaitOne();
 				}
 				catch (Exception ex)
@@ -162,7 +189,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 					Log.Error("Listen()", ex);
 					return;
 				}
-				if (this.Listener == null) return;
+				if (Listener == null) return;
 			}
 		}
 
@@ -533,6 +560,39 @@ namespace ServiceStack.WebHost.Endpoints.Support
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Reserves the specified URL for non-administrator users and accounts. 
+        /// http://msdn.microsoft.com/en-us/library/windows/desktop/cc307223(v=vs.85).aspx
+        /// </summary>
+        public static void AddUrlReservationToAcl(string urlBase)
+        {
+            var args = string.Format(@"http add urlacl url={0} user={1}\{2} listen=yes", urlBase, Environment.UserDomainName, Environment.UserName);
+
+            var psi = new ProcessStartInfo("netsh", args)
+            {
+                Verb = "runas",
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                UseShellExecute = true
+            };
+
+            Process.Start(psi).WaitForExit();
+        }
+
+        public static void RemoveUrlReservationFromAcl(string urlBase)
+        {
+            var args = string.Format(@"http delete urlacl url={0}", urlBase);
+
+            var psi = new ProcessStartInfo("netsh", args)
+            {
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                UseShellExecute = true
+            };
+
+            Process.Start(psi).WaitForExit();
         }
 
         private bool disposed;
