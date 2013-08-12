@@ -7,8 +7,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
 	{
 		public string Xsd { get; set; }
 		public string ServiceName { get; set; }
-		public IEnumerable<string> ReplyOperationNames { get; set; }
-		public IEnumerable<string> OneWayOperationNames { get; set; }
+        public IList<string> ReplyOperationNames { get; set; }
+        public IList<string> OneWayOperationNames { get; set; }
 		public string ReplyEndpointUri { get; set; }
 		public string OneWayEndpointUri { get; set; }
 
@@ -20,10 +20,10 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
 			{
 				return
 	@"<wsdl:message name=""{0}In"">
-        <wsdl:part name=""parameters"" element=""tns:{0}"" />
+        <wsdl:part name=""par"" element=""tns:{0}"" />
     </wsdl:message>
     <wsdl:message name=""{0}Out"">
-        <wsdl:part name=""parameters"" element=""tns:{0}Response"" />
+        <wsdl:part name=""par"" element=""tns:{0}Response"" />
     </wsdl:message>";
 			}
 		}
@@ -34,7 +34,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
 			{
 				return
 	@"<wsdl:message name=""{0}In"">
-        <wsdl:part name=""parameters"" element=""tns:{0}"" />
+        <wsdl:part name=""par"" element=""tns:{0}"" />
     </wsdl:message>";
 			}
 		}
@@ -128,13 +128,9 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
 
 	{3}
 
-	<wsdl:portType name=""ISyncReply"">
 	{4}
-	</wsdl:portType>
 
-	<wsdl:portType name=""IOneWay"">
 	{5}
-	</wsdl:portType>
 
 	{6}
         
@@ -168,23 +164,34 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
 
 		public override string ToString()
 		{
-			var replyMessages    = RepeaterTemplate(this.ReplyMessagesTemplate, this.ReplyOperationNames);
-			var oneWayMessages   = RepeaterTemplate(this.OneWayMessagesTemplate, this.OneWayOperationNames);
-			var replyOperations  = RepeaterTemplate(this.ReplyOperationsTemplate, this.ReplyOperationNames);
-			var oneWayOperations = RepeaterTemplate(this.OneWayOperationsTemplate, this.OneWayOperationNames);
+            var wsdlSoapActionNamespace = EndpointHost.Config.WsdlSoapActionNamespace;
+            if (!wsdlSoapActionNamespace.EndsWith("/"))
+                wsdlSoapActionNamespace += '/';
+            
+            var replyMessages = RepeaterTemplate(this.ReplyMessagesTemplate, this.ReplyOperationNames);
+		    var replyOperations  = RepeaterTemplate(this.ReplyOperationsTemplate, this.ReplyOperationNames);
+		    var replyServiceName = (ServiceName ?? "SyncReply");
+		    replyOperations = "<wsdl:portType name=\"I" + replyServiceName + "\">" + replyOperations + "</wsdl:portType>";
+            var replyActions = RepeaterTemplate(this.ReplyActionsTemplate, wsdlSoapActionNamespace, this.ReplyOperationNames);
+            var replyBindings = string.Format(this.ReplyBindingContainerTemplate, replyActions, replyServiceName);
+            var replyEndpointUri = string.Format(this.ReplyEndpointUriTemplate, ServiceName, this.ReplyEndpointUri, replyServiceName);
 
-			var wsdlSoapActionNamespace = EndpointHost.Config.WsdlSoapActionNamespace;
-			if (!wsdlSoapActionNamespace.EndsWith("/"))
-				wsdlSoapActionNamespace += '/';
-			var replyActions   = RepeaterTemplate(this.ReplyActionsTemplate, wsdlSoapActionNamespace, this.ReplyOperationNames);
-			var oneWayActions  = RepeaterTemplate(this.OneWayActionsTemplate, wsdlSoapActionNamespace, this.OneWayOperationNames);
-			var replyBindings  = string.Format(this.ReplyBindingContainerTemplate, replyActions);
-			var oneWayBindings = string.Format(this.OneWayBindingContainerTemplate, oneWayActions);
-			
-			var replyEndpointUri = string.Format(this.ReplyEndpointUriTemplate, ServiceName, this.ReplyEndpointUri);
-			var oneWayEndpointUri = string.Format(this.OneWayEndpointUriTemplate, ServiceName, this.OneWayEndpointUri);
+            string oneWayMessages = "";
+            string oneWayOperations = "";
+		    string oneWayBindings = "";
+            string oneWayEndpointUri = "";
+            if (OneWayOperationNames.Count > 0)
+            {
+                oneWayMessages = RepeaterTemplate(this.OneWayMessagesTemplate, this.OneWayOperationNames);
+                oneWayOperations = RepeaterTemplate(this.OneWayOperationsTemplate, this.OneWayOperationNames);
+                var oneWayServiceName = (ServiceName ?? "");
+                oneWayOperations = "<wsdl:portType name=\"I" + oneWayServiceName + "OneWay\">" + oneWayOperations + "</wsdl:portType>";
+                var oneWayActions=RepeaterTemplate(this.OneWayActionsTemplate, wsdlSoapActionNamespace, this.OneWayOperationNames);
+                oneWayBindings = string.Format(this.OneWayBindingContainerTemplate, oneWayActions, oneWayServiceName);
+                oneWayEndpointUri = string.Format(this.OneWayEndpointUriTemplate, ServiceName, this.OneWayEndpointUri, oneWayServiceName);
+            }
 
-			var wsdl = string.Format(Template, 
+		    var wsdl = string.Format(Template, 
 				WsdlName, 
 				Xsd, 
 				replyMessages, 
