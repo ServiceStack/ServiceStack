@@ -399,6 +399,7 @@ namespace ServiceStack.WebHost.Endpoints
         public bool UseCustomMetadataTemplates { get; set; }
 
         public string ServiceName { get; set; }
+        public string SoapServiceName { get; set; }
         public string DefaultContentType { get; set; }
         public bool AllowJsonpRequests { get; set; }
         public bool AllowRouteContentTypeExtensions { get; set; }
