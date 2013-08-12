@@ -28,7 +28,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 
 			try
 			{
-				var wsdlTemplate = GetWsdlTemplate(operations, baseUri, optimizeForFlash, context.Request.GetBaseUrl());
+                var wsdlTemplate = GetWsdlTemplate(operations, baseUri, optimizeForFlash, context.Request.GetBaseUrl(), EndpointHost.Config.SoapServiceName);
 				context.Response.Write(wsdlTemplate.ToString());
 			}
 			catch (Exception ex)
@@ -53,7 +53,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 
 			try
 			{
-				var wsdlTemplate = GetWsdlTemplate(operations, baseUri, optimizeForFlash, httpReq.ResolveBaseUrl());
+                var wsdlTemplate = GetWsdlTemplate(operations, baseUri, optimizeForFlash, httpReq.ResolveBaseUrl(), EndpointHost.Config.SoapServiceName);
 				httpRes.Write(wsdlTemplate.ToString());
 			}
 			catch (Exception ex)
@@ -65,7 +65,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 			}
 		}
 
-        public WsdlTemplateBase GetWsdlTemplate(XsdMetadata operations, string baseUri, bool optimizeForFlash, string rawUrl)
+        public WsdlTemplateBase GetWsdlTemplate(XsdMetadata operations, string baseUri, bool optimizeForFlash, string rawUrl, string serviceName)
 		{
 			var xsd = new XsdGenerator {
                 OperationTypes = operations.GetAllTypes(),
@@ -77,6 +77,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 
 			var wsdlTemplate = GetWsdlTemplate();
 			wsdlTemplate.Xsd = xsd;
+            wsdlTemplate.ServiceName = serviceName;
             wsdlTemplate.ReplyOperationNames = operations.GetReplyOperationNames(soapFormat);
             wsdlTemplate.OneWayOperationNames = operations.GetOneWayOperationNames(soapFormat);
             
