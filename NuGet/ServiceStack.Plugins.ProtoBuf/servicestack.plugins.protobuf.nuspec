@@ -3,7 +3,7 @@
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Plugins.ProtoBuf</id> 
     <title>Protocol Buffers support for ServiceStack. Includes typed ProtoBuf Client</title>
-    <version>3.9.56</version> 
+    <version>3.9.58</version> 
     <authors>Demis Bellot</authors> 
     <owners>Demis Bellot</owners>
     <summary>ProtoBuf Format Serializer ContentType ServiceClients for ServiceStack</summary>

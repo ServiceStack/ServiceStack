@@ -44,7 +44,6 @@ MD ..\NuGet\ServiceStack.Api.Swagger\content\swagger-ui
 COPY ..\src\ServiceStack.Api.Swagger\bin\%BUILD%\ServiceStack.Api.Swagger.* ..\NuGet\ServiceStack.Api.Swagger\lib\net35
 XCOPY /E ..\src\ServiceStack.Api.Swagger\swagger-ui ..\NuGet\ServiceStack.Api.Swagger\content\swagger-ui
 
-
 COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\*.* ..\..\chaweet\api\lib
 
 COPY ..\src\ServiceStack.Razor\bin\%BUILD%\*.* ..\..\ServiceStack.Examples\lib
@@ -54,10 +53,9 @@ COPY ..\src\ServiceStack\bin\%BUILD%\*.* ..\..\ServiceStack.RedisWebServices\lib
 COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\ServiceStack.ServiceInterface.* ..\..\ServiceStack.RedisWebServices\lib
 
 COPY ..\src\ServiceStack\bin\%BUILD%\ServiceStack.Interfaces.dll ..\..\ServiceStack.Redis\lib
-COPY ..\src\ServiceStack\bin\%BUILD%\ServiceStack.Text.dll ..\..\ServiceStack.Redis\lib
-COPY ..\src\ServiceStack\bin\%BUILD%\ServiceStack.Text.pdb ..\..\ServiceStack.Redis\lib
-COPY ..\src\ServiceStack\bin\%BUILD%\ServiceStack.Common.dll ..\..\ServiceStack.Redis\lib
-COPY ..\src\ServiceStack\bin\%BUILD%\ServiceStack.Common.pdb ..\..\ServiceStack.Redis\lib
+COPY ..\src\ServiceStack\bin\%BUILD%\ServiceStack.Text.* ..\..\ServiceStack.Redis\lib
+COPY ..\src\ServiceStack\bin\%BUILD%\ServiceStack.Common.* ..\..\ServiceStack.Redis\lib
+COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\ServiceStack.* ..\..\ServiceStack.Redis\lib\tests
 COPY ..\tests\ServiceStack.Common.Tests\bin\%BUILD%\ServiceStack.Common.Tests.* ..\..\ServiceStack.Redis\lib\tests
 COPY ..\tests\ServiceStack.Messaging.Tests\bin\%BUILD%\ServiceStack.Messaging.Tests.* ..\..\ServiceStack.Redis\lib\tests
 
@@ -67,10 +65,3 @@ COPY ..\src\ServiceStack\bin\%BUILD%\ServiceStack.Text.pdb ..\..\ServiceStack.Or
 COPY ..\src\ServiceStack\bin\%BUILD%\ServiceStack.Common.dll ..\..\ServiceStack.OrmLite\lib
 COPY ..\src\ServiceStack\bin\%BUILD%\ServiceStack.Common.pdb ..\..\ServiceStack.OrmLite\lib
 COPY ..\tests\ServiceStack.Common.Tests\bin\%BUILD%\ServiceStack.Common.Tests.* ..\..\ServiceStack.OrmLite\lib\tests
-
-COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\*.* ..\..\SocialApiBootstrap\lib
-COPY ..\src\ServiceStack.FluentValidation.Mvc3\bin\%BUILD%\ServiceStack.FluentValidation.Mvc3.* ..\..\SocialApiBootstrap\lib
-COPY ..\..\ServiceStack.OrmLite\NuGet\ServiceStack.OrmLite.SqlServer\lib\*.* ..\..\SocialApiBootstrap\lib
-COPY ..\..\ServiceStack.Redis\NuGet\lib\net35\*.* ..\..\SocialApiBootstrap\lib
-
-

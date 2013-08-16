@@ -3,7 +3,7 @@
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Mvc</id>
     <title>MVC Adapters for integrating with ServiceStack webservices</title>
-    <version>3.9.56</version>
+    <version>3.9.58</version>
     <authors>Demis Bellot</authors>
     <owners>Demis Bellot</owners>
     <summary>.NET 4.0 project Integration of ServiceStack with MVC3</summary>

@@ -3,7 +3,7 @@
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Common</id>
     <title>Service Clients and Common libs for ServiceStack projects</title>
-    <version>3.9.56</version>
+    <version>3.9.58</version>
     <authors>Demis Bellot</authors>
     <owners>Demis Bellot</owners>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>

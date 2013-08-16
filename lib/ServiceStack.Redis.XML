@@ -151,6 +151,12 @@
             Don't listen on any Priority Queues
             </summary>
         </member>
+        <member name="P:ServiceStack.Redis.Messaging.RedisMqServer.PublishResponsesWhitelist">
+            <summary>
+            Opt-in to only publish responses on this white list. 
+            Publishes all responses by default.
+            </summary>
+        </member>
         <member name="M:ServiceStack.Redis.RedisClientManagerCacheClient.Dispose">
             <summary>
             Ignore dispose on RedisClientsManager, which should be registered as a singleton

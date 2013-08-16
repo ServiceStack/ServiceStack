@@ -3,7 +3,7 @@
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Api.Swagger</id>
     <title>ServiceStack additional API for integration with Swagger</title>
-    <version>3.9.56</version>
+    <version>3.9.58</version>
     <authors>Demis Bellot</authors>
     <owners>Demis Bellot</owners>
     <summary>ServiceStack integration with Swagger</summary>
