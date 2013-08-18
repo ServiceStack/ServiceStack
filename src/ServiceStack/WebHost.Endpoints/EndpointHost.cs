@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Funq;
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
@@ -155,7 +156,8 @@ namespace ServiceStack.WebHost.Endpoints
 
             if (ExceptionHandler == null)
             {
-                ExceptionHandler = (httpReq, httpRes, operationName, ex) => {
+                ExceptionHandler = (httpReq, httpRes, operationName, ex) =>
+                {
                     var errorMessage = String.Format("Error occured while Processing Request: {0}", ex.Message);
                     var statusCode = ex.ToStatusCode();
                     //httpRes.WriteToResponse always calls .Close in it's finally statement so 
@@ -243,7 +245,7 @@ namespace ServiceStack.WebHost.Endpoints
             ServiceManager = config.ServiceManager; //reset operations
         }
 
-        public static T GetPlugin<T>() where T : class, IPlugin 
+        public static T GetPlugin<T>() where T : class, IPlugin
         {
             return Plugins.FirstOrDefault(x => x is T) as T;
         }
@@ -288,6 +290,17 @@ namespace ServiceStack.WebHost.Endpoints
                 config = value;
                 ApplyConfigChanges();
             }
+        }
+
+        public static void AssertTestConfig(params Assembly[] assemblies)
+        {
+            if (Config != null)
+                return;
+
+            var config = EndpointHostConfig.Instance;
+            config.ServiceName = "Test Services";
+            config.ServiceManager = new ServiceManager(assemblies.Length == 0 ? new[] { Assembly.GetCallingAssembly() } : assemblies);
+            Config = config;
         }
 
         public static bool DebugMode

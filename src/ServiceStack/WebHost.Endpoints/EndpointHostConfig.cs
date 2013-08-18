@@ -18,7 +18,6 @@ using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Markdown;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
@@ -50,8 +49,7 @@ namespace ServiceStack.WebHost.Endpoints
                 {
                     instance = new EndpointHostConfig
                     {
-                        MetadataTypesConfig = new MetadataTypesConfig(
-                            addDefaultXmlNamespace: "http://schemas.servicestack.net/types"),
+                        MetadataTypesConfig = new MetadataTypesConfig(addDefaultXmlNamespace: "http://schemas.servicestack.net/types"),
                         WsdlServiceNamespace = "http://schemas.servicestack.net/types",
                         WsdlSoapActionNamespace = "http://schemas.servicestack.net/types",
                         MetadataPageBodyHtml = @"<br />
@@ -72,8 +70,7 @@ namespace ServiceStack.WebHost.Endpoints
                         AllowNonHttpOnlyCookies = false,
                         UseHttpsLinks = false,
                         DebugMode = false,
-                        DefaultDocuments = new List<string>
-                            {
+                        DefaultDocuments = new List<string> {
 							"default.htm",
 							"default.html",
 							"default.cshtml",
@@ -101,16 +98,14 @@ namespace ServiceStack.WebHost.Endpoints
                         MarkdownBaseType = typeof(MarkdownViewBase),
                         MarkdownGlobalHelpers = new Dictionary<string, Type>(),
                         HtmlReplaceTokens = new Dictionary<string, string>(),
-                        AddMaxAgeForStaticMimeTypes = new Dictionary<string, TimeSpan>
-                            {
+                        AddMaxAgeForStaticMimeTypes = new Dictionary<string, TimeSpan> {
 							{ "image/gif", TimeSpan.FromHours(1) },
 							{ "image/png", TimeSpan.FromHours(1) },
 							{ "image/jpeg", TimeSpan.FromHours(1) },
 						},
                         AppendUtf8CharsetOnContentTypes = new HashSet<string> { ContentType.Json, },
                         RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>>(),
-                        RouteNamingConventions = new List<RouteNamingConventionDelegate>
-                            {
+                        RouteNamingConventions = new List<RouteNamingConventionDelegate> {
 					        RouteNamingConvention.WithRequestDtoName,
 					        RouteNamingConvention.WithMatchingAttributes,
 					        RouteNamingConvention.WithMatchingPropertyNames
@@ -125,8 +120,7 @@ namespace ServiceStack.WebHost.Endpoints
                         Return204NoContentForEmptyResponse = true,
                         AllowPartialResponses = true,
                         AllowAclUrlReservation = true,
-                        IgnoreWarningsOnPropertyNames = new List<string>
-                            {
+                        IgnoreWarningsOnPropertyNames = new List<string> {
                             "format", "callback", "debug", "_", "authsecret"
                         }
                     };
@@ -145,6 +139,7 @@ namespace ServiceStack.WebHost.Endpoints
         {
             this.ServiceName = serviceName;
             this.ServiceManager = serviceManager;
+
         }
 
         public EndpointHostConfig()
@@ -378,11 +373,11 @@ namespace ServiceStack.WebHost.Endpoints
 
         private static string EnsureHandlerTypeAttribute(XElement handler)
         {
-          if (handler.Attribute("type") != null && !String.IsNullOrEmpty(handler.Attribute("type").Value))
-          {
-            return handler.Attribute("type").Value;
-          }
-          return String.Empty;
+            if (handler.Attribute("type") != null && !String.IsNullOrEmpty(handler.Attribute("type").Value))
+            {
+                return handler.Attribute("type").Value;
+            }
+            return String.Empty;
         }
 
         public ServiceManager ServiceManager { get; internal set; }
@@ -534,7 +529,7 @@ namespace ServiceStack.WebHost.Endpoints
 
             AssertFeatures(contentType.ToFeature());
         }
-        
+
         public MetadataPagesConfig MetadataPagesConfig
         {
             get
@@ -567,7 +562,7 @@ namespace ServiceStack.WebHost.Endpoints
             return true;
         }
 
-        public void HandleErrorResponse(IHttpRequest httpReq, IHttpResponse httpRes, HttpStatusCode errorStatus, string errorStatusDescription=null)
+        public void HandleErrorResponse(IHttpRequest httpReq, IHttpResponse httpRes, HttpStatusCode errorStatus, string errorStatusDescription = null)
         {
             if (httpRes.IsClosed) return;
 
@@ -602,7 +597,7 @@ namespace ServiceStack.WebHost.Endpoints
         {
             try
             {
-                return GetCustomErrorHandler((HttpStatusCode) errorStatusCode);
+                return GetCustomErrorHandler((HttpStatusCode)errorStatusCode);
             }
             catch
             {
@@ -633,7 +628,7 @@ namespace ServiceStack.WebHost.Endpoints
         public Action<object, IHttpRequest, IHttpResponse> PostExecuteServiceFilter { get; set; }
 
         public FallbackRestPathDelegate FallbackRestPath { get; set; }
-        
+
         public bool HasValidAuthSecret(IHttpRequest req)
         {
             if (AdminAuthSecret != null)

@@ -7,7 +7,6 @@ using ServiceStack.Common.Web;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface.Validation;
 using ServiceStack.VirtualPath;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
@@ -31,7 +30,7 @@ namespace ServiceStack.ServiceInterface.Testing
 
             this.Config = EndpointHost.Config = new EndpointHostConfig(
                 GetType().Name,
-                new ServiceManager(true, serviceAssemblies));
+                new ServiceManager(this.container, serviceAssemblies).Init());
 
             this.ContentTypeFilters = new HttpResponseFilter();
             this.PreRequestFilters = new List<Action<IHttpRequest, IHttpResponse>>();

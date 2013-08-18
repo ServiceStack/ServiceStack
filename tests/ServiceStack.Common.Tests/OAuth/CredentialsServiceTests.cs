@@ -1,10 +1,8 @@
-﻿using Moq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.Testing;
-using ServiceStack.ServiceInterface.Validation;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Common.Tests.OAuth

@@ -94,8 +94,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
         public static void Init(Func<IAuthSession> sessionFactory, params IAuthProvider[] authProviders)
         {
-            if (EndpointHost.Config == null)
-                EndpointHost.Config = new EndpointHostConfig("AuthService", new ServiceManager(typeof(AuthService).Assembly));
+            EndpointHost.AssertTestConfig();
 
             if (authProviders.Length == 0)
                 throw new ArgumentNullException("authProviders");

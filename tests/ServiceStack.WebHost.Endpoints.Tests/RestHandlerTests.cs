@@ -52,7 +52,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		private void ConfigureHost()
 		{
 			var host = ServiceHostTestBase.CreateAppHost();
-			EndpointHost.ConfigureHost(host, string.Empty, new ServiceManager(true, typeof(RestHandlerTests).Assembly));		
+			EndpointHost.ConfigureHost(host, string.Empty, new ServiceManager(typeof(RestHandlerTests).Assembly).Init());		
 		}
 
 		public class RequestType

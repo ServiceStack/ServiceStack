@@ -31,15 +31,6 @@ namespace ServiceStack.ServiceHost
             this.ServiceController = new ServiceController(() => GetAssemblyTypes(assembliesWithServices), this.Metadata);
 		}
 
-		public ServiceManager(bool autoInitialize, params Assembly[] assembliesWithServices)
-			: this(assembliesWithServices)
-		{
-			if (autoInitialize)
-			{
-				this.Init();
-			}
-		}
-
         public ServiceManager(Container container, params Assembly[] assembliesWithServices)
             : this(assembliesWithServices)
         {
@@ -88,13 +79,15 @@ namespace ServiceStack.ServiceHost
 
 		private ContainerResolveCache typeFactory;
 
-		public void Init()
+		public ServiceManager Init()
 		{
 			typeFactory = new ContainerResolveCache(this.Container);
 
 			this.ServiceController.Register(typeFactory);
 
 			this.Container.RegisterAutoWiredTypes(this.Metadata.ServiceTypes);
+
+		    return this;
 		}
 
 		public void RegisterService<T>()
