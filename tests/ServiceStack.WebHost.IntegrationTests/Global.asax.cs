@@ -22,6 +22,7 @@ using ServiceStack.ServiceInterface.Validation;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.IntegrationTests.Services;
+using ServiceStack.WebHost.IntegrationTests.Tests;
 
 namespace ServiceStack.WebHost.IntegrationTests
 {
@@ -115,6 +116,7 @@ namespace ServiceStack.WebHost.IntegrationTests
                         { "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS" },
                         { "Access-Control-Allow-Headers", "Content-Type, X-Requested-With" },
                     },
+                    AdminAuthSecret = AuthTestsBase.AuthSecret,
                     //EnableFeatures = onlyEnableFeatures,
                     DebugMode = true, //Show StackTraces for easier debugging
                 });

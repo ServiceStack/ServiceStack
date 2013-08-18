@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using NUnit.Framework;
 using ServiceStack.ServiceClient.Web;
+using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
 using ServiceStack.WebHost.IntegrationTests.Services;
@@ -223,6 +224,30 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
 			Assert.That(response.Result, Is.EqualTo("Haz Access"));
 		}
+
+        [Test]
+        public void Cannot_access_Admin_service_by_default()
+        {
+            try
+            {
+                BaseUri.AppendPath("requestlogs").GetStringFromUrl();
+
+                Assert.Fail("Should not allow access to protected resource");
+            }
+            catch (Exception ex)
+            {
+                if (ex.IsUnauthorized())
+                    return;
+
+                throw;
+            }
+        }
+
+        [Test]
+        public void Can_access_Admin_service_with_AuthSecret()
+        {
+            BaseUri.AppendPath("requestlogs").AddQueryParam("authsecret", AuthSecret).GetStringFromUrl();
+        }
 
 	}
 }

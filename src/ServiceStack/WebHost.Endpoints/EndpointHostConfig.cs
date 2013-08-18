@@ -72,7 +72,8 @@ namespace ServiceStack.WebHost.Endpoints
                         AllowNonHttpOnlyCookies = false,
                         UseHttpsLinks = false,
                         DebugMode = false,
-                        DefaultDocuments = new List<string> {
+                        DefaultDocuments = new List<string>
+                            {
 							"default.htm",
 							"default.html",
 							"default.cshtml",
@@ -100,14 +101,16 @@ namespace ServiceStack.WebHost.Endpoints
                         MarkdownBaseType = typeof(MarkdownViewBase),
                         MarkdownGlobalHelpers = new Dictionary<string, Type>(),
                         HtmlReplaceTokens = new Dictionary<string, string>(),
-                        AddMaxAgeForStaticMimeTypes = new Dictionary<string, TimeSpan> {
+                        AddMaxAgeForStaticMimeTypes = new Dictionary<string, TimeSpan>
+                            {
 							{ "image/gif", TimeSpan.FromHours(1) },
 							{ "image/png", TimeSpan.FromHours(1) },
 							{ "image/jpeg", TimeSpan.FromHours(1) },
 						},
                         AppendUtf8CharsetOnContentTypes = new HashSet<string> { ContentType.Json, },
                         RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>>(),
-                        RouteNamingConventions = new List<RouteNamingConventionDelegate> {
+                        RouteNamingConventions = new List<RouteNamingConventionDelegate>
+                            {
 					        RouteNamingConvention.WithRequestDtoName,
 					        RouteNamingConvention.WithMatchingAttributes,
 					        RouteNamingConvention.WithMatchingPropertyNames
@@ -122,8 +125,9 @@ namespace ServiceStack.WebHost.Endpoints
                         Return204NoContentForEmptyResponse = true,
                         AllowPartialResponses = true,
                         AllowAclUrlReservation = true,
-                        IgnoreWarningsOnPropertyNames = new List<string>() {
-                            "format", "callback", "debug", "_"
+                        IgnoreWarningsOnPropertyNames = new List<string>
+                            {
+                            "format", "callback", "debug", "_", "authsecret"
                         }
                     };
 
@@ -198,6 +202,7 @@ namespace ServiceStack.WebHost.Endpoints
             this.PostExecuteServiceFilter = instance.PostExecuteServiceFilter;
             this.FallbackRestPath = instance.FallbackRestPath;
             this.AllowAclUrlReservation = instance.AllowAclUrlReservation;
+            this.AdminAuthSecret = instance.AdminAuthSecret;
         }
 
         public static string GetAppConfigPath()
@@ -326,7 +331,7 @@ namespace ServiceStack.WebHost.Endpoints
                 if (webServerSection != null)
                 {
                     var rawXml = webServerSection.SectionInformation.GetRawXml();
-                    if (!string.IsNullOrEmpty(rawXml))
+                    if (!String.IsNullOrEmpty(rawXml))
                     {
                         SetPaths(ExtractHandlerPathFromWebServerConfigurationXml(rawXml), locationPath);
                     }
@@ -355,7 +360,7 @@ namespace ServiceStack.WebHost.Endpoints
             }
 
             instance.ServiceStackHandlerFactoryPath = locationPath ??
-                (string.IsNullOrEmpty(handlerPath) ? null : handlerPath);
+                (String.IsNullOrEmpty(handlerPath) ? null : handlerPath);
 
             instance.MetadataRedirectPath = PathUtils.CombinePaths(
                 null != locationPath ? instance.ServiceStackHandlerFactoryPath : handlerPath
@@ -373,11 +378,11 @@ namespace ServiceStack.WebHost.Endpoints
 
         private static string EnsureHandlerTypeAttribute(XElement handler)
         {
-          if (handler.Attribute("type") != null && !string.IsNullOrEmpty(handler.Attribute("type").Value))
+          if (handler.Attribute("type") != null && !String.IsNullOrEmpty(handler.Attribute("type").Value))
           {
             return handler.Attribute("type").Value;
           }
-          return string.Empty;
+          return String.Empty;
         }
 
         public ServiceManager ServiceManager { get; internal set; }
@@ -460,6 +465,8 @@ namespace ServiceStack.WebHost.Endpoints
 
         public bool UseHttpsLinks { get; set; }
 
+        public string AdminAuthSecret { get; set; }
+
         private string defaultOperationNamespace;
         public string DefaultOperationNamespace
         {
@@ -525,8 +532,7 @@ namespace ServiceStack.WebHost.Endpoints
         {
             if (EndpointHost.Config.EnableFeatures == Feature.All) return;
 
-            var contentTypeFeature = ContentType.ToFeature(contentType);
-            AssertFeatures(contentTypeFeature);
+            AssertFeatures(contentType.ToFeature());
         }
         
         public MetadataPagesConfig MetadataPagesConfig
@@ -627,6 +633,17 @@ namespace ServiceStack.WebHost.Endpoints
         public Action<object, IHttpRequest, IHttpResponse> PostExecuteServiceFilter { get; set; }
 
         public FallbackRestPathDelegate FallbackRestPath { get; set; }
+        
+        public bool HasValidAuthSecret(IHttpRequest req)
+        {
+            if (AdminAuthSecret != null)
+            {
+                var authSecret = req.GetParam("authsecret");
+                return authSecret == EndpointHost.Config.AdminAuthSecret;
+            }
+
+            return false;
+        }
     }
 
 }
