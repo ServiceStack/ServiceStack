@@ -5,6 +5,7 @@ using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.ServiceInterface
@@ -53,8 +54,9 @@ namespace ServiceStack.ServiceInterface
 
         public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
         {
-            if (AuthService.AuthProviders == null) throw new InvalidOperationException("The AuthService must be initialized by calling "
-                 + "AuthService.Init to use an authenticate attribute");
+            if (AuthService.AuthProviders == null) 
+                throw new InvalidOperationException(
+                    "The AuthService must be initialized by calling AuthService.Init to use an authenticate attribute");
 
             var matchingOAuthConfigs = AuthService.AuthProviders.Where(x =>
                 this.Provider.IsNullOrEmpty()

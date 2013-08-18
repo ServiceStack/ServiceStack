@@ -170,7 +170,7 @@ namespace ServiceStack.ServiceInterface.Auth
         {
             httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
             httpRes.AddHeader(HttpHeaders.WwwAuthenticate, "{0} realm=\"{1}\"".Fmt(this.Provider, this.AuthRealm));
-            httpRes.EndServiceStackRequest();
+            httpRes.EndRequest();
         }
 
         public static void HandleFailedAuth(IAuthProvider authProvider,
@@ -187,7 +187,7 @@ namespace ServiceStack.ServiceInterface.Auth
             httpRes.AddHeader(HttpHeaders.WwwAuthenticate, "{0} realm=\"{1}\""
                 .Fmt(authProvider.Provider, authProvider.AuthRealm));
 
-            httpRes.EndServiceStackRequest();
+            httpRes.EndRequest();
         }
     }
 
