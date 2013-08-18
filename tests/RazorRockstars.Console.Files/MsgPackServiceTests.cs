@@ -62,9 +62,9 @@ namespace RazorRockstars.Console.Files
         public ResponseStatus ResponseStatus { get; set; }
     }
 
-    public class MsgPackEmailService : ServiceBase<MsgPackEmail>
+    public class MsgPackEmailService : Service
     {
-        protected override object Run(MsgPackEmail request)
+        public object Any(MsgPackEmail request)
         {
             return request;
         }

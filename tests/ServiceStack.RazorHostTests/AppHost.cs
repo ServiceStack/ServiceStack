@@ -91,9 +91,9 @@ namespace ServiceStack.RazorHostTests
         public List<string> Results { get; set; }
     }
 
-    public class ViewService : ServiceBase<ViewThatUsesLayoutAndModel>
+    public class ViewService : ServiceInterface.Service
     {
-        protected override object Run( ViewThatUsesLayoutAndModel request )
+        public object Any(ViewThatUsesLayoutAndModel request)
         {
             return new ViewThatUsesLayoutAndModelResponse
             {
