@@ -26,10 +26,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public string Value { get; set; }
 	}
 
-	public class SecureService
-		: ServiceBase<Secure>
+	public class SecureService : ServiceInterface.Service
 	{
-		protected override object Run(Secure request)
+        public object Any(Secure request)
 		{
 			throw new UnauthorizedAccessException("You shouldn't be able to see this");
 		}

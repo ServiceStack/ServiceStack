@@ -65,9 +65,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class ProtoBufEmailService : ServiceBase<ProtoBufEmail>
+	public class ProtoBufEmailService : ServiceInterface.Service
 	{
-		protected override object Run(ProtoBufEmail request)
+        public object Any(ProtoBufEmail request)
 		{
 			return request;
 		}

@@ -51,8 +51,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public string Text { get; set; }
         }
 
-        public class TimedService : ServiceStack.ServiceInterface.ServiceBase<PlainText> {
-            protected override object Run(PlainText request) {
+        public class TimedService : ServiceStack.ServiceInterface.Service
+        {
+            public object Any(PlainText request) 
+            {
                 string contentType = "text/plain";
                 var response = new HttpResult(request.Text, contentType);
                 if(request.SetContentTypeBrutally) {

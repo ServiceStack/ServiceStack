@@ -32,10 +32,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-    public class HttpResultsService
-        : ServiceBase<HttpResults>
+    public class HttpResultsService : ServiceInterface.Service
 	{
-        protected override object Run(HttpResults request)
+        public object Any(HttpResults request)
 		{
             if (request.Name == "Error")
                 throw new HttpError(HttpStatusCode.NotFound, "Error NotFound");

@@ -38,10 +38,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public string Result { get; set; }
 	}
 
-	public class EchoRequestService 
-		: ServiceBase<EchoRequest>
+	public class EchoRequestService : ServiceInterface.Service
 	{
-		protected override object Run(EchoRequest request)
+        public object Any(EchoRequest request)
 		{
 			return request;
 		}

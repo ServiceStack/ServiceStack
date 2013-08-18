@@ -1,7 +1,5 @@
-using System;
 using System.Runtime.Serialization;
 using ServiceStack.Messaging;
-using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -19,12 +17,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public string Result { get; set; }
 	}
 
-	public class MqHostStatsService 
-		: ServiceBase<MqHostStats>
+	public class MqHostStatsService : ServiceInterface.Service
 	{
 		public IMessageService MessageService { get; set; }
 
-		protected override object Run(MqHostStats request)
+        public object Any(MqHostStats request)
 		{
 			return new MqHostStatsResponse { Result = MessageService.GetStatsDescription() };
 		}

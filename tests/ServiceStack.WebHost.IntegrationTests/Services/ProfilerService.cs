@@ -2,7 +2,6 @@
 using ServiceStack.MiniProfiler;
 using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -13,11 +12,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public string Type { get; set; }
 	}
 
-	public class MiniProfilerService : ServiceBase<MiniProfiler>
+	public class MiniProfilerService : ServiceInterface.Service
 	{
 		public IDbConnectionFactory DbFactory { get; set; }
 
-		protected override object Run(MiniProfiler request)
+        public object Any(MiniProfiler request)
 		{
 			var profiler = Profiler.Current;
 

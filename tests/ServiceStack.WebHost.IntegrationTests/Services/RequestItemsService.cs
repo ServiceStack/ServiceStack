@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Runtime.Serialization;
-using System.Web;
-using ServiceStack.CacheAccess;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.ServiceModel;
-using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -21,9 +15,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public ResponseStatus ResponseStatus { get; set; }
     }
 
-    public class RequestItemsService : ServiceBase<RequestItems>
+    public class RequestItemsService : ServiceInterface.Service
     {
-        protected override object Run(RequestItems request)
+        public object Any(RequestItems request)
         {
             if (!Request.Items.ContainsKey("_DataSetAtPreRequestFilters"))
                 throw new InvalidOperationException("DataSetAtPreRequestFilters missing.");

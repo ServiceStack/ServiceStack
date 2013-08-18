@@ -30,10 +30,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class ThrowsArgumentNullService 
-		: ServiceBase<ThrowsArgumentNull>
+	public class ThrowsArgumentNullService : ServiceInterface.Service
 	{
-		protected override object Run(ThrowsArgumentNull request)
+        public object Any(ThrowsArgumentNull request)
 		{
 			throw new ArgumentNullException("Name");
 		}

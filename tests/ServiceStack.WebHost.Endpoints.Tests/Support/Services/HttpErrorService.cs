@@ -39,10 +39,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class HttpErrorService 
-		: ServiceBase<HttpError>
+	public class HttpErrorService : ServiceInterface.Service
 	{
-		protected override object Run(HttpError request)
+	    public object Any(HttpError request)
 		{
 			if (request.Type.IsNullOrEmpty())
 				throw new ArgumentNullException("Type");

@@ -65,9 +65,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			public int Milliseconds { get; set; }
 		}
 
-		public class TimedService : ServiceStack.ServiceInterface.ServiceBase<Timed>
+		public class TimedService : ServiceInterface.Service
 		{
-			protected override object Run(Timed request)
+            public object Any(Timed request)
 			{
 				Thread.Sleep(request.Milliseconds);
 				return true;

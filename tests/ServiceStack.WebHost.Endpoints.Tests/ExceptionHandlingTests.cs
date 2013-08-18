@@ -53,9 +53,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public ResponseStatus ResponseStatus { get; set; }
     }
-    public class ExceptionWithResponseStatusService : ServiceBase<ExceptionWithResponseStatus>
+    public class ExceptionWithResponseStatusService : ServiceInterface.Service
     {
-        protected override object Run(ExceptionWithResponseStatus request)
+        public object Any(ExceptionWithResponseStatus request)
         {
             throw new CustomException();
         }
@@ -63,18 +63,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class ExceptionNoResponseStatus { }
     public class ExceptionNoResponseStatusResponse { }
-    public class ExceptionNoResponseStatusService : ServiceBase<ExceptionNoResponseStatus>
+    public class ExceptionNoResponseStatusService : ServiceInterface.Service
     {
-        protected override object Run(ExceptionNoResponseStatus request)
+        public object Any(ExceptionNoResponseStatus request)
         {
             throw new CustomException();
         }
     }
 
     public class ExceptionNoResponseDto { }
-    public class ExceptionNoResponseDtoService : ServiceBase<ExceptionNoResponseDto>
+    public class ExceptionNoResponseDtoService : ServiceInterface.Service
     {
-        protected override object Run(ExceptionNoResponseDto request)
+        public object Any(ExceptionNoResponseDto request)
         {
             throw new CustomException();
         }
@@ -82,9 +82,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class UncatchedException { }
     public class UncatchedExceptionResponse { }
-    public class UncatchedExceptionService : IService<UncatchedException>
+    public class UncatchedExceptionService : ServiceInterface.Service
     {
-        public object Execute(UncatchedException request)
+        public object Any(UncatchedException request)
         {
             //We don't wrap a try..catch block around the service (which happens with ServiceBase<> automatically)
             //so the global exception handling strategy is invoked

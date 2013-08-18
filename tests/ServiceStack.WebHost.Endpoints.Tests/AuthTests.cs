@@ -84,9 +84,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [RequiredRole("TheRole")]
-    public class RequiresRoleService : ServiceBase<RequiresRole>
+    public class RequiresRoleService : ServiceInterface.Service
     {
-        protected override object Run(RequiresRole request)
+        public object Any(RequiresRole request)
         {
             return new RequiresRoleResponse { Result = request.Name };
         }
@@ -115,9 +115,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [RequiresAnyRole("TheRole", "TheRole2")]
-    public class RequiresAnyRoleService : ServiceBase<RequiresAnyRole>
+    public class RequiresAnyRoleService : ServiceInterface.Service
     {
-        protected override object Run(RequiresAnyRole request)
+        public object Any(RequiresAnyRole request)
         {
             return new RequiresAnyRoleResponse { Result = request.Roles };
         }

@@ -17,9 +17,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Operations
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class CustomRequestBinderService : ServiceBase<CustomRequestBinder>
+    public class CustomRequestBinderService : ServiceInterface.Service
 	{
-		protected override object Run(CustomRequestBinder request)
+        public object Any(CustomRequestBinder request)
 		{
 			return new CustomRequestBinderResponse { FromBinder = request.IsFromBinder };
 		}
