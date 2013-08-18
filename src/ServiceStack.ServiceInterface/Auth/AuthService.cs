@@ -5,6 +5,7 @@ using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
@@ -93,6 +94,9 @@ namespace ServiceStack.ServiceInterface.Auth
 
         public static void Init(Func<IAuthSession> sessionFactory, params IAuthProvider[] authProviders)
         {
+            if (EndpointHost.Config == null)
+                EndpointHost.Config = new EndpointHostConfig("AuthService", new ServiceManager(typeof(AuthService).Assembly));
+
             if (authProviders.Length == 0)
                 throw new ArgumentNullException("authProviders");
 

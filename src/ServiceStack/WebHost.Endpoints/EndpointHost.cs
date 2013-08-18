@@ -34,8 +34,10 @@ namespace ServiceStack.WebHost.Endpoints
 
         public static List<IViewEngine> ViewEngines { get; set; }
 
+        //TODO: rename to UncaughtExceptionsHandler
         public static HandleUncaughtExceptionDelegate ExceptionHandler { get; set; }
 
+        //TODO: rename to ServiceExceptionsHandler
         public static HandleServiceExceptionDelegate ServiceExceptionHandler { get; set; }
 
         public static List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
