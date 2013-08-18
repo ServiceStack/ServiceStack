@@ -58,9 +58,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public UserValidation Result { get; set; }
     }
 
-    public class UserValidationService : RestServiceBase<UserValidation>
+    public class UserValidationService : ServiceInterface.Service
     {
-        public override object OnGet(UserValidation request)
+        public object Get(UserValidation request)
         {
             return new OperationResponse { Result = request };
         }

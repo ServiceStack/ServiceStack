@@ -7,7 +7,6 @@ using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {
-
 	[DataContract]
 	[Route("/cached/movies", "GET")]
     [Route("/cached/movies/genres/{Genre}")]
@@ -17,11 +16,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 		public string Genre { get; set; }
 	}
 
-	public class CachedMoviesService : RestServiceBase<CachedMovies>
+	public class CachedMoviesService : ServiceInterface.Service
 	{
 		public IDbConnectionFactory DbFactory { get; set; }
 
-		public override object OnGet(CachedMovies request)
+		public object Get(CachedMovies request)
 		{
 			var service = base.ResolveService<MoviesService>();
 
@@ -32,5 +31,4 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 				});
 		}
 	}
-
 }

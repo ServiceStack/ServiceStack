@@ -58,24 +58,25 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class TodoListService : RestServiceBase<TodoList>
+    [DefaultRequest(typeof(TodoList))]
+	public class TodoListService : ServiceInterface.Service
 	{
-		public override object OnGet(TodoList request)
+		public object Get(TodoList request)
 		{
 			return new TodoListResponse { Results = request };
 		}
 
-		public override object OnPost(TodoList request)
+		public object Post(TodoList request)
 		{
 			return new TodoListResponse { Results = request };
 		}
 
-		public override object OnPut(TodoList request)
+		public object Put(TodoList request)
 		{
 			return new TodoListResponse { Results = request };
 		}
 
-		public override object OnDelete(TodoList request)
+		public object Delete(TodoList request)
 		{
 			return new TodoListResponse { Results = request };
 		}
@@ -89,13 +90,10 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public class TodoListAppHostHttpListener
 			: AppHostHttpListenerBase
 		{
-
 			public TodoListAppHostHttpListener()
 				: base("TodoList Tests", typeof(TodoList).Assembly) { }
 
-			public override void Configure(Container container)
-			{
-			}
+			public override void Configure(Container container) {}
 		}
 
 		TodoListAppHostHttpListener appHost;

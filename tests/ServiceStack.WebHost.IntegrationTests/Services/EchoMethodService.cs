@@ -1,8 +1,6 @@
-using System;
 using System.Runtime.Serialization;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -18,30 +16,30 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public string Result { get; set; }
 	}
 
-	public class EchoMethodService
-		: RestServiceBase<EchoMethod>
+    [DefaultRequest(typeof(EchoMethod))]
+	public class EchoMethodService : ServiceInterface.Service
 	{
-		public override object OnGet(EchoMethod request)
+		public object Get(EchoMethod request)
 		{
 			return new EchoMethodResponse { Result = HttpMethods.Get };
 		}
 
-		public override object OnPost(EchoMethod request)
+		public object Post(EchoMethod request)
 		{
 			return new EchoMethodResponse { Result = HttpMethods.Post };
 		}
 
-		public override object OnPut(EchoMethod request)
+		public object Put(EchoMethod request)
 		{
 			return new EchoMethodResponse { Result = HttpMethods.Put };
 		}
 
-		public override object OnDelete(EchoMethod request)
+		public object Delete(EchoMethod request)
 		{
 			return new EchoMethodResponse { Result = HttpMethods.Delete };
 		}
 
-		public override object OnPatch(EchoMethod request)
+		public object Patch(EchoMethod request)
 		{
 			return new EchoMethodResponse { Result = HttpMethods.Patch };
 		}

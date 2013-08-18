@@ -4,20 +4,17 @@ using System.ComponentModel;
 using System.Runtime.Serialization;
 using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
-
 	[DataContract]
 	[Description("Resets the database back to the original Top 5 movies.")]
 	[Route("/reset-movies")]
 	public class ResetMovies { }
 
 	[DataContract]
-	public class ResetMoviesResponse
-		: IHasResponseStatus
+	public class ResetMoviesResponse : IHasResponseStatus
 	{
 		public ResetMoviesResponse()
 		{
@@ -28,7 +25,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class ResetMoviesService : RestServiceBase<ResetMovies>
+	public class ResetMoviesService : ServiceInterface.Service
 	{
 		public static List<Movie> Top5Movies = new List<Movie>
 		{
@@ -41,17 +38,13 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 
 		public IDbConnectionFactory DbFactory { get; set; }
 
-		public override object OnPost(ResetMovies request)
+		public object Post(ResetMovies request)
 		{
-			DbFactory.Run(db =>
-			{
-				const bool overwriteTable = true;
-				db.CreateTable<Movie>(overwriteTable);
-				db.SaveAll(Top5Movies);
-			});
+            const bool overwriteTable = true;
+            Db.CreateTable<Movie>(overwriteTable);
+            Db.SaveAll(Top5Movies);
 
 			return new ResetMoviesResponse();
 		}
 	}
-
 }

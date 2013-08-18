@@ -86,24 +86,25 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class CustomerService : RestServiceBase<Customers>
+    [DefaultRequest(typeof(Customers))]
+	public class CustomerService : ServiceInterface.Service
 	{
-		public override object OnGet(Customers request)
+		public object Get(Customers request)
 		{
 			return new CustomersResponse { Result = request };
 		}
 
-		public override object OnPost(Customers request)
+		public object Post(Customers request)
 		{
 			return new CustomersResponse { Result = request };
 		}
 
-		public override object OnPut(Customers request)
+		public object Put(Customers request)
 		{
 			return new CustomersResponse { Result = request };
 		}
 
-		public override object OnDelete(Customers request)
+		public object Delete(Customers request)
 		{
 			return new CustomersResponse { Result = request };
 		}
@@ -117,7 +118,6 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public class ValidationAppHostHttpListener
 			: AppHostHttpListenerBase
 		{
-
 			public ValidationAppHostHttpListener()
 				: base("Validation Tests", typeof(CustomerService).Assembly) { }
 

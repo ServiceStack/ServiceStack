@@ -38,43 +38,40 @@ namespace ServiceStack.RazorHostTests
         public List<Rockstar> Results { get; set; }
     }
 
-    public class RockstarsService : RestServiceBase<Rockstars>
+    public class RockstarsService : ServiceInterface.Service
     {
         public IDbConnectionFactory DbFactory { get; set; }
 
-        public override object OnGet( Rockstars request )
+        public object Get(Rockstars request)
         {
-            using( var db = DbFactory.OpenDbConnection() )
+            if (request.Delete == "reset")
             {
-                if( request.Delete == "reset" )
-                {
-                    db.DeleteAll<Rockstar>();
-                    db.Insert( Rockstar.SeedData );
-                }
-                else if( request.Delete.IsInt() )
-                {
-                    db.DeleteById<Rockstar>( request.Delete.ToInt() );
-                }
-
-                return new RockstarsResponse
-                {
-                    Aged = request.Age,
-                    Total = db.GetScalar<int>( "select count(*) from Rockstar" ),
-                    Results = request.Id != default( int ) ?
-                        db.Select<Rockstar>( q => q.Id == request.Id )
-                          : request.Age.HasValue ?
-                        db.Select<Rockstar>( q => q.Age == request.Age.Value )
-                          : db.Select<Rockstar>()
-                };
+                Db.DeleteAll<Rockstar>();
+                Db.Insert(Rockstar.SeedData);
             }
+            else if (request.Delete.IsInt())
+            {
+                Db.DeleteById<Rockstar>(request.Delete.ToInt());
+            }
+
+            return new RockstarsResponse
+            {
+                Aged = request.Age,
+                Total = Db.GetScalar<int>("select count(*) from Rockstar"),
+                Results = request.Id != default(int) ?
+                    Db.Select<Rockstar>(q => q.Id == request.Id)
+                      : request.Age.HasValue ?
+                    Db.Select<Rockstar>(q => q.Age == request.Age.Value)
+                      : Db.Select<Rockstar>()
+            };
         }
 
-        public override object OnPost( Rockstars request )
+        public object Post(Rockstars request)
         {
             using( var db = DbFactory.OpenDbConnection() )
             {
                 db.Insert( request.TranslateTo<Rockstar>() );
-                return OnGet( new Rockstars() );
+                return Get( new Rockstars() );
             }
         }
     }

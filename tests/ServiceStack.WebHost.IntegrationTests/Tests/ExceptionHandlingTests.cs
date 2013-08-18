@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Net;
 using ServiceStack.ServiceInterface.ServiceModel;
-using ServiceStack.ServiceInterface;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using NUnit.Framework;
-using Funq;
 using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.Text;
@@ -19,24 +17,24 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         public ResponseStatus ResponseStatus { get; set; }
     }
 
-    public class UserService : RestServiceBase<User>
+    public class UserService : ServiceInterface.Service
     {
-        public override object OnGet(User request)
+        public object Get(User request)
         {
             return new HttpError(System.Net.HttpStatusCode.BadRequest, "CanNotExecute", "Failed to execute!");
         }
 
-        public override object OnPost(User request)
+        public object Post(User request)
         {
             throw new HttpError(System.Net.HttpStatusCode.BadRequest, "CanNotExecute", "Failed to execute!");
         }
 
-        public override object OnDelete(User request)
+        public object Delete(User request)
         {
             throw new HttpError(System.Net.HttpStatusCode.Forbidden, "CanNotExecute", "Failed to execute!");
         }
 
-        public override object OnPut(User request)
+        public object Put(User request)
         {
             throw new ArgumentException();
         }

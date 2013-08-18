@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
@@ -36,9 +35,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public ResponseStatus ResponseStatus { get; set; } //Where Exceptions get auto-serialized
 	}
 
-	public class GeoInfoService : RestServiceBase<GeoInfo>
+	public class GeoInfoService : ServiceInterface.Service
 	{
-		public override object OnPost(GeoInfo request)
+		public object Post(GeoInfo request)
 		{
 			return new GeoInfoResponse
 			{

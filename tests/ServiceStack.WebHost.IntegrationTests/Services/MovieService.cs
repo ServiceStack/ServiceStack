@@ -84,33 +84,28 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public Movie Movie { get; set; }
 	}
 
-
-	public class MovieService : RestServiceBase<Movie>
+	public class MovieService : ServiceInterface.Service
 	{
-		public IDbConnectionFactory DbFactory { get; set; }
-
 		/// <summary>
 		/// GET /movies/{Id} 
 		/// </summary>
-		public override object OnGet(Movie movie)
+		public object Get(Movie movie)
 		{
 			return new MovieResponse {
-				Movie = DbFactory.Run(db => db.GetById<Movie>(movie.Id))
+				Movie = Db.GetById<Movie>(movie.Id)
 			};
 		}
 
 		/// <summary>
 		/// POST /movies
 		/// </summary>
-		public override object OnPost(Movie movie)
+		public object Post(Movie movie)
 		{
-			var newMovieId = DbFactory.Run(db => {
-				db.Insert(movie);
-				return db.GetLastInsertId();
-			});
+            Db.Insert(movie);
+			var newMovieId = Db.GetLastInsertId();
 
 			var newMovie = new MovieResponse {
-				Movie = DbFactory.Run(db => db.GetById<Movie>(newMovieId))
+				Movie = Db.GetById<Movie>(newMovieId)
 			};
 			return new HttpResult(newMovie) {
 				StatusCode = HttpStatusCode.Created,
@@ -123,34 +118,32 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		/// <summary>
 		/// PUT /movies
 		/// </summary>
-		public override object OnPut(Movie movie)
+		public object Put(Movie movie)
 		{
-			DbFactory.Run(db => db.Update(movie));
+		    Db.Update(movie);
 			return new MovieResponse();
 		}
 
 		/// <summary>
 		/// DELETE /movies/{Id}
 		/// </summary>
-		public override object OnDelete(Movie request)
+		public object Delete(Movie request)
 		{
-			DbFactory.Run(db => db.DeleteById<Movie>(request.Id));
+			Db.DeleteById<Movie>(request.Id);
 			return new MovieResponse();
 		}
 
 		/// <summary>
 		/// PATCH /movies
 		/// </summary>
-		public override object OnPatch(Movie movie)
+		public object Patch(Movie movie)
 		{
-			DbFactory.Run(db => {
-				var existingMovie = db.GetById<Movie>(movie.Id);
-				if (movie.Title != null)
-					existingMovie.Title = movie.Title;
-				db.Save(existingMovie);
-			});
-			return new MovieResponse();
+            var existingMovie = Db.GetById<Movie>(movie.Id);
+            if (movie.Title != null)
+                existingMovie.Title = movie.Title;
+            Db.Save(existingMovie);
+            
+            return new MovieResponse();
 		}
 	}
-
 }

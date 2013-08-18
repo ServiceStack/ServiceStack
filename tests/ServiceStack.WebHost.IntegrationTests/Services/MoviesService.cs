@@ -3,11 +3,9 @@ using System.Runtime.Serialization;
 using ServiceStack.Common.Extensions;
 using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
-
 	[DataContract]
 	[Route("/movies", "GET, OPTIONS")]
 	[Route("/movies/genres/{Genre}")]
@@ -27,23 +25,20 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public List<Movie> Movies { get; set; }
 	}
 
-	public class MoviesService : RestServiceBase<Movies>
+	public class MoviesService : ServiceInterface.Service
 	{
-		public IDbConnectionFactory DbFactory { get; set; }
-
 		/// <summary>
 		/// GET /movies 
 		/// GET /movies/genres/{Genre}
 		/// </summary>
-		public override object OnGet(Movies request)
+		public object Get(Movies request)
 		{
 			return new MoviesResponse
 			{
 				Movies = request.Genre.IsNullOrEmpty()
-					? DbFactory.Run(db => db.Select<Movie>())
-					: DbFactory.Run(db => db.Select<Movie>("Genres LIKE {0}", "%" + request.Genre + "%"))
+					? Db.Select<Movie>()
+					: Db.Select<Movie>("Genres LIKE {0}", "%" + request.Genre + "%")
 			};
 		}
 	}
-
 }
