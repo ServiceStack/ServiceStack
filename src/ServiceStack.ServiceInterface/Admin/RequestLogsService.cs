@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using ServiceStack.Common;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.ServiceInterface.Admin
@@ -45,7 +46,8 @@ namespace ServiceStack.ServiceInterface.Admin
         [DataMember(Order=3)] public ResponseStatus ResponseStatus { get; set; }
     }
 
-    public class RequestLogsService : ServiceBase<RequestLogs>
+    [DefaultRequest(typeof(RequestLogs))]
+    public class RequestLogsService : Service
     {
         private static readonly Dictionary<string, string> Usage = new Dictionary<string, string> {
             {"int BeforeSecs",      "Requests before elapsed time"},
@@ -68,7 +70,9 @@ namespace ServiceStack.ServiceInterface.Admin
             {"TimeSpan DurationLessThan", "Requests with a duration less than"},
         };
 
-        protected override object Run(RequestLogs request)
+        public IRequestLogger RequestLogger { get; set; }
+
+        public object Any(RequestLogs request)
         {
             if (RequestLogger == null)
                 throw new Exception("No IRequestLogger is registered");

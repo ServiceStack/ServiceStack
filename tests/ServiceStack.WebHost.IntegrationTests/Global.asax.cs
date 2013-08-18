@@ -15,6 +15,7 @@ using ServiceStack.Redis;
 using ServiceStack.Redis.Messaging;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceInterface.Admin;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Api.Swagger;
 using ServiceStack.ServiceInterface.Validation;
@@ -96,6 +97,7 @@ namespace ServiceStack.WebHost.IntegrationTests
                 Plugins.Add(new SessionFeature());
                 Plugins.Add(new ProtoBufFormat());
                 Plugins.Add(new SwaggerFeature());
+                Plugins.Add(new RequestLogsFeature());
 
                 container.RegisterValidators(typeof(CustomersValidator).Assembly);
 
