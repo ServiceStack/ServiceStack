@@ -86,7 +86,7 @@ namespace ServiceStack.Razor.Managers
             httpRes.ContentType = ContentType.Html;
 
             ResolveAndExecuteRazorPage(httpReq, httpRes, null);
-            httpRes.EndServiceStackRequest(skipHeaders: true);
+            httpRes.EndRequest(skipHeaders: true);
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace ServiceStack.Razor.Managers
 
             ResolveAndExecuteRazorPage(httpReq, httpRes, dto, existingRazorPage);
 
-            httpRes.EndServiceStackRequest();
+            httpRes.EndRequest();
             return true;
         }
 

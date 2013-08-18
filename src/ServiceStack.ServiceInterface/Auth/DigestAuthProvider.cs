@@ -154,7 +154,7 @@ namespace ServiceStack.ServiceInterface.Auth
             var digestHelper = new DigestAuthFunctions();
             httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
             httpRes.AddHeader(HttpHeaders.WwwAuthenticate, "{0} realm=\"{1}\", nonce=\"{2}\", qop=\"auth\"".Fmt(Provider, AuthRealm,digestHelper.GetNonce(httpReq.UserHostAddress,PrivateKey)));
-            httpRes.EndServiceStackRequest();
+            httpRes.EndRequest();
         }
     }
 }

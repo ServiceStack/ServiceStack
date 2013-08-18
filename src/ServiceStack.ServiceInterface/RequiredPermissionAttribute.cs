@@ -39,7 +39,7 @@ namespace ServiceStack.ServiceInterface
 
             res.StatusCode = (int)HttpStatusCode.Forbidden;
             res.StatusDescription = "Invalid Permission";
-            res.EndServiceStackRequest();
+            res.EndRequest();
         }
 
         public bool HasAllPermissions(IHttpRequest req, IAuthSession session, IUserAuthRepository userAuthRepo=null)

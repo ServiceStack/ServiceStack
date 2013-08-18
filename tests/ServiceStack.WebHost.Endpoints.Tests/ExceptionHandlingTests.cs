@@ -118,7 +118,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 this.ExceptionHandler = (req, res, operationName, ex) =>
                 {
                     res.Write(string.Format("Exception {0}", ex.GetType().Name));
-                    res.EndServiceStackRequest(skipHeaders: true);
+                    res.EndRequest(skipHeaders: true);
                 };
             }
         }

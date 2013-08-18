@@ -14,7 +14,7 @@ namespace ServiceStack.ServiceHost
 		{
 		    httpRes.StatusCode = (int) redirectStatusCode;
 			httpRes.AddHeader(HttpHeaders.Location, url);
-            httpRes.EndServiceStackRequest();
+            httpRes.EndRequest();
         }
 
 		public static void TransmitFile(this IHttpResponse httpRes, string filePath)
@@ -31,7 +31,7 @@ namespace ServiceStack.ServiceHost
 				fs.WriteTo(httpRes.OutputStream);
 			}
 
-            httpRes.EndServiceStackRequest();
+            httpRes.EndRequest();
         }
 
 		public static void WriteFile(this IHttpResponse httpRes, string filePath)
@@ -48,13 +48,13 @@ namespace ServiceStack.ServiceHost
 				fs.WriteTo(httpRes.OutputStream);
 			}
 
-            httpRes.EndServiceStackRequest();
+            httpRes.EndRequest();
         }
 
 		public static void Redirect(this IHttpResponse httpRes, string url)
 		{
 			httpRes.AddHeader(HttpHeaders.Location, url);
-            httpRes.EndServiceStackRequest();
+            httpRes.EndRequest();
         }
 
 		public static void ReturnAuthRequired(this IHttpResponse httpRes)

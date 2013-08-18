@@ -41,7 +41,7 @@ namespace ServiceStack.ServiceInterface
 
             res.StatusCode = (int)HttpStatusCode.Forbidden;
             res.StatusDescription = "Invalid Role";
-            res.EndServiceStackRequest();
+            res.EndRequest();
         }
 
         public bool HasAnyRoles(IHttpRequest req, IAuthSession session, IUserAuthRepository userAuthRepo = null)

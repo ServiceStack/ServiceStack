@@ -233,7 +233,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
             }
             finally
             {
-                httpRes.EndServiceStackRequest(skipHeaders: true);
+                httpRes.EndRequest(skipHeaders: true);
             }
         }
 

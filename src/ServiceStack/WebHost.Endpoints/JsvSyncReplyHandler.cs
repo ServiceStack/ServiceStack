@@ -54,7 +54,7 @@ namespace ServiceStack.WebHost.Endpoints
             httpRes.WriteToResponse(response, WriteDebugRequest,
                 new SerializationContext(ContentType.PlainText));
 
-            httpRes.EndServiceStackRequest();
+            httpRes.EndRequest();
         }
     }
 }

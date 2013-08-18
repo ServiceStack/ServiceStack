@@ -260,7 +260,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
                 }
                 finally
                 {
-                    response.EndServiceStackRequest(skipHeaders: true);
+                    response.EndRequest(skipHeaders: true);
                 }
             }
         }
