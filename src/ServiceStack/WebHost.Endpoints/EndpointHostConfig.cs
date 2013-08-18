@@ -121,6 +121,7 @@ namespace ServiceStack.WebHost.Endpoints
                         MetadataVisibility = EndpointAttributes.Any,
                         Return204NoContentForEmptyResponse = true,
                         AllowPartialResponses = true,
+                        AllowAclUrlReservation = true,
                         IgnoreWarningsOnPropertyNames = new List<string>() {
                             "format", "callback", "debug", "_"
                         }
@@ -196,6 +197,7 @@ namespace ServiceStack.WebHost.Endpoints
             this.PreExecuteServiceFilter = instance.PreExecuteServiceFilter;
             this.PostExecuteServiceFilter = instance.PostExecuteServiceFilter;
             this.FallbackRestPath = instance.FallbackRestPath;
+            this.AllowAclUrlReservation = instance.AllowAclUrlReservation;
         }
 
         public static string GetAppConfigPath()
@@ -453,8 +455,8 @@ namespace ServiceStack.WebHost.Endpoints
         public TimeSpan DefaultJsonpCacheExpiration { get; set; }
         public bool Return204NoContentForEmptyResponse { get; set; }
         public bool AllowPartialResponses { get; set; }
-
         public bool AllowNonHttpOnlyCookies { get; set; }
+        public bool AllowAclUrlReservation { get; set; }
 
         public bool UseHttpsLinks { get; set; }
 

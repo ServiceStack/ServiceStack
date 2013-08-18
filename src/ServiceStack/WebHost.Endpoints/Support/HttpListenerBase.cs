@@ -148,7 +148,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 	        catch (HttpListenerException ex)
 	        {
 	            var attemptUrlReservation = Environment.OSVersion.Platform == PlatformID.Win32NT && ex.ErrorCode == 5;
-	            if (attemptUrlReservation)
+	            if (Config.AllowAclUrlReservation && attemptUrlReservation)
 	            {
 	                AddUrlReservationToAcl(urlBase);
 	                reservedUrl = true;
