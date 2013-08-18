@@ -22,17 +22,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public object Get(User request)
         {
-            return new HttpError(System.Net.HttpStatusCode.BadRequest, "CanNotExecute", "Failed to execute!");
+            return new HttpError(HttpStatusCode.BadRequest, "CanNotExecute", "Failed to execute!");
         }
 
         public object Post(User request)
         {
-            throw new HttpError(System.Net.HttpStatusCode.BadRequest, "CanNotExecute", "Failed to execute!");
+            throw new HttpError(HttpStatusCode.BadRequest, "CanNotExecute", "Failed to execute!");
         }
 
         public object Delete(User request)
         {
-            throw new HttpError(System.Net.HttpStatusCode.Forbidden, "CanNotExecute", "Failed to execute!");
+            throw new HttpError(HttpStatusCode.Forbidden, "CanNotExecute", "Failed to execute!");
         }
 
         public object Put(User request)
@@ -109,9 +109,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 SetConfig(new EndpointHostConfig { DebugMode = false });
 
-                //Uncomment to enable server-side stack traces
-                //SetConfig(new EndpointHostConfig { DebugMode = true });
-
                 //Custom global uncaught exception handling strategy
                 this.ExceptionHandler = (req, res, operationName, ex) =>
                 {
@@ -119,8 +116,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     res.EndRequest(skipHeaders: true);
                 };
 
-                //Make service exception appear 'uncaught'
-                this.ServiceExceptionHandler = (request, exception) => null;
+                this.ServiceExceptionHandler = (request, exception) =>
+                {
+                    if (request is UncatchedException)
+                        throw exception;
+
+                    return null;
+                };
             }
         }
 
