@@ -140,7 +140,7 @@ namespace ServiceStack.Api.Swagger
     {
         internal static bool UseCamelCaseModelPropertyNames { get; set; }
         internal static bool UseLowercaseUnderscoreModelPropertyNames { get; set; }
-        internal static bool ExcludePostBody { get; set; }
+        internal static bool DisableAutoDtoInBodyParam { get; set; }
 
         private readonly Regex nicknameCleanerRegex = new Regex(@"[\{\}\*\-_/]*", RegexOptions.Compiled);
 
@@ -436,7 +436,7 @@ namespace ServiceStack.Api.Swagger
                     });
             }
 
-            if (!ExcludePostBody)
+            if (!DisableAutoDtoInBodyParam)
             {
                 if (!ServiceStack.Common.Web.HttpMethods.Get.Equals(verb, StringComparison.OrdinalIgnoreCase) && !methodOperationParameters.Any(p => p.ParamType.Equals("body", StringComparison.OrdinalIgnoreCase)))
                 {

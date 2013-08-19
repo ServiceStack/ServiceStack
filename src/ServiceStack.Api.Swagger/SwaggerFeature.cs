@@ -15,7 +15,7 @@ namespace ServiceStack.Api.Swagger
 
         public bool UseLowercaseUnderscoreModelPropertyNames { get; set; }
 
-        public bool ExcludePostBody { get; set; }
+        public bool DisableAutoDtoInBodyParam { get; set; }
 
         public void Register(IAppHost appHost)
         {
@@ -24,7 +24,7 @@ namespace ServiceStack.Api.Swagger
 
             SwaggerApiService.UseCamelCaseModelPropertyNames = UseCamelCaseModelPropertyNames;
             SwaggerApiService.UseLowercaseUnderscoreModelPropertyNames = UseLowercaseUnderscoreModelPropertyNames;
-            SwaggerApiService.ExcludePostBody = ExcludePostBody;
+            SwaggerApiService.DisableAutoDtoInBodyParam = DisableAutoDtoInBodyParam;
 
             appHost.RegisterService(typeof(SwaggerResourcesService), new[] { "/resources" });
             appHost.RegisterService(typeof(SwaggerApiService), new[] { SwaggerResourcesService.RESOURCE_PATH + "/{Name*}" });
