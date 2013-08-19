@@ -15,7 +15,6 @@ using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
-using ServiceStack.VirtualPath;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
@@ -37,7 +36,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		protected HttpListener Listener;
 		protected bool IsStarted = false;
-	    protected string reservedUrl = null;
+	    protected string registeredReservedUrl = null;
 
 		private readonly DateTime startTime;
 
@@ -147,20 +146,15 @@ namespace ServiceStack.WebHost.Endpoints.Support
 	        }
 	        catch (HttpListenerException ex)
 	        {
-                if (Config.AllowAclUrlReservation && ex.ErrorCode == 5 && reservedUrl == null)
-	            {
-                    reservedUrl = AddUrlReservationToAcl(urlBase);
-
-                    if (string.IsNullOrEmpty(reservedUrl))
-                    {
-                        throw ex;
-                    }
-                    else
+                if (Config.AllowAclUrlReservation && ex.ErrorCode == 5 && registeredReservedUrl == null)
+                {
+                    registeredReservedUrl = AddUrlReservationToAcl(urlBase);
+                    if (registeredReservedUrl != null)
                     {
                         Start(urlBase, listenCallback);
                         return;
                     }
-	            }
+                }
 
 	            throw ex;
 	        }
@@ -299,10 +293,10 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				this.Listener.Close();
 
                 // remove Url Reservation if one was made
-                if (!string.IsNullOrEmpty(reservedUrl))
+                if (registeredReservedUrl != null)
                 {
-                    RemoveUrlReservationFromAcl(reservedUrl);
-                    reservedUrl = null;
+                    RemoveUrlReservationFromAcl(registeredReservedUrl);
+                    registeredReservedUrl = null;
                 }
 			}
 			catch (HttpListenerException ex)
