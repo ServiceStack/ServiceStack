@@ -37,7 +37,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		protected HttpListener Listener;
 		protected bool IsStarted = false;
-	    protected bool reservedUrl = false;
+	    protected string reservedUrl = null;
 
 		private readonly DateTime startTime;
 
@@ -147,24 +147,25 @@ namespace ServiceStack.WebHost.Endpoints.Support
 	        }
 	        catch (HttpListenerException ex)
 	        {
-	            var attemptUrlReservation = Environment.OSVersion.Platform == PlatformID.Win32NT && ex.ErrorCode == 5;
-	            if (Config.AllowAclUrlReservation && attemptUrlReservation)
+                if (Config.AllowAclUrlReservation && ex.ErrorCode == 5 && reservedUrl == null)
 	            {
-	                AddUrlReservationToAcl(urlBase);
-	                reservedUrl = true;
+                    reservedUrl = AddUrlReservationToAcl(urlBase);
 
-	                Listener.Start();
-	                return;
+                    if (string.IsNullOrEmpty(reservedUrl))
+                    {
+                        throw ex;
+                    }
+                    else
+                    {
+                        Start(urlBase, listenCallback);
+                        return;
+                    }
 	            }
 
 	            throw ex;
 	        }
 
 	        ThreadPool.QueueUserWorkItem(listenCallback);
-
-	        // remove Url Reservation if one was made
-	        if (reservedUrl)
-	            RemoveUrlReservationFromAcl(urlBase);
 	    }
 
 	    private bool IsListening
@@ -296,6 +297,13 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			try
 			{
 				this.Listener.Close();
+
+                // remove Url Reservation if one was made
+                if (!string.IsNullOrEmpty(reservedUrl))
+                {
+                    RemoveUrlReservationFromAcl(reservedUrl);
+                    reservedUrl = null;
+                }
 			}
 			catch (HttpListenerException ex)
 			{
@@ -566,33 +574,82 @@ namespace ServiceStack.WebHost.Endpoints.Support
         /// Reserves the specified URL for non-administrator users and accounts. 
         /// http://msdn.microsoft.com/en-us/library/windows/desktop/cc307223(v=vs.85).aspx
         /// </summary>
-        public static void AddUrlReservationToAcl(string urlBase)
+        /// <returns>Reserved Url if the process completes successfully</returns>
+        public static string AddUrlReservationToAcl(string urlBase)
         {
-            var args = string.Format(@"http add urlacl url={0} user={1}\{2} listen=yes", urlBase, Environment.UserDomainName, Environment.UserName);
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+                return null;
 
-            var psi = new ProcessStartInfo("netsh", args)
+            try
             {
-                Verb = "runas",
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                UseShellExecute = true
-            };
+                string cmd, args;
 
-            Process.Start(psi).WaitForExit();
+                // use HttpCfg for windows versions before Version 6.0, else use NetSH
+                if (Environment.OSVersion.Version.Major < 6)
+                {
+                    var sid = System.Security.Principal.WindowsIdentity.GetCurrent().User;
+                    cmd = "httpcfg";
+                    args = string.Format(@"set urlacl /u {0} /a D:(A;;GX;;;""{1}"")", urlBase, sid);
+                }
+                else
+                {
+                    cmd = "netsh";
+                    args = string.Format(@"http add urlacl url={0} user={1}\{2} listen=yes", urlBase, Environment.UserDomainName, Environment.UserName);
+                }
+
+                var psi = new ProcessStartInfo(cmd, args)
+                {
+                    Verb = "runas",
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    UseShellExecute = true
+                };
+
+                Process.Start(psi).WaitForExit();
+
+                return urlBase;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public static void RemoveUrlReservationFromAcl(string urlBase)
         {
-            var args = string.Format(@"http delete urlacl url={0}", urlBase);
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+                return;
 
-            var psi = new ProcessStartInfo("netsh", args)
+            try
             {
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                UseShellExecute = true
-            };
 
-            Process.Start(psi).WaitForExit();
+                string cmd, args;
+
+                if (Environment.OSVersion.Version.Major < 6)
+                {
+                    cmd = "httpcfg";
+                    args = string.Format(@"delete urlacl /u {0}", urlBase);
+                }
+                else
+                {
+                    cmd = "netsh";
+                    args = string.Format(@"http delete urlacl url={0}", urlBase);
+                }
+
+                var psi = new ProcessStartInfo(cmd, args)
+                {
+                    Verb = "runas",
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    UseShellExecute = true
+                };
+
+                Process.Start(psi).WaitForExit();
+            }
+            catch
+            {
+                /* ignore */
+            }
         }
 
         private bool disposed;
