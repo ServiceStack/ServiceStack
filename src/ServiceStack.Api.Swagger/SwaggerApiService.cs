@@ -140,8 +140,8 @@ namespace ServiceStack.Api.Swagger
     {
         internal static bool UseCamelCaseModelPropertyNames { get; set; }
         internal static bool UseLowercaseUnderscoreModelPropertyNames { get; set; }
-		internal static bool ExcludePostBody { get; set; }
-		
+        internal static bool ExcludePostBody { get; set; }
+
         private readonly Regex nicknameCleanerRegex = new Regex(@"[\{\}\*\-_/]*", RegexOptions.Compiled);
 
         public object Get(ResourceRequest request)
@@ -436,18 +436,18 @@ namespace ServiceStack.Api.Swagger
                     });
             }
 
-			if (!ExcludePostBody)
-			{
-				if (!ServiceStack.Common.Web.HttpMethods.Get.Equals(verb, StringComparison.OrdinalIgnoreCase) && !methodOperationParameters.Any(p => p.ParamType.Equals("body", StringComparison.OrdinalIgnoreCase)))
-				{
-					ParseModel(models, operationType);
-					methodOperationParameters.Add(new MethodOperationParameter()
-					{
-						DataType = GetSwaggerTypeName(operationType),
-						ParamType = "body"
-					});
-				}
-			}
+            if (!ExcludePostBody)
+            {
+                if (!ServiceStack.Common.Web.HttpMethods.Get.Equals(verb, StringComparison.OrdinalIgnoreCase) && !methodOperationParameters.Any(p => p.ParamType.Equals("body", StringComparison.OrdinalIgnoreCase)))
+                {
+                    ParseModel(models, operationType);
+                    methodOperationParameters.Add(new MethodOperationParameter()
+                    {
+                        DataType = GetSwaggerTypeName(operationType),
+                        ParamType = "body"
+                    });
+                }
+            }
             return methodOperationParameters;
         }
 
