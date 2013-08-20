@@ -207,7 +207,7 @@ namespace ServiceStack.ServiceHost
                 return true;
 
             Operation operation;
-            OperationNamesMap.TryGetValue(operationName.ToLower(), out operation);
+            OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out operation);
             if (operation == null) return false;
 
             var canCall = HasImplementation(operation, format);

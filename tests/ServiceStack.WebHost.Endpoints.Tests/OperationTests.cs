@@ -1,4 +1,8 @@
+using System;
+using System.Globalization;
 using System.IO;
+using System.Runtime.Serialization;
+using System.Threading;
 using System.Web.UI;
 using Funq;
 using NUnit.Framework;
@@ -76,5 +80,38 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.IsTrue(html.Contains("<a href=\"/metadata\">&lt;back to all web services</a>"));
         }
 
+        [Test]
+        public void When_culture_is_turkish_operations_containing_capital_I_are_still_visible()
+        {
+            Metadata.Add(GetType(), typeof(HelloImage), null);
+
+            using (new CultureSwitch("tr-TR"))
+            {
+                Assert.IsTrue(Metadata.IsVisible(_operationControl.HttpRequest, Format.Json, "HelloImage"));
+            }
+        }
 	}
+
+    [DataContract]
+    public class HelloImage
+    {
+    }
+
+    public class CultureSwitch : IDisposable
+    {
+        private readonly CultureInfo _currentCulture;
+
+        public CultureSwitch(string culture)
+        {
+            var currentThread = Thread.CurrentThread;
+            _currentCulture = currentThread.CurrentCulture;
+            var switchCulture = CultureInfo.GetCultureInfo(culture);
+            currentThread.CurrentCulture = switchCulture;
+        }
+
+        public void Dispose()
+        {
+            Thread.CurrentThread.CurrentCulture = _currentCulture;
+        }
+    }
 }
