@@ -10,16 +10,23 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
     {
         //private static readonly ILog Log = LogManager.GetLogger(typeof(HttpResponseWrapper));
 
-        private readonly HttpResponse response;
+        private readonly HttpResponseBase response;
 
         public HttpResponseWrapper(HttpResponse response)
+        {
+            this.response = new System.Web.HttpResponseWrapper(response);
+            this.response.TrySkipIisCustomErrors = true;
+            this.Cookies = new Cookies(this);
+        }
+
+        public HttpResponseWrapper(HttpResponseBase response)
         {
             this.response = response;
             this.response.TrySkipIisCustomErrors = true;
             this.Cookies = new Cookies(this);
         }
 
-        public HttpResponse Response
+        public HttpResponseBase Response
         {
             get { return response; }
         }
