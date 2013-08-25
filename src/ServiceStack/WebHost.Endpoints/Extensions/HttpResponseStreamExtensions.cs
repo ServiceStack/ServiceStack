@@ -27,24 +27,6 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			//IsIis = !Env.IsMono;
 			IsHttpListener = HttpContext.Current == null;
 		}
-
-        public static void CloseOutputStream(this HttpResponseBase response)
-        {
-            try
-            {
-                //Don't close for MonoFastCGI as it outputs random 4-letters at the start
-                if (!IsMonoFastCgi)
-                {
-                    response.OutputStream.Flush();
-                    response.OutputStream.Close();
-                    //response.Close(); //This kills .NET Development Web Server
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Exception closing HttpResponse: " + ex.Message, ex);
-            }
-        }
         
 		public static void CloseOutputStream(this HttpResponse response)
 		{
