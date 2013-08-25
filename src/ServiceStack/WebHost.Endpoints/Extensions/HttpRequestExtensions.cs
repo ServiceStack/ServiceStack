@@ -110,6 +110,21 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 		}
 
+        public static string GetUrlHostName(this HttpRequestBase request)
+        {
+            //TODO: Fix bug in mono fastcgi, when trying to get 'Request.Url.Host'
+            try
+            {
+                return request.Url.Host;
+            }
+            catch (Exception ex)
+            {
+                Log.ErrorFormat("Error trying to get 'Request.Url.Host'", ex);
+
+                return request.UserHostName;
+            }
+        }
+
 		// http://localhost/ServiceStack.Examples.Host.Web/Public/Public/Soap12/Wsdl => 
 		// http://localhost/ServiceStack.Examples.Host.Web/Public/Soap12/
 		public static string GetParentBaseUrl(this HttpRequest request)
@@ -153,6 +168,20 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		{
 			return GetLastPathInfoFromRawUrl(request.RawUrl);
 		}
+
+        public static string GetPathInfo(this HttpRequestBase request)
+        {
+            if (!String.IsNullOrEmpty(request.PathInfo)) return request.PathInfo.TrimEnd('/');
+
+            var mode = EndpointHost.Config.ServiceStackHandlerFactoryPath;
+            var appPath = String.IsNullOrEmpty(request.ApplicationPath)
+                          ? WebHostDirectoryName
+                          : request.ApplicationPath.TrimStart('/');
+
+            //mod_mono: /CustomPath35/api//default.htm
+            var path = Env.IsMono ? request.Path.Replace("//", "/") : request.Path;
+            return GetPathInfo(path, mode, appPath);
+        }
 
 		public static string GetPathInfo(this HttpRequest request)
 		{
@@ -525,6 +554,15 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 	        return false;
 	    }
+
+        public static IHttpRequest ToRequest(this HttpRequestBase aspnetHttpReq, string operationName = null)
+        {
+            return new HttpRequestWrapper(aspnetHttpReq)
+            {
+                OperationName = operationName,
+                Container = AppHostBase.Instance != null ? AppHostBase.Instance.Container : null
+            };
+        }
         
 	    public static IHttpRequest ToRequest(this HttpRequest aspnetHttpReq, string operationName=null)
 	    {
@@ -541,6 +579,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
                 Container = AppHostBase.Instance != null ? AppHostBase.Instance.Container : null
             };
 	    }
+
+        public static IHttpResponse ToResponse(this HttpResponseBase aspnetHttpRes)
+        {
+            return new HttpResponseWrapper(aspnetHttpRes);
+        }
 
 	    public static IHttpResponse ToResponse(this HttpResponse aspnetHttpRes)
 	    {

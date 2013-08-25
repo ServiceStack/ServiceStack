@@ -17,14 +17,14 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
     {
         private static readonly string physicalFilePath;
         public Container Container { get; set; }
-        private readonly HttpRequest request;
+        private readonly HttpRequestBase request;
 
         static HttpRequestWrapper()
         {
             physicalFilePath = "~".MapHostAbsolutePath();
         }
 
-        public HttpRequest Request
+        public HttpRequestBase Request
         {
             get { return request; }
         }
@@ -32,6 +32,18 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
         public object OriginalRequest
         {
             get { return request; }
+        }
+
+        public HttpRequestWrapper(HttpRequestBase request)
+            : this(null, request)
+        {
+        }
+
+        public HttpRequestWrapper(string operationName, HttpRequestBase request)
+        {
+            this.OperationName = operationName;
+            this.request = request;
+            this.Container = Container;
         }
 
         public HttpRequestWrapper(HttpRequest request)
@@ -42,7 +54,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
         public HttpRequestWrapper(string operationName, HttpRequest request)
         {
             this.OperationName = operationName;
-            this.request = request;
+            this.request = new System.Web.HttpRequestWrapper(request);
             this.Container = Container;
         }
 
