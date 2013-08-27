@@ -141,12 +141,12 @@
             Execute global error handler logic. Must be thread-safe.
             </summary>
         </member>
-        <member name="P:ServiceStack.Redis.Messaging.RedisMqServer.OnlyEnablePriortyQueuesForTypes">
+        <member name="P:ServiceStack.Redis.Messaging.RedisMqServer.PriortyQueuesWhitelist">
             <summary>
             If you only want to enable priority queue handlers (and threads) for specific msg types
             </summary>
         </member>
-        <member name="P:ServiceStack.Redis.Messaging.RedisMqServer.DisableAllPriorityQueues">
+        <member name="P:ServiceStack.Redis.Messaging.RedisMqServer.DisablePriorityQueues">
             <summary>
             Don't listen on any Priority Queues
             </summary>
