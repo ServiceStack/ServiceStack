@@ -177,9 +177,9 @@ namespace ServiceStack.ServiceInterface
             return (lambdaExpression.Body is UnaryExpression ? (MemberExpression)((UnaryExpression)lambdaExpression.Body).Operand : (MemberExpression)lambdaExpression.Body).Member.Name;
         }
 
-        public static void Add<T>(this IServiceRoutes serviceRoutes, string restPath, ApplyTo verbs, params Expression<Func<T, object>>[] propertyExpressions)
+        public static IServiceRoutes Add<T>(this IServiceRoutes serviceRoutes, string restPath, ApplyTo verbs, params Expression<Func<T, object>>[] propertyExpressions)
         {
-            serviceRoutes.Add<T>(FormatRoute(restPath, propertyExpressions), verbs);
+            return serviceRoutes.Add<T>(FormatRoute(restPath, propertyExpressions), verbs);
         }
     }
 }
