@@ -66,6 +66,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Mvc.Tests", ".
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Razor.Tests", "..\tests\ServiceStack.Razor.Tests\ServiceStack.Razor.Tests.csproj", "{7F42298E-7DEA-458B-B7BC-057A7229A7CF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Authentication.OAuth2", "ServiceStack.AuthenticationOAuth2\ServiceStack.Authentication.OAuth2.csproj", "{C53331DF-3690-4AEA-AB57-70672BCFA086}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -675,6 +677,31 @@ Global
 		{7F42298E-7DEA-458B-B7BC-057A7229A7CF}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{7F42298E-7DEA-458B-B7BC-057A7229A7CF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{7F42298E-7DEA-458B-B7BC-057A7229A7CF}.Release|x86.ActiveCfg = Release|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.MonoDebug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.MonoDebug|Any CPU.Build.0 = Debug|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.MonoDebug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.MonoDebug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.MonoDebug|x86.ActiveCfg = Debug|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.MonoRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.MonoRelease|Any CPU.Build.0 = Release|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.MonoRelease|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.MonoRelease|Mixed Platforms.Build.0 = Release|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.MonoRelease|x86.ActiveCfg = Release|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.MonoTouch|Any CPU.Build.0 = Release|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.MonoTouch|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.MonoTouch|Mixed Platforms.Build.0 = Release|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.MonoTouch|x86.ActiveCfg = Release|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{C53331DF-3690-4AEA-AB57-70672BCFA086}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
