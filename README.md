@@ -1,4 +1,4 @@
-See [www.servicestack.net](http://www.servicestack.net/) for an overview.
+<s>See [www.servicestack.net](http://www.servicestack.net/) for an overview.</>
 
 Join the [ServiceStack Google+ Community](https://plus.google.com/u/0/communities/112445368900682590445) or
 follow [@ServiceStack](http://twitter.com/servicestack) for project updates. 
