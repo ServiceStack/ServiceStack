@@ -28,7 +28,7 @@ namespace ServiceStack.Plugins.ProtoBuf
 			}
 			catch (Exception ex)
 			{
-				throw new SerializationException("ProtoBufServiceClient: Error converting to type: " + ex.Message, ex);
+				throw new SerializationException("ProtoBufServiceClient: Error serializing: " + ex.Message, ex);
 			}
 		}
 
@@ -40,7 +40,7 @@ namespace ServiceStack.Plugins.ProtoBuf
 			}
 			catch (Exception ex)
 			{
-				throw new SerializationException("ProtoBufServiceClient: Error converting to type: " + ex.Message, ex);
+				throw new SerializationException("ProtoBufServiceClient: Error deserializing: " + ex.Message, ex);
 			}
 		}
 
@@ -62,7 +62,7 @@ namespace ServiceStack.Plugins.ProtoBuf
 			}
 			catch (Exception ex)
 			{
-				throw new SerializationException("ProtoBufServiceClient: Error converting to type: " + ex.Message, ex);
+				throw new SerializationException("ProtoBufServiceClient: Error deserializing: " + ex.Message, ex);
 			}
 		}
 	}
