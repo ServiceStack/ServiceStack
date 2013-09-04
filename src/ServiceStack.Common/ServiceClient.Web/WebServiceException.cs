@@ -33,17 +33,15 @@ namespace ServiceStack.ServiceClient.Web
 
         private void ParseResponseDto()
         {
-            if (ResponseDto == null)
-            {
-                errorCode = StatusDescription;
-                return;
-            }
-            var jsv = TypeSerializer.SerializeToString(ResponseDto);
-            var map = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(jsv);
-            map = new Dictionary<string, string>(map, StringExtensions.InvariantComparerIgnoreCase());
-
             string responseStatus;
-            if (!map.TryGetValue("ResponseStatus", out responseStatus)) return;
+            if (!TryGetResponseStatusFromResponseDto(out responseStatus))
+            {
+                if (!TryGetResponseStatusFromResponseBody(out responseStatus))
+                {
+                    errorCode = StatusDescription;
+                    return;
+                }
+            }
 
             var rsMap = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(responseStatus);
             if (rsMap == null) return;
@@ -52,6 +50,41 @@ namespace ServiceStack.ServiceClient.Web
             rsMap.TryGetValue("ErrorCode", out errorCode);
             rsMap.TryGetValue("Message", out errorMessage);
             rsMap.TryGetValue("StackTrace", out serverStackTrace);
+        }
+
+        private bool TryGetResponseStatusFromResponseDto(out string responseStatus)
+        {
+            responseStatus = String.Empty;
+            try
+            {
+                if (ResponseDto == null)
+                    return false;
+                var jsv = TypeSerializer.SerializeToString(ResponseDto);
+                var map = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(jsv);
+                map = new Dictionary<string, string>(map, StringExtensions.InvariantComparerIgnoreCase());
+
+                return map.TryGetValue("ResponseStatus", out responseStatus);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private bool TryGetResponseStatusFromResponseBody(out string responseStatus)
+        {
+            responseStatus = String.Empty;
+            try
+            {
+                if (String.IsNullOrEmpty(ResponseBody)) return false;
+                var map = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(ResponseBody);
+                map = new Dictionary<string, string>(map, StringExtensions.InvariantComparerIgnoreCase());
+                return map.TryGetValue("ResponseStatus", out responseStatus);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public string ErrorCode
