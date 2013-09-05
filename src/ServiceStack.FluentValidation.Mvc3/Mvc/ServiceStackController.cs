@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Text;
 using System.Web;
 using System.Web.Mvc;
@@ -131,20 +132,15 @@ namespace ServiceStack.Mvc
             {
                 this.View(DefaultAction).ExecuteResult(this.ControllerContext);
             }
-            catch (Exception ex)
+            catch
             {
-                var catchAllController = CatchAllController != null
-                    ? CatchAllController(this.Request.RequestContext)
-                    : null;
+                // We failed to execute our own default action, so we'll fall back to
+                // the CatchAllController, if one is specified.
 
-                if (catchAllController != null)
+                if (CatchAllController != null)
                 {
-                    var routeData = new RouteData();
-                    var controllerName = catchAllController.GetType().Name.Replace("Controller", "");
-                    routeData.Values.Add("controller", controllerName);
-                    routeData.Values.Add("action", DefaultAction);
-                    routeData.Values.Add("url", httpContext.Request.Url.OriginalString);
-                    catchAllController.Execute(new RequestContext(httpContext, routeData));
+                    var catchAllController = CatchAllController(this.Request.RequestContext);
+                    InvokeControllerDefaultAction(catchAllController, httpContext);
                 }
             }
 
@@ -153,7 +149,26 @@ namespace ServiceStack.Mvc
 
         protected override void HandleUnknownAction(string actionName)
         {
-            this.InvokeDefaultAction(HttpContext);
+            if (CatchAllController == null)
+            {
+                base.HandleUnknownAction(actionName); // delegate to default MVC behaviour, which will throw 404.
+            }
+            else
+            {
+                var catchAllController = CatchAllController(this.Request.RequestContext);
+                InvokeControllerDefaultAction(catchAllController, HttpContext);
+            }
+        }
+
+        private void InvokeControllerDefaultAction(ServiceStackController controller, HttpContextBase httpContext)
+        {
+            var routeData = new RouteData();
+            var controllerName = controller.GetType().Name.Replace("Controller", "");
+            routeData.Values.Add("controller", controllerName);
+            routeData.Values.Add("action", DefaultAction);
+            routeData.Values.Add("url", httpContext.Request.Url.OriginalString);
+            controller.Execute(new RequestContext(httpContext, routeData));
+
         }
     }
 
