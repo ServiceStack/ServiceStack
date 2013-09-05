@@ -122,7 +122,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 	    {
 	        get
 	        {
-	            return string.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedFor]) ? null : request.Headers[HttpHeaders.XForwardedFor];
+	            return String.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedFor]) ? null : request.Headers[HttpHeaders.XForwardedFor];
 	        }
 	    }
 
@@ -130,7 +130,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
         {
             get
             {
-                return string.IsNullOrEmpty(request.Headers[HttpHeaders.XRealIp]) ? null : request.Headers[HttpHeaders.XRealIp];
+                return String.IsNullOrEmpty(request.Headers[HttpHeaders.XRealIp]) ? null : request.Headers[HttpHeaders.XRealIp];
             }
         }
 
@@ -566,7 +566,27 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			return String.Compare(ContentType, ct, true, Helpers.InvariantCulture) == 0;
 		}
 
-		void LoadWwwForm()
+
+	    public static Encoding GetEncoding(string contentType)
+	    {
+	        var charsetSplit = contentType.Split(new[] { "charset=" }, StringSplitOptions.None);
+	        if (charsetSplit.Count() == 2)
+	        {
+	            try
+	            {
+	                return Encoding.GetEncoding(charsetSplit[1].Trim());
+	            }
+	            catch (ArgumentException)
+	            {
+	                // if wrong encoding, then use default
+	                return null;
+	            }
+	        }
+	        return null;
+	    }
+
+
+	    void LoadWwwForm()
 		{
 			using (Stream input = GetSubStream (InputStream)) {
 				using (StreamReader s = new StreamReader (input, ContentEncoding)) {
@@ -1252,24 +1272,6 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				return elem;
 			}
 
-            private static Encoding GetEncoding(string contentType)
-            {
-                var charsetSplit = contentType.Split(new[] { "charset=" }, StringSplitOptions.None);
-                if (charsetSplit.Count() == 2)
-                {
-                    try
-                    {
-                        return Encoding.GetEncoding(charsetSplit[1]);
-                    }
-                    catch (ArgumentException)
-                    {
-                        // if wrong encoding, then use default
-                        return null;
-                    }
-                }
-                return null;
-            }
-
 			static string StripPath(string path)
 			{
 				if (path == null || path.Length == 0)
@@ -1285,6 +1287,6 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
         {
             get { return request.UrlReferrer; }
         }
-    }
+	}
 
 }
