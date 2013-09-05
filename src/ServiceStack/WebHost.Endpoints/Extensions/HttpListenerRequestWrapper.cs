@@ -1237,11 +1237,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					else if (StrUtils.StartsWith(header, "Content-Type:", true))
 					{
 						elem.ContentType = header.Substring("Content-Type:".Length).Trim();
-
-					    var csindex = elem.ContentType.IndexOf("utf-8", StringComparison.InvariantCultureIgnoreCase); 
-                        if (csindex > 0)
-                            elem.Encoding = Encoding.UTF8;
-                        //TODO: add more encoding support 
+                        elem.Encoding = GetEncoding(elem.ContentType);
 					}
 				}
 
@@ -1255,6 +1251,24 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				elem.Length = pos - start;
 				return elem;
 			}
+
+            private static Encoding GetEncoding(string contentType)
+            {
+                var charsetSplit = contentType.Split(new[] { "charset=" }, StringSplitOptions.None);
+                if (charsetSplit.Count() == 2)
+                {
+                    try
+                    {
+                        return Encoding.GetEncoding(charsetSplit[1]);
+                    }
+                    catch (ArgumentException)
+                    {
+                        // if wrong encoding, then use default
+                        return null;
+                    }
+                }
+                return null;
+            }
 
 			static string StripPath(string path)
 			{
