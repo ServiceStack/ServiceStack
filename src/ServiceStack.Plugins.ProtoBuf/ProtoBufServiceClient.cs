@@ -1,3 +1,5 @@
+using System;
+using System.Runtime.Serialization;
 using ProtoBuf;
 using System.IO;
 using ServiceStack.ServiceClient.Web;
