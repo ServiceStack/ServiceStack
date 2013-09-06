@@ -15,6 +15,7 @@ using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
+using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
@@ -237,39 +238,53 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			RaiseReceiveWebRequest(context);
 
-			try
-			{
-				this.ProcessRequest(context);
-			}
-			catch (Exception ex)
-			{
-				var error = string.Format("Error this.ProcessRequest(context): [{0}]: {1}", ex.GetType().Name, ex.Message);
-				Log.ErrorFormat(error);
+            try
+            {
+	            this.ProcessRequest(context);
+            }
+            catch (Exception ex)
+            {
+                var error = string.Format("Error this.ProcessRequest(context): [{0}]: {1}", ex.GetType().Name, ex.Message);
+                Log.ErrorFormat(error);
 
-				try
-				{
-					var sb = new StringBuilder();
-					sb.AppendLine("{");
-					sb.AppendLine("\"ResponseStatus\":{");
-					sb.AppendFormat(" \"ErrorCode\":{0},\n", ex.GetType().Name.EncodeJson());
-					sb.AppendFormat(" \"Message\":{0},\n", ex.Message.EncodeJson());
-					sb.AppendFormat(" \"StackTrace\":{0}\n", ex.StackTrace.EncodeJson());
-					sb.AppendLine("}");
-					sb.AppendLine("}");
+                try
+                {
+	                var errorResponse = new ErrorResponse
+	                {
+                        ResponseStatus = new ResponseStatus
+                        {
+                            ErrorCode = ex.GetType().Name,
+                            Message = ex.Message,
+                            StackTrace = ex.StackTrace,
+                        }
+	                };
 
-					context.Response.StatusCode = 500;
-					context.Response.ContentType = ContentType.Json;
-					var sbBytes = sb.ToString().ToUtf8Bytes();
-					context.Response.OutputStream.Write(sbBytes, 0, sbBytes.Length);
-					context.Response.Close();
-				}
-				catch (Exception errorEx)
-				{
-					error = string.Format("Error this.ProcessRequest(context)(Exception while writing error to the response): [{0}]: {1}", errorEx.GetType().Name, errorEx.Message);
-					Log.ErrorFormat(error);
+                    var operationName = context.Request.GetOperationName();
+                    var httpReq = new HttpListenerRequestWrapper(operationName, context.Request);
+                    var httpRes = new HttpListenerResponseWrapper(context.Response);
+	                var requestCtx = new HttpRequestContext(httpReq, httpRes, errorResponse);
+	                var contentType = requestCtx.ResponseContentType;
 
-				}
-			}
+	                var serializer = EndpointHost.ContentTypeFilter.GetResponseSerializer(contentType);
+                    if (serializer == null)
+                    {
+                        contentType = EndpointHost.Config.DefaultContentType;
+                        serializer = EndpointHost.ContentTypeFilter.GetResponseSerializer(contentType);
+                    }
+
+                    httpRes.StatusCode = 500;
+                    httpRes.ContentType = contentType;
+
+	                serializer(requestCtx, errorResponse, httpRes);
+
+                    httpRes.Close();
+                }
+                catch (Exception errorEx)
+                {
+	                error = string.Format("Error this.ProcessRequest(context)(Exception while writing error to the response): [{0}]: {1}", errorEx.GetType().Name, errorEx.Message);
+	                Log.ErrorFormat(error);
+                }
+            }
 
             //System.Diagnostics.Debug.WriteLine("End: " + requestNumber + " at " + DateTime.UtcNow);
 		}
