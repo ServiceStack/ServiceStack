@@ -6,6 +6,7 @@ namespace ServiceStack.AuthWeb.Tests
     {
         protected void Application_Start(object sender, EventArgs e)
         {
+            log4net.Config.XmlConfigurator.Configure();
             new AppHost().Init();
         }
     }

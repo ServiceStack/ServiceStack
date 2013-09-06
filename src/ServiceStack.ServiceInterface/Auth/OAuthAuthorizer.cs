@@ -154,7 +154,6 @@ namespace ServiceStack.ServiceInterface.Auth
                     signatureHeaders.Add(key, OAuthUtils.PercentEncode(nvc[key]));
             }
 
-          
             string signature = MakeSignature("POST", uri.GetLeftPart(UriPartial.Path), signatureHeaders);
             string compositeSigningKey = MakeSigningKey(provider.ConsumerSecret, null);
             string oauth_signature = MakeOAuthSignature(compositeSigningKey, signature);

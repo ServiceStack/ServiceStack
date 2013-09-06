@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Xml.Linq;
 
 using ServiceStack.Configuration;
+using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 
 namespace ServiceStack.Authentication.OAuth2
@@ -20,27 +21,41 @@ namespace ServiceStack.Authentication.OAuth2
             : base(appSettings, Realm, Name)
         {
             this.AuthorizeUrl = this.AuthorizeUrl ?? Realm;
-            this.AccessTokenUrl = this.AccessTokenUrl ?? Realm;
+            this.AccessTokenUrl = this.AccessTokenUrl ?? "https://www.linkedin.com/uas/oauth2/accessToken";
+            
+            //Fields available at: http://developer.linkedin.com/documents/profile-fields
+            this.UserProfileUrl = this.UserProfileUrl
+                ?? "https://api.linkedin.com/v1/people/~:(id,email-address,formatted-name,first-name,last-name,date-of-birth,public-profile-url,picture-url)";
+
             if (this.Scopes.Length == 0)
             {
-                this.Scopes = new[] { "r_basicprofile", "r_emailaddress" };
+                this.Scopes = new[] {
+                    "r_emailaddress", 
+                    "r_fullprofile", 
+                    "r_basicprofile"
+                };
             }
         }
 
         protected override Dictionary<string, string> CreateAuthInfo(string accessToken)
         {
-            var url = this.UserProfileUrl + accessToken;
-            string contents = url.GetStringFromUrl();
-            XDocument xml = XDocument.Parse(contents);
+            var url = this.UserProfileUrl.AddQueryParam("oauth2_access_token", accessToken);
+            var contents = url.GetXmlFromUrl();
+            var xml = XDocument.Parse(contents);
+            var el = xml.Root;
             var authInfo = new Dictionary<string, string>
             {
-                { "user_id", xml.Descendants("id").FirstOrDefault().Value }, 
-                { "username", xml.Descendants("email-address").FirstOrDefault().Value }, 
-                { "email", xml.Descendants("email-address").FirstOrDefault().Value }, 
-                { "name", xml.Descendants("formatted-name").FirstOrDefault().Value }, 
-                { "first_name", xml.Descendants("first-name").FirstOrDefault().Value }, 
-                { "last_name", xml.Descendants("last-name").FirstOrDefault().Value }
+                { "user_id", el.GetString("id") }, 
+                { "username", el.GetString("email-address") }, 
+                { "email", el.GetString("email-address") }, 
+                { "name", el.GetString("formatted-name") }, 
+                { "first_name", el.GetString("first-name") }, 
+                { "last_name", el.GetString("last-name") },
+                { "birthday", el.GetString("date-of-birth") },
+                { "link", el.GetString("public-profile-url") },
+                { "picture", el.GetString("picture-url") },
             };
+
             return authInfo;
         }
     }

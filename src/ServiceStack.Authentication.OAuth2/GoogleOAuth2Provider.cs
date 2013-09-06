@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using ServiceStack.Configuration;
+using ServiceStack.ServiceInterface;
 using ServiceStack.Text;
 
 namespace ServiceStack.Authentication.OAuth2
 {
     /*
-        Create an OAuth2 App at: https://code.google.com/apis/consol
+        Create an OAuth2 App at: https://code.google.com/apis/console/
         The Apps Callback URL should match the CallbackUrl here.
      
         Google OAuth2 info: https://developers.google.com/accounts/docs/OAuth2Login
@@ -25,26 +26,36 @@ namespace ServiceStack.Authentication.OAuth2
             : base(appSettings, Realm, Name)
         {
             this.AuthorizeUrl = this.AuthorizeUrl ?? Realm;
-            this.AccessTokenUrl = this.AccessTokenUrl ?? Realm;
+            this.AccessTokenUrl = this.AccessTokenUrl ?? "https://accounts.google.com/o/oauth2/token";
+            this.UserProfileUrl = this.UserProfileUrl ?? "https://www.googleapis.com/oauth2/v1/userinfo";
+
             if (this.Scopes.Length == 0)
             {
-                this.Scopes = new[] { "https://www.googleapis.com/auth/userinfo.email" };
+                this.Scopes = new[] {
+                    "https://www.googleapis.com/auth/userinfo.profile",
+                    "https://www.googleapis.com/auth/userinfo.email"
+                };
             }
         }
 
         protected override Dictionary<string, string> CreateAuthInfo(string accessToken)
         {
-            var url = this.UserProfileUrl + accessToken;
+            var url = this.UserProfileUrl.AddQueryParam("access_token", accessToken);
             string json = url.GetJsonFromUrl();
             var obj = JsonObject.Parse(json);
             var authInfo = new Dictionary<string, string>
             {
-                { "user_id", obj.Get("id") }, 
-                { "username", obj.Get("email") }, 
-                { "email", obj.Get("email") }, 
-                { "name", obj.Get("name") }, 
-                { "first_name", obj.Get("given_name") }, 
-                { "last_name", obj.Get("family_name") }
+                { "user_id", obj["id"] }, 
+                { "username", obj["email"] }, 
+                { "email", obj["email"] }, 
+                { "name", obj["name"] }, 
+                { "first_name", obj["given_name"] }, 
+                { "last_name", obj["family_name"] },
+                { "gender", obj["gender"] },
+                { "birthday", obj["birthday"] },
+                { "link", obj["link"] },
+                { "picture", obj["picture"] },
+                { "locale", obj["locale"] },
             };
             return authInfo;
         }

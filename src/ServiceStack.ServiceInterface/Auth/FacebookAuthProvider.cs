@@ -3,13 +3,16 @@ using System.Net;
 using System.Web;
 using ServiceStack.Common;
 using ServiceStack.Configuration;
-using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
+    /// <summary>
+    /// Create a Facebook App at: https://developers.facebook.com/apps
+    /// The Callback URL for your app should match the CallbackUrl provided.
+    /// </summary>
     public class FacebookAuthProvider : OAuthProvider
     {
         public const string Name = "facebook";

@@ -9,6 +9,7 @@ using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.WebHost.Endpoints;
 
 #if HTTP_LISTENER
 namespace ServiceStack.Auth.Tests
@@ -65,7 +66,11 @@ namespace ServiceStack.AuthWeb.Tests
             Db.DeleteAll<UserAuth>();
             Db.DeleteAll<UserOAuthProvider>();
 
-            return HttpResult.Redirect(Request.UrlReferrer.AbsoluteUri);
+            var referrer = Request.UrlReferrer != null
+                ? Request.UrlReferrer.AbsoluteUri
+                : ServiceStackHttpHandlerFactory.GetBaseUrl();
+
+            return HttpResult.Redirect(referrer);
         }
     }
 

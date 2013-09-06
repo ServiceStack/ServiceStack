@@ -28,7 +28,7 @@ namespace ServiceStack.Authentication.OAuth2
             var scopes = appSettings.GetString("oauth.{0}.Scopes".Fmt(provider))
                 ?? FallbackConfig(appSettings.GetString("oauth.Scopes")) ?? "";
             this.Scopes = scopes.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-            
+
             this.RequestTokenUrl = appSettings.GetString("oauth.{0}.RequestTokenUrl".Fmt(provider))
                 ?? FallbackConfig(appSettings.GetString("oauth.RequestTokenUrl"));
             this.AuthorizeUrl = appSettings.GetString("oauth.{0}.AuthorizeUrl".Fmt(provider))
@@ -60,20 +60,11 @@ namespace ServiceStack.Authentication.OAuth2
             var tokens = this.Init(authService, ref session, request);
 
             var authServer = new AuthorizationServerDescription { AuthorizationEndpoint = new Uri(this.AuthorizeUrl), TokenEndpoint = new Uri(this.AccessTokenUrl) };
-            var authClient = new WebServerClient(authServer, this.ConsumerKey, ClientCredentialApplicator.PostParameter(this.ConsumerSecret));
-            IAuthorizationState authState;
+            var authClient = new WebServerClient(authServer, this.ConsumerKey) {
+                ClientCredentialApplicator = ClientCredentialApplicator.PostParameter(this.ConsumerSecret),
+            };
 
-            try
-            {
-                authState = authClient.ProcessUserAuthorization();
-                //authState = authClient.ProcessUserAuthorization(new HttpRequestWrapper(HttpContext.Current.Request));
-            }
-            catch (ProtocolException ex)
-            {
-                Log.Error("Failed to login to {0}".Fmt(this.Provider), ex);
-                return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "ProcessUserAuthorization"));
-            }
-
+            var authState = authClient.ProcessUserAuthorization();
             if (authState == null)
             {
                 try

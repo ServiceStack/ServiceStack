@@ -29,7 +29,7 @@ namespace ServiceStack.AuthWeb.Tests
 #endif
     {
         public AppHost()
-            : base("Test Auth", typeof(AppHost).Assembly) {}
+            : base("Test Auth", typeof(AppHost).Assembly) { }
 
         public override void Configure(Container container)
         {
@@ -39,9 +39,10 @@ namespace ServiceStack.AuthWeb.Tests
 
             container.Register<IDbConnectionFactory>(
                 new OrmLiteConnectionFactory(":memory:", false, //ConnectionString in Web.Config
-                    SqliteDialect.Provider) {
-                    ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
-                });
+                    SqliteDialect.Provider)
+                    {
+                        ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
+                    });
 
             using (var db = container.Resolve<IDbConnectionFactory>().Open())
             {
@@ -65,6 +66,10 @@ namespace ServiceStack.AuthWeb.Tests
             //Create your own custom User table
             var dbFactory = container.Resolve<IDbConnectionFactory>();
             dbFactory.Run(db => db.DropAndCreateTable<UserTable>());
+
+            SetConfig(new EndpointHostConfig {
+                DebugMode = true,
+            });
         }
 
         private void ConfigureAuth(Container container)
@@ -119,7 +124,8 @@ namespace ServiceStack.AuthWeb.Tests
     {
         public CustomRegistrationValidator()
         {
-            RuleSet(ApplyTo.Post, () => {
+            RuleSet(ApplyTo.Post, () =>
+            {
                 RuleFor(x => x.DisplayName).NotEmpty();
             });
         }
