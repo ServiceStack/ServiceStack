@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using DotNetOpenAuth.Messaging;
+using DotNetOpenAuth.OpenId;
 using DotNetOpenAuth.OpenId.Extensions.AttributeExchange;
 using DotNetOpenAuth.OpenId.Extensions.SimpleRegistration;
 using DotNetOpenAuth.OpenId.RelyingParty;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
-using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
@@ -19,6 +19,8 @@ namespace ServiceStack.Authentication.OpenId
     public class OpenIdOAuthProvider : OAuthProvider
     {
         public const string DefaultName = "OpenId";
+
+        public static IOpenIdApplicationStore OpenIdApplicationStore { get; set; }
 
         public OpenIdOAuthProvider(IResourceManager appSettings, string name = DefaultName, string realm = null)
             : base(appSettings, realm, name) { }
@@ -32,6 +34,14 @@ namespace ServiceStack.Authentication.OpenId
                 PostalCode = DemandLevel.Require,
                 TimeZone = DemandLevel.Require,
             };
+        }
+
+        protected virtual OpenIdRelyingParty CreateOpenIdRelyingParty(IOpenIdApplicationStore store)
+        {
+            // it matters
+            return store != null
+                ? new OpenIdRelyingParty(store)
+                : new OpenIdRelyingParty();
         }
 
         public override object Authenticate(IServiceBase authService, IAuthSession session, Auth request)
@@ -49,7 +59,7 @@ namespace ServiceStack.Authentication.OpenId
 
                 try
                 {
-                    using (var openid = new OpenIdRelyingParty())
+                    using (var openid = CreateOpenIdRelyingParty(OpenIdApplicationStore))
                     {
                         var openIdRequest = openid.CreateRequest(openIdUrl);
 
@@ -84,7 +94,7 @@ namespace ServiceStack.Authentication.OpenId
 
             if (isOpenIdRequest)
             {
-                using (var openid = new OpenIdRelyingParty())
+                using (var openid = CreateOpenIdRelyingParty(OpenIdApplicationStore))
                 {
                     var response = openid.GetResponse();
                     if (response != null)
