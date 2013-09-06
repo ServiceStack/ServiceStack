@@ -32,10 +32,25 @@ namespace ServiceStack.ServiceInterface.Auth
             this.Provider = oAuthProvider;
             if (appSettings != null)
             {
-                this.CallbackUrl = appSettings.GetString("oauth.{0}.CallbackUrl".Fmt(oAuthProvider));
-                this.RedirectUrl = appSettings.GetString("oauth.{0}.RedirectUrl".Fmt(oAuthProvider));
+                this.CallbackUrl = appSettings.GetString("oauth.{0}.CallbackUrl".Fmt(oAuthProvider))
+                    ?? FallbackConfig(appSettings.GetString("oauth.CallbackUrl"));
+                this.RedirectUrl = appSettings.GetString("oauth.{0}.RedirectUrl".Fmt(oAuthProvider))
+                    ?? FallbackConfig(appSettings.GetString("oauth.RedirectUrl"));
             }
             this.SessionExpiry = DefaultSessionExpiry;
+        }
+
+        /// <summary>
+        /// Allows specifying a global fallback config that if exists is formatted with the Provider as the first arg.
+        /// E.g. this appSetting with the TwitterAuthProvider: 
+        /// oauth.CallbackUrl="http://localhost:11001/auth/{0}"
+        /// Would result in: 
+        /// oauth.CallbackUrl="http://localhost:11001/auth/twitter"
+        /// </summary>
+        /// <returns></returns>
+        protected string FallbackConfig(string fallback)
+        {
+            return fallback != null ? fallback.Fmt(Provider) : null;
         }
 
         /// <summary>

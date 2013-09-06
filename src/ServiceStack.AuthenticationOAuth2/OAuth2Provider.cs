@@ -1,37 +1,42 @@
-﻿namespace ServiceStack.Authentication.OAuth2
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Web;
+using DotNetOpenAuth.Messaging;
+using DotNetOpenAuth.OAuth2;
+
+using ServiceStack.Common;
+using ServiceStack.Common.Web;
+using ServiceStack.Configuration;
+using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceInterface.Auth;
+using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints;
+
+namespace ServiceStack.Authentication.OAuth2
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net;
-
-    using DotNetOpenAuth.Messaging;
-    using DotNetOpenAuth.OAuth2;
-
-    using ServiceStack.Common;
-    using ServiceStack.Common.Web;
-    using ServiceStack.Configuration;
-    using ServiceStack.ServiceInterface;
-    using ServiceStack.ServiceInterface.Auth;
-    using ServiceStack.Text;
-    using ServiceStack.WebHost.Endpoints;
-
     public abstract class OAuth2Provider : AuthProvider
     {
         protected OAuth2Provider(IResourceManager appSettings, string realm, string provider)
+            : base(appSettings, realm, provider)
         {
-            this.Provider = provider;
-            this.AuthRealm = appSettings.Get("OAuthRealm", realm);
-            this.RedirectUrl = appSettings.GetString("oauth.{0}.RedirectUrl".Fmt(provider));
-            this.CallbackUrl = appSettings.GetString("oauth.{0}.CallbackUrl".Fmt(provider));
-            this.ConsumerKey = appSettings.GetString("oauth.{0}.{1}".Fmt(provider, "ConsumerKey"));
-            this.ConsumerSecret = appSettings.GetString("oauth.{0}.{1}".Fmt(provider, "ConsumerSecret"));
-            string scopes = appSettings.GetString("oauth.{0}.Scopes".Fmt(provider)) ?? string.Empty;
+            this.ConsumerKey = appSettings.GetString("oauth.{0}.ConsumerKey".Fmt(provider))
+                ?? FallbackConfig(appSettings.GetString("oauth.ConsumerKey"));
+            this.ConsumerSecret = appSettings.GetString("oauth.{0}.ConsumerSecret".Fmt(provider))
+                ?? FallbackConfig(appSettings.GetString("oauth.ConsumerSecret"));
+            var scopes = appSettings.GetString("oauth.{0}.Scopes".Fmt(provider))
+                ?? FallbackConfig(appSettings.GetString("oauth.Scopes")) ?? "";
             this.Scopes = scopes.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-            this.RequestTokenUrl = appSettings.GetString("oauth.{0}.RequestTokenUrl".Fmt(provider));
-            this.AuthorizeUrl = appSettings.GetString("oauth.{0}.AuthorizeUrl".Fmt(provider));
-            this.AccessTokenUrl = appSettings.GetString("oauth.{0}.AccessTokenUrl".Fmt(provider));
-            this.UserProfileUrl = appSettings.GetString("oauth.{0}.UserProfileUrl".Fmt(provider));
+            
+            this.RequestTokenUrl = appSettings.GetString("oauth.{0}.RequestTokenUrl".Fmt(provider))
+                ?? FallbackConfig(appSettings.GetString("oauth.RequestTokenUrl"));
+            this.AuthorizeUrl = appSettings.GetString("oauth.{0}.AuthorizeUrl".Fmt(provider))
+                ?? FallbackConfig(appSettings.GetString("oauth.AuthorizeUrl"));
+            this.AccessTokenUrl = appSettings.GetString("oauth.{0}.AccessTokenUrl".Fmt(provider))
+                ?? FallbackConfig(appSettings.GetString("oauth.AccessTokenUrl"));
+            this.UserProfileUrl = appSettings.GetString("oauth.{0}.UserProfileUrl".Fmt(provider))
+                ?? FallbackConfig(appSettings.GetString("oauth.UserProfileUrl"));
         }
 
         public string AccessTokenUrl { get; set; }
@@ -56,7 +61,18 @@
 
             var authServer = new AuthorizationServerDescription { AuthorizationEndpoint = new Uri(this.AuthorizeUrl), TokenEndpoint = new Uri(this.AccessTokenUrl) };
             var authClient = new WebServerClient(authServer, this.ConsumerKey, ClientCredentialApplicator.PostParameter(this.ConsumerSecret));
-            IAuthorizationState authState = authClient.ProcessUserAuthorization();
+            IAuthorizationState authState;
+
+            try
+            {
+                authState = authClient.ProcessUserAuthorization();
+                //authState = authClient.ProcessUserAuthorization(new HttpRequestWrapper(HttpContext.Current.Request));
+            }
+            catch (ProtocolException ex)
+            {
+                Log.Error("Failed to login to {0}".Fmt(this.Provider), ex);
+                return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "ProcessUserAuthorization"));
+            }
 
             if (authState == null)
             {
