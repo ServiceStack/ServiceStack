@@ -5,6 +5,7 @@ using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Auth;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
 
@@ -65,9 +66,9 @@ namespace ServiceStack.ServiceInterface
             httpRes.CreateSessionIds(httpReq);
         }
 
-        public static string GetSessionKey()
+        public static string GetSessionKey(IHttpRequest httpReq = null)
         {
-            var sessionId = GetSessionId();
+            var sessionId = GetSessionId(httpReq);
             return sessionId == null ? null : GetSessionKey(sessionId);
         }
 
@@ -76,15 +77,16 @@ namespace ServiceStack.ServiceInterface
             return IdUtils.CreateUrn<IAuthSession>(sessionId);
         }
 
-        public static T GetOrCreateSession<T>(ICacheClient cacheClient) where T : class, new()
+        public static T GetOrCreateSession<T>(ICacheClient cacheClient, IHttpRequest httpReq = null, IHttpResponse httpRes = null) 
+            where T : class
         {
             T session = null;
-            if (GetSessionKey() != null)
-                session = cacheClient.Get<T>(GetSessionKey());
+            if (GetSessionKey(httpReq) != null)
+                session = cacheClient.Get<T>(GetSessionKey(httpReq));
             else
-                CreateSessionIds();
+                CreateSessionIds(httpReq, httpRes);
 
-            return session ?? new T();
+            return session ?? (T)typeof(T).CreateInstance();
         }
     }
 }

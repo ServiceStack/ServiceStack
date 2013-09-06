@@ -401,10 +401,10 @@ namespace ServiceStack.Razor
         private IAuthSession userSession;
         private string layout;
 
-        public virtual T GetSession<T>() where T : class, IAuthSession, new()
+        public virtual T GetSession<T>() where T : class, IAuthSession
         {
             if (userSession != null) return (T)userSession;
-            return (T)(userSession = SessionFeature.GetOrCreateSession<T>(Cache));
+            return (T)(userSession = SessionFeature.GetOrCreateSession<T>(Cache, Request, Response));
         }
 
         public string SessionKey
