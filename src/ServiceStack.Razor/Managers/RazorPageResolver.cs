@@ -136,27 +136,28 @@ namespace ServiceStack.Razor.Managers
                 return null;
             }
 
+            var page = CreateRazorPageInstance(httpReq, httpRes, model, razorPage);
+
+            var includeLayout = !(httpReq.GetParam(QueryStringFormatKey) ?? "").Contains(NoTemplateFormatValue);
+            if (includeLayout)
+            {
+                var result = ExecuteRazorPageWithLayout(httpReq, httpRes, model, page, () => 
+                    httpReq.GetItem(LayoutKey) as string
+                    ?? page.Layout
+                    ?? DefaultLayoutName);
+
+                using (var writer = new StreamWriter(httpRes.OutputStream, UTF8EncodingWithoutBom))
+                {
+                    writer.Write(result.Item2);
+                }
+                return result.Item1;
+            }
+
             using (var writer = new StreamWriter(httpRes.OutputStream, UTF8EncodingWithoutBom))
             {
-                var page = CreateRazorPageInstance(httpReq, httpRes, model, razorPage);
-
-                var includeLayout = !(httpReq.GetParam(QueryStringFormatKey) ?? "").Contains(NoTemplateFormatValue);
-                if (includeLayout)
-                {
-                    var result = ExecuteRazorPageWithLayout(httpReq, httpRes, model, page, () =>
-                    {
-                        return httpReq.GetItem(LayoutKey) as string
-                                       ?? page.Layout
-                                       ?? DefaultLayoutName;
-                    });
-
-                    writer.Write(result.Item2);
-                    return result.Item1;
-                }
-
                 page.WriteTo(writer);
-                return page;
             }
+            return page;
         }
 
         private Tuple<IRazorView, string> ExecuteRazorPageWithLayout(IHttpRequest httpReq, IHttpResponse httpRes, object model, IRazorView page, Func<string> layout)
