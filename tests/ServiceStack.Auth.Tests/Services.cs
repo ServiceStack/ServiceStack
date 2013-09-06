@@ -1,72 +1,71 @@
-﻿using System;
+﻿#define HTTP_LISTENER
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Threading;
-using Funq;
-using NUnit.Framework;
 using ServiceStack.Common;
+using ServiceStack.Common.Web;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
-using ServiceStack.OrmLite.Sqlite;
-using ServiceStack.Razor;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
-using ServiceStack.WebHost.Endpoints;
+using ServiceStack.ServiceInterface.Auth;
+using ServiceStack.ServiceInterface.ServiceModel;
 
+#if HTTP_LISTENER
 namespace ServiceStack.Auth.Tests
+#else
+namespace ServiceStack.AuthWeb.Tests
+#endif
 {
-    public class DataSource
+    [Route("/profile")]
+    public class GetUserProfile { }
+
+    public class UserProfile
     {
-        public string[] Items = new[] { "Eeny", "meeny", "miny", "moe" };
+        public int Id { get; set; }
+
+        public UserAuth UserAuth { get; set; }
+        public AuthUserSession Session { get; set; }
+        public List<UserOAuthProvider> UserAuthProviders { get; set; }
     }
 
-    public class Rockstar
+    public class UserProfileResponse
     {
-        public static Rockstar[] SeedData = new[] {
-            new Rockstar(1, "Jimi", "Hendrix", 27), 
-            new Rockstar(2, "Janis", "Joplin", 27), 
-            new Rockstar(3, "Jim", "Morrisson", 27), 
-            new Rockstar(4, "Kurt", "Cobain", 27),              
-            new Rockstar(5, "Elvis", "Presley", 42), 
-            new Rockstar(6, "Michael", "Jackson", 50), 
-        };
+        public UserProfile Result { get; set; }
+        public ResponseStatus ResponseStatus { get; set; }
+    }
 
-        [AutoIncrement]
-        public int Id { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public int? Age { get; set; }
-        public bool Alive { get; set; }
-
-        public Rockstar() { }
-        public Rockstar(int id, string firstName, string lastName, int age)
+    [Authenticate]
+    public class UserProfileService : ServiceInterface.Service
+    {
+        public UserProfile Get(GetUserProfile request)
         {
-            Id = id;
-            FirstName = firstName;
-            LastName = lastName;
-            Age = age;
+            var session = base.SessionAs<CustomUserSession>();
+
+            var userAuthId = session.UserAuthId.ToInt();
+            var userProfile = new UserProfile
+            {
+                Id = userAuthId,
+                Session = session,
+                UserAuth = Db.QueryById<UserAuth>(userAuthId),
+                UserAuthProviders = Db.Select<UserOAuthProvider>(x => x.UserAuthId == userAuthId),
+            };
+
+            return userProfile;
         }
     }
-    
-    public class RazorAppHost : AppHostHttpListenerBase
+
+    [Route("/reset-userauth")]
+    public class ResetUserAuth { }
+    public class ResetUserAuthService : ServiceInterface.Service
     {
-        public RazorAppHost()
-            : base("Test Razor", typeof(RazorAppHost).Assembly) {}
-
-        public override void Configure(Container container)
+        public object Get(ResetUserAuth request)
         {
-            Plugins.Add(new RazorFormat());
+            this.Cache.Remove(SessionFeature.GetSessionKey(Request));
 
-            container.Register(new DataSource());
+            Db.DeleteAll<UserAuth>();
+            Db.DeleteAll<UserOAuthProvider>();
 
-            container.Register<IDbConnectionFactory>(
-                new OrmLiteConnectionFactory(":memory:", false, SqliteOrmLiteDialectProvider.Instance));
-
-            using (var db = container.Resolve<IDbConnectionFactory>().OpenDbConnection())
-            {
-                db.CreateTable<Rockstar>(overwrite: false);
-                db.Insert(Rockstar.SeedData);
-            }
+            return HttpResult.Redirect(Request.UrlReferrer.AbsoluteUri);
         }
     }
 
@@ -95,6 +94,34 @@ namespace ServiceStack.Auth.Tests
 
         [DataMember]
         public List<Rockstar> Results { get; set; }
+    }
+
+    public class Rockstar
+    {
+        public static Rockstar[] SeedData = new[] {
+            new Rockstar(1, "Jimi", "Hendrix", 27), 
+            new Rockstar(2, "Janis", "Joplin", 27), 
+            new Rockstar(3, "Jim", "Morrisson", 27), 
+            new Rockstar(4, "Kurt", "Cobain", 27),              
+            new Rockstar(5, "Elvis", "Presley", 42), 
+            new Rockstar(6, "Michael", "Jackson", 50), 
+        };
+
+        [AutoIncrement]
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public int? Age { get; set; }
+        public bool Alive { get; set; }
+
+        public Rockstar() { }
+        public Rockstar(int id, string firstName, string lastName, int age)
+        {
+            Id = id;
+            FirstName = firstName;
+            LastName = lastName;
+            Age = age;
+        }
     }
 
     [DefaultRequest(typeof(Rockstars))]
@@ -149,26 +176,11 @@ namespace ServiceStack.Auth.Tests
     {
         public object Any(ViewThatUsesLayoutAndModel request)
         {
-            return new ViewThatUsesLayoutAndModelResponse {
+            return new ViewThatUsesLayoutAndModelResponse
+            {
                 Name = request.Id ?? "Foo",
                 Results = new List<string> { "Tom", "Dick", "Harry" }
             };
-        }
-    }
-
-    [NUnit.Framework.Ignore]
-    [TestFixture]
-    public class RazorAppHostTests
-    {
-        [Test]
-        public void Hold_open_for_10Mins()
-        {
-            using (var appHost = new RazorAppHost())
-            {
-                appHost.Init();
-                appHost.Start("http://localhost:11000/");
-                Thread.Sleep(TimeSpan.FromMinutes(10));
-            }
         }
     }
 }

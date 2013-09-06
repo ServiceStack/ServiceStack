@@ -9,6 +9,8 @@
     <OutputType>Library</OutputType>
     <RootNamespace>ServiceStack.Auth.Tests</RootNamespace>
     <AssemblyName>ServiceStack.Auth.Tests</AssemblyName>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\src\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -27,8 +29,13 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>False</ConsolePause>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DotNetOpenAuth, Version=4.3.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\src\packages\DotNetOpenAuth.Ultimate.4.3.1.13153\lib\net40-full\DotNetOpenAuth.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="ServiceStack.Text">
       <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
@@ -49,12 +56,23 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="RazorAppHost.cs" />
+    <Compile Include="AppHost.cs" />
+    <Compile Include="OpenIdApplicationStore.cs" />
+    <Compile Include="Services.cs" />
+    <Compile Include="Startup.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="SecureTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
+    <ProjectReference Include="..\..\src\ServiceStack.Authentication.OpenId\ServiceStack.Authentication.OpenId.csproj">
+      <Project>{6E240294-9D93-4C09-9BB0-38D82A22DEEE}</Project>
+      <Name>ServiceStack.Authentication.OpenId</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.AuthenticationOAuth2\ServiceStack.Authentication.OAuth2.csproj">
+      <Project>{C53331DF-3690-4AEA-AB57-70672BCFA086}</Project>
+      <Name>ServiceStack.Authentication.OAuth2</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
@@ -85,7 +103,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="CatchAll.cshtml" />
-    <EmbeddedResource Include="Views\_Layout.cshtml" />
+    <Content Include="jsonviewer.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Views\_Layout.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="CatchAllDynamic.cshtml" />
@@ -100,10 +123,18 @@
     <EmbeddedResource Include="Views\ViewThatUsesLayoutAndModel.cshtml" />
     <EmbeddedResource Include="Views\Shared\HtmlReport.cshtml" />
     <EmbeddedResource Include="Views\Rockstars.cshtml" />
+    <Content Include="default.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="packages.config" />
+    <None Include="Web.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\..\lib\sqlite3.dll">
       <Link>sqlite3.dll</Link>
     </Content>
   </ItemGroup>
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
 </Project>

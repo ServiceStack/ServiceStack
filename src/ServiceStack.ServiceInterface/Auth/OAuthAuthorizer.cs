@@ -36,6 +36,7 @@ using System.Net;
 using System.Web;
 using System.Security.Cryptography;
 using ServiceStack.ServiceModel;
+using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
@@ -177,6 +178,8 @@ namespace ServiceStack.ServiceInterface.Auth
             catch (Exception e)
             {
                 Console.WriteLine(e);
+                string responseBody = e.GetResponseBody();
+                responseBody.Print();
                 // fallthrough for errors
             }
             return false;
