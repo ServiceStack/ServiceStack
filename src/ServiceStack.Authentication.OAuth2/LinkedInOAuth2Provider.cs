@@ -9,7 +9,7 @@ using ServiceStack.Text;
 namespace ServiceStack.Authentication.OAuth2
 {
     /// <summary>
-    /// Create new App at: https://www.linkedin.com/secure/developer?newapp=
+    /// Create new App at: https://www.linkedin.com/secure/developer
     /// </summary>
     public class LinkedInOAuth2Provider : OAuth2Provider
     {

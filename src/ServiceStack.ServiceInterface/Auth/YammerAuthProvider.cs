@@ -1,18 +1,17 @@
-﻿namespace ServiceStack.ServiceInterface.Auth
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Web;
+
+using ServiceStack.Common;
+using ServiceStack.Configuration;
+using ServiceStack.ServiceHost;
+using ServiceStack.ServiceModel;
+using ServiceStack.Text;
+
+namespace ServiceStack.ServiceInterface.Auth
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net;
-    using System.Web;
-
-    using ServiceStack.Common;
-    using ServiceStack.Configuration;
-    using ServiceStack.ServiceHost;
-    using ServiceStack.ServiceInterface;
-    using ServiceStack.ServiceModel;
-    using ServiceStack.Text;
-
     /// <summary>
     /// The ServiceStack Yammer OAuth provider.
     /// </summary>
