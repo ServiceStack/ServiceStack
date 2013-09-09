@@ -11,6 +11,7 @@ MD ..\NuGet\ServiceStack.Common\lib\net35
 MD ..\NuGet\ServiceStack.Mvc\lib\net40
 MD ..\NuGet\ServiceStack.Razor\lib\net40
 MD ..\NuGet\ServiceStack.Authentication.OpenId\lib\net35
+MD ..\NuGet\ServiceStack.Authentication.OAuth2\lib\net35
 MD ..\NuGet\ServiceStack.Plugins.ProtoBuf\lib\net35
 MD ..\NuGet\ServiceStack.Plugins.MsgPack\lib\net40
 
@@ -33,6 +34,8 @@ COPY ..\src\ServiceStack.FluentValidation.Mvc3\bin\%BUILD%\ServiceStack.FluentVa
 COPY ..\src\ServiceStack.FluentValidation.Mvc3\bin\%BUILD%\ServiceStack.FluentValidation.Mvc3.* ..\NuGet\ServiceStack.Mvc\lib\net40
 
 COPY ..\src\ServiceStack.Authentication.OpenId\bin\%BUILD%\ServiceStack.Authentication.OpenId.* ..\NuGet\ServiceStack.Authentication.OpenId\lib\net35
+
+COPY ..\src\ServiceStack.Authentication.OAuth2\bin\%BUILD%\ServiceStack.Authentication.OAuth2.* ..\NuGet\ServiceStack.Authentication.OAuth2\lib\net35
 
 COPY ..\src\ServiceStack.Plugins.ProtoBuf\bin\%BUILD%\ServiceStack.Plugins.ProtoBuf.* ..\NuGet\ServiceStack.Plugins.ProtoBuf\lib\net35
 

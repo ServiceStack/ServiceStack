@@ -25,6 +25,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771
 		..\CONTRIBUTORS.md = ..\CONTRIBUTORS.md
 		..\README.md = ..\README.md
 		..\NuGet\ServiceStack.Api.Swagger\servicestack.api.swagger.nuspec = ..\NuGet\ServiceStack.Api.Swagger\servicestack.api.swagger.nuspec
+		..\NuGet\ServiceStack.Authentication.OAuth2\servicestack.authentication.oauth2.nuspec = ..\NuGet\ServiceStack.Authentication.OAuth2\servicestack.authentication.oauth2.nuspec
 		..\NuGet\ServiceStack.Authentication.OpenId\servicestack.authentication.openid.nuspec = ..\NuGet\ServiceStack.Authentication.OpenId\servicestack.authentication.openid.nuspec
 		..\NuGet\ServiceStack.Common\servicestack.common.nuspec = ..\NuGet\ServiceStack.Common\servicestack.common.nuspec
 		..\NuGet\ServiceStack.Host.AspNet\servicestack.host.aspnet.nuspec = ..\NuGet\ServiceStack.Host.AspNet\servicestack.host.aspnet.nuspec
