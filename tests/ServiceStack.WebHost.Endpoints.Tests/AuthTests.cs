@@ -24,7 +24,7 @@ using System.Collections.Generic;
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
     [Route("/secured")]
-    public class Secured
+    public class Secured : IReturn<SecuredResponse>
     {
         public string Name { get; set; }
     }
@@ -352,7 +352,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         IServiceClient GetHtmlClient()
         {
-            return new HtmlServiceClient(ListeningOn);
+            return new HtmlServiceClient(ListeningOn) {BaseUri = ListeningOn};
         }
 
         IServiceClient GetClientWithUserPassword()
@@ -764,6 +764,33 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             // Should also obey the WebHostUrl setting.
             var schemeAndHost = redirectUri.Scheme + "://" + redirectUri.Authority;
             Assert.That(schemeAndHost, Contains.Substring(WebHostUrl).IgnoreCase);
+        }
+
+        [Test]
+        public void Html_clients_receive_secured_url_including_query_string_within_login_page_redirect_query_string()
+        {
+            var client = (ServiceClientBase)GetHtmlClient();
+            client.AllowAutoRedirect = false;
+            string lastResponseLocationHeader = null;
+            client.LocalHttpWebResponseFilter = response =>
+            {
+                lastResponseLocationHeader = response.Headers["Location"];
+            };
+
+            var request = new Secured { Name = "test" };
+            // Perform a GET so that the Name DTO field is encoded as query string.
+            client.Get(request);
+
+            var locationUri = new Uri(lastResponseLocationHeader);
+            var locationUriQueryString = HttpUtility.ParseQueryString(locationUri.Query);
+            var redirectQueryItem = locationUriQueryString["redirect"];
+            var redirectUri = new Uri(redirectQueryItem);
+
+            // Should contain the url attempted to access before the redirect to the login page,
+            // including the 'Name=test' query string.
+            var redirectUriQueryString = HttpUtility.ParseQueryString(redirectUri.Query);
+            Assert.That(redirectUriQueryString.AllKeys, Contains.Item("name"));
+            Assert.That(redirectUriQueryString["name"], Is.EqualTo("test"));
         }
 
         [Test]
