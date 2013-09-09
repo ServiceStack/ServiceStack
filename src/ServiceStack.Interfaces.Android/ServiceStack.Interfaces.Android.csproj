@@ -31,7 +31,6 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AndroidLinkMode>SdkOnly</AndroidLinkMode>
     <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
   </PropertyGroup>
   <ItemGroup>
@@ -591,6 +590,12 @@
     <Compile Include="..\ServiceStack.Interfaces\Service\IPartialWriter.cs">
       <Link>Service\IPartialWriter.cs</Link>
     </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\OrmLite\DbConnectionFactory.cs">
+      <Link>OrmLite\DbConnectionFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\OrmLite\IDbConnectionFactory.cs">
+      <Link>OrmLite\IDbConnectionFactory.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\README.md" />
@@ -608,4 +613,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ItemGroup>
+    <Folder Include="OrmLite\" />
+  </ItemGroup>
 </Project>
