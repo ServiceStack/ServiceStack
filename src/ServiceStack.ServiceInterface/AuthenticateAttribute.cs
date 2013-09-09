@@ -93,7 +93,7 @@ namespace ServiceStack.ServiceInterface
                 var url = req.ResolveAbsoluteUrl(htmlRedirect);
                 if (includeRedirectParam)
                 {
-                    var absoluteRequestPath = req.ResolveAbsoluteUrl("~" + req.PathInfo);
+                    var absoluteRequestPath = req.ResolveAbsoluteUrl("~" + req.RawUrl);
                     url = url.AddQueryParam("redirect", absoluteRequestPath);
                 }
 
