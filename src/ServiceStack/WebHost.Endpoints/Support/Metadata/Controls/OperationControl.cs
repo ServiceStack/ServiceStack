@@ -44,12 +44,14 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 
 		public void Render(HtmlTextWriter output)
 		{
-			// use a fully qualified path if WebHostUrl is set
-			string baseUrl = HttpRequest.GetParentAbsolutePath();
-			if (EndpointHost.Config.WebHostUrl != null)
-			{
-				baseUrl = EndpointHost.Config.WebHostUrl.CombineWith(baseUrl);
-			}
+            var baseUrl = HttpRequest.GetParentAbsolutePath().ToParentPath();
+            if (string.IsNullOrEmpty(baseUrl))
+                baseUrl = "/";
+            // use a fully qualified path if WebHostUrl is set
+            if (EndpointHost.Config.WebHostUrl != null)
+            {
+                baseUrl = EndpointHost.Config.WebHostUrl.CombineWith(baseUrl);
+            }
 
 			var renderedTemplate = HtmlTemplates.Format(HtmlTemplates.OperationControlTemplate, 
 				Title,
