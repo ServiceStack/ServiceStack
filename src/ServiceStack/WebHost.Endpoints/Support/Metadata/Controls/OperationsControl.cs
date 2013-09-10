@@ -17,7 +17,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
                 ListItems = this.OperationNames,
                 ListItemTemplate = @"<li><a href=""?op={0}"">{0}</a></li>"
             }.ToString();
-            var renderedTemplate = HtmlTemplates.Format(HtmlTemplates.OperationsControlTemplate, 
+            var renderedTemplate = HtmlTemplates.Format(HtmlTemplates.OperationsControlTemplate,
                 this.Title, this.MetadataOperationPageBodyHtml, operationsPart);
             output.Write(renderedTemplate);
         }
