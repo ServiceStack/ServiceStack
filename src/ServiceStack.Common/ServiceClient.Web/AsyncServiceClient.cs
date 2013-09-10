@@ -44,7 +44,7 @@ namespace ServiceStack.ServiceClient.Web
         /// </summary>
         public Action<WebRequest> OnAuthenticationRequired { get; set; }
 
-        const int BufferSize = 4096;
+        public static int BufferSize = 8192;
 
         public ICredentials Credentials { get; set; }
 
