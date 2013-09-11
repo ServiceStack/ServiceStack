@@ -244,13 +244,21 @@ namespace ServiceStack.ServiceHost
 
         public int MatchScore(string httpMethod, string[] withPathInfoParts)
         {
-            var isMatch = IsMatch(httpMethod, withPathInfoParts);
+            int wildcardMatchCount;
+            var isMatch = IsMatch(httpMethod, withPathInfoParts, out wildcardMatchCount);
             if (!isMatch) return -1;
 
             var exactVerb = httpMethod == AllowedVerbs;
             var score = exactVerb ? 10 : 1;
-            score += Math.Max((10 - variableArgsCount), 1) * 100;
-
+            if (IsWildCardPath)
+            {
+                var wildcardArgCount = this.isWildcard.Count(x => x);
+                score += Math.Max((10 - (variableArgsCount - wildcardArgCount + wildcardMatchCount)), 1)*100;
+            }
+            else
+            {
+                score += Math.Max((10 - variableArgsCount), 1)*100;
+            }
             return score;
         }
 
@@ -263,6 +271,22 @@ namespace ServiceStack.ServiceHost
 		/// <returns></returns>
 		public bool IsMatch(string httpMethod, string[] withPathInfoParts)
 		{
+		    int wildcardMatchCount;
+		    return IsMatch(httpMethod, withPathInfoParts, out wildcardMatchCount);
+		}
+
+        /// <summary>
+        /// For performance withPathInfoParts should already be a lower case string
+        /// to minimize redundant matching operations.
+        /// </summary>
+        /// <param name="httpMethod"></param>
+        /// <param name="withPathInfoParts"></param>
+        /// <param name="wildcardMatchCount"></param>
+        /// <returns></returns>
+        public bool IsMatch(string httpMethod, string[] withPathInfoParts, out int wildcardMatchCount)
+		{
+		    wildcardMatchCount = 0;
+
 			if (withPathInfoParts.Length != this.PathComponentsCount && !this.IsWildCardPath) return false;
 			if (!this.allowsAllVerbs && !this.allowedVerbs.Contains(httpMethod)) return false;
 
@@ -272,18 +296,28 @@ namespace ServiceStack.ServiceHost
 		    int pathIx = 0;
 		    for (var i = 0; i < this.TotalComponentsCount; i++)
 		    {
-		        if (this.isWildcard[i] && i < this.TotalComponentsCount - 1)
+		        if (this.isWildcard[i])
 		        {
-		            // Continue to consume up until a match with the next literal
-                    while (pathIx < withPathInfoParts.Length && withPathInfoParts[pathIx] != this.literalsToMatch[i + 1])
+		            if (i < this.TotalComponentsCount - 1)
 		            {
-		                pathIx++;
-		            }
+		                // Continue to consume up until a match with the next literal
+		                while (pathIx < withPathInfoParts.Length && withPathInfoParts[pathIx] != this.literalsToMatch[i + 1])
+		                {
+		                    pathIx++;
+		                    wildcardMatchCount++;
+		                }
 
-		            // Ensure there are still enough parts left to match the remainder
-		            if ((withPathInfoParts.Length - pathIx) < (this.TotalComponentsCount - i - 1))
+		                // Ensure there are still enough parts left to match the remainder
+		                if ((withPathInfoParts.Length - pathIx) < (this.TotalComponentsCount - i - 1))
+		                {
+		                    return false;
+		                }
+		            }
+		            else
 		            {
-		                return false;
+		                // A wildcard at the end matches the remainder of path
+		                wildcardMatchCount += withPathInfoParts.Length - pathIx;
+		                pathIx = withPathInfoParts.Length;
 		            }
 		        }
 		        else
@@ -301,7 +335,7 @@ namespace ServiceStack.ServiceHost
 		        }
 		    }
 
-		    return this.isWildcard[this.TotalComponentsCount-1] || pathIx == withPathInfoParts.Length;
+		    return pathIx == withPathInfoParts.Length;
 		}
 
 		private bool ExplodeComponents(ref string[] withPathInfoParts)

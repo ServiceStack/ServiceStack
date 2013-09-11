@@ -234,7 +234,7 @@ namespace ServiceStack.ServiceHost.Tests
         }
 
         private static void AssertMatch(string definitionPath, string requestPath, string firstMatchHashKey,
-                                        SlugRequest expectedRequest)
+                                        SlugRequest expectedRequest, int expectedScore)
         {
             var restPath = new RestPath(typeof (SlugRequest), definitionPath);
             var requestTestPath = RestPath.GetPathPartsForMatching(requestPath);
@@ -247,6 +247,7 @@ namespace ServiceStack.ServiceHost.Tests
             Assert.That(actualRequest.Slug, Is.EqualTo(expectedRequest.Slug));
             Assert.That(actualRequest.Version, Is.EqualTo(expectedRequest.Version));
             Assert.That(actualRequest.Options, Is.EqualTo(expectedRequest.Options));
+            Assert.That(restPath.MatchScore("GET", requestTestPath), Is.EqualTo(expectedScore));
         }
 
         private static void AssertNoMatch(string definitionPath, string requestPath)
@@ -261,30 +262,33 @@ namespace ServiceStack.ServiceHost.Tests
         public void Cannot_have_variable_after_wildcard()
         {
             AssertMatch("/content/{Slug*}/{Version}",
-                "/content/wildcard/slug/path/1", "*/content", new SlugRequest());
+                "/content/wildcard/slug/path/1", "*/content", new SlugRequest(), -1);
         }
 
 	    [Test]
 	    public void Can_support_internal_wildcard()
 	    {
-            //AssertMatch("/content/{Slug*}/literal",
-            //            "/content/wildcard/slug/path/literal",
-            //            "*/content",
-            //            new SlugRequest { Slug = "wildcard/slug/path" });
+            AssertMatch("/content/{Slug*}/literal",
+                        "/content/wildcard/slug/path/literal",
+                        "*/content",
+                        new SlugRequest { Slug = "wildcard/slug/path" },
+                        701);
 
-            //AssertMatch("/content/{Slug*}/version/{Version}",
-            //            "/content/wildcard/slug/path/version/1",
-            //            "*/content",
-            //            new SlugRequest { Slug = "wildcard/slug/path", Version = 1 });
+            AssertMatch("/content/{Slug*}/version/{Version}",
+                        "/content/wildcard/slug/path/version/1",
+                        "*/content",
+                        new SlugRequest { Slug = "wildcard/slug/path", Version = 1 },
+                        601);
 
             AssertMatch("/content/{Slug*}/with/{Options*}",
                         "/content/wildcard/slug/path/with/optionA/optionB",
                         "*/content",
-                        new SlugRequest { Slug = "wildcard/slug/path", Options = "optionA/optionB" });
+                        new SlugRequest { Slug = "wildcard/slug/path", Options = "optionA/optionB" },
+                        501);
 
-            AssertMatch("/{Slug*}/content", "/content", "*/content", new SlugRequest());
+            AssertMatch("/{Slug*}/content", "/content", "*/content", new SlugRequest(), 1001);
 
-            AssertMatch("/content/{Slug*}/literal", "/content/literal", "*/content", new SlugRequest());
+	        AssertMatch("/content/{Slug*}/literal", "/content/literal", "*/content", new SlugRequest(), 1001);
 
             AssertNoMatch("/content/{Slug*}/literal", "/content/wildcard/slug/path");
 
