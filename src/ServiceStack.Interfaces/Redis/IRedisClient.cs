@@ -39,6 +39,7 @@ namespace ServiceStack.Redis
 		int SendTimeout { get; set; }
 		string Password { get; set; }
 		bool HadExceptions { get; }
+        string NamespacePrefix { get; }
 
 		void Save();
 		void SaveAsync();

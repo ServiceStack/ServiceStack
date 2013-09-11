@@ -203,6 +203,11 @@ namespace ServiceStack.ServiceInterface.Auth
             public void Dispose()
             {
             }
+
+            public string NamespacePrefix
+            {
+                get { return null; }
+            }
         }
 
     }

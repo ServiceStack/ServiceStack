@@ -26,6 +26,7 @@ namespace ServiceStack.ServiceInterface.Auth
         void RemoveEntryFromHash(string hashId, string key);
         void AddItemToSet(string setId, string item);
         ITypedRedisClientFacade<T> As<T>();
+        string NamespacePrefix { get; }
     }
 
     public interface ITypedRedisClientFacade<T>
@@ -127,6 +128,11 @@ namespace ServiceStack.ServiceInterface.Auth
             public void Dispose()
             {
                 this.redisClient.Dispose();
+            }
+
+            public string NamespacePrefix
+            {
+                get { return this.redisClient.NamespacePrefix; }
             }
         }
     }
