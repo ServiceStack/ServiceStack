@@ -226,5 +226,72 @@ namespace ServiceStack.ServiceHost.Tests
 				new RackSpaceRequest{});
 		}
 
+        public class SlugRequest
+        {
+            public string Slug { get; set; }
+            public int Version { get; set; }
+            public string Options { get; set; }
+        }
+
+        private static void AssertMatch(string definitionPath, string requestPath, string firstMatchHashKey,
+                                        SlugRequest expectedRequest)
+        {
+            var restPath = new RestPath(typeof (SlugRequest), definitionPath);
+            var requestTestPath = RestPath.GetPathPartsForMatching(requestPath);
+            Assert.That(restPath.IsMatch("GET", requestTestPath), Is.True);
+
+            Assert.That(firstMatchHashKey, Is.EqualTo(restPath.FirstMatchHashKey));
+
+            var actualRequest = restPath.CreateRequest(requestPath) as SlugRequest;
+            Assert.That(actualRequest, Is.Not.Null);
+            Assert.That(actualRequest.Slug, Is.EqualTo(expectedRequest.Slug));
+            Assert.That(actualRequest.Version, Is.EqualTo(expectedRequest.Version));
+            Assert.That(actualRequest.Options, Is.EqualTo(expectedRequest.Options));
+        }
+
+        private static void AssertNoMatch(string definitionPath, string requestPath)
+        {
+            var restPath = new RestPath(typeof (SlugRequest), definitionPath);
+            var requestTestPath = RestPath.GetPathPartsForMatching(requestPath);
+            Assert.That(restPath.IsMatch("GET", requestTestPath), Is.False);
+        }
+
+        [Test]
+        [ExpectedException(typeof (ArgumentException))]
+        public void Cannot_have_variable_after_wildcard()
+        {
+            AssertMatch("/content/{Slug*}/{Version}",
+                "/content/wildcard/slug/path/1", "*/content", new SlugRequest());
+        }
+
+	    [Test]
+	    public void Can_support_internal_wildcard()
+	    {
+            //AssertMatch("/content/{Slug*}/literal",
+            //            "/content/wildcard/slug/path/literal",
+            //            "*/content",
+            //            new SlugRequest { Slug = "wildcard/slug/path" });
+
+            //AssertMatch("/content/{Slug*}/version/{Version}",
+            //            "/content/wildcard/slug/path/version/1",
+            //            "*/content",
+            //            new SlugRequest { Slug = "wildcard/slug/path", Version = 1 });
+
+            AssertMatch("/content/{Slug*}/with/{Options*}",
+                        "/content/wildcard/slug/path/with/optionA/optionB",
+                        "*/content",
+                        new SlugRequest { Slug = "wildcard/slug/path", Options = "optionA/optionB" });
+
+            AssertMatch("/{Slug*}/content", "/content", "*/content", new SlugRequest());
+
+            AssertMatch("/content/{Slug*}/literal", "/content/literal", "*/content", new SlugRequest());
+
+            AssertNoMatch("/content/{Slug*}/literal", "/content/wildcard/slug/path");
+
+            AssertNoMatch("/content/{Slug*}/literal", "/content/literal/literal");
+	        
+	    }
+
+        
 	}
 }
