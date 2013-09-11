@@ -31,6 +31,9 @@ namespace ServiceStack.ServiceHost
 		private readonly string[] literalsToMatch = new string[0];
 
 		private readonly string[] variablesNames = new string[0];
+
+        private readonly bool[] isWildcard = new bool[0];
+
         private int variableArgsCount;
 
 		/// <summary>
@@ -134,10 +137,11 @@ namespace ServiceStack.ServiceHost
 
 			this.literalsToMatch = new string[this.TotalComponentsCount];
 			this.variablesNames = new string[this.TotalComponentsCount];
+            this.isWildcard = new bool[this.TotalComponentsCount];
 			this.componentsWithSeparators = hasSeparators.ToArray();
 			this.PathComponentsCount = this.componentsWithSeparators.Length;
 			string firstLiteralMatch = null;
-			var lastVariableMatchPos = -1;
+			//var lastVariableMatchPos = -1;
 
 			var sbHashKey = new StringBuilder();
 			for (var i = 0; i < components.Length; i++)
@@ -146,9 +150,16 @@ namespace ServiceStack.ServiceHost
 
 				if (component.StartsWith(VariablePrefix))
 				{
-					this.variablesNames[i] = component.Substring(1, component.Length - 2);
+                    var variableName = component.Substring(1, component.Length - 2);
+                    if (variableName[variableName.Length - 1] == WildCardChar)
+                    {
+                        this.isWildcard[i] = true;
+                        this.IsWildCardPath = true;
+                        variableName = variableName.Substring(0, variableName.Length - 1);
+                    }
+				    this.variablesNames[i] = variableName;
 				    this.variableArgsCount++;
-					lastVariableMatchPos = i;
+					//lastVariableMatchPos = i;
 				}
 				else
 				{
@@ -162,19 +173,28 @@ namespace ServiceStack.ServiceHost
 				}
 			}
 
-			if (lastVariableMatchPos != -1)
-			{
-				var lastVariableMatch = this.variablesNames[lastVariableMatchPos];
-				this.IsWildCardPath = lastVariableMatch[lastVariableMatch.Length - 1] == WildCardChar;
-				if (this.IsWildCardPath)
-				{
-					this.variablesNames[lastVariableMatchPos] = lastVariableMatch.Substring(0, lastVariableMatch.Length - 1);
-				}
-			}
+            for (var i = 0; i < components.Length-1; i++)
+            {
+                if (!this.isWildcard[i]) continue;
+                if (this.literalsToMatch[i+1] == null)
+                {
+                    throw new ArgumentException("A wildcard path component must be at the end of the path or followed by a literal path component.");
+                }
+            }
 
-			this.FirstMatchHashKey = !this.IsWildCardPath
-				? this.PathComponentsCount + PathSeperator + firstLiteralMatch
-				: WildCardChar + PathSeperator + firstLiteralMatch;
+		    //if (lastVariableMatchPos != -1)
+                //{
+                //    var lastVariableMatch = this.variablesNames[lastVariableMatchPos];
+                //    this.IsWildCardPath = lastVariableMatch[lastVariableMatch.Length - 1] == WildCardChar;
+                //    if (this.IsWildCardPath)
+                //    {
+                //        this.variablesNames[lastVariableMatchPos] = lastVariableMatch.Substring(0, lastVariableMatch.Length - 1);
+                //    }
+                //}
+
+                this.FirstMatchHashKey = !this.IsWildCardPath
+                    ? this.PathComponentsCount + PathSeperator + firstLiteralMatch
+                    : WildCardChar + PathSeperator + firstLiteralMatch;
 
 			this.IsValid = sbHashKey.Length > 0;
 			this.UniqueMatchHashKey = sbHashKey.ToString();
@@ -224,13 +244,21 @@ namespace ServiceStack.ServiceHost
 
         public int MatchScore(string httpMethod, string[] withPathInfoParts)
         {
-            var isMatch = IsMatch(httpMethod, withPathInfoParts);
+            int wildcardMatchCount;
+            var isMatch = IsMatch(httpMethod, withPathInfoParts, out wildcardMatchCount);
             if (!isMatch) return -1;
 
             var exactVerb = httpMethod == AllowedVerbs;
             var score = exactVerb ? 10 : 1;
-            score += Math.Max((10 - variableArgsCount), 1) * 100;
-
+            if (IsWildCardPath)
+            {
+                var wildcardArgCount = this.isWildcard.Count(x => x);
+                score += Math.Max((10 - (variableArgsCount - wildcardArgCount + wildcardMatchCount)), 1)*100;
+            }
+            else
+            {
+                score += Math.Max((10 - variableArgsCount), 1)*100;
+            }
             return score;
         }
 
@@ -243,21 +271,71 @@ namespace ServiceStack.ServiceHost
 		/// <returns></returns>
 		public bool IsMatch(string httpMethod, string[] withPathInfoParts)
 		{
+		    int wildcardMatchCount;
+		    return IsMatch(httpMethod, withPathInfoParts, out wildcardMatchCount);
+		}
+
+        /// <summary>
+        /// For performance withPathInfoParts should already be a lower case string
+        /// to minimize redundant matching operations.
+        /// </summary>
+        /// <param name="httpMethod"></param>
+        /// <param name="withPathInfoParts"></param>
+        /// <param name="wildcardMatchCount"></param>
+        /// <returns></returns>
+        public bool IsMatch(string httpMethod, string[] withPathInfoParts, out int wildcardMatchCount)
+		{
+		    wildcardMatchCount = 0;
+
 			if (withPathInfoParts.Length != this.PathComponentsCount && !this.IsWildCardPath) return false;
 			if (!this.allowsAllVerbs && !this.allowedVerbs.Contains(httpMethod)) return false;
 
 			if (!ExplodeComponents(ref withPathInfoParts)) return false;
 			if (this.TotalComponentsCount != withPathInfoParts.Length && !this.IsWildCardPath) return false;
 
-			for (var i = 0; i < this.TotalComponentsCount; i++)
-			{
-				var literalToMatch = this.literalsToMatch[i];
-				if (literalToMatch == null) continue;
+		    int pathIx = 0;
+		    for (var i = 0; i < this.TotalComponentsCount; i++)
+		    {
+		        if (this.isWildcard[i])
+		        {
+		            if (i < this.TotalComponentsCount - 1)
+		            {
+		                // Continue to consume up until a match with the next literal
+		                while (pathIx < withPathInfoParts.Length && withPathInfoParts[pathIx] != this.literalsToMatch[i + 1])
+		                {
+		                    pathIx++;
+		                    wildcardMatchCount++;
+		                }
 
-				if (withPathInfoParts[i] != literalToMatch) return false;
-			}
+		                // Ensure there are still enough parts left to match the remainder
+		                if ((withPathInfoParts.Length - pathIx) < (this.TotalComponentsCount - i - 1))
+		                {
+		                    return false;
+		                }
+		            }
+		            else
+		            {
+		                // A wildcard at the end matches the remainder of path
+		                wildcardMatchCount += withPathInfoParts.Length - pathIx;
+		                pathIx = withPathInfoParts.Length;
+		            }
+		        }
+		        else
+		        {
+		            var literalToMatch = this.literalsToMatch[i];
+		            if (literalToMatch == null)
+		            {
+                        // Matching an ordinary (non-wildcard) variable consumes a single part
+		                pathIx++;
+                        continue;
+		            }
 
-			return true;
+		            if (withPathInfoParts[pathIx] != literalToMatch) return false;
+		            pathIx++;
+		        }
+		    }
+
+		    return pathIx == withPathInfoParts.Length;
 		}
 
 		private bool ExplodeComponents(ref string[] withPathInfoParts)
@@ -300,7 +378,7 @@ namespace ServiceStack.ServiceHost
 			if (requestComponents.Length != this.TotalComponentsCount)
 			{
 				var isValidWildCardPath = this.IsWildCardPath
-					&& requestComponents.Length >= this.TotalComponentsCount - 1;
+					&& requestComponents.Length >= this.TotalComponentsCount - this.isWildcard.Count(x=>x);
 
 				if (!isValidWildCardPath)
 					throw new ArgumentException(string.Format(
@@ -309,10 +387,15 @@ namespace ServiceStack.ServiceHost
 			}
 
 			var requestKeyValuesMap = new Dictionary<string, string>();
+		    var pathIx = 0;
 			for (var i = 0; i < this.TotalComponentsCount; i++)
 			{
 				var variableName = this.variablesNames[i];
-				if (variableName == null) continue;
+				if (variableName == null)
+				{
+				    pathIx++;
+				    continue;
+				}
 
 				string propertyNameOnRequest;
 				if (!this.propertyNamesMap.TryGetValue(variableName.ToLower(), out propertyNameOnRequest))
@@ -324,15 +407,45 @@ namespace ServiceStack.ServiceHost
 						+ variableName + " on " + RequestType.Name);
 				}
 
-                var value = requestComponents.Length > i ? requestComponents[i] : null; //wildcard has arg mismatch
-				if (value != null && i == this.TotalComponentsCount - 1)
+                var value = requestComponents.Length > pathIx ? requestComponents[pathIx] : null; //wildcard has arg mismatch
+				if (value != null && this.isWildcard[i])
 				{
-					var sb = new StringBuilder(value);
-					for (var j = i + 1; j < requestComponents.Length; j++)
-					{
-						sb.Append(PathSeperatorChar + requestComponents[j]);
-					}
-					value = sb.ToString();
+				    if (i == this.TotalComponentsCount - 1)
+				    {
+				        // Wildcard at end of path definition consumes all the rest
+				        var sb = new StringBuilder(value);
+				        for (var j = pathIx + 1; j < requestComponents.Length; j++)
+				        {
+				            sb.Append(PathSeperatorChar + requestComponents[j]);
+				        }
+				        value = sb.ToString();
+				    }
+				    else
+				    {
+                        // Wildcard in middle of path definition consumes up until it
+                        // hits a match for the next element in the definition (which must be a literal)
+                        // It may consume 0 or more path parts
+				        var stopLiteral = i == this.TotalComponentsCount - 1 ? null : this.literalsToMatch[i + 1];
+				        if (requestComponents[pathIx] != stopLiteral)
+				        {
+				            var sb = new StringBuilder(value);
+				            pathIx++;
+				            while (requestComponents[pathIx] != stopLiteral)
+				            {
+				                sb.Append(PathSeperatorChar + requestComponents[pathIx++]);
+				            }
+				            value = sb.ToString();
+				        }
+				        else
+				        {
+				            value = null;
+				        }
+				    }
+				}
+				else
+				{
+				    // Variable consumes single path item
+				    pathIx++;
 				}
 
 				requestKeyValuesMap[propertyNameOnRequest] = value;
