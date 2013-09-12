@@ -284,7 +284,8 @@
  - [devrios](https://github.com/devrios) (Dev Rios)
  - [bfkelsey](https://github.com/bfkelsey) (Ben Kelsey)
  - [maksimenko](https://github.com/maksimenko)
-
+ - [dixon](https://github.com/dixon) (Jarrod Dixon)
+ - [kal](https://github.com/kal) (Kal Ahmed)
 
 
 
