@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
+using ServiceStack.Common;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 
@@ -236,7 +239,7 @@ namespace ServiceStack.ServiceHost.Tests
         private static void AssertMatch(string definitionPath, string requestPath, string firstMatchHashKey,
                                         SlugRequest expectedRequest, int expectedScore)
         {
-            var restPath = new RestPath(typeof (SlugRequest), definitionPath);
+            var restPath = new RestPath(typeof(SlugRequest), definitionPath);
             var requestTestPath = RestPath.GetPathPartsForMatching(requestPath);
             Assert.That(restPath.IsMatch("GET", requestTestPath), Is.True);
 
@@ -252,7 +255,7 @@ namespace ServiceStack.ServiceHost.Tests
 
         private static void AssertNoMatch(string definitionPath, string requestPath)
         {
-            var restPath = new RestPath(typeof (SlugRequest), definitionPath);
+            var restPath = new RestPath(typeof(SlugRequest), definitionPath);
             var requestTestPath = RestPath.GetPathPartsForMatching(requestPath);
             Assert.That(restPath.IsMatch("GET", requestTestPath), Is.False);
         }
@@ -272,30 +275,197 @@ namespace ServiceStack.ServiceHost.Tests
                         "/content/wildcard/slug/path/literal",
                         "*/content",
                         new SlugRequest { Slug = "wildcard/slug/path" },
-                        701);
+                        7901);
 
             AssertMatch("/content/{Slug*}/version/{Version}",
                         "/content/wildcard/slug/path/version/1",
                         "*/content",
                         new SlugRequest { Slug = "wildcard/slug/path", Version = 1 },
-                        601);
+                        7801);
 
             AssertMatch("/content/{Slug*}/with/{Options*}",
                         "/content/wildcard/slug/path/with/optionA/optionB",
                         "*/content",
                         new SlugRequest { Slug = "wildcard/slug/path", Options = "optionA/optionB" },
-                        501);
+                        5801);
 
-            AssertMatch("/{Slug*}/content", "/content", "*/content", new SlugRequest(), 1001);
+            AssertMatch("/{Slug*}/content", "/content", "*/content", new SlugRequest(), 10901);
 
-	        AssertMatch("/content/{Slug*}/literal", "/content/literal", "*/content", new SlugRequest(), 1001);
+            AssertMatch("/content/{Slug*}/literal", "/content/literal", "*/content", new SlugRequest(), 10901);
 
             AssertNoMatch("/content/{Slug*}/literal", "/content/wildcard/slug/path");
 
-            AssertNoMatch("/content/{Slug*}/literal", "/content/literal/literal");
-	        
+            AssertNoMatch("/content/{Slug*}/literal", "/content/literal/literal");	        
 	    }
 
-        
+        [Test]
+        public void Routes_have_expected_precedence()
+        {
+            AssertPrecedence("GET /content",
+                "GET /content",
+                "ANY /content",
+                "GET /content/{Slug*}",
+                "ANY /content/{Slug*}");
+
+            AssertPrecedence("PUT /content",
+                "PUT /content",
+                "ANY /content",
+                "PUT /content/{Slug*}",
+                "ANY /content/{Slug*}");
+
+            AssertPrecedence("GET /content/literal",
+                "GET /content/literal",
+                "ANY /content/literal",
+                "GET /content/{Version}",
+                "ANY /content/{Version}",
+                "GET /content/{Slug*}",
+                "ANY /content/{Slug*}");
+
+            AssertPrecedence("PUT /content/literal",
+                "PUT /content/literal",
+                "ANY /content/literal",
+                "PUT /content/{Version}",
+                "ANY /content/{Version}",
+                "PUT /content/{Slug*}",
+                "ANY /content/{Slug*}");
+
+            AssertPrecedence("GET /content/v1",
+                "GET /content/{Version}",
+                "ANY /content/{Version}",
+                "GET /content/{Slug*}",
+                "ANY /content/{Slug*}");
+
+            AssertPrecedence("PUT /content/v1",
+                "PUT /content/{Version}",
+                "ANY /content/{Version}",
+                "PUT /content/{Slug*}",
+                "ANY /content/{Slug*}");
+
+            AssertPrecedence("GET /content/v1/literal-after",
+                "GET /content/v1/literal-after",
+                "ANY /content/v1/literal-after",
+                "GET /content/{Version}/literal-after",
+                "ANY /content/{Version}/literal-after",
+                "GET /content/{Version}/{Slug}",
+                "ANY /content/{Version}/{Slug}",
+                "GET /content/{Slug*}",
+                "ANY /content/{Slug*}");
+
+            AssertPrecedence("PUT /content/v1/literal-after",
+                "ANY /content/v1/literal-after",
+                "ANY /content/{Version}/literal-after",
+                "ANY /content/{Version}/{Slug}",
+                "PUT /content/{Slug*}",
+                "ANY /content/{Slug*}");
+
+            AssertPrecedence("GET /content/literal-before/v1",
+                "GET /content/literal-before/v1",
+                "ANY /content/literal-before/v1",
+                "GET /content/literal-before/{Version}",
+                "ANY /content/literal-before/{Version}",
+                "GET /content/{Version}/{Slug}",
+                "ANY /content/{Version}/{Slug}",
+                "GET /content/{Slug*}",
+                "ANY /content/{Slug*}");
+
+            AssertPrecedence("PUT /content/literal-before/v1",
+                "ANY /content/literal-before/v1",
+                "ANY /content/literal-before/{Version}",
+                "ANY /content/{Version}/{Slug}",
+                "PUT /content/{Slug*}",
+                "ANY /content/{Slug*}");
+
+            AssertPrecedence("GET /content/v1/literal/slug",
+                "GET /content/v1/literal/slug",
+                "ANY /content/v1/literal/slug",
+                "GET /content/{Version*}/literal/{Slug*}",
+                "ANY /content/{Version*}/literal/{Slug*}",
+                "GET /content/{Slug*}",
+                "ANY /content/{Slug*}");
+
+            AssertPrecedence("PUT /content/v1/literal/slug",
+                "ANY /content/v1/literal/slug",
+                "ANY /content/{Version*}/literal/{Slug*}",
+                "PUT /content/{Slug*}",
+                "ANY /content/{Slug*}");
+        }
+
+        class SlugRoute
+        {
+            public static SlugRoute[] Definitions = new[]{
+                new SlugRoute("GET /content"),
+                new SlugRoute("PUT /content"),
+                new SlugRoute("ANY /content"),
+
+                new SlugRoute("GET /content/literal"),
+                new SlugRoute("PUT /content/literal"),
+                new SlugRoute("ANY /content/literal"),
+
+                new SlugRoute("GET /content/{Version}"),
+                new SlugRoute("PUT /content/{Version}"),
+                new SlugRoute("ANY /content/{Version}"),
+
+                new SlugRoute("GET /content/{Slug*}"),
+                new SlugRoute("PUT /content/{Slug*}"),
+                new SlugRoute("ANY /content/{Slug*}"),
+
+                new SlugRoute("GET /content/v1/literal-after"),
+                new SlugRoute("ANY /content/v1/literal-after"),
+                new SlugRoute("GET /content/{Version}/literal-after"),
+                new SlugRoute("ANY /content/{Version}/literal-after"),
+                new SlugRoute("GET /content/{Version}/{Slug}"),
+                new SlugRoute("ANY /content/{Version}/{Slug}"),
+
+                new SlugRoute("GET /content/literal-before/v1"),
+                new SlugRoute("ANY /content/literal-before/v1"),
+                new SlugRoute("GET /content/literal-before/{Version}"),
+                new SlugRoute("ANY /content/literal-before/{Version}"),
+
+                new SlugRoute("GET /content/v1/literal/slug"),
+                new SlugRoute("ANY /content/v1/literal/slug"),
+                new SlugRoute("GET /content/{Version*}/literal/{Slug*}"),
+                new SlugRoute("ANY /content/{Version*}/literal/{Slug*}"),
+	        };
+
+            public string Definition { get; set; }
+            public RestPath RestPath { get; set; }
+            public int Score { get; set; }
+
+            public SlugRoute(string definition)
+            {
+                this.Definition = definition;
+                var parts = definition.SplitOnFirst(' ');
+                RestPath = new RestPath(typeof(SlugRequest), path:parts[1], verbs:parts[0] == "ANY" ? null : parts[0]);
+            }
+
+            public static List<SlugRoute> GetOrderedMatchingRules(string withVerb, string forPath)
+            {
+                var matchingRoutes = new List<SlugRoute>();
+
+                foreach (var definition in Definitions)
+                {
+                    var pathComponents = RestPath.GetPathPartsForMatching(forPath);
+                    definition.Score = definition.RestPath.MatchScore(withVerb, pathComponents);
+                    if (definition.Score > 0)
+                    {
+                        matchingRoutes.Add(definition);
+                    }
+                }
+
+                var orderedRoutes = matchingRoutes.OrderByDescending(x => x.Score).ToList();
+                return orderedRoutes;
+            }
+        }
+
+        public void AssertPrecedence(string requestedDefinition, params string[] expected)
+        {
+            var parts = requestedDefinition.SplitOnFirst(' ');
+            var orderedRoutes = SlugRoute.GetOrderedMatchingRules(parts[0], parts[1]);
+            var matchingDefinitions = orderedRoutes.ConvertAll(x => x.Definition);
+
+            var isMatch = matchingDefinitions.EquivalentTo(expected);
+
+            Assert.That(isMatch, "Expected:\n{0}\n  Actual:\n{1}".Fmt(expected.Join("\n"), matchingDefinitions.Join("\n")));
+        }
 	}
 }

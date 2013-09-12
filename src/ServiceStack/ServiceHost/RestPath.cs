@@ -33,6 +33,7 @@ namespace ServiceStack.ServiceHost
 		private readonly string[] variablesNames = new string[0];
 
         private readonly bool[] isWildcard = new bool[0];
+	    private readonly int wildcardCount = 0;
 
         private int variableArgsCount;
 
@@ -141,7 +142,6 @@ namespace ServiceStack.ServiceHost
 			this.componentsWithSeparators = hasSeparators.ToArray();
 			this.PathComponentsCount = this.componentsWithSeparators.Length;
 			string firstLiteralMatch = null;
-			//var lastVariableMatchPos = -1;
 
 			var sbHashKey = new StringBuilder();
 			for (var i = 0; i < components.Length; i++)
@@ -154,12 +154,10 @@ namespace ServiceStack.ServiceHost
                     if (variableName[variableName.Length - 1] == WildCardChar)
                     {
                         this.isWildcard[i] = true;
-                        this.IsWildCardPath = true;
                         variableName = variableName.Substring(0, variableName.Length - 1);
                     }
 				    this.variablesNames[i] = variableName;
 				    this.variableArgsCount++;
-					//lastVariableMatchPos = i;
 				}
 				else
 				{
@@ -182,19 +180,12 @@ namespace ServiceStack.ServiceHost
                 }
             }
 
-		    //if (lastVariableMatchPos != -1)
-                //{
-                //    var lastVariableMatch = this.variablesNames[lastVariableMatchPos];
-                //    this.IsWildCardPath = lastVariableMatch[lastVariableMatch.Length - 1] == WildCardChar;
-                //    if (this.IsWildCardPath)
-                //    {
-                //        this.variablesNames[lastVariableMatchPos] = lastVariableMatch.Substring(0, lastVariableMatch.Length - 1);
-                //    }
-                //}
+            this.wildcardCount = this.isWildcard.Count(x => x);
+            this.IsWildCardPath = this.wildcardCount > 0;
 
-                this.FirstMatchHashKey = !this.IsWildCardPath
-                    ? this.PathComponentsCount + PathSeperator + firstLiteralMatch
-                    : WildCardChar + PathSeperator + firstLiteralMatch;
+            this.FirstMatchHashKey = !this.IsWildCardPath
+                ? this.PathComponentsCount + PathSeperator + firstLiteralMatch
+                : WildCardChar + PathSeperator + firstLiteralMatch;
 
 			this.IsValid = sbHashKey.Length > 0;
 			this.UniqueMatchHashKey = sbHashKey.ToString();
@@ -248,17 +239,18 @@ namespace ServiceStack.ServiceHost
             var isMatch = IsMatch(httpMethod, withPathInfoParts, out wildcardMatchCount);
             if (!isMatch) return -1;
 
+            var score = 0;
+
+            //Routes with least wildcard matches get the highest score
+            score += Math.Max((10 - wildcardMatchCount), 1) * 1000;
+
+            //Routes with less variable (and more literal) matches
+            score += Math.Max((10 - variableArgsCount), 1) * 100;
+            
+            //Exact verb match is better than ANY
             var exactVerb = httpMethod == AllowedVerbs;
-            var score = exactVerb ? 10 : 1;
-            if (IsWildCardPath)
-            {
-                var wildcardArgCount = this.isWildcard.Count(x => x);
-                score += Math.Max((10 - (variableArgsCount - wildcardArgCount + wildcardMatchCount)), 1)*100;
-            }
-            else
-            {
-                score += Math.Max((10 - variableArgsCount), 1)*100;
-            }
+            score += exactVerb ? 10 : 1;
+
             return score;
         }
 
@@ -378,7 +370,7 @@ namespace ServiceStack.ServiceHost
 			if (requestComponents.Length != this.TotalComponentsCount)
 			{
 				var isValidWildCardPath = this.IsWildCardPath
-					&& requestComponents.Length >= this.TotalComponentsCount - this.isWildcard.Count(x=>x);
+                    && requestComponents.Length >= this.TotalComponentsCount - this.wildcardCount;
 
 				if (!isValidWildCardPath)
 					throw new ArgumentException(string.Format(
