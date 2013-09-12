@@ -158,6 +158,12 @@
             Gets or sets a value indicating if the framework should always assume <see cref="T:System.DateTime"/> is in UTC format if Kind is Unspecified. 
             </summary>
         </member>
+        <member name="F:ServiceStack.Text.JsConfig.sAppendUtcOffset">
+            <summary>
+            Gets or sets whether we should append the Utc offset when we serialize Utc dates. Defaults to no.
+            Only supported for when the JsConfig.DateHandler == JsonDateHandler.TimestampOffset
+            </summary>
+        </member>
         <member name="F:ServiceStack.Text.JsConfig.sEscapeUnicode">
             <summary>
             Gets or sets a value indicating if unicode symbols should be serialized as "\uXXXX".
