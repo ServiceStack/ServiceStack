@@ -393,8 +393,11 @@ namespace ServiceStack.ServiceHost
                 if (!this.propertyNamesMap.TryGetValue(variableName.ToLower(), out propertyNameOnRequest))
                 {
                     if (IgnoreParam.EqualsIgnoreCase(variableName))
-                        continue;
-
+                    {
+                        pathIx++;
+                        continue;                       
+                    }
+ 
                     throw new ArgumentException("Could not find property "
                         + variableName + " on " + RequestType.Name);
                 }

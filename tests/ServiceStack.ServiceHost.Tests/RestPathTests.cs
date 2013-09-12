@@ -378,6 +378,8 @@ namespace ServiceStack.ServiceHost.Tests
             AssertPrecedence("GET /content/v1/literal/slug",
                 "GET /content/v1/literal/slug",
                 "ANY /content/v1/literal/slug",
+                "GET /content/v1/literal/{ignore}",
+                "GET /content/{ignore}/literal/{ignore}",
                 "GET /content/{Version*}/literal/{Slug*}",
                 "ANY /content/{Version*}/literal/{Slug*}",
                 "GET /content/{Slug*}",
@@ -422,10 +424,13 @@ namespace ServiceStack.ServiceHost.Tests
                 new SlugRoute("ANY /content/literal-before/{Version}"),
 
                 new SlugRoute("GET /content/v1/literal/slug"),
-                new SlugRoute("ANY /content/v1/literal/slug"),
+                new SlugRoute("ANY /content/v1/literal/slug"),                
+                new SlugRoute("GET /content/v1/literal/{ignore}"),
+                new SlugRoute("GET /content/{ignore}/literal/{ignore}"),
                 new SlugRoute("GET /content/{Version*}/literal/{Slug*}"),
                 new SlugRoute("ANY /content/{Version*}/literal/{Slug*}"),
-	        };
+
+            };
 
             public string Definition { get; set; }
             public RestPath RestPath { get; set; }

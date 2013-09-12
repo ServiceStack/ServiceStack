@@ -941,6 +941,19 @@ namespace RazorRockstars.Console.Files
             response4 = "{0}/ignorewildcard/a/b?Name=foo".Fmt(Host).GetJsonFromUrl().FromJson<IgnoreWildcardRoute>();
             Assert.That(response4.Name, Is.EqualTo("foo"));
         }
+
+        [Test]
+        public void Does_handle_ignored_routes()
+        {
+            var restPath = new RestPath(typeof(IgnoreRoute3), "/ignore/{ignore}/with/{name}");
+            var pathComponents = RestPath.GetPathPartsForMatching("/ignore/AnyThing/with/foo");
+            var score = restPath.MatchScore("GET", pathComponents);
+
+            Assert.That(score, Is.GreaterThan(0));
+
+            var request = (IgnoreRoute3) restPath.CreateRequest("/ignore/AnyThing/with/foo");
+            Assert.That(request.Name, Is.EqualTo("foo"));
+        }
     }
     
 }
