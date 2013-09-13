@@ -55,8 +55,8 @@
   <Target Name="BuildSolutions">
     <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.sln" Targets="Build"
       Properties="Configuration=$(Configuration)" />
-    <!--<MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.SL5.sln" Targets="Build"
-      Properties="Configuration=$(Configuration)" />-->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.SL5.sln" Targets="Build"
+      Properties="Configuration=$(Configuration)" />
   </Target>
 
   <Target Name="NuGetPack">
