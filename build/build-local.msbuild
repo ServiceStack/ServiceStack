@@ -2,9 +2,9 @@
   <Import Project="$(MSBuildProjectDirectory)/Build.tasks" />
 
   <PropertyGroup>
-    <MajorVersion>3</MajorVersion>
-    <MinorVersion>9</MinorVersion>
-    <PatchVersion>$(BUILD_NUMBER)</PatchVersion>
+    <MajorVersion Condition="$(MajorVersion) == ''">3</MajorVersion>
+    <MinorVersion Condition="$(MinorVersion) == ''">9</MinorVersion>
+    <PatchVersion Condition="$(PatchVersion) == ''">$(BUILD_NUMBER)</PatchVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -59,9 +59,10 @@
 
   <Target Name="NuGetPack">
 
-    <!-- Update Version -->
     <ItemGroup>
-      <RegexTransform Include="$(BuildSolutionDir)/src/**/AssemblyInfo.cs">
+      <!-- Exclude versioning future strong-named libs -->
+      <RegexTransform Include="$(BuildSolutionDir)/src/**/AssemblyInfo.cs"
+                      Exclude="$(SrcDir)/ServiceStack.Interfaces*/Properties/AssemblyInfo.cs">
         <Find>\d+\.\d+\.\d+\.\d+</Find>
         <ReplaceWith>$(Version)</ReplaceWith>
       </RegexTransform>
@@ -105,9 +106,9 @@
              Targets="Build"
              Properties="BuildPackage=true;Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <Copy SourceFiles="%(StackOverflowSwaggerFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/net35" />
+    <!--<Copy SourceFiles="%(StackOverflowSwaggerFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/net35" />-->
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.Swagger/servicestack.api.swagger.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.Swagger/servicestack.api.swagger.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Authentication.OpenId -->
@@ -117,9 +118,9 @@
              Properties="BuildPackage=true;Version=$(PackageVersion);Configuration=$(Configuration)" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Authentication.OpenId/lib/net35" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Authentication.OpenId/lib/net35')" />
-    <Copy SourceFiles="%(ServiceStackAuthenticationOpenIdFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Authentication.OpenId/lib/net35" />
+    <!--<Copy SourceFiles="%(ServiceStackAuthenticationOpenIdFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Authentication.OpenId/lib/net35" />-->
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Authentication.OpenId/servicestack.authentication.openid.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Authentication.OpenId/servicestack.authentication.openid.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Authentication.OAuth2 -->
@@ -129,24 +130,24 @@
              Properties="BuildPackage=true;Version=$(PackageVersion);Configuration=$(Configuration)" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Authentication.OAuth2/lib/net35" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Authentication.OAuth2/lib/net35')" />
-    <Copy SourceFiles="%(ServiceStackAuthenticationOpenIdFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Authentication.OAuth2/lib/net35" />
+    <!--<Copy SourceFiles="%(ServiceStackAuthenticationOpenIdFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Authentication.OAuth2/lib/net35" />-->
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Authentication.OAuth2/servicestack.authentication.oauth2.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Authentication.OAuth2/servicestack.authentication.oauth2.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Client.Silverlight - Empty NuGet wrapper around ServiceStack.Common -->
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Client.Silverlight/servicestack.client.silverlight.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Client.Silverlight/servicestack.client.silverlight.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Host.AspNet - Content Templates -->
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Host.AspNet/servicestack.host.aspnet.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Host.AspNet/servicestack.host.aspnet.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Host.Mvc - Content Templates -->
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Host.Mvc/servicestack.host.mvc.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Host.Mvc/servicestack.host.mvc.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Mvc -->
@@ -156,9 +157,9 @@
              Properties="BuildPackage=true;Version=$(PackageVersion);Configuration=$(Configuration)" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Mvc/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Mvc/lib/net40')" />
-    <Copy SourceFiles="%(ServiceStackMvcFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Mvc/lib/net40" />
+    <!--<Copy SourceFiles="%(ServiceStackMvcFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Mvc/lib/net40" />-->
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Mvc/servicestack.mvc.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Mvc/servicestack.mvc.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Plugins.MsgPack -->
@@ -168,9 +169,9 @@
              Properties="BuildPackage=true;Version=$(PackageVersion);Configuration=$(Configuration)" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Plugins.MsgPack/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Plugins.MsgPack/lib/net40')" />
-    <Copy SourceFiles="%(ServiceStackPluginsMsgPackFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Plugins.MsgPack/lib/net40" />
+    <!--<Copy SourceFiles="%(ServiceStackPluginsMsgPackFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Plugins.MsgPack/lib/net40" />-->
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Plugins.MsgPack/servicestack.plugins.msgpack.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Plugins.MsgPack/servicestack.plugins.msgpack.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Plugins.ProtoBuf -->
@@ -180,9 +181,9 @@
              Properties="BuildPackage=true;Version=$(PackageVersion);Configuration=$(Configuration)" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Plugins.ProtoBuf/lib/net35" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Plugins.ProtoBuf/lib/net35')" />
-    <Copy SourceFiles="%(ServiceStackPluginsProtoBufFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Plugins.ProtoBuf/lib/net35" />
+    <!--<Copy SourceFiles="%(ServiceStackPluginsProtoBufFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Plugins.ProtoBuf/lib/net35" />-->
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Plugins.ProtoBuf/servicestack.plugins.protobuf.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Plugins.ProtoBuf/servicestack.plugins.protobuf.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Razor -->
@@ -191,9 +192,9 @@
              Targets="Build"
              Properties="BuildPackage=true;Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <Copy SourceFiles="%(ServiceStackRazorFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Razor/lib/net40" />
+    <!--<Copy SourceFiles="%(ServiceStackRazorFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Razor/lib/net40" />-->
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Razor/servicestack.razor.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Razor/servicestack.razor.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Common -->
@@ -202,9 +203,9 @@
              Targets="Build"
              Properties="BuildPackage=true;Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <Copy SourceFiles="%(ServiceStackCommonFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Common/lib/net35" />
+    <!--<Copy SourceFiles="%(ServiceStackCommonFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Common/lib/net35" />-->
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Common/servicestack.common.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Common/servicestack.common.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack -->
@@ -213,9 +214,9 @@
              Targets="Build"
              Properties="BuildPackage=true;Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <Copy SourceFiles="%(ServiceStackFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack/lib/net35" />
+    <!--<Copy SourceFiles="%(ServiceStackFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack/lib/net35" />-->
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack/servicestack.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack/servicestack.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
   </Target>
