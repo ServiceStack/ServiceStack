@@ -54,7 +54,9 @@
 
   <Target Name="BuildSolutions">
     <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.sln" Targets="Build"
-   Properties="Configuration=$(Configuration)" />
+      Properties="Configuration=$(Configuration)" />
+    <!--<MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.SL5.sln" Targets="Build"
+      Properties="Configuration=$(Configuration)" />-->
   </Target>
 
   <Target Name="NuGetPack">
@@ -82,6 +84,8 @@
 
       <ServiceStackCommonFiles Include="$(SrcDir)/ServiceStack.Common/bin/$(Configuration)/ServiceStack.Common.*"></ServiceStackCommonFiles>
       <ServiceStackCommonFiles Include="$(SrcDir)/ServiceStack.Common/bin/$(Configuration)/ServiceStack.Interfaces.*"></ServiceStackCommonFiles>
+      <ServiceStackCommonFilesSL5 Include="$(SrcDir)/ServiceStack.Common.SL5/bin/$(Configuration)/ServiceStack.Common.*"></ServiceStackCommonFilesSL5>
+      <ServiceStackCommonFilesSL5 Include="$(SrcDir)/ServiceStack.Common.SL5/bin/$(Configuration)/ServiceStack.Interfaces.*"></ServiceStackCommonFilesSL5>
 
       <ServiceStackMvcFiles Include="$(SrcDir)/ServiceStack.FluentValidation.Mvc3/bin/$(Configuration)/ServiceStack.FluentValidation.Mvc3.*"></ServiceStackMvcFiles>
 
@@ -109,7 +113,7 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/net35" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/net35')" />
     <Copy SourceFiles="%(StackOverflowSwaggerFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/net35" />
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.Swagger/servicestack.api.swagger.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols -Symbols"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.Swagger/servicestack.api.swagger.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Authentication.OpenId -->
@@ -208,6 +212,14 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Common/lib/net35" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Common/lib/net35')" />
     <Copy SourceFiles="%(ServiceStackCommonFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Common/lib/net35" />
 
+      <!-- Silverlight -->
+      <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Common.SL5/ServiceStack.Common.SL5.csproj"
+               Targets="Build"
+               Properties="BuildPackage=true;Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+      <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Common/lib/sl5" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Common/lib/sl5')" />
+      <Copy SourceFiles="%(ServiceStackCommonFilesSL5.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Common/lib/sl5" />
+
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Common/servicestack.common.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
@@ -222,7 +234,7 @@
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack/servicestack.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
-
+    
   </Target>
 
 </Project>
