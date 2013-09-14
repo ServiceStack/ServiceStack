@@ -21,7 +21,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Auth.Tests", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771-6C97-4D64-8E11-FD88AE48A41A}"
 	ProjectSection(SolutionItems) = preProject
+		..\build\build-local.bat = ..\build\build-local.bat
+		..\build\build-local.msbuild = ..\build\build-local.msbuild
 		..\build\build.bat = ..\build\build.bat
+		..\build\build.msbuild = ..\build\build.msbuild
+		..\build\Build.tasks = ..\build\Build.tasks
 		..\CONTRIBUTORS.md = ..\CONTRIBUTORS.md
 		..\README.md = ..\README.md
 		..\NuGet\ServiceStack.Api.Swagger\servicestack.api.swagger.nuspec = ..\NuGet\ServiceStack.Api.Swagger\servicestack.api.swagger.nuspec
