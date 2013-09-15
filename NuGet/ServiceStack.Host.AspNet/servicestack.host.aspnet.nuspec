@@ -19,7 +19,7 @@ ServiceStack is a modern, high-performance, code-first web service framework pro
 	<copyright>servicestack.net 2012 and contributors</copyright>
 	<dependencies>
       <dependency id="WebActivator" version="1.5" />
-      <dependency id="ServiceStack" />
+      <dependency id="ServiceStack" version="[3,4)" />
     </dependencies> 
   </metadata> 
 </package>
