@@ -21,7 +21,7 @@
     <language>en-US</language>
     <copyright>servicestack.net 2013 and contributors</copyright>
     <dependencies>
-        <dependency id="ServiceStack" />
+        <dependency id="ServiceStack" version="[3,4)" />
         <dependency id="DotNetOpenAuth.Ultimate" />
     </dependencies> 
   </metadata>

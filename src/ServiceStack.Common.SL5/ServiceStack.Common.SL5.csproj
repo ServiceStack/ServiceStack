@@ -48,6 +48,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
+    <Reference Include="ServiceStack.Text, Version=3.9.50.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\sl5\ServiceStack.Text.dll</HintPath>
+    </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows" />
     <Reference Include="system" />
@@ -437,10 +441,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text.SL5\ServiceStack.Text.SL5.csproj">
-      <Project>{CC38D2CC-5E47-4218-9994-5DDEE36820FA}</Project>
-      <Name>ServiceStack.Text.SL5</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.Interfaces.SL5\ServiceStack.Interfaces.SL5.csproj">
       <Project>{36E79FA9-13BB-47BA-B7E8-2A45B8FEBE01}</Project>
       <Name>ServiceStack.Interfaces.SL5</Name>
@@ -452,7 +452,7 @@
       <FlavorProperties GUID="{A1591282-1198-4647-A2B1-27E5FF5F6F3B}">
         <SilverlightProjectProperties />
       </FlavorProperties>
-      <UserProperties ProjectLinkReference="982416db-c143-4028-a0c3-cf41892d18d3" ProjectLinkerExcludeFilter="\\?desktop(\\.*)?$;\\?silverlight(\\.*)?$;\.desktop;\.silverlight;\.xaml;^service references(\\.*)?$;\.clientconfig;^web references(\\.*)?$" />
+      <UserProperties ProjectLinkerExcludeFilter="\\?desktop(\\.*)?$;\\?silverlight(\\.*)?$;\.desktop;\.silverlight;\.xaml;^service references(\\.*)?$;\.clientconfig;^web references(\\.*)?$" ProjectLinkReference="982416db-c143-4028-a0c3-cf41892d18d3" />
     </VisualStudio>
   </ProjectExtensions>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

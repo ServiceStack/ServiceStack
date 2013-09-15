@@ -28,7 +28,7 @@
     <language>en-US</language>
     <copyright>servicestack.net 2012 and contributors</copyright>
     <dependencies>
-      <dependency id="ServiceStack" />
+      <dependency id="ServiceStack" version="[3,4)" />
       <dependency id="System.Web.Razor.Unofficial" />
     </dependencies>
   </metadata>
