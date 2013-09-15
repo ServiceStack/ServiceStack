@@ -22,4 +22,7 @@ ServiceStack is a modern, high-performance, code-first web service framework pro
       <dependency id="ServiceStack.Mvc" version="[3,4)" />
     </dependencies> 
   </metadata> 
+  <files>
+    <file src="content\**\*.*" target="content" />
+  </files>
 </package>
