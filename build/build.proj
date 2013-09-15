@@ -146,12 +146,12 @@
 
     <!-- ServiceStack.Host.AspNet - Content Templates -->
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Host.AspNet/servicestack.host.aspnet.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Host.AspNet/servicestack.host.aspnet.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Host.Mvc - Content Templates -->
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Host.Mvc/servicestack.host.mvc.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Host.Mvc/servicestack.host.mvc.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Mvc -->
