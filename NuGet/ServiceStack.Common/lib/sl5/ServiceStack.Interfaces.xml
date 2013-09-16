@@ -686,6 +686,11 @@
             Factory to create consumers and producers that work with this service
             </summary>
         </member>
+        <member name="P:ServiceStack.Messaging.IMessageService.RegisteredTypes">
+            <summary>
+            Get a list of all message types registered on this MQ Host
+            </summary>
+        </member>
         <member name="T:ServiceStack.Messaging.MessageError">
             <summary>
             An Error Message Type that can be easily serialized
@@ -1304,6 +1309,11 @@
             </param>
             <param name="verbs">A comma-delimited list of HTTP verbs supported by the 
             	service.  If unspecified, all verbs are assumed to be supported.</param>
+        </member>
+        <member name="T:ServiceStack.ServiceHost.FallbackRouteAttribute">
+            <summary>
+            Fallback routes have the lowest precedence, i.e. after normal Routes, static files or any matching Catch All Handlers.
+            </summary>
         </member>
         <member name="T:ServiceStack.ServiceInterface.ServiceModel.ErrorResponse">
             <summary>

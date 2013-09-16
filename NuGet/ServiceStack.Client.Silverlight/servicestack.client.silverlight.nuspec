@@ -2,7 +2,7 @@
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Client.Silverlight</id> 
-    <version>3.9.0</version> 
+    <version>3.9.60</version> 
     <title>Silverlight Clients for ServiceStack webservices</title>
     <authors>Demis Bellot</authors> 
     <owners>Demis Bellot</owners>

@@ -23,7 +23,7 @@
     <language>en-US</language>
     <copyright>servicestack.net 2012 and contributors</copyright>
     <dependencies>
-      <dependency id="ServiceStack.Text" />
+      <dependency id="ServiceStack.Text" version="[3,4)" />
     </dependencies>
   </metadata>
   <files>
