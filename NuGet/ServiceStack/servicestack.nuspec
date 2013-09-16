@@ -20,9 +20,9 @@
     <language>en-US</language>
     <copyright>servicestack.net 2012 and contributors</copyright>
     <dependencies>
-      <dependency id="ServiceStack.Common" />
-      <dependency id="ServiceStack.Redis" />
-      <dependency id="ServiceStack.OrmLite.SqlServer" />
+      <dependency id="ServiceStack.Common" version="[3,4)" />
+      <dependency id="ServiceStack.Redis" version="[3,4)" />
+      <dependency id="ServiceStack.OrmLite.SqlServer" version="[3,4)" />
     </dependencies>
   </metadata>
   <files>
