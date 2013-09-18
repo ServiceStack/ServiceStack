@@ -7,7 +7,6 @@ You can catch some community members hanging out on [JabbR](http://jabbr.net/#/r
 Service Stack is a high-performance .NET web services platform that simplifies the development of high-performance 
 REST (JSON, XML, JSV, HTML, MsgPack, ProtoBuf, CSV) and WCF SOAP [Web Services](https://github.com/ServiceStack/ServiceStack/wiki/Service-Stack-Web-Services). 
 
-_Note: the source code is provided as-is - no direct or commercial support is available for ServiceStack_
 
 Simple REST service example
 =========================== 
@@ -115,6 +114,8 @@ That's all the application code required to create a simple REST web service.
  * [Example Apps and Demos](http://stackoverflow.com/questions/15862634/in-what-order-are-the-servicestack-examples-supposed-to-be-grokked/15869816#15869816)
  * [Community resources](https://github.com/ServiceStack/ServiceStack/wiki/Community-Resources)
 
+### [Release Notes](https://github.com/ServiceStack/ServiceStack/wiki/Release-Notes)
+
 ## Download
 
 If you have [NuGet](http://nuget.org) installed, the easiest way to get started is to install ServiceStack via NuGet:
@@ -125,7 +126,7 @@ ServiceStack binaries only: Minimal installation of ServiceStack containing only
 ServiceStack with Razor Support: Create an empty ASP.NET Web or Console Application and (.NET 4.0+)
 ![Install-Pacakage ServiceStack.Razor2](http://www.servicestack.net/img/nuget-servicestack.razor.png)
 
-_Note: the binary packages are provided as-is - no direct or commercial support is available for ServiceStack_
+_Commercial support will be available for ServiceStack, contact team@servicestack.net for details_
 
 ### Examples
 
@@ -141,16 +142,23 @@ extracting them from the published NuGet packages. The url to download a nuget p
     
  So to get the core ServiceStack and ServiceStack.Text libs in OSX/Linux (or using gnu tools for Windows) you can just do:
 
-    wget -O ServiceStack http://packages.nuget.org/api/v1/package/ServiceStack/3.9.60
+    wget -O ServiceStack http://packages.nuget.org/api/v1/package/ServiceStack/3.9.62
     unzip ServiceStack 'lib/*'
     
-    wget -O ServiceStack.Text http://packages.nuget.org/api/v1/package/ServiceStack.Text/3.9.60
+    wget -O ServiceStack.Text http://packages.nuget.org/api/v1/package/ServiceStack.Text/3.9.62
     unzip ServiceStack.Text 'lib/*'
 
 which will download and extract the dlls into your local local `lib/` folder.
 
+## Copying
 
-[Release notes for major releases](https://github.com/ServiceStack/ServiceStack/wiki/Release-Notes)
+Since September 2013, ServiceStack source code is available under GNU Affero General Public License/FOSS License Exception, see license.txt in the source. 
+Alternative commercial licensing is also available, contact team@servicestack.net for details.
+
+## Contributing
+
+Commits should be made to the **v3-fixes** branch so they can be merged into both **v3** and **master** (v4) release branches. 
+Contributors need to approve the [Contributor License Agreement](https://docs.google.com/forms/d/16Op0fmKaqYtxGL4sg7w_g-cXXyCoWjzppgkuqzOeKyk/viewform) before any code will be reviewed, see the [Contributing wiki](https://github.com/ServiceStack/ServiceStack/wiki/Contributing) for more details. 
 
 ## OSS Libraries used
 
@@ -167,6 +175,7 @@ Each library is released under its respective licence:
   - [MarkdownDeep](https://github.com/toptensoftware/markdowndeep) [(License)](http://www.toptensoftware.com/markdowndeep/license)
 
 ## Similar open source projects
+
 Similar Open source .NET projects for developing or accessing web services include:
 
  * [Nancy Fx](http://nancyfx.org) - A Sinatra-inspired lightweight Web Framework for .NET:
