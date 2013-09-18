@@ -67,4 +67,4 @@ Zlib/libpng License                                      -
 Commercial License
 ===========================================================================
 In addition to this license, ServiceStack is offered under a commerical license.
-See http://www.servicestack.net for details.
+Contact team@servicestack.net for details.
