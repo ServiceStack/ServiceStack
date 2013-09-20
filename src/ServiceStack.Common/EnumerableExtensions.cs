@@ -18,9 +18,38 @@ namespace ServiceStack.Common
             return new HashSet<T>(items);
         }
 
+        public static void SafeForEach<T>(this IEnumerable<T> values, Action<T> action)
+        {
+            if (values == null) return;
+
+            foreach (var value in values)
+            {
+                action(value);
+            }
+        }
+
+        public static void SafeForEach<T>(this IEnumerable<T> values, Action<int,T> action)
+        {
+            if (values == null) return;
+
+            var i = 0;
+            foreach (var value in values)
+            {
+                action(i++, value);
+            }
+        }
+
         public static List<To> SafeConvertAll<To, From>(this IEnumerable<From> items, Func<From, To> converter)
         {
-            return items == null ? new List<To>() : Extensions.EnumerableExtensions.ConvertAll(items, converter);
+            if (items == null)
+                return new List<To>();
+
+            var list = new List<To>();
+            foreach (var item in items)
+            {
+                list.Add(converter(item));
+            }
+            return list;
         }
 
         public static List<object> ToObjects<T>(this IEnumerable<T> items)
