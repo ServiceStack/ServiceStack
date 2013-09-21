@@ -128,15 +128,6 @@
     <Compile Include="Expressions\DelegateFactory.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Extensions\IntExtensions.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Extensions\ITranslatorExtensions.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Extensions\StringExtensions.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="HostContext.cs" />
     <Compile Include="IntExtensions.cs">
       <SubType>Code</SubType>
