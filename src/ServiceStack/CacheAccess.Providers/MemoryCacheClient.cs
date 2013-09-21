@@ -1,8 +1,8 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using ServiceStack.Logging;
-using ServiceStack.Net30.Collections.Concurrent;
 
 namespace ServiceStack.CacheAccess.Providers
 {

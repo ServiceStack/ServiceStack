@@ -1,8 +1,8 @@
-﻿using System.Data.Common;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Data.Common;
 using System.Linq;
 using ServiceStack.MiniProfiler.Data;
-using ServiceStack.Net30;
-using ServiceStack.Net30.Collections.Concurrent;
 
 namespace ServiceStack.MiniProfiler
 {
@@ -13,8 +13,8 @@ namespace ServiceStack.MiniProfiler
     /// </summary>
     public class SqlProfiler
     {
-        ConcurrentDictionary<Tuple<object, ExecuteType>, SqlTiming> _inProgress = new ConcurrentDictionary<Tuple<object, ExecuteType>, SqlTiming>();
-        ConcurrentDictionary<DbDataReader, SqlTiming> _inProgressReaders = new ConcurrentDictionary<DbDataReader, SqlTiming>();
+        ConcurrentDictionary<Tuple<object, ExecuteType>, SqlTiming> inProgress = new ConcurrentDictionary<Tuple<object, ExecuteType>, SqlTiming>();
+        ConcurrentDictionary<DbDataReader, SqlTiming> inProgressReaders = new ConcurrentDictionary<DbDataReader, SqlTiming>();
 
         /// <summary>
         /// The profiling session this SqlProfiler is part of.
@@ -37,14 +37,14 @@ namespace ServiceStack.MiniProfiler
             var id = Tuple.Create((object)command, type);
             var sqlTiming = new SqlTiming(command, type, Profiler);
 
-            _inProgress[id] = sqlTiming;
+            inProgress[id] = sqlTiming;
         }
         /// <summary>
         /// Returns all currently open commands on this connection
         /// </summary>
         public SqlTiming[] GetInProgressCommands()
         {
-            return _inProgress.Values.OrderBy(x => x.StartMilliseconds).ToArray();
+            return inProgress.Values.OrderBy(x => x.StartMilliseconds).ToArray();
         }
         /// <summary>
         /// Finishes profiling for 'command', recording durations.
@@ -52,13 +52,13 @@ namespace ServiceStack.MiniProfiler
         public void ExecuteFinishImpl(DbCommand command, ExecuteType type, DbDataReader reader = null)
         {
             var id = Tuple.Create((object)command, type);
-            var current = _inProgress[id];
+            var current = inProgress[id];
             current.ExecutionComplete(isReader: reader != null);
             SqlTiming ignore;
-            _inProgress.TryRemove(id, out ignore);
+            inProgress.TryRemove(id, out ignore);
             if (reader != null)
             {
-                _inProgressReaders[reader] = current;
+                inProgressReaders[reader] = current;
             }
         }
 
@@ -69,11 +69,11 @@ namespace ServiceStack.MiniProfiler
         {
             SqlTiming stat;
             // this reader may have been disposed/closed by reader code, not by our using()
-            if (_inProgressReaders.TryGetValue(reader, out stat))
+            if (inProgressReaders.TryGetValue(reader, out stat))
             {
                 stat.ReaderFetchComplete();
                 SqlTiming ignore;
-                _inProgressReaders.TryRemove(reader, out ignore);
+                inProgressReaders.TryRemove(reader, out ignore);
             }
         }
     }

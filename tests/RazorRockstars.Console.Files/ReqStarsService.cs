@@ -204,7 +204,7 @@ namespace RazorRockstars.Console.Files
             if (!request.Age.HasValue)
                 throw new ArgumentException("Age is required");
 
-            Db.Insert(request.TranslateTo<Reqstar>());
+            Db.Insert(request.ConvertTo<Reqstar>());
             return Db.Select<Reqstar>();
         }
 

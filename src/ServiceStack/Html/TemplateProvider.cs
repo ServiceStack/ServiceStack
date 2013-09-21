@@ -1,12 +1,11 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using ServiceStack.Common;
-using ServiceStack.Common.Net30;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Text;
-using ServiceStack.VirtualPath;
 
 namespace ServiceStack.Html
 {

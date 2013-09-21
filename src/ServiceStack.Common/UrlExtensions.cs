@@ -1,5 +1,4 @@
 ﻿using ServiceStack.Common.Web;
-using ServiceStack.Net30.Collections.Concurrent;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -10,9 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
-#if NETFX_CORE
 using System.Collections.Concurrent;
-#endif
 
 namespace ServiceStack.Common
 {

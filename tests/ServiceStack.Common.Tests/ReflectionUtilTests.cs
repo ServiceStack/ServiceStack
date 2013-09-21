@@ -267,7 +267,7 @@ namespace ServiceStack.Common.Tests
 		{
 			var fromObj = ModelWithFieldsOfDifferentTypes.CreateConstant(1);
 
-			var toObj = fromObj.TranslateTo<ModelWithFieldsOfDifferentTypesAsNullables>();
+			var toObj = fromObj.ConvertTo<ModelWithFieldsOfDifferentTypesAsNullables>();
 
 			Console.WriteLine(toObj.Dump());
 
@@ -279,7 +279,7 @@ namespace ServiceStack.Common.Tests
 		{
 			var fromObj = ModelWithFieldsOfDifferentTypesAsNullables.CreateConstant(1);
 
-			var toObj = fromObj.TranslateTo<ModelWithFieldsOfDifferentTypes>();
+			var toObj = fromObj.ConvertTo<ModelWithFieldsOfDifferentTypes>();
 
 			Console.WriteLine(toObj.Dump());
 

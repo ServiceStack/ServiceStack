@@ -70,7 +70,7 @@ namespace ServiceStack.RazorHostTests
         {
             using( var db = DbFactory.OpenDbConnection() )
             {
-                db.Insert( request.TranslateTo<Rockstar>() );
+                db.Insert( request.ConvertTo<Rockstar>() );
                 return Get( new Rockstars() );
             }
         }

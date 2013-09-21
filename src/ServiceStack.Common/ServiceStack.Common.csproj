@@ -194,19 +194,6 @@
     <Compile Include="ModelConfig.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Net30\ConcurrentDictionary.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Net30\ConcurrentQueue.cs" />
-    <Compile Include="Net30\ObjectPool.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Net30\SplitOrderedList.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Net30\Tuple.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReflectionExtensions.cs">
       <SubType>Code</SubType>

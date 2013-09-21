@@ -1,12 +1,10 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Net;
-using System.Linq;
 #if !(MONOTOUCH || SILVERLIGHT)
-using System.Text;
 using System.Web;
 #endif
 #if !SILVERLIGHT
@@ -15,7 +13,6 @@ using System.Reflection;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
-using ServiceStack.Net30.Collections.Concurrent;
 using ServiceStack.Service;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;

@@ -148,7 +148,7 @@ namespace ServiceStack.Common.Tests
                 Car = new Car() { Name = "BMW X6", Age = 3 }
             };
 
-            var userDto = user.TranslateTo<UserDto>();
+            var userDto = user.ConvertTo<UserDto>();
 
             Assert.That(userDto.FirstName, Is.EqualTo(user.FirstName));
             Assert.That(userDto.LastName, Is.EqualTo(user.LastName));
@@ -159,7 +159,7 @@ namespace ServiceStack.Common.Tests
         public void Does_enumstringconversion_translate()
         {
             var conversion = new EnumConversion { Color = Color.Blue };
-            var conversionDto = conversion.TranslateTo<EnumConversionStringDto>();
+            var conversionDto = conversion.ConvertTo<EnumConversionStringDto>();
 
             Assert.That(conversionDto.Color, Is.EqualTo("Blue"));
         }
@@ -168,7 +168,7 @@ namespace ServiceStack.Common.Tests
         public void Does_enumintconversion_translate()
         {
             var conversion = new EnumConversion { Color = Color.Green };
-            var conversionDto = conversion.TranslateTo<EnumConversionIntDto>();
+            var conversionDto = conversion.ConvertTo<EnumConversionIntDto>();
 
             Assert.That(conversionDto.Color, Is.EqualTo(1));
         }
@@ -177,7 +177,7 @@ namespace ServiceStack.Common.Tests
         public void Does_nullableconversion_translate()
         {
             var conversion = new NullableConversion { Amount = 123.45m };
-            var conversionDto = conversion.TranslateTo<NullableConversionDto>();
+            var conversionDto = conversion.ConvertTo<NullableConversionDto>();
 
             Assert.That(conversionDto.Amount, Is.EqualTo(123.45m));
         }
@@ -186,7 +186,7 @@ namespace ServiceStack.Common.Tests
         public void Does_Enumnullableconversion_translate()
         {
             var conversion = new NullableEnumConversion { Color = Color.Green };
-            var conversionDto = conversion.TranslateTo<NullableEnumConversionDto>();
+            var conversionDto = conversion.ConvertTo<NullableEnumConversionDto>();
 
             Assert.That(conversionDto.Color, Is.EqualTo(OtherColor.Green));
 
@@ -196,7 +196,7 @@ namespace ServiceStack.Common.Tests
         public void Does_Enumconversion_translate()
         {
             var conversion = new NullableEnumConversion { Color = Color.Green };
-            var conversionDto = conversion.TranslateTo<EnumConversionDto>();
+            var conversionDto = conversion.ConvertTo<EnumConversionDto>();
 
             Assert.That(conversionDto.Color, Is.EqualTo(OtherColor.Green));
 
@@ -207,11 +207,11 @@ namespace ServiceStack.Common.Tests
         {
             var nullable = new IntNullableId();
 
-            var nonNullable = nullable.TranslateTo<IntId>();
+            var nonNullable = nullable.ConvertTo<IntId>();
 
             nonNullable.Id = 10;
 
-            var expectedNullable = nonNullable.TranslateTo<IntNullableId>();
+            var expectedNullable = nonNullable.ConvertTo<IntNullableId>();
 
             Assert.That(expectedNullable.Id.Value, Is.EqualTo(nonNullable.Id));
         }
@@ -225,7 +225,7 @@ namespace ServiceStack.Common.Tests
                 Car = new Car { Name = "BMW X6", Age = 3 }
             };
 
-            var to = user.TranslateTo<UserFields>();
+            var to = user.ConvertTo<UserFields>();
             Assert.That(to.FirstName, Is.EqualTo(user.FirstName));
             Assert.That(to.LastName, Is.EqualTo(user.LastName));
             Assert.That(to.Car.Name, Is.EqualTo(user.Car.Name));
@@ -241,7 +241,7 @@ namespace ServiceStack.Common.Tests
                 Car = new Car { Name = "BMW X6", Age = 3 }
             };
 
-            var to = user.TranslateTo<UserFields>();
+            var to = user.ConvertTo<UserFields>();
             Assert.That(to.FirstName, Is.EqualTo(user.FirstName));
             Assert.That(to.LastName, Is.EqualTo(user.LastName));
             Assert.That(to.Car.Name, Is.EqualTo(user.Car.Name));
@@ -257,7 +257,7 @@ namespace ServiceStack.Common.Tests
                 Car = new Car { Name = "BMW X6", Age = 3 }
             };
 
-            var to = user.TranslateTo<UserFields>();
+            var to = user.ConvertTo<UserFields>();
             Assert.That(to.FirstName, Is.EqualTo(user.FirstName));
             Assert.That(to.LastName, Is.EqualTo(user.LastName));
             Assert.That(to.Car.Name, Is.EqualTo(user.Car.Name));
@@ -273,7 +273,7 @@ namespace ServiceStack.Common.Tests
                 Car = new Car { Name = "BMW X6", Age = 3 }
             };
 
-            var to = user.TranslateTo<SubUserFields>();
+            var to = user.ConvertTo<SubUserFields>();
             Assert.That(to.FirstName, Is.EqualTo(user.FirstName));
             Assert.That(to.LastName, Is.EqualTo(user.LastName));
             Assert.That(to.Car.Name, Is.EqualTo(user.Car.Name));
@@ -290,7 +290,7 @@ namespace ServiceStack.Common.Tests
                 Decimal = 4.4m,                
             };
 
-            var to = from.TranslateTo<BclTypeStrings>();
+            var to = from.ConvertTo<BclTypeStrings>();
             Assert.That(to.Int, Is.EqualTo("1"));
             Assert.That(to.Long, Is.EqualTo("2"));
             Assert.That(to.Double, Is.EqualTo("3.3"));
@@ -307,7 +307,7 @@ namespace ServiceStack.Common.Tests
                 Decimal = "4.4",
             };
 
-            var to = from.TranslateTo<BclTypes>();
+            var to = from.ConvertTo<BclTypes>();
             Assert.That(to.Int, Is.EqualTo(1));
             Assert.That(to.Long, Is.EqualTo(2));
             Assert.That(to.Double, Is.EqualTo(3.3d));

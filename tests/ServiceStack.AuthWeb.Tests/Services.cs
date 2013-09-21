@@ -160,7 +160,7 @@ namespace ServiceStack.AuthWeb.Tests
 
         public object Post(Rockstars request)
         {
-            Db.Insert(request.TranslateTo<Rockstar>());
+            Db.Insert(request.ConvertTo<Rockstar>());
             return Get(new Rockstars());
         }
     }
