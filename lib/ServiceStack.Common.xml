@@ -26,6 +26,26 @@
             </summary>        
             <returns>RsaKeyPair</returns>
         </member>
+        <member name="M:ServiceStack.Common.EnumerableExtensions.Each``1(System.Collections.Generic.IEnumerable{``0},System.Action{``0})">
+            <summary>
+            Alias for SafeForEach
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Common.EnumerableExtensions.Each``1(System.Collections.Generic.IEnumerable{``0},System.Action{System.Int32,``0})">
+            <summary>
+            Alias for SafeForEach
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Common.EnumerableExtensions.Map``2(System.Collections.Generic.IEnumerable{``1},System.Func{``1,``0})">
+            <summary>
+            Alias for SafeConvertAll
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Common.EnumerableExtensions.Map``1(System.Collections.IEnumerable,System.Func{System.Object,``0})">
+            <summary>
+            Alias for SafeConvertAll
+            </summary>
+        </member>
         <member name="M:ServiceStack.Common.EnumExtensions.ToDescription(System.Enum)">
             <summary>
             Gets the textual description of the enum if it has one. e.g.
@@ -42,12 +62,6 @@
             <param name="enum"></param>
             <returns></returns>
         </member>
-        <member name="T:ServiceStack.Common.Extensions.EnumerableExtensions">
-            <summary>
-            These extensions have a potential to conflict with the LINQ extensions methods so
-            leaving the implmentation in the 'Extensions' sub-namespace to force explicit opt-in
-            </summary>
-        </member>
         <member name="M:ServiceStack.Common.HostContext.TrackDisposable(System.IDisposable)">
             <summary>
             Track any IDisposable's to dispose of at the end of the request in IAppHost.OnEndRequest()
@@ -62,20 +76,20 @@
             If a handler uses additional threads, this data will not be available on those threads.
             </remarks>
         </member>
-        <member name="T:ServiceStack.Common.Extensions.IPAddressExtensions">
+        <member name="T:ServiceStack.Common.IPAddressExtensions">
             <summary>
             Useful IPAddressExtensions from: 
             http://blogs.msdn.com/knom/archive/2008/12/31/ip-address-calculations-with-c-subnetmasks-networks.aspx
             
             </summary>
         </member>
-        <member name="M:ServiceStack.Common.Extensions.IPAddressExtensions.GetAllNetworkInterfaceIpv4Addresses">
+        <member name="M:ServiceStack.Common.IPAddressExtensions.GetAllNetworkInterfaceIpv4Addresses">
             <summary>
             Gets the ipv4 addresses from all Network Interfaces that have Subnet masks.
             </summary>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.Common.Extensions.IPAddressExtensions.GetAllNetworkInterfaceIpv6Addresses">
+        <member name="M:ServiceStack.Common.IPAddressExtensions.GetAllNetworkInterfaceIpv6Addresses">
             <summary>
             Gets the ipv6 addresses from all Network Interfaces.
             </summary>
@@ -594,7 +608,7 @@
             Specifies if cookies should be stored
             </summary>
         </member>
-        <member name="T:ServiceStack.ServiceClient.Web.UrlExtensions">
+        <member name="T:ServiceStack.Common.UrlExtensions">
             <summary>
             Donated by Ivan Korneliuk from his post:
             http://korneliuk.blogspot.com/2012/08/servicestack-reusing-dtos.html
@@ -917,53 +931,53 @@
             <param name="recursionInfo">Tracks how deeply nested we are</param>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.Common.Web.HttpResultExtensions.ToDto(System.Object)">
+        <member name="M:ServiceStack.Common.HttpResultExtensions.ToDto(System.Object)">
             <summary>
             Shortcut to get the ResponseDTO whether it's bare or inside a IHttpResult
             </summary>
             <param name="response"></param>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.Common.Web.HttpResultExtensions.ToResponseDto(System.Object)">
+        <member name="M:ServiceStack.Common.HttpResultExtensions.ToResponseDto(System.Object)">
             <summary>
             Alias of ToDto
             </summary>
         </member>
-        <member name="M:ServiceStack.Common.Web.HttpResultExtensions.ToDto``1(System.Object)">
+        <member name="M:ServiceStack.Common.HttpResultExtensions.ToDto``1(System.Object)">
             <summary>
             Shortcut to get the ResponseDTO whether it's bare or inside a IHttpResult
             </summary>
             <param name="response"></param>
             <returns>TResponse if found; otherwise null</returns>
         </member>
-        <member name="M:ServiceStack.Common.Web.HttpResultExtensions.ToResponseDto``1(System.Object)">
+        <member name="M:ServiceStack.Common.HttpResultExtensions.ToResponseDto``1(System.Object)">
             <summary>
             Alias of ToDto
             </summary>
         </member>
-        <member name="M:ServiceStack.Common.Web.HttpResultExtensions.ToResponseStatus(System.Object)">
+        <member name="M:ServiceStack.Common.HttpResultExtensions.ToResponseStatus(System.Object)">
             <summary>
             Shortcut to get the ResponseStatus whether it's bare or inside a IHttpResult
             </summary>
             <param name="response"></param>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.Common.Web.HttpResultExtensions.IsErrorResponse(System.Object)">
+        <member name="M:ServiceStack.Common.HttpResultExtensions.IsErrorResponse(System.Object)">
             <summary>
             Whether the response is an IHttpError or Exception
             </summary>
         </member>
-        <member name="M:ServiceStack.Common.Web.HttpResultExtensions.ExtractHttpRanges(System.String,System.Int64,System.Int64@,System.Int64@)">
+        <member name="M:ServiceStack.Common.HttpResultExtensions.ExtractHttpRanges(System.String,System.Int64,System.Int64@,System.Int64@)">
             <summary>
             rangeHeader should be of the format "bytes=0-" or "bytes=0-12345" or "bytes=123-456"
             </summary>
         </member>
-        <member name="M:ServiceStack.Common.Web.HttpResultExtensions.AddHttpRangeResponseHeaders(ServiceStack.ServiceHost.IHttpResponse,System.Int64,System.Int64,System.Int64)">
+        <member name="M:ServiceStack.Common.HttpResultExtensions.AddHttpRangeResponseHeaders(ServiceStack.ServiceHost.IHttpResponse,System.Int64,System.Int64,System.Int64)">
             <summary>
             Adds 206 PartialContent Status, Content-Range and Content-Length headers
             </summary>
         </member>
-        <member name="M:ServiceStack.Common.Web.HttpResultExtensions.WritePartialTo(System.IO.Stream,System.IO.Stream,System.Int64,System.Int64)">
+        <member name="M:ServiceStack.Common.HttpResultExtensions.WritePartialTo(System.IO.Stream,System.IO.Stream,System.Int64,System.Int64)">
             <summary>
             Writes partial range as specified by start-end, from fromStream to toStream.
             </summary>
