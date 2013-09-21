@@ -24,6 +24,15 @@ namespace ServiceStack.Common
         private static readonly ConcurrentDictionary<Type, List<RestRoute>> routesCache =
             new ConcurrentDictionary<Type, List<RestRoute>>();
 
+        /// <summary>
+        /// Alias for ToUrl
+        /// </summary>
+        /// <returns></returns>
+        public static string ToRelativeUri(this IReturn request, string httpMethod, string formatFallbackToPredefinedRoute = null)
+        {
+            return request.ToUrl(httpMethod, formatFallbackToPredefinedRoute);
+        }
+
         public static string ToUrl(this IReturn request, string httpMethod, string formatFallbackToPredefinedRoute = null)
         {
             httpMethod = httpMethod.ToUpper();
