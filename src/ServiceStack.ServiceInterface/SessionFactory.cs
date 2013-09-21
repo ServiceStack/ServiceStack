@@ -4,7 +4,6 @@ using ServiceStack.CacheAccess;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.Text.Common;
-using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.ServiceInterface
 {

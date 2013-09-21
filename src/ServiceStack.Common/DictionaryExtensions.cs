@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
-using ServiceStack.Common.Extensions;
 
 namespace ServiceStack.Common
 {
@@ -38,7 +38,7 @@ namespace ServiceStack.Common
         public static List<T> ConvertAll<T, K, V>(IDictionary<K, V> map, Func<K, V, T> createFn)
         {
             var list = new List<T>();
-            map.ForEach((kvp) => list.Add(createFn(kvp.Key, kvp.Value)));
+            map.Each((kvp) => list.Add(createFn(kvp.Key, kvp.Value)));
             return list;
         }
 
@@ -59,5 +59,44 @@ namespace ServiceStack.Common
         {
             return new KeyValuePair<TKey, TValue>(key, value);
         }
+
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+
+        public static Dictionary<string, string> ToDictionary(this System.Collections.Specialized.NameValueCollection nameValues)
+        {
+            if (nameValues == null) return new Dictionary<string, string>();
+
+            var map = new Dictionary<string, string>();
+            foreach (var key in nameValues.AllKeys)
+            {
+                if (key == null)
+                {
+                    //occurs when no value is specified, e.g. 'path/to/page?debug'
+                    //throw new ArgumentNullException("key", "nameValues: " + nameValues);
+                    continue;
+                }
+
+                var values = nameValues.GetValues(key);
+                if (values != null && values.Length > 0)
+                {
+                    map[key] = values[0];
+                }
+            }
+            return map;
+        }
+
+        public static System.Collections.Specialized.NameValueCollection ToNameValueCollection(this Dictionary<string, string> map)
+        {
+            if (map == null) return new System.Collections.Specialized.NameValueCollection();
+
+            var nameValues = new System.Collections.Specialized.NameValueCollection();
+            foreach (var item in map)
+            {
+                nameValues.Add(item.Key, item.Value);
+            }
+            return nameValues;
+        }
+
+#endif
     }
 }

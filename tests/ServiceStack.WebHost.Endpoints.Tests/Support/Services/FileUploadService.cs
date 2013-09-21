@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Runtime.Serialization;
-using ServiceStack.Common.Extensions;
+using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;

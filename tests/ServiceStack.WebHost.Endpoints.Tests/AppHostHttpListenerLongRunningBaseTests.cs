@@ -5,6 +5,7 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using NUnit.Framework;
+using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;

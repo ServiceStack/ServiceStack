@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Common;
-using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Utils;
 using ServiceStack.DataAccess;
 using ServiceStack.Text;
@@ -78,17 +77,16 @@ namespace ServiceStack.CacheAccess.Providers
 		{
 			if (entityIds.Count == 0) return new List<TEntity>();
 
-			var cacheKeys = entityIds.ConvertAll(x => x.CreateUrn());
+			var cacheKeys = entityIds.Map(x => x.CreateUrn());
 			var cacheEntitiesMap = this.CacheClient.GetAll<TEntity>(cacheKeys);
 
 			if (cacheEntitiesMap.Count < entityIds.Count)
 			{
-				var entityIdType = entityIds.First().GetType();
+                var entityIdType = entityIds.SafeFirst().GetType();
 
 				var entityIdsNotInCache = cacheKeys
 					.Where(x => !cacheEntitiesMap.ContainsKey(x))
-					.ConvertAll(x =>
-						TypeSerializer.DeserializeFromString(UrnId.GetStringId(x), entityIdType));
+					.Map(x => TypeSerializer.DeserializeFromString(UrnId.GetStringId(x), entityIdType));
 
 				using (var db = GetBasicPersistenceProvider())
 				{
@@ -109,7 +107,7 @@ namespace ServiceStack.CacheAccess.Providers
 		public void ClearAll<TEntity>(ICollection entityIds)
 			where TEntity : class, new()
 		{
-			var cacheKeys = entityIds.ConvertAll(x => IdUtils.CreateUrn<TEntity>(x));
+			var cacheKeys = entityIds.Map(IdUtils.CreateUrn<TEntity>);
 			this.CacheClient.RemoveAll(cacheKeys);
 		}
 

@@ -4,7 +4,6 @@ using ServiceStack.CacheAccess;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {

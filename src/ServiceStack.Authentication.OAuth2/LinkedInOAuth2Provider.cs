@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Xml.Linq;
-
+using ServiceStack.Common;
 using ServiceStack.Configuration;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceModel;

@@ -4,7 +4,7 @@ using System.Net;
 using System.Runtime.Serialization;
 using System.Threading;
 using Funq;
-using ServiceStack.Common.Extensions;
+using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;

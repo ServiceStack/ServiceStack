@@ -5,7 +5,6 @@ using System.Reflection;
 using ServiceStack.Common;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.ServiceHost
 {

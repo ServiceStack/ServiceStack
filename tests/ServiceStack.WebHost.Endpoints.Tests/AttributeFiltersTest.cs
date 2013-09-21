@@ -4,6 +4,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
+using ServiceStack.Common;
 using ServiceStack.Common.Tests.ServiceClient.Web;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;

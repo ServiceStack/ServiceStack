@@ -1,3 +1,6 @@
+//Copyright (c) Service Stack LLC. All Rights Reserved.
+//License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -10,7 +13,7 @@ using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 
-namespace ServiceStack.WebHost.Endpoints.Extensions
+namespace ServiceStack.WebHost.Endpoints.Wrappers
 {
     public class HttpRequestWrapper
         : IHttpRequest

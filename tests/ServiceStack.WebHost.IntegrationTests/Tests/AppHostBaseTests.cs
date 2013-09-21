@@ -1,5 +1,6 @@
 using System.Net;
 using NUnit.Framework;
+using ServiceStack.Common;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.Text;
 

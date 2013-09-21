@@ -14,7 +14,7 @@ namespace ServiceStack.ServiceHost.Tests
 	{
 		public static string ResolvePath(string mode, string path)
 		{
-			return WebHost.Endpoints.Extensions.HttpRequestExtensions.
+			return HttpRequestExtensions.
 				GetPathInfo(path, mode, path.Split('/').First(x => x != ""));
 		}
 

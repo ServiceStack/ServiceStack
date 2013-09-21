@@ -9,7 +9,6 @@ using ServiceStack.Common.Web;
 using ServiceStack.Html;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.Razor.Managers

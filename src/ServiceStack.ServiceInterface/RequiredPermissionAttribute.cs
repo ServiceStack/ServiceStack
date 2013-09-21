@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Auth;
-using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.ServiceInterface
 {

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using ServiceStack.Common.Extensions;
+using ServiceStack.Common;
 using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost;
 

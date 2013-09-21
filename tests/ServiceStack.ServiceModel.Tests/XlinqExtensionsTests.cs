@@ -1,6 +1,7 @@
 using System;
 using System.Xml.Linq;
 using NUnit.Framework;
+using ServiceStack.Common;
 
 namespace ServiceStack.ServiceModel.Tests
 {

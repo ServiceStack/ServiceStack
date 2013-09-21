@@ -4,9 +4,8 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using ServiceStack.Logging;
 
-namespace ServiceStack.Common.Extensions
+namespace ServiceStack.Common
 {
     /// <summary>
     /// Useful IPAddressExtensions from: 

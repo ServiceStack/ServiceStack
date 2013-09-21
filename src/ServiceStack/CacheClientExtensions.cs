@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using ServiceStack.CacheAccess;
 using ServiceStack.ServiceHost;
 using ServiceStack.Common.Web;
-using ServiceStack.Common.Extensions;
+using ServiceStack.Common;
 using ServiceStack.WebHost.Endpoints;
 
-namespace ServiceStack.CacheAccess.Providers
+namespace ServiceStack
 {
 	public static class CacheClientExtensions
 	{

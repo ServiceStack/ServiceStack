@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using ServiceStack.Common.Extensions;
+using ServiceStack.Common;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
@@ -16,7 +16,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 		//Localhost and LocalSubnet is always included with the Internal flag
 		private const int EndpointAttributeCount = 17;
-		private static readonly List<EndpointAttributes> AllAttributes = (EndpointAttributeCount).Times().ConvertAll<EndpointAttributes>(x => (EndpointAttributes)(1 << (int)x));
+        private static readonly List<EndpointAttributes> AllAttributes = (EndpointAttributeCount).Times().Map<EndpointAttributes>(x => (EndpointAttributes)(1 << (int)x));
 
 		TestAppHost appHost;
 

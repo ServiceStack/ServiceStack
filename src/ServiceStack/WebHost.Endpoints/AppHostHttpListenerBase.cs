@@ -2,8 +2,8 @@ using System;
 using System.Net;
 using System.Reflection;
 using ServiceStack.Common.Utils;
-using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
+using ServiceStack.WebHost.Endpoints.Wrappers;
 
 namespace ServiceStack.WebHost.Endpoints
 {

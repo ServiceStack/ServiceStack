@@ -10,8 +10,6 @@ using System;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
-using ServiceStack.WebHost.Endpoints.Extensions;
-using HttpResponseExtensions = ServiceStack.WebHost.Endpoints.Extensions.HttpResponseExtensions;
 
 namespace ServiceStack.ServiceInterface.Auth
 {

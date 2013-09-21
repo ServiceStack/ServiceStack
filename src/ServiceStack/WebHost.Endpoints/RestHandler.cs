@@ -5,8 +5,8 @@ using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
+using ServiceStack.WebHost.Endpoints.Wrappers;
 
 namespace ServiceStack.WebHost.Endpoints
 {

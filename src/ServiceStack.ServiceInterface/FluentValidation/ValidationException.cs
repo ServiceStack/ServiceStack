@@ -16,7 +16,7 @@
 // The latest version of this file can be found at http://www.codeplex.com/FluentValidation
 #endregion
 
-using ServiceStack.Common.Extensions;
+using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Validation;
@@ -43,7 +43,7 @@ namespace ServiceStack.FluentValidation
 
         public ResponseStatus ToResponseStatus()
         {
-            var errors = Errors.ConvertAll(x =>
+            var errors = Errors.Map(x =>
                 new ValidationErrorField(x.ErrorCode, x.PropertyName, x.ErrorMessage));
 
             var responseStatus = ResponseStatusUtils.CreateResponseStatus(typeof(ValidationException).Name, Message, errors);

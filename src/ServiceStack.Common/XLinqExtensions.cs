@@ -5,9 +5,9 @@
 // Authors:
 //   Demis Bellot (demis.bellot@gmail.com)
 //
-// Copyright 2012 ServiceStack
+// Copyright 2013 ServiceStack.
 //
-// Licensed under the new BSD license.
+// Licensed under the same terms of reddis and ServiceStack: new BSD license.
 //
 
 using System;
@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace ServiceStack.ServiceModel
+namespace ServiceStack.Common
 {
     public static class XLinqExtensions
     {
@@ -28,6 +28,15 @@ namespace ServiceStack.ServiceModel
         {
             var attr = AnyAttribute(element, name);
             return attr == null ? null : GetAttributeValueOrDefault(attr, name, x => x.Value);
+        }
+
+        public static T GetAttributeValueOrDefault<T>(this XAttribute attr, string name, Func<XAttribute, T> converter)
+        {
+            if (converter == null)
+            {
+                throw new ArgumentNullException("converter");
+            }
+            return attr == null || string.IsNullOrEmpty(attr.Value) ? default(T) : converter(attr);
         }
 
         public static bool GetBool(this XElement el, string name)
@@ -172,25 +181,6 @@ namespace ServiceStack.ServiceModel
             return element.AnyElement(name);
         }
 
-        public static T GetAttributeValueOrDefault<T>(this XAttribute attr, string name, Func<XAttribute, T> converter)
-        {
-            if (converter == null)
-            {
-                throw new ArgumentNullException("converter");
-            }
-            return attr == null || string.IsNullOrEmpty(attr.Value) ? default(T) : converter(attr);
-        }
-
-        public static void AssertExactlyOneResult(this XElement queryListItems, string referenceNumber, string formType)
-        {
-            int count = Convert.ToInt32(queryListItems.AnyAttribute("ItemCount").Value);
-            if (count == 0)
-                throw new InvalidOperationException(string.Format("There is no {0} for with a deal reference number {1}", formType, referenceNumber));
-            if (count > 1)
-                throw new InvalidOperationException(
-                    string.Format("There are more than one {0}s with deal reference number {1}", formType, referenceNumber));
-        }
-
         public static void AssertElementHasValue(this XElement element, string name)
         {
             if (element == null)
@@ -292,7 +282,7 @@ namespace ServiceStack.ServiceModel
             }
             return null;
         }
-    }
 
+    }
 }
 #endif

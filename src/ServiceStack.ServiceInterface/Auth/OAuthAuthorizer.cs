@@ -35,6 +35,7 @@ using System.Text;
 using System.Net;
 using System.Web;
 using System.Security.Cryptography;
+using ServiceStack.Common;
 using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 

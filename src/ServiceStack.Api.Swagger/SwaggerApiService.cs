@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using ServiceStack.Common;
-using ServiceStack.Common.Extensions;
+using ServiceStack.Common;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
 

@@ -1,8 +1,12 @@
+//Copyright (c) Service Stack LLC. All Rights Reserved.
+//License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
 using System;
 using System.IO;
 using System.Net;
 using System.Web;
 using System.Collections.Generic;
+using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
@@ -10,12 +14,13 @@ using ServiceStack.Service;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints;
 
-namespace ServiceStack.WebHost.Endpoints.Extensions
+namespace ServiceStack
 {
-    public static class HttpResponseExtensions
+    public static class HttpResponseExtensionsInternal
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(HttpResponseExtensions));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(HttpResponseExtensionsInternal));
 
         public static bool WriteToOutputStream(IHttpResponse response, object result, byte[] bodyPrefix, byte[] bodySuffix)
         {
@@ -389,18 +394,6 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
             {
                 httpRes.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
             }
-        }
-
-        [Obsolete("Use EndRequest extension method")]
-        public static void EndServiceStackRequest(this HttpResponse httpRes, bool skipHeaders = false)
-        {
-            httpRes.EndRequest(skipHeaders);
-        }
-
-        [Obsolete("Use EndRequest extension method")]
-        public static void EndServiceStackRequest(this IHttpResponse httpRes, bool skipHeaders = false)
-        {
-            httpRes.EndRequest(skipHeaders);
         }
 
     }

@@ -10,6 +10,7 @@ using System.Web;
 using System.Web.Configuration;
 using System.Xml.Linq;
 using MarkdownSharp;
+using ServiceStack.Common;
 using ServiceStack.Common.ServiceModel;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
@@ -20,7 +21,6 @@ using ServiceStack.Markdown;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints

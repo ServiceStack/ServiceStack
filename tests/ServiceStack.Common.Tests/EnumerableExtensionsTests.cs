@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using ServiceStack.Common.Extensions;
+using ServiceStack.Common;
 using System.Linq;
 using ServiceStack.Text;
 

@@ -14,10 +14,10 @@ using ServiceStack.MiniProfiler;
 using ServiceStack.ServiceHost;
 using ServiceStack.VirtualPath;
 using ServiceStack.ServiceModel.Serialization;
-using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Formats;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Utils;
+using ServiceStack.WebHost.Endpoints.Wrappers;
 
 namespace ServiceStack.WebHost.Endpoints
 {

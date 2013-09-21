@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using ServiceStack.Common;
 
 namespace ServiceStack.ServiceModel.Serialization
 {

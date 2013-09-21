@@ -9,7 +9,6 @@ using ServiceStack.IO;
 using ServiceStack.ServiceHost;
 using ServiceStack.VirtualPath;
 using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.ServiceInterface.Testing
 {

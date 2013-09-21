@@ -1,6 +1,7 @@
 ﻿#if !SILVERLIGHT 
 using System;
 using System.Collections.Generic;
+using ServiceStack.Common;
 using ServiceStack.Messaging;
 using System.Net.Sockets;
 using System.Text;

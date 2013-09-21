@@ -30,7 +30,7 @@ namespace ServiceStack.ServiceHost.Tests
 	{
 		public string ResolvePath(string mode, string path)
 		{
-			return WebHost.Endpoints.Extensions.HttpRequestExtensions.
+			return HttpRequestExtensions.
 				GetPathInfo(path, mode, path.Split('/').First(x => x != ""));
 		}
 
@@ -89,10 +89,10 @@ namespace ServiceStack.ServiceHost.Tests
 		public void Can_resolve_paths_with_multipart_root()
 		{
 			var results = new List<string> {
-				WebHost.Endpoints.Extensions.HttpRequestExtensions.GetPathInfo("/api/foo/metadata", "api/foo", "api"),
-				WebHost.Endpoints.Extensions.HttpRequestExtensions.GetPathInfo("/api/foo/1.0/wildcard/metadata", "api/foo/1.0/wildcard", "api"),
-				WebHost.Endpoints.Extensions.HttpRequestExtensions.GetPathInfo("/location.api.wildcard35/api/foo/metadata", "api/foo", "api"),
-				WebHost.Endpoints.Extensions.HttpRequestExtensions.GetPathInfo("/this/is/very/nested/metadata", "this/is/very/nested", "api"),
+				HttpRequestExtensions.GetPathInfo("/api/foo/metadata", "api/foo", "api"),
+				HttpRequestExtensions.GetPathInfo("/api/foo/1.0/wildcard/metadata", "api/foo/1.0/wildcard", "api"),
+				HttpRequestExtensions.GetPathInfo("/location.api.wildcard35/api/foo/metadata", "api/foo", "api"),
+				HttpRequestExtensions.GetPathInfo("/this/is/very/nested/metadata", "this/is/very/nested", "api"),
 			};
 
 			Console.WriteLine(results.Dump());

@@ -6,6 +6,7 @@ using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using ServiceStack.Common;
 
 namespace ServiceStack.Messaging.Rcon
 {

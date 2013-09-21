@@ -1,20 +1,20 @@
 ﻿using ServiceStack.Common.Web;
 using ServiceStack.Net30.Collections.Concurrent;
+using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using System;
-#if NETFX_CORE
-using System.Collections.Concurrent;
-#endif
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
+#if NETFX_CORE
+using System.Collections.Concurrent;
+#endif
 
-namespace ServiceStack.ServiceClient.Web
+namespace ServiceStack.Common
 {
     /// <summary>
     /// Donated by Ivan Korneliuk from his post:
@@ -194,7 +194,7 @@ namespace ServiceStack.ServiceClient.Web
         private const char VariablePostfixChar = '}';
 
         private readonly IDictionary<string, RouteMember> queryProperties;
-        private readonly IDictionary<string, RouteMember> variablesMap = new Dictionary<string, RouteMember>(StringExtensions.InvariantComparerIgnoreCase());
+        private readonly IDictionary<string, RouteMember> variablesMap = new Dictionary<string, RouteMember>(Text.StringExtensions.InvariantComparerIgnoreCase());
 
 	    public RestRoute(Type type, string path, string verbs)
         {
@@ -306,7 +306,7 @@ namespace ServiceStack.ServiceClient.Web
 
         internal static IDictionary<string, RouteMember> GetQueryProperties(Type requestType)
         {
-            var result = new Dictionary<string, RouteMember>(StringExtensions.InvariantComparerIgnoreCase()); 
+            var result = new Dictionary<string, RouteMember>(Text.StringExtensions.InvariantComparerIgnoreCase()); 
             var hasDataContract = requestType.HasAttr<DataContractAttribute>();
 
             foreach (var propertyInfo in requestType.GetPublicProperties())
@@ -329,7 +329,7 @@ namespace ServiceStack.ServiceClient.Web
                     if (propertyInfo.IsDefined(typeof(IgnoreDataMemberAttribute), true)) continue;
                 }
 
-                result[propertyName.ToCamelCase()] = new PropertyRouteMember(propertyInfo);
+                result[Text.StringExtensions.ToCamelCase(propertyName)] = new PropertyRouteMember(propertyInfo);
             }
 
 			if (JsConfig.IncludePublicFields)
@@ -340,7 +340,7 @@ namespace ServiceStack.ServiceClient.Web
 
 					if (fieldInfo.IsDefined(typeof(IgnoreDataMemberAttribute), true)) continue;
 
-					result[fieldName.ToCamelCase()] = new FieldRouteMember(fieldInfo);
+					result[Text.StringExtensions.ToCamelCase(fieldName)] = new FieldRouteMember(fieldInfo);
 				}
 
 			}

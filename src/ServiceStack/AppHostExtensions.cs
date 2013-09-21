@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Funq;
-using ServiceStack.Common.Utils;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints;
 
-namespace ServiceStack.WebHost.Endpoints
+namespace ServiceStack
 {
 	public static class AppHostExtensions
 	{

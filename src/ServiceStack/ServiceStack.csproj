@@ -109,7 +109,7 @@
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="CacheAccess.Providers\BasicPersistenceProviderCacheBase.cs" />
-    <Compile Include="CacheAccess.Providers\CacheClientExtensions.cs" />
+    <Compile Include="CacheClientExtensions.cs" />
     <Compile Include="CacheAccess.Providers\FileAndCacheTextManager.cs" />
     <Compile Include="CacheAccess.Providers\FileSystemXmlCacheClient.cs" />
     <Compile Include="CacheAccess.Providers\MemoryCacheClient.cs" />
@@ -187,7 +187,7 @@
     </Compile>
     <Compile Include="MetadataFeature.cs" />
     <Compile Include="RequestInfoFeature.cs" />
-    <Compile Include="ServiceHost\ContainerTypeExtensions.cs" />
+    <Compile Include="ContainerTypeExtensions.cs" />
     <Compile Include="Funq\Func.cs" />
     <Compile Include="Funq\IFluentInterface.cs" />
     <Compile Include="Funq\IFunqlet.cs" />
@@ -259,7 +259,7 @@
     <Compile Include="VirtualPath\InMemoryVirtualPathProvider.cs" />
     <Compile Include="VirtualPath\VirtualPathExtension.cs" />
     <Compile Include="WebHost.Endpoints\ActionContext.cs" />
-    <Compile Include="WebHost.Endpoints\AppHostExtensions.cs" />
+    <Compile Include="AppHostExtensions.cs" />
     <Compile Include="Html\CachedExpressionCompiler.cs" />
     <Compile Include="Html\DynamicTypeGenerator.cs" />
     <Compile Include="Html\ExpressionHelper.cs" />
@@ -281,14 +281,14 @@
     <Compile Include="Html\ViewDataInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs" />
     <Compile Include="Html\ITemplatePage.cs" />
-    <Compile Include="ServiceHost\FileExtensions.cs" />
+    <Compile Include="FileExtensions.cs" />
     <Compile Include="ServiceHost\HttpFile.cs" />
     <Compile Include="ServiceHost\HttpRequestAuthentication.cs" />
     <Compile Include="ServiceHost\HttpRequestContext.cs" />
-    <Compile Include="ServiceHost\HttpRequestExtensions.cs" />
-    <Compile Include="ServiceHost\HttpResponseExtensions.cs" />
+    <Compile Include="HttpRequestExtensions.cs" />
+    <Compile Include="HttpResponseExtensions.cs" />
     <Compile Include="ServiceHost\RequestAttributes.cs" />
-    <Compile Include="ServiceHost\RequestContextExtensions.cs" />
+    <Compile Include="RequestContextExtensions.cs" />
     <Compile Include="ServiceHost\RestPath.cs" />
     <Compile Include="ServiceHost\ServiceController.cs" />
     <Compile Include="ServiceHost\ServiceControllerReflection.cs" />
@@ -299,10 +299,9 @@
     <Compile Include="ServiceHost\ServiceRoutes.cs" />
     <Compile Include="WebHost.Endpoints\AppHostBase.cs" />
     <Compile Include="WebHost.Endpoints\AppHostHttpListenerLongRunningBase.cs" />
-    <Compile Include="WebHost.Endpoints\Extensions\HttpListenerRequestWrapper.Mono.cs" />
-    <Compile Include="WebHost.Endpoints\Extensions\HttpResponseStreamExtensions.cs" />
+    <Compile Include="WebHost.Endpoints\Wrappers\HttpListenerRequestWrapper.Mono.cs" />
     <Compile Include="WebHost.Endpoints\Formats\CsvFormat.cs" />
-    <Compile Include="WebHost.Endpoints\Extensions\HttpListenerRequestWrapper.cs" />
+    <Compile Include="WebHost.Endpoints\Wrappers\HttpListenerRequestWrapper.cs" />
     <Compile Include="WebHost.Endpoints\AppDelegates.cs" />
     <Compile Include="WebHost.Endpoints\ActionHandler.cs" />
     <Compile Include="WebHost.Endpoints\Support\Templates\HtmlTemplates.cs" />
@@ -321,7 +320,7 @@
     <Compile Include="WebHost.Endpoints\Formats\HtmlFormat.cs" />
     <Compile Include="WebHost.Endpoints\Metadata\CustomMetadataHandler.cs" />
     <Compile Include="WebHost.Endpoints\RestHandler.cs" />
-    <Compile Include="WebHost.Endpoints\Extensions\HttpRequestWrapper.cs" />
+    <Compile Include="WebHost.Endpoints\Wrappers\HttpRequestWrapper.cs" />
     <Compile Include="WebHost.Endpoints\Ext\AllFilesHandler.cs" />
     <Compile Include="WebHost.Endpoints\HttpWebRequestConfig.cs" />
     <Compile Include="WebHost.Endpoints\Metadata\JsvMetadataHandler.cs" />
@@ -333,10 +332,9 @@
     <Compile Include="WebHost.Endpoints\Support\IServiceStackHttpHandler.cs" />
     <Compile Include="WebHost.Endpoints\Support\NotFoundHttpHandler.cs" />
     <Compile Include="WebHost.Endpoints\JsvSyncReplyHandler.cs" />
-    <Compile Include="WebHost.Endpoints\Extensions\IHttpResponseExtensions.cs" />
-    <Compile Include="WebHost.Endpoints\Extensions\HttpListenerResponseWrapper.cs" />
-    <Compile Include="WebHost.Endpoints\Extensions\HttpRequestExtensions.cs" />
-    <Compile Include="WebHost.Endpoints\Extensions\HttpResponseWrapper.cs" />
+    <Compile Include="HttpResponseExtensionsInternal.cs" />
+    <Compile Include="WebHost.Endpoints\Wrappers\HttpListenerResponseWrapper.cs" />
+    <Compile Include="WebHost.Endpoints\Wrappers\HttpResponseWrapper.cs" />
     <Compile Include="WebHost.Endpoints\MetadataConfig.cs" />
     <Compile Include="WebHost.Endpoints\ServiceStackHttpHandlerFactory.cs" />
     <Compile Include="WebHost.Endpoints\Soap11Handlers.cs" />

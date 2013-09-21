@@ -38,9 +38,8 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Web;
-using ServiceStack.Text;
 
-namespace ServiceStack.WebHost.Endpoints.Extensions
+namespace ServiceStack.WebHost.Endpoints.Wrappers
 {
     public partial class HttpListenerRequestWrapper 
     {

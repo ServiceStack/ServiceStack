@@ -1,11 +1,11 @@
 using System;
 using ServiceStack.CacheAccess;
-using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common;
+using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.Common.Web;
 
-namespace ServiceStack.ServiceHost
+namespace ServiceStack
 {
 	public static class RequestContextExtensions
 	{

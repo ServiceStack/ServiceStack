@@ -3,7 +3,6 @@ using NUnit.Framework;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Testing;
-using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.Common.Tests
 {

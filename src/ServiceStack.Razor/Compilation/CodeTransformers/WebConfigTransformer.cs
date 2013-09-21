@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using ServiceStack.Common.Extensions;
+using ServiceStack.Common;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Razor.Compilation.CodeTransformers
@@ -20,7 +20,7 @@ namespace ServiceStack.Razor.Compilation.CodeTransformers
             //read the base type here from the web.config here
 
             EndpointHostConfig.RazorNamespaces
-                              .ForEach(ns => razorHost.NamespaceImports.Add(ns));
+                              .Each(ns => razorHost.NamespaceImports.Add(ns));
 
             base.Initialize(razorHost, directives);
         }

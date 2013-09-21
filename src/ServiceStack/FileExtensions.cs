@@ -1,12 +1,12 @@
-using System;
 using System.IO;
 using System.Web;
 using ServiceStack.Common.Utils;
+using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Support;
 
-namespace ServiceStack.ServiceHost
+namespace ServiceStack
 {
 	public static class FileExtensions
 	{

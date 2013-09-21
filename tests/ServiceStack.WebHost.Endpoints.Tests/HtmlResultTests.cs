@@ -4,9 +4,9 @@ using Moq;
 using NUnit.Framework;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceInterface.Testing;
-using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Tests.Mocks;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
+using ServiceStack.WebHost.Endpoints.Wrappers;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

@@ -1,7 +1,7 @@
 ﻿using ServiceStack.FluentValidation.Results;
 using ServiceStack.Validation;
 
-namespace ServiceStack.ServiceInterface.Validation
+namespace ServiceStack.ServiceInterface
 {
     public static class ValidationResultExtensions
     {

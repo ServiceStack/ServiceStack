@@ -1,14 +1,12 @@
-#if !SILVERLIGHT 
+#if !SILVERLIGHT
 using System;
 using System.IO;
 using System.Net;
-using System.Text;
-using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 
-namespace ServiceStack.ServiceClient.Web
+namespace ServiceStack.Common
 {
     public static class WebRequestExtensions
     {
@@ -20,14 +18,6 @@ namespace ServiceStack.ServiceClient.Web
             using (var reader = new StreamReader(stream))
             {
                 return reader.ReadToEnd();
-            }
-        }
-
-        public static byte[] DownloadBinary(this WebResponse webRes)
-        {
-            using (var stream = webRes.GetResponseStream())
-            {
-                return stream.ReadFully();
             }
         }
 

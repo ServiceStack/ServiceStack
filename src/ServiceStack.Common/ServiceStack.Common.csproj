@@ -156,7 +156,7 @@
     <Compile Include="Messaging\InMemoryTransientMessageService.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Messaging\MessageExtensions.cs">
+    <Compile Include="MessageExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Messaging\MessageHandler.cs">
@@ -223,9 +223,6 @@
     <Compile Include="ServiceClient.Web\AuthDtos.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\DictionaryExtensions.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="ServiceClient.Web\GenericProxy.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -268,11 +265,11 @@
     <Compile Include="ServiceClient.Web\Soap12ServiceClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\UrlExtensions.cs" />
+    <Compile Include="UrlExtensions.cs" />
     <Compile Include="ServiceClient.Web\WcfServiceClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\WebRequestExtensions.cs">
+    <Compile Include="WebRequestExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ServiceClient.Web\WebRequestUtils.cs">
@@ -281,16 +278,10 @@
     <Compile Include="ServiceClient.Web\WebServiceException.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\XLinqExtensions.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="ServiceClient.Web\XmlRestClientAsync.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ServiceClient.Web\XmlServiceClient.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ServiceModel\DictionaryExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ServiceModel\Serialization\DataContractDeserializer.cs">
@@ -329,7 +320,7 @@
     <Compile Include="ServiceModel\Validation\ValidationErrorResult.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceModel\XLinqExtensions.cs">
+    <Compile Include="XLinqExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="StreamExtensions.cs">
@@ -430,7 +421,7 @@
     <Compile Include="Web\HttpResult.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Web\HttpResultExtensions.cs" />
+    <Compile Include="HttpResultExtensions.cs" />
     <Compile Include="Web\MimeTypes.cs">
       <SubType>Code</SubType>
     </Compile>

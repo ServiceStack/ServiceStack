@@ -249,7 +249,7 @@
     <Compile Include="FluentValidation\ValidationErrors.cs" />
     <Compile Include="Validation\ValidationFilters.cs" />
     <Compile Include="Validation\ValidationFeature.cs" />
-    <Compile Include="Validation\ValidationResultExtensions.cs" />
+    <Compile Include="ValidationResultExtensions.cs" />
     <Compile Include="Validation\ValidatorCache.cs" />
   </ItemGroup>
   <ItemGroup>

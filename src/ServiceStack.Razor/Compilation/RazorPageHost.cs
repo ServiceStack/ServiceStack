@@ -12,7 +12,7 @@ using System.Web.Razor.Generator;
 using System.Web.Razor.Parser;
 using System.Web.Razor.Parser.SyntaxTree;
 using System.Web.Razor.Text;
-using ServiceStack.Common.Extensions;
+using ServiceStack.Common;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Html;
 using ServiceStack.IO;
@@ -192,7 +192,7 @@ namespace ServiceStack.Razor.Compilation
             var tempFilesMarkedForDeletion = new TempFileCollection(null); 
             @params.TempFiles
                    .OfType<string>()
-                   .ForEach(file => tempFilesMarkedForDeletion.AddFile(file, false));
+                   .Each(file => tempFilesMarkedForDeletion.AddFile(file, false));
 
             using (tempFilesMarkedForDeletion)
             {

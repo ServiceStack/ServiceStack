@@ -14,8 +14,8 @@ using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.ServiceModel.Support;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Utils;
-using HttpRequestWrapper = ServiceStack.WebHost.Endpoints.Extensions.HttpRequestWrapper;
-using HttpResponseWrapper = ServiceStack.WebHost.Endpoints.Extensions.HttpResponseWrapper;
+using HttpRequestWrapper = ServiceStack.WebHost.Endpoints.Wrappers.HttpRequestWrapper;
+using HttpResponseWrapper = ServiceStack.WebHost.Endpoints.Wrappers.HttpResponseWrapper;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {

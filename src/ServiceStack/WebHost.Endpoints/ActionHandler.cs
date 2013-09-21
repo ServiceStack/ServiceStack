@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Web;
 using ServiceStack.ServiceHost;
-using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
+using ServiceStack.WebHost.Endpoints.Wrappers;
 
 namespace ServiceStack.WebHost.Endpoints
 {

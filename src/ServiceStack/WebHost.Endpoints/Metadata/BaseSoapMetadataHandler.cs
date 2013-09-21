@@ -4,11 +4,11 @@ using System.Linq;
 using System.Web.UI;
 using System.Xml.Schema;
 using ServiceStack.ServiceHost;
-using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Support.Metadata;
 using ServiceStack.WebHost.Endpoints.Support.Metadata.Controls;
 using ServiceStack.WebHost.Endpoints.Utils;
+using ServiceStack.WebHost.Endpoints.Wrappers;
 
 namespace ServiceStack.WebHost.Endpoints.Metadata
 {

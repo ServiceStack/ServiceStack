@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Threading;
-using System.Linq;
+using ServiceStack.Messaging;
 using ServiceStack.Text;
 
-namespace ServiceStack.Messaging
+namespace ServiceStack.Common
 {
     public static class MessageExtensions
     {

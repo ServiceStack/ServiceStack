@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using NUnit.Framework;
+using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.Service;

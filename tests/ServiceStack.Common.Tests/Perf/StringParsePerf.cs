@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using ServiceStack.Common.Extensions;
+using ServiceStack.Common;
 using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests.Perf
@@ -73,7 +73,7 @@ namespace ServiceStack.Common.Tests.Perf
 		{
 			const string intValues = "[0,1,2,3,4,5,6,7,8,9]";
 			CompareMultipleRuns(
-				"intValues.Split(',').ConvertAll", () => SplitList(intValues).ConvertAll(x => int.Parse(x)),
+				"intValues.Split(',').ConvertAll", () => SplitList(intValues).Map(int.Parse),
 				"SCU.Parse<List<int>>", () => TypeSerializer.DeserializeFromString<List<int>>(intValues)
 			);
 		}
@@ -83,7 +83,7 @@ namespace ServiceStack.Common.Tests.Perf
 		{
 			const string longValues = "[0,1,2,3,4,5,6,7,8,9]";
 			CompareMultipleRuns(
-				"intValues.Split(',').ConvertAll", () => SplitList(longValues).ConvertAll(x => long.Parse(x)),
+                "intValues.Split(',').ConvertAll", () => SplitList(longValues).Map(long.Parse),
 				"SCU.Parse<List<long>>", () => TypeSerializer.DeserializeFromString<List<long>>(longValues)
 			);
 		}
@@ -103,7 +103,7 @@ namespace ServiceStack.Common.Tests.Perf
 		{
 			const string stringValues = "[1.1,2.2,3.3,4.4,5.5,6.6,7.7,8.8,9.9,0.1]";
 			CompareMultipleRuns(
-				".Split(',').ConvertAll(x => double.Parse(x))", () => SplitList(stringValues).ConvertAll(x => double.Parse(x)),
+                ".Split(',').ConvertAll(x => double.Parse(x))", () => SplitList(stringValues).Map(double.Parse),
 				"SCU.Parse<double[]>", () => TypeSerializer.DeserializeFromString<double[]>(stringValues)
 			);
 		}
@@ -113,7 +113,7 @@ namespace ServiceStack.Common.Tests.Perf
 		{
 			const string stringValues = "[8F403A5E-CDFC-4C6F-B0EB-C055C1C8BA60,5673BAC7-BAC5-4B3F-9B69-4180E6227508,B0CA730F-14C9-4D00-AC7F-07E7DE8D566E,4E26AF94-6B13-4F89-B192-36C6ABE73DAE,08491B16-2270-4DF9-8AEE-A8861A791C50]";
 			CompareMultipleRuns(
-				".Split(',').ConvertAll(x => new Guid(x))", () => SplitList(stringValues).ConvertAll(x => new Guid(x)),
+                ".Split(',').ConvertAll(x => new Guid(x))", () => SplitList(stringValues).Map(x => new Guid(x)),
 				"SCU.Parse<Guid[]>", () => TypeSerializer.DeserializeFromString<Guid[]>(stringValues)
 			);
 		}
@@ -133,7 +133,7 @@ namespace ServiceStack.Common.Tests.Perf
 		{
 			const string stringValues = "[1.1,2.2,3.3,4.4,5.5,6.6,7.7,8.8,9.9,0.1]";
 			CompareMultipleRuns(
-				".Split(',').ConvertAll(x => double.Parse(x))", () => SplitList(stringValues).ConvertAll(x => double.Parse(x)),
+                ".Split(',').ConvertAll(x => double.Parse(x))", () => SplitList(stringValues).Map(double.Parse),
 				"SCU.Parse<List<double>>", () => TypeSerializer.DeserializeFromString<List<double>>(stringValues)
 			);
 		}
@@ -143,7 +143,7 @@ namespace ServiceStack.Common.Tests.Perf
 		{
 			const string stringValues = "[8F403A5E-CDFC-4C6F-B0EB-C055C1C8BA60,5673BAC7-BAC5-4B3F-9B69-4180E6227508,B0CA730F-14C9-4D00-AC7F-07E7DE8D566E,4E26AF94-6B13-4F89-B192-36C6ABE73DAE,08491B16-2270-4DF9-8AEE-A8861A791C50]";
 			CompareMultipleRuns(
-				".Split(',').ConvertAll(x => new Guid(x))", () => SplitList(stringValues).ConvertAll(x => new Guid(x)),
+                ".Split(',').ConvertAll(x => new Guid(x))", () => SplitList(stringValues).Map(x => new Guid(x)),
 				"SCU.Parse<List<Guid>>", () => TypeSerializer.DeserializeFromString<List<Guid>>(stringValues)
 			);
 		}
@@ -163,7 +163,7 @@ namespace ServiceStack.Common.Tests.Perf
 		{
 			const string stringValues = "[0,1,2,3,4,5,6,7,8,9]";
 			CompareMultipleRuns(
-				"new HashSet<int>(.Split(',').ConvertAll(x => int.Parse(x))", () => new HashSet<int>(SplitList(stringValues).ConvertAll(x => int.Parse(x))),
+                "new HashSet<int>(.Split(',').ConvertAll(x => int.Parse(x))", () => new HashSet<int>(SplitList(stringValues).Map(int.Parse)),
 				"SCU.Parse<HashSet<int>>", () => TypeSerializer.DeserializeFromString<HashSet<int>>(stringValues)
 			);
 		}
@@ -173,7 +173,7 @@ namespace ServiceStack.Common.Tests.Perf
 		{
 			const string stringValues = "[1.1,2.2,3.3,4.4,5.5,6.6,7.7,8.8,9.9,0.1]";
 			CompareMultipleRuns(
-				"new HashSet<double>(.ConvertAll(x => double.Parse(x)))", () => new HashSet<double>(SplitList(stringValues).ConvertAll(x => double.Parse(x))),
+                "new HashSet<double>(.ConvertAll(x => double.Parse(x)))", () => new HashSet<double>(SplitList(stringValues).Map(double.Parse)),
 				"SCU.Parse<HashSet<double>>", () => TypeSerializer.DeserializeFromString<HashSet<double>>(stringValues)
 			);
 		}
@@ -184,7 +184,7 @@ namespace ServiceStack.Common.Tests.Perf
 			const string mapValues = "{A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:0}";
 			var map = new Dictionary<string, string>();
 			CompareMultipleRuns(
-				"mapValues.Split(',').ConvertAll", () => SplitList(mapValues).ConvertAll(x => x.Split(':')).ForEach(y => map[y[0].FromCsvField()] = y[1].FromCsvField()),
+                "mapValues.Split(',').ConvertAll", () => SplitList(mapValues).Map(x => x.Split(':')).ForEach(y => map[y[0].FromCsvField()] = y[1].FromCsvField()),
 				"SCU.Parse<Dictionary<string, string>>", () => TypeSerializer.DeserializeFromString<Dictionary<string, string>>(mapValues)
 			);
 		}
@@ -195,7 +195,7 @@ namespace ServiceStack.Common.Tests.Perf
 			const string mapValues = "{A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:0}";
 			var map = new Dictionary<string, int>();
 			CompareMultipleRuns(
-				"mapValues.Split(',').ConvertAll", () => SplitList(mapValues).ConvertAll(x => x.Split(':')).ForEach(y => map[y[0].FromCsvField()] = int.Parse(y[1])),
+                "mapValues.Split(',').ConvertAll", () => SplitList(mapValues).Map(x => x.Split(':')).ForEach(y => map[y[0].FromCsvField()] = int.Parse(y[1])),
 				"SCU.Parse<Dictionary<string, int>>", () => TypeSerializer.DeserializeFromString<Dictionary<string, int>>(mapValues)
 			);
 		}
@@ -206,7 +206,7 @@ namespace ServiceStack.Common.Tests.Perf
 			const string mapValues = "{A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:0}";
 			var map = new SortedDictionary<string, int>();
 			CompareMultipleRuns(
-				"mapValues.Split(',').ConvertAll", () => SplitList(mapValues).ConvertAll(x => x.Split(':')).ForEach(y => map[y[0].FromCsvField()] = int.Parse(y[1])),
+                "mapValues.Split(',').ConvertAll", () => SplitList(mapValues).Map(x => x.Split(':')).ForEach(y => map[y[0].FromCsvField()] = int.Parse(y[1])),
 				"SCU.Parse<Dictionary<string, int>>", () => TypeSerializer.DeserializeFromString<SortedDictionary<string, int>>(mapValues)
 			);
 		}

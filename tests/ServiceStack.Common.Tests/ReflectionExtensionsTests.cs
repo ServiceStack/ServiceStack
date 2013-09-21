@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using NUnit.Framework;
-using ServiceStack.Common.Extensions;
+using ServiceStack.Common;
 using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.Common.Tests
@@ -53,7 +53,7 @@ namespace ServiceStack.Common.Tests
 
 			AssertAreEqual(testA, fromTestA);
 
-			var userFileTypeValues = testA.FromUserFileTypes.ConvertAll(x => x.ToString());
+			var userFileTypeValues = testA.FromUserFileTypes.Map(x => x.ToString());
 			var testB = new TestClassB {
 				FromStringList = new List<string>(values),
 				ToStringList = new ArrayOfString(values),

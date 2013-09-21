@@ -4,7 +4,7 @@ using System.IO;
 using System.Net;
 using Funq;
 using NUnit.Framework;
-using ServiceStack.Common.Extensions;
+using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;

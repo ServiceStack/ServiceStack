@@ -7,6 +7,7 @@ using System.Net;
 using System.Runtime.Serialization;
 using System.Threading;
 using NUnit.Framework;
+using ServiceStack;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
