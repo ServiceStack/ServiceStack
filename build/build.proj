@@ -213,13 +213,14 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Common/lib/net35" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Common/lib/net35')" />
     <Copy SourceFiles="%(ServiceStackCommonFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Common/lib/net35" />
 
-      <!-- Silverlight -->
-      <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Common.SL5/ServiceStack.Common.SL5.csproj"
+    <!-- TODO re-add SL5 after re-factor -->
+    <!-- Silverlight -->
+      <!--<MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Common.SL5/ServiceStack.Common.SL5.csproj"
                Targets="Build"
                Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
       <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Common/lib/sl5" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Common/lib/sl5')" />
-      <Copy SourceFiles="%(ServiceStackCommonFilesSL5.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Common/lib/sl5" />
+      <Copy SourceFiles="%(ServiceStackCommonFilesSL5.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Common/lib/sl5" />-->
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Common/servicestack.common.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
