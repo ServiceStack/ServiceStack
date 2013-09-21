@@ -128,24 +128,6 @@
     <Compile Include="Expressions\DelegateFactory.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Extensions\ActionExecExtensions.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Extensions\AssertExtensions.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Extensions\ByteArrayExtensions.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Extensions\CollectionExtensions.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Extensions\DictionaryExtensions.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Extensions\EnumerableExtensions.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Extensions\IntExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -465,7 +447,6 @@
     <Compile Include="Web\SerializationContext.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Extensions\CustomExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
