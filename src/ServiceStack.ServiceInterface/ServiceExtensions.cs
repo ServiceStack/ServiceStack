@@ -14,57 +14,6 @@ namespace ServiceStack.ServiceInterface
 {
     public static class ServiceExtensions
     {
-        public static string AddQueryParam(this string url, string key, object val, bool encode = true)
-        {
-            return url.AddQueryParam(key, val.ToString(), encode);
-        }
-
-        public static string AddQueryParam(this string url, object key, string val, bool encode = true)
-        {
-            return AddQueryParam(url, (key ?? "").ToString(), val, encode);
-        }
-
-        public static string AddQueryParam(this string url, string key, string val, bool encode = true)
-        {
-            if (string.IsNullOrEmpty(url)) return null;
-            var prefix = url.IndexOf('?') == -1 ? "?" : "&";
-            return url + prefix + key + "=" + (encode ? val.UrlEncode() : val);
-        }
-
-        public static string SetQueryParam(this string url, string key, string val)
-        {
-            if (string.IsNullOrEmpty(url)) return null;
-            var qsPos = url.IndexOf('?');
-            if (qsPos != -1)
-            {
-                var existingKeyPos = url.IndexOf(key, qsPos, StringComparison.InvariantCulture);
-                if (existingKeyPos != -1)
-                {
-                    var endPos = url.IndexOf('&', existingKeyPos);
-                    if (endPos == -1) endPos = url.Length;
-
-                    var newUrl = url.Substring(0, existingKeyPos + key.Length + 1)
-                        + val.UrlEncode()
-                        + url.Substring(endPos);
-                    return newUrl;
-                }
-            }
-            var prefix = qsPos == -1 ? "?" : "&";
-            return url + prefix + key + "=" + val.UrlEncode();
-        }
-
-        public static string AddHashParam(this string url, string key, object val)
-        {
-            return url.AddHashParam(key, val.ToString());
-        }
-
-        public static string AddHashParam(this string url, string key, string val)
-        {
-            if (string.IsNullOrEmpty(url)) return null;
-            var prefix = url.IndexOf('#') == -1 ? "#" : "/";
-            return url + prefix + key + "=" + val.UrlEncode();
-        }
-
         public static IHttpResult Redirect(this IServiceBase service, string url)
         {
             return service.Redirect(url, "Moved Temporarily");
