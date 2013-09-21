@@ -445,8 +445,8 @@ namespace ServiceStack.ServiceInterface.Testing
             var httpHandler = GetHandler(httpMethod, pathInfo);
 
             var contentType = (formData != null && formData.Count > 0)
-                ? ContentType.FormUrlEncoded
-                : requestBody != null ? ContentType.Json : null;
+                ? MimeTypes.FormUrlEncoded
+                : requestBody != null ? MimeTypes.Json : null;
 
             var httpReq = new MockHttpRequest(
                     httpHandler.RequestName, httpMethod, contentType,
@@ -524,8 +524,8 @@ namespace ServiceStack.ServiceInterface.Testing
             var httpHandler = GetHandler(httpMethod, pathInfo);
 
             var contentType = (formData != null && formData.Count > 0)
-                ? ContentType.FormUrlEncoded
-                : requestBody != null ? ContentType.Json : null;
+                ? MimeTypes.FormUrlEncoded
+                : requestBody != null ? MimeTypes.Json : null;
 
             var httpReq = new MockHttpRequest(
                     httpHandler.RequestName, httpMethod, contentType,

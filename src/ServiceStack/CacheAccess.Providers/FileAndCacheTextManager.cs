@@ -4,8 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using ServiceStack.Common;
-using ServiceStack.Common;
 using ServiceStack.Common.Web;
+using ServiceStack.Text;
 
 namespace ServiceStack.CacheAccess.Providers
 {

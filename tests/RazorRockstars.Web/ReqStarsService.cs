@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Runtime.Serialization;
-using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
@@ -21,7 +18,6 @@ using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Cors;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints;
 
 namespace RazorRockstars.Web
 {
@@ -370,7 +366,7 @@ namespace RazorRockstars.Web
         [Test]
         public void Can_GET_AllReqstars_View()
         {
-            var html = "{0}/reqstars".Fmt(Host).GetStringFromUrl(acceptContentType: "text/html");
+            var html = "{0}/reqstars".Fmt(Host).GetStringFromUrl(accept: "text/html");
             html.Print();
             Assert.That(html, Is.StringContaining("<!--view:AllReqstars.cshtml-->"));
             Assert.That(html, Is.StringContaining("<!--template:HtmlReport.cshtml-->"));
@@ -502,7 +498,7 @@ namespace RazorRockstars.Web
         [Test]
         public void Can_GET_GetReqstar_View()
         {
-            var html = "{0}/reqstars/1".Fmt(Host).GetStringFromUrl(acceptContentType: "text/html");
+            var html = "{0}/reqstars/1".Fmt(Host).GetStringFromUrl(accept: "text/html");
             html.Print();
             Assert.That(html, Is.StringContaining("<!--view:GetReqstar.cshtml-->"));
             Assert.That(html, Is.StringContaining("<!--template:HtmlReport.cshtml-->"));

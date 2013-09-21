@@ -202,7 +202,7 @@ namespace ServiceStack.WebHost.Endpoints
                         sb.AppendLine("}");
 
                         context.Response.StatusCode = 500;
-                        context.Response.ContentType = ContentType.Json;
+                        context.Response.ContentType = MimeTypes.Json;
                         byte[] sbBytes = sb.ToString().ToUtf8Bytes();
                         context.Response.OutputStream.Write(sbBytes, 0, sbBytes.Length);
                         context.Response.Close();

@@ -10,6 +10,7 @@ using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Mocks;
 using ServiceStack.WebHost.Endpoints.Wrappers;
 using DataContractSerializer = ServiceStack.ServiceModel.Serialization.DataContractSerializer;

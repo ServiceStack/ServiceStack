@@ -12,6 +12,7 @@ using ServiceStack.IO;
 using ServiceStack.Messaging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.WebHost.Endpoints.Formats;
@@ -239,7 +240,7 @@ namespace ServiceStack.WebHost.Endpoints
             if (!String.IsNullOrEmpty(specifiedContentType))
                 config.DefaultContentType = specifiedContentType;
             else if (String.IsNullOrEmpty(config.DefaultContentType))
-                config.DefaultContentType = ContentType.Json;
+                config.DefaultContentType = MimeTypes.Json;
 
             config.ServiceManager.AfterInit();
             ServiceManager = config.ServiceManager; //reset operations

@@ -253,7 +253,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
             var requestOperationName = GetAction(contentType);
             return requestOperationName != null
                     ? contentType.Replace(requestOperationName, requestOperationName + "Response")
-                    : (this.HandlerAttributes == EndpointAttributes.Soap11 ? ContentType.Soap11 : ContentType.Soap12);
+                    : (this.HandlerAttributes == EndpointAttributes.Soap11 ? MimeTypes.Soap11 : MimeTypes.Soap12);
         }
 
         public override object CreateRequest(IHttpRequest request, string operationName)

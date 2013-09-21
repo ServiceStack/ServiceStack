@@ -14,8 +14,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
         {
             set
             {
-                this.ContentType = Common.Web.ContentType.ToContentType(value);
-                this.ContentFormat = Common.Web.ContentType.GetContentFormat(value);
+                this.ContentType = Common.Web.ContentFormat.ToContentType(value);
+                this.ContentFormat = Common.Web.ContentFormat.GetContentFormat(value);
             }
         }
 

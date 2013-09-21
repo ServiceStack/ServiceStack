@@ -582,7 +582,7 @@ namespace RazorRockstars.Console.Files
         [Test]
         public void Can_GET_AllReqstars_View()
         {
-            var html = "{0}/reqstars".Fmt(Host).GetStringFromUrl(acceptContentType: "text/html");
+            var html = "{0}/reqstars".Fmt(Host).GetStringFromUrl(accept: "text/html");
             html.Print();
             Assert.That(html, Is.StringContaining("<!--view:AllReqstars.cshtml-->"));
             Assert.That(html, Is.StringContaining("<!--template:HtmlReport.cshtml-->"));
@@ -714,7 +714,7 @@ namespace RazorRockstars.Console.Files
         [Test]
         public void Can_GET_GetReqstar_View()
         {
-            var html = "{0}/reqstars/1".Fmt(Host).GetStringFromUrl(acceptContentType: "text/html");
+            var html = "{0}/reqstars/1".Fmt(Host).GetStringFromUrl(accept: "text/html");
             html.Print();
             Assert.That(html, Is.StringContaining("<!--view:GetReqstar.cshtml-->"));
             Assert.That(html, Is.StringContaining("<!--template:HtmlReport.cshtml-->"));

@@ -88,7 +88,7 @@ namespace ServiceStack.ServiceInterface
         protected bool DoHtmlRedirectIfConfigured(IHttpRequest req, IHttpResponse res, bool includeRedirectParam = false)
         {
             var htmlRedirect = this.HtmlRedirect ?? AuthService.HtmlRedirect;
-            if (htmlRedirect != null && req.ResponseContentType.MatchesContentType(ContentType.Html))
+            if (htmlRedirect != null && req.ResponseContentType.MatchesContentType(MimeTypes.Html))
             {
                 var url = req.ResolveAbsoluteUrl(htmlRedirect);
                 if (includeRedirectParam)

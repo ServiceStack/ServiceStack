@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using ServiceStack.Service;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Web
 {

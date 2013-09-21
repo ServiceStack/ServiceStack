@@ -276,7 +276,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_override_global_exception_handling()
         {
             var req = (HttpWebRequest)WebRequest.Create(PredefinedJsonUrl<UncatchedException>());
-            var res = req.GetResponse().DownloadText();
+            var res = req.GetResponse().ReadToEnd();
             Assert.AreEqual("Exception ArgumentException", res);
         }
     }

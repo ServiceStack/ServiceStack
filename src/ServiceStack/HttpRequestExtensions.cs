@@ -522,7 +522,7 @@ namespace ServiceStack
         public static string GetQueryStringContentType(this IHttpRequest httpReq)
         {
             var callback = httpReq.QueryString["callback"];
-            if (!String.IsNullOrEmpty(callback)) return ContentType.Json;
+            if (!String.IsNullOrEmpty(callback)) return MimeTypes.Json;
 
             var format = httpReq.QueryString["format"];
             if (format == null)
@@ -536,9 +536,9 @@ namespace ServiceStack
             }
 
             format = format.SplitOnFirst('.')[0].ToLower();
-            if (format.Contains("json")) return ContentType.Json;
-            if (format.Contains("xml")) return ContentType.Xml;
-            if (format.Contains("jsv")) return ContentType.Jsv;
+            if (format.Contains("json")) return MimeTypes.Json;
+            if (format.Contains("xml")) return MimeTypes.Xml;
+            if (format.Contains("jsv")) return MimeTypes.Jsv;
 
             string contentType;
             EndpointHost.ContentTypeFilter.ContentTypeFormats.TryGetValue(format, out contentType);
@@ -547,7 +547,7 @@ namespace ServiceStack
         }
 
         public static string[] PreferredContentTypes = new[] {
-			ContentType.Html, ContentType.Json, ContentType.Xml, ContentType.Jsv
+			MimeTypes.Html, MimeTypes.Json, MimeTypes.Xml, MimeTypes.Jsv
 		};
 
         /// <summary>
@@ -574,7 +574,7 @@ namespace ServiceStack
 
             var acceptContentTypes = httpReq.AcceptTypes;
             var defaultContentType = httpReq.ContentType;
-            if (httpReq.HasAnyOfContentTypes(ContentType.FormUrlEncoded, ContentType.MultiPartFormData))
+            if (httpReq.HasAnyOfContentTypes(MimeTypes.FormUrlEncoded, MimeTypes.MultiPartFormData))
             {
                 defaultContentType = EndpointHost.Config.DefaultContentType;
             }

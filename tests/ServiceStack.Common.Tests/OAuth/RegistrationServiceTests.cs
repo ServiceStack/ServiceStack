@@ -5,6 +5,7 @@ using ServiceStack.FluentValidation;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Common.Tests.OAuth
@@ -172,7 +173,7 @@ namespace ServiceStack.Common.Tests.OAuth
 		[Test]
 		public void Registration_with_Html_ContentType_And_Continue_returns_302_with_Location()
 		{
-			var service = GetRegistrationService(null, null, ContentType.Html);
+            var service = GetRegistrationService(null, null, MimeTypes.Html);
 
 			var request = GetValidRegistration();
 			request.Continue = "http://localhost/home";
@@ -187,7 +188,7 @@ namespace ServiceStack.Common.Tests.OAuth
 		[Test]
 		public void Registration_with_EmptyString_Continue_returns_RegistrationResponse()
 		{
-			var service = GetRegistrationService(null, null, ContentType.Html);
+            var service = GetRegistrationService(null, null, MimeTypes.Html);
 
 			var request = GetValidRegistration();
 			request.Continue = string.Empty;
@@ -201,7 +202,7 @@ namespace ServiceStack.Common.Tests.OAuth
 		[Test]
 		public void Registration_with_Json_ContentType_And_Continue_returns_RegistrationResponse_with_ReferrerUrl()
 		{
-			var service = GetRegistrationService(null, null, ContentType.Json);
+            var service = GetRegistrationService(null, null, MimeTypes.Json);
 
 			var request = GetValidRegistration();
 			request.Continue = "http://localhost/home";

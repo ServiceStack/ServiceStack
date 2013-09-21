@@ -116,7 +116,7 @@ namespace ServiceStack.WebHost.Endpoints
 
         public override object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request)
         {
-            var requestContentType = ContentType.GetEndpointAttributes(httpReq.ResponseContentType);
+            var requestContentType = ContentFormat.GetEndpointAttributes(httpReq.ResponseContentType);
 
             return ExecuteService(request,
                 HandlerAttributes | requestContentType | httpReq.GetAttributes(), httpReq, httpRes);

@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Support.Mocks
 {
@@ -58,7 +59,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Mocks
 		private string responseContentType;
 		public string ResponseContentType
 		{
-			get { return responseContentType ?? this.ContentType ?? Common.Web.ContentType.Json; }
+            get { return responseContentType ?? this.ContentType ?? MimeTypes.Json; }
 			set { responseContentType = value; }
 		}
 

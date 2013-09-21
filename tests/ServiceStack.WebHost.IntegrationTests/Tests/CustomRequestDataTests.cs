@@ -1,9 +1,8 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Net;
-using System.Web;
 using NUnit.Framework;
 using ServiceStack.Common.Web;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
 {
@@ -18,7 +17,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		{
 			var webReq = (HttpWebRequest)WebRequest.Create(Config.ServiceStackBaseUri + "/customformdata?format=json");
 			webReq.Method = HttpMethods.Post;
-			webReq.ContentType = ContentType.FormUrlEncoded;
+            webReq.ContentType = MimeTypes.FormUrlEncoded;
 
 			try
 			{
@@ -26,14 +25,14 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 				{
 					sw.Write("&first-name=tom&item-0=blah&item-1-delete=1");
 				}
-				var response = new StreamReader(webReq.GetResponse().GetResponseStream()).ReadToEnd();
+				var response = webReq.GetResponse().ReadToEnd();
 
 				Assert.That(response, Is.EqualTo("{\"firstName\":\"tom\",\"item0\":\"blah\",\"item1Delete\":\"1\"}"));
 			}
 			catch (WebException webEx)
 			{
 				var errorWebResponse = ((HttpWebResponse)webEx.Response);
-				var errorResponse = new StreamReader(errorWebResponse.GetResponseStream()).ReadToEnd();
+                var errorResponse = errorWebResponse.ReadToEnd();
 
 				Assert.Fail(errorResponse);
 			}

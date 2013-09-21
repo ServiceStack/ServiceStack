@@ -1,12 +1,8 @@
-using System;
-using System.Text;
-using Moq;
 using NUnit.Framework;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Mocks;
-using ServiceStack.WebHost.Endpoints.Tests.Support;
-using ServiceStack.WebHost.Endpoints.Wrappers;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -23,7 +19,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 					"<html><head><meta http-equiv=\"refresh\" content=\"0;url={0}\"></head></html>",
 					url);
 
-				return new HttpResult(html, ContentType.Html) {
+                return new HttpResult(html, MimeTypes.Html)
+                {
 					Headers = { { "Location", url } },
 				};
 			}

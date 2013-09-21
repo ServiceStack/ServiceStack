@@ -1,4 +1,5 @@
 using ServiceStack.Common.Web;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -37,19 +38,19 @@ namespace ServiceStack.WebHost.Endpoints
         {
             switch (contentType)
             {
-                case ContentType.Soap11:
+                case MimeTypes.Soap11:
                     return this.Soap11;
-                case ContentType.Soap12:
+                case MimeTypes.Soap12:
                     return this.Soap12;
-                case ContentType.Xml:
+                case MimeTypes.Xml:
                     return this.Xml;
-                case ContentType.Json:
+                case MimeTypes.Json:
                     return this.Json;
-                case ContentType.Jsv:
+                case MimeTypes.Jsv:
                     return this.Jsv;
             }
 
-            var format = ContentType.GetContentFormat(contentType);
+            var format = ContentFormat.GetContentFormat(contentType);
             return Custom.Create(format);
         }
     }

@@ -72,7 +72,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
                 }
             }
 
-            var isFormData = httpReq.HasAnyOfContentTypes(ContentType.FormUrlEncoded, ContentType.MultiPartFormData);
+            var isFormData = httpReq.HasAnyOfContentTypes(MimeTypes.FormUrlEncoded, MimeTypes.MultiPartFormData);
             if (isFormData)
             {
                 try

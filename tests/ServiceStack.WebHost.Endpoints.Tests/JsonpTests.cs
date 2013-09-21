@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Net;
 using NUnit.Framework;
-using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -49,8 +48,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			webReq.Accept = "*/*";
 			using (var webRes = webReq.GetResponse())
 			{
-				Assert.That(webRes.ContentType, Is.StringStarting(ContentType.JavaScript));
-				response = webRes.DownloadText();
+                Assert.That(webRes.ContentType, Is.StringStarting(MimeTypes.JavaScript));
+				response = webRes.ReadToEnd();
 			}
 
 			Assert.That(response, Is.Not.Null, "No response received");

@@ -163,8 +163,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             webReq.Accept = "*/*";
             using (var webRes = webReq.GetResponse())
             {
-                Assert.That(webRes.ContentType, Is.StringStarting(ContentType.Json));
-                response = webRes.DownloadText();
+                Assert.That(webRes.ContentType, Is.StringStarting(MimeTypes.Json));
+                response = webRes.ReadToEnd();
             }
 
             Assert.That(response, Is.Not.Null, "No response received");

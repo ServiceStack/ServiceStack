@@ -41,11 +41,11 @@ namespace ServiceStack.Common.Web
         {
             //built-in formats
             if (format == "json")
-                return ContentType.Json;
+                return MimeTypes.Json;
             if (format == "xml")
-                return ContentType.Xml;
+                return MimeTypes.Xml;
             if (format == "jsv")
-                return ContentType.Jsv;
+                return MimeTypes.Jsv;
 
             string registeredFormats;
             ContentTypeFormats.TryGetValue(format, out registeredFormats);
@@ -96,7 +96,7 @@ namespace ServiceStack.Common.Web
 
             StreamSerializerDelegate responseStreamWriter;
             if (this.ContentTypeSerializers.TryGetValue(contentType, out responseStreamWriter) ||
-                this.ContentTypeSerializers.TryGetValue(ContentType.GetRealContentType(contentType), out responseStreamWriter))
+                this.ContentTypeSerializers.TryGetValue(ContentFormat.GetRealContentType(contentType), out responseStreamWriter))
             {
                 using (var ms = new MemoryStream())
                 {
@@ -108,7 +108,7 @@ namespace ServiceStack.Common.Web
 
             ResponseSerializerDelegate responseWriter;
             if (this.ContentTypeResponseSerializers.TryGetValue(contentType, out responseWriter) ||
-                this.ContentTypeResponseSerializers.TryGetValue(ContentType.GetRealContentType(contentType), out responseWriter))
+                this.ContentTypeResponseSerializers.TryGetValue(ContentFormat.GetRealContentType(contentType), out responseWriter))
             {
                 using (var ms = new MemoryStream())
                 {
@@ -119,7 +119,7 @@ namespace ServiceStack.Common.Web
                 }
             }
 
-            var contentTypeAttr = ContentType.GetEndpointAttributes(contentType);
+            var contentTypeAttr = ContentFormat.GetEndpointAttributes(contentType);
             switch (contentTypeAttr)
             {
                 case EndpointAttributes.Xml:
@@ -141,7 +141,7 @@ namespace ServiceStack.Common.Web
 
             StreamSerializerDelegate responseStreamWriter;
             if (this.ContentTypeSerializers.TryGetValue(contentType, out responseStreamWriter) ||
-                this.ContentTypeSerializers.TryGetValue(ContentType.GetRealContentType(contentType), out responseStreamWriter))
+                this.ContentTypeSerializers.TryGetValue(ContentFormat.GetRealContentType(contentType), out responseStreamWriter))
             {
                 using (var ms = new MemoryStream())
                 {
@@ -155,7 +155,7 @@ namespace ServiceStack.Common.Web
 
             ResponseSerializerDelegate responseWriter;
             if (this.ContentTypeResponseSerializers.TryGetValue(contentType, out responseWriter) ||
-                this.ContentTypeResponseSerializers.TryGetValue(ContentType.GetRealContentType(contentType), out responseWriter))
+                this.ContentTypeResponseSerializers.TryGetValue(ContentFormat.GetRealContentType(contentType), out responseWriter))
             {
                 using (var ms = new MemoryStream())
                 {
@@ -175,7 +175,7 @@ namespace ServiceStack.Common.Web
             }
 
 
-            var contentTypeAttr = ContentType.GetEndpointAttributes(contentType);
+            var contentTypeAttr = ContentFormat.GetEndpointAttributes(contentType);
             switch (contentTypeAttr)
             {
                 case EndpointAttributes.Xml:
@@ -216,7 +216,7 @@ namespace ServiceStack.Common.Web
         {
             ResponseSerializerDelegate responseWriter;
             if (this.ContentTypeResponseSerializers.TryGetValue(contentType, out responseWriter) ||
-                this.ContentTypeResponseSerializers.TryGetValue(ContentType.GetRealContentType(contentType), out responseWriter))
+                this.ContentTypeResponseSerializers.TryGetValue(ContentFormat.GetRealContentType(contentType), out responseWriter))
             {
                 return responseWriter;
             }
@@ -231,12 +231,12 @@ namespace ServiceStack.Common.Web
         {
             StreamSerializerDelegate responseWriter;
             if (this.ContentTypeSerializers.TryGetValue(contentType, out responseWriter) ||
-                this.ContentTypeSerializers.TryGetValue(ContentType.GetRealContentType(contentType), out responseWriter))
+                this.ContentTypeSerializers.TryGetValue(ContentFormat.GetRealContentType(contentType), out responseWriter))
             {
                 return responseWriter;
             }
 
-            var contentTypeAttr = ContentType.GetEndpointAttributes(contentType);
+            var contentTypeAttr = ContentFormat.GetEndpointAttributes(contentType);
             switch (contentTypeAttr)
             {
                 case EndpointAttributes.Xml:
@@ -254,7 +254,7 @@ namespace ServiceStack.Common.Web
 
         public object DeserializeFromString(string contentType, Type type, string request)
         {
-            var contentTypeAttr = ContentType.GetEndpointAttributes(contentType);
+            var contentTypeAttr = ContentFormat.GetEndpointAttributes(contentType);
             switch (contentTypeAttr)
             {
                 case EndpointAttributes.Xml:
@@ -289,7 +289,7 @@ namespace ServiceStack.Common.Web
                 return streamReader;
             }
 
-            var contentTypeAttr = ContentType.GetEndpointAttributes(contentType);
+            var contentTypeAttr = ContentFormat.GetEndpointAttributes(contentType);
             switch (contentTypeAttr)
             {
                 case EndpointAttributes.Xml:

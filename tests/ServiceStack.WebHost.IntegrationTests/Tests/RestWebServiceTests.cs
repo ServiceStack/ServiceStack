@@ -4,6 +4,7 @@ using System.Net;
 using System.Text;
 using NUnit.Framework;
 using ServiceStack.Common.Web;
+using ServiceStack.Text;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
@@ -27,8 +28,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		[Test]
 		public void Can_call_EchoRequest_with_AcceptJson()
 		{
-			var response = GetWebResponse(ServiceClientBaseUri + "/echo/1/One", ContentType.Json);
-			AssertResponse<EchoRequest>(response, ContentType.Json, x =>
+			var response = GetWebResponse(ServiceClientBaseUri + "/echo/1/One", MimeTypes.Json);
+            AssertResponse<EchoRequest>(response, MimeTypes.Json, x =>
 			{
 				Assert.That(x.Id, Is.EqualTo(1));
 				Assert.That(x.String, Is.EqualTo("One"));
@@ -38,8 +39,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		[Test]
 		public void Can_call_EchoRequest_with_AcceptXml()
 		{
-			var response = GetWebResponse(ServiceClientBaseUri + "/echo/1/One", ContentType.Xml);
-			AssertResponse<EchoRequest>(response, ContentType.Xml, x =>
+            var response = GetWebResponse(ServiceClientBaseUri + "/echo/1/One", MimeTypes.Xml);
+            AssertResponse<EchoRequest>(response, MimeTypes.Xml, x =>
 			{
 				Assert.That(x.Id, Is.EqualTo(1));
 				Assert.That(x.String, Is.EqualTo("One"));
@@ -49,8 +50,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		[Test]
 		public void Can_call_EchoRequest_with_AcceptJsv()
 		{
-			var response = GetWebResponse(ServiceClientBaseUri + "/echo/1/One", ContentType.Jsv);
-			AssertResponse<EchoRequest>(response, ContentType.Jsv, x =>
+            var response = GetWebResponse(ServiceClientBaseUri + "/echo/1/One", MimeTypes.Jsv);
+            AssertResponse<EchoRequest>(response, MimeTypes.Jsv, x =>
 			{
 				Assert.That(x.Id, Is.EqualTo(1));
 				Assert.That(x.String, Is.EqualTo("One"));
@@ -60,8 +61,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		[Test]
 		public void Can_call_EchoRequest_with_QueryString()
 		{
-			var response = GetWebResponse(ServiceClientBaseUri + "/echo/1/One?Long=2&Bool=True", ContentType.Json);
-			AssertResponse<EchoRequest>(response, ContentType.Json, x =>
+            var response = GetWebResponse(ServiceClientBaseUri + "/echo/1/One?Long=2&Bool=True", MimeTypes.Json);
+            AssertResponse<EchoRequest>(response, MimeTypes.Json, x =>
 			{
 				Assert.That(x.Id, Is.EqualTo(1));
 				Assert.That(x.String, Is.EqualTo("One"));
@@ -73,7 +74,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		private HttpWebResponse EmulateHttpMethod(string emulateMethod, string useMethod)
 		{
 			var webRequest = (HttpWebRequest) WebRequest.Create(ServiceClientBaseUri + "/echomethod");
-			webRequest.Accept = ContentType.Json;
+            webRequest.Accept = MimeTypes.Json;
 			webRequest.Method = useMethod;
 			webRequest.Headers[HttpHeaders.XHttpMethodOverride] = emulateMethod;
 			if (useMethod == HttpMethods.Post)
@@ -87,7 +88,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		{
 			var response = EmulateHttpMethod(HttpMethods.Put, HttpMethods.Post);
 
-			AssertResponse<EchoMethodResponse>(response, ContentType.Json, x =>
+            AssertResponse<EchoMethodResponse>(response, MimeTypes.Json, x =>
 				Assert.That(x.Result, Is.EqualTo(HttpMethods.Put)));
 		}
 
@@ -96,7 +97,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		{
 			var response = EmulateHttpMethod(HttpMethods.Put, HttpMethods.Get);
 
-			AssertResponse<EchoMethodResponse>(response, ContentType.Json, x =>
+            AssertResponse<EchoMethodResponse>(response, MimeTypes.Json, x =>
 				Assert.That(x.Result, Is.EqualTo(HttpMethods.Put)));
 		}
 
@@ -105,15 +106,15 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		{
 			var response = EmulateHttpMethod(HttpMethods.Delete, HttpMethods.Get);
 
-			AssertResponse<EchoMethodResponse>(response, ContentType.Json, x =>
+            AssertResponse<EchoMethodResponse>(response, MimeTypes.Json, x =>
 				Assert.That(x.Result, Is.EqualTo(HttpMethods.Delete)));
 		}
 
 		[Test]
 		public void Can_call_WildCardRequest_with_alternate_WildCard_defined()
 		{
-			var response = GetWebResponse(ServiceClientBaseUri + "/wildcard/1/aPath/edit", ContentType.Json);
-			AssertResponse<WildCardRequest>(response, ContentType.Json, x =>
+            var response = GetWebResponse(ServiceClientBaseUri + "/wildcard/1/aPath/edit", MimeTypes.Json);
+            AssertResponse<WildCardRequest>(response, MimeTypes.Json, x =>
 			{
 				Assert.That(x.Id, Is.EqualTo(1));
 				Assert.That(x.Path, Is.EqualTo("aPath"));
@@ -125,8 +126,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		[Test]
 		public void Can_call_WildCardRequest_WildCard_mapping()
 		{
-			var response = GetWebResponse(ServiceClientBaseUri + "/wildcard/1/remaining/path/to/here", ContentType.Json);
-			AssertResponse<WildCardRequest>(response, ContentType.Json, x =>
+            var response = GetWebResponse(ServiceClientBaseUri + "/wildcard/1/remaining/path/to/here", MimeTypes.Json);
+            AssertResponse<WildCardRequest>(response, MimeTypes.Json, x =>
 			{
 				Assert.That(x.Id, Is.EqualTo(1));
 				Assert.That(x.Path, Is.Null);
@@ -138,8 +139,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		[Test]
 		public void Can_call_WildCardRequest_WildCard_mapping_with_QueryString()
 		{
-			var response = GetWebResponse(ServiceClientBaseUri + "/wildcard/1/remaining/path/to/here?Action=edit", ContentType.Json);
-			AssertResponse<WildCardRequest>(response, ContentType.Json, x =>
+            var response = GetWebResponse(ServiceClientBaseUri + "/wildcard/1/remaining/path/to/here?Action=edit", MimeTypes.Json);
+            AssertResponse<WildCardRequest>(response, MimeTypes.Json, x =>
 			{
 				Assert.That(x.Id, Is.EqualTo(1));
 				Assert.That(x.Path, Is.Null);
@@ -151,8 +152,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		[Test(Description = "Test for error processing empty XML request")]
 		public void Can_call_ResetMovies_mapping_with_empty_Xml_post()
 		{
-			var response = GetWebResponse(HttpMethods.Post, ServiceClientBaseUri + "/reset-movies", ContentType.Xml, 0);
-			AssertResponse<ResetMoviesResponse>(response, ContentType.Xml, x =>
+            var response = GetWebResponse(HttpMethods.Post, ServiceClientBaseUri + "/reset-movies", MimeTypes.Xml, 0);
+            AssertResponse<ResetMoviesResponse>(response, MimeTypes.Xml, x =>
 			{
 			});
 		}
@@ -163,8 +164,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			const string formData = "Id=0&ImdbId=tt0110912&Title=Pulp+Fiction&Rating=8.9&Director=Quentin+Tarantino&ReleaseDate=1994-11-24&TagLine=Girls+like+me+don't+make+invitations+like+this+to+just+anyone!&Genres=Crime%2CDrama%2CThriller";
 			var formDataBytes = Encoding.UTF8.GetBytes(formData);
 			var webRequest = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri + "/movies");
-			webRequest.Accept = ContentType.Json;
-			webRequest.ContentType = ContentType.FormUrlEncoded;
+            webRequest.Accept = MimeTypes.Json;
+            webRequest.ContentType = MimeTypes.FormUrlEncoded;
 			webRequest.Method = HttpMethods.Post;
 			webRequest.ContentLength = formDataBytes.Length;
 			webRequest.GetRequestStream().Write(formDataBytes, 0, formDataBytes.Length);
@@ -173,7 +174,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			{
 				var response = (HttpWebResponse)webRequest.GetResponse();
 
-				AssertResponse<MovieResponse>(response, ContentType.Json, x =>
+                AssertResponse<MovieResponse>(response, MimeTypes.Json, x =>
 				{
 					Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
 					Assert.That(response.Headers["Location"], Is.EqualTo(ServiceClientBaseUri + "/movies/" + x.Movie.Id));

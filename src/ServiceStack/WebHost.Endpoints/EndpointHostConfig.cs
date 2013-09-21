@@ -103,7 +103,7 @@ namespace ServiceStack.WebHost.Endpoints
 							{ "image/png", TimeSpan.FromHours(1) },
 							{ "image/jpeg", TimeSpan.FromHours(1) },
 						},
-                        AppendUtf8CharsetOnContentTypes = new HashSet<string> { ContentType.Json, },
+                        AppendUtf8CharsetOnContentTypes = new HashSet<string> { MimeTypes.Json, },
                         RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>>(),
                         RouteNamingConventions = new List<RouteNamingConventionDelegate> {
 					        RouteNamingConvention.WithRequestDtoName,

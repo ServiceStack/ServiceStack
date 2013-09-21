@@ -70,7 +70,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
             service.RemoveSession();
 
-            if (service.RequestContext.ResponseContentType == ContentType.Html && !String.IsNullOrEmpty(referrerUrl))
+            if (service.RequestContext.ResponseContentType == MimeTypes.Html && !String.IsNullOrEmpty(referrerUrl))
                 return service.Redirect(referrerUrl.AddHashParam("s", "-1"));
 
             return new AuthResponse();

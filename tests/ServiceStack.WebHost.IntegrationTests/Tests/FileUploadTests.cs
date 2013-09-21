@@ -1,10 +1,8 @@
 using System;
-using System.Drawing;
 using System.IO;
 using System.Net;
 using NUnit.Framework;
 using ServiceStack.Common.Utils;
-using ServiceStack.Common.Web;
 using ServiceStack.Text;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
@@ -22,7 +20,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
 			var httpWebRequest = (HttpWebRequest)WebRequest.Create(base.ServiceClientBaseUri + pathInfo);
 			httpWebRequest.ContentType = "multipart/form-data; boundary=" + boundary;
-			httpWebRequest.Accept = ContentType.Json;
+            httpWebRequest.Accept = MimeTypes.Json;
 			httpWebRequest.Method = "POST";
 			httpWebRequest.AllowAutoRedirect = false;
 			httpWebRequest.KeepAlive = false;

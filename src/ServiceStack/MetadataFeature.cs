@@ -80,7 +80,7 @@ namespace ServiceStack
                     if (EndpointHost.ContentTypeFilter
                         .ContentTypeFormats.TryGetValue(pathController, out contentType))
                     {
-                        var format = Common.Web.ContentType.GetContentFormat(contentType);
+                        var format = Common.Web.ContentFormat.GetContentFormat(contentType);
                         return new CustomMetadataHandler(contentType, format);
                     }
                     break;

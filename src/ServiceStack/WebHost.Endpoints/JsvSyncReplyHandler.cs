@@ -3,20 +3,19 @@ using System.Text;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints.Wrappers;
 
 namespace ServiceStack.WebHost.Endpoints
 {
     public class JsvAsyncOneWayHandler : GenericHandler
     {
         public JsvAsyncOneWayHandler()
-            : base(ContentType.Jsv, EndpointAttributes.OneWay | EndpointAttributes.Jsv, Feature.Jsv) { }
+            : base(MimeTypes.Jsv, EndpointAttributes.OneWay | EndpointAttributes.Jsv, Feature.Jsv) { }
     }
 
     public class JsvSyncReplyHandler : GenericHandler
     {
         public JsvSyncReplyHandler()
-            : base(ContentType.JsvText, EndpointAttributes.Reply | EndpointAttributes.Jsv, Feature.Jsv) { }
+            : base(MimeTypes.JsvText, EndpointAttributes.Reply | EndpointAttributes.Jsv, Feature.Jsv) { }
 
         private static void WriteDebugRequest(IRequestContext requestContext, object dto, IHttpResponse httpRes)
         {
@@ -52,7 +51,7 @@ namespace ServiceStack.WebHost.Endpoints
         public static void WriteDebugResponse(IHttpResponse httpRes, object response)
         {
             httpRes.WriteToResponse(response, WriteDebugRequest,
-                new SerializationContext(ContentType.PlainText));
+                new SerializationContext(MimeTypes.PlainText));
 
             httpRes.EndRequest();
         }

@@ -63,7 +63,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
             if (!AssertAccess(httpReq, httpRes, operationName)) return;
 
-            ContentFormat = Common.Web.ContentType.GetContentFormat(Format);
+            ContentFormat = Common.Web.ContentFormat.GetContentFormat(Format);
             var metadata = EndpointHost.Metadata;
             if (operationName != null)
             {

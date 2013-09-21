@@ -1,13 +1,10 @@
 using System.IO;
-using System.Text;
 using NUnit.Framework;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Mocks;
-using ServiceStack.WebHost.Endpoints.Tests.Support;
-using ServiceStack.WebHost.Endpoints.Wrappers;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -23,14 +20,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			var customText = "<h1>Custom Text</h1>";
 
-			var httpResult = new HttpResult(customText, ContentType.Html) {
+            var httpResult = new HttpResult(customText, MimeTypes.Html)
+            {
 				Headers =
 				{
 					{"X-Custom","Header"}
 				}
 			};
 
-			var reponseWasAutoHandled = mockResponse.WriteToResponse(httpResult, ContentType.Html);
+            var reponseWasAutoHandled = mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
 
 			Assert.That(reponseWasAutoHandled, Is.True);
 
@@ -50,14 +48,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			ms.Write(customTextBytes, 0, customTextBytes.Length);
 
 
-			var httpResult = new HttpResult(ms, ContentType.Html) {
+            var httpResult = new HttpResult(ms, MimeTypes.Html)
+            {
 				Headers =
 				{
 					{"X-Custom","Header"}
 				}
 			};
 
-			var reponseWasAutoHandled = mockResponse.WriteToResponse(httpResult, ContentType.Html);
+            var reponseWasAutoHandled = mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
 
 			Assert.That(reponseWasAutoHandled, Is.True);
 
@@ -69,7 +68,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Can_send_ResponseText_test_with_StatusDescription()
 		{
-			var mockRequest = new MockHttpRequest { ContentType = ContentType.Json };
+            var mockRequest = new MockHttpRequest { ContentType = MimeTypes.Json };
 			var mockRequestContext = new HttpRequestContext(mockRequest, null, new object());
 			var mockResponse = new HttpResponseMock();
 
@@ -79,7 +78,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				RequestContext = mockRequestContext
 			};
 
-			var reponseWasAutoHandled = mockResponse.WriteToResponse(httpResult, ContentType.Html);
+            var reponseWasAutoHandled = mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
 
 			Assert.That(reponseWasAutoHandled, Is.True);
 
@@ -96,7 +95,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			var httpResult = new HttpResult();
 			httpResult.StatusDescription = null;
 
-			mockResponse.WriteToResponse(httpResult, ContentType.Html);
+            mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
 
 			Assert.IsNotNull(mockResponse.StatusDescription);
 		}

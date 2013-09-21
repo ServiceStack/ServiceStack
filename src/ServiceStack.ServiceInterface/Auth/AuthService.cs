@@ -150,7 +150,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
             var session = this.GetSession();
 
-            var isHtml = base.RequestContext.ResponseContentType.MatchesContentType(ContentType.Html);
+            var isHtml = base.RequestContext.ResponseContentType.MatchesContentType(MimeTypes.Html);
             try
             {
                 var response = Authenticate(request, provider, session, oAuthConfig);
@@ -207,7 +207,7 @@ namespace ServiceStack.ServiceInterface.Auth
         public AuthResponse Authenticate(Auth request)
         {
             //Remove HTML Content-Type to avoid auth providers issuing browser re-directs
-            ((HttpRequestContext)this.RequestContext).ResponseContentType = ContentType.PlainText;
+            ((HttpRequestContext)this.RequestContext).ResponseContentType = MimeTypes.PlainText;
 
             var provider = request.provider ?? AuthProviders[0].Provider;
             var oAuthConfig = GetAuthProvider(provider);

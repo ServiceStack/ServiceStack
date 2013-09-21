@@ -4,6 +4,7 @@ using MsgPack.Serialization;
 using System.IO;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 
 namespace ServiceStack.Plugins.MsgPack
 {
@@ -52,7 +53,7 @@ namespace ServiceStack.Plugins.MsgPack
 
 		public override string ContentType
 		{
-			get { return Common.Web.ContentType.MsgPack; }
+            get { return MimeTypes.MsgPack; }
 		}
 
 		public override StreamDeserializerDelegate StreamDeserializer

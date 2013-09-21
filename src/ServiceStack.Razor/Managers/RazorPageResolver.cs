@@ -5,7 +5,6 @@ using System.Net;
 using System.Text;
 using System.Web;
 using ServiceStack.Common;
-using ServiceStack.Common.Web;
 using ServiceStack.Html;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -82,7 +81,7 @@ namespace ServiceStack.Razor.Managers
         /// </summary>
         public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
         {
-            httpRes.ContentType = ContentType.Html;
+            httpRes.ContentType = MimeTypes.Html;
 
             ResolveAndExecuteRazorPage(httpReq, httpRes, null);
             httpRes.EndRequest(skipHeaders: true);

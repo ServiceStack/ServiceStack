@@ -8,6 +8,7 @@ using ServiceStack.FluentValidation;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.ServiceInterface.Validation;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface.Auth
@@ -158,7 +159,7 @@ namespace ServiceStack.ServiceInterface.Auth
                 };
             }
 
-            var isHtml = base.RequestContext.ResponseContentType.MatchesContentType(ContentType.Html);
+            var isHtml = base.RequestContext.ResponseContentType.MatchesContentType(MimeTypes.Html);
             if (isHtml)
             {
                 if (string.IsNullOrEmpty(request.Continue))

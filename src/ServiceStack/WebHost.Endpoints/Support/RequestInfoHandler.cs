@@ -124,7 +124,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 
 			var json = JsonSerializer.SerializeToString(response);
-			httpRes.ContentType = ContentType.Json;
+            httpRes.ContentType = MimeTypes.Json;
 			httpRes.Write(json);
 		}
 

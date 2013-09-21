@@ -159,16 +159,16 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			T result;
 			switch (contentType)
 			{
-				case ContentType.Xml:
+                case MimeTypes.Xml:
 					result = XmlSerializer.DeserializeFromString<T>(contents);
 					break;
 
-				case ContentType.Json:
-				case ContentType.Json + ContentType.Utf8Suffix:
+                case MimeTypes.Json:
+                case MimeTypes.Json + ContentFormat.Utf8Suffix:
 					result = JsonSerializer.DeserializeFromString<T>(contents);
 					break;
 
-				case ContentType.Jsv:
+                case MimeTypes.Jsv:
 					result = TypeSerializer.DeserializeFromString<T>(contents);
 					break;
 

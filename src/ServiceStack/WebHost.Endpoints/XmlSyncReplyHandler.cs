@@ -1,12 +1,12 @@
-using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints
 {
 	public class XmlAsyncOneWayHandler : GenericHandler
 	{
 		public XmlAsyncOneWayHandler()
-			: base(ContentType.Xml, EndpointAttributes.OneWay | EndpointAttributes.Xml, Feature.Xml)
+            : base(MimeTypes.Xml, EndpointAttributes.OneWay | EndpointAttributes.Xml, Feature.Xml)
 		{
 		}
 	}
@@ -14,7 +14,7 @@ namespace ServiceStack.WebHost.Endpoints
 	public class XmlSyncReplyHandler : GenericHandler
 	{
 		public XmlSyncReplyHandler()
-			: base(ContentType.Xml, EndpointAttributes.Reply | EndpointAttributes.Xml, Feature.Xml)
+            : base(MimeTypes.Xml, EndpointAttributes.Reply | EndpointAttributes.Xml, Feature.Xml)
 		{
 		}
 	}

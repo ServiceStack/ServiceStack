@@ -31,13 +31,13 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
 
         public override string Accept
         {
-            get { return Common.Web.ContentType.Html; }
+            get { return MimeTypes.Html; }
         }
 
         public override string ContentType
         {
             // Only used by the base class when POST-ing.
-            get { return Common.Web.ContentType.FormUrlEncoded; }
+            get { return MimeTypes.FormUrlEncoded; }
         }
 
         public override void SerializeToStream(IRequestContext requestContext, object request, Stream stream)

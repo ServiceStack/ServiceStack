@@ -269,9 +269,6 @@
     <Compile Include="ServiceClient.Web\WcfServiceClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="WebRequestExtensions.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="ServiceClient.Web\WebRequestUtils.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -397,7 +394,7 @@
     <Compile Include="Web\CompressionTypes.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Web\ContentType.cs">
+    <Compile Include="Web\ContentFormat.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Web\EndPoint.cs">
@@ -422,9 +419,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="HttpResultExtensions.cs" />
-    <Compile Include="Web\MimeTypes.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="RequestContextExtensions.cs" />
     <Compile Include="Web\SerializationContext.cs">
       <SubType>Code</SubType>

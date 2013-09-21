@@ -52,7 +52,7 @@ namespace ServiceStack
             var bytes = result as byte[];
             if (bytes != null)
             {
-                response.ContentType = ContentType.Binary;
+                response.ContentType = MimeTypes.Binary;
                 if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
                 response.OutputStream.Write(bytes, 0, bytes.Length);
                 if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
@@ -188,18 +188,18 @@ namespace ServiceStack
 
                     //ContentType='text/html' is the default for a HttpResponse
                     //Do not override if another has been set
-                    if (response.ContentType == null || response.ContentType == ContentType.Html)
+                    if (response.ContentType == null || response.ContentType == MimeTypes.Html)
                     {
                         response.ContentType = defaultContentType;
                     }
-                    if (bodyPrefix != null && response.ContentType.IndexOf(ContentType.Json, StringComparison.InvariantCultureIgnoreCase) >= 0)
+                    if (bodyPrefix != null && response.ContentType.IndexOf(MimeTypes.Json, StringComparison.InvariantCultureIgnoreCase) >= 0)
                     {
-                        response.ContentType = ContentType.JavaScript;
+                        response.ContentType = MimeTypes.JavaScript;
                     }
 
                     if (EndpointHost.Config.AppendUtf8CharsetOnContentTypes.Contains(response.ContentType))
                     {
-                        response.ContentType += ContentType.Utf8Suffix;
+                        response.ContentType += ContentFormat.Utf8Suffix;
                     }
 
                     var responseText = result as string;
@@ -276,7 +276,7 @@ namespace ServiceStack
             {
                 //ContentType='text/html' is the default for a HttpResponse
                 //Do not override if another has been set
-                if (response.ContentType == null || response.ContentType == ContentType.Html)
+                if (response.ContentType == null || response.ContentType == MimeTypes.Html)
                 {
                     response.ContentType = defaultContentType;
                 }
@@ -302,13 +302,13 @@ namespace ServiceStack
             var errorDto = ex.ToErrorResponse();
             if (HandleCustomErrorHandler(httpRes, httpReq, contentType, statusCode, errorDto)) return;
 
-            if (httpRes.ContentType == null || httpRes.ContentType == ContentType.Html)
+            if (httpRes.ContentType == null || httpRes.ContentType == MimeTypes.Html)
             {
                 httpRes.ContentType = contentType;
             }
             if (EndpointHost.Config.AppendUtf8CharsetOnContentTypes.Contains(contentType))
             {
-                httpRes.ContentType += ContentType.Utf8Suffix;
+                httpRes.ContentType += ContentFormat.Utf8Suffix;
             }
 
             httpRes.StatusCode = statusCode;
@@ -326,7 +326,7 @@ namespace ServiceStack
         private static bool HandleCustomErrorHandler(this IHttpResponse httpRes, IHttpRequest httpReq,
             string contentType, int statusCode, object errorDto)
         {
-            if (httpReq != null && ContentType.Html.MatchesContentType(contentType))
+            if (httpReq != null && MimeTypes.Html.MatchesContentType(contentType))
             {
                 var errorHandler = EndpointHost.Config.GetCustomErrorHandler(statusCode);
                 if (errorHandler != null)

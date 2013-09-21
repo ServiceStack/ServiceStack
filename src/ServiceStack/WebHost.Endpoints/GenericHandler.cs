@@ -13,7 +13,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public GenericHandler(string contentType, EndpointAttributes handlerAttributes, Feature format)
 		{
 			this.HandlerContentType = contentType;
-			this.ContentTypeAttribute = ContentType.GetEndpointAttributes(contentType);
+			this.ContentTypeAttribute = ContentFormat.GetEndpointAttributes(contentType);
 			this.HandlerAttributes = handlerAttributes;
 			this.format = format;
 		}

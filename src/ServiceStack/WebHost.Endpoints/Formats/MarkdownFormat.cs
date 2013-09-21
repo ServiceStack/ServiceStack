@@ -166,10 +166,10 @@ namespace ServiceStack.WebHost.Endpoints.Formats
                 };
             });
 
-            appHost.ContentTypeFilters.Register(ContentType.MarkdownText, SerializeToStream, null);
-            appHost.ContentTypeFilters.Register(ContentType.PlainText, SerializeToStream, null);
-            appHost.Config.IgnoreFormatsInMetadata.Add(ContentType.MarkdownText.ToContentFormat());
-            appHost.Config.IgnoreFormatsInMetadata.Add(ContentType.PlainText.ToContentFormat());
+            appHost.ContentTypeFilters.Register(MimeTypes.MarkdownText, SerializeToStream, null);
+            appHost.ContentTypeFilters.Register(MimeTypes.PlainText, SerializeToStream, null);
+            appHost.Config.IgnoreFormatsInMetadata.Add(MimeTypes.MarkdownText.ToContentFormat());
+            appHost.Config.IgnoreFormatsInMetadata.Add(MimeTypes.PlainText.ToContentFormat());
         }
 
         public MarkdownPage FindByPathInfo(string pathInfo)
@@ -248,7 +248,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 
             if (!renderHtml)
             {
-                httpRes.ContentType = ContentType.PlainText;
+                httpRes.ContentType = MimeTypes.PlainText;
             }
 
             var template = httpReq.GetTemplate();

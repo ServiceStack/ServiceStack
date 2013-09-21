@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 using ProtoBuf;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 
 namespace ServiceStack.Plugins.ProtoBuf
 {
@@ -48,7 +49,7 @@ namespace ServiceStack.Plugins.ProtoBuf
 
 		public override string ContentType
 		{
-			get { return Common.Web.ContentType.ProtoBuf; }
+            get { return MimeTypes.ProtoBuf; }
 		}
 
 		public override StreamDeserializerDelegate StreamDeserializer

@@ -21,7 +21,7 @@ namespace ServiceStack.ServiceHost
         {
             this.Resolver = resolver;
             this.Message = message;
-            this.ContentType = this.ResponseContentType = Common.Web.ContentType.Json;
+            this.ContentType = this.ResponseContentType = MimeTypes.Json;
             if (message.Body != null)
                 this.PathInfo = "/json/oneway/" + OperationName;
             

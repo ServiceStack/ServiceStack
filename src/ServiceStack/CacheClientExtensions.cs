@@ -4,29 +4,30 @@ using ServiceStack.CacheAccess;
 using ServiceStack.ServiceHost;
 using ServiceStack.Common.Web;
 using ServiceStack.Common;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack
 {
-	public static class CacheClientExtensions
-	{
-		public static void Set<T>(this ICacheClient cacheClient, string cacheKey, T value, TimeSpan? expireCacheIn)
-		{
-			if (expireCacheIn.HasValue)
-				cacheClient.Set(cacheKey, value, expireCacheIn.Value);
-			else
-				cacheClient.Set(cacheKey, value);
-		}
+    public static class CacheClientExtensions
+    {
+        public static void Set<T>(this ICacheClient cacheClient, string cacheKey, T value, TimeSpan? expireCacheIn)
+        {
+            if (expireCacheIn.HasValue)
+                cacheClient.Set(cacheKey, value, expireCacheIn.Value);
+            else
+                cacheClient.Set(cacheKey, value);
+        }
 
-		public static object ResolveFromCache(this ICacheClient cacheClient, 
-			string cacheKey, 
-			IRequestContext context)
-		{
-			string modifiers = null;
+        public static object ResolveFromCache(this ICacheClient cacheClient,
+            string cacheKey,
+            IRequestContext context)
+        {
+            string modifiers = null;
             if (!context.ResponseContentType.IsBinary())
             {
 
-                if (context.ResponseContentType == ContentType.Json)
+                if (context.ResponseContentType == MimeTypes.Json)
                 {
                     string jsonp = context.Get<IHttpRequest>().GetJsonpCallback();
                     if (jsonp != null)
@@ -68,23 +69,23 @@ namespace ServiceStack
                 }
             }
 
-		    return null;
-		}
+            return null;
+        }
 
-		public static object Cache(this ICacheClient cacheClient, 
-			string cacheKey, 
-			object responseDto, 
-			IRequestContext context, 
-			TimeSpan? expireCacheIn = null)
-		{
-			cacheClient.Set(cacheKey, responseDto, expireCacheIn);
+        public static object Cache(this ICacheClient cacheClient,
+            string cacheKey,
+            object responseDto,
+            IRequestContext context,
+            TimeSpan? expireCacheIn = null)
+        {
+            cacheClient.Set(cacheKey, responseDto, expireCacheIn);
 
             if (!context.ResponseContentType.IsBinary())
             {
                 string serializedDto = EndpointHost.ContentTypeFilter.SerializeToString(context, responseDto);
 
                 string modifiers = null;
-                if (context.ResponseContentType.MatchesContentType(ContentType.Json))
+                if (context.ResponseContentType.MatchesContentType(MimeTypes.Json))
                 {
                     var jsonp = context.Get<IHttpRequest>().GetJsonpCallback();
                     if (jsonp != null)
@@ -125,68 +126,69 @@ namespace ServiceStack
                 cacheClient.Set(cacheKeySerialized, serializedDto, expireCacheIn);
                 return serializedDto;
             }
-		}
+        }
 
-		public static void ClearCaches(this ICacheClient cacheClient, params string[] cacheKeys)
-		{
-			var allContentTypes = new List<string>(EndpointHost.ContentTypeFilter.ContentTypeFormats.Values)
-			{ ContentType.XmlText, ContentType.JsonText, ContentType.JsvText };
+        public static void ClearCaches(this ICacheClient cacheClient, params string[] cacheKeys)
+        {
+            var allContentTypes = new List<string>(EndpointHost.ContentTypeFilter.ContentTypeFormats.Values) {
+			    MimeTypes.XmlText, MimeTypes.JsonText, MimeTypes.JsvText
+			};
 
-			var allCacheKeys = new List<string>();
+            var allCacheKeys = new List<string>();
 
-			foreach (var cacheKey in cacheKeys)
-			{
-				allCacheKeys.Add(cacheKey);
-				foreach (var serializedExt in allContentTypes)
-				{
-					var serializedCacheKey = GetCacheKeyForSerialized(cacheKey, serializedExt, null);
-					allCacheKeys.Add(serializedCacheKey);
+            foreach (var cacheKey in cacheKeys)
+            {
+                allCacheKeys.Add(cacheKey);
+                foreach (var serializedExt in allContentTypes)
+                {
+                    var serializedCacheKey = GetCacheKeyForSerialized(cacheKey, serializedExt, null);
+                    allCacheKeys.Add(serializedCacheKey);
 
-					foreach (var compressionType in CompressionTypes.AllCompressionTypes)
-					{
-						allCacheKeys.Add(GetCacheKeyForCompressed(serializedCacheKey, compressionType));
-					}
-				}
-			}
+                    foreach (var compressionType in CompressionTypes.AllCompressionTypes)
+                    {
+                        allCacheKeys.Add(GetCacheKeyForCompressed(serializedCacheKey, compressionType));
+                    }
+                }
+            }
 
-			cacheClient.RemoveAll(allCacheKeys);
-		}
+            cacheClient.RemoveAll(allCacheKeys);
+        }
 
-		public static string GetCacheKeyForSerialized(string cacheKey, string mimeType, string modifiers)
-		{
-			return cacheKey + MimeTypes.GetExtension(mimeType) + modifiers;
-		}
+        public static string GetCacheKeyForSerialized(string cacheKey, string mimeType, string modifiers)
+        {
+            return cacheKey + MimeTypes.GetExtension(mimeType) + modifiers;
+        }
 
-		public static string GetCacheKeyForCompressed(string cacheKeySerialized, string compressionType)
-		{
-			return cacheKeySerialized + "." + compressionType;
-		}
+        public static string GetCacheKeyForCompressed(string cacheKeySerialized, string compressionType)
+        {
+            return cacheKeySerialized + "." + compressionType;
+        }
 
-		/// <summary>
-		/// Removes items from cache that have keys matching the specified wildcard pattern
-		/// </summary>
-		/// <param name="cacheClient">Cache client</param>
-		/// <param name="pattern">The wildcard, where "*" means any sequence of characters and "?" means any single character.</param>
-		public static void RemoveByPattern(this ICacheClient cacheClient, string pattern)
-		{
-			var canRemoveByPattern = cacheClient as IRemoveByPattern;
-			if (canRemoveByPattern == null)
-				throw new NotImplementedException("ICacheRemovableByPattern is not implemented by the cache client: " + cacheClient.GetType().FullName);
+        /// <summary>
+        /// Removes items from cache that have keys matching the specified wildcard pattern
+        /// </summary>
+        /// <param name="cacheClient">Cache client</param>
+        /// <param name="pattern">The wildcard, where "*" means any sequence of characters and "?" means any single character.</param>
+        public static void RemoveByPattern(this ICacheClient cacheClient, string pattern)
+        {
+            var canRemoveByPattern = cacheClient as IRemoveByPattern;
+            if (canRemoveByPattern == null)
+                throw new NotImplementedException("ICacheRemovableByPattern is not implemented by the cache client: " + cacheClient.GetType().FullName);
 
-			canRemoveByPattern.RemoveByPattern(pattern);
-		}
-		/// <summary>
-		/// Removes items from the cache based on the specified regular expression pattern
-		/// </summary>
-		/// <param name="cacheClient">Cache client</param>
-		/// <param name="regex">Regular expression pattern to search cache keys</param>
-		public static void RemoveByRegex(this ICacheClient cacheClient, string regex)
-		{
-			var canRemoveByPattern = cacheClient as IRemoveByPattern;
-			if (canRemoveByPattern == null)
-				throw new NotImplementedException("ICacheRemovableByPattern is not implemented by the cache client: " + cacheClient.GetType().FullName);
+            canRemoveByPattern.RemoveByPattern(pattern);
+        }
+        /// <summary>
+        /// Removes items from the cache based on the specified regular expression pattern
+        /// </summary>
+        /// <param name="cacheClient">Cache client</param>
+        /// <param name="regex">Regular expression pattern to search cache keys</param>
+        public static void RemoveByRegex(this ICacheClient cacheClient, string regex)
+        {
+            var canRemoveByPattern = cacheClient as IRemoveByPattern;
+            if (canRemoveByPattern == null)
+                throw new NotImplementedException("ICacheRemovableByPattern is not implemented by the cache client: " + cacheClient.GetType().FullName);
 
-			canRemoveByPattern.RemoveByRegex(regex);
-		}
-	}
+            canRemoveByPattern.RemoveByRegex(regex);
+        }
+    }
 }
