@@ -48,6 +48,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 	    static readonly List<Assembly> Assemblies = new List<Assembly> {
 			typeof(string).Assembly,       //"system.dll",
 //			typeof(XmlDocument).Assembly,  //"system.xml.dll",
+            typeof(System.Web.HtmlString).Assembly, //"system.web.dll",
 			typeof(Expression).Assembly,   //"system.core.dll",
 			typeof(AppHostBase).Assembly,  //"ServiceStack.dll",
 			typeof(JsConfig).Assembly,     //"ServiceStack.Text.dll",
@@ -59,6 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 	        "System",
             "System.Text",
 //            "System.Xml",
+            "System.Web",
             "System.Collections",
             "System.Collections.Generic",
             "System.Linq",
@@ -300,7 +302,7 @@ namespace CSharpEval
 				if (!Env.IsMono)
 				{
 					//cp.ReferencedAssemblies.Add(@"C:\Windows\Microsoft.NET\Framework\v2.0.50727\System.dll");
-					cp.ReferencedAssemblies.Add(@"C:\Program Files\Reference Assemblies\Microsoft\Framework\v3.5\System.Core.dll");
+                    cp.ReferencedAssemblies.Add(@"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\System.Core.dll");
 				}
 			}
 
