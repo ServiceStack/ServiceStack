@@ -286,6 +286,7 @@
  - [maksimenko](https://github.com/maksimenko)
  - [dixon](https://github.com/dixon) (Jarrod Dixon)
  - [kal](https://github.com/kal) (Kal Ahmed)
+ - [mhanney](https://github.com/mhanney) (Michael Hanney)
 
 
 
