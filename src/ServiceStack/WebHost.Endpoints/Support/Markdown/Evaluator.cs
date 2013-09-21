@@ -1,6 +1,7 @@
 ﻿using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -195,7 +196,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 		}
 
 		private static readonly bool IsVersion4AndUp = Type.GetType("System.Collections.Concurrent.Partitioner") != null;
-
+        
 		private static void AddAssembly(CompilerParameters cp, string location)
 		{
 			//Error if trying to re-add ref to mscorlib or System.Core for .NET 4.0
@@ -296,13 +297,9 @@ namespace CSharpEval
 
 			if (IsVersion4AndUp)
 			{
-				//var type = Type.GetType("System.Collections.Concurrent.Partitioner");
-				//if (type != null)
-				//    cp.ReferencedAssemblies.Add(type.Assembly.Location);
 				if (!Env.IsMono)
 				{
-					//cp.ReferencedAssemblies.Add(@"C:\Windows\Microsoft.NET\Framework\v2.0.50727\System.dll");
-                    cp.ReferencedAssemblies.Add(@"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\System.Core.dll");
+                    cp.ReferencedAssemblies.Add(Env.ReferenceAssembyPath + @"System.Core.dll");
 				}
 			}
 
