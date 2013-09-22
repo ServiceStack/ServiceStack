@@ -8,6 +8,7 @@ using System.Threading;
 using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.Markdown;
+using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Formats;
 

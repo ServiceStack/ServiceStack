@@ -4,6 +4,7 @@ using System.Net;
 using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
+using ServiceStack.Server;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;

@@ -1,7 +1,7 @@
 #if !SILVERLIGHT && !MONOTOUCH && !XBOX && !ANDROIDINDIE
 using System;
 using System.ServiceModel.Channels;
-using ServiceStack.Service;
+using ServiceStack.Clients;
 using System.Xml;
 
 namespace ServiceStack.ServiceClient.Web

@@ -1,7 +1,6 @@
 using System;
 using NUnit.Framework;
-using ServiceStack.Common;
-using ServiceStack.DesignPatterns.Model;
+using ServiceStack.Model;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 

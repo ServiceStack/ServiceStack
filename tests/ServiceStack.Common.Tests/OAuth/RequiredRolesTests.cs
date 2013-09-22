@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using NUnit.Framework;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;

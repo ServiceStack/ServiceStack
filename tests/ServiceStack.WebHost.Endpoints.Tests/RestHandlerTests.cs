@@ -1,6 +1,7 @@
 ﻿using System.Collections.Specialized;
 using Moq;
 using NUnit.Framework;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Tests

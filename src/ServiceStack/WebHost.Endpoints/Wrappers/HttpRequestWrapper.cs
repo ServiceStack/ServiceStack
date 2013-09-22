@@ -8,6 +8,7 @@ using System.IO;
 using System.Net;
 using System.Web;
 using Funq;
+using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;

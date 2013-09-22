@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.ServiceModel;
 
 namespace ServiceStack.Common.Web
 {

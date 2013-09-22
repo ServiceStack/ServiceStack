@@ -4,7 +4,7 @@ using System.Text;
 using System.Reflection;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.Logging;
 #if !NETFX_CORE

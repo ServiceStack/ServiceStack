@@ -1,5 +1,6 @@
 using System.Collections.Generic;
-using ServiceStack.DesignPatterns.Model;
+using ServiceStack.Model;
+using ServiceStack.Model;
 
 namespace ServiceStack.Redis
 {

@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using ServiceStack.Service;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.ServiceClient.Web
@@ -125,7 +124,6 @@ namespace ServiceStack.ServiceClient.Web
     }
 
 #else
-    using ServiceStack.Service;
 
     using System.ServiceModel;
     using System.ServiceModel.Channels;

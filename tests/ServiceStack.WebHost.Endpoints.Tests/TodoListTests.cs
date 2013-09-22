@@ -3,7 +3,7 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.ServiceModel;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.ServiceHost;
 

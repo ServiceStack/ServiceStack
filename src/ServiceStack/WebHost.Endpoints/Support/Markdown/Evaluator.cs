@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using ServiceStack.Logging;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 

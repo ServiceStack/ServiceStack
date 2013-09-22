@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Web;
 using ServiceStack.Caching;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text.Common;
 

@@ -2,10 +2,11 @@
 using System.IO;
 using System.Net;
 using ServiceStack.Common.Web;
+using ServiceStack.Server;
+using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.Common.Utils;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.Common
 {

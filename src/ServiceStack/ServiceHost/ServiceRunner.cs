@@ -4,6 +4,7 @@ using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
+using ServiceStack.Server;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;

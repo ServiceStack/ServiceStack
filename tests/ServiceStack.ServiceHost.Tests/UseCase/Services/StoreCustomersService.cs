@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using ServiceStack.OrmLite;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost.Tests.UseCase.Operations;
 
 namespace ServiceStack.ServiceHost.Tests.UseCase.Services

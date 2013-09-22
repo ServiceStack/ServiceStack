@@ -1,5 +1,5 @@
 using System;
-using ServiceStack.DesignPatterns.Model;
+using ServiceStack.Model;
 
 namespace ServiceStack.Common.Tests.Models
 {

@@ -26,4 +26,4 @@ using System.Runtime.Serialization;
 [assembly: Guid("d13ebd2a-6589-453d-bf31-4c744a59e993")]
 
 [assembly: ContractNamespace("http://schemas.servicestack.net/types", 
-	ClrNamespace = "ServiceStack.ServiceInterface.ServiceModel")]
+	ClrNamespace = "ServiceStack")]

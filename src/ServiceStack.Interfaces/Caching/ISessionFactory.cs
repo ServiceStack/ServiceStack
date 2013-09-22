@@ -1,4 +1,5 @@
 #if !SILVERLIGHT && !MONOTOUCH && !XBOX
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Caching

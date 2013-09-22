@@ -6,13 +6,14 @@ using System.IO;
 using System.Net;
 using System.Web;
 using System.Collections.Generic;
+using ServiceStack.Clients;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
-using ServiceStack.Service;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 
@@ -64,7 +65,7 @@ namespace ServiceStack
 
         public static bool WriteToResponse(this IHttpResponse httpRes, object result, string contentType)
         {
-            var serializer = EndpointHost.AppHost.ContentTypeFilters.GetResponseSerializer(contentType);
+            var serializer = EndpointHost.AppHost.ContentTypeses.GetResponseSerializer(contentType);
             return httpRes.WriteToResponse(result, serializer, new SerializationContext(contentType));
         }
 
@@ -87,7 +88,7 @@ namespace ServiceStack
             {
                 if (httpResult.ResponseFilter == null)
                 {
-                    httpResult.ResponseFilter = EndpointHost.AppHost.ContentTypeFilters;
+                    httpResult.ResponseFilter = EndpointHost.AppHost.ContentTypeses;
                 }
                 httpResult.RequestContext = serializationContext;
                 serializationContext.ResponseContentType = httpResult.ContentType ?? httpReq.ResponseContentType;
@@ -95,7 +96,7 @@ namespace ServiceStack
                 return httpRes.WriteToResponse(httpResult, httpResSerializer, serializationContext, bodyPrefix, bodySuffix);
             }
 
-            var serializer = EndpointHost.AppHost.ContentTypeFilters.GetResponseSerializer(httpReq.ResponseContentType);
+            var serializer = EndpointHost.AppHost.ContentTypeses.GetResponseSerializer(httpReq.ResponseContentType);
             return httpRes.WriteToResponse(result, serializer, serializationContext, bodyPrefix, bodySuffix);
         }
 
@@ -314,7 +315,7 @@ namespace ServiceStack
             httpRes.StatusCode = statusCode;
             var serializationCtx = new SerializationContext(contentType);
 
-            var serializer = EndpointHost.AppHost.ContentTypeFilters.GetResponseSerializer(contentType);
+            var serializer = EndpointHost.AppHost.ContentTypeses.GetResponseSerializer(contentType);
             if (serializer != null)
             {
                 serializer(serializationCtx, errorDto, httpRes);

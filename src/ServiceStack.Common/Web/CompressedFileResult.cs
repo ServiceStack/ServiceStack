@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using ServiceStack.Service;
+using ServiceStack.Clients;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 #if NETFX_CORE

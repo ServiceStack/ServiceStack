@@ -8,6 +8,7 @@ using System.Text;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
+using ServiceStack.Server;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;

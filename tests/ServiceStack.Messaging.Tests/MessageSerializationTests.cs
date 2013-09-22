@@ -1,8 +1,8 @@
 using System;
 using NUnit.Framework;
 using ServiceStack.Common;
-using ServiceStack.DesignPatterns.Model;
 using ServiceStack.Messaging.Tests.Services;
+using ServiceStack.Model;
 using ServiceStack.Text;
 
 namespace ServiceStack.Messaging.Tests

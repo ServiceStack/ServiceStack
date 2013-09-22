@@ -6,6 +6,7 @@ using System.Reflection;
 using ServiceStack.MiniProfiler.Helpers;
 using ServiceStack.MiniProfiler.SqlFormatters;
 using ServiceStack.MiniProfiler.Storage;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.MiniProfiler

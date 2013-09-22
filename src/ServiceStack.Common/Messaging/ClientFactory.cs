@@ -1,6 +1,6 @@
 ﻿using System;
+using ServiceStack.Clients;
 using ServiceStack.Common;
-using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
 
 namespace ServiceStack.Messaging

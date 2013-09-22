@@ -4,16 +4,16 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using NUnit.Framework;
+using ServiceStack.Clients;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceClient.Web;
-using ServiceStack.Service;
 using ServiceStack.Api.Swagger;
 using ServiceStack.ServiceInterface.Cors;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    [ServiceHost.Api("Service Description")]
+    [Api("Service Description")]
     [Route("/swagger/{Name}", "GET", Summary = @"GET Summary", Notes = "GET Notes")]
     [Route("/swagger/{Name}", "POST", Summary = @"POST Summary", Notes = "POST Notes")]
     public class SwaggerFeatureRequest
@@ -23,21 +23,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Name { get; set; }
     }
 
-    [ServiceHost.Api]
+    [Api]
     [Route("/swaggerGetList/{Name}", "GET")]
     public class SwaggerGetListRequest : IReturn<List<SwaggerFeatureResponse>>
     {
         public string Name { get; set; }
     }
 
-    [ServiceHost.Api]
+    [Api]
     [Route("/swaggerGetArray/{Name}", "GET")]
     public class SwaggerGetArrayRequest : IReturn<SwaggerFeatureResponse[]>
     {
         public string Name { get; set; }
     }
     
-    [ServiceHost.Api]
+    [Api]
     [Route("/swaggerModels/{UrlParam}", "POST")]
     public class SwaggerModelsRequest : IReturn<SwaggerFeatureResponse>
     {
@@ -88,7 +88,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public bool NestedProperty3 { get; set;}
     }
 
-    [ServiceHost.Api]
+    [Api]
     [Route("/swagger2/NameIsNotSetRequest", "GET")]
     public class NameIsNotSetRequest
     {
@@ -97,7 +97,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
 
-    [ServiceHost.Api("test")]
+    [Api("test")]
     [Route("/swg3/conference/count", "GET")]
     public class MultipleTestRequest : IReturn<int>
     {
@@ -105,7 +105,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Name { get; set; }
     }
 
-    [ServiceHost.Api]
+    [Api]
     [Route("/swg3/conference/{Name}/conferences", "POST")]
     [Route("/swgb3/conference/{Name}/conferences", "POST")]
     public class MultipleTest2Request : IReturn<object>
@@ -114,7 +114,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Name { get; set; }
     }
 
-    [ServiceHost.Api]
+    [Api]
     [Route("/swg3/conference/{Name}/conferences", "DELETE")]
     public class MultipleTest3Request : IReturn<object>
     {
@@ -122,7 +122,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Name { get; set; }
     }
 
-    [ServiceHost.Api]
+    [Api]
     [Route("/swg3/conference", "GET")]
     public class MultipleTest4Request : IReturn<object>
     {
@@ -138,7 +138,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		public int? Optional { get; set; }
 	}
 
-	[ServiceHost.Api]
+	[Api]
 	[Route("/swgnull/", "GET")]
 	public class NullableInRequest : IReturn<NullableResponse>
 	{

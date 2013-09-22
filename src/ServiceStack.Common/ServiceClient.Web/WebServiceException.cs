@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Reflection;
 using ServiceStack.Common.Utils;
-using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceClient.Web

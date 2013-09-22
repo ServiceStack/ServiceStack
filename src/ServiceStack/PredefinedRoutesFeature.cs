@@ -60,7 +60,7 @@ namespace ServiceStack
 
                 default:
                     string contentType;
-                    if (EndpointHost.ContentTypeFilter.ContentTypeFormats.TryGetValue(pathController, out contentType))
+                    if (EndpointHost.ContentTypes.ContentTypeFormats.TryGetValue(pathController, out contentType))
                     {
                         var feature = Common.Web.ContentFormat.ToFeature(contentType);
                         if (feature == Feature.None) feature = Feature.CustomFormat;

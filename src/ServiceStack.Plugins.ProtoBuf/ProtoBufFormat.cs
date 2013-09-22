@@ -3,6 +3,7 @@ using System.IO;
 using ProtoBuf;
 using ProtoBuf.Meta;
 using ServiceStack.Common.Web;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
@@ -13,7 +14,7 @@ namespace ServiceStack.Plugins.ProtoBuf
 	{
 		public void Register(IAppHost appHost)
 		{
-            appHost.ContentTypeFilters.Register(MimeTypes.ProtoBuf, Serialize, Deserialize);
+            appHost.ContentTypeses.Register(MimeTypes.ProtoBuf, Serialize, Deserialize);
 		}
 
 	    private static RuntimeTypeModel model;

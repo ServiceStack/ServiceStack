@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using ServiceStack.Common;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Support.Templates;

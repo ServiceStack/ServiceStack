@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
+using ServiceStack.Clients;
 using ServiceStack.Common;
 using ServiceStack.Logging;
-using ServiceStack.Service;
 using ServiceStack.Text;
 using StringExtensions = ServiceStack.Common.StringExtensions;
 

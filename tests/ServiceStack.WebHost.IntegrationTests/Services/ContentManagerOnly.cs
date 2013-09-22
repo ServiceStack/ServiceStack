@@ -1,6 +1,6 @@
 ﻿using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.ServiceModel;
 using ServiceStack.WebHost.IntegrationTests.Tests;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services

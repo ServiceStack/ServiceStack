@@ -3,8 +3,6 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Xml;
-using ServiceStack.DesignPatterns.Serialization;
-
 #if !SILVERLIGHT && !MONOTOUCH && !XBOX
 using System.IO.Compression;
 #endif

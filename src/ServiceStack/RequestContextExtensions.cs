@@ -1,6 +1,7 @@
 using System;
 using ServiceStack.Caching;
 using ServiceStack.Common;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.Common.Web;
@@ -18,7 +19,7 @@ namespace ServiceStack
 		/// <returns></returns>
 		public static object ToOptimizedResult<T>(this IRequestContext requestContext, T dto) 
 		{
-			string serializedDto = EndpointHost.ContentTypeFilter.SerializeToString(requestContext, dto);
+			string serializedDto = EndpointHost.ContentTypes.SerializeToString(requestContext, dto);
 			if (requestContext.CompressionType == null)
 				return (object)serializedDto;
 

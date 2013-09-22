@@ -4,7 +4,6 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Xml;
-using ServiceStack.DesignPatterns.Serialization;
 using ServiceStack.ServiceModel.Support;
 
 namespace ServiceStack.ServiceModel.Serialization

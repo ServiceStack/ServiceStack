@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
-using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.Model;
 
 namespace ServiceStack.Validation
 {

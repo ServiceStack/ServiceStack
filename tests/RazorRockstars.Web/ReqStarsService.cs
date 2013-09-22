@@ -5,18 +5,19 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using NUnit.Framework;
+using ServiceStack;
+using ServiceStack.Clients;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.OrmLite;
 using ServiceStack.Plugins.MsgPack;
-using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Cors;
-using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 
 namespace RazorRockstars.Web

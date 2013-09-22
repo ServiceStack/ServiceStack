@@ -7,6 +7,7 @@ using System.Web;
 using ServiceStack.Caching;
 using ServiceStack.Common;
 using ServiceStack.Configuration;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;

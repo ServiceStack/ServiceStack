@@ -6,6 +6,7 @@ using Funq;
 using ServiceStack.Common.Web;
 using ServiceStack.Html;
 using ServiceStack.IO;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.VirtualPath;
 using ServiceStack.WebHost.Endpoints;
@@ -31,7 +32,7 @@ namespace ServiceStack.ServiceInterface.Testing
                 GetType().Name,
                 new ServiceManager(this.container, serviceAssemblies).Init());
 
-            this.ContentTypeFilters = new HttpResponseFilter();
+            this.ContentTypeses = new ContentTypes();
             this.PreRequestFilters = new List<Action<IHttpRequest, IHttpResponse>>();
             this.RequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
             this.ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
@@ -61,7 +62,7 @@ namespace ServiceStack.ServiceInterface.Testing
             return container.TryResolve<T>();
         }
 
-        public IContentTypeFilter ContentTypeFilters { get; set; }
+        public IContentTypes ContentTypeses { get; set; }
 
         public List<Action<IHttpRequest, IHttpResponse>> PreRequestFilters { get; set; }
 

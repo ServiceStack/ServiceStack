@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Common;
-using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.ServiceModel;
 
 namespace ServiceStack.Common.Tests
 {

@@ -98,9 +98,9 @@
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.FluentValidation.Mvc3\ServiceStack.FluentValidation.Mvc3.csproj">
+    <ProjectReference Include="..\..\src\ServiceStack.FluentValidation.Mvc3\ServiceStack.Mvc3.csproj">
       <Project>{672F2DFE-4EE8-498B-B449-23E9E7F6961C}</Project>
-      <Name>ServiceStack.FluentValidation.Mvc3</Name>
+      <Name>ServiceStack.Mvc3</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
       <Project>{42e1c8c0-a163-44cc-92b1-8f416f2c0b01}</Project>

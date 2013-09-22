@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using NUnit.Framework;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.ServiceModel;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {

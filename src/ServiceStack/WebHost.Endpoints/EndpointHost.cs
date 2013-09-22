@@ -10,6 +10,7 @@ using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Messaging;
 using ServiceStack.MiniProfiler;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;
@@ -25,7 +26,7 @@ namespace ServiceStack.WebHost.Endpoints
     {
         public static IAppHost AppHost { get; internal set; }
 
-        public static IContentTypeFilter ContentTypeFilter { get; set; }
+        public static IContentTypes ContentTypes { get; set; }
 
         public static List<Action<IHttpRequest, IHttpResponse>> RawRequestFilters { get; private set; }
 
@@ -55,7 +56,7 @@ namespace ServiceStack.WebHost.Endpoints
 
         private static void Reset()
         {
-            ContentTypeFilter = HttpResponseFilter.Instance;
+            ContentTypes = Common.Web.ContentTypes.Instance;
             RawRequestFilters = new List<Action<IHttpRequest, IHttpResponse>>();
             RequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
             ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();

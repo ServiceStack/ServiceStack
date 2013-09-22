@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.ServiceInterface

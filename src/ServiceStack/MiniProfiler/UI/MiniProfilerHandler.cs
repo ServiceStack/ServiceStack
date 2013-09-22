@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Web;
+using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.MiniProfiler.Helpers;
 using ServiceStack.ServiceHost;

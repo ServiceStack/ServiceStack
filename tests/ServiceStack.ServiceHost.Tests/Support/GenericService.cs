@@ -1,6 +1,7 @@
 using System.Runtime.Serialization;
 using System.Reflection;
 using System;
+using ServiceStack.Server;
 
 namespace ServiceStack.ServiceHost.Tests.Support
 {

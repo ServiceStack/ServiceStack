@@ -6,6 +6,7 @@ using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Razor.Managers;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;

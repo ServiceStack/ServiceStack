@@ -1,5 +1,6 @@
 using System.Threading;
-using ServiceStack.DesignPatterns.Command;
+using ServiceStack.Commands;
+using ServiceStack;
 
 namespace ServiceStack.Common.Support
 {

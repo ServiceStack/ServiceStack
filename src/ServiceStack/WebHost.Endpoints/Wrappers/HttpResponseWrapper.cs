@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Web;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Wrappers

@@ -2,10 +2,9 @@ using System;
 using System.Xml.Linq;
 using NUnit.Framework;
 using ServiceStack.DataAnnotations;
-using ServiceStack.DesignPatterns.Model;
+using ServiceStack.Model;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
-using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests.Xlinq

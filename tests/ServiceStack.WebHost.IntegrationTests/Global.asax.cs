@@ -5,6 +5,7 @@ using ServiceStack.Caching;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Configuration;
+using ServiceStack.Data;
 using ServiceStack.Messaging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.MiniProfiler.Data;

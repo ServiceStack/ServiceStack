@@ -19,8 +19,6 @@ namespace ServiceStack.Configuration
 		/// <summary>
 		/// Gets the nullable app setting.
 		/// </summary>
-		/// <param name="key">The key.</param>
-		/// <returns></returns>
 		public static string GetNullableAppSetting(string key)
 		{
 			return ConfigurationManager.AppSettings[key];
@@ -29,8 +27,6 @@ namespace ServiceStack.Configuration
 		/// <summary>
 		/// Gets the app setting.
 		/// </summary>
-		/// <param name="key">The key.</param>
-		/// <returns></returns>
 		public static string GetAppSetting(string key)
 		{
 			string value = ConfigurationManager.AppSettings[key];
@@ -46,8 +42,6 @@ namespace ServiceStack.Configuration
 		/// <summary>
 		/// Determines wheter the Config section identified by the sectionName exists.
 		/// </summary>
-		/// <param name="sectionName">Name of the section.</param>
-		/// <returns></returns>
 		public static bool ConfigSectionExists(string sectionName)
 		{
 			return (ConfigurationManager.GetSection(sectionName) != null);
@@ -56,9 +50,6 @@ namespace ServiceStack.Configuration
 		/// <summary>
 		/// Returns AppSetting[key] if exists otherwise defaultValue
 		/// </summary>
-		/// <param name="key">The key.</param>
-		/// <param name="defaultValue">The default value.</param>
-		/// <returns></returns>
 		public static string GetAppSetting(string key, string defaultValue)
 		{
 			return ConfigurationManager.AppSettings[key] ?? defaultValue;
@@ -67,10 +58,6 @@ namespace ServiceStack.Configuration
 		/// <summary>
 		/// Returns AppSetting[key] if exists otherwise defaultValue, for non-string values
 		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <param name="key">The key.</param>
-		/// <param name="defaultValue">The default value.</param>
-		/// <returns></returns>
 		public static T GetAppSetting<T>(string key, T defaultValue)
 		{
 			string val = ConfigurationManager.AppSettings[key];
@@ -88,8 +75,6 @@ namespace ServiceStack.Configuration
 		/// <summary>
 		/// Gets the connection string setting.
 		/// </summary>
-		/// <param name="key">The key.</param>
-		/// <returns></returns>
 		public static ConnectionStringSettings GetConnectionStringSetting(string key)
 		{
 			var value = ConfigurationManager.ConnectionStrings[key];
@@ -104,8 +89,6 @@ namespace ServiceStack.Configuration
 		/// <summary>
 		/// Gets the connection string.
 		/// </summary>
-		/// <param name="key">The key.</param>
-		/// <returns></returns>
 		public static string GetConnectionString(string key)
 		{
 			return GetConnectionStringSetting(key).ToString();
@@ -114,8 +97,6 @@ namespace ServiceStack.Configuration
 		/// <summary>
 		/// Gets the list from app setting.
 		/// </summary>
-		/// <param name="key">The key.</param>
-		/// <returns></returns>
 		public static List<string> GetListFromAppSetting(string key)
 		{
 		    var appSettingValue = GetAppSetting(key);
@@ -130,8 +111,6 @@ namespace ServiceStack.Configuration
 	    /// <summary>
 		/// Gets the dictionary from app setting.
 		/// </summary>
-		/// <param name="key">The key.</param>
-		/// <returns></returns>
 		public static Dictionary<string, string> GetDictionaryFromAppSetting(string key)
 	    {
 	        var appSettingValue = GetAppSetting(key);
@@ -150,12 +129,9 @@ namespace ServiceStack.Configuration
 	        return dictionary;
 	    }
 
-	    #region Private Methods
 		/// <summary>
 		/// Get the static Parse(string) method on the type supplied
 		/// </summary>
-		/// <param name="type"></param>
-		/// <returns>A delegate to the type's Parse(string) if it has one</returns>
 		private static MethodInfo GetParseMethod(Type type)
 		{
 			const string parseMethod = "Parse";
@@ -173,8 +149,6 @@ namespace ServiceStack.Configuration
 		/// <summary>
 		/// Gets the constructor info for T(string) if exists.
 		/// </summary>
-		/// <param name="type">The type.</param>
-		/// <returns></returns>
 		private static ConstructorInfo GetConstructorInfo(Type type)
 		{
 			foreach (ConstructorInfo ci in type.GetConstructors())
@@ -194,9 +168,6 @@ namespace ServiceStack.Configuration
 		/// e.g. if T was a TimeSpan it will return TimeSpan.Parse(textValue).
 		/// If there is no Parse Method it will attempt to create a new instance of the destined type
 		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <param name="textValue">The default value.</param>
-		/// <returns>T.Parse(string) or new T(string) value</returns>
 		private static T ParseTextValue<T>(string textValue)
 		{
 			var parseMethod = GetParseMethod(typeof(T));
@@ -213,7 +184,6 @@ namespace ServiceStack.Configuration
 			var value = parseMethod.Invoke(null, new object[] { textValue });
 			return (T)value;
 		}
-		#endregion
 
 	}
 }

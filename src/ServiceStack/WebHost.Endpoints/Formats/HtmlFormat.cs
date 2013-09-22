@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
@@ -25,8 +26,8 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 		{
 			AppHost = appHost;
 			//Register this in ServiceStack with the custom formats
-            appHost.ContentTypeFilters.Register(MimeTypes.Html, SerializeToStream, null);
-            appHost.ContentTypeFilters.Register(MimeTypes.JsonReport, SerializeToStream, null);
+            appHost.ContentTypeses.Register(MimeTypes.Html, SerializeToStream, null);
+            appHost.ContentTypeses.Register(MimeTypes.JsonReport, SerializeToStream, null);
 
             appHost.Config.DefaultContentType = MimeTypes.Html;
             appHost.Config.IgnoreFormatsInMetadata.Add(MimeTypes.Html.ToContentFormat());

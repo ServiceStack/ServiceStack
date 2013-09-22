@@ -6,6 +6,7 @@ using System.Net;
 using System.Web;
 using ServiceStack.Common;
 using ServiceStack.MiniProfiler.UI;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Support;

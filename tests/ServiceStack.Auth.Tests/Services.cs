@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
+using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
-using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.ServiceModel;
 
 #if HTTP_LISTENER
 namespace ServiceStack.Auth.Tests

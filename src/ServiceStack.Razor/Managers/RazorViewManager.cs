@@ -9,6 +9,7 @@ using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Razor.Compilation;
 using ServiceStack.Razor.Managers.RazorGen;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 

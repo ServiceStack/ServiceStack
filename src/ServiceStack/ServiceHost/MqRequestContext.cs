@@ -2,7 +2,9 @@
 using System.Collections.Specialized;
 using System.Globalization;
 using System.Net;
+using ServiceStack.Configuration;
 using ServiceStack.Messaging;
+using ServiceStack.Server;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceHost

@@ -8,6 +8,7 @@ using System.Web;
 using System.Xml;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
+using ServiceStack.Server;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;

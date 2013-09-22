@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using ServiceStack.Commands;
 using ServiceStack.Common.Support;
-using ServiceStack.DesignPatterns.Command;
+using ServiceStack;
+
 #if NETFX_CORE
 using Windows.System.Threading;
 #endif

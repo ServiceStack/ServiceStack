@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using ServiceStack.Common.Support;
 using ServiceStack.Logging;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 

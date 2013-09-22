@@ -4,6 +4,7 @@ using ServiceStack.Authentication.OAuth2;
 using ServiceStack.Authentication.OpenId;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
+using ServiceStack.Data;
 using ServiceStack.FluentValidation;
 using ServiceStack.MiniProfiler;
 using ServiceStack.MiniProfiler.Data;

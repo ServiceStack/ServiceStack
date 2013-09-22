@@ -1,5 +1,6 @@
 ﻿using System;
 using ServiceStack.Common.Web;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.ServiceInterface.Cors

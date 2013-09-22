@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using ServiceStack.Data;
 using ServiceStack.OrmLite;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests

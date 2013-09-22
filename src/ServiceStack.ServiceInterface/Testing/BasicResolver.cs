@@ -1,4 +1,5 @@
 ﻿using Funq;
+using ServiceStack.Configuration;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.ServiceInterface.Testing

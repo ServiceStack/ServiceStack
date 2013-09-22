@@ -188,7 +188,7 @@
     </Compile>
     <Compile Include="ServiceClient.Web\RouteMember.cs" />
     <Compile Include="ServiceModel\MetadataTypes.cs" />
-    <Compile Include="Model.cs">
+    <Compile Include="ModelUtils.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ModelConfig.cs">
@@ -252,6 +252,9 @@
     <Compile Include="ServiceClient.Web\Soap12ServiceClient.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ServiceModel\Serialization\IStringDeserializer.cs" />
+    <Compile Include="ServiceModel\Serialization\IStringSerializer.cs" />
+    <Compile Include="ServiceModel\Serialization\ITextSerializer.cs" />
     <Compile Include="UrlExtensions.cs" />
     <Compile Include="ServiceClient.Web\WcfServiceClient.cs">
       <SubType>Code</SubType>
@@ -331,9 +334,6 @@
     <Compile Include="Support\InMemoryLogFactory.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Support\LogicFacadeBase.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Support\NetDeflateProvider.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -396,7 +396,7 @@
     <Compile Include="Web\HttpMethods.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Web\HttpResponseFilter.cs">
+    <Compile Include="Web\ContentTypes.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Web\HttpResponseStreamWrapper.cs">
@@ -433,9 +433,6 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

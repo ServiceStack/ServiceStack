@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Net;
 using ServiceStack.Logging;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Wrappers

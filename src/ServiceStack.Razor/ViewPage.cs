@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using ServiceStack.Html;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Razor

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ServiceStack.Server;
 using ServiceStack.ServiceClient.Web;
 
 namespace ServiceStack.Common.Tests.ServiceClient.Web
@@ -10,7 +11,7 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
     {
         public override string ContentType { get { return String.Format("application/{0}", Format); } }
 
-        public override void SerializeToStream(ServiceHost.IRequestContext requestContext, object request, System.IO.Stream stream)
+        public override void SerializeToStream(IRequestContext requestContext, object request, System.IO.Stream stream)
         {
             throw new NotImplementedException();
         }

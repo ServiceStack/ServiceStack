@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using Funq;
 using ServiceStack.Logging;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;

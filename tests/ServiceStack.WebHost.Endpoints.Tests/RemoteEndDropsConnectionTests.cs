@@ -4,6 +4,7 @@ using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
+using ServiceStack.Server;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 using System.Linq;
 
@@ -56,7 +57,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		/// <summary>
 		/// *Request* DTO
 		/// </summary>
-		[ServiceStack.ServiceHost.RestService("/test/timed", "GET")]
+		[RestService("/test/timed", "GET")]
 		public class Timed
 		{
 			/// <summary>

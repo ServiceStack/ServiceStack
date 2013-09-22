@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Common.Utils;
+using ServiceStack.Server;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceHost

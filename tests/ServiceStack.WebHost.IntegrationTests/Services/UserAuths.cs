@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
+using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
-using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.ServiceModel;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {

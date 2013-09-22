@@ -5,6 +5,7 @@ using System.Reflection;
 using Funq;
 using ServiceStack.Html;
 using ServiceStack.IO;
+using ServiceStack.Server;
 using ServiceStack.VirtualPath;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
@@ -47,7 +48,7 @@ namespace ServiceStack.ServiceInterface.Testing
 
         public Container Container { get; set; }
 
-        public IContentTypeFilter ContentTypeFilters { get; set; }
+        public IContentTypes ContentTypeses { get; set; }
 
         public List<Action<IHttpRequest, IHttpResponse>> PreRequestFilters { get; set; }
 

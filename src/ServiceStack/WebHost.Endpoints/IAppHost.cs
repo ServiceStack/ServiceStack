@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using ServiceStack.Configuration;
 using ServiceStack.Html;
 using ServiceStack.IO;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints
@@ -45,7 +47,7 @@ namespace ServiceStack.WebHost.Endpoints
 		/// <summary>
 		/// Register custom ContentType serializers
 		/// </summary>
-		IContentTypeFilter ContentTypeFilters { get; }
+		IContentTypes ContentTypeses { get; }
 		
         /// <summary>
         /// Add Request Filters, to be applied before the dto is deserialized

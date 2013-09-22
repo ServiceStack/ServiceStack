@@ -48,7 +48,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Interfaces", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.ServiceInterface", "ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj", "{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.FluentValidation.Mvc3", "ServiceStack.FluentValidation.Mvc3\ServiceStack.FluentValidation.Mvc3.csproj", "{672F2DFE-4EE8-498B-B449-23E9E7F6961C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Mvc3", "ServiceStack.FluentValidation.Mvc3\ServiceStack.Mvc3.csproj", "{672F2DFE-4EE8-498B-B449-23E9E7F6961C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Plugins.ProtoBuf", "ServiceStack.Plugins.ProtoBuf\ServiceStack.Plugins.ProtoBuf.csproj", "{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}"
 EndProject

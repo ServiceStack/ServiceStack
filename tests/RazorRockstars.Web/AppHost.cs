@@ -2,8 +2,10 @@
 using System.Net;
 using System.Runtime.Serialization;
 using Funq;
+using ServiceStack;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
+using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.Plugins.MsgPack;

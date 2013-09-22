@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Threading;
 using NUnit.Framework;
-using ServiceStack.Service;
+using ServiceStack.Clients;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;

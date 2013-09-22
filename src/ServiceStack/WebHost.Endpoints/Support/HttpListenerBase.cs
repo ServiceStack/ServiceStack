@@ -14,8 +14,9 @@ using ServiceStack.Configuration;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.ServiceModel;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Wrappers;
@@ -265,11 +266,11 @@ namespace ServiceStack.WebHost.Endpoints.Support
 	                var requestCtx = new HttpRequestContext(httpReq, httpRes, errorResponse);
 	                var contentType = requestCtx.ResponseContentType;
 
-	                var serializer = EndpointHost.ContentTypeFilter.GetResponseSerializer(contentType);
+	                var serializer = EndpointHost.ContentTypes.GetResponseSerializer(contentType);
                     if (serializer == null)
                     {
                         contentType = EndpointHost.Config.DefaultContentType;
-                        serializer = EndpointHost.ContentTypeFilter.GetResponseSerializer(contentType);
+                        serializer = EndpointHost.ContentTypes.GetResponseSerializer(contentType);
                     }
 
                     httpRes.StatusCode = 500;
@@ -456,11 +457,11 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			get { return EndpointHost.ServiceManager.ServiceController.RequestTypeFactoryMap; }
 		}
 
-		public IContentTypeFilter ContentTypeFilters
+		public IContentTypes ContentTypeses
 		{
 			get
 			{
-				return EndpointHost.ContentTypeFilter;
+				return EndpointHost.ContentTypes;
 			}
 		}
 

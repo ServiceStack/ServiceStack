@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ServiceStack.Common.Utils;
+using ServiceStack.Server;
 
 namespace ServiceStack.ServiceHost.Tests
 {

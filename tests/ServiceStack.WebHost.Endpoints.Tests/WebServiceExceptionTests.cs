@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using NUnit.Framework;
 using ServiceStack.ServiceClient.Web;
-using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.ServiceModel;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

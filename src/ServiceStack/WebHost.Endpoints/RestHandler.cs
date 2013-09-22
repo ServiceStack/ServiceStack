@@ -3,6 +3,7 @@ using System.Runtime.Serialization;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Support;
@@ -40,7 +41,7 @@ namespace ServiceStack.WebHost.Endpoints
                 if (pos >= 0)
                 {
                     var format = pathInfo.Substring(pos + 1);
-                    contentType = EndpointHost.ContentTypeFilter.GetFormatContentType(format);
+                    contentType = EndpointHost.ContentTypes.GetFormatContentType(format);
                     if (contentType != null)
                     {
                         pathInfo = pathInfo.Substring(0, pos);

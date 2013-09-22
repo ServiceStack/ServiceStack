@@ -5,6 +5,7 @@ using System.Web.UI;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Support.Metadata.Controls;
 
@@ -34,7 +35,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
 				using (var ms = new MemoryStream())
 				{
-					EndpointHost.ContentTypeFilter.SerializeToStream(
+					EndpointHost.ContentTypes.SerializeToStream(
 						new SerializationContext(this.ContentType), requestObj, ms);
 
 					return Encoding.UTF8.GetString(ms.ToArray());

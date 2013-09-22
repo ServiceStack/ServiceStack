@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Funq;
 using ServiceStack.Common;
 using ServiceStack.Configuration;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 

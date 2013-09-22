@@ -1,6 +1,7 @@
 using System.Web;
 using System.Web.UI;
 using ServiceStack.Common;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Support.Templates;
 

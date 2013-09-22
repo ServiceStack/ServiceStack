@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Caching;
+using ServiceStack.Clients;
 using ServiceStack.Common;
 using ServiceStack.Common.Tests.ServiceClient.Web;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using NUnit.Framework;
 using ServiceStack.ServiceClient.Web;
-using ServiceStack.Service;
 using ServiceStack.ServiceInterface;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Utils;

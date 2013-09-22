@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.ServiceModel;
 using ServiceStack.Validation;
 
 namespace ServiceStack.Common.Utils

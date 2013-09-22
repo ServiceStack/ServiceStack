@@ -7,6 +7,7 @@ using System.Threading;
 using MsgPack;
 using MsgPack.Serialization;
 using ServiceStack.Common.Web;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
@@ -68,7 +69,7 @@ namespace ServiceStack.Plugins.MsgPack
 	{
 		public void Register(IAppHost appHost)
 		{
-            appHost.ContentTypeFilters.Register(MimeTypes.MsgPack,
+            appHost.ContentTypeses.Register(MimeTypes.MsgPack,
                 Serialize,
                 Deserialize);
 		}

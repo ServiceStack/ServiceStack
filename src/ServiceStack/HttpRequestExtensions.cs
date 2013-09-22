@@ -10,6 +10,7 @@ using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
@@ -541,7 +542,7 @@ namespace ServiceStack
             if (format.Contains("jsv")) return MimeTypes.Jsv;
 
             string contentType;
-            EndpointHost.ContentTypeFilter.ContentTypeFormats.TryGetValue(format, out contentType);
+            EndpointHost.ContentTypes.ContentTypeFormats.TryGetValue(format, out contentType);
 
             return contentType;
         }
@@ -579,7 +580,7 @@ namespace ServiceStack
                 defaultContentType = EndpointHost.Config.DefaultContentType;
             }
 
-            var customContentTypes = EndpointHost.ContentTypeFilter.ContentTypeFormats.Values;
+            var customContentTypes = EndpointHost.ContentTypes.ContentTypeFormats.Values;
 
             var acceptsAnything = false;
             var hasDefaultContentType = !String.IsNullOrEmpty(defaultContentType);

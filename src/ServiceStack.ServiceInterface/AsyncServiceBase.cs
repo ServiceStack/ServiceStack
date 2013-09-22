@@ -1,5 +1,6 @@
 using System;
 using ServiceStack.Messaging;
+using ServiceStack.Server;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;

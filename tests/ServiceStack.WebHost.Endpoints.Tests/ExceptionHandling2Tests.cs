@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using NUnit.Framework;
 using ProtoBuf;
+using ServiceStack.Clients;
 using ServiceStack.Plugins.ProtoBuf;
-using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.ServiceModel;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

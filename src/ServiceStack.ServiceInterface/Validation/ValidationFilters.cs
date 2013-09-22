@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.FluentValidation;
 using ServiceStack.WebHost.Endpoints;

@@ -10,6 +10,7 @@ using ServiceStack.Configuration;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints
@@ -172,11 +173,11 @@ namespace ServiceStack.WebHost.Endpoints
 			get { return EndpointHost.ServiceManager.ServiceController.RequestTypeFactoryMap; }
 		}
 
-		public IContentTypeFilter ContentTypeFilters
+		public IContentTypes ContentTypeses
 		{
 			get
 			{
-				return EndpointHost.ContentTypeFilter;
+				return EndpointHost.ContentTypes;
 			}
 		}
 

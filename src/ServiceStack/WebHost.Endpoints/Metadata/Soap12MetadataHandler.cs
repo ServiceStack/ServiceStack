@@ -1,6 +1,7 @@
 using System;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.WebHost.Endpoints.Support.Metadata.Controls;

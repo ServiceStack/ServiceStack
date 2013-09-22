@@ -3,6 +3,7 @@ using System.Data;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.OrmLite;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost.Tests.Support;
 using ServiceStack.ServiceHost.Tests.UseCase.Operations;
 

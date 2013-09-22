@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using ServiceStack.Markdown;
+using ServiceStack.Server;
 
 namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 {

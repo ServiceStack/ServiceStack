@@ -2,6 +2,7 @@ using System;
 using System.Web;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
+using ServiceStack.Server;
 
 namespace ServiceStack.ServiceHost
 {

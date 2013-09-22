@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Formats;
 

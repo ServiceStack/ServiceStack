@@ -3,6 +3,7 @@ using System.Net;
 using System.Web;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
+using ServiceStack.Server;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;

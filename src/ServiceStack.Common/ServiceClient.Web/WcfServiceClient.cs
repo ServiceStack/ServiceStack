@@ -9,7 +9,7 @@ using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
 using ServiceStack.Common.Utils;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.ServiceModel;
 
 
 namespace ServiceStack.ServiceClient.Web

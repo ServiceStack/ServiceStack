@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
-using ServiceStack.Service;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 
@@ -41,7 +41,7 @@ namespace ServiceStack.Common.Web
         public HttpResult(object response, string contentType, HttpStatusCode statusCode)
         {
             this.Headers = new Dictionary<string, string>();
-            this.ResponseFilter = HttpResponseFilter.Instance;
+            this.ResponseFilter = ContentTypes.Instance;
 
             this.Response = response;
             this.ContentType = contentType;

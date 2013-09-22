@@ -1,12 +1,13 @@
 ﻿using Funq;
 using NUnit.Framework;
+using ServiceStack.Clients;
+using ServiceStack.Server;
 using ServiceStack.ServiceInterface.Admin;
 using ServiceStack.Text;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using System.Runtime.Serialization;
-using ServiceStack.Service;
 using ServiceStack.Messaging;
 using System.ServiceModel.Channels;
 using System;

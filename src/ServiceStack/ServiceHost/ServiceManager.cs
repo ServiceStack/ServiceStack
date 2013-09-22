@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using ServiceStack.Logging;
 using Funq;
+using ServiceStack.Server;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceHost

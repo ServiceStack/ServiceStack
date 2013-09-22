@@ -6,6 +6,7 @@ using System.Web;
 
 using ServiceStack.Common;
 using ServiceStack.Configuration;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel;
 using ServiceStack.Text;

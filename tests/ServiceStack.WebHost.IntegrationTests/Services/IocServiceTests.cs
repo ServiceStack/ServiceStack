@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using NUnit.Framework;
+using ServiceStack.Server;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.WebHost.IntegrationTests.Tests;
 

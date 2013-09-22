@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using NUnit.Framework;
+using ServiceStack.Server;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceHost.Tests

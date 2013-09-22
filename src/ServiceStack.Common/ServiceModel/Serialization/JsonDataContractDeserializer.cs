@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
-using ServiceStack.DesignPatterns.Serialization;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceModel.Serialization

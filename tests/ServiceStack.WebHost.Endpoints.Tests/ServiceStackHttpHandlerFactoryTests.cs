@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Web;
 using NUnit.Framework;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Metadata;
 using ServiceStack.WebHost.Endpoints.Support;

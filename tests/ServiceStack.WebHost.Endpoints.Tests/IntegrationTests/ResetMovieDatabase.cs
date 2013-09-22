@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.ServiceModel;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {

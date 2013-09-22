@@ -8,7 +8,7 @@ using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Plugins.ProtoBuf;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 

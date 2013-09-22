@@ -7,6 +7,7 @@ using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Markdown;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;
@@ -166,8 +167,8 @@ namespace ServiceStack.WebHost.Endpoints.Formats
                 };
             });
 
-            appHost.ContentTypeFilters.Register(MimeTypes.MarkdownText, SerializeToStream, null);
-            appHost.ContentTypeFilters.Register(MimeTypes.PlainText, SerializeToStream, null);
+            appHost.ContentTypeses.Register(MimeTypes.MarkdownText, SerializeToStream, null);
+            appHost.ContentTypeses.Register(MimeTypes.PlainText, SerializeToStream, null);
             appHost.Config.IgnoreFormatsInMetadata.Add(MimeTypes.MarkdownText.ToContentFormat());
             appHost.Config.IgnoreFormatsInMetadata.Add(MimeTypes.PlainText.ToContentFormat());
         }

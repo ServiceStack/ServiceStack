@@ -1,3 +1,4 @@
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;
 

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Net;
-using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.Clients;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using NUnit.Framework;
-using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
+using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using ServiceStack.Common.Web;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Mocks

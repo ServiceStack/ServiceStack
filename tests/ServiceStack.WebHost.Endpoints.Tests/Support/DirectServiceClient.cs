@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using System.Net;
+using ServiceStack.Clients;
 using ServiceStack.Common.Web;
-using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -54,7 +54,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 
 				try
 				{
-					var deserializer = EndpointHost.AppHost.ContentTypeFilters.GetStreamDeserializer(httpReq.ResponseContentType);
+					var deserializer = EndpointHost.AppHost.ContentTypeses.GetStreamDeserializer(httpReq.ResponseContentType);
 					webEx.ResponseDto = deserializer(typeof(TResponse), httpRes.OutputStream);
 				}
 				catch (Exception ex)

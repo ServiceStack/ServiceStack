@@ -77,7 +77,7 @@ namespace ServiceStack
 
                 default:
                     string contentType;
-                    if (EndpointHost.ContentTypeFilter
+                    if (EndpointHost.ContentTypes
                         .ContentTypeFormats.TryGetValue(pathController, out contentType))
                     {
                         var format = Common.Web.ContentFormat.GetContentFormat(contentType);

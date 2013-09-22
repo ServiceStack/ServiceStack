@@ -18,6 +18,7 @@ using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Markdown;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel;
 using ServiceStack.Text;
@@ -538,7 +539,7 @@ namespace ServiceStack.WebHost.Endpoints
                     Metadata,
                     ServiceEndpointsMetadataConfig,
                     IgnoreFormatsInMetadata,
-                    EndpointHost.ContentTypeFilter.ContentTypeFormats.Keys.ToList());
+                    EndpointHost.ContentTypes.ContentTypeFormats.Keys.ToList());
             }
         }
 

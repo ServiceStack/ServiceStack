@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ServiceStack.Data;
 using ServiceStack.MiniProfiler;
 using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost;

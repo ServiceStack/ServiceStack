@@ -3,7 +3,6 @@ using System.IO;
 using System.Text;
 using System.Runtime.Serialization;
 using System.Xml;
-using ServiceStack.DesignPatterns.Serialization;
 
 namespace ServiceStack.ServiceModel.Serialization
 {

@@ -11,6 +11,7 @@ using System.Web;
 using Funq;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 

@@ -1,5 +1,6 @@
 using System.Runtime.Serialization;
 using ServiceStack.Common;
+using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;

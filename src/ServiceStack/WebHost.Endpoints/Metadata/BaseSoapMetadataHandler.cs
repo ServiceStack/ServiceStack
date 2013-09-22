@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Xml.Schema;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Support.Metadata;

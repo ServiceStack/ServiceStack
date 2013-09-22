@@ -4,8 +4,8 @@ using System.Net;
 using NUnit.Framework;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
-using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.IntegrationTests.Services;
@@ -80,7 +80,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 					{
 						using (var stream = errorResponse.GetResponseStream())
 						{
-							var response = HttpResponseFilter.Instance.DeserializeFromStream(contentType, typeof(T), stream);
+							var response = ContentTypes.Instance.DeserializeFromStream(contentType, typeof(T), stream);
 							return (T)response;
 						}
 					}

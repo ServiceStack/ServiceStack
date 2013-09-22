@@ -1,7 +1,6 @@
 #if !(SILVERLIGHT || MONOTOUCH || XBOX || __ANDROID__)
 using System;
 using System.IO;
-using ServiceStack.Service;
 using System.Net;
 
 namespace ServiceStack.ServiceClient.Web
@@ -9,7 +8,6 @@ namespace ServiceStack.ServiceClient.Web
     using System.ServiceModel;
     using System.ServiceModel.Channels;
     using ServiceStack.Text;
-    using ServiceStack.Service;
 
     public class Soap12ServiceClient : WcfServiceClient
     {

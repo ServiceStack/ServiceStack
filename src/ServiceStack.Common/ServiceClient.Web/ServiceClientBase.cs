@@ -10,10 +10,11 @@ using System.Web;
 #if !SILVERLIGHT
 using System.Reflection;
 #endif
+using ServiceStack.Clients;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
-using ServiceStack.Service;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 

@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Web;
 using ServiceStack.Common.Web;
 using ServiceStack.Html.AntiXsrf;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Support.Markdown;

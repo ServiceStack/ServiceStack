@@ -1,5 +1,6 @@
 using System.IO;
 using System.Xml;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;

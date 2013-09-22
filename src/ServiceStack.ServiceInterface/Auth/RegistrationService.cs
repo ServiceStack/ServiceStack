@@ -5,9 +5,10 @@ using System.Runtime.Serialization;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.FluentValidation;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.ServiceInterface.Validation;
+using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 

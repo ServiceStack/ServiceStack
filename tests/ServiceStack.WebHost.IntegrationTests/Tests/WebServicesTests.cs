@@ -1,7 +1,7 @@
 using System;
 using System.Net;
 using NUnit.Framework;
-using ServiceStack.Service;
+using ServiceStack.Clients;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Testing;

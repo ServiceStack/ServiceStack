@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ServiceStack.Server;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceHost

@@ -6,6 +6,7 @@ using System.Web;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
@@ -95,7 +96,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
             {
                 if (!string.IsNullOrEmpty(contentType) && httpReq.ContentLength > 0)
                 {
-                    var deserializer = EndpointHost.AppHost.ContentTypeFilters.GetStreamDeserializer(contentType);
+                    var deserializer = EndpointHost.AppHost.ContentTypeses.GetStreamDeserializer(contentType);
                     if (deserializer != null)
                     {
                         return deserializer(requestType, httpReq.InputStream);

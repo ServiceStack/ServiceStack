@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using ServiceStack.Common;
+using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 

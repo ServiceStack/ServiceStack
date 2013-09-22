@@ -9,6 +9,7 @@ using ServiceStack.Configuration;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.SqlServer;
 using ServiceStack.Redis;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;

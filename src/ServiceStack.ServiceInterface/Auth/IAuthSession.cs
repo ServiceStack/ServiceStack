@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.ServiceInterface.Auth

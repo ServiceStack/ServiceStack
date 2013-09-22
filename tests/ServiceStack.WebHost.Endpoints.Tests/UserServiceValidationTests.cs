@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using ServiceStack.Clients;
 using ServiceStack.FluentValidation;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using NUnit.Framework;
@@ -11,7 +13,6 @@ using ServiceStack.ServiceInterface.Validation;
 using System.Collections;
 using Funq;
 using ServiceStack.ServiceClient.Web;
-using ServiceStack.Service;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
 

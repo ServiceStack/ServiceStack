@@ -2,7 +2,9 @@
 using System.Net;
 using ServiceStack.Caching;
 using ServiceStack.Common.Web;
+using ServiceStack.Configuration;
 using ServiceStack.Redis;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.Testing;

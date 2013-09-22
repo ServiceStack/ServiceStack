@@ -9,6 +9,7 @@ using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.Html;
 using ServiceStack.IO;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost.Tests.AppData;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
@@ -51,7 +52,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 					HtmlReplaceTokens = new Dictionary<string, string>(),
 					IgnoreFormatsInMetadata = new HashSet<string>(),
 				};
-				this.ContentTypeFilters = HttpResponseFilter.Instance;
+				this.ContentTypeses = ContentTypes.Instance;
 				this.ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
 				this.ViewEngines = new List<IViewEngine>();
 				this.CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
@@ -79,7 +80,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 				throw new NotImplementedException();
 			}
 
-			public IContentTypeFilter ContentTypeFilters { get; set; }
+			public IContentTypes ContentTypeses { get; set; }
 
             public List<Action<IHttpRequest, IHttpResponse>> PreRequestFilters { get; set; }
 

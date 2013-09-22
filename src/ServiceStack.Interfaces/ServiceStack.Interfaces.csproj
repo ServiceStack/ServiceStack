@@ -150,64 +150,46 @@
     <Compile Include="DataAnnotations\ReferencesAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DesignPatterns\Command\ICommand.cs">
+    <Compile Include="Commands\ICommand.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DesignPatterns\Command\ICommandExec.cs">
+    <Compile Include="Commands\ICommandExec.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DesignPatterns\Command\ICommandIEnumerable.cs">
+    <Compile Include="Commands\ICommandList.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DesignPatterns\Command\ICommandIList.cs">
+    <Compile Include="Commands\ICommand.Generic.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DesignPatterns\Command\ICommandList.cs">
+    <Compile Include="Model\IHasGuidId.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DesignPatterns\Command\ICommandVoid.cs">
+    <Compile Include="Model\IHasId.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DesignPatterns\Model\IHasGuidId.cs">
+    <Compile Include="Model\IHasIntId.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DesignPatterns\Model\IHasId.cs">
+    <Compile Include="Model\IHasLongId.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DesignPatterns\Model\IHasIntId.cs">
+    <Compile Include="Model\IHasNamed.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DesignPatterns\Model\IHasLongId.cs">
+    <Compile Include="Model\IHasNamedCollection.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DesignPatterns\Model\IHasNamed.cs">
+    <Compile Include="Model\IHasNamedList.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DesignPatterns\Model\IHasNamedCollection.cs">
+    <Compile Include="Model\IHasStringId.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DesignPatterns\Model\IHasNamedList.cs">
+    <Compile Include="Model\IHasUserId.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DesignPatterns\Model\IHasStringId.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DesignPatterns\Model\IHasUserId.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DesignPatterns\Model\IHasUserSession.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DesignPatterns\Serialization\IStringDeserializer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DesignPatterns\Serialization\IStringSerializer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DesignPatterns\Serialization\ITextSerializer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DesignPatterns\Translator\ITranslator.cs">
+    <Compile Include="Model\IHasUserSession.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="IO\IVirtualDirectory.cs" />
@@ -246,21 +228,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Logging\Support\Logging\TestLogger.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="LogicFacade\IInitContext.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="LogicFacade\ILogicFacade.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="LogicFacade\InitOptions.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="LogicFacade\IServiceModelFinder.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="LogicFacade\IXmlRequest.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Messaging\IMessage.cs">
@@ -302,8 +269,8 @@
     <Compile Include="Messaging\UnRetryableMessagingException.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="OrmLite\DbConnectionFactory.cs" />
-    <Compile Include="OrmLite\IDbConnectionFactory.cs" />
+    <Compile Include="Data\DbConnectionFactory.cs" />
+    <Compile Include="Data\IDbConnectionFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Redis\Generic\IRedisHash.Generic.cs">
       <SubType>Code</SubType>
@@ -381,187 +348,166 @@
     <Compile Include="Redis\SortOptions.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SearchIndex\FullTextIndexAttribute.cs">
+    <Compile Include="ApiAllowableValuesAttribute.cs" />
+    <Compile Include="ApiAttribute.cs" />
+    <Compile Include="ApiMemberAttribute.cs" />
+    <Compile Include="ApiResponse.cs" />
+    <Compile Include="Server\IRestOptionsService.cs" />
+    <Compile Include="IService.cs" />
+    <Compile Include="Server\IExpress.cs" />
+    <Compile Include="Server\IRequiresHttpRequest.cs" />
+    <Compile Include="Server\IRequiresRequestStream.cs" />
+    <Compile Include="EndpointAttributes.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SearchIndex\FullTextIndexDocumentAttribute.cs">
+    <Compile Include="Feature.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SearchIndex\FullTextIndexFieldAttribute.cs">
+    <Compile Include="Server\IAsyncService.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\ApiAllowableValuesAttribute.cs" />
-    <Compile Include="ServiceHost\ApiAttribute.cs" />
-    <Compile Include="ServiceHost\ApiMemberAttribute.cs" />
-    <Compile Include="ServiceHost\ApiResponse.cs" />
-    <Compile Include="ServiceHost\IRestOptionsService.cs" />
-    <Compile Include="ServiceHost\IService.cs" />
-    <Compile Include="ServiceHost\IExpress.cs" />
-    <Compile Include="ServiceHost\IRequiresHttpRequest.cs" />
-    <Compile Include="ServiceHost\IRequiresRequestStream.cs" />
-    <Compile Include="ServiceHost\EndpointAttributes.cs">
+    <Compile Include="Configuration\IResolver.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\Feature.cs">
+    <Compile Include="Server\IContentTypes.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IAsyncService.cs">
+    <Compile Include="Server\IContentTypeReader.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IResolver.cs">
+    <Compile Include="Server\IContentTypeWriter.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IContentTypeFilter.cs">
+    <Compile Include="Server\ICookies.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IContentTypeReader.cs">
+    <Compile Include="Server\IExpirable.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IContentTypeWriter.cs">
+    <Compile Include="Server\IFile.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\ICookies.cs">
+    <Compile Include="Server\IHasOptions.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IExpirable.cs">
+    <Compile Include="Server\IHasRequestFilter.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IFile.cs">
+    <Compile Include="Server\IHasResponseFilter.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IHasOptions.cs">
+    <Compile Include="Server\IHttpError.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IHasRequestFilter.cs">
+    <Compile Include="Server\IHttpRequest.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IHasResponseFilter.cs">
+    <Compile Include="Server\IHttpResponse.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IHttpError.cs">
+    <Compile Include="Server\IHttpResult.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IHttpRequest.cs">
+    <Compile Include="Server\IRequestAttributes.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IHttpResponse.cs">
+    <Compile Include="Server\IRequestContext.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IHttpResult.cs">
+    <Compile Include="Server\IRequestLogger.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IRequestAttributes.cs">
+    <Compile Include="Server\IRequiresRequestContext.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IRequestContext.cs">
+    <Compile Include="Server\IRestDeleteService.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IRequestLogger.cs">
+    <Compile Include="Server\IRestGetService.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IRequiresRequestContext.cs">
+    <Compile Include="Server\IRestPatchService.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IRestDeleteService.cs">
+    <Compile Include="Server\IRestPath.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IRestGetService.cs">
+    <Compile Include="Server\IRestPostService.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IRestPatchService.cs">
+    <Compile Include="Server\IRestPutService.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IRestPath.cs">
+    <Compile Include="Server\IRestService.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IRestPostService.cs">
+    <Compile Include="Server\IServiceRunner.cs" />
+    <Compile Include="Server\IService.Generic.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IRestPutService.cs">
+    <Compile Include="Server\IServiceController.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IRestService.cs">
+    <Compile Include="Server\IServiceRoutes.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IServiceRunner.cs" />
-    <Compile Include="ServiceHost\IService`1.cs">
+    <Compile Include="RouteAttribute.cs" />
+    <Compile Include="ErrorResponse.cs" />
+    <Compile Include="Model\IResponseStatusConvertible.cs" />
+    <Compile Include="RequestLogEntry.cs" />
+    <Compile Include="Server\RestServiceAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IServiceController.cs">
+    <Compile Include="RestrictAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IServiceRoutes.cs">
+    <Compile Include="CollectionTypes.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\RouteAttribute.cs" />
-    <Compile Include="ServiceInterface.ServiceModel\ErrorResponse.cs" />
-    <Compile Include="ServiceInterface.ServiceModel\IResponseStatusConvertible.cs" />
-    <Compile Include="ServiceInterface.ServiceModel\RequestLogEntry.cs" />
-    <Compile Include="ServiceHost\RestServiceAttribute.cs">
+    <Compile Include="Model\ICacheByDateModified.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\RestrictAttribute.cs">
+    <Compile Include="Model\ICacheByEtag.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceInterface.ServiceModel\CollectionTypes.cs">
+    <Compile Include="Model\IHasAction.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceInterface.ServiceModel\ICacheByDateModified.cs">
+    <Compile Include="IHasResponseStatus.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceInterface.ServiceModel\ICacheByEtag.cs">
+    <Compile Include="Property.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceInterface.ServiceModel\IHasAction.cs">
+    <Compile Include="ResponseError.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceInterface.ServiceModel\IHasResponseStatus.cs">
+    <Compile Include="ResponseStatus.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceInterface.ServiceModel\Property.cs">
+    <Compile Include="Server\IPartialWriter.cs" />
+    <Compile Include="Clients\IOneWayClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceInterface.ServiceModel\ResponseError.cs">
+    <Compile Include="Clients\IReplyClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceInterface.ServiceModel\ResponseStatus.cs">
+    <Compile Include="IResponseStatus.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Service\IPartialWriter.cs" />
-    <Compile Include="Service\IOneWayClient.cs">
+    <Compile Include="Clients\IRestClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Service\IReplyClient.cs">
+    <Compile Include="Clients\IRestClientAsync.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Service\IResponseBase.cs">
+    <Compile Include="Clients\IServiceClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Service\IResponseStatus.cs">
+    <Compile Include="Clients\IServiceClientAsync.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Service\IRestClient.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Service\IRestClientAsync.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Service\IServiceClient.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Service\IServiceClientAsync.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Service\IStreamWriter.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Translators\TranslateAttribute.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Translators\TranslateExtensionAttribute.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Translators\TranslateMemberAttribute.cs">
+    <Compile Include="Server\IStreamWriter.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
@@ -583,7 +529,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="README.md" />
     <None Include="Redis\Redis.cd" />
   </ItemGroup>
   <ItemGroup>

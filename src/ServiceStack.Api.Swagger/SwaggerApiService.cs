@@ -8,6 +8,7 @@ using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using ServiceStack.Common;
 using ServiceStack.Common;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
 

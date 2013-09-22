@@ -611,7 +611,7 @@
             Modified to only allow using routes matching the supplied HTTP Verb
             </summary>
         </member>
-        <member name="M:ServiceStack.Common.UrlExtensions.ToRelativeUri(ServiceStack.ServiceHost.IReturn,System.String,System.String)">
+        <member name="M:ServiceStack.Common.UrlExtensions.ToRelativeUri(ServiceStack.IReturn,System.String,System.String)">
             <summary>
             Alias for ToUrl
             </summary>
@@ -817,44 +817,6 @@
             to provide a detailed analysis of your logs.
             </summary>
         </member>
-        <member name="M:ServiceStack.Common.Support.LogicFacadeBase.Execute``1(ServiceStack.DesignPatterns.Command.ICommand{``0})">
-            <summary>
-            Executes the specified action.
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="action">The action.</param>
-            <returns></returns>
-        </member>
-        <member name="P:ServiceStack.Common.Support.LogicFacadeBase.CurrentContext">
-            <summary>
-            Gets the current context (or null if none).
-            </summary>
-        </member>
-        <member name="P:ServiceStack.Common.Support.LogicFacadeBase.IsCurrentlyInitializeOnly">
-            <summary>
-            Checks if the current context is set to "initialize only".
-            </summary>
-        </member>
-        <member name="F:ServiceStack.Common.Support.LogicFacadeBase.InitialisationContext.initOptions">
-            <summary>
-            Determines whether this context is initialise only or not
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Common.Support.LogicFacadeBase.InitialisationContext.#ctor(ServiceStack.Common.Support.LogicFacadeBase,ServiceStack.LogicFacade.InitOptions)">
-            <summary>
-            Constructs a new InitialiseOnlyContext
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Common.Support.LogicFacadeBase.InitialisationContext.Dispose">
-            <summary>
-            Call to remove this current context and reveal the previous context (if any).
-            </summary>
-        </member>
-        <member name="P:ServiceStack.Common.Support.LogicFacadeBase.InitialisationContext.InitialisedObject">
-            <summary>
-            Gets or sets the object that has been initialized only.
-            </summary>
-        </member>
         <member name="T:ServiceStack.Common.UrnId">
             <summary>
             Creates a Unified Resource Name (URN) with the following formats:
@@ -865,7 +827,7 @@
             </summary>
         </member>
         <!-- Badly formed XML comment ignored for member "M:ServiceStack.Common.Utils.AssertUtils.AreNotNull(System.Collections.Generic.IDictionary{System.String,System.Object})" -->
-        <member name="M:ServiceStack.Common.Utils.CommandsUtils.ExecuteAsyncCommandExec(System.Collections.Generic.IEnumerable{ServiceStack.DesignPatterns.Command.ICommandExec})">
+        <member name="M:ServiceStack.Common.Utils.CommandsUtils.ExecuteAsyncCommandExec(System.Collections.Generic.IEnumerable{ServiceStack.Commands.ICommandExec})">
             <summary>
             Provide the an option for the callee to block until all commands are executed
             </summary>
@@ -973,7 +935,7 @@
             rangeHeader should be of the format "bytes=0-" or "bytes=0-12345" or "bytes=123-456"
             </summary>
         </member>
-        <member name="M:ServiceStack.Common.HttpResultExtensions.AddHttpRangeResponseHeaders(ServiceStack.ServiceHost.IHttpResponse,System.Int64,System.Int64,System.Int64)">
+        <member name="M:ServiceStack.Common.HttpResultExtensions.AddHttpRangeResponseHeaders(ServiceStack.Server.IHttpResponse,System.Int64,System.Int64,System.Int64)">
             <summary>
             Adds 206 PartialContent Status, Content-Range and Content-Length headers
             </summary>
@@ -983,22 +945,22 @@
             Writes partial range as specified by start-end, from fromStream to toStream.
             </summary>
         </member>
-        <member name="M:ServiceStack.Common.RequestContextExtensions.SetItem(ServiceStack.ServiceHost.IRequestContext,System.String,System.Object)">
+        <member name="M:ServiceStack.Common.RequestContextExtensions.SetItem(ServiceStack.Server.IRequestContext,System.String,System.Object)">
             <summary>
             Store an entry in the IHttpRequest.Items Dictionary
             </summary>
         </member>
-        <member name="M:ServiceStack.Common.RequestContextExtensions.SetItem(ServiceStack.ServiceHost.IHttpRequest,System.String,System.Object)">
+        <member name="M:ServiceStack.Common.RequestContextExtensions.SetItem(ServiceStack.Server.IHttpRequest,System.String,System.Object)">
             <summary>
             Store an entry in the IHttpRequest.Items Dictionary
             </summary>
         </member>
-        <member name="M:ServiceStack.Common.RequestContextExtensions.GetItem(ServiceStack.ServiceHost.IRequestContext,System.String)">
+        <member name="M:ServiceStack.Common.RequestContextExtensions.GetItem(ServiceStack.Server.IRequestContext,System.String)">
             <summary>
             Get an entry from the IHttpRequest.Items Dictionary
             </summary>
         </member>
-        <member name="M:ServiceStack.Common.RequestContextExtensions.GetItem(ServiceStack.ServiceHost.IHttpRequest,System.String)">
+        <member name="M:ServiceStack.Common.RequestContextExtensions.GetItem(ServiceStack.Server.IHttpRequest,System.String)">
             <summary>
             Get an entry from the IHttpRequest.Items Dictionary
             </summary>

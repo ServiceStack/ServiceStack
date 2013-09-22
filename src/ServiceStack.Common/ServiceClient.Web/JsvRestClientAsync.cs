@@ -1,7 +1,8 @@
 using System;
 using System.IO;
+using ServiceStack.Clients;
 using ServiceStack.Common.Web;
-using ServiceStack.Service;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 

@@ -9,7 +9,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
     {
         public Soap12OperationControl()
         {
-            Format = ServiceHost.Format.Soap12;
+            Format = Format.Soap12;
         }
 
         public override string RequestUri

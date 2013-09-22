@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ServiceStack.Caching;
+using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Common.Web;
 using ServiceStack.Common;
@@ -82,7 +83,7 @@ namespace ServiceStack
 
             if (!context.ResponseContentType.IsBinary())
             {
-                string serializedDto = EndpointHost.ContentTypeFilter.SerializeToString(context, responseDto);
+                string serializedDto = EndpointHost.ContentTypes.SerializeToString(context, responseDto);
 
                 string modifiers = null;
                 if (context.ResponseContentType.MatchesContentType(MimeTypes.Json))
@@ -121,7 +122,7 @@ namespace ServiceStack
             else
             {
                 string modifiers = null;
-                byte[] serializedDto = EndpointHost.ContentTypeFilter.SerializeToBytes(context, responseDto);
+                byte[] serializedDto = EndpointHost.ContentTypes.SerializeToBytes(context, responseDto);
                 var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, context.ResponseContentType, modifiers);
                 cacheClient.Set(cacheKeySerialized, serializedDto, expireCacheIn);
                 return serializedDto;
@@ -130,7 +131,7 @@ namespace ServiceStack
 
         public static void ClearCaches(this ICacheClient cacheClient, params string[] cacheKeys)
         {
-            var allContentTypes = new List<string>(EndpointHost.ContentTypeFilter.ContentTypeFormats.Values) {
+            var allContentTypes = new List<string>(EndpointHost.ContentTypes.ContentTypeFormats.Values) {
 			    MimeTypes.XmlText, MimeTypes.JsonText, MimeTypes.JsvText
 			};
 
