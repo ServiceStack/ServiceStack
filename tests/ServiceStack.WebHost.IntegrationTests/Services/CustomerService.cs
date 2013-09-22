@@ -3,7 +3,6 @@ using System.Text.RegularExpressions;
 using ServiceStack.FluentValidation;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceModel;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {

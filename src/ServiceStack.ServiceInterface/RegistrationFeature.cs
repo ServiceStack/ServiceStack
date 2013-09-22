@@ -19,8 +19,8 @@ namespace ServiceStack.ServiceInterface
 
         public void Register(IAppHost appHost)
         {
-            appHost.RegisterService<RegistrationService>(AtRestPath);
-            appHost.RegisterAs<RegistrationValidator, IValidator<Registration>>();
+            appHost.RegisterService<RegisterService>(AtRestPath);
+            //appHost.RegisterAs<RegistrationValidator, IValidator<Registration>>();
         }
     }
 }

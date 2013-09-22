@@ -190,12 +190,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             this.Provider = "custom";
         }
 
-        public override bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Auth request = null)
+        public override bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Authenticate request = null)
         {
             return false;
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Auth request)
+        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
             throw new NotImplementedException();
         }
@@ -387,7 +387,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 var client = GetClient();
-                var authResponse = client.Send(new Auth
+                var authResponse = client.Send(new Authenticate
                 {
                     provider = CredentialsAuthProvider.Name,
                     UserName = "user",
@@ -505,7 +505,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var client = GetClient();
 
-                var authResponse = client.Send(new Auth
+                var authResponse = client.Send(new Authenticate
                 {
                     provider = CredentialsAuthProvider.Name,
                     UserName = "user",
@@ -533,7 +533,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var request = new Secured { Name = "test" };
             SecureResponse response = null;
 
-            client.SendAsync<AuthResponse>(new Auth
+            client.SendAsync<AuthenticateResponse>(new Authenticate
             {
                 provider = CredentialsAuthProvider.Name,
                 UserName = "user",
@@ -663,7 +663,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var client = GetClient();
 
-                var authResponse = client.Send<AuthResponse>(new Auth
+                var authResponse = client.Send<AuthenticateResponse>(new Authenticate
                 {
                     provider = CredentialsAuthProvider.Name,
                     UserName = "user",
@@ -803,7 +803,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 lastResponseLocationHeader = response.Headers["Location"];
             };
 
-            client.Send(new Auth
+            client.Send(new Authenticate
             {
                 provider = CredentialsAuthProvider.Name,
                 UserName = UserNameWithSessionRedirect,
@@ -818,7 +818,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var client = GetClient();
 
-            var authRequest = new Auth
+            var authRequest = new Authenticate
             {
                 provider = CredentialsAuthProvider.Name,
                 UserName = UserName,
@@ -837,7 +837,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var client = GetClient();
 
-            var authRequest = new Auth
+            var authRequest = new Authenticate
             {
                 provider = CredentialsAuthProvider.Name,
                 UserName = EmailBasedUsername,
@@ -854,7 +854,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var client = GetClient();
 
-            var authRequest = new Auth
+            var authRequest = new Authenticate
             {
                 provider = CredentialsAuthProvider.Name,
                 UserName = EmailBasedUsername,

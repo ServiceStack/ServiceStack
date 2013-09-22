@@ -4,7 +4,6 @@ using ServiceStack.Clients;
 using ServiceStack.ServiceHost;
 using NUnit.Framework;
 using ServiceStack.Clients;
-using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.Web;
 

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using ServiceStack.Common;
+using ServiceStack.Utils;
 
 namespace ServiceStack.ServiceInterface.Auth
 {

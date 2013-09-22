@@ -116,7 +116,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			RequestTokenSecret = "qKKCCUUJ2R10bMieVQZZad7iSwWkPYJmtBYzPoM9q0",
 			UserId = "133371690876022785",
 		};
-		protected Registration registrationDto;
+		protected Register RegisterDto;
 
 		protected void InitTest(IUserAuthRepository userAuthRepository)
 		{
@@ -138,7 +138,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			mockService.Expect(x => x.RequestContext).Returns(requestContext);
 			service = mockService.Object;
 
-			registrationDto = new Registration {
+			RegisterDto = new Register {
 				UserName = "UserName",
 				Password = "p@55word",
 				Email = "as@if.com",
@@ -148,7 +148,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			};
 		}
 
-		public static RegistrationService GetRegistrationService(
+		public static RegisterService GetRegistrationService(
 			IUserAuthRepository userAuthRepository,
 			AuthUserSession oAuthUserSession = null,
 			MockRequestContext requestContext = null)
@@ -169,13 +169,13 @@ namespace ServiceStack.Common.Tests.OAuth
 
 			requestContext.Container.Register(userAuthRepository);
 
-		    var authService = new AuthService {
+		    var authService = new AuthenticateService {
                 RequestContext = requestContext,
             };
             authService.SetAppHost(mockAppHost);
             mockAppHost.Register(authService);
 
-			var registrationService = new RegistrationService {
+			var registrationService = new RegisterService {
 				UserAuthRepo = userAuthRepository,
 				RequestContext = requestContext,
 				RegistrationValidator =
@@ -186,7 +186,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			return registrationService;
 		}
 
-		public static void AssertEqual(UserAuth userAuth, Registration request)
+		public static void AssertEqual(UserAuth userAuth, Register request)
 		{
 			Assert.That(userAuth, Is.Not.Null);
 			Assert.That(userAuth.UserName, Is.EqualTo(request.UserName));
@@ -200,7 +200,7 @@ namespace ServiceStack.Common.Tests.OAuth
 		{
 			Register(userAuthRepository, oAuthUserSession);
 
-			Login(registrationDto.UserName, registrationDto.Password, oAuthUserSession);
+			Login(RegisterDto.UserName, RegisterDto.Password, oAuthUserSession);
 
 			oAuthUserSession = requestContext.ReloadSession();
 			return oAuthUserSession;
@@ -213,20 +213,20 @@ namespace ServiceStack.Common.Tests.OAuth
 
 			var credentialsAuth = GetCredentialsAuthConfig();
 			return credentialsAuth.Authenticate(service, oAuthUserSession,
-				new Auth {
+				new Authenticate {
 					provider = CredentialsAuthProvider.Name,
-					UserName = registrationDto.UserName,
-					Password = registrationDto.Password,
+					UserName = RegisterDto.UserName,
+					Password = RegisterDto.Password,
 				});
 		}
 
-		protected object Register(IUserAuthRepository userAuthRepository, AuthUserSession oAuthUserSession, Registration registration = null)
+		protected object Register(IUserAuthRepository userAuthRepository, AuthUserSession oAuthUserSession, Register register = null)
 		{
-			if (registration == null)
-				registration = registrationDto;
+			if (register == null)
+				register = RegisterDto;
 
 			var registrationService = GetRegistrationService(userAuthRepository, oAuthUserSession, requestContext);
-			var response = registrationService.Post(registration);
+			var response = registrationService.Post(register);
 			Assert.That(response as IHttpError, Is.Null);
 			return response;
 		}

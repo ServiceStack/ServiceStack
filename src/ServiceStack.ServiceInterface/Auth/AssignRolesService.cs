@@ -2,7 +2,6 @@
 using System.Linq;
 using ServiceStack.Common;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel;
 using ServiceStack.Web;
 
 namespace ServiceStack.ServiceInterface.Auth

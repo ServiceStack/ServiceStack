@@ -16,7 +16,6 @@ using ServiceStack.Clients;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Cors;
-using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.Web;
 

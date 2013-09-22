@@ -55,11 +55,11 @@ namespace ServiceStack.ServiceInterface
 
         public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
         {
-            if (AuthService.AuthProviders == null) 
+            if (AuthenticateService.AuthProviders == null) 
                 throw new InvalidOperationException(
                     "The AuthService must be initialized by calling AuthService.Init to use an authenticate attribute");
 
-            var matchingOAuthConfigs = AuthService.AuthProviders.Where(x =>
+            var matchingOAuthConfigs = AuthenticateService.AuthProviders.Where(x =>
                 this.Provider.IsNullOrEmpty()
                 || x.Provider == this.Provider).ToList();
 
@@ -88,7 +88,7 @@ namespace ServiceStack.ServiceInterface
 
         protected bool DoHtmlRedirectIfConfigured(IHttpRequest req, IHttpResponse res, bool includeRedirectParam = false)
         {
-            var htmlRedirect = this.HtmlRedirect ?? AuthService.HtmlRedirect;
+            var htmlRedirect = this.HtmlRedirect ?? AuthenticateService.HtmlRedirect;
             if (htmlRedirect != null && req.ResponseContentType.MatchesContentType(MimeTypes.Html))
             {
                 var url = req.ResolveAbsoluteUrl(htmlRedirect);
@@ -113,9 +113,9 @@ namespace ServiceStack.ServiceInterface
             var userPass = req.GetBasicAuthUserAndPassword();
             if (userPass != null)
             {
-                var authService = req.TryResolve<AuthService>();
+                var authService = req.TryResolve<AuthenticateService>();
                 authService.RequestContext = new HttpRequestContext(req, res, null);
-                var response = authService.Post(new Auth.Auth {
+                var response = authService.Post(new Authenticate {
                     provider = BasicAuthProvider.Name,
                     UserName = userPass.Value.Key,
                     Password = userPass.Value.Value
@@ -130,9 +130,9 @@ namespace ServiceStack.ServiceInterface
             var digestAuth = req.GetDigestAuth();
             if (digestAuth != null)
             {
-                var authService = req.TryResolve<AuthService>();
+                var authService = req.TryResolve<AuthenticateService>();
                 authService.RequestContext = new HttpRequestContext(req, res, null);
-                var response = authService.Post(new Auth.Auth
+                var response = authService.Post(new Authenticate
                 {
                     provider = DigestAuthProvider.Name,
                     nonce = digestAuth["nonce"],

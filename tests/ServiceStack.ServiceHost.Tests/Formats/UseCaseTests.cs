@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 

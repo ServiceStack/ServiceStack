@@ -1,6 +1,5 @@
 ﻿using System;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {

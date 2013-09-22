@@ -8,7 +8,6 @@ using ServiceStack.Common;
 using ServiceStack.Configuration;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface.Auth
@@ -90,7 +89,7 @@ namespace ServiceStack.ServiceInterface.Auth
         /// <returns>
         /// The <see cref="object"/>.
         /// </returns>
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Auth request)
+        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
             var tokens = this.Init(authService, ref session, request);
 

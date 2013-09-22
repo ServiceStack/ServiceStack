@@ -42,7 +42,7 @@ namespace ServiceStack.ServiceInterface
             this.authProviders = authProviders;
 
             ServiceRoutes = new Dictionary<Type, string[]> {
-                { typeof(AuthService), new[]{"/auth", "/auth/{provider}"} },
+                { typeof(AuthenticateService), new[]{"/auth", "/auth/{provider}"} },
                 { typeof(AssignRolesService), new[]{"/assignroles"} },
                 { typeof(UnAssignRolesService), new[]{"/unassignroles"} },
             };
@@ -56,8 +56,8 @@ namespace ServiceStack.ServiceInterface
 
         public void Register(IAppHost appHost)
         {
-            AuthService.Init(sessionFactory, authProviders);
-            AuthService.HtmlRedirect = HtmlRedirect;
+            AuthenticateService.Init(sessionFactory, authProviders);
+            AuthenticateService.HtmlRedirect = HtmlRedirect;
 
             var unitTest = appHost == null;
             if (unitTest) return;
@@ -72,7 +72,7 @@ namespace ServiceStack.ServiceInterface
 
         public static TimeSpan? GetDefaultSessionExpiry()
         {
-            var authProvider = AuthService.AuthProviders.FirstOrDefault() as AuthProvider;
+            var authProvider = AuthenticateService.AuthProviders.FirstOrDefault() as AuthProvider;
             return authProvider == null ? null : authProvider.SessionExpiry;
         }
     }

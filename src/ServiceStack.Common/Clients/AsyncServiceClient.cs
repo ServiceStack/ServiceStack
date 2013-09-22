@@ -7,6 +7,7 @@ using ServiceStack.Logging;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.Utils;
 
 #if NETFX_CORE
 using Windows.System.Threading;

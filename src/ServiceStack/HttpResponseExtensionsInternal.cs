@@ -12,7 +12,6 @@ using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints;

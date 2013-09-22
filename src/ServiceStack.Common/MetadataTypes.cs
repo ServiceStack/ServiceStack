@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ServiceStack.ServiceModel
+namespace ServiceStack
 {
     public class MetadataTypesConfig
     {

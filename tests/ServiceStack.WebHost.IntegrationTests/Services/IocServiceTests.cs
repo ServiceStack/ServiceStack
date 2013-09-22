@@ -4,7 +4,6 @@ using NUnit.Framework;
 using ServiceStack.Server;
 using ServiceStack.Clients;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.WebHost.IntegrationTests.Tests;
 

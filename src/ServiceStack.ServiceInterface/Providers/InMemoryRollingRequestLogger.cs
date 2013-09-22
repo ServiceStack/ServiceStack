@@ -6,7 +6,6 @@ using System.Threading;
 using ServiceStack.Common;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel;
 using ServiceStack.Web;
 
 namespace ServiceStack.ServiceInterface.Providers

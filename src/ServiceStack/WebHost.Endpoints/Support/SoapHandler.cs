@@ -10,7 +10,6 @@ using ServiceStack.Serialization;
 using ServiceStack.Server;
 using ServiceStack.Clients;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Utils;
 using HttpRequestWrapper = ServiceStack.WebHost.Endpoints.Wrappers.HttpRequestWrapper;

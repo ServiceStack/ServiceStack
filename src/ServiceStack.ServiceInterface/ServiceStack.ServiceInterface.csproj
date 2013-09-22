@@ -112,7 +112,7 @@
     <Compile Include="AuthenticateAttribute.cs" />
     <Compile Include="AuthFeature.cs" />
     <Compile Include="Auth\AssignRolesService.cs" />
-    <Compile Include="Auth\AuthService.cs" />
+    <Compile Include="Auth\AuthenticateService.cs" />
     <Compile Include="Auth\BasicAuthProvider.cs" />
     <Compile Include="Auth\CredentialsAuthProvider.cs" />
     <Compile Include="Auth\DigestAuthProvider.cs" />
@@ -139,7 +139,7 @@
     <Compile Include="RequiresAnyPermission.cs" />
     <Compile Include="RequiresAnyRoleAttribute.cs" />
     <Compile Include="RequiredRoleAttribute.cs" />
-    <Compile Include="Auth\RegistrationService.cs" />
+    <Compile Include="Auth\RegisterService.cs" />
     <Compile Include="Auth\OAuthAuthorizer.cs" />
     <Compile Include="Auth\AuthProvider.cs" />
     <Compile Include="Auth\AuthUserSession.cs" />

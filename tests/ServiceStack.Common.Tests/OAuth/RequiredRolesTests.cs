@@ -14,7 +14,7 @@ namespace ServiceStack.Common.Tests.OAuth
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
-            AuthService.Init(() => new AuthUserSession(), new CredentialsAuthProvider());
+            AuthenticateService.Init(() => new AuthUserSession(), new CredentialsAuthProvider());
         }
 
         public class MockUserAuthRepository : InMemoryAuthRepository
@@ -56,7 +56,7 @@ namespace ServiceStack.Common.Tests.OAuth
             userAuth = new MockUserAuthRepository(userWithAdminRole);
         }
 
-        private RegistrationService GetRegistrationService()
+        private RegisterService GetRegistrationService()
         {
             var registrationService = RegistrationServiceTests.GetRegistrationService(authRepo: userAuth);
             var request = RegistrationServiceTests.GetValidRegistration(autoLogin: true);

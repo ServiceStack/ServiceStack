@@ -6,7 +6,6 @@ using ServiceStack.Common;
 using ServiceStack.Plugins.ProtoBuf;
 using ServiceStack.Clients;
 using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests

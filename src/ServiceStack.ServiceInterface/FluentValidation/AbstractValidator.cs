@@ -16,7 +16,6 @@
 // The latest version of this file can be found at http://www.codeplex.com/FluentValidation
 #endregion
 
-using ServiceStack.Common;
 using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.FluentValidation

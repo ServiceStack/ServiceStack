@@ -5,7 +5,6 @@ using ServiceStack.Common;
 using ServiceStack.Configuration;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface.Auth
@@ -32,7 +31,7 @@ namespace ServiceStack.ServiceInterface.Auth
             this.Permissions = appSettings.Get("oauth.facebook.Permissions", new string[0]);
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Auth request)
+        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
             var tokens = Init(authService, ref session, request);
 

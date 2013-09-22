@@ -7,8 +7,8 @@ namespace ServiceStack.ServiceInterface.Auth
 {
     public class BasicAuthProvider : CredentialsAuthProvider
     {
-        public new static string Name = AuthService.BasicProvider;
-        public new static string Realm = "/auth/" + AuthService.BasicProvider;
+        public new static string Name = AuthenticateService.BasicProvider;
+        public new static string Realm = "/auth/" + AuthenticateService.BasicProvider;
 
         public BasicAuthProvider()
         {
@@ -21,7 +21,7 @@ namespace ServiceStack.ServiceInterface.Auth
         {
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Auth request)
+        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
             var httpReq = authService.RequestContext.Get<IHttpRequest>();
             var basicAuth = httpReq.GetBasicAuthUserAndPassword();

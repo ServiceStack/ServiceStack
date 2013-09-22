@@ -1,6 +1,4 @@
-using ServiceStack.Utils;
-
-namespace ServiceStack
+namespace ServiceStack.Utils
 {
     public static class ModelUtils
     {

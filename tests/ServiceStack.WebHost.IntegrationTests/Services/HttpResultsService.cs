@@ -3,7 +3,6 @@ using System.Net;
 using System.Runtime.Serialization;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceModel;
 using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services

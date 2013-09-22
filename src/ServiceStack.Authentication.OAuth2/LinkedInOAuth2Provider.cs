@@ -3,7 +3,6 @@ using System.Xml.Linq;
 using ServiceStack.Common;
 using ServiceStack.Configuration;
 using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 
 namespace ServiceStack.Authentication.OAuth2

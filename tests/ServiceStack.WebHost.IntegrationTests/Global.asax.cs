@@ -135,7 +135,7 @@ namespace ServiceStack.WebHost.IntegrationTests
             private void ConfigureAuth(Funq.Container container)
             {
                 Routes
-                    .Add<Registration>("/register");
+                    .Add<Register>("/register");
 
                 var appSettings = new AppSettings();
 

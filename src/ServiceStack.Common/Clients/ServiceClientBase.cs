@@ -14,6 +14,7 @@ using ServiceStack.Logging;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.Utils;
 using ServiceStack.Web;
 
 namespace ServiceStack.Clients
@@ -439,7 +440,7 @@ namespace ServiceStack.Clients
                         }
                         else
                         {
-                            this.authInfo = new ServiceStack.Clients.AuthenticationInfo(doAuthHeader);
+                            this.authInfo = new AuthenticationInfo(doAuthHeader);
                             client.AddAuthInfo(this.UserName, this.Password, authInfo);
                         }
                     }

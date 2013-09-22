@@ -14,18 +14,18 @@ namespace ServiceStack.ServiceInterface.Auth
         /// <param name="service"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        object Logout(IServiceBase service, Auth request);
+        object Logout(IServiceBase service, Authenticate request);
 
         /// <summary>
         /// The entry point for all AuthProvider providers. Runs inside the AuthService so exceptions are treated normally.
         /// Overridable so you can provide your own Auth implementation.
         /// </summary>
-        object Authenticate(IServiceBase authService, IAuthSession session, Auth request);
+        object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request);
 
         /// <summary>
         /// Determine if the current session is already authenticated with this AuthProvider
         /// </summary>
-        bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Auth request = null);
+        bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Authenticate request = null);
     }
 
     public interface IOAuthProvider : IAuthProvider

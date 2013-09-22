@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace ServiceStack.ServiceModel
+namespace ServiceStack.Serialization
 {
     public sealed class XmlSerializerWrapper : XmlObjectSerializer
     {

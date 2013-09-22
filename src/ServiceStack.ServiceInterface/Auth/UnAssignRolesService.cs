@@ -2,7 +2,6 @@
 using ServiceStack.Common;
 using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel;
 using ServiceStack.Web;
 
 namespace ServiceStack.ServiceInterface.Auth

@@ -16,7 +16,6 @@ using ServiceStack.Logging;
 using ServiceStack.Serialization;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Wrappers;
 

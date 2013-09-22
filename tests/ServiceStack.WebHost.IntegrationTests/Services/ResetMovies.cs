@@ -5,7 +5,6 @@ using System.Runtime.Serialization;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {

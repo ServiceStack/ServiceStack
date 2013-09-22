@@ -1,14 +1,11 @@
 using System;
 using System.Net;
 using System.Text;
-using System.Reflection;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.Logging;
-#if !NETFX_CORE
 using System.Security.Cryptography;
 using ServiceStack.Web;
+#if !NETFX_CORE
 
 #endif
 
@@ -19,7 +16,7 @@ using Windows.Security.Cryptography.Core;
 using Windows.Storage.Streams;
 #endif
 
-namespace ServiceStack.Clients
+namespace ServiceStack.Utils
 {
     public class AuthenticationException : Exception
     {

@@ -55,7 +55,7 @@ namespace ServiceStack.Authentication.OAuth2
 
         protected string[] Scopes { get; set; }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Auth request)
+        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
             var tokens = this.Init(authService, ref session, request);
 
@@ -123,7 +123,7 @@ namespace ServiceStack.Authentication.OAuth2
             return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "RequestTokenFailed"));
         }
 
-        public override bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Auth request = null)
+        public override bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Authenticate request = null)
         {
             if (request != null)
             {
@@ -174,7 +174,7 @@ namespace ServiceStack.Authentication.OAuth2
             }
         }
 
-        protected IOAuthTokens Init(IServiceBase authService, ref IAuthSession session, Auth request)
+        protected IOAuthTokens Init(IServiceBase authService, ref IAuthSession session, Authenticate request)
         {
             var requestUri = authService.RequestContext.AbsoluteUri;
             if (this.CallbackUrl.IsNullOrEmpty())

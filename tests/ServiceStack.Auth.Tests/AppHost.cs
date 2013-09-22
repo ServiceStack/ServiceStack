@@ -99,7 +99,7 @@ namespace ServiceStack.AuthWeb.Tests
             Plugins.Add(new RegistrationFeature());
 
             //override the default registration validation with your own custom implementation
-            container.RegisterAs<CustomRegistrationValidator, IValidator<Registration>>();
+            container.RegisterAs<CustomRegistrationValidator, IValidator<Register>>();
 
             //Store User Data into the referenced SqlServer database
             container.Register<IUserAuthRepository>(c =>

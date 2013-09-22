@@ -59,7 +59,7 @@ namespace ServiceStack.ServiceInterface.Auth
         /// <param name="service"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        public virtual object Logout(IServiceBase service, Auth request)
+        public virtual object Logout(IServiceBase service, Authenticate request)
         {
             var session = service.GetSession();
             var referrerUrl = (request != null ? request.Continue : null)
@@ -74,7 +74,7 @@ namespace ServiceStack.ServiceInterface.Auth
             if (service.RequestContext.ResponseContentType == MimeTypes.Html && !String.IsNullOrEmpty(referrerUrl))
                 return service.Redirect(referrerUrl.AddHashParam("s", "-1"));
 
-            return new AuthResponse();
+            return new AuthenticateResponse();
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
             foreach (var oAuthToken in session.ProviderOAuthAccess)
             {
-                var authProvider = AuthService.GetAuthProvider(oAuthToken.Provider);
+                var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
                 if (authProvider == null) continue;
                 var userAuthProvider = authProvider as OAuthProvider;
                 if (userAuthProvider != null)
@@ -136,7 +136,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
                 foreach (var oAuthToken in session.ProviderOAuthAccess)
                 {
-                    var authProvider = AuthService.GetAuthProvider(oAuthToken.Provider);
+                    var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
                     if (authProvider == null) continue;
                     var userAuthProvider = authProvider as OAuthProvider;
                     if (userAuthProvider != null)
@@ -177,9 +177,9 @@ namespace ServiceStack.ServiceInterface.Auth
             return true;
         }
 
-        public abstract bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Auth request = null);
+        public abstract bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Authenticate request = null);
 
-        public abstract object Authenticate(IServiceBase authService, IAuthSession session, Auth request);
+        public abstract object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request);
 
         public virtual void OnFailedAuthentication(IAuthSession session, IHttpRequest httpReq, IHttpResponse httpRes)
         {

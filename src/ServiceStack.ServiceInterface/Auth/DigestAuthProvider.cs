@@ -16,7 +16,7 @@ namespace ServiceStack.ServiceInterface.Auth
 {
     public class DigestAuthProvider : AuthProvider
     {
-        class DigestAuthValidator : AbstractValidator<Auth>
+        class DigestAuthValidator : AbstractValidator<Authenticate>
         {
             public DigestAuthValidator()
             {
@@ -25,8 +25,8 @@ namespace ServiceStack.ServiceInterface.Auth
             }
         }
 
-        public static string Name = AuthService.DigestProvider;
-        public static string Realm = "/auth/" + AuthService.DigestProvider;
+        public static string Name = AuthenticateService.DigestProvider;
+        public static string Realm = "/auth/" + AuthenticateService.DigestProvider;
         public static int NonceTimeOut = 600;
         public string PrivateKey;
         public IAppSettings AppSettings { get; set; }
@@ -68,7 +68,7 @@ namespace ServiceStack.ServiceInterface.Auth
             return false;
         }
 
-        public override bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Auth request = null)
+        public override bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Authenticate request = null)
         {
             if (request != null)
             {
@@ -78,7 +78,7 @@ namespace ServiceStack.ServiceInterface.Auth
             return !session.UserAuthName.IsNullOrEmpty();
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Auth request)
+        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
             //new CredentialsAuthValidator().ValidateAndThrow(request);
             return Authenticate(authService, session, request.UserName, request.Password);
@@ -99,7 +99,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
                 OnAuthenticated(authService, session, null, null);
 
-                return new AuthResponse
+                return new AuthenticateResponse
                 {
                     UserName = userName,
                     SessionId = session.Id,
@@ -128,7 +128,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
                 foreach (var oAuthToken in session.ProviderOAuthAccess)
                 {
-                    var authProvider = AuthService.GetAuthProvider(oAuthToken.Provider);
+                    var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
                     if (authProvider == null) continue;
                     var userAuthProvider = authProvider as OAuthProvider;
                     if (userAuthProvider != null)

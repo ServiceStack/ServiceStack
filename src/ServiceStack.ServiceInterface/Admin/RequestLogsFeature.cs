@@ -70,7 +70,7 @@ namespace ServiceStack.ServiceInterface.Admin
             this.EnableRequestBodyTracking = false;
             this.ExcludeRequestDtoTypes = new[] { typeof(RequestLogs) };
             this.HideRequestBodyForRequestDtoTypes = new[] {
-                typeof(Auth.Auth), typeof(Registration)
+                typeof(Authenticate), typeof(Register)
             };
         }
 

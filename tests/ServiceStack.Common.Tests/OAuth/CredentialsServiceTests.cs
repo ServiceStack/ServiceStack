@@ -14,13 +14,13 @@ namespace ServiceStack.Common.Tests.OAuth
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			AuthService.Init(() => new AuthUserSession(),
+			AuthenticateService.Init(() => new AuthUserSession(),
 				new CredentialsAuthProvider());           
 		}
 
-		public AuthService GetAuthService()
+		public AuthenticateService GetAuthService()
 		{
-		    var authService = new AuthService {
+		    var authService = new AuthenticateService {
                 RequestContext = new MockRequestContext(),
                 //ServiceExceptionHandler = (req, ex) =>
                 //    ValidationFeature.HandleException(new BasicResolver(), req, ex)
@@ -39,11 +39,11 @@ namespace ServiceStack.Common.Tests.OAuth
             }
         }
 
-        public object GetAuthService(AuthService authService, Auth request)
+        public object GetAuthService(AuthenticateService authService, Authenticate request)
         {
-            var serviceRunner = new ValidateServiceRunner<Auth>(null, new ActionContext {
+            var serviceRunner = new ValidateServiceRunner<Authenticate>(null, new ActionContext {
                 Id = "GET Auth",
-                ServiceAction = (service, req) => ((AuthService)service).Get((Auth)req)
+                ServiceAction = (service, req) => ((AuthenticateService)service).Get((Authenticate)req)
             });
 
             return serviceRunner.Process(authService.RequestContext, authService, request);
@@ -54,7 +54,7 @@ namespace ServiceStack.Common.Tests.OAuth
 		{
 			var authService = GetAuthService();
 
-            var response = (HttpError)GetAuthService(authService, new Auth());
+            var response = (HttpError)GetAuthService(authService, new Authenticate());
 			var errors = response.GetFieldErrors();
 
 			Assert.That(errors.Count, Is.EqualTo(2));
@@ -70,7 +70,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			var authService = GetAuthService();
 
             var response = (HttpError)GetAuthService(authService,
-                new Auth { provider = AuthService.CredentialsProvider });
+                new Authenticate { provider = AuthenticateService.CredentialsProvider });
 
 			var errors = response.GetFieldErrors();
 

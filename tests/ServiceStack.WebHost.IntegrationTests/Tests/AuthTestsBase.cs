@@ -24,9 +24,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			}
 		}
 
-		public Registration CreateAdminUser()
+		public Register CreateAdminUser()
 		{
-			var registration = new Registration {
+			var registration = new Register {
 				UserName = "Admin",
 				DisplayName = "The Admin User",
 				Email = AdminEmail, //this email is automatically assigned as Admin in Web.Config
@@ -49,7 +49,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		public JsonServiceClient Login(string userName, string password)
 		{
 			var client = new JsonServiceClient(BaseUri);
-			client.Send(new Auth {
+			client.Send(new Authenticate {
 				UserName = userName,
 				Password = password,
 				RememberMe = true,
@@ -62,7 +62,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		{
 			var registration = CreateAdminUser();
 			var adminServiceClient = new JsonServiceClient(BaseUri);
-			adminServiceClient.Send(new Auth {
+			adminServiceClient.Send(new Authenticate {
 				UserName = registration.UserName,
 				Password = registration.Password,
 				RememberMe = true,

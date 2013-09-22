@@ -10,7 +10,6 @@ using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Plugins.MsgPack;
 using ServiceStack.Clients;
 using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 
 namespace RazorRockstars.Console.Files

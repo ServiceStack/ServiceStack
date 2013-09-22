@@ -107,9 +107,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="CryptUtils.cs" />
-    <Compile Include="DictionaryExtensions.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="DirectoryInfoExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -129,7 +127,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="HostContext.cs" />
-    <Compile Include="IntExtensions.cs">
+    <Compile Include="AsyncExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="IPAddressExtensions.cs">
@@ -187,8 +185,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Clients\RouteMember.cs" />
-    <Compile Include="ServiceModel\MetadataTypes.cs" />
-    <Compile Include="ModelUtils.cs">
+    <Compile Include="MetadataTypes.cs" />
+    <Compile Include="Utils\ModelUtils.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ModelConfig.cs">
@@ -207,7 +205,7 @@
     <Compile Include="Clients\AsyncServiceClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Clients\AuthDtos.cs">
+    <Compile Include="AuthDtos.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Clients\GenericProxy.cs">
@@ -259,7 +257,7 @@
     <Compile Include="Clients\WcfServiceClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Clients\WebRequestUtils.cs">
+    <Compile Include="Utils\WebRequestUtils.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Clients\WebServiceException.cs">
@@ -295,7 +293,7 @@
     <Compile Include="Serialization\XmlSerializableSerializer.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceModel\XmlSerializableWrapper.cs">
+    <Compile Include="Serialization\XmlSerializableWrapper.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Validation\ValidationError.cs">
@@ -344,9 +342,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Support\Thread.WinRT.cs" />
-    <Compile Include="TypeExtensions.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="UrnId.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -434,6 +429,7 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

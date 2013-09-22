@@ -52,7 +52,7 @@ namespace ServiceStack.ServiceInterface.Auth
         public virtual bool IsAuthorized(string provider)
         {
             var tokens = ProviderOAuthAccess.FirstOrDefault(x => x.Provider == provider);
-            return AuthService.GetAuthProvider(provider).IsAuthorizedSafe(this, tokens);
+            return AuthenticateService.GetAuthProvider(provider).IsAuthorizedSafe(this, tokens);
         }
 
         public virtual bool HasPermission(string permission)

@@ -13,12 +13,12 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 	[TestFixture]
 	public class ManageRolesTests : AuthTestsBase
 	{
-		protected Registration registration;
+		protected Register register;
 
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			registration = CreateAdminUser();
+			register = CreateAdminUser();
 		}
 
 		public string RoleName1 = "Role1";
@@ -29,11 +29,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		public string Permission1 = "Permission1";
 		public string Permission2 = "Permission2";
 
-		public Registration RegisterNewUser(bool? autoLogin = null)
+		public Register RegisterNewUser(bool? autoLogin = null)
 		{
 			var userId = Environment.TickCount % 10000;
 
-			var newUserRegistration = new Registration {
+			var newUserRegistration = new Register {
 				UserName = "UserName" + userId,
 				DisplayName = "DisplayName" + userId,
 				Email = "user{0}@sf.com".Fmt(userId),

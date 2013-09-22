@@ -1,47 +1,16 @@
 ﻿using System;
 using System.Configuration;
 using System.Globalization;
-using System.Runtime.Serialization;
-using ServiceStack.Common;
 using ServiceStack.FluentValidation;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Validation;
-using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
-    [DataContract]
-    public class Registration : IReturn<RegistrationResponse>
-    {
-        [DataMember(Order = 1)] public string UserName { get; set; }
-        [DataMember(Order = 2)] public string FirstName { get; set; }
-        [DataMember(Order = 3)] public string LastName { get; set; }
-        [DataMember(Order = 4)] public string DisplayName { get; set; }
-        [DataMember(Order = 5)] public string Email { get; set; }
-        [DataMember(Order = 6)] public string Password { get; set; }
-        [DataMember(Order = 7)] public bool? AutoLogin { get; set; }
-        [DataMember(Order = 8)] public string Continue { get; set; }
-    }
-
-    [DataContract]
-    public class RegistrationResponse
-    {
-        public RegistrationResponse()
-        {
-            this.ResponseStatus = new ResponseStatus();
-        }
-
-        [DataMember(Order = 1)] public string UserId { get; set; }
-        [DataMember(Order = 2)] public string SessionId { get; set; }
-        [DataMember(Order = 3)] public string UserName { get; set; }
-        [DataMember(Order = 4)] public string ReferrerUrl { get; set; }
-        [DataMember(Order = 5)] public ResponseStatus ResponseStatus { get; set; }
-    }
-
     public class FullRegistrationValidator : RegistrationValidator
     {
         public FullRegistrationValidator()
@@ -52,7 +21,7 @@ namespace ServiceStack.ServiceInterface.Auth
         }
     }
 
-    public class RegistrationValidator : AbstractValidator<Registration>
+    public class RegistrationValidator : AbstractValidator<Register>
     {
         public IUserAuthRepository UserAuthRepo { get; set; }
 
@@ -80,13 +49,13 @@ namespace ServiceStack.ServiceInterface.Auth
         }
     }
 
-    [DefaultRequest(typeof(Registration))]
-    public class RegistrationService : Service
+    [DefaultRequest(typeof(Register))]
+    public class RegisterService : Service
     {
         public IUserAuthRepository UserAuthRepo { get; set; }
         public static ValidateFn ValidateFn { get; set; }
 
-        public IValidator<Registration> RegistrationValidator { get; set; }
+        public IValidator<Register> RegistrationValidator { get; set; }
 
         private void AssertUserAuthRepo()
         {
@@ -97,7 +66,7 @@ namespace ServiceStack.ServiceInterface.Auth
         /// <summary>
         /// Create new Registration
         /// </summary>
-        public object Post(Registration request)
+        public object Post(Register request)
         {
             if (EndpointHost.RequestFilters == null
                 || !EndpointHost.RequestFilters.Contains(ValidationFilters.RequestFilter)) //Already gets run
@@ -111,7 +80,7 @@ namespace ServiceStack.ServiceInterface.Auth
                 if (validateResponse != null) return validateResponse;
             }
 
-            RegistrationResponse response = null;
+            RegisterResponse response = null;
             var session = this.GetSession();
             var newUserAuth = ToUserAuth(request);
             var existingUser = UserAuthRepo.GetUserAuth(session, null);
@@ -128,9 +97,10 @@ namespace ServiceStack.ServiceInterface.Auth
 
             if (request.AutoLogin.GetValueOrDefault())
             {
-                using (var authService = base.ResolveService<AuthService>())
+                using (var authService = base.ResolveService<AuthenticateService>())
                 {
-                    var authResponse = authService.Post(new Auth {
+                    var authResponse = authService.Post(new Authenticate
+                    {
                         UserName = request.UserName ?? request.Email,
                         Password = request.Password,
                         Continue = request.Continue
@@ -139,10 +109,10 @@ namespace ServiceStack.ServiceInterface.Auth
                     if (authResponse is IHttpError)
                         throw (Exception)authResponse;
 
-                    var typedResponse = authResponse as AuthResponse;
+                    var typedResponse = authResponse as AuthenticateResponse;
                     if (typedResponse != null)
                     {
-                        response = new RegistrationResponse {
+                        response = new RegisterResponse {
                             SessionId = typedResponse.SessionId,
                             UserName = typedResponse.UserName,
                             ReferrerUrl = typedResponse.ReferrerUrl,
@@ -154,7 +124,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
             if (response == null)
             {
-                response = new RegistrationResponse {
+                response = new RegisterResponse {
                     UserId = user.Id.ToString(CultureInfo.InvariantCulture),
                     ReferrerUrl = request.Continue
                 };
@@ -175,7 +145,7 @@ namespace ServiceStack.ServiceInterface.Auth
             return response;
         }
 
-        public UserAuth ToUserAuth(Registration request)
+        public UserAuth ToUserAuth(Register request)
         {
             var to = request.ConvertTo<UserAuth>();
             to.PrimaryEmail = request.Email;
@@ -185,7 +155,7 @@ namespace ServiceStack.ServiceInterface.Auth
         /// <summary>
         /// Logic to update UserAuth from Registration info, not enabled on OnPut because of security.
         /// </summary>
-        public object UpdateUserAuth(Registration request)
+        public object UpdateUserAuth(Register request)
         {
             if (EndpointHost.RequestFilters == null 
                 || !EndpointHost.RequestFilters.Contains(ValidationFilters.RequestFilter))
@@ -207,7 +177,7 @@ namespace ServiceStack.ServiceInterface.Auth
             var newUserAuth = ToUserAuth(request);
             UserAuthRepo.UpdateUserAuth(newUserAuth, existingUser, request.Password);
 
-            return new RegistrationResponse {
+            return new RegisterResponse {
                 UserId = existingUser.Id.ToString(CultureInfo.InvariantCulture),
             };
         }

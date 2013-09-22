@@ -6,7 +6,6 @@ using DeliveryService.Model.Types;
 using ServiceStack;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceModel;
 
 namespace DeliveryService.Model.Operations
 {
