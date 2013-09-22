@@ -6,8 +6,8 @@ using ServiceStack.Clients;
 using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
-using ServiceStack.ServiceClient.Web;
-using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.Clients;
+using ServiceStack.Serialization;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 

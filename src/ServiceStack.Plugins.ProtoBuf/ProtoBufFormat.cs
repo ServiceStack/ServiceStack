@@ -2,7 +2,6 @@
 using System.IO;
 using ProtoBuf;
 using ProtoBuf.Meta;
-using ServiceStack.Common.Web;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;

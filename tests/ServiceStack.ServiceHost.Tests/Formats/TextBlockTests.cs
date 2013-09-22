@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
-using ServiceStack.Common.Utils;
+using ServiceStack.Utils;
 using ServiceStack.WebHost.Endpoints.Formats;
 using ServiceStack.WebHost.Endpoints.Support.Markdown;
 using ServiceStack.ServiceHost.Tests.Formats_Razor;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ServiceStack.Server;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 
 namespace ServiceStack.Common.Tests.ServiceClient.Web
 {

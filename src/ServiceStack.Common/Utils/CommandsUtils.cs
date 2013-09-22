@@ -2,14 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using ServiceStack.Commands;
-using ServiceStack.Common.Support;
-using ServiceStack;
+using ServiceStack.Support;
 
 #if NETFX_CORE
 using Windows.System.Threading;
 #endif
 
-namespace ServiceStack.Common.Utils
+namespace ServiceStack.Utils
 {
     public class CommandsUtils
     {

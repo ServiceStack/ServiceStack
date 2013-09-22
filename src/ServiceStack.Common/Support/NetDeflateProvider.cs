@@ -5,7 +5,7 @@ using System.Text;
 using ServiceStack.Caching;
 using ServiceStack.Text;
 
-namespace ServiceStack.Common.Support
+namespace ServiceStack.Support
 {
     public class NetDeflateProvider : IDeflateProvider
     {

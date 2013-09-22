@@ -17,8 +17,8 @@
 #endregion
 
 using ServiceStack.Common;
-using ServiceStack.Common.Utils;
 using ServiceStack.Model;
+using ServiceStack.Utils;
 using ServiceStack.Validation;
 
 namespace ServiceStack.FluentValidation

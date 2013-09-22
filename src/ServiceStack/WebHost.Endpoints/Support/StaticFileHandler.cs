@@ -33,11 +33,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Web;
 using ServiceStack.Common;
-using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.Web;
 using HttpRequestWrapper = ServiceStack.WebHost.Endpoints.Wrappers.HttpRequestWrapper;
 using HttpResponseWrapper = ServiceStack.WebHost.Endpoints.Wrappers.HttpResponseWrapper;
 

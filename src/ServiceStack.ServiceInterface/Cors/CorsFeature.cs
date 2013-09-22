@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using ServiceStack.Common.Web;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface.Cors

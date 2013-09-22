@@ -3,11 +3,11 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using ServiceStack.Caching;
-using ServiceStack.Common.Support;
-using ServiceStack.Common.Web;
+using ServiceStack.Support;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
-namespace ServiceStack.Common
+namespace ServiceStack
 {
     public static class StreamExtensions
     {

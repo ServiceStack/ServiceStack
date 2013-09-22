@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using ServiceStack.Common.Support;
+using ServiceStack.Support;
 
 #if NETFX_CORE
 using Windows.System.Threading;
 #endif
 
-namespace ServiceStack.Common
+namespace ServiceStack
 {
     public static class ActionExecExtensions
     {

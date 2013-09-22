@@ -3,7 +3,7 @@ using System.Collections;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Clients;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests

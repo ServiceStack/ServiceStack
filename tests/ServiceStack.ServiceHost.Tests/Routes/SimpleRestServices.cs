@@ -1,6 +1,6 @@
 using System.Net;
-using ServiceStack.Common.Web;
 using ServiceStack.ServiceInterface;
+using ServiceStack.Web;
 
 namespace ServiceStack.ServiceHost.Tests.Routes
 {

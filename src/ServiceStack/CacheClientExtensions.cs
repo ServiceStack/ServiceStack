@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using ServiceStack.Caching;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
-using ServiceStack.Common.Web;
 using ServiceStack.Common;
 using ServiceStack.Text;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack
@@ -109,7 +109,7 @@ namespace ServiceStack
                 {
                     var cacheKeySerializedZip = GetCacheKeyForCompressed(cacheKeySerialized, context.CompressionType);
 
-                    byte[] compressedSerializedDto = Common.StreamExtensions.Compress(serializedDto, context.CompressionType);
+                    byte[] compressedSerializedDto = StreamExtensions.Compress(serializedDto, context.CompressionType);
                     cacheClient.Set(cacheKeySerializedZip, compressedSerializedDto, expireCacheIn);
 
                     return (compressedSerializedDto != null)

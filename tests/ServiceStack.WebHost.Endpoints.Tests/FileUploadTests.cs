@@ -5,10 +5,10 @@ using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Clients;
 using ServiceStack.Common;
-using ServiceStack.Common.Utils;
-using ServiceStack.Common.Web;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.Text;
+using ServiceStack.Utils;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 

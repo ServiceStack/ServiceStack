@@ -1,6 +1,5 @@
 using System.Web;
 using ServiceStack.Common;
-using ServiceStack.Common.ServiceModel;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel;

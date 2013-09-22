@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using NUnit.Framework;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;

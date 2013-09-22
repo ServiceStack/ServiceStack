@@ -1,9 +1,9 @@
 using System;
-using ServiceStack.Common.Web;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Wrappers;
 

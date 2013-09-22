@@ -1,15 +1,14 @@
 ﻿//#define HTTP_LISTENER
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using ServiceStack.Common;
-using ServiceStack.Common.Web;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
-using ServiceStack.ServiceModel;
+using ServiceStack.Text;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints;
 
 #if HTTP_LISTENER

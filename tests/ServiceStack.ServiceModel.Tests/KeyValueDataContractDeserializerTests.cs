@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.Serialization;
 using ServiceStack.ServiceModel.Tests.DataContracts.Operations;
 using System;
 using System.Collections.Generic;

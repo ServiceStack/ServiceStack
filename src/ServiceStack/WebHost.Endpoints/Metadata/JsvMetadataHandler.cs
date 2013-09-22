@@ -1,9 +1,9 @@
 using System;
 using System.Web.UI;
-using ServiceStack.Common.Utils;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.Utils;
 using ServiceStack.WebHost.Endpoints.Support.Metadata.Controls;
 
 namespace ServiceStack.WebHost.Endpoints.Metadata

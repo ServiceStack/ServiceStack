@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net;
 using NUnit.Framework;
-using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Text;

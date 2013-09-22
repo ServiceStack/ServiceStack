@@ -1,6 +1,6 @@
 using System;
 using NUnit.Framework;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support
 {

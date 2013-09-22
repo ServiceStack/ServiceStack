@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using ServiceStack.Common;
+using ServiceStack.Serialization;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
 
-namespace ServiceStack.Common.Web
+namespace ServiceStack.Web
 {
     public class ContentTypes : IContentTypes
     {

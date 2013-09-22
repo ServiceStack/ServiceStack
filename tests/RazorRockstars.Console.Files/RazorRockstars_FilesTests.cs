@@ -5,11 +5,12 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using NUnit.Framework;
+using ServiceStack;
 using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Razor;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
 

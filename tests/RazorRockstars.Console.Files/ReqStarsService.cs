@@ -10,19 +10,19 @@ using NUnit.Framework;
 using ServiceStack;
 using ServiceStack.Clients;
 using ServiceStack.Common;
-using ServiceStack.Common.Web;
 using ServiceStack.Data;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.OrmLite;
 using ServiceStack.Plugins.MsgPack;
 using ServiceStack.Server;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Cors;
 using ServiceStack.ServiceModel;
 using ServiceStack.Text;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints;
 
 namespace RazorRockstars.Console.Files

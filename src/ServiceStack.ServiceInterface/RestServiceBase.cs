@@ -1,7 +1,7 @@
 using System;
-using ServiceStack.Common.Web;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
+using ServiceStack.Web;
 
 namespace ServiceStack.ServiceInterface
 {

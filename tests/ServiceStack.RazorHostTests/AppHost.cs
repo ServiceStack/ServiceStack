@@ -1,14 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Funq;
-using ServiceStack.Common;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.Razor;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.RazorHostTests

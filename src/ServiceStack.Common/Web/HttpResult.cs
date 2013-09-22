@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using ServiceStack.Common;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 
-namespace ServiceStack.Common.Web
+namespace ServiceStack.Web
 {
     public class HttpResult
         : IHttpResult, IStreamWriter, IPartialWriter

@@ -7,7 +7,7 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Clients;
 using ServiceStack.Server;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.Text;

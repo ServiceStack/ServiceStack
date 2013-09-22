@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Net;
 using ServiceStack.Common;
-using ServiceStack.Common.Utils;
-using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Model;
 using ServiceStack.Redis;
 using ServiceStack.Server;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.Text;
+using ServiceStack.Utils;
 using ServiceStack.Validation;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceHost

@@ -4,9 +4,9 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using ServiceStack.Clients;
-using ServiceStack.Common.Web;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
+using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {

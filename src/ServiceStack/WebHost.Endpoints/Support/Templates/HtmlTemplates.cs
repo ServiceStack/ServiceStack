@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using ServiceStack.Common.Utils;
+using ServiceStack.Utils;
 
 namespace ServiceStack.WebHost.Endpoints.Support.Templates
 {

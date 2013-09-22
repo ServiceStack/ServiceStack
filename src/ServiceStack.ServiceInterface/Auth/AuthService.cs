@@ -1,11 +1,11 @@
 using System;
 using System.Configuration;
 using System.Runtime.Serialization;
-using ServiceStack.Common.Web;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel;
 using ServiceStack.Text;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface.Auth

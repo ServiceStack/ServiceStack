@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
-using ServiceStack.Common.Utils;
 using ServiceStack.Configuration;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.SqlServer;
@@ -10,6 +9,7 @@ using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.Redis;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
+using ServiceStack.Utils;
 
 namespace ServiceStack.Common.Tests.OAuth
 {

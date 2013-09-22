@@ -3,10 +3,10 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using ServiceStack.Common;
-using ServiceStack.Common.Web;
 using ServiceStack.Server;
 using ServiceStack.ServiceModel;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.ServiceHost
 {

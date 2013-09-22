@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
 using ServiceStack.Common;
-using ServiceStack.Common.Utils;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
+using ServiceStack.Utils;
 using ServiceStack.VirtualPath;
 using ServiceStack.WebHost.Endpoints.Formats;
 

@@ -11,9 +11,6 @@ using System.Web.Configuration;
 using System.Xml.Linq;
 using MarkdownSharp;
 using ServiceStack.Common;
-using ServiceStack.Common.ServiceModel;
-using ServiceStack.Common.Utils;
-using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
@@ -22,6 +19,8 @@ using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel;
 using ServiceStack.Text;
+using ServiceStack.Utils;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints

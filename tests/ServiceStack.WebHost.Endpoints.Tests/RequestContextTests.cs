@@ -5,8 +5,8 @@ using System.Net;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Common;
-using ServiceStack.Common.Web;
 using ServiceStack.Text;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 
 namespace ServiceStack.WebHost.Endpoints.Tests

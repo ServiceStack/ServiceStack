@@ -1,7 +1,7 @@
 using System;
 using System.Text;
 
-namespace ServiceStack.Common
+namespace ServiceStack
 {
     /// <summary>
     /// Creates a Unified Resource Name (URN) with the following formats:

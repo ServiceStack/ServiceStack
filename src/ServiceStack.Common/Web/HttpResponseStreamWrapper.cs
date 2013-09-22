@@ -2,10 +2,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
-using ServiceStack.Common;
 
-namespace ServiceStack.Common.Web
+namespace ServiceStack.Web
 {
     public class HttpResponseStreamWrapper : IHttpResponse
     {

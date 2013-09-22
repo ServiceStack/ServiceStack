@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using ServiceStack.Logging;
 
-namespace ServiceStack.Common
+namespace ServiceStack
 {
     public static class DisposableExtensions
     {

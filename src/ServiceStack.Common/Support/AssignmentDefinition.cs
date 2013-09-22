@@ -1,12 +1,12 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
-using ServiceStack.Common.Utils;
+using ServiceStack.Common.Support;
 using ServiceStack.Logging;
 using ServiceStack.Text;
+using ServiceStack.Utils;
 
-namespace ServiceStack.Common.Support
+namespace ServiceStack.Support
 {
     public class AssignmentEntry
     {

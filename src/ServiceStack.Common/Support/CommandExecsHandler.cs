@@ -1,8 +1,7 @@
 using System.Threading;
 using ServiceStack.Commands;
-using ServiceStack;
 
-namespace ServiceStack.Common.Support
+namespace ServiceStack.Support
 {
     public class CommandExecsHandler : ICommandExec
     {

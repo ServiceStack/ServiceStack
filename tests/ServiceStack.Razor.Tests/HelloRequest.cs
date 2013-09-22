@@ -1,6 +1,6 @@
-﻿using ServiceStack.Common.Web;
-using ServiceStack.ServiceHost;
+﻿using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
+using ServiceStack.Web;
 
 namespace ServiceStack.Razor.Tests
 {

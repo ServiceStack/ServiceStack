@@ -2,13 +2,13 @@
 using System.Net;
 using ServiceStack.Clients;
 using ServiceStack.Common;
-using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using NUnit.Framework;
 using Funq;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.ServiceModel;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

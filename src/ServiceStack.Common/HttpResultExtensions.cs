@@ -1,14 +1,12 @@
 ﻿using System;
 using System.IO;
 using System.Net;
-using ServiceStack.Common.Web;
 using ServiceStack.Server;
-using ServiceStack.ServiceModel;
 using ServiceStack.Text;
-using ServiceStack.Common.Utils;
-using ServiceStack.ServiceHost;
+using ServiceStack.Utils;
+using ServiceStack.Web;
 
-namespace ServiceStack.Common
+namespace ServiceStack
 {
     public static class HttpResultExtensions
     {

@@ -1,7 +1,7 @@
-using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
+using ServiceStack.Web;
 
 namespace ServiceStack.ServiceInterface.Auth
 {

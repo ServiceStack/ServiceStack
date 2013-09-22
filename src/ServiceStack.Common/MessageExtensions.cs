@@ -4,7 +4,7 @@ using System.Threading;
 using ServiceStack.Messaging;
 using ServiceStack.Text;
 
-namespace ServiceStack.Common
+namespace ServiceStack
 {
     public static class MessageExtensions
     {

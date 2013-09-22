@@ -1,7 +1,7 @@
 using System;
 using ServiceStack.Logging;
 
-namespace ServiceStack.Common.Utils
+namespace ServiceStack.Utils
 {
     public static class FuncUtils
     {

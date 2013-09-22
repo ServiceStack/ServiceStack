@@ -1,6 +1,6 @@
 using System;
 
-namespace ServiceStack.Common.Web
+namespace ServiceStack.Web
 {
     public static class CompressionTypes
     {

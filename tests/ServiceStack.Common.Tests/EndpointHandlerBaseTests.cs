@@ -1,10 +1,10 @@
 ﻿using System;
 using NUnit.Framework;
-using ServiceStack.Common.Web;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Common.Tests
 {

@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace ServiceStack.Common.Utils
+namespace ServiceStack.Utils
 {
     public static class PathUtils
     {

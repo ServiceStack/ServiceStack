@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using ServiceStack.ServiceModel;
 using ServiceStack.Validation;
 
-namespace ServiceStack.Common.Utils
+namespace ServiceStack.Utils
 {
     public static class ResponseStatusUtils
     {

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using ServiceStack.Common.Utils;
 using ServiceStack.Model;
+using ServiceStack.Utils;
 
 namespace ServiceStack.Common.Tests.Perf
 {

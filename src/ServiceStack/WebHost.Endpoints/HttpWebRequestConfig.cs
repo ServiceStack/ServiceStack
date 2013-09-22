@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Web;
 using System.Web.Security;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 
 namespace ServiceStack.WebHost.Endpoints
 {

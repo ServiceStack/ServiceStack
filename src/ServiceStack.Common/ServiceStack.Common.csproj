@@ -8,7 +8,7 @@
     <ProjectGuid>{982416DB-C143-4028-A0C3-CF41892D18D3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceStack.Common</RootNamespace>
+    <RootNamespace>ServiceStack</RootNamespace>
     <AssemblyName>ServiceStack.Common</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -51,7 +51,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <DocumentationFile>bin\Release\ServiceStack.Common.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\ServiceStack.Common.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'STATIC_ONLY NO_EXPRESSIONS|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -125,7 +125,7 @@
     <Compile Include="ExecExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Expressions\DelegateFactory.cs">
+    <Compile Include="Reflection\DelegateFactory.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="HostContext.cs" />
@@ -186,7 +186,7 @@
     <Compile Include="Messaging\TransientMessageServiceBase.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\RouteMember.cs" />
+    <Compile Include="Clients\RouteMember.cs" />
     <Compile Include="ServiceModel\MetadataTypes.cs" />
     <Compile Include="ModelUtils.cs">
       <SubType>Code</SubType>
@@ -204,107 +204,107 @@
     <Compile Include="Reflection\StaticAccessors.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\AsyncServiceClient.cs">
+    <Compile Include="Clients\AsyncServiceClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\AuthDtos.cs">
+    <Compile Include="Clients\AuthDtos.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\GenericProxy.cs">
+    <Compile Include="Clients\GenericProxy.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\HttpMethod.cs">
+    <Compile Include="Clients\HttpMethod.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\IDuplex.cs">
+    <Compile Include="Clients\IDuplex.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\IDuplexCallback.cs">
+    <Compile Include="Clients\IDuplexCallback.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\IOneWay.cs">
+    <Compile Include="Clients\IOneWay.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\ISyncReply.cs">
+    <Compile Include="Clients\ISyncReply.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\IWcfServiceClient.cs">
+    <Compile Include="Clients\IWcfServiceClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\JsonRestClientAsync.cs">
+    <Compile Include="Clients\JsonRestClientAsync.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\JsonServiceClient.cs">
+    <Compile Include="Clients\JsonServiceClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\JsvRestClientAsync.cs">
+    <Compile Include="Clients\JsvRestClientAsync.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\JsvServiceClient.cs">
+    <Compile Include="Clients\JsvServiceClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\ServiceClientBase.cs">
+    <Compile Include="Clients\ServiceClientBase.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\Soap11ServiceClient.cs">
+    <Compile Include="Clients\Soap11ServiceClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\Soap12ServiceClient.cs">
+    <Compile Include="Clients\Soap12ServiceClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceModel\Serialization\IStringDeserializer.cs" />
-    <Compile Include="ServiceModel\Serialization\IStringSerializer.cs" />
-    <Compile Include="ServiceModel\Serialization\ITextSerializer.cs" />
+    <Compile Include="Serialization\IStringDeserializer.cs" />
+    <Compile Include="Serialization\IStringSerializer.cs" />
+    <Compile Include="Serialization\ITextSerializer.cs" />
     <Compile Include="UrlExtensions.cs" />
-    <Compile Include="ServiceClient.Web\WcfServiceClient.cs">
+    <Compile Include="Clients\WcfServiceClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\WebRequestUtils.cs">
+    <Compile Include="Clients\WebRequestUtils.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\WebServiceException.cs">
+    <Compile Include="Clients\WebServiceException.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\XmlRestClientAsync.cs">
+    <Compile Include="Clients\XmlRestClientAsync.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceClient.Web\XmlServiceClient.cs">
+    <Compile Include="Clients\XmlServiceClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceModel\Serialization\DataContractDeserializer.cs">
+    <Compile Include="Serialization\DataContractDeserializer.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceModel\Serialization\DataContractSerializer.cs">
+    <Compile Include="Serialization\DataContractSerializer.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceModel\Serialization\JsonDataContractDeserializer.cs">
+    <Compile Include="Serialization\JsonDataContractDeserializer.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceModel\Serialization\JsonDataContractSerializer.cs">
+    <Compile Include="Serialization\JsonDataContractSerializer.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceModel\Serialization\KeyValueDataContractDeserializer.cs">
+    <Compile Include="Serialization\KeyValueDataContractDeserializer.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceModel\Serialization\StringMapTypeDeserializer.cs">
+    <Compile Include="Serialization\StringMapTypeDeserializer.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceModel\Serialization\XmlSerializableDeserializer.cs">
+    <Compile Include="Serialization\XmlSerializableDeserializer.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceModel\Serialization\XmlSerializableSerializer.cs">
+    <Compile Include="Serialization\XmlSerializableSerializer.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceModel\Support\XmlSerializableWrapper.cs">
+    <Compile Include="ServiceModel\XmlSerializableWrapper.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceModel\Validation\ValidationError.cs">
+    <Compile Include="Validation\ValidationError.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceModel\Validation\ValidationErrorField.cs">
+    <Compile Include="Validation\ValidationErrorField.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceModel\Validation\ValidationErrorResult.cs">
+    <Compile Include="Validation\ValidationErrorResult.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="XLinqExtensions.cs">
@@ -313,7 +313,7 @@
     <Compile Include="StreamExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="StringExtensions.cs">
+    <Compile Include="PathExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Support\ActionExecHandler.cs">

@@ -4,7 +4,7 @@ using ServiceStack.Clients;
 using ServiceStack.Server;
 using ServiceStack.ServiceInterface.Admin;
 using ServiceStack.Text;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using System.Runtime.Serialization;

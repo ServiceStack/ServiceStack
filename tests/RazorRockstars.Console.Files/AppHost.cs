@@ -2,14 +2,13 @@
 using System.Runtime.Serialization;
 using Funq;
 using ServiceStack;
-using ServiceStack.Common;
-using ServiceStack.Common.Web;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.Razor;
-using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
+using ServiceStack.Text;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints;
 
 //The entire C# code for the stand-alone RazorRockstars demo.

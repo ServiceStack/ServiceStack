@@ -4,7 +4,6 @@ using ServiceStack.Clients;
 using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.Text;
-using StringExtensions = ServiceStack.Common.StringExtensions;
 
 namespace ServiceStack.Messaging
 {
@@ -167,7 +166,7 @@ namespace ServiceStack.Messaging
                         }
 
                         // Leave as-is to work around a Mono 2.6.7 compiler bug
-                        if (!StringExtensions.IsUserType(responseType)) return;
+                        if (!responseType.IsUserType()) return;
                         mqReplyTo = new QueueNames(responseType).In;
                     }
                     
@@ -185,7 +184,7 @@ namespace ServiceStack.Messaging
                                 .Fmt(mqReplyTo, replyClient.GetType().Name), ex);
 
                             // Leave as-is to work around a Mono 2.6.7 compiler bug
-                            if (!StringExtensions.IsUserType(responseType)) return;
+                            if (!responseType.IsUserType()) return;
 
                             mqReplyTo = new QueueNames(responseType).In;
                         }

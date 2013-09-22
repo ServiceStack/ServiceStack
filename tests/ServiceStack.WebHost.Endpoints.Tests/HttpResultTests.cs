@@ -1,9 +1,9 @@
 using System.IO;
 using NUnit.Framework;
-using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Tests.Mocks;
 
 namespace ServiceStack.WebHost.Endpoints.Tests

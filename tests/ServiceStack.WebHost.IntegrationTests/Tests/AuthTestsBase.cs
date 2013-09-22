@@ -2,7 +2,7 @@ using System;
 using System.Net;
 using NUnit.Framework;
 using ServiceStack.Clients;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
 

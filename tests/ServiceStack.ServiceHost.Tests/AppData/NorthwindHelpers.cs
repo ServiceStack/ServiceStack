@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using ServiceStack.Common;
 
 namespace ServiceStack.ServiceHost.Tests.AppData
 {

@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
 using NUnit.Framework;
-using ServiceStack.Common.Expressions;
+using ServiceStack.Reflection;
 
 namespace ServiceStack.Common.Tests.Expressions
 {

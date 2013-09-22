@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using NUnit.Framework;
-using ServiceStack.Common.Reflection;
 using ServiceStack.Common.Tests.Models;
+using ServiceStack.Reflection;
 using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests.Perf

@@ -4,13 +4,12 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
-using ServiceStack.Common.Support;
 using ServiceStack.Logging;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
+using ServiceStack.Support;
 using ServiceStack.Text;
 
-namespace ServiceStack.Common.Utils
+namespace ServiceStack.Utils
 {
     [DataContract(Namespace = "http://schemas.servicestack.net/types")]
     public class CustomHttpResult { }

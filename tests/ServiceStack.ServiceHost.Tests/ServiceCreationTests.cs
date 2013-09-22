@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 using ServiceStack.Caching;
 using ServiceStack.Clients;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.WebHost.Endpoints;
 using Funq;
 

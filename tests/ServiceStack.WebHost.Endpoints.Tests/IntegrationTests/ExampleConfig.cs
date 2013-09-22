@@ -1,4 +1,3 @@
-using ServiceStack.Common.Utils;
 using ServiceStack.Configuration;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests

@@ -1,15 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using ServiceStack.Clients;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+
 #if NETFX_CORE
 using System.Net.Http.Headers;
 #endif
 
-namespace ServiceStack.Common.Web
+namespace ServiceStack.Web
 {
     public class CompressedFileResult
         : IStreamWriter, IHasOptions

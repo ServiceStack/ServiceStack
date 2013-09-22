@@ -9,15 +9,14 @@ using System.Text;
 using System.Threading;
 using Funq;
 using ServiceStack.Common;
-using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
+using ServiceStack.Serialization;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel;
-using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Wrappers;
 

@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 using MsgPack.Serialization;
 using System.IO;
 using ServiceStack.Server;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 

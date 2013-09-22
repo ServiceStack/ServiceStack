@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using ServiceStack.Text;
 
-namespace ServiceStack.Common.Support
+namespace ServiceStack.Support
 {
     public delegate void PropertySetterDelegate(object instance, object value);
     public delegate object PropertyGetterDelegate(object instance);

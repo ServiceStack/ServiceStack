@@ -1,4 +1,4 @@
-using ServiceStack.Common.Utils;
+using ServiceStack.Utils;
 
 namespace ServiceStack
 {

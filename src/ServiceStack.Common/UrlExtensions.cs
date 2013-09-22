@@ -1,6 +1,4 @@
-﻿using ServiceStack.Common.Web;
-using ServiceStack.ServiceClient.Web;
-using ServiceStack.ServiceHost;
+﻿using ServiceStack.Clients;
 using ServiceStack.Text;
 using System;
 using System.Collections.Generic;
@@ -10,8 +8,9 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Collections.Concurrent;
+using ServiceStack.Web;
 
-namespace ServiceStack.Common
+namespace ServiceStack
 {
     /// <summary>
     /// Donated by Ivan Korneliuk from his post:

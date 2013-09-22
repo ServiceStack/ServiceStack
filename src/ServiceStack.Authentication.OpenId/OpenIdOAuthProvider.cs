@@ -7,13 +7,13 @@ using DotNetOpenAuth.OpenId.Extensions.AttributeExchange;
 using DotNetOpenAuth.OpenId.Extensions.SimpleRegistration;
 using DotNetOpenAuth.OpenId.RelyingParty;
 using ServiceStack.Common;
-using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Authentication.OpenId
 {

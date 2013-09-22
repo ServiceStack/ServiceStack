@@ -2,10 +2,10 @@ using System;
 using System.IO;
 using System.Net;
 using ServiceStack.Clients;
-using ServiceStack.Common.Web;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Support.Mocks;
 using ServiceStack.WebHost.Endpoints.Tests.Mocks;
 

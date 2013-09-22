@@ -1,9 +1,9 @@
 using System;
 using System.Reflection;
-using System.Linq;
 using ServiceStack.Text;
+using System.Linq.Expressions;
 
-namespace ServiceStack.Common.Reflection
+namespace ServiceStack.Reflection
 {
 
 #if MONOTOUCH || SILVERLIGHT
@@ -11,8 +11,7 @@ namespace ServiceStack.Common.Reflection
     {
     }
 #else
-    using System.Linq.Expressions;
-
+    
     public static class StaticAccessors
     {
         public static Func<object, object> GetValueGetter(Type type, PropertyInfo propertyInfo)

@@ -3,7 +3,7 @@
 using System;
 using System.Diagnostics;
 
-namespace ServiceStack.Common.Utils
+namespace ServiceStack.Utils
 {
     public static class PerfUtils
     {

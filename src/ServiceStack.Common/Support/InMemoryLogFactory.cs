@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using ServiceStack.Logging;
 
-namespace ServiceStack.Common.Support
+namespace ServiceStack.Support
 {
     /// <summary>
     /// Note: InMemoryLog keeps all logs in memory, so don't use it long running exceptions

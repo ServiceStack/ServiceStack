@@ -1,4 +1,4 @@
-namespace ServiceStack.Common
+namespace ServiceStack
 {
     public static class ByteArrayExtensions
     {

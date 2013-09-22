@@ -9,11 +9,11 @@ using System.Net;
 using System.Text;
 using System.Web;
 using Funq;
-using ServiceStack.Common.Utils;
-using ServiceStack.Common.Web;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.Utils;
+using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Wrappers
 {

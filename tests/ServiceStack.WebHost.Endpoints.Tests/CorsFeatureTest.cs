@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using ServiceStack.Clients;
-using ServiceStack.Common.Web;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using NUnit.Framework;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Cors;
 using ServiceStack.Text;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Utils;
 
 namespace ServiceStack.WebHost.Endpoints.Tests

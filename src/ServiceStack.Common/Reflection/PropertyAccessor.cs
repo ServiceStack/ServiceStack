@@ -2,7 +2,7 @@ using System;
 using System.Reflection;
 using ServiceStack.Text;
 
-namespace ServiceStack.Common.Reflection
+namespace ServiceStack.Reflection
 {
 
     public static class PropertyAccessor

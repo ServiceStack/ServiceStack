@@ -2,11 +2,10 @@ using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.ServiceModel.Dispatcher;
-using ServiceStack.Common;
-using ServiceStack.Common.Utils;
-using ServiceStack.Common.Web;
-using ServiceStack.ServiceHost;
+using ServiceStack.Text;
+using ServiceStack.Utils;
 using ServiceStack.Validation;
+using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {

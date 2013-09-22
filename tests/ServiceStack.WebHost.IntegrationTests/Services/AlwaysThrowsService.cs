@@ -1,8 +1,8 @@
 using System;
 using System.Runtime.Serialization;
-using ServiceStack.Common.Web;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceModel;
+using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {

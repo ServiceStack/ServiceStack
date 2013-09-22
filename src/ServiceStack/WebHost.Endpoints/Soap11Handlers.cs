@@ -1,8 +1,8 @@
 ﻿using System.Web;
 using System.Xml;
-using ServiceStack.Common.Web;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Metadata;
 using ServiceStack.WebHost.Endpoints.Support;
 

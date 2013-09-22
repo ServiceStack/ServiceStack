@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+
 #if WINDOWS_PHONE
 using ServiceStack.Text.WP;
 #endif
 
-namespace ServiceStack.Common
+namespace ServiceStack
 {
     public static class EnumerableExtensions
     {

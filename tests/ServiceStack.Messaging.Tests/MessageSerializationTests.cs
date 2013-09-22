@@ -1,6 +1,5 @@
 using System;
 using NUnit.Framework;
-using ServiceStack.Common;
 using ServiceStack.Messaging.Tests.Services;
 using ServiceStack.Model;
 using ServiceStack.Text;

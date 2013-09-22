@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Web;
-using ServiceStack.Common.Utils;
+using ServiceStack.Utils;
 
 namespace ServiceStack.WebHost.Endpoints.Ext
 {

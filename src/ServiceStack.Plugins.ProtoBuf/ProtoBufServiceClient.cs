@@ -3,7 +3,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using ProtoBuf;
 using ServiceStack.Server;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 

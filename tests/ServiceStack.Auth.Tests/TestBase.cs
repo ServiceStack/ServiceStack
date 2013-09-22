@@ -1,6 +1,6 @@
 using System;
 using NUnit.Framework;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
 

@@ -1,8 +1,7 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using ServiceStack.Common;
 using ServiceStack.OrmLite;
-using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {

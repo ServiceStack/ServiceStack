@@ -1,7 +1,7 @@
 using Northwind.Common.DataModel;
 using Northwind.Common.ComplexModel;
 using NUnit.Framework;
-using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.Serialization;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceModel.Tests

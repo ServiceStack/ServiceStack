@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using ServiceStack.Common;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel;
 
-namespace ServiceStack.Common.Web
+namespace ServiceStack.Web
 {
     public class HttpError : Exception, IHttpError
     {

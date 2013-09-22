@@ -1,7 +1,7 @@
 using System;
 using ServiceStack.Logging;
 
-namespace ServiceStack.Common.Support
+namespace ServiceStack.Support
 {
     /// <summary>
     /// Common functionality when creating adapters

@@ -8,7 +8,7 @@ using ServiceStack.Common.Tests.ServiceClient.Web;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using NUnit.Framework;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.ServiceInterface;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Utils;

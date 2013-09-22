@@ -1,4 +1,4 @@
-namespace ServiceStack.Common.Web
+namespace ServiceStack.Web
 {
     public class EndPoint
     {

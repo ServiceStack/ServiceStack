@@ -8,7 +8,6 @@ using System.Text;
 using System.Web;
 using ServiceStack.Caching;
 using ServiceStack.Common;
-using ServiceStack.Common.Web;
 using ServiceStack.Data;
 using ServiceStack.Html;
 using ServiceStack.Messaging;

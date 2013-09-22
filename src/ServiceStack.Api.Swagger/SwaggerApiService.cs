@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
-using ServiceStack.Common;
-using ServiceStack.Common;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Api.Swagger
@@ -439,7 +438,7 @@ namespace ServiceStack.Api.Swagger
 
             if (!DisableAutoDtoInBodyParam)
             {
-                if (!ServiceStack.Common.Web.HttpMethods.Get.Equals(verb, StringComparison.OrdinalIgnoreCase) && !methodOperationParameters.Any(p => p.ParamType.Equals("body", StringComparison.OrdinalIgnoreCase)))
+                if (!HttpMethods.Get.Equals(verb, StringComparison.OrdinalIgnoreCase) && !methodOperationParameters.Any(p => p.ParamType.Equals("body", StringComparison.OrdinalIgnoreCase)))
                 {
                     ParseModel(models, operationType);
                     methodOperationParameters.Add(new MethodOperationParameter()

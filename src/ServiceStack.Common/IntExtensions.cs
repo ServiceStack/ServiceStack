@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ServiceStack.Common
+namespace ServiceStack
 {
     public static class IntExtensions
     {

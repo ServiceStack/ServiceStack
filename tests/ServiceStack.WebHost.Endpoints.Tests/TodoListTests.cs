@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Funq;
 using NUnit.Framework;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceModel;
 using ServiceStack.WebHost.Endpoints;

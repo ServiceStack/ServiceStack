@@ -12,7 +12,7 @@ using NUnit.Framework;
 using ServiceStack.ServiceInterface.Validation;
 using System.Collections;
 using Funq;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
 

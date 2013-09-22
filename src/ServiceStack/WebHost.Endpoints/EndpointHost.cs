@@ -5,16 +5,15 @@ using System.Reflection;
 using Funq;
 using ServiceStack.Caching;
 using ServiceStack.Common;
-using ServiceStack.Common.Web;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Messaging;
 using ServiceStack.MiniProfiler;
+using ServiceStack.Serialization;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;
-using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.WebHost.Endpoints.Formats;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Utils;
@@ -56,7 +55,7 @@ namespace ServiceStack.WebHost.Endpoints
 
         private static void Reset()
         {
-            ContentTypes = Common.Web.ContentTypes.Instance;
+            ContentTypes = Web.ContentTypes.Instance;
             RawRequestFilters = new List<Action<IHttpRequest, IHttpResponse>>();
             RequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
             ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();

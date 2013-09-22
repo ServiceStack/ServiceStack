@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
 using ServiceStack.Text;
 
-namespace ServiceStack.Common
+namespace ServiceStack
 {
     public static class EnumExtensions
     {

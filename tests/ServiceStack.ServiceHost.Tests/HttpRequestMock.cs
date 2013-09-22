@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ServiceStack.Common.Utils;
 using ServiceStack.Server;
+using ServiceStack.Utils;
 
 namespace ServiceStack.ServiceHost.Tests
 {

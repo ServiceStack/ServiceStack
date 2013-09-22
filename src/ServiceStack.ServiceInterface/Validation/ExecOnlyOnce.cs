@@ -1,8 +1,8 @@
 ﻿using System;
 using ServiceStack.Common;
-using ServiceStack.Common.Web;
 using ServiceStack.Redis;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.ServiceInterface.Validation
 {

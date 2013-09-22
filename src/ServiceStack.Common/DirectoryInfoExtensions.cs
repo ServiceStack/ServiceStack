@@ -1,8 +1,8 @@
-#if !SILVERLIGHT 
+#if !SILVERLIGHT
 using System.Collections.Generic;
 using System.IO;
 
-namespace ServiceStack.Common
+namespace ServiceStack
 {
     public static class DirectoryInfoExtensions
     {

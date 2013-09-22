@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using ServiceStack.Common;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 {

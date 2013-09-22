@@ -1,8 +1,6 @@
-using System;
-using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 
-namespace ServiceStack.Common.Web
+namespace ServiceStack.Web
 {
     public static class ContentFormat
     {

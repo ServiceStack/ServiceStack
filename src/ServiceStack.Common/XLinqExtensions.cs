@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace ServiceStack.Common
+namespace ServiceStack
 {
     public static class XLinqExtensions
     {

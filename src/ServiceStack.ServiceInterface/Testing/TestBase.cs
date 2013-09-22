@@ -6,12 +6,12 @@ using System.Reflection;
 using System.Text;
 using ServiceStack.Clients;
 using ServiceStack.Common;
-using ServiceStack.Common.Web;
 using ServiceStack.Server;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel;
 using ServiceStack.Text;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Support;
 

@@ -3,10 +3,10 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using NUnit.Framework;
 using ServiceStack.Common.Tests.Models;
-using ServiceStack.Common.Utils;
 using ServiceStack.DataAnnotations;
 using System.Collections.Generic;
 using ServiceStack.Text;
+using ServiceStack.Utils;
 
 namespace ServiceStack.Common.Tests
 {

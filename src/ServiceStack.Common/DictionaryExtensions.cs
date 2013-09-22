@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
+using ServiceStack.Common;
 
-namespace ServiceStack.Common
+namespace ServiceStack
 {
     public static class DictionaryExtensions
     {

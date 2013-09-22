@@ -1,4 +1,5 @@
 ﻿using System.Web;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Metadata;
 
@@ -80,7 +81,7 @@ namespace ServiceStack
                     if (EndpointHost.ContentTypes
                         .ContentTypeFormats.TryGetValue(pathController, out contentType))
                     {
-                        var format = Common.Web.ContentFormat.GetContentFormat(contentType);
+                        var format = ContentFormat.GetContentFormat(contentType);
                         return new CustomMetadataHandler(contentType, format);
                     }
                     break;

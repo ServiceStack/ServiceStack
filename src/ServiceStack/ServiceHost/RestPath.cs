@@ -4,8 +4,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using ServiceStack.Common;
+using ServiceStack.Serialization;
 using ServiceStack.Server;
-using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 

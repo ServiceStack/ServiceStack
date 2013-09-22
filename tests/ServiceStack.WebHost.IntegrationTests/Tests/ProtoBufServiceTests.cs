@@ -4,7 +4,7 @@ using System.Text;
 using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.Plugins.ProtoBuf;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceModel;
 using ServiceStack.Text;

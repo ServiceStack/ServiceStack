@@ -1,5 +1,6 @@
 ﻿using System.Web;
 using ServiceStack.ServiceHost;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack
@@ -62,7 +63,7 @@ namespace ServiceStack
                     string contentType;
                     if (EndpointHost.ContentTypes.ContentTypeFormats.TryGetValue(pathController, out contentType))
                     {
-                        var feature = Common.Web.ContentFormat.ToFeature(contentType);
+                        var feature = ContentFormat.ToFeature(contentType);
                         if (feature == Feature.None) feature = Feature.CustomFormat;
 
                         if (isReply)

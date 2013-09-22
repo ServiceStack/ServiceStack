@@ -2,11 +2,11 @@ using System;
 using System.IO;
 using System.Linq;
 using ServiceStack.Common;
-using ServiceStack.Common.Web;
+using ServiceStack.Serialization;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Formats
 {

@@ -6,10 +6,9 @@ using System.Net;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Common;
-using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 

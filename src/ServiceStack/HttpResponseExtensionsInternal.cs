@@ -8,13 +8,13 @@ using System.Web;
 using System.Collections.Generic;
 using ServiceStack.Clients;
 using ServiceStack.Common;
-using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel;
 using ServiceStack.Text;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack

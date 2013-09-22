@@ -1,6 +1,6 @@
 using NUnit.Framework;
-using ServiceStack.Common.Reflection;
 using ServiceStack.Common.Tests.Models;
+using ServiceStack.Reflection;
 
 namespace ServiceStack.Common.Tests.Reflection
 {

@@ -2,8 +2,8 @@ using System;
 using System.IO;
 using System.Net;
 using NUnit.Framework;
-using ServiceStack.Common.Utils;
 using ServiceStack.Text;
+using ServiceStack.Utils;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests

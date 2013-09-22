@@ -7,11 +7,11 @@ using DotNetOpenAuth.Messaging;
 using DotNetOpenAuth.OAuth2;
 
 using ServiceStack.Common;
-using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Authentication.OAuth2

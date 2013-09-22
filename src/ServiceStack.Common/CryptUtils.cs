@@ -3,7 +3,7 @@ using System.Collections;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace ServiceStack.Common
+namespace ServiceStack
 {
     public enum RsaKeyLengths
     {

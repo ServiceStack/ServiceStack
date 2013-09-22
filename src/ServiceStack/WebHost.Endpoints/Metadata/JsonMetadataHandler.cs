@@ -1,10 +1,10 @@
 using System;
 using System.Web.UI;
-using ServiceStack.Common.Utils;
+using ServiceStack.Serialization;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
+using ServiceStack.Utils;
 using ServiceStack.WebHost.Endpoints.Support.Metadata.Controls;
 
 namespace ServiceStack.WebHost.Endpoints.Metadata

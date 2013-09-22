@@ -5,10 +5,10 @@ using System.Net;
 using System.Web;
 using System.Web.UI;
 using ServiceStack.Common;
-using ServiceStack.Common.Utils;
-using ServiceStack.Common.Web;
 using ServiceStack.Server;
 using ServiceStack.Text;
+using ServiceStack.Utils;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Support.Metadata.Controls;
 using HttpRequestWrapper = ServiceStack.WebHost.Endpoints.Wrappers.HttpRequestWrapper;
@@ -64,7 +64,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
             if (!AssertAccess(httpReq, httpRes, operationName)) return;
 
-            ContentFormat = Common.Web.ContentFormat.GetContentFormat(Format);
+            ContentFormat = Web.ContentFormat.GetContentFormat(Format);
             var metadata = EndpointHost.Metadata;
             if (operationName != null)
             {

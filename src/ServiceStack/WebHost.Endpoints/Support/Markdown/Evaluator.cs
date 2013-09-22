@@ -55,7 +55,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 			typeof(AppHostBase).Assembly,  //"ServiceStack.dll",
 			typeof(JsConfig).Assembly,     //"ServiceStack.Text.dll",
 			typeof(IService<>).Assembly,   //"ServiceStack.Interfaces.dll",
-			typeof(Common.UrnId).Assembly, //"ServiceStack.Common.dll"
+			typeof(UrnId).Assembly, //"ServiceStack.Common.dll"
 		};
 
 	    static readonly List<string> AssemblyNames = new List<string> {

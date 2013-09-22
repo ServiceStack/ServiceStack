@@ -6,7 +6,7 @@ using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Clients;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.Api.Swagger;
 using ServiceStack.ServiceInterface.Cors;
 using ServiceStack.Text;

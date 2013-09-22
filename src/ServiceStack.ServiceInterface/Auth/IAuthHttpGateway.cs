@@ -1,5 +1,5 @@
 using ServiceStack.Common;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface.Auth

@@ -3,13 +3,13 @@ using System.IO;
 using System.Net;
 using Funq;
 using NUnit.Framework;
-using ServiceStack.Common.Web;
 using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Results;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Validation;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

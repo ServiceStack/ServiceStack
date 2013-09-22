@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using ServiceStack.Text;
 
-namespace ServiceStack.Common
+namespace ServiceStack
 {
     public static class TypeExtensions
     {

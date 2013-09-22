@@ -4,9 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using ServiceStack.Server;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests.ServiceClient.Web

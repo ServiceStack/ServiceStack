@@ -1,8 +1,8 @@
 using System.Runtime.Serialization;
 using NUnit.Framework;
 using ServiceStack.Common;
-using ServiceStack.ServiceModel.Serialization;
-using DataContractSerializer=ServiceStack.ServiceModel.Serialization.DataContractSerializer;
+using ServiceStack.Serialization;
+using DataContractSerializer=ServiceStack.Serialization.DataContractSerializer;
 
 namespace ServiceStack.Common.Tests
 {

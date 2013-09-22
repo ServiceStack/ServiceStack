@@ -5,7 +5,7 @@ using NUnit.Framework;
 using ProtoBuf;
 using ServiceStack.Clients;
 using ServiceStack.Plugins.ProtoBuf;
-using ServiceStack.ServiceClient.Web;
+using ServiceStack.Clients;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel;
 

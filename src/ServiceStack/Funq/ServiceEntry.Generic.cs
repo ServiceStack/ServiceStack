@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using ServiceStack;
 using ServiceStack.Common;
 
 namespace Funq

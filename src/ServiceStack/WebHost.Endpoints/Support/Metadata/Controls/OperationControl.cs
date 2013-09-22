@@ -1,8 +1,7 @@
 using System.Web;
 using System.Web.UI;
-using ServiceStack.Common;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Support.Templates;
 
 namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
@@ -15,8 +14,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
         {
             set
             {
-                this.ContentType = Common.Web.ContentFormat.ToContentType(value);
-                this.ContentFormat = Common.Web.ContentFormat.GetContentFormat(value);
+                this.ContentType = Web.ContentFormat.ToContentType(value);
+                this.ContentFormat = Web.ContentFormat.GetContentFormat(value);
             }
         }
 

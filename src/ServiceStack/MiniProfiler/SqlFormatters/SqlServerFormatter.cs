@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Data;
-using ServiceStack.Common;
+using ServiceStack.Text;
 
 namespace ServiceStack.MiniProfiler.SqlFormatters
 {
