@@ -28,17 +28,17 @@ namespace ServiceStack.ServiceInterface.Auth
         public static string Realm = "/auth/" + AuthService.DigestProvider;
         public static int NonceTimeOut = 600;
         public string PrivateKey;
-        public IResourceManager AppSettings { get; set; }
+        public IAppSettings AppSettings { get; set; }
         public DigestAuthProvider()
         {
             this.Provider = Name;
             PrivateKey = Guid.NewGuid().ToString();
             this.AuthRealm = Realm;
         }
-        public DigestAuthProvider(IResourceManager appSettings, string authRealm, string oAuthProvider)
+        public DigestAuthProvider(IAppSettings appSettings, string authRealm, string oAuthProvider)
             : base(appSettings, authRealm, oAuthProvider) { }
 
-        public DigestAuthProvider(IResourceManager appSettings)
+        public DigestAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name) { }
 
         public virtual bool TryAuthenticate(IServiceBase authService, string userName, string password)

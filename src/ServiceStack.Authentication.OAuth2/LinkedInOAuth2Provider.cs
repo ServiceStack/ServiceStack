@@ -17,7 +17,7 @@ namespace ServiceStack.Authentication.OAuth2
 
         public const string Realm = "https://www.linkedin.com/uas/oauth2/authorization";
 
-        public LinkedInOAuth2Provider(IResourceManager appSettings)
+        public LinkedInOAuth2Provider(IAppSettings appSettings)
             : base(appSettings, Realm, Name)
         {
             this.AuthorizeUrl = this.AuthorizeUrl ?? Realm;

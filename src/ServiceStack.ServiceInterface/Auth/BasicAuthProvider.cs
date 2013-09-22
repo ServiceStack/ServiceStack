@@ -15,7 +15,7 @@ namespace ServiceStack.ServiceInterface.Auth
             this.AuthRealm = Realm;
         }
 
-        public BasicAuthProvider(IResourceManager appSettings)
+        public BasicAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name)
         {
         }

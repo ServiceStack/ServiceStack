@@ -7,7 +7,7 @@ namespace ServiceStack.Authentication.OpenId
         public const string Name = "MyOpenId";
         public static string Realm = "http://www.myopenid.com";
 
-        public MyOpenIdOAuthProvider(IResourceManager appSettings)
+        public MyOpenIdOAuthProvider(IAppSettings appSettings)
             : base(appSettings, Name, Realm) { }
     }
 }

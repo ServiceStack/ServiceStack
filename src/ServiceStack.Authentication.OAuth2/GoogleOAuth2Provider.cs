@@ -22,7 +22,7 @@ namespace ServiceStack.Authentication.OAuth2
 
         public const string Realm = "https://accounts.google.com/o/oauth2/auth";
 
-        public GoogleOAuth2Provider(IResourceManager appSettings)
+        public GoogleOAuth2Provider(IAppSettings appSettings)
             : base(appSettings, Realm, Name)
         {
             this.AuthorizeUrl = this.AuthorizeUrl ?? Realm;

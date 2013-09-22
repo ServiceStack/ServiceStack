@@ -18,7 +18,7 @@ namespace ServiceStack.Authentication.OAuth2
 {
     public abstract class OAuth2Provider : AuthProvider
     {
-        protected OAuth2Provider(IResourceManager appSettings, string realm, string provider)
+        protected OAuth2Provider(IAppSettings appSettings, string realm, string provider)
             : base(appSettings, realm, provider)
         {
             this.ConsumerKey = appSettings.GetString("oauth.{0}.ConsumerKey".Fmt(provider))

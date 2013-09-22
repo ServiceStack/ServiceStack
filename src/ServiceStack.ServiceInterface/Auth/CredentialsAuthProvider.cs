@@ -28,10 +28,10 @@ namespace ServiceStack.ServiceInterface.Auth
             this.AuthRealm = Realm;
         }
 
-        public CredentialsAuthProvider(IResourceManager appSettings, string authRealm, string oAuthProvider)
+        public CredentialsAuthProvider(IAppSettings appSettings, string authRealm, string oAuthProvider)
             : base(appSettings, authRealm, oAuthProvider) { }
 
-        public CredentialsAuthProvider(IResourceManager appSettings)
+        public CredentialsAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name) { }
 
         public virtual bool TryAuthenticate(IServiceBase authService, string userName, string password)

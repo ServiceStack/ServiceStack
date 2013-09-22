@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace ServiceStack.Configuration
 {
-	public interface IResourceManager
+	public interface IAppSettings
 	{
 		string GetString(string name);
 

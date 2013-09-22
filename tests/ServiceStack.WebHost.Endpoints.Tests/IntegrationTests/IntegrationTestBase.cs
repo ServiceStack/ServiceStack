@@ -40,9 +40,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 
 		public override void Configure(Container container)
 		{
-			container.Register<IResourceManager>(new ConfigurationResourceManager());
+			container.Register<IAppSettings>(new ConfigurationResourceManager());
 
-			container.Register(c => new ExampleConfig(c.Resolve<IResourceManager>()));
+			container.Register(c => new ExampleConfig(c.Resolve<IAppSettings>()));
 			//var appConfig = container.Resolve<ExampleConfig>();
 
 			container.Register<IDbConnectionFactory>(c =>

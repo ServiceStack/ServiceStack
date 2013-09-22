@@ -445,11 +445,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 				.Add<GetHttpResult>("/gethttpresult")
 			;
 
-			container.Register<IResourceManager>(new ConfigurationResourceManager());
+			container.Register<IAppSettings>(new ConfigurationResourceManager());
 
 			//var appSettings = container.Resolve<IResourceManager>();
 
-			container.Register(c => new ExampleConfig(c.Resolve<IResourceManager>()));
+			container.Register(c => new ExampleConfig(c.Resolve<IAppSettings>()));
 			//var appConfig = container.Resolve<ExampleConfig>();
 
 			container.Register<IDbConnectionFactory>(c =>
@@ -517,11 +517,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
                 .Add<GetHttpResult>("/gethttpresult")
             ;
 
-            container.Register<IResourceManager>(new ConfigurationResourceManager());
+            container.Register<IAppSettings>(new ConfigurationResourceManager());
 
             //var appSettings = container.Resolve<IResourceManager>();
 
-            container.Register(c => new ExampleConfig(c.Resolve<IResourceManager>()));
+            container.Register(c => new ExampleConfig(c.Resolve<IAppSettings>()));
             //var appConfig = container.Resolve<ExampleConfig>();
 
             container.Register<IDbConnectionFactory>(c =>

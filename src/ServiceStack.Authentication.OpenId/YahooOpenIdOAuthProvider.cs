@@ -7,7 +7,7 @@ namespace ServiceStack.Authentication.OpenId
         public const string Name = "YahooOpenId";
         public static string Realm = "https://me.yahoo.com";
 
-        public YahooOpenIdOAuthProvider(IResourceManager appSettings)
+        public YahooOpenIdOAuthProvider(IAppSettings appSettings)
             : base(appSettings, Name, Realm) { }
     }
 }

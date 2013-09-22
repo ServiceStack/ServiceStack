@@ -87,9 +87,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\GlobalAssemblyInfo.cs">
-      <Link>Properties\GlobalAssemblyInfo.cs</Link>
-    </Compile>
     <Compile Include="Caching\ICacheClient.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -116,7 +113,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Configuration\IRelease.cs" />
-    <Compile Include="Configuration\IResourceManager.cs">
+    <Compile Include="Configuration\IAppSettings.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Configuration\ITypeFactory.cs">

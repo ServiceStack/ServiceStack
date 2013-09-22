@@ -7,7 +7,7 @@ namespace ServiceStack.Authentication.OpenId
         public const string Name = "GoogleOpenId";
         public static string Realm = "https://www.google.com/accounts/o8/id";
 
-        public GoogleOpenIdOAuthProvider(IResourceManager appSettings)
+        public GoogleOpenIdOAuthProvider(IAppSettings appSettings)
             : base(appSettings, Name, Realm) { }
     }
 }

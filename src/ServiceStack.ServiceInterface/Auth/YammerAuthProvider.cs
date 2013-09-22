@@ -51,7 +51,7 @@ namespace ServiceStack.ServiceInterface.Auth
         /// <param name="appSettings">
         /// The application settings (in web.config).
         /// </param>
-        public YammerAuthProvider(IResourceManager appSettings)
+        public YammerAuthProvider(IAppSettings appSettings)
             : base(appSettings, appSettings.GetString("oauth.yammer.Realm"), Name, "ClientId", "AppSecret")
         {
             this.ClientId = appSettings.GetString("oauth.yammer.ClientId");

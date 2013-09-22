@@ -23,7 +23,7 @@ namespace ServiceStack.ServiceInterface.Auth
         public string AppSecret { get; set; }
         public string[] Permissions { get; set; }
 
-        public FacebookAuthProvider(IResourceManager appSettings)
+        public FacebookAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name, "AppId", "AppSecret")
         {
             this.AppId = appSettings.GetString("oauth.facebook.AppId");

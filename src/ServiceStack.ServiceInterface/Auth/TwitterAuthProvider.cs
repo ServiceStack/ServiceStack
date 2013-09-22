@@ -15,7 +15,7 @@ namespace ServiceStack.ServiceInterface.Auth
         public const string Name = "twitter";
         public static string Realm = "https://api.twitter.com/";
 
-        public TwitterAuthProvider(IResourceManager appSettings)
+        public TwitterAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name) {}
 
         protected override void LoadUserAuthInfo(AuthUserSession userSession, IOAuthTokens tokens, Dictionary<string, string> authInfo)

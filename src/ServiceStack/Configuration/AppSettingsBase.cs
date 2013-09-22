@@ -5,7 +5,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Configuration
 {
-    public class AppSettingsBase : IResourceManager
+    public class AppSettingsBase : IAppSettings
     {
         protected ISettings settings;
         const string ErrorAppsettingNotFound = "Unable to find App Setting: {0}";

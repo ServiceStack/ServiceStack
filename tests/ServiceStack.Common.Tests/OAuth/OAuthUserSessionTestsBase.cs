@@ -121,7 +121,7 @@ namespace ServiceStack.Common.Tests.OAuth
 		{
 			((IClearable)userAuthRepository).Clear();
 
-			var appsettingsMock = new Mock<IResourceManager>();
+			var appsettingsMock = new Mock<IAppSettings>();
 			var appSettings = appsettingsMock.Object;
 
 			new AuthFeature(null, new IAuthProvider[] {

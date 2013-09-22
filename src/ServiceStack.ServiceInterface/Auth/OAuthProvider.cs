@@ -12,10 +12,10 @@ namespace ServiceStack.ServiceInterface.Auth
     {
         public OAuthProvider() { }
 
-        public OAuthProvider(IResourceManager appSettings, string authRealm, string oAuthProvider)
+        public OAuthProvider(IAppSettings appSettings, string authRealm, string oAuthProvider)
             : this(appSettings, authRealm, oAuthProvider, "ConsumerKey", "ConsumerSecret") { }
 
-        public OAuthProvider(IResourceManager appSettings, string authRealm, string oAuthProvider,
+        public OAuthProvider(IAppSettings appSettings, string authRealm, string oAuthProvider,
                              string consumerKeyName, string consumerSecretName)
         {
             this.AuthRealm = appSettings.Get("OAuthRealm", authRealm);

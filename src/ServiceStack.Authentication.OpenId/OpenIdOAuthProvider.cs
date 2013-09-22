@@ -22,7 +22,7 @@ namespace ServiceStack.Authentication.OpenId
 
         public static IOpenIdApplicationStore OpenIdApplicationStore { get; set; }
 
-        public OpenIdOAuthProvider(IResourceManager appSettings, string name = DefaultName, string realm = null)
+        public OpenIdOAuthProvider(IAppSettings appSettings, string name = DefaultName, string realm = null)
             : base(appSettings, realm, name) { }
 
         public virtual ClaimsRequest CreateClaimsRequest(IHttpRequest httpReq)

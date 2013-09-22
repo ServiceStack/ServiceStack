@@ -23,7 +23,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
         protected AuthProvider() { }
 
-        protected AuthProvider(IResourceManager appSettings, string authRealm, string oAuthProvider)
+        protected AuthProvider(IAppSettings appSettings, string authRealm, string oAuthProvider)
         {
             // Enhancement per https://github.com/ServiceStack/ServiceStack/issues/741
             this.AuthRealm = appSettings != null ? appSettings.Get("OAuthRealm", authRealm) : authRealm;

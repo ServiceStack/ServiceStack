@@ -397,11 +397,6 @@
             Factory to create consumers and producers that work with this service
             </summary>
         </member>
-        <member name="T:ServiceStack.Net30.ExtendTuple">
-            <summary>
-            Helper extensions for tuples
-            </summary>
-        </member>
         <member name="M:ServiceStack.Common.Reflection.PropertyAccessor`1.TypedGetPropertyFn``1">
             <summary>
             Func to get the Strongly-typed field
@@ -615,6 +610,12 @@
             
             Modified to only allow using routes matching the supplied HTTP Verb
             </summary>
+        </member>
+        <member name="M:ServiceStack.Common.UrlExtensions.ToRelativeUri(ServiceStack.ServiceHost.IReturn,System.String,System.String)">
+            <summary>
+            Alias for ToUrl
+            </summary>
+            <returns></returns>
         </member>
         <member name="T:ServiceStack.ServiceClient.Web.CookieManagerEndpointBehavior">
             <summary>
