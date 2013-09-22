@@ -4,6 +4,7 @@ using System.Linq;
 using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 
@@ -27,32 +28,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 
 		public void ShouldAllowAccessWhen<TRequestDto>(EndpointAttributes withScenario)
-			where TRequestDto : new()
 		{
-			ShouldNotThrow<UnauthorizedAccessException>(() => appHost.ExecuteService(new TRequestDto(), withScenario));
+            ShouldNotThrow<UnauthorizedAccessException>(() => appHost.ExecuteService(typeof(TRequestDto).New(), withScenario));
 		}
 
 		public void ShouldDenyAccessWhen<TRequestDto>(EndpointAttributes withScenario)
-			where TRequestDto : new()
 		{
-			ShouldThrow<UnauthorizedAccessException>(() => appHost.ExecuteService(new TRequestDto(), withScenario));
+            ShouldThrow<UnauthorizedAccessException>(() => appHost.ExecuteService(typeof(TRequestDto).New(), withScenario));
 		}
 
 		public void ShouldDenyAccessForAllOtherScenarios<TRequestDto>(params EndpointAttributes[] notIncluding)
-			where TRequestDto : new()
 		{
 			ShouldDenyAccessForOtherScenarios<TRequestDto>(AllAttributes.Where(x => !notIncluding.Contains(x)).ToList());
 		}
 
 		public void ShouldDenyAccessForOtherNetworkAccessScenarios<TRequestDto>(params EndpointAttributes[] notIncluding)
-			where TRequestDto : new()
 		{
 			var scenarios = new List<EndpointAttributes> { EndpointAttributes.Localhost, EndpointAttributes.LocalSubnet, EndpointAttributes.External };
 			ShouldDenyAccessForOtherScenarios<TRequestDto>(scenarios.Where(x => !notIncluding.Contains(x)).ToList());
 		}
 
 		public void ShouldDenyAccessForOtherHttpRequestTypesScenarios<TRequestDto>(params EndpointAttributes[] notIncluding)
-			where TRequestDto : new()
 		{
 			var scenarios = new List<EndpointAttributes> { EndpointAttributes.HttpHead, EndpointAttributes.HttpGet, 
 				EndpointAttributes.HttpPost, EndpointAttributes.HttpPut, EndpointAttributes.HttpDelete };
@@ -60,9 +56,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 
 		private void ShouldDenyAccessForOtherScenarios<TRequestDto>(IEnumerable<EndpointAttributes> otherScenarios)
-			where TRequestDto : new()
 		{
-			var requestDto = new TRequestDto();
+            var requestDto = typeof(TRequestDto).New();
 			foreach (var otherScenario in otherScenarios)
 			{
 				try

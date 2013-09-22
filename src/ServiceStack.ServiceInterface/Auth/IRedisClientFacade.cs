@@ -20,7 +20,7 @@ namespace ServiceStack.ServiceInterface.Auth
     public interface IRedisClientFacade : IDisposable
     {
         HashSet<string> GetAllItemsFromSet(string setId);
-        void Store<T>(T item) where T : class, new();
+        void Store<T>(T item);
         string GetValueFromHash(string hashId, string key);
         void SetEntryInHash(string hashId, string key, string value);
         void RemoveEntryFromHash(string hashId, string key);
@@ -94,7 +94,7 @@ namespace ServiceStack.ServiceInterface.Auth
                 return redisClient.GetAllItemsFromSet(setId);
             }
 
-            public void Store<T>(T item) where T : class , new()
+            public void Store<T>(T item)
             {
                 redisClient.Store(item);
             }

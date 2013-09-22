@@ -293,7 +293,7 @@ namespace ServiceStack.Razor
         void SetModel(object o);
     }
 
-    public abstract class ViewPageBase<TModel> : RenderingPage, IHasModel where TModel : class
+    public abstract class ViewPageBase<TModel> : RenderingPage, IHasModel
     {
         public string Layout
         {
@@ -312,10 +312,10 @@ namespace ServiceStack.Razor
         
         public virtual void SetModel(object o)
         {
-            var viewModel = o as TModel;
+            var viewModel = o is TModel ? (TModel)o : default(TModel);
             this.Model = viewModel;
 
-            if (viewModel == null)
+            if (Equals(viewModel, default(TModel)))
             {
                 this.ModelError = o;
             }

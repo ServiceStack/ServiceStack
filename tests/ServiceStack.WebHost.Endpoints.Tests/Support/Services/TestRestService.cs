@@ -1,15 +1,10 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using ServiceStack.Common;
-using ServiceStack.DataAnnotations;
-using ServiceStack.ServiceInterface;
+﻿using ServiceStack.ServiceInterface;
 using ServiceStack.Text;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 {
 	public class TestRestService<TRequest> : IService
-		where TRequest : class
 	{
 		public object Get(TRequest request)
 		{

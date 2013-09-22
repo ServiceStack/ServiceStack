@@ -120,9 +120,9 @@ namespace ServiceStack.ServiceInterface.Auth
                 }
             }
 
-            public void Store<T>(T item) where T : class , new()
+            public void Store<T>(T item) 
             {
-                if (item == null) return;
+                if (Equals(item, default(T))) return;
 
                 lock (TypedData<T>.Instance.Items)
                 {

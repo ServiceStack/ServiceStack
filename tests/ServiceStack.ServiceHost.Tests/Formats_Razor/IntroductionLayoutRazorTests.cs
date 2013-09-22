@@ -28,7 +28,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         }
     }
 
-    public class CustomBaseClass<T> : ViewPage<T> where T : class
+    public class CustomBaseClass<T> : ViewPage<T>
     {
         public MvcHtmlString Field(string fieldName, string fieldValue)
         {

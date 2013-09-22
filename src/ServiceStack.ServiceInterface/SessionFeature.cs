@@ -85,7 +85,7 @@ namespace ServiceStack.ServiceInterface
             else
                 CreateSessionIds(httpReq, httpRes);
 
-            return session ?? (T)typeof(T).CreateInstance();
+            return session ?? typeof(T).New<T>();
         }
     }
 }

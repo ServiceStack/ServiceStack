@@ -1,7 +1,7 @@
 ﻿#if !SILVERLIGHT && !XBOX
 using System.Data;
 
-namespace ServiceStack.DataAccess
+namespace ServiceStack.Data
 {
 	public interface IHasDbConnection
 	{

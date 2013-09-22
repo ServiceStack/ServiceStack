@@ -26,40 +26,32 @@ namespace MarkdownDeep
 	static class Utils
 	{
 		// Extension method. Get the last item in a list (or null if empty)
-		public static T Last<T>(this List<T> list) where T:class
+		public static T Last<T>(this List<T> list)
 		{
-			if (list.Count > 0)
-				return list[list.Count - 1];
-			else
-				return null;
+		    return list.Count > 0 ? list[list.Count - 1] : default(T);
 		}
 
-		// Extension method. Get the first item in a list (or null if empty)
-		public static T First<T>(this List<T> list) where T : class
+	    // Extension method. Get the first item in a list (or null if empty)
+		public static T First<T>(this List<T> list)
 		{
-			if (list.Count > 0)
-				return list[0];
-			else
-				return null;
+		    return list.Count > 0 ? list[0] : default(T);
 		}
 
-		// Extension method.  Use a list like a stack
-		public static void Push<T>(this List<T> list, T value) where T : class
+	    // Extension method.  Use a list like a stack
+		public static void Push<T>(this List<T> list, T value)
 		{
 			list.Add(value);
 		}
 
 		// Extension method.  Remove last item from a list
-		public static T Pop<T>(this List<T> list) where T : class
+		public static T Pop<T>(this List<T> list)
 		{
 			if (list.Count == 0)
-				return null;
-			else
-			{
-				T val = list[list.Count - 1];
-				list.RemoveAt(list.Count - 1);
-				return val;
-			}
+				return default(T);
+		    
+            T val = list[list.Count - 1];
+		    list.RemoveAt(list.Count - 1);
+		    return val;
 		}
 
 

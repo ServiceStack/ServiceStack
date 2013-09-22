@@ -32,7 +32,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         public List<string> Labels { get; set; }
     }
 
-    public class CustomViewBase<T> : ViewPage<T> where T : class
+    public class CustomViewBase<T> : ViewPage<T>
     {
         public CustomMarkdownHelper Ext = new CustomMarkdownHelper();
         public ExternalProductHelper Prod = new ExternalProductHelper();

@@ -10,13 +10,8 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Mvc
 {
-    [Obsolete("To avoid name conflicts with MVC's ControllerBase this has been renamed to ServiceStackController")]
-    public abstract class ControllerBase<T> : ServiceStackController<T> where T : class, IAuthSession, new() { }
-    [Obsolete("To avoid name conflicts with MVC's ControllerBase this has been renamed to ServiceStackController")]
-    public abstract class ControllerBase : ServiceStackController { }
-
     public abstract class ServiceStackController<T> : ServiceStackController
-        where T : class, IAuthSession, new()
+        where T : IAuthSession
     {
         protected T UserSession
         {

@@ -13,7 +13,7 @@
 using System;
 using System.Collections.Generic;
 using ServiceStack.CacheAccess;
-using ServiceStack.DataAccess;
+using ServiceStack.Data;
 using ServiceStack.DesignPatterns.Model;
 using ServiceStack.Redis.Generic;
 using ServiceStack.Redis.Pipeline;
@@ -24,7 +24,7 @@ using ServiceStack.Text.WP;
 namespace ServiceStack.Redis
 {
 	public interface IRedisClient
-		: IBasicPersistenceProvider, ICacheClient
+		: IEntityStore, ICacheClient
 	{
 		//Basic Redis Connection operations
 		long Db { get; set; }

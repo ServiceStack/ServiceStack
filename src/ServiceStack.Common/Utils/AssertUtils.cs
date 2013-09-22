@@ -1,18 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ServiceStack.Common.Utils
 {
     public static class AssertUtils
     {
-        public static void AreNotNull<T>(params T[] fields) where T : class 
+        public static void AreNotNull<T>(params T[] fields)
         {
-            foreach (var field in fields)
+            if (fields.Contains(default(T)))
             {
-                if (field == null)
-                {
-                    throw new ArgumentNullException(typeof(T).Name);
-                }
+                throw new ArgumentNullException(typeof(T).Name);
             }
         }
 
@@ -23,7 +21,7 @@ namespace ServiceStack.Common.Utils
         ///   will throw new ArgumentNullException("name");
         /// </summary>
         /// <param name="fieldMap">The field map.</param>
-        public static void AreNotNull(IDictionary<string,object> fieldMap)
+        public static void AreNotNull(IDictionary<string, object> fieldMap)
         {
             foreach (var pair in fieldMap)
             {

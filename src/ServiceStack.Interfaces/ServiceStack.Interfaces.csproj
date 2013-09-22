@@ -90,29 +90,11 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="CacheAccess\ICacheClearable.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="CacheAccess\ICacheClient.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="CacheAccess\IRemoveByPattern.cs" />
-    <Compile Include="CacheAccess\ICacheHasContentType.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="CacheAccess\ICacheManager.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="CacheAccess\ICacheTextManager.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="CacheAccess\ICacheTextManagerFactory.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="CacheAccess\ICompressableCacheTextManager.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="CacheAccess\ICompressableCacheTextManagerFactory.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="CacheAccess\IDeflateProvider.cs">
@@ -121,16 +103,7 @@
     <Compile Include="CacheAccess\IGZipProvider.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="CacheAccess\IHasCacheClient.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="CacheAccess\IMemcachedClient.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="CacheAccess\IPersistenceProviderCache.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="CacheAccess\IPersistenceProviderCacheFactory.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="CacheAccess\ISession.cs">
@@ -152,64 +125,16 @@
     <Compile Include="Configuration\ITypeFactory.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DataAccess\Criteria\ICriteria.cs">
+    <Compile Include="Data\DataException.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DataAccess\Criteria\IOrderAscendingCriteria.cs">
+    <Compile Include="Data\IEntityStore.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DataAccess\Criteria\IOrderDescendingCriteria.cs">
+    <Compile Include="Data\IEntityStore.Generic.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DataAccess\Criteria\IPagingCriteria.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DataAccess\Criteria\PagingCriteria.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DataAccess\DataAccessException.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DataAccess\IAggregatable.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DataAccess\IBasicPersistenceProvider.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DataAccess\IBasicPersistenceProvider.Generic.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DataAccess\IHasDbConnection.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DataAccess\IPersistenceProvider.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DataAccess\IPersistenceProviderManager.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DataAccess\IPersistenceProviderManagerFactory.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DataAccess\IQueryable.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DataAccess\IQueryableByComparer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DataAccess\IQueryableByExample.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DataAccess\IQueryableByPredicate.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DataAccess\IQueryablePersistenceProvider.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DataAccess\IResultSet.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DataAccess\ITransactionContext.cs">
+    <Compile Include="Data\IHasDbConnection.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="DataAnnotations\AliasAttribute.cs">
@@ -329,9 +254,6 @@
     <Compile Include="Logging\Support\Logging\TestLogger.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="LogicFacade\IApplicationContext.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="LogicFacade\IInitContext.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -339,9 +261,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="LogicFacade\InitOptions.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="LogicFacade\IOperationContext.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="LogicFacade\IServiceModelFinder.cs">

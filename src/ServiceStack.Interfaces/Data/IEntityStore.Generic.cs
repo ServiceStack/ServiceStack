@@ -1,14 +1,17 @@
+//Copyright (c) Service Stack LLC. All Rights Reserved.
+//License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace ServiceStack.DataAccess
+namespace ServiceStack.Data
 {
 	/// <summary>
 	/// For providers that want a cleaner API with a little more perf
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public interface IBasicPersistenceProvider<T> 
+	public interface IEntityStore<T> 
 		: IDisposable
 	{
 		T GetById(object id);

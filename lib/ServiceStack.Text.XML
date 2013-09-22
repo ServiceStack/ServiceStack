@@ -422,6 +422,23 @@
             </summary>
             <typeparam name="T"></typeparam>
         </member>
+        <member name="M:ServiceStack.Text.ReflectionExtensions.New``1(System.Type)">
+            <summary>
+            Creates a new instance of type. 
+            First looks at JsConfig.ModelFactory before falling back to CreateInstance
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.ReflectionExtensions.New(System.Type)">
+            <summary>
+            Creates a new instance of type. 
+            First looks at JsConfig.ModelFactory before falling back to CreateInstance
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.ReflectionExtensions.CreateInstance(System.Type)">
+            <summary>
+            Creates a new instance from the default constructor of type
+            </summary>
+        </member>
         <member name="F:ServiceStack.Text.StreamExtensions.DefaultBufferSize">
             <summary>
             @jonskeet: Collection of utility methods which operate on streams.

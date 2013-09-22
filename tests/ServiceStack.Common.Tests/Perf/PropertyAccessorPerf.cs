@@ -5,6 +5,7 @@ using System.Reflection;
 using NUnit.Framework;
 using ServiceStack.Common.Reflection;
 using ServiceStack.Common.Tests.Models;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests.Perf
 {
@@ -115,9 +116,8 @@ namespace ServiceStack.Common.Tests.Perf
 		}
 
 		private void CompareGet<T>(Func<T, object> reflection, Func<T, object> expr)
-			where T : new()
 		{
-			var obj = new T();
+			var obj = typeof(T).CreateInstance<T>();
 			CompareMultipleRuns(
 				"GET Reflection", () => reflection(obj),
 				"GET Expression", () => expr(obj)
@@ -126,10 +126,9 @@ namespace ServiceStack.Common.Tests.Perf
 
 		private void CompareSet<T, TArg>(
 			Action<T, object> reflection, Action<T, object> expr, TArg arg)
-			where T : new()
 		{
-			var obj = new T();
-			CompareMultipleRuns(
+            var obj = typeof(T).CreateInstance<T>();
+            CompareMultipleRuns(
 				"SET Reflection", () => reflection(obj, arg),
 				"SET Expression", () => expr(obj, arg)
 			);
