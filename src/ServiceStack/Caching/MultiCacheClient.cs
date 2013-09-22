@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using ServiceStack.Common;
 
-namespace ServiceStack.CacheAccess.Providers
+namespace ServiceStack.Caching
 {
 	public class MultiCacheClient 
 		: ICacheClient

@@ -90,26 +90,23 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="CacheAccess\ICacheClient.cs">
+    <Compile Include="Caching\ICacheClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="CacheAccess\IRemoveByPattern.cs" />
-    <Compile Include="CacheAccess\ICacheManager.cs">
+    <Compile Include="Caching\IRemoveByPattern.cs" />
+    <Compile Include="Caching\IDeflateProvider.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="CacheAccess\IDeflateProvider.cs">
+    <Compile Include="Caching\IGZipProvider.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="CacheAccess\IGZipProvider.cs">
+    <Compile Include="Caching\IMemcachedClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="CacheAccess\IMemcachedClient.cs">
+    <Compile Include="Caching\ISession.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="CacheAccess\ISession.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="CacheAccess\ISessionFactory.cs">
+    <Compile Include="Caching\ISessionFactory.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Configuration\IContainerAdapter.cs">

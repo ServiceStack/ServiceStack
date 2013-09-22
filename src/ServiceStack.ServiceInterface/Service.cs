@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Data;
-using ServiceStack.CacheAccess;
+using ServiceStack.Caching;
 using ServiceStack.Messaging;
 using ServiceStack.OrmLite;
 using ServiceStack.Redis;

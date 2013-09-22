@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using ServiceStack.CacheAccess;
+using ServiceStack.Caching;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;

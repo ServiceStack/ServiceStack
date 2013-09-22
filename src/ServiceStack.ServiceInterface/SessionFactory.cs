@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Web;
-using ServiceStack.CacheAccess;
+using ServiceStack.Caching;
 using ServiceStack.ServiceHost;
-using ServiceStack.Text;
 using ServiceStack.Text.Common;
 
 namespace ServiceStack.ServiceInterface

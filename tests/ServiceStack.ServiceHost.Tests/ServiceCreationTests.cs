@@ -1,10 +1,9 @@
 ﻿using NUnit.Framework;
+using ServiceStack.Caching;
 using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.WebHost.Endpoints;
 using Funq;
-using ServiceStack.CacheAccess;
-using ServiceStack.CacheAccess.Providers;
 
 namespace ServiceStack.ServiceHost.Tests
 {

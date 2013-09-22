@@ -1,6 +1,6 @@
 using System;
 using System.Web;
-using ServiceStack.CacheAccess;
+using ServiceStack.Caching;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;

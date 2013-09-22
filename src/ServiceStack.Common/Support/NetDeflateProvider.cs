@@ -1,9 +1,8 @@
 #if !SILVERLIGHT && !MONOTOUCH && !XBOX
-using System;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
-using ServiceStack.CacheAccess;
+using ServiceStack.Caching;
 using ServiceStack.Text;
 
 namespace ServiceStack.Common.Support

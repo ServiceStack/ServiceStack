@@ -1,4 +1,4 @@
-﻿namespace ServiceStack.CacheAccess
+﻿namespace ServiceStack.Caching
 {
 	public interface IRemoveByPattern
 	{

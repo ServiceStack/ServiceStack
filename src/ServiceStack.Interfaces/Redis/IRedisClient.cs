@@ -12,7 +12,7 @@
 
 using System;
 using System.Collections.Generic;
-using ServiceStack.CacheAccess;
+using ServiceStack.Caching;
 using ServiceStack.Data;
 using ServiceStack.DesignPatterns.Model;
 using ServiceStack.Redis.Generic;

@@ -1,6 +1,6 @@
 using System;
 using System.Data;
-using ServiceStack.CacheAccess;
+using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost.Tests.Support;

@@ -11,7 +11,7 @@
 //
 
 using System;
-using ServiceStack.CacheAccess;
+using ServiceStack.Caching;
 
 namespace ServiceStack.Redis
 {

@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using ServiceStack.CacheAccess;
+using ServiceStack.Caching;
 using ServiceStack.Common.Support;
 using ServiceStack.Common.Web;
 using ServiceStack.Text;

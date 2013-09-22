@@ -1,7 +1,7 @@
 #if !SILVERLIGHT && !MONOTOUCH && !XBOX
 using ServiceStack.ServiceHost;
 
-namespace ServiceStack.CacheAccess
+namespace ServiceStack.Caching
 {
 	/// <summary>
 	/// Retrieves a User Session

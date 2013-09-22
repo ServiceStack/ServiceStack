@@ -1,8 +1,7 @@
 ﻿using System;
 using Funq;
 using ServiceStack.Authentication.OpenId;
-using ServiceStack.CacheAccess;
-using ServiceStack.CacheAccess.Providers;
+using ServiceStack.Caching;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Configuration;

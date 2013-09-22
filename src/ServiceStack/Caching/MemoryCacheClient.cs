@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using ServiceStack.Logging;
 
-namespace ServiceStack.CacheAccess.Providers
+namespace ServiceStack.Caching
 {
 	public class MemoryCacheClient
 		: ICacheClient, IRemoveByPattern

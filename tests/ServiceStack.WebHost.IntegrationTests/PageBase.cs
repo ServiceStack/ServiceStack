@@ -1,5 +1,5 @@
 using System.Web.UI;
-using ServiceStack.CacheAccess;
+using ServiceStack.Caching;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.WebHost.Endpoints;

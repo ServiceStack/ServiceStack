@@ -1,5 +1,5 @@
 using System;
-using ServiceStack.CacheAccess;
+using ServiceStack.Caching;
 using ServiceStack.Common;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;

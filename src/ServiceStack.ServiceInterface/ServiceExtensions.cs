@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net;
-using ServiceStack.CacheAccess;
-using ServiceStack.CacheAccess.Providers;
+using ServiceStack.Caching;
 using ServiceStack.Common.Web;
 using ServiceStack.Redis;
 using ServiceStack.ServiceHost;

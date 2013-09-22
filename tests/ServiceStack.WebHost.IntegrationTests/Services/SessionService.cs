@@ -1,9 +1,4 @@
-using System.Runtime.Serialization;
-using System.Web;
-using ServiceStack.CacheAccess;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
-using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {

@@ -1,20 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.IO;
 using System.Linq;
-using System.Text;
+using ServiceStack.Caching;
 using ServiceStack.Common;
 using ServiceStack.Common.Tests.ServiceClient.Web;
-using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using NUnit.Framework;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.Service;
 using ServiceStack.ServiceInterface;
-using ServiceStack.CacheAccess;
-using ServiceStack.CacheAccess.Providers;
-using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Utils;
 

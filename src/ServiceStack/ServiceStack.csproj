@@ -109,8 +109,8 @@
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="CacheClientExtensions.cs" />
-    <Compile Include="CacheAccess.Providers\MemoryCacheClient.cs" />
-    <Compile Include="CacheAccess.Providers\MultiCacheClient.cs" />
+    <Compile Include="Caching\MemoryCacheClient.cs" />
+    <Compile Include="Caching\MultiCacheClient.cs" />
     <Compile Include="Configuration\AppSettings.cs" />
     <Compile Include="Configuration\AppSettingsBase.cs" />
     <Compile Include="Configuration\ConfigUtils.cs" />

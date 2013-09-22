@@ -2,8 +2,7 @@
 using Funq;
 using ServiceStack.Authentication.OAuth2;
 using ServiceStack.Authentication.OpenId;
-using ServiceStack.CacheAccess;
-using ServiceStack.CacheAccess.Providers;
+using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.FluentValidation;
 using ServiceStack.MiniProfiler;

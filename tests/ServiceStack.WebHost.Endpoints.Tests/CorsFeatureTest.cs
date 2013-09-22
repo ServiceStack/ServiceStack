@@ -9,8 +9,6 @@ using NUnit.Framework;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.Service;
 using ServiceStack.ServiceInterface;
-using ServiceStack.CacheAccess;
-using ServiceStack.CacheAccess.Providers;
 using ServiceStack.ServiceInterface.Cors;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Utils;

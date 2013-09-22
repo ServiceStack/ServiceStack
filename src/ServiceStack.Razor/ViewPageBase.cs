@@ -6,7 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Web;
-using ServiceStack.CacheAccess;
+using ServiceStack.Caching;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Html;
