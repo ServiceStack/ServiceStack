@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Northwind.Common.DataModel;
 using Northwind.Common.ComplexModel;
 using NUnit.Framework;
 using ServiceStack.ServiceModel.Serialization;
-using ServiceStack.ServiceModel.Tests.DataContracts.Operations;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceModel.Tests
