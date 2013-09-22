@@ -92,9 +92,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 
 		[Test]
-		public void Can_download_CSV_movies_using_csv_syncreply_endpoint()
+		public void Can_download_CSV_movies_using_csv_reply_endpoint()
 		{
-			var req = (HttpWebRequest)WebRequest.Create(ListeningOn + "csv/syncreply/Movies");
+            var req = (HttpWebRequest)WebRequest.Create(ListeningOn + "csv/reply/Movies");
 			
 			var res = req.GetResponse();
             Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
@@ -125,9 +125,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 
 		[Test]
-		public void Can_download_CSV_Hello_using_csv_syncreply_endpoint()
+		public void Can_download_CSV_Hello_using_csv_reply_endpoint()
 		{
-			var req = (HttpWebRequest)WebRequest.Create(ListeningOn + "csv/syncreply/Hello?Name=World!");
+			var req = (HttpWebRequest)WebRequest.Create(ListeningOn + "csv/reply/Hello?Name=World!");
 
 			var res = req.GetResponse();
             Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
@@ -156,9 +156,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 
 		[Test]
-		public void Can_download_CSV_movies_using_csv_SyncReply_Path()
+		public void Can_download_CSV_movies_using_csv_reply_Path()
 		{
-			var req = (HttpWebRequest)WebRequest.Create(ListeningOn + "csv/syncreply/Movies");
+			var req = (HttpWebRequest)WebRequest.Create(ListeningOn + "csv/reply/Movies");
 			req.Accept = "application/xml";
 
 			var res = req.GetResponse();

@@ -16,7 +16,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			try
 			{
 				var webRequest = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri 
-					+ "/json/syncreply/RequestFilter?StatusCode=401");
+					+ "/json/reply/RequestFilter?StatusCode=401");
 
 				var webResponse = (HttpWebResponse)webRequest.GetResponse();
 				webResponse.Method.Print();
@@ -35,7 +35,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			try
 			{
 				var webRequest = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri
-					+ "/json/syncreply/RequestFilter?StatusCode=401"
+					+ "/json/reply/RequestFilter?StatusCode=401"
 					+ "&HeaderName=" + HttpHeaders.WwwAuthenticate
 					+ "&HeaderValue=" + "Basic realm=\"Auth Required\"".UrlEncode());
 
@@ -60,7 +60,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			try
 			{
 				var webRequest = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri
-					+ "/json/syncreply/Secure?SessionId=175BEA29-DC79-4555-BD42-C4DD5D57A004");
+					+ "/json/reply/Secure?SessionId=175BEA29-DC79-4555-BD42-C4DD5D57A004");
 
 				var webResponse = (HttpWebResponse)webRequest.GetResponse();
 				webResponse.Method.Print();

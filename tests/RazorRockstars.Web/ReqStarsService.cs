@@ -659,7 +659,7 @@ namespace RazorRockstars.Web
 
             var format = ((ServiceClientBase)client).Format;
             Assert.That(request.ToUrl("GET", format), Is.EqualTo(
-                "/{0}/syncreply/RoutelessReqstar?id=1&firstName=Foo&lastName=Bar".Fmt(format)));
+                "/{0}/reply/RoutelessReqstar?id=1&firstName=Foo&lastName=Bar".Fmt(format)));
             Assert.That(response.Id, Is.EqualTo(request.Id));
             Assert.That(response.FirstName, Is.EqualTo(request.FirstName));
             Assert.That(response.LastName, Is.EqualTo(request.LastName));
@@ -678,7 +678,7 @@ namespace RazorRockstars.Web
 
             var format = ((ServiceClientBase)client).Format;
             Assert.That(request.ToUrl("POST", format), Is.EqualTo(
-                "/{0}/syncreply/RoutelessReqstar".Fmt(format)));
+                "/{0}/reply/RoutelessReqstar".Fmt(format)));
             Assert.That(response.Id, Is.EqualTo(request.Id));
             Assert.That(response.FirstName, Is.EqualTo(request.FirstName));
             Assert.That(response.LastName, Is.EqualTo(request.LastName));

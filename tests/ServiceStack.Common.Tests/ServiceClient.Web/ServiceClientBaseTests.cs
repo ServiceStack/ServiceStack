@@ -18,8 +18,8 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
             serviceClientBaseTester.SetBaseUri(baseUri);
 
             String expectedBaseUri = baseUri;
-            String expectedSyncReplyBaseUri = baseUri + "/" + serviceClientBaseTester.Format + "/syncreply/";
-            String expectedAsyncOneWayBaseUri = baseUri + "/" + serviceClientBaseTester.Format + "/asynconeway/";
+            String expectedSyncReplyBaseUri = baseUri + "/" + serviceClientBaseTester.Format + "/reply/";
+            String expectedAsyncOneWayBaseUri = baseUri + "/" + serviceClientBaseTester.Format + "/oneway/";
             Assert.That(serviceClientBaseTester.BaseUri, Is.EqualTo(expectedBaseUri));
             Assert.That(serviceClientBaseTester.SyncReplyBaseUri, Is.EqualTo(expectedSyncReplyBaseUri));
             Assert.That(serviceClientBaseTester.AsyncOneWayBaseUri, Is.EqualTo(expectedAsyncOneWayBaseUri));

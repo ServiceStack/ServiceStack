@@ -45,7 +45,7 @@ namespace ServiceStack
                         + "(Note: The automatic route selection only works with [Route] attributes on the request DTO and"
                         + "not with routes registered in the IAppHost!)");
 
-                var predefinedRoute = "/{0}/syncreply/{1}".Fmt(formatFallbackToPredefinedRoute, requestType.Name);
+                var predefinedRoute = "/{0}/reply/{1}".Fmt(formatFallbackToPredefinedRoute, requestType.Name);
                 if (httpMethod == "GET" || httpMethod == "DELETE" || httpMethod == "OPTIONS" || httpMethod == "HEAD")
                 {
                     var queryProperties = RestRoute.GetQueryProperties(request.GetType());

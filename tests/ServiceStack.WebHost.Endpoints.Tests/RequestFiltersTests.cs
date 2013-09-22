@@ -8,9 +8,7 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Clients;
 using ServiceStack.Server;
-using ServiceStack.Clients;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Support;
@@ -183,7 +181,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			if (format == null) return;
 
 			var req = (HttpWebRequest)WebRequest.Create(
-				string.Format("http://localhost:82/{0}/syncreply/Secure", format));
+				string.Format("http://localhost:82/{0}/reply/Secure", format));
 
 			req.Headers[HttpHeaders.Authorization]
 				= "basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(AllowedUser + ":" + AllowedPass));
@@ -231,7 +229,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			if (format == null) return;
 
 			var req = (HttpWebRequest)WebRequest.Create(
-				string.Format("{0}{1}/syncreply/Insecure", ServiceClientBaseUri, format));
+				string.Format("{0}{1}/reply/Insecure", ServiceClientBaseUri, format));
 
 			req.Headers[HttpHeaders.Authorization]
 				= "basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(AllowedUser + ":" + AllowedPass));
@@ -277,7 +275,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			if (format == null) return;
 
 			var req = (HttpWebRequest)WebRequest.Create(
-				string.Format("http://localhost:82/{0}/syncreply/Secure", format));
+				string.Format("http://localhost:82/{0}/reply/Secure", format));
 
 			req.Headers[HttpHeaders.Authorization]
 				= "basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(AllowedUser + ":" + AllowedPass));
@@ -287,7 +285,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			if (cookie != null)
 			{
 				req = (HttpWebRequest)WebRequest.Create(
-					string.Format("http://localhost:82/{0}/syncreply/Secure", format));
+					string.Format("http://localhost:82/{0}/reply/Secure", format));
 				req.CookieContainer.Add(new Cookie("ss-session", cookie.Value));
 
 				var dtoString = new StreamReader(req.GetResponse().GetResponseStream()).ReadToEnd();
@@ -303,7 +301,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			if (format == null) return;
 
 			var req = (HttpWebRequest)WebRequest.Create(
-				string.Format("http://localhost:82/{0}/syncreply/Secure", format));
+				string.Format("http://localhost:82/{0}/reply/Secure", format));
 
 			req.CookieContainer = new CookieContainer();
 			req.CookieContainer.Add(new Cookie("ss-session", AllowedUser + "/" + Guid.NewGuid().ToString("N"), "/", "localhost"));

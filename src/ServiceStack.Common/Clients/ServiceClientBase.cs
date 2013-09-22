@@ -10,8 +10,6 @@ using System.Web;
 #if !SILVERLIGHT
 using System.Reflection;
 #endif
-using ServiceStack.Clients;
-using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
@@ -34,21 +32,7 @@ namespace ServiceStack.Clients
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(ServiceClientBase));
 
-        private string replyPath = "/syncreply/";
-        private string oneWayPath = "/asynconeway/";
-
         private AuthenticationInfo authInfo = null;
-
-        public bool UseNewPredefinedRoutes
-        {
-            set
-            {
-                replyPath = value ? "/reply/" : "/syncreply/";
-                oneWayPath = value ? "/oneway/" : "/asynconeway/";
-                this.SyncReplyBaseUri = BaseUri.WithTrailingSlash() + Format + replyPath;
-                this.AsyncOneWayBaseUri = BaseUri.WithTrailingSlash() + Format + oneWayPath;
-            }
-        }
 
         /// <summary>
         /// The request filter is called before any request.
@@ -144,23 +128,8 @@ namespace ServiceStack.Clients
         {
             this.BaseUri = baseUri;
             this.asyncClient.BaseUri = baseUri;
-            this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + Format + replyPath;
-            this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + Format + oneWayPath;
-        }
-
-        /// <summary>
-        /// Sets all baseUri properties allowing for a temporary override of the Format property
-        /// </summary>
-        /// <param name="baseUri">Base URI of the service</param>
-        /// <param name="format">Override of the Format property for the service</param>
-        //Marked obsolete on 4/11/2012
-        [Obsolete("Please call the SetBaseUri(string baseUri) method, which uses the specific implementation's Format property.")]
-        public void SetBaseUri(string baseUri, string format)
-        {
-            this.BaseUri = baseUri;
-            this.asyncClient.BaseUri = baseUri;
-            this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + format + "/syncreply/";
-            this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + format + "/asynconeway/";
+            this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + Format + "/reply/";
+            this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + Format + "/oneway/";
         }
 
         /// <summary>

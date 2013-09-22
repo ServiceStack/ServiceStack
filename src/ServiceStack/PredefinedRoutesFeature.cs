@@ -34,8 +34,8 @@ namespace ServiceStack
 
             var pathAction = string.Intern(pathParts[1].ToLower());
             var requestName = pathParts.Length > 2 ? pathParts[2] : null;
-            var isReply = pathAction == "syncreply" || pathAction == "reply";
-            var isOneWay = pathAction == "asynconeway" || pathAction == "oneway";
+            var isReply = pathAction == "reply";
+            var isOneWay = pathAction == "oneway";
             switch (pathController)
             {
                 case "json":

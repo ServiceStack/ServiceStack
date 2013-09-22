@@ -161,7 +161,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
         public string PredefinedJsonUrl<T>()
         {
-            return ListeningOn + "json/syncreply/" + typeof(T).Name;
+            return ListeningOn + "json/reply/" + typeof(T).Name;
         }
 
         [Test]

@@ -50,9 +50,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		}
 
 		[Test]
-		public void Can_download_CSV_movies_using_csv_syncreply_endpoint()
+		public void Can_download_CSV_movies_using_csv_reply_endpoint()
 		{
-			var req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri + "csv/syncreply/Movies");
+			var req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri + "csv/reply/Movies");
 
 			var res = req.GetResponse();
             Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
@@ -66,9 +66,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		}
 
 		[Test]
-		public void Can_download_CSV_movies_using_csv_SyncReply_Path_and_alternate_XML_Accept_Header()
+		public void Can_download_CSV_movies_using_csv_reply_Path_and_alternate_XML_Accept_Header()
 		{
-			var req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri + "csv/syncreply/Movies");
+			var req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri + "csv/reply/Movies");
 			req.Accept = "application/xml";
 
 			var res = req.GetResponse();
@@ -98,9 +98,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		}
 
 		[Test]
-		public void Can_download_CSV_Hello_using_csv_syncreply_endpoint()
+		public void Can_download_CSV_Hello_using_csv_reply_endpoint()
 		{
-			var req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri + "csv/syncreply/Hello?Name=World!");
+			var req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri + "csv/reply/Hello?Name=World!");
 
 			var res = req.GetResponse();
             Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));

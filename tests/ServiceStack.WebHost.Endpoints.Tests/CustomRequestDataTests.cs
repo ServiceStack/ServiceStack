@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		ExampleAppHostHttpListener appHost;
 		readonly JsonServiceClient client = new JsonServiceClient(ListeningOn);
 		private string customUrl = ListeningOn.CombineWith("customrequestbinder");
-		private string predefinedUrl = ListeningOn.CombineWith("json/syncreply/customrequestbinder");
+		private string predefinedUrl = ListeningOn.CombineWith("json/reply/customrequestbinder");
 
 		[TestFixtureSetUp]
 		public void OnTestFixtureSetUp()
