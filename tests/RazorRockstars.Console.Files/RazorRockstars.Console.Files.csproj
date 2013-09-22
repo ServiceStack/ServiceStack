@@ -235,10 +235,6 @@
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.FluentValidation.Mvc3\ServiceStack.Mvc3.csproj">
-      <Project>{672F2DFE-4EE8-498B-B449-23E9E7F6961C}</Project>
-      <Name>ServiceStack.Mvc3</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
       <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
       <Name>ServiceStack.Interfaces</Name>

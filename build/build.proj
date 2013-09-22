@@ -88,7 +88,7 @@
       <ServiceStackCommonFilesSL5 Include="$(SrcDir)/ServiceStack.Common.SL5/bin/$(Configuration)/ServiceStack.Common.*"></ServiceStackCommonFilesSL5>
       <ServiceStackCommonFilesSL5 Include="$(SrcDir)/ServiceStack.Common.SL5/bin/$(Configuration)/ServiceStack.Interfaces.*"></ServiceStackCommonFilesSL5>
 
-      <ServiceStackMvcFiles Include="$(SrcDir)/ServiceStack.FluentValidation.Mvc3/bin/$(Configuration)/ServiceStack.FluentValidation.Mvc3.*"></ServiceStackMvcFiles>
+      <ServiceStackMvcFiles Include="$(SrcDir)/ServiceStack.Mvc/bin/$(Configuration)/ServiceStack.Mvc.*"></ServiceStackMvcFiles>
 
       <ServiceStackAuthenticationOpenIdFiles Include="$(SrcDir)/ServiceStack.Authentication.OpenId/bin/$(Configuration)/ServiceStack.Authentication.OpenId.*"></ServiceStackAuthenticationOpenIdFiles>
 
@@ -158,7 +158,7 @@
 
     <!-- ServiceStack.Mvc -->
 
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.FluentValidation.Mvc3/ServiceStack.FluentValidation.Mvc3.csproj"
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Mvc/ServiceStack.Mvc.csproj"
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
