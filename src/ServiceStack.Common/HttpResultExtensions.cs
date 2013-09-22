@@ -15,7 +15,7 @@ namespace ServiceStack
         /// </summary>
         /// <param name="response"></param>
         /// <returns></returns>
-        public static object ToDto(this object response)
+        public static object GetDto(this object response)
         {
             if (response == null) return null;
             var httpResult = response as IHttpResult;
@@ -23,11 +23,11 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Alias of ToDto
+        /// Alias of AsDto
         /// </summary>
-        public static object ToResponseDto(this object response)
+        public static object GetResponseDto(this object response)
         {
-            return ToDto(response);
+            return GetDto(response);
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace ServiceStack
         /// </summary>
         /// <param name="response"></param>
         /// <returns>TResponse if found; otherwise null</returns>
-        public static TResponse ToDto<TResponse>(this object response) where TResponse : class
+        public static TResponse GetDto<TResponse>(this object response) where TResponse : class
         {
             if (response == null) return default(TResponse);
             var httpResult = response as IHttpResult;
@@ -43,17 +43,17 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Alias of ToDto
+        /// Alias of AsDto
         /// </summary>
-        public static TResponse ToResponseDto<TResponse>(this object response) where TResponse : class
+        public static TResponse GetResponseDto<TResponse>(this object response) where TResponse : class
         {
-            return ToDto<TResponse>(response);
+            return GetDto<TResponse>(response);
         }
 
-        public static object ToErrorResponse(this IHttpError httpError)
+        public static object CreateErrorResponse(this IHttpError httpError)
         {
             if (httpError == null) return null;
-            var errorDto = httpError.ToDto();
+            var errorDto = httpError.GetDto();
             if (errorDto != null) return errorDto;
 
             var error = httpError as HttpError;
@@ -71,7 +71,7 @@ namespace ServiceStack
         /// </summary>
         /// <param name="response"></param>
         /// <returns></returns>
-        public static ResponseStatus ToResponseStatus(this object response)
+        public static ResponseStatus GetResponseStatus(this object response)
         {
             if (response == null) return null;
 

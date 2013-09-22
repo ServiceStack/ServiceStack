@@ -322,7 +322,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
         /// </summary>
         public void SerializeToStream(IRequestContext requestContext, object response, Stream stream)
         {
-            var dto = response.ToDto();
+            var dto = response.GetDto();
             var text = dto as string;
             if (text != null)
             {

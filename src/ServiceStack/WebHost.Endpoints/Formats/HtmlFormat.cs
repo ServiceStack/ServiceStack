@@ -46,7 +46,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
             if (requestContext.ResponseContentType != MimeTypes.Html && httpReq != null
                 && httpReq.ResponseContentType != MimeTypes.JsonReport) return;
 
-		    var dto = response.ToDto();
+		    var dto = response.GetDto();
 		    var html = dto as string;
             if (html == null)
             {

@@ -86,7 +86,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public void ResponseFilter(IHttpRequest req, IHttpResponse res, object response)
         {
-            var dto = response.ToResponseDto() as AttributeFilteredResponse;
+            var dto = response.GetResponseDto() as AttributeFilteredResponse;
             dto.ResponseFilterExecuted = true;
             dto.ResponseFilterDependencyIsResolved = Cache != null && !Cache.Equals(previousCache);
 

@@ -385,7 +385,7 @@ namespace ServiceStack.WebHost.Endpoints
 
             using (Profiler.Current.Step("Executing Response Filters"))
             {
-                var responseDto = response.ToResponseDto();
+                var responseDto = response.GetResponseDto();
                 var attributes = responseDto != null
                     ? FilterAttributeCache.GetResponseFilterAttributes(responseDto.GetType())
                     : null;

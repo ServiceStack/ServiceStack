@@ -143,7 +143,7 @@ namespace ServiceStack
                         if (httpError != null)
                         {
                             if (response.HandleCustomErrorHandler(serializerCtx.Get<IHttpRequest>(),
-                                defaultContentType, httpError.Status, httpError.ToErrorResponse()))
+                                defaultContentType, httpError.Status, httpError.CreateErrorResponse()))
                             {
                                 return true;
                             }

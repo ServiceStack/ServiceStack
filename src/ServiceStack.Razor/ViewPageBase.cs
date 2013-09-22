@@ -350,7 +350,7 @@ namespace ServiceStack.Razor
 
         private ResponseStatus ToResponseStatus<T>(T modelError)
         {
-            var ret = modelError.ToResponseStatus();
+            var ret = modelError.GetResponseStatus();
             if (ret != null) return ret;
 
             if (modelError is DynamicObject)

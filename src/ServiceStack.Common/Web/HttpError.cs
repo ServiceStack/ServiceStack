@@ -89,7 +89,7 @@ namespace ServiceStack.Web
         {
             get
             {
-                return this.Response.ToResponseStatus();
+                return this.Response.GetResponseStatus();
             }
         }
 
