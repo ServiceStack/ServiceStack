@@ -42,9 +42,9 @@ namespace ServiceStack.ServiceInterface
             this.authProviders = authProviders;
 
             ServiceRoutes = new Dictionary<Type, string[]> {
-                { typeof(AuthenticateService), new[]{"/auth", "/auth/{provider}"} },
-                { typeof(AssignRolesService), new[]{"/assignroles"} },
-                { typeof(UnAssignRolesService), new[]{"/unassignroles"} },
+                { typeof(AuthenticateService), new[]{ "/auth", "/auth/{provider}", "/authenticate", "/authenticate/{provider}", } },
+                { typeof(AssignRolesService), new[]{ "/assignroles" } },
+                { typeof(UnAssignRolesService), new[]{ "/unassignroles" } },
             };
 
             RegisterPlugins = new List<IPlugin> {

@@ -1,5 +1,4 @@
-﻿using System;
-using ServiceStack.FluentValidation;
+﻿using ServiceStack.FluentValidation;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.WebHost.Endpoints;
 
@@ -20,7 +19,7 @@ namespace ServiceStack.ServiceInterface
         public void Register(IAppHost appHost)
         {
             appHost.RegisterService<RegisterService>(AtRestPath);
-            //appHost.RegisterAs<RegistrationValidator, IValidator<Registration>>();
+            appHost.RegisterAs<RegistrationValidator, IValidator<Register>>();
         }
     }
 }
