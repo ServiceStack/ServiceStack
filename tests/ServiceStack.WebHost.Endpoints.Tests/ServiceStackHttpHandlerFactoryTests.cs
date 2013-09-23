@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Web;
 using NUnit.Framework;
-using ServiceStack.Server;
 using ServiceStack.ServiceHost;
+using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Metadata;
-using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -15,21 +13,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         readonly Dictionary<string, Type> pathInfoMap = new Dictionary<string, Type>
 		{
-			{"Metadata", typeof(IndexMetadataHandler)},
-			{"Soap11", typeof(Soap11MessageSyncReplyHttpHandler)},
-			{"Soap12", typeof(Soap12MessageSyncReplyHttpHandler)},
+            {"Metadata", typeof(IndexMetadataHandler)},
+            {"Soap11", typeof(Soap11MessageSyncReplyHttpHandler)},
+            {"Soap12", typeof(Soap12MessageSyncReplyHttpHandler)},
 
-			{"Json/SyncReply", typeof(JsonSyncReplyHandler)},
-			{"Json/AsyncOneWay", typeof(JsonAsyncOneWayHandler)},
-			{"Json/Metadata", typeof(JsonMetadataHandler)},
+            {"Json/Reply", typeof(JsonSyncReplyHandler)},
+            {"Json/OneWay", typeof(JsonAsyncOneWayHandler)},
+            {"Json/Metadata", typeof(JsonMetadataHandler)},
 
-			{"Xml/SyncReply", typeof(XmlSyncReplyHandler)},
-			{"Xml/AsyncOneWay", typeof(XmlAsyncOneWayHandler)},
-			{"Xml/Metadata", typeof(XmlMetadataHandler)},
+            {"Xml/Reply", typeof(XmlSyncReplyHandler)},
+            {"Xml/OneWay", typeof(XmlAsyncOneWayHandler)},
+            {"Xml/Metadata", typeof(XmlMetadataHandler)},
 
-			{"Jsv/SyncReply", typeof(JsvSyncReplyHandler)},
-			{"Jsv/AsyncOneWay", typeof(JsvAsyncOneWayHandler)},
-			{"Jsv/Metadata", typeof(JsvMetadataHandler)},
+            {"Jsv/Reply", typeof(JsvSyncReplyHandler)},
+            {"Jsv/OneWay", typeof(JsvAsyncOneWayHandler)},
+            {"Jsv/Metadata", typeof(JsvMetadataHandler)},
 
 			{"Soap11/Wsdl", typeof(Soap11WsdlMetadataHandler)},
 			{"Soap11/Metadata", typeof(Soap11MetadataHandler)},
@@ -63,12 +61,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         private void RegisterConfig()
         {
-            EndpointHost.Config = new EndpointHostConfig("ServiceName", new ServiceManager(GetType().Assembly)) {
-                RawHttpHandlers = new List<Func<IHttpRequest,IHttpHandler>>(),
-				RouteNamingConventions = new List<RouteNamingConventionDelegate>(),
-                CustomHttpHandlers = new Dictionary<HttpStatusCode, IServiceStackHttpHandler>(),
-                WebHostPhysicalPath = "~/".MapServerPath()
-            };
+            EndpointHost.ConfigureHost(new BasicAppHost(), "ServiceName", new ServiceManager(GetType().Assembly));
             EndpointHost.CatchAllHandlers.Add(new PredefinedRoutesFeature().ProcessRequest);
             EndpointHost.CatchAllHandlers.Add(new MetadataFeature().ProcessRequest);
         }
@@ -80,11 +73,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var expectedType = item.Value;
                 var lowerPathInfo = item.Key.ToLower();
+                lowerPathInfo.Print();
                 var handler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(null, lowerPathInfo, null, null);
                 Assert.That(handler.GetType(), Is.EqualTo(expectedType));
             }
         }
-
-
     }
 }

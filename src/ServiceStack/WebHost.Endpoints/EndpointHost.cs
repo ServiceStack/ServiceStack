@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using Funq;
 using ServiceStack.Caching;
-using ServiceStack.Common;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Messaging;
@@ -17,7 +16,6 @@ using ServiceStack.VirtualPath;
 using ServiceStack.WebHost.Endpoints.Formats;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Utils;
-using ServiceStack.WebHost.Endpoints.Wrappers;
 
 namespace ServiceStack.WebHost.Endpoints
 {
