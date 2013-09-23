@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Web;
+using System.Web.Hosting;
 using Funq;
 using ServiceStack.Common;
 using ServiceStack.Configuration;
@@ -254,6 +255,12 @@ namespace ServiceStack.WebHost.Endpoints
 
         public virtual string ResolveAbsoluteUrl(string virtualPath, IHttpRequest httpReq)
         {
+            if (HostingEnvironment.ApplicationVirtualPath != null
+                && virtualPath.StartsWith("~" + HostingEnvironment.ApplicationVirtualPath))
+            {
+                virtualPath = virtualPath.Remove(1, HostingEnvironment.ApplicationVirtualPath.Length);
+            }
+
             return Config.WebHostUrl == null 
                 ? VirtualPathUtility.ToAbsolute(virtualPath) 
                 : httpReq.GetAbsoluteUrl(virtualPath);
