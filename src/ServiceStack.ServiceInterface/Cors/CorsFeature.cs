@@ -56,7 +56,7 @@ namespace ServiceStack.ServiceInterface.Cors
 
             if (allowOriginWhitelist != null)
             {
-                appHost.RequestFilters.Add((httpReq, httpRes, requestDto) =>
+                appHost.GlobalRequestFilters.Add((httpReq, httpRes, requestDto) =>
                     {
                         var origin = httpReq.Headers.Get("Origin");
                         if (allowOriginWhitelist.Contains(origin))

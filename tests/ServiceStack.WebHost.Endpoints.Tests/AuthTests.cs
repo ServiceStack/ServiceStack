@@ -477,7 +477,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var client = (ServiceClientBase)GetClientWithUserPassword();
                 client.AlwaysSendBasicAuthHeader = true;
-                client.LocalHttpWebRequestFilter = req =>
+                client.RequestFilter = req =>
                 {
                     bool hasAuthentication = false;
                     foreach (var key in req.Headers.Keys)
@@ -727,7 +727,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var client = (ServiceClientBase)GetHtmlClient();
             client.AllowAutoRedirect = false;
             string lastResponseLocationHeader = null;
-            client.LocalHttpWebResponseFilter = response =>
+            client.ResponseFilter = response =>
             {
                 lastResponseLocationHeader = response.Headers["Location"];
             };
@@ -745,7 +745,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var client = (ServiceClientBase)GetHtmlClient();
             client.AllowAutoRedirect = false;
             string lastResponseLocationHeader = null;
-            client.LocalHttpWebResponseFilter = response =>
+            client.ResponseFilter = response =>
             {
                 lastResponseLocationHeader = response.Headers["Location"];
             };
@@ -771,7 +771,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var client = (ServiceClientBase)GetHtmlClient();
             client.AllowAutoRedirect = false;
             string lastResponseLocationHeader = null;
-            client.LocalHttpWebResponseFilter = response =>
+            client.ResponseFilter = response =>
             {
                 lastResponseLocationHeader = response.Headers["Location"];
             };
@@ -798,7 +798,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var client = (ServiceClientBase)GetHtmlClient();
             client.AllowAutoRedirect = false;
             string lastResponseLocationHeader = null;
-            client.LocalHttpWebResponseFilter = response =>
+            client.ResponseFilter = response =>
             {
                 lastResponseLocationHeader = response.Headers["Location"];
             };
@@ -1000,7 +1000,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             WebHeaderCollection headers = null;
             var client = GetClientWithUserPassword();
             ((ServiceClientBase)client).AlwaysSendBasicAuthHeader = true;
-            ((ServiceClientBase)client).LocalHttpWebResponseFilter = x => headers = x.Headers;
+            ((ServiceClientBase)client).ResponseFilter = x => headers = x.Headers;
             var response = client.Send<CustomAuthAttrResponse>(new CustomAuthAttr() { Name = "Hi You" });
             Assert.That(response.Result, Is.EqualTo("Hi You"));
             Assert.That(

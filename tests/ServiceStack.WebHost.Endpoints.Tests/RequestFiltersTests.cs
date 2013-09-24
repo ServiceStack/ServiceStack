@@ -88,7 +88,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			public override void Configure(Container container)
 			{
-				this.RequestFilters.Add((req, res, dto) =>
+				this.GlobalRequestFilters.Add((req, res, dto) =>
 				{
 					var userPass = req.GetBasicAuthUserAndPassword();
 					if (userPass == null)
@@ -107,7 +107,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 						res.SetPermanentCookie("ss-session", sessionKey);
 					}
 				});
-				this.RequestFilters.Add((req, res, dto) =>
+				this.GlobalRequestFilters.Add((req, res, dto) =>
 				{
 					if (dto is Secure)
 					{

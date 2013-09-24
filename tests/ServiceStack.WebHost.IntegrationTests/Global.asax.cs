@@ -44,7 +44,7 @@ namespace ServiceStack.WebHost.IntegrationTests
 					req.Items["_DataSetAtPreRequestFilters"] = true;
 				});
 
-                this.RequestFilters.Add((req, res, dto) => {
+                this.GlobalRequestFilters.Add((req, res, dto) => {
                     req.Items["_DataSetAtRequestFilters"] = true;
 
                     var requestFilter = dto as RequestFilter;

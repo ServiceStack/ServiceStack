@@ -4,7 +4,6 @@ using ServiceStack.Configuration;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -57,12 +56,12 @@ namespace ServiceStack.WebHost.Endpoints
 		/// <summary>
 		/// Add Request Filters
 		/// </summary>
-		List<Action<IHttpRequest, IHttpResponse, object>> RequestFilters { get; }
+		List<Action<IHttpRequest, IHttpResponse, object>> GlobalRequestFilters { get; }
 		
 		/// <summary>
 		/// Add Response Filters
 		/// </summary>
-		List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters { get; }
+		List<Action<IHttpRequest, IHttpResponse, object>> GlobalResponseFilters { get; }
 
 		/// <summary>
 		/// Add alternative HTML View Engines

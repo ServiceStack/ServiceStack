@@ -15,7 +15,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 				SerializeToStream, CsvSerializer.DeserializeFromStream);
 
 			//Add a response filter to add a 'Content-Disposition' header so browsers treat it natively as a .csv file
-			appHost.ResponseFilters.Add((req, res, dto) =>
+			appHost.GlobalResponseFilters.Add((req, res, dto) =>
 			{
                 if (req.ResponseContentType == MimeTypes.Csv)
 				{

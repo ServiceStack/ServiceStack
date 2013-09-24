@@ -246,14 +246,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var isActioncalledGlobal = false;
             var isActioncalledLocal = false;
-            ServiceClientBase.HttpWebResponseFilter = r => isActioncalledGlobal = true;
+            ServiceClientBase.GlobalResponseFilter = r => isActioncalledGlobal = true;
             var restClient = (JsonServiceClient)CreateRestClient();
-            restClient.LocalHttpWebResponseFilter = r => isActioncalledLocal = true;
+            restClient.ResponseFilter = r => isActioncalledLocal = true;
             restClient.Get<MoviesResponse>("movies");
             Assert.That(isActioncalledGlobal, Is.True);
             Assert.That(isActioncalledLocal, Is.True);
 
-            ServiceClientBase.HttpWebResponseFilter = null;
+            ServiceClientBase.GlobalResponseFilter = null;
         }
     }
 

@@ -9,7 +9,7 @@ namespace ServiceStack.WebHost.Endpoints
 	{
 		public static void Configure()
 		{
-			ServiceClientBase.HttpWebRequestFilter = TransferAuthenticationTokens;
+			ServiceClientBase.GlobalRequestFilter = TransferAuthenticationTokens;
 		}
 
 		public static void TransferAuthenticationTokens(HttpWebRequest httpWebRequest)

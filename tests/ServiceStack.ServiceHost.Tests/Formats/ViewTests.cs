@@ -53,7 +53,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 					IgnoreFormatsInMetadata = new HashSet<string>(),
 				};
 				this.ContentTypeses = ContentTypes.Instance;
-				this.ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
+				this.GlobalResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
 				this.ViewEngines = new List<IViewEngine>();
 				this.CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
 				this.VirtualPathProvider = new FileSystemVirtualPathProvider(this, "~".MapProjectPath());
@@ -84,9 +84,9 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
             public List<Action<IHttpRequest, IHttpResponse>> PreRequestFilters { get; set; }
 
-			public List<Action<IHttpRequest, IHttpResponse, object>> RequestFilters { get; set; }
+			public List<Action<IHttpRequest, IHttpResponse, object>> GlobalRequestFilters { get; set; }
 
-			public List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters { get; set; }
+			public List<Action<IHttpRequest, IHttpResponse, object>> GlobalResponseFilters { get; set; }
 
             public List<IViewEngine> ViewEngines { get; set; }
             

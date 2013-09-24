@@ -36,7 +36,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 					},
 				});
 
-				this.RequestFilters.Add((req, res, dto) =>
+				this.GlobalRequestFilters.Add((req, res, dto) =>
 				{
 					var requestFilter = dto as RequestFilter;
 					if (requestFilter != null)

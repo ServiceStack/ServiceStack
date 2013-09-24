@@ -39,17 +39,17 @@ namespace ServiceStack.Clients
         /// The request filter is called before any request.
         /// This request filter is executed globally.
         /// </summary>
-        private static Action<HttpWebRequest> httpWebRequestFilter;
-        public static Action<HttpWebRequest> HttpWebRequestFilter
+        private static Action<HttpWebRequest> globalRequestFilter;
+        public static Action<HttpWebRequest> GlobalRequestFilter
         {
             get
             {
-                return httpWebRequestFilter;
+                return globalRequestFilter;
             }
             set
             {
-                httpWebRequestFilter = value;
-                AsyncServiceClient.HttpWebRequestFilter = value;
+                globalRequestFilter = value;
+                AsyncServiceClient.RequestFilter = value;
             }
         }
 
@@ -59,17 +59,17 @@ namespace ServiceStack.Clients
         /// This response action is executed globally.
         /// Note that you should NOT consume the response stream as this is handled by ServiceStack
         /// </summary>
-        private static Action<HttpWebResponse> httpWebResponseFilter;
-        public static Action<HttpWebResponse> HttpWebResponseFilter
+        private static Action<HttpWebResponse> globalResponseFilter;
+        public static Action<HttpWebResponse> GlobalResponseFilter
         {
             get
             {
-                return httpWebResponseFilter;
+                return globalResponseFilter;
             }
             set
             {
-                httpWebResponseFilter = value;
-                AsyncServiceClient.HttpWebResponseFilter = value;
+                globalResponseFilter = value;
+                AsyncServiceClient.ResponseFilter = value;
             }
         }
 
@@ -96,8 +96,8 @@ namespace ServiceStack.Clients
                 StreamDeserializer = StreamDeserializer,
                 UserName = this.UserName,
                 Password = this.Password,
-                LocalHttpWebRequestFilter = this.LocalHttpWebRequestFilter,
-                LocalHttpWebResponseFilter = this.LocalHttpWebResponseFilter
+                LocalHttpWebRequestFilter = this.RequestFilter,
+                LocalHttpWebResponseFilter = this.ResponseFilter
             };
             this.CookieContainer = new CookieContainer();
             this.StoreCookies = true; //leave
@@ -329,16 +329,16 @@ namespace ServiceStack.Clients
         /// The request filter is called before any request.
         /// This request filter only works with the instance where it was set (not global).
         /// </summary>
-        private Action<HttpWebRequest> localHttpWebRequestFilter { get; set; }
-        public Action<HttpWebRequest> LocalHttpWebRequestFilter
+        private Action<HttpWebRequest> requestFilter { get; set; }
+        public Action<HttpWebRequest> RequestFilter
         {
             get
             {
-                return localHttpWebRequestFilter;
+                return requestFilter;
             }
             set
             {
-                localHttpWebRequestFilter = value;
+                requestFilter = value;
                 asyncClient.LocalHttpWebRequestFilter = value;
             }
         }
@@ -348,16 +348,16 @@ namespace ServiceStack.Clients
         /// It will allow you to access raw response information. 
         /// Note that you should NOT consume the response stream as this is handled by ServiceStack
         /// </summary>
-        private Action<HttpWebResponse> localHttpWebResponseFilter { get; set; }
-        public Action<HttpWebResponse> LocalHttpWebResponseFilter
+        private Action<HttpWebResponse> responseFilter { get; set; }
+        public Action<HttpWebResponse> ResponseFilter
         {
             get
             {
-                return localHttpWebResponseFilter;
+                return responseFilter;
             }
             set
             {
-                localHttpWebResponseFilter = value;
+                responseFilter = value;
                 asyncClient.LocalHttpWebResponseFilter = value;
             }
         }
@@ -647,19 +647,19 @@ namespace ServiceStack.Clients
         {
             if (!(webResponse is HttpWebResponse)) return;
 
-            if (HttpWebResponseFilter != null)
-                HttpWebResponseFilter((HttpWebResponse)webResponse);
-            if (LocalHttpWebResponseFilter != null)
-                LocalHttpWebResponseFilter((HttpWebResponse)webResponse);
+            if (GlobalResponseFilter != null)
+                GlobalResponseFilter((HttpWebResponse)webResponse);
+            if (ResponseFilter != null)
+                ResponseFilter((HttpWebResponse)webResponse);
         }
 
         private void ApplyWebRequestFilters(HttpWebRequest client)
         {
-            if (LocalHttpWebRequestFilter != null)
-                LocalHttpWebRequestFilter(client);
+            if (RequestFilter != null)
+                RequestFilter(client);
 
-            if (HttpWebRequestFilter != null)
-                HttpWebRequestFilter(client);
+            if (GlobalRequestFilter != null)
+                GlobalRequestFilter(client);
         }
 #else
         private void SendRequest(string requestUri, object request, Action<WebRequest> callback)

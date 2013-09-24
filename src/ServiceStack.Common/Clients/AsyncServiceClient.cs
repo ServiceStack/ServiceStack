@@ -31,7 +31,7 @@ namespace ServiceStack.Clients
         /// The request filter is called before any request.
         /// This request filter is executed globally.
         /// </summary>
-        public static Action<HttpWebRequest> HttpWebRequestFilter { get; set; }
+        public static Action<HttpWebRequest> RequestFilter { get; set; }
 
         /// <summary>
         /// The response action is called once the server response is available.
@@ -39,7 +39,7 @@ namespace ServiceStack.Clients
         /// This response action is executed globally.
         /// Note that you should NOT consume the response stream as this is handled by ServiceStack
         /// </summary>
-        public static Action<HttpWebResponse> HttpWebResponseFilter { get; set; }
+        public static Action<HttpWebResponse> ResponseFilter { get; set; }
 
         /// <summary>
         /// Called before request resend, when the initial request required authentication
@@ -660,8 +660,8 @@ namespace ServiceStack.Clients
         {
             if (!(webResponse is HttpWebResponse)) return;
 
-            if (HttpWebResponseFilter != null)
-                HttpWebResponseFilter((HttpWebResponse)webResponse);
+            if (ResponseFilter != null)
+                ResponseFilter((HttpWebResponse)webResponse);
             if (LocalHttpWebResponseFilter != null)
                 LocalHttpWebResponseFilter((HttpWebResponse)webResponse);
         }
@@ -671,8 +671,8 @@ namespace ServiceStack.Clients
             if (LocalHttpWebRequestFilter != null)
                 LocalHttpWebRequestFilter(client);
 
-            if (HttpWebRequestFilter != null)
-                HttpWebRequestFilter(client);
+            if (RequestFilter != null)
+                RequestFilter(client);
         }
 
         public void Dispose() { }

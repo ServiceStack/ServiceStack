@@ -27,7 +27,7 @@ namespace ServiceStack.ServiceInterface
             alreadyConfigured = true;
 
             //Add permanent and session cookies if not already set.
-            appHost.RequestFilters.Add(AddSessionIdToRequestFilter);
+            appHost.GlobalRequestFilters.Add(AddSessionIdToRequestFilter);
         }
 
         public static void AddSessionIdToRequestFilter(IHttpRequest req, IHttpResponse res, object requestDto)

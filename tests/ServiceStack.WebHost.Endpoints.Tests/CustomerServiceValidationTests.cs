@@ -199,9 +199,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         [Test]
         public void ValidationFeature_add_request_filter_once()
         {
-            var old = appHost.RequestFilters.Count; 
+            var old = appHost.GlobalRequestFilters.Count; 
             appHost.LoadPlugin(new ValidationFeature());
-            Assert.That(old, Is.EqualTo(appHost.RequestFilters.Count));
+            Assert.That(old, Is.EqualTo(appHost.GlobalRequestFilters.Count));
         }
 		
 		[Test]

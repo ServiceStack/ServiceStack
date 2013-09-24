@@ -34,8 +34,8 @@ namespace ServiceStack.ServiceInterface.Testing
 
             this.ContentTypeses = new ContentTypes();
             this.PreRequestFilters = new List<Action<IHttpRequest, IHttpResponse>>();
-            this.RequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
-            this.ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
+            this.GlobalRequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
+            this.GlobalResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
             this.ViewEngines = new List<IViewEngine>();
             this.CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
 			this.VirtualPathProvider = new FileSystemVirtualPathProvider(this);
@@ -66,9 +66,9 @@ namespace ServiceStack.ServiceInterface.Testing
 
         public List<Action<IHttpRequest, IHttpResponse>> PreRequestFilters { get; set; }
 
-        public List<Action<IHttpRequest, IHttpResponse, object>> RequestFilters { get; set; }
+        public List<Action<IHttpRequest, IHttpResponse, object>> GlobalRequestFilters { get; set; }
 
-        public List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters { get; set; }
+        public List<Action<IHttpRequest, IHttpResponse, object>> GlobalResponseFilters { get; set; }
 
         public List<IViewEngine> ViewEngines { get; private set; }
 

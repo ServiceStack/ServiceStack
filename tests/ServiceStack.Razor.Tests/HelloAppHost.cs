@@ -30,7 +30,7 @@ namespace ServiceStack.Razor.Tests
 
             this.PreRequestFilters.Add(SimplePreRequestFilter);
 
-            this.RequestFilters.Add(SimpleRequestFilter);
+            this.GlobalRequestFilters.Add(SimpleRequestFilter);
 
             //this.SetConfig( new EndpointHostConfig()
             //    {

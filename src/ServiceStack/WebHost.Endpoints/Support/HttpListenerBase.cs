@@ -471,7 +471,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 		}
 
-		public List<Action<IHttpRequest, IHttpResponse, object>> RequestFilters
+		public List<Action<IHttpRequest, IHttpResponse, object>> GlobalRequestFilters
 		{
 			get
 			{
@@ -479,7 +479,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 		}
 
-		public List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters
+		public List<Action<IHttpRequest, IHttpResponse, object>> GlobalResponseFilters
 		{
 			get
 			{
