@@ -57,7 +57,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		/// <summary>
 		/// *Request* DTO
 		/// </summary>
-		[RestService("/test/timed", "GET")]
+		[Route("/test/timed", "GET")]
 		public class Timed
 		{
 			/// <summary>

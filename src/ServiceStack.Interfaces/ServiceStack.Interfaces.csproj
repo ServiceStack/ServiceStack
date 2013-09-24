@@ -433,9 +433,6 @@
     <Compile Include="ErrorResponse.cs" />
     <Compile Include="Model\IResponseStatusConvertible.cs" />
     <Compile Include="RequestLogEntry.cs" />
-    <Compile Include="Server\RestServiceAttribute.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="RestrictAttribute.cs">
       <SubType>Code</SubType>
     </Compile>

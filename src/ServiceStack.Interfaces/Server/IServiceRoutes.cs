@@ -13,7 +13,7 @@ namespace ServiceStack.Server
 		/// <typeparam name="TRequest">The type of request DTO to map 
 		///		the path to.</typeparam>
 		/// <param name="restPath">The path to map the request DTO to.
-		///		See <see cref="RestServiceAttribute.Path">RestServiceAttribute.Path</see>
+        ///		See <see cref="RouteAttribute.Path">RouteAttribute.Path</see>
 		///		for details on the correct format.</param>
 		/// <returns>The same <see cref="IServiceRoutes"/> instance;
 		///		never <see langword="null"/>.</returns>
@@ -26,7 +26,7 @@ namespace ServiceStack.Server
 		/// <typeparam name="TRequest">The type of request DTO to map 
 		///		the path to.</typeparam>
 		/// <param name="restPath">The path to map the request DTO to.
-		///		See <see cref="RestServiceAttribute.Path">RestServiceAttribute.Path</see>
+        ///		See <see cref="RouteAttribute.Path">RouteAttribute.Path</see>
 		///		for details on the correct format.</param>
 		/// <param name="verbs">
 		///		The comma-delimited list of HTTP verbs supported by the path, 
@@ -46,7 +46,7 @@ namespace ServiceStack.Server
 		///		The type of request DTO to map the path to.
 		/// </param>
 		/// <param name="restPath">The path to map the request DTO to.
-		///		See <see cref="RestServiceAttribute.Path">RestServiceAttribute.Path</see>
+        ///		See <see cref="RouteAttribute.Path">RouteAttribute.Path</see>
 		///		for details on the correct format.</param>
 		/// <param name="verbs">
 		///		The comma-delimited list of HTTP verbs supported by the path, 
@@ -65,7 +65,7 @@ namespace ServiceStack.Server
         ///		The type of request DTO to map the path to.
         /// </param>
         /// <param name="restPath">The path to map the request DTO to.
-        ///		See <see cref="RestServiceAttribute.Path">RestServiceAttribute.Path</see>
+        ///		See <see cref="RouteAttribute.Path">RouteAttribute.Path</see>
         ///		for details on the correct format.</param>
         /// <param name="verbs">
         ///		The comma-delimited list of HTTP verbs supported by the path, 
