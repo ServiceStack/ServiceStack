@@ -14,9 +14,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 
 		[DataMember]
 		public int ExecuteTimes { get; set; }
-
-		[DataMember]
-		public int ExecuteAsyncTimes { get; set; }
 	}
 
 	public class TestService : IService
@@ -24,12 +21,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 		private readonly IFoo foo;
 
 		public static int ExecuteTimes { get; private set; }
-		public static int ExecuteAsyncTimes { get; private set; }
 
 		public static void ResetStats()
 		{
 			ExecuteTimes = 0;
-			ExecuteAsyncTimes = 0;
 		}
 
 		public TestService(IFoo foo)

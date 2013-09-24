@@ -72,7 +72,7 @@ namespace ServiceStack.ServiceHost
             var processedReqs = new HashSet<Type>();
 
             if (typeof(IService).IsAssignableFrom(serviceType)
-                && !serviceType.IsAbstract && !serviceType.IsGenericTypeDefinition)
+                && !serviceType.IsAbstract && !serviceType.IsGenericTypeDefinition && !serviceType.ContainsGenericParameters)
             {
                 foreach (var mi in serviceType.GetActions())
                 {
@@ -250,8 +250,8 @@ namespace ServiceStack.ServiceHost
 
         public void RegisterNServiceExecutor(Type requestType, Type serviceType, ITypeFactory serviceFactoryFn)
         {
-            var serviceExecDef = typeof(NServiceRequestExec<,>).MakeGenericType(serviceType, requestType);
-            var iserviceExec = (INServiceExec)serviceExecDef.CreateInstance();
+            var serviceExecDef = typeof(ServiceRequestExec<,>).MakeGenericType(serviceType, requestType);
+            var iserviceExec = (IServiceExec)serviceExecDef.CreateInstance();
 
             ServiceExecFn handlerFn = (requestContext, dto) => {
                 var service = serviceFactoryFn.CreateInstance(serviceType);

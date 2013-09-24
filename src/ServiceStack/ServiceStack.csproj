@@ -242,7 +242,7 @@
     <Compile Include="ServiceHost\MqRequest.cs" />
     <Compile Include="ServiceHost\MqResponse.cs" />
     <Compile Include="ServiceHost\MqRequestContext.cs" />
-    <Compile Include="ServiceHost\NServiceExec.cs" />
+    <Compile Include="ServiceHost\ServiceExec.cs" />
     <Compile Include="ServiceHost\RouteNamingConvention.cs" />
     <Compile Include="ServiceHost\ServiceRunner.cs" />
     <Compile Include="ServiceStackHttpHandler.cs" />

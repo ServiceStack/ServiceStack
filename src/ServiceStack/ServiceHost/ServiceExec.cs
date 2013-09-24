@@ -1,3 +1,6 @@
+//Copyright (c) Service Stack LLC. All Rights Reserved.
+//License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -9,18 +12,18 @@ using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceHost
 {
-    public interface INServiceExec
+    public interface IServiceExec
     {
         object Execute(IRequestContext requestContext, object instance, object request);
     }
 
-    public class NServiceRequestExec<TService, TRequest> : INServiceExec
+    public class ServiceRequestExec<TService, TRequest> : IServiceExec
     {
-        static NServiceRequestExec()
+        static ServiceRequestExec()
         {
             try
             {
-                NServiceExec<TService>.CreateServiceRunnersFor<TRequest>();
+                ServiceExec<TService>.CreateServiceRunnersFor<TRequest>();
             }
             catch (Exception ex)
             {
@@ -31,12 +34,12 @@ namespace ServiceStack.ServiceHost
 
         public object Execute(IRequestContext requestContext, object instance, object request)
         {
-            return NServiceExec<TService>.Execute(requestContext, instance, request,
+            return ServiceExec<TService>.Execute(requestContext, instance, request,
                 typeof(TRequest).Name);
         }
     }
 
-    public static class NServiceExecExtensions
+    public static class ServiceExecExtensions
     {
         public static IEnumerable<MethodInfo> GetActions(this Type serviceType)
         {
@@ -54,7 +57,7 @@ namespace ServiceStack.ServiceHost
         }
     }
 
-    public class NServiceExec<TService>
+    public class ServiceExec<TService>
     {
         private static Dictionary<Type, List<ActionContext>> actionMap
             = new Dictionary<Type, List<ActionContext>>();
@@ -62,7 +65,7 @@ namespace ServiceStack.ServiceHost
         private static Dictionary<string, InstanceExecFn> execMap 
             = new Dictionary<string, InstanceExecFn>();
 
-        static NServiceExec()
+        static ServiceExec()
         {
             foreach (var mi in typeof(TService).GetActions())
             {
@@ -166,11 +169,11 @@ namespace ServiceStack.ServiceHost
             }
         }
 
-        public static object Execute(IRequestContext requestContext,
-                                     object instance, object request, string requestName)
+        public static object Execute(IRequestContext requestContext, object instance, object request, string requestName)
         {
-            var actionName = requestContext != null
-                ? requestContext.Get<IHttpRequest>().HttpMethod
+            IHttpRequest httpReq;
+            var actionName = requestContext != null && (httpReq = requestContext.Get<IHttpRequest>()) != null
+                ? httpReq.HttpMethod
                 : HttpMethods.Post; //MQ Services
 
             InstanceExecFn action;

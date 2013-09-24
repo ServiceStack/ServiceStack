@@ -1,8 +1,4 @@
-using System;
-using System.Reflection;
-using System.Runtime.Serialization;
 using NUnit.Framework;
-using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 
@@ -49,23 +45,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			Assert.That(response, Is.Not.Null);
 			Assert.That(response.ExecuteTimes, Is.EqualTo(1));
-			Assert.That(response.ExecuteAsyncTimes, Is.EqualTo(0));
-		}
-
-		[Test]
-		public void Call_AsyncOneWay_endpoint_on_AsyncTestService_calls_ExecuteAsync()
-		{
-			var host = new TestAppHost();
-			host.Init();
-
-			TestAsyncService.ResetStats();
-
-			var request = new TestAsync();
-			var response = host.ExecuteService(request, EndpointAttributes.OneWay) as TestAsyncResponse;
-
-			Assert.That(response, Is.Not.Null);
-			Assert.That(response.ExecuteTimes, Is.EqualTo(0));
-			Assert.That(response.ExecuteAsyncTimes, Is.EqualTo(1));
 		}
 	}
 }

@@ -1,9 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.Serialization;
 using ServiceStack.Data;
-using ServiceStack.OrmLite;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {
@@ -26,7 +23,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 
 	public class ResetMoviesService : ServiceInterface.Service
 	{
-		public object OnPost(ResetMovies request)
+		public object Post(ResetMovies request)
 		{
 			ConfigureDatabase.Init(TryResolve<IDbConnectionFactory>());
 

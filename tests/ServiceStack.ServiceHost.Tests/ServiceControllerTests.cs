@@ -102,7 +102,8 @@ namespace ServiceStack.ServiceHost.Tests
         public void Generic_service_with_recursive_ceneric_type_should_not_get_registered()
         {
             // Tell manager to register GenericService<Generic3<>>, which should not be possible since Generic3<> is an open type
-            var serviceManager = new ServiceManager(null, new ServiceController(() => new[] { typeof(GenericService<>).MakeGenericType(new[] { typeof(Generic3<>) }) }));
+            var serviceManager = new ServiceManager(null, 
+                new ServiceController(() => new[] { typeof(GenericService<>).MakeGenericType(new[] { typeof(Generic3<>) }) }));
 
             serviceManager.Init();
 

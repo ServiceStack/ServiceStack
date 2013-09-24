@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using ServiceStack.Common;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel;
 
 /*
  * Examples of preliminery REST method support in ServiceStack
@@ -12,14 +9,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {
 	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
 	[Route("/restmovies/{Id}")]
-	public class RestMovies
-	{
-		[DataMember(EmitDefaultValue = false)]
-		public string Id { get; set; }
+    public class RestMovies
+    {
+        [DataMember(EmitDefaultValue = false)]
+        public string Id { get; set; }
 
-		[DataMember(EmitDefaultValue = false)]
-		public RestMovie Movie { get; set; }
-	}
+        [DataMember(EmitDefaultValue = false)]
+        public RestMovie Movie { get; set; }
+    }
+
+    [DataContract(Namespace = ExampleConfig.DefaultNamespace)]
+    public class GetRestMovies //For SOAP
+    {
+        [DataMember(EmitDefaultValue = false)]
+        public string Id { get; set; }
+
+        [DataMember(EmitDefaultValue = false)]
+        public RestMovie Movie { get; set; }
+    }
 
 	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
 	public class RestMoviesResponse
