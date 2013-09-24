@@ -47,10 +47,6 @@ MD ..\NuGet\ServiceStack.Api.Swagger\content\swagger-ui
 COPY ..\src\ServiceStack.Api.Swagger\bin\%BUILD%\ServiceStack.Api.Swagger.* ..\NuGet\ServiceStack.Api.Swagger\lib\net35
 XCOPY /E ..\src\ServiceStack.Api.Swagger\swagger-ui ..\NuGet\ServiceStack.Api.Swagger\content\swagger-ui
 
-COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\*.* ..\..\chaweet\api\lib
-
-COPY ..\src\ServiceStack.Razor\bin\%BUILD%\*.* ..\..\ServiceStack.Examples\lib
-COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\*.* ..\..\ServiceStack.Examples\lib
 COPY ..\src\ServiceStack\bin\%BUILD%\*.* ..\..\ServiceStack.Contrib\lib
 COPY ..\src\ServiceStack\bin\%BUILD%\*.* ..\..\ServiceStack.RedisWebServices\lib
 COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\ServiceStack.ServiceInterface.* ..\..\ServiceStack.RedisWebServices\lib

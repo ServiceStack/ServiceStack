@@ -518,13 +518,6 @@
             </summary>
             <param name="baseUri">Base URI of the service</param>
         </member>
-        <member name="M:ServiceStack.Clients.ServiceClientBase.SetBaseUri(System.String,System.String)">
-            <summary>
-            Sets all baseUri properties allowing for a temporary override of the Format property
-            </summary>
-            <param name="baseUri">Base URI of the service</param>
-            <param name="format">Override of the Format property for the service</param>
-        </member>
         <member name="F:ServiceStack.Clients.ServiceClientBase.disableAutoCompression">
             <summary>
             Whether to Accept Gzip,Deflate Content-Encoding and to auto decompress responses
@@ -670,7 +663,7 @@
             Gets the singleton <see cref="!:ClientIdentityMessageInspector"/> instance.
             </summary>
         </member>
-        <member name="F:ServiceStack.Clients.WebRequestUtils.ResponseDtoSuffix">
+        <member name="F:ServiceStack.Utils.WebRequestUtils.ResponseDtoSuffix">
             <summary>
             Naming convention for the request's Response DTO
             </summary>
@@ -685,7 +678,7 @@
             Serializer cache of delegates required to create a type from a string map (e.g. for REST urls)
             </summary>
         </member>
-        <member name="M:ServiceStack.ServiceModel.XmlSerializerWrapper.GetNamespace(System.Type)">
+        <member name="M:ServiceStack.Serialization.XmlSerializerWrapper.GetNamespace(System.Type)">
             <summary>
             Gets the namespace from an attribute marked on the type's definition
             </summary>
@@ -894,31 +887,31 @@
             <param name="recursionInfo">Tracks how deeply nested we are</param>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.HttpResultExtensions.ToDto(System.Object)">
+        <member name="M:ServiceStack.HttpResultExtensions.GetDto(System.Object)">
             <summary>
             Shortcut to get the ResponseDTO whether it's bare or inside a IHttpResult
             </summary>
             <param name="response"></param>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.HttpResultExtensions.ToResponseDto(System.Object)">
+        <member name="M:ServiceStack.HttpResultExtensions.GetResponseDto(System.Object)">
             <summary>
-            Alias of ToDto
+            Alias of AsDto
             </summary>
         </member>
-        <member name="M:ServiceStack.HttpResultExtensions.ToDto``1(System.Object)">
+        <member name="M:ServiceStack.HttpResultExtensions.GetDto``1(System.Object)">
             <summary>
             Shortcut to get the ResponseDTO whether it's bare or inside a IHttpResult
             </summary>
             <param name="response"></param>
             <returns>TResponse if found; otherwise null</returns>
         </member>
-        <member name="M:ServiceStack.HttpResultExtensions.ToResponseDto``1(System.Object)">
+        <member name="M:ServiceStack.HttpResultExtensions.GetResponseDto``1(System.Object)">
             <summary>
-            Alias of ToDto
+            Alias of AsDto
             </summary>
         </member>
-        <member name="M:ServiceStack.HttpResultExtensions.ToResponseStatus(System.Object)">
+        <member name="M:ServiceStack.HttpResultExtensions.GetResponseStatus(System.Object)">
             <summary>
             Shortcut to get the ResponseStatus whether it's bare or inside a IHttpResult
             </summary>

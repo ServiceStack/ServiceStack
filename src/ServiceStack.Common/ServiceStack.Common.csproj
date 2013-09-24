@@ -123,13 +123,11 @@
     <Compile Include="ExecExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="IntExtensions.cs" />
     <Compile Include="Reflection\DelegateFactory.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="HostContext.cs" />
-    <Compile Include="AsyncExtensions.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="IPAddressExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
