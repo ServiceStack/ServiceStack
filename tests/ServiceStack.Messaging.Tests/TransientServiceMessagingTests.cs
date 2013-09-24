@@ -27,7 +27,7 @@ namespace ServiceStack.Messaging.Tests
 			var service = Container.Resolve<GreetService>();
 			using (var serviceHost = CreateMessagingService())
 			{
-				serviceHost.RegisterHandler<Greet>(service.ExecuteAsync);
+                serviceHost.RegisterHandler<Greet>(m => service.Any(m.GetBody()));
 
 				serviceHost.Start();
 
@@ -52,7 +52,7 @@ namespace ServiceStack.Messaging.Tests
 					client.Publish(new Greet { Name = "World!" });
 				}
 
-				serviceHost.RegisterHandler<Greet>(service.ExecuteAsync);
+                serviceHost.RegisterHandler<Greet>(m => service.Any(m.GetBody()));
 				serviceHost.Start();
 
 				Assert.That(service.Result, Is.EqualTo("Hello, World!"));
@@ -72,7 +72,7 @@ namespace ServiceStack.Messaging.Tests
 					client.Publish(request);
 				}
 
-				serviceHost.RegisterHandler<AlwaysFail>(service.ExecuteAsync);
+                serviceHost.RegisterHandler<AlwaysFail>(m => service.Any(m.GetBody()));
 				serviceHost.Start();
 
 				Assert.That(service.Result, Is.Null);
@@ -101,7 +101,7 @@ namespace ServiceStack.Messaging.Tests
 					client.Publish(request);
 				}
 
-				serviceHost.RegisterHandler<UnRetryableFail>(service.ExecuteAsync);
+                serviceHost.RegisterHandler<UnRetryableFail>(m => service.Any(m.GetBody()));
 				serviceHost.Start();
 
 				Assert.That(service.Result, Is.Null);

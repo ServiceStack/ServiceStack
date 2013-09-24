@@ -1,6 +1,4 @@
 using System.Runtime.Serialization;
-using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 {
@@ -23,9 +21,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 	}
 
 	/// Create your Web Service implementation 
-	public class HelloService : IService<Hello>
+	public class HelloService : IService
 	{
-		public object Execute(Hello request)
+		public object Any(Hello request)
 		{
 			return new HelloResponse { Result = "Hello, " + request.Name };
 		}

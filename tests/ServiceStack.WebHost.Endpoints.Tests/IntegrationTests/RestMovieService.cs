@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {
@@ -11,18 +8,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 	/// An example of a very basic web service
 	/// </summary>
 	public class RestMovieService
-		: IService<RestMovies>
-		  , IRestGetService<RestMovies>
-		  , IRestPutService<RestMovies>
-		  , IRestPostService<RestMovies>
-		  , IRestDeleteService<RestMovies>
-		  , IRequiresRequestContext
+		: IService, IRequiresRequestContext
 	{
 		public IRequestContext RequestContext { get; set; }
 
 		public IDbConnectionFactory DbFactory { get; set; }
 
-		public object Execute(RestMovies request)
+		public object Any(RestMovies request)
 		{
 			return Get(request);
 		}

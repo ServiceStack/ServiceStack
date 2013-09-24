@@ -54,7 +54,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 			typeof(Expression).Assembly,   //"system.core.dll",
 			typeof(AppHostBase).Assembly,  //"ServiceStack.dll",
 			typeof(JsConfig).Assembly,     //"ServiceStack.Text.dll",
-			typeof(IService<>).Assembly,   //"ServiceStack.Interfaces.dll",
+			typeof(IService).Assembly,   //"ServiceStack.Interfaces.dll",
 			typeof(UrnId).Assembly, //"ServiceStack.Common.dll"
 		};
 

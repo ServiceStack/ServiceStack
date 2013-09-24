@@ -1,8 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.Serialization;
-using ServiceStack.Server;
 using ServiceStack.Clients;
-using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -23,9 +21,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public string Result { get; set; }
 	}
 
-	public class TestService : IService<Test>
+	public class TestService : IService
 	{
-		public object Execute(Test request)
+		public object Any(Test request)
 		{
 			var client = new Soap12ServiceClient("http://localhost/ServiceStack.WebHost.IntegrationTests/api/");
 			var response = client.Send<HelloResponse>(new Hello { Name = request.Name });

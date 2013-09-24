@@ -1,18 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using ServiceStack.Clients;
-using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using NUnit.Framework;
-using ServiceStack.Clients;
-using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Cors;
-using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints.Utils;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -27,9 +18,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public bool IsSuccess { get; set; }
     }
 
-    public class CorsFeatureService : IService<CorsFeatureRequest>
+    public class CorsFeatureService : IService
     {
-        public object Execute(CorsFeatureRequest request)
+        public object Any(CorsFeatureRequest request)
         {
             return new CorsFeatureResponse { IsSuccess = true };
         }
@@ -45,9 +36,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public bool IsSuccess { get; set; }
     }
 
-    public class GlobalCorsFeatureService : IService<GlobalCorsFeatureRequest>
+    public class GlobalCorsFeatureService : IService
     {
-        public object Execute(GlobalCorsFeatureRequest request)
+        public object Any(GlobalCorsFeatureRequest request)
         {
             return new GlobalCorsFeatureResponse { IsSuccess = true };
         }

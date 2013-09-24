@@ -122,8 +122,8 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 
 		private static void RegisterServices(ServiceController serviceController, ITypeFactory typeFactory)
 		{
-			serviceController.RegisterGServiceExecutor(typeof(StoreCustomers), typeof(StoreCustomersService), typeFactory);
-			serviceController.RegisterGServiceExecutor(typeof(GetCustomer), typeof(GetCustomerService), typeFactory);
+			serviceController.RegisterNServiceExecutor(typeof(StoreCustomers), typeof(StoreCustomersService), typeFactory);
+			serviceController.RegisterNServiceExecutor(typeof(GetCustomer), typeof(GetCustomerService), typeFactory);
 		}
 
 		public static ITypeFactory GetNativeFunqTypeFactory()

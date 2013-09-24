@@ -1,6 +1,4 @@
 ﻿using System.Runtime.Serialization;
-using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 {
@@ -10,14 +8,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
     [DataContract]
     public class FailingRequestResponse { }
 
-    public class FailingService : IService<FailingRequest>
+    public class FailingService : IService
     {
         private void ThisMethodAlwaysThrowsAnError(FailingRequest request)
         {
             throw new System.ArgumentException("Failure");
         }
         
-        public object Execute(FailingRequest request)
+        public object Any(FailingRequest request)
         {
             ThisMethodAlwaysThrowsAnError(request);
             return new FailingRequestResponse();

@@ -28,7 +28,6 @@ namespace ServiceStack.ServiceInterface
         {
             foreach (Assembly assembly in assembliesWithServices)
             {
-                AddOldApiRoutes(routes, assembly);
                 AddNewApiRoutes(routes, assembly);
             }
 
@@ -63,62 +62,6 @@ namespace ServiceStack.ServiceInterface
 
                     routes.AddRoute(requestType, allowedVerbs);
                 }
-            }
-        }
-
-        private static void AddOldApiRoutes(IServiceRoutes routes, Assembly assembly)
-        {
-            var services = assembly.GetExportedTypes()
-                .Where(t => !t.IsAbstract
-                            && t.IsSubclassOfRawGeneric(typeof(ServiceBase<>)));
-
-            foreach (Type service in services)
-            {
-                Type baseType = service.BaseType;
-                //go up the hierarchy to the first generic base type
-                while (!baseType.IsGenericType)
-                {
-                    baseType = baseType.BaseType;
-                }
-
-                Type requestType = baseType.GetGenericArguments()[0];
-
-                string allowedVerbs = null; //null == All Routes
-
-                if (service.IsSubclassOfRawGeneric(typeof(RestServiceBase<>)))
-                {
-                    //find overriden REST methods
-                    var allowedMethods = new List<string>();
-                    if (service.GetMethod("OnGet").DeclaringType == service)
-                    {
-                        allowedMethods.Add(HttpMethods.Get);
-                    }
-
-                    if (service.GetMethod("OnPost").DeclaringType == service)
-                    {
-                        allowedMethods.Add(HttpMethods.Post);
-                    }
-
-                    if (service.GetMethod("OnPut").DeclaringType == service)
-                    {
-                        allowedMethods.Add(HttpMethods.Put);
-                    }
-
-                    if (service.GetMethod("OnDelete").DeclaringType == service)
-                    {
-                        allowedMethods.Add(HttpMethods.Delete);
-                    }
-
-                    if (service.GetMethod("OnPatch").DeclaringType == service)
-                    {
-                        allowedMethods.Add(HttpMethods.Patch);
-                    }
-
-                    if (allowedMethods.Count == 0) continue;
-                    allowedVerbs = string.Join(" ", allowedMethods.ToArray());
-                }
-
-                routes.AddRoute(requestType, allowedVerbs);
             }
         }
 

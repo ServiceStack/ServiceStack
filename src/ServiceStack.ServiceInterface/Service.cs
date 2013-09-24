@@ -96,10 +96,17 @@ namespace ServiceStack.ServiceInterface
             get { return redis ?? (redis = TryResolve<IRedisClientsManager>().GetClient()); }
         }
 
+        private IMessageFactory messageFactory;
+        public virtual IMessageFactory MessageFactory
+        {
+            get { return messageFactory ?? (messageFactory = TryResolve<IMessageFactory>()); }
+            set { messageFactory = value; }
+        }
+
         private IMessageProducer messageProducer;
         public virtual IMessageProducer MessageProducer
         {
-            get { return messageProducer ?? (messageProducer = TryResolve<IMessageFactory>().CreateMessageProducer()); }
+            get { return messageProducer ?? (messageProducer = MessageFactory.CreateMessageProducer()); }
         }
 
         private ISessionFactory sessionFactory;

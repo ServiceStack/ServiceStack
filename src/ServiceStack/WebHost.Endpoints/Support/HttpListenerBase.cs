@@ -556,24 +556,13 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public void RegisterService(Type serviceType, params string[] atRestPaths)
 		{
-            var genericService = EndpointHost.Config.ServiceManager.RegisterService(serviceType);
-            if (genericService != null)
+            EndpointHost.Config.ServiceManager.RegisterService(serviceType);
+            var reqAttr = serviceType.GetCustomAttributes(true).OfType<DefaultRequestAttribute>().FirstOrDefault();
+            if (reqAttr != null)
             {
-                var requestType = genericService.GetGenericArguments()[0];
                 foreach (var atRestPath in atRestPaths)
                 {
-                    this.Routes.Add(requestType, atRestPath, null);
-                }
-            }
-            else
-            {
-                var reqAttr = serviceType.GetCustomAttributes(true).OfType<DefaultRequestAttribute>().FirstOrDefault();
-                if (reqAttr != null)
-                {
-                    foreach (var atRestPath in atRestPaths)
-                    {
-                        this.Routes.Add(reqAttr.RequestType, atRestPath, null);
-                    }
+                    this.Routes.Add(reqAttr.RequestType, atRestPath, null);
                 }
             }
         }

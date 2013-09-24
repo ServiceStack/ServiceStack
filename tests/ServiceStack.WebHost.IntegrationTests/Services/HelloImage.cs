@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using ServiceStack.Clients;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
@@ -13,9 +11,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
     [Route("/HelloImage")]
     public class HelloImage {}
 
-    public class HelloImageService : IService<HelloImage>
+    public class HelloImageService : IService
     {
-        public object Execute(HelloImage request)
+        public object Any(HelloImage request)
         {
             using (Bitmap image = new Bitmap(10, 10))
             {
@@ -33,9 +31,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
     [Route("/HelloImage2")]
     public class HelloImage2 {}
 
-    public class HelloImage2Service : IService<HelloImage2>
+    public class HelloImage2Service : IService
     {
-        public object Execute(HelloImage2 request)
+        public object Any(HelloImage2 request)
         {
             using (Bitmap image = new Bitmap(10, 10))
             {
@@ -84,9 +82,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public IDictionary<string, string> Options { get; set; }
     }
 
-    public class HelloImage3Service : IService<HelloImage3>
+    public class HelloImage3Service : IService
     {
-        public object Execute(HelloImage3 request)
+        public object Any(HelloImage3 request)
         {
             var image = new Bitmap(10, 10);
             using (var g = Graphics.FromImage(image))
@@ -95,6 +93,5 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
             return new ImageResult(image); //terse + explicit is good :)
         }
     }
-
 
 }

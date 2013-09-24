@@ -17,13 +17,12 @@ namespace ServiceStack.Messaging.Tests.Services
 		public string Result { get; set; }
 	}
 
-	public class GreetService
-		: AsyncServiceBase<Greet>
+	public class GreetService : Service
 	{
 		public int TimesCalled { get; set; }
 		public string Result { get; set; }
 
-		protected override object Run(Greet request)
+	    public object Any(Greet request)
 		{
 			this.TimesCalled++;
 

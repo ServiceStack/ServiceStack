@@ -1,61 +1,8 @@
 using System.Net;
-using ServiceStack.ServiceInterface;
 using ServiceStack.Web;
 
 namespace ServiceStack.ServiceHost.Tests.Routes
 {
-    public class OldApiRequestDto
-    {
-        public string Name { get; set; }
-    }
-
-    public class OldApiRestServiceWithSomeVerbsImplemented : RestServiceBase<OldApiRequestDto>
-    {
-        public override object OnGet(OldApiRequestDto request)
-        {
-            return new HttpResult { StatusCode = HttpStatusCode.OK };
-        }
-
-        public override object OnPut(OldApiRequestDto request)
-        {
-            return new HttpResult { StatusCode = HttpStatusCode.OK };
-        }
-    }
-
-	public class OldApiRequestDto2
-	{
-		public string Name { get; set; }
-	}
-
-	public class OldApiRestServiceWithAllVerbsImplemented : RestServiceBase<OldApiRequestDto2>
-    {
-		public override object OnGet(OldApiRequestDto2 request)
-        {
-            return new HttpResult {StatusCode = HttpStatusCode.OK};
-        }
-
-		public override object OnPut(OldApiRequestDto2 request)
-        {
-            return new HttpResult {StatusCode = HttpStatusCode.OK};
-        }
-
-		public override object OnPost(OldApiRequestDto2 request)
-        {
-            return new HttpResult {StatusCode = HttpStatusCode.OK};
-        }
-
-		public override object OnDelete(OldApiRequestDto2 request)
-        {
-            return new HttpResult {StatusCode = HttpStatusCode.OK};
-        }
-
-		public override object OnPatch(OldApiRequestDto2 request)
-        {
-            return new HttpResult {StatusCode = HttpStatusCode.OK};
-        }
-    }
-
-    
     public class NewApiRequestDto
     {
         public string Name { get; set; }

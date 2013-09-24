@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.Serialization;
-using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.Messaging.Tests.Services
@@ -19,13 +18,12 @@ namespace ServiceStack.Messaging.Tests.Services
 		public string Result { get; set; }
 	}
 
-	public class UnRetryableFailService
-		: AsyncServiceBase<UnRetryableFail>
+	public class UnRetryableFailService : Service
 	{
 		public int TimesCalled { get; set; }
 		public string Result { get; set; }
 
-		protected override object Run(UnRetryableFail request)
+	    public object Any(UnRetryableFail request)
 		{
 			this.TimesCalled++;
 
@@ -34,5 +32,4 @@ namespace ServiceStack.Messaging.Tests.Services
 				new NotSupportedException("This service always fails"));
 		}
 	}
-
 }

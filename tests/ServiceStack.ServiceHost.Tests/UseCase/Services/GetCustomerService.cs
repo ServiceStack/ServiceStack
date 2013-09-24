@@ -1,16 +1,12 @@
-using System;
 using System.Data;
 using ServiceStack.Caching;
-using ServiceStack.Configuration;
 using ServiceStack.OrmLite;
-using ServiceStack.Server;
 using ServiceStack.ServiceHost.Tests.Support;
 using ServiceStack.ServiceHost.Tests.UseCase.Operations;
 
 namespace ServiceStack.ServiceHost.Tests.UseCase.Services
 {
-	public class GetCustomerService
-		: IService<GetCustomer>
+	public class GetCustomerService : IService
 	{
 		private static readonly string CacheKey = typeof (GetCustomer).Name;
 
@@ -25,7 +21,7 @@ namespace ServiceStack.ServiceHost.Tests.UseCase.Services
 
 		public ICacheClient CacheClient { get; set; }
 
-		public object Execute(GetCustomer request)
+		public object Any(GetCustomer request)
 		{
 			if (config.UseCache)
 			{

@@ -150,9 +150,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public bool ResponseFilterDependencyIsResolved { get; set; }
     }
 
-    public class AttributeFilteredService : IService<AttributeFiltered>
+    public class AttributeFilteredService : IService
     {
-        public object Execute(AttributeFiltered request)
+        public object Any(AttributeFiltered request)
         {
             return new AttributeFilteredResponse() {
                 ResponseFilterExecuted = false,

@@ -35,9 +35,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class SecureService : IService<Secure>
+	public class SecureService : IService
 	{
-		public object Execute(Secure request)
+		public object Any(Secure request)
 		{
 			return new SecureResponse { Result = "Confidential" };
 		}
@@ -61,9 +61,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class InsecureService : IService<Insecure>
+	public class InsecureService : IService
 	{
-		public object Execute(Insecure request)
+		public object Any(Insecure request)
 		{
 			return new InsecureResponse { Result = "Public" };
 		}

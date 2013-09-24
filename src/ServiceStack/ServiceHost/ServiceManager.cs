@@ -49,6 +49,8 @@ namespace ServiceStack.ServiceHost
             this.Container = container ?? new Container();
             this.Metadata = serviceController.Metadata; //always share the same metadata
             this.ServiceController = serviceController;
+
+            typeFactory = new ContainerResolveCache(this.Container);
         }
 
 		private List<Type> GetAssemblyTypes(Assembly[] assembliesWithServices)
@@ -91,42 +93,22 @@ namespace ServiceStack.ServiceHost
 		    return this;
 		}
 
-		public void RegisterService<T>()
+		public void RegisterService(Type serviceType)
 		{
-			if (!typeof(T).IsGenericType
-				|| typeof(T).GetGenericTypeDefinition() != typeof(IService<>))
-				throw new ArgumentException("Type {0} is not a Web Service that inherits IService<>".Fmt(typeof(T).FullName));
-
-			this.ServiceController.RegisterGService(typeFactory, typeof(T));
-			this.Container.RegisterAutoWired<T>();
-		}
-
-		public Type RegisterService(Type serviceType)
-		{
-            var genericServiceType = serviceType.GetTypeWithGenericTypeDefinitionOf(typeof(IService<>));
             try
 			{
-                if (genericServiceType != null)
-                {
-                    this.ServiceController.RegisterGService(typeFactory, serviceType);
-                    this.Container.RegisterAutoWiredType(serviceType);
-                    return genericServiceType;
-                }
-
                 var isNService = typeof(IService).IsAssignableFrom(serviceType);
                 if (isNService)
                 {
-                    this.ServiceController.RegisterNService(typeFactory, serviceType);
+                    this.ServiceController.RegisterService(typeFactory, serviceType);
                     this.Container.RegisterAutoWiredType(serviceType);
-                    return null;
                 }
 
-                throw new ArgumentException("Type {0} is not a Web Service that inherits IService<> or IService".Fmt(serviceType.FullName));
+                throw new ArgumentException("Type {0} is not a Web Service that inherits IService".Fmt(serviceType.FullName));
             }
 			catch (Exception ex)
 			{
 				Log.Error(ex);
-			    return genericServiceType;
 			}
 		}
 

@@ -1,5 +1,4 @@
 using System.Runtime.Serialization;
-using ServiceStack.Server;
 
 namespace ServiceStack.ServiceHost.Tests.Support
 {
@@ -9,9 +8,9 @@ namespace ServiceStack.ServiceHost.Tests.Support
 	[DataContract]
 	public class BasicRequestResponse { }
 
-	public class BasicService : IService<BasicRequest>
+	public class BasicService : IService
 	{
-		public object Execute(BasicRequest request)
+		public object Any(BasicRequest request)
 		{
 			return new BasicRequestResponse();
 		}

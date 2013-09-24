@@ -6,8 +6,7 @@ using ServiceStack.ServiceHost.Tests.UseCase.Operations;
 
 namespace ServiceStack.ServiceHost.Tests.UseCase.Services
 {
-	public class StoreCustomersService
-		: IService<StoreCustomers> 
+	public class StoreCustomersService : IService
 	{
 		private readonly IDbConnection db;
 
@@ -17,9 +16,9 @@ namespace ServiceStack.ServiceHost.Tests.UseCase.Services
 			//Console.WriteLine("StoreCustomersService()");
 		}
 
-		public object Execute(StoreCustomers request)
+		public object Any(StoreCustomers request)
 		{
-			db.CreateTable<Customer>(false);
+			db.DropAndCreateTable<Customer>();
 			foreach (var customer in request.Customers)
 			{
 				db.Insert(customer);

@@ -352,7 +352,6 @@
     <Compile Include="ApiAttribute.cs" />
     <Compile Include="ApiMemberAttribute.cs" />
     <Compile Include="ApiResponse.cs" />
-    <Compile Include="Server\IRestOptionsService.cs" />
     <Compile Include="IService.cs" />
     <Compile Include="Server\IExpress.cs" />
     <Compile Include="Server\IRequiresHttpRequest.cs" />
@@ -420,31 +419,10 @@
     <Compile Include="Server\IRequiresRequestContext.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IRestDeleteService.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Server\IRestGetService.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Server\IRestPatchService.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Server\IRestPath.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IRestPostService.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Server\IRestPutService.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Server\IRestService.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Server\IServiceRunner.cs" />
-    <Compile Include="Server\IService.Generic.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Server\IServiceController.cs">
       <SubType>Code</SubType>
     </Compile>

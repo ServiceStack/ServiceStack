@@ -1,13 +1,8 @@
-using System;
-using ServiceStack.Server;
-using ServiceStack.ServiceHost;
-
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {
-	public class ResetMovieDatabaseService
-		: IService<ResetMovieDatabase>
+	public class ResetMovieDatabaseService : IService
 	{
-		public object Execute(ResetMovieDatabase request)
+		public object Any(ResetMovieDatabase request)
 		{
 			return new ResetMovieDatabaseResponse();
 		}

@@ -1,7 +1,4 @@
-using System;
 using System.Runtime.Serialization;
-using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
@@ -22,8 +19,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 		public int ExecuteAsyncTimes { get; set; }
 	}
 
-	public class TestAsyncService 
-		: IService<TestAsync>, IAsyncService<TestAsync>
+	public class TestAsyncService : IService
 	{
 		private readonly IFoo foo;
 
@@ -41,14 +37,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 			this.foo = foo;
 		}
 
-		public object Execute(TestAsync request)
+		public object Any(TestAsync request)
 		{
 			return new TestAsyncResponse { Foo = this.foo, ExecuteTimes = ++ExecuteTimes };
-		}
-
-		public object ExecuteAsync(TestAsync request)
-		{
-			return new TestAsyncResponse { Foo = this.foo, ExecuteAsyncTimes = ++ExecuteAsyncTimes };
 		}
 	}
 }

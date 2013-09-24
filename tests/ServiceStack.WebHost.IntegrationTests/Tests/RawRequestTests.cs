@@ -1,13 +1,7 @@
-﻿using System;
-using System.IO;
-using System.Net;
+﻿using System.IO;
 using NUnit.Framework;
-using ServiceStack.Common;
 using ServiceStack.Server;
-using ServiceStack.Clients;
-using ServiceStack.ServiceHost;
 using ServiceStack.Text;
-using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
 {
@@ -22,9 +16,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		public string Result { get; set; }
 	}
 
-	public class RawRequestService : IService<RawRequest>
+	public class RawRequestService : IService
 	{
-		public object Execute(RawRequest request)
+		public object Any(RawRequest request)
 		{
 			var rawRequest = request.RequestStream.ToUtf8String();
 			return new RawRequestResponse { Result = rawRequest };
