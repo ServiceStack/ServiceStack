@@ -164,7 +164,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
 
 		public override string ToString()
 		{
-            var wsdlSoapActionNamespace = EndpointHost.Config.WsdlSoapActionNamespace;
+            var wsdlSoapActionNamespace = EndpointHost.Config.WsdlServiceNamespace;
             if (!wsdlSoapActionNamespace.EndsWith("/"))
                 wsdlSoapActionNamespace += '/';
             

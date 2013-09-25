@@ -10,7 +10,6 @@ using System.Web;
 using System.Web.Configuration;
 using System.Xml.Linq;
 using MarkdownSharp;
-using ServiceStack.Common;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
@@ -50,7 +49,6 @@ namespace ServiceStack.WebHost.Endpoints
                     {
                         MetadataTypesConfig = new MetadataTypesConfig(addDefaultXmlNamespace: "http://schemas.servicestack.net/types"),
                         WsdlServiceNamespace = "http://schemas.servicestack.net/types",
-                        WsdlSoapActionNamespace = "http://schemas.servicestack.net/types",
                         MetadataPageBodyHtml = @"<br />
                             <h3><a href=""https://github.com/ServiceStack/ServiceStack/wiki/Clients-overview"">Clients Overview</a></h3>",
                         MetadataOperationPageBodyHtml = @"<br />
@@ -148,7 +146,6 @@ namespace ServiceStack.WebHost.Endpoints
             //Get a copy of the singleton already partially configured
             this.MetadataTypesConfig = instance.MetadataTypesConfig;
             this.WsdlServiceNamespace = instance.WsdlServiceNamespace;
-            this.WsdlSoapActionNamespace = instance.WsdlSoapActionNamespace;
             this.MetadataPageBodyHtml = instance.MetadataPageBodyHtml;
             this.MetadataOperationPageBodyHtml = instance.MetadataOperationPageBodyHtml;
             this.MetadataCustomPath = instance.MetadataCustomPath;
@@ -385,7 +382,6 @@ namespace ServiceStack.WebHost.Endpoints
 
         public MetadataTypesConfig MetadataTypesConfig { get; set; }
         public string WsdlServiceNamespace { get; set; }
-        public string WsdlSoapActionNamespace { get; set; }
 
         private EndpointAttributes metadataVisibility;
         public EndpointAttributes MetadataVisibility
