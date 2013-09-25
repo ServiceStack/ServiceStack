@@ -7,7 +7,6 @@ using ServiceStack.Messaging;
 using ServiceStack.OrmLite;
 using ServiceStack.Redis;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface
@@ -17,12 +16,14 @@ namespace ServiceStack.ServiceInterface
     /// </summary>
     public class Service : IService, IRequiresRequestContext, IServiceBase, IDisposable
     {
+        public static IResolver GlobalResolver { get; set; } //for testing
+
         public IRequestContext RequestContext { get; set; }
 
         private IResolver resolver;
         public virtual IResolver GetResolver()
         {
-            return resolver ?? EndpointHost.AppHost;
+            return resolver ?? GlobalResolver ?? EndpointHost.AppHost;
         }
 
         public virtual IAppHost GetAppHost()
