@@ -15,16 +15,16 @@
         <add assembly="System.Web.WebPages.Razor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31BF3856AD364E35" />
       </assemblies>
       <buildProviders>
-        <add extension=".cshtml" type="ServiceStack.Razor2.CSharpRazorBuildProvider, ServiceStack.Razor2" />
+        <add extension=".cshtml" type="ServiceStack.Razor.CSharpRazorBuildProvider, ServiceStack.Razor" />
       </buildProviders>
     </compilation>
   </system.web>
   <system.web.webPages.razor>
     <host factoryType="System.Web.Mvc.MvcWebRazorHostFactory, System.Web.Mvc, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31BF3856AD364E35" />
-    <pages pageBaseType="ServiceStack.Razor2.ViewPage">
+    <pages pageBaseType="ServiceStack.Razor.ViewPage">
       <namespaces>
         <add namespace="ServiceStack.Html" />
-        <add namespace="ServiceStack.Razor2" />
+        <add namespace="ServiceStack.Razor" />
         <add namespace="ServiceStack.Text" />
         <add namespace="ServiceStack.OrmLite" />
         <add namespace="$rootnamespace$" />
