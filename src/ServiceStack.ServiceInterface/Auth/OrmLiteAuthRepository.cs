@@ -4,7 +4,6 @@ using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
-using ServiceStack.Common;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
@@ -31,19 +30,20 @@ namespace ServiceStack.ServiceInterface.Auth
 
         public void CreateMissingTables()
         {
-            dbFactory.Run(db => {
-                db.CreateTable<UserAuth>(false);
-                db.CreateTable<UserOAuthProvider>(false);
-            });
+            using (var db = dbFactory.Open())
+            {
+                db.CreateTable<UserAuth>();
+                db.CreateTable<UserOAuthProvider>();
+            }
         }
 
         public void DropAndReCreateTables()
         {
-            dbFactory.Run(db =>
+            using (var db = dbFactory.Open())
             {
-                db.CreateTable<UserAuth>(true);
-                db.CreateTable<UserOAuthProvider>(true);
-            });
+                db.DropAndCreateTable<UserAuth>();
+                db.DropAndCreateTable<UserOAuthProvider>();
+            };
         }
 
         private void ValidateNewUser(UserAuth newUser, string password)
@@ -65,7 +65,8 @@ namespace ServiceStack.ServiceInterface.Auth
         {
             ValidateNewUser(newUser, password);
 
-            return dbFactory.Run(db => {
+            using (var db = dbFactory.Open())
+            {
                 AssertNoExistingUser(db, newUser);
 
                 string salt;
@@ -82,7 +83,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
                 newUser = db.GetById<UserAuth>(db.GetLastInsertId());
                 return newUser;
-            });
+            };
         }
 
         private static void AssertNoExistingUser(IDbConnection db, UserAuth newUser, UserAuth exceptForExistingUser = null)
@@ -107,7 +108,8 @@ namespace ServiceStack.ServiceInterface.Auth
         {
             ValidateNewUser(newUser, password);
 
-            return dbFactory.Run(db => {
+            using (var db = dbFactory.Open())
+            {
                 AssertNoExistingUser(db, newUser, existingUser);
 
                 var hash = existingUser.PasswordHash;
@@ -133,12 +135,13 @@ namespace ServiceStack.ServiceInterface.Auth
                 db.Save(newUser);
 
                 return newUser;
-            });
+            }
         }
 
         public UserAuth GetUserAuthByUserName(string userNameOrEmail)
         {
-            return dbFactory.Run(db => GetUserAuthByUserName(db, userNameOrEmail));
+            using (var db = dbFactory.Open())
+                return GetUserAuthByUserName(db, userNameOrEmail);
         }
 
         private static UserAuth GetUserAuthByUserName(IDbConnection db, string userNameOrEmail)
@@ -207,13 +210,14 @@ namespace ServiceStack.ServiceInterface.Auth
 
         public UserAuth GetUserAuth(string userAuthId)
         {
-            return dbFactory.Run(db => db.GetByIdOrDefault<UserAuth>(userAuthId));
+            using (var db = dbFactory.Open())
+                return db.GetByIdOrDefault<UserAuth>(userAuthId);
         }
 
         public void SaveUserAuth(IAuthSession authSession)
         {
-            dbFactory.Run(db => {
-
+            using (var db = dbFactory.Open())
+            {
                 var userAuth = !authSession.UserAuthId.IsNullOrEmpty()
                     ? db.GetByIdOrDefault<UserAuth>(authSession.UserAuthId)
                     : authSession.ConvertTo<UserAuth>();
@@ -226,7 +230,7 @@ namespace ServiceStack.ServiceInterface.Auth
                     userAuth.CreatedDate = userAuth.ModifiedDate;
 
                 db.Save(userAuth);
-            });
+            };
         }
 
         public void SaveUserAuth(UserAuth userAuth)
@@ -235,14 +239,17 @@ namespace ServiceStack.ServiceInterface.Auth
             if (userAuth.CreatedDate == default(DateTime))
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
-            dbFactory.Run(db => db.Save(userAuth));
+            using (var db = dbFactory.Open())
+                db.Save(userAuth);
         }
 
         public List<UserOAuthProvider> GetUserOAuthProviders(string userAuthId)
         {
             var id = int.Parse(userAuthId);
-            return dbFactory.Run(db =>
-                db.Select<UserOAuthProvider>(q => q.UserAuthId == id)).OrderBy(x => x.ModifiedDate).ToList();
+            using (var db = dbFactory.Open())
+            {
+                return db.Select<UserOAuthProvider>(q => q.UserAuthId == id).OrderBy(x => x.ModifiedDate).ToList();
+            }
         }
 
         public UserAuth GetUserAuth(IAuthSession authSession, IOAuthTokens tokens)
@@ -261,7 +268,8 @@ namespace ServiceStack.ServiceInterface.Auth
             if (tokens == null || tokens.Provider.IsNullOrEmpty() || tokens.UserId.IsNullOrEmpty())
                 return null;
 
-            return dbFactory.Run(db => {
+            using (var db = dbFactory.Open())
+            {
                 var oAuthProvider = db.Select<UserOAuthProvider>(q => 
                     q.Provider == tokens.Provider && q.UserId == tokens.UserId).FirstOrDefault();
 
@@ -271,15 +279,15 @@ namespace ServiceStack.ServiceInterface.Auth
                     return userAuth;
                 }
                 return null;
-            });
+            };
         }
 
         public string CreateOrMergeAuthSession(IAuthSession authSession, IOAuthTokens tokens)
         {
             var userAuth = GetUserAuth(authSession, tokens) ?? new UserAuth();
 
-            return dbFactory.Run(db => {
-
+            using (var db = dbFactory.Open())
+            {
                 var oAuthProvider = db.Select<UserOAuthProvider>(q =>
                     q.Provider == tokens.Provider && q.UserId == tokens.UserId).FirstOrDefault();
 
@@ -311,15 +319,16 @@ namespace ServiceStack.ServiceInterface.Auth
                 db.Save(oAuthProvider);
 
                 return oAuthProvider.UserAuthId.ToString(CultureInfo.InvariantCulture);
-            });
+            };
         }
 
         public void Clear()
         {
-            dbFactory.Run(db => {
+            using (var db = dbFactory.Open())
+            {
                 db.DeleteAll<UserAuth>();
                 db.DeleteAll<UserOAuthProvider>();
-            });
+            }
         }
     }
 }

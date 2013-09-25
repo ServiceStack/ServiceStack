@@ -12,7 +12,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
     }
 
-    [CorsSupport("http://localhost http://localhost2", "POST, GET", "Type1, Type2", true)]
+    [EnableCors("http://localhost http://localhost2", "POST, GET", "Type1, Type2", true)]
     public class CorsFeatureResponse
     {
         public bool IsSuccess { get; set; }

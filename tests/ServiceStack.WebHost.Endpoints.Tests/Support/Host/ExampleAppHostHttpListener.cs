@@ -152,9 +152,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		/// </summary>
 		public object Get(Movie movie)
 		{
-			return new MovieResponse {
-				Movie = DbFactory.Run(db => db.GetById<Movie>(movie.Id))
-			};
+		    using (var db = DbFactory.Open())
+		    {
+		        return new MovieResponse {
+		            Movie = db.GetById<Movie>(movie.Id)
+		        };
+		    }
 		}
 
 		/// <summary>
@@ -162,20 +165,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		/// </summary>
 		public object Post(Movie movie)
 		{
-			var newMovieId = DbFactory.Run(db => {
-				db.Insert(movie);
-				return db.GetLastInsertId();
-			});
+		    using (var db = DbFactory.Open())
+		    {
+                db.Insert(movie);
+                var newMovieId = db.GetLastInsertId();
 
-			var newMovie = new MovieResponse {
-				Movie = DbFactory.Run(db => db.GetById<Movie>(newMovieId))
-			};
-			return new HttpResult(newMovie) {
-				StatusCode = HttpStatusCode.Created,
-				Headers = {
-					{ HttpHeaders.Location, this.RequestContext.AbsoluteUri.WithTrailingSlash() + newMovieId }
-				}
-			};
+                var newMovie = new MovieResponse
+                {
+                    Movie = db.GetById<Movie>(newMovieId)
+                };
+
+                return new HttpResult(newMovie)
+                {
+                    StatusCode = HttpStatusCode.Created,
+                    Headers = {
+					    { HttpHeaders.Location, this.RequestContext.AbsoluteUri.WithTrailingSlash() + newMovieId }
+				    }
+                };
+            }
 		}
 
 		/// <summary>
@@ -183,8 +190,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		/// </summary>
 		public object Put(Movie movie)
 		{
-			DbFactory.Run(db => db.Save(movie));
-			return new MovieResponse();
+		    using (var db = DbFactory.Open())
+		    {
+		        db.Save(movie);
+		        return new MovieResponse();
+		    }
 		}
 
 		/// <summary>
@@ -192,8 +202,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		/// </summary>
 		public object Delete(Movie request)
 		{
-			DbFactory.Run(db => db.DeleteById<Movie>(request.Id));
-			return new MovieResponse();
+		    using (var db = DbFactory.Open())
+		    {
+		        db.DeleteById<Movie>(request.Id);
+		        return new MovieResponse();
+		    }
 		}
 	}
 
@@ -267,13 +280,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 
 		public object Post(MoviesZip request)
 		{
-			var response = new MoviesZipResponse {
-				Movies = request.Genre.IsNullOrEmpty()
-					? DbFactory.Run(db => db.Select<Movie>())
-					: DbFactory.Run(db => db.Select<Movie>("Genres LIKE {0}", "%" + request.Genre + "%"))
-			};
+		    using (var db = DbFactory.Open())
+		    {
+                var response = new MoviesZipResponse
+                {
+                    Movies = request.Genre.IsNullOrEmpty()
+                        ? db.Select<Movie>()
+                        : db.Select<Movie>("Genres LIKE {0}", "%" + request.Genre + "%")
+                };
 
-			return RequestContext.ToOptimizedResult(response);
+                return RequestContext.ToOptimizedResult(response);
+            }
 		}
 	}
 

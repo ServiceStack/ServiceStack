@@ -15,7 +15,6 @@ using System.Collections.Generic;
 using ServiceStack.Caching;
 using ServiceStack.Data;
 using ServiceStack.Model;
-using ServiceStack.Model;
 using ServiceStack.Redis.Generic;
 using ServiceStack.Redis.Pipeline;
 #if WINDOWS_PHONE
@@ -64,7 +63,6 @@ namespace ServiceStack.Redis
 		Dictionary<string, T> GetValuesMap<T>(List<string> keys);
 		long AppendToValue(string key, string value);
 		void RenameKey(string fromName, string toName);
-		string GetSubstring(string key, int fromIndex, int toIndex);
 
         //store POCOs as hash
 	    T GetFromHash<T>(object id);
@@ -89,13 +87,6 @@ namespace ServiceStack.Redis
 
 		//Store entities without registering entity ids
 		void WriteAll<TEntity>(IEnumerable<TEntity> entities);
-
-		/// <summary>
-		/// Returns a high-level typed client API
-		/// Shorter Alias is As&lt;T&gt;();
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		IRedisTypedClient<T> GetTypedClient<T>();
 
 		/// <summary>
 		/// Returns a high-level typed client API

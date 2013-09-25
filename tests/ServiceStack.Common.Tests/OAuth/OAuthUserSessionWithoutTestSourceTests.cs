@@ -47,10 +47,11 @@ namespace ServiceStack.Common.Tests.OAuth
 				else
 				{
 					var sqliteInMemoryRepo = new OrmLiteAuthRepository(dbFactory);
-					dbFactory.Run(db => {
-						db.CreateTable<UserAuth>(true);
-						db.CreateTable<UserOAuthProvider>(true);
-					});
+                    using (var db = dbFactory.Open())
+                    {
+						db.DropAndCreateTable<UserAuth>();
+						db.DropAndCreateTable<UserOAuthProvider>();
+					}
 					sqliteInMemoryRepo.Clear();
 					userAuthRepositorys.Add(sqliteInMemoryRepo);
 

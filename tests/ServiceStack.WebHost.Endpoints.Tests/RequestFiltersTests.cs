@@ -7,7 +7,6 @@ using System.Threading;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Clients;
-using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -433,7 +432,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			protected override IRestClientAsync CreateNewRestClientAsync()
 			{
-				return new XmlRestClientAsync(ServiceClientBaseUri);
+                return new XmlServiceClient(ServiceClientBaseUri);
 			}
 		}
 
@@ -452,7 +451,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			protected override IRestClientAsync CreateNewRestClientAsync()
 			{
-				return new JsonRestClientAsync(ServiceClientBaseUri);
+                return new JsonServiceClient(ServiceClientBaseUri);
 			}
 		}
 
@@ -471,7 +470,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			protected override IRestClientAsync CreateNewRestClientAsync()
 			{
-				return new JsvRestClientAsync(ServiceClientBaseUri);
+                return new JsvServiceClient(ServiceClientBaseUri);
 			}
 		}
 

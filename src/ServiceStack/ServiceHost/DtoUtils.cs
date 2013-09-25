@@ -198,7 +198,7 @@ namespace ServiceStack.ServiceHost
                 using (var client = redisManager.GetClient())
                 {
                     //Get a client with a native interface for storing 'ResponseStatus' objects
-                    var redis = client.GetTypedClient<ResponseStatus>();
+                    var redis = client.As<ResponseStatus>();
 
                     //Store the errors in predictable Redis-named lists i.e. 
                     //'urn:ServiceErrors:{ServiceName}' and 'urn:ServiceErrors:All' 

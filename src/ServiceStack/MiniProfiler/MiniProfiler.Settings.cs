@@ -220,23 +220,7 @@ namespace ServiceStack.MiniProfiler
             /// The formatter applied to the SQL being rendered (used only for UI)
             /// </summary>
             public static ISqlFormatter SqlFormatter { get; set; }
-
-            /// <summary>
-            /// Provides user identification for a given profiling request.
-            /// </summary>
-            [Obsolete("Obselete, use WebRequestProfilerProvider.UserProvider")]
-            public static IUserProvider UserProvider
-            {
-                get
-                {
-                    return WebRequestProfilerProvider.Settings.UserProvider;
-                }
-                set
-                {
-                    WebRequestProfilerProvider.Settings.UserProvider = value;
-                }
-            }
-
+            
             /// <summary>
             /// Assembly version of this dank MiniProfiler.
             /// </summary>

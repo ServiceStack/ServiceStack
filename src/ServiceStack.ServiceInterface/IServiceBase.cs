@@ -1,7 +1,5 @@
 using ServiceStack.Configuration;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface
 {

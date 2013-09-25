@@ -64,8 +64,8 @@ namespace ServiceStack.AuthWeb.Tests
             ConfigureAuth(container);
 
             //Create your own custom User table
-            var dbFactory = container.Resolve<IDbConnectionFactory>();
-            dbFactory.Run(db => db.DropAndCreateTable<UserTable>());
+            using (var db = container.Resolve<IDbConnectionFactory>().Open())
+                db.DropAndCreateTable<UserTable>();
         }
 
         private void ConfigureAuth(Container container)

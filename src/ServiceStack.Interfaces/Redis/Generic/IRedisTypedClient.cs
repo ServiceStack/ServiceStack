@@ -14,7 +14,6 @@ using System;
 using System.Collections.Generic;
 using ServiceStack.Data;
 using ServiceStack.Model;
-using ServiceStack.Model;
 
 #if WINDOWS_PHONE
 using ServiceStack.Text.WP;

@@ -37,7 +37,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 		public IRestClientAsync CreateRestClient()
 		{
-			return new JsonRestClientAsync();
+			return new JsonServiceClient();
 		}
 
 		[Test]

@@ -36,13 +36,6 @@ namespace ServiceStack.ServiceInterface
             return this;
         }
 
-        [Obsolete("Use SetResolver")]
-        public virtual Service SetAppHost(IAppHost appHost)
-        {
-            this.resolver = appHost;
-            return this;
-        }
-
         public virtual T TryResolve<T>()
         {
             return this.GetResolver() == null

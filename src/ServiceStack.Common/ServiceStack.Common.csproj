@@ -209,9 +209,6 @@
     <Compile Include="Clients\GenericProxy.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Clients\HttpMethod.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Clients\IDuplex.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -227,13 +224,7 @@
     <Compile Include="Clients\IWcfServiceClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Clients\JsonRestClientAsync.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Clients\JsonServiceClient.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Clients\JsvRestClientAsync.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Clients\JsvServiceClient.cs">
@@ -259,9 +250,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Clients\WebServiceException.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Clients\XmlRestClientAsync.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Clients\XmlServiceClient.cs">

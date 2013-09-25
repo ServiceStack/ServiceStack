@@ -70,8 +70,6 @@ namespace ServiceStack.Redis
 		long Decr(string key);
 		long DecrBy(string key, int decrBy);
 		long Append(string key, byte[] value);
-		[Obsolete("Was renamed to GetRange in 2.4")]
-		byte[] Substr(string key, int fromIndex, int toIndex);
 		byte[] GetRange(string key, int fromIndex, int toIndex);
 		long SetRange(string key, int offset, byte[] value);
 		long GetBit(string key, int offset);

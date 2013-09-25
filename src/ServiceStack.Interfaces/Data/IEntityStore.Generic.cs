@@ -12,7 +12,6 @@ namespace ServiceStack.Data
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	public interface IEntityStore<T> 
-		: IDisposable
 	{
 		T GetById(object id);
 

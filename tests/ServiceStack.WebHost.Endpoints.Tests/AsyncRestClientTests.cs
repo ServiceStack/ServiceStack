@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Clients;
-using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
-using ServiceStack.Clients;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -149,7 +147,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			protected override IRestClientAsync CreateAsyncRestClient()
 			{
-				return new JsonRestClientAsync(ListeningOn);
+                return new JsonServiceClient(ListeningOn);
 			}
 		}
 
@@ -158,7 +156,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			protected override IRestClientAsync CreateAsyncRestClient()
 			{
-				return new JsvRestClientAsync(ListeningOn);
+				return new JsvServiceClient(ListeningOn);
 			}
 		}
 
@@ -167,7 +165,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			protected override IRestClientAsync CreateAsyncRestClient()
 			{
-				return new XmlRestClientAsync(ListeningOn);
+                return new XmlServiceClient(ListeningOn);
 			}
 		}
 	}
