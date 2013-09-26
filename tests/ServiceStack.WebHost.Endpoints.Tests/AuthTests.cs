@@ -5,15 +5,11 @@ using System.Threading;
 using System.Web;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Clients;
 using ServiceStack.Common.Tests.ServiceClient.Web;
 using ServiceStack.Server;
-using ServiceStack.Clients;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceInterface.Auth;
-using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
@@ -43,7 +39,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [Authenticate]
-    public class SecuredService : ServiceInterface.Service
+    public class SecuredService : Service
     {
         public object Post(Secured request)
         {
@@ -83,7 +79,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [RequiredRole("TheRole")]
-    public class RequiresRoleService : ServiceInterface.Service
+    public class RequiresRoleService : Service
     {
         public object Any(RequiresRole request)
         {
@@ -114,7 +110,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [RequiresAnyRole("TheRole", "TheRole2")]
-    public class RequiresAnyRoleService : ServiceInterface.Service
+    public class RequiresAnyRoleService : Service
     {
         public object Any(RequiresAnyRole request)
         {
@@ -135,7 +131,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [RequiredPermission("ThePermission")]
-    public class RequiresPermissionService : ServiceInterface.Service
+    public class RequiresPermissionService : Service
     {
         public RequiresPermissionResponse Any(RequiresPermission request)
         {
@@ -166,7 +162,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [RequiresAnyPermission("ThePermission", "ThePermission2")]
-    public class RequiresAnyPermissionService : ServiceInterface.Service
+    public class RequiresAnyPermissionService : Service
     {
         public RequiresAnyPermissionResponse Any(RequiresAnyPermission request)
         {
@@ -214,7 +210,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [Authenticate(Provider = "custom")]
-    public class RequiresCustomAuthService : ServiceInterface.Service
+    public class RequiresCustomAuthService : Service
     {
         public RequiresCustomAuthResponse Any(RequiresCustomAuth request)
         {
@@ -222,7 +218,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    public class CustomAuthenticateAttribute : ServiceStack.ServiceInterface.AuthenticateAttribute
+    public class CustomAuthenticateAttribute : AuthenticateAttribute
     {
         public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
         {
@@ -248,7 +244,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [CustomAuthenticate]
-    public class CustomAuthAttrService : ServiceInterface.Service
+    public class CustomAuthAttrService : Service
     {
         public CustomAuthAttrResponse Any(CustomAuthAttr request)
         {

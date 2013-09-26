@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using ServiceStack.ServiceInterface.Testing;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using ServiceStack.Testing;
 
 namespace ServiceStack.ServiceHost.Tests
 {

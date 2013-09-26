@@ -2,10 +2,8 @@
 using System.Runtime.Serialization;
 using System.Text;
 using NUnit.Framework;
-using ServiceStack.Common;
 using ServiceStack.Plugins.ProtoBuf;
 using ServiceStack.Clients;
-using ServiceStack.ServiceInterface;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
@@ -64,7 +62,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class ProtoBufEmailService : ServiceInterface.Service
+	public class ProtoBufEmailService : Service
 	{
         public object Any(ProtoBufEmail request)
 		{

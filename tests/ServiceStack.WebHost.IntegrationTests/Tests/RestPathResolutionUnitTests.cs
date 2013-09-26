@@ -1,6 +1,5 @@
-using Funq;
 using NUnit.Framework;
-using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Testing;
 using ServiceStack.Web;
 using ServiceStack.WebHost.IntegrationTests.Services;
 

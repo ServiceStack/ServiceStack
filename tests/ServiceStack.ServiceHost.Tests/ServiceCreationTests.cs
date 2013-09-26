@@ -1,7 +1,6 @@
 ﻿using NUnit.Framework;
 using ServiceStack.Caching;
 using ServiceStack.Clients;
-using ServiceStack.Clients;
 using ServiceStack.WebHost.Endpoints;
 using Funq;
 
@@ -19,7 +18,7 @@ namespace ServiceStack.ServiceHost.Tests
         public int RequestCount { get; set; }
     }
 
-    public class ServiceCreationService : ServiceInterface.Service
+    public class ServiceCreationService : Service
     {
         public int RequestCounter = 0;
 

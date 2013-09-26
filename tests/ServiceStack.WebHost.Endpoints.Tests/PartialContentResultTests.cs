@@ -1,19 +1,14 @@
 ﻿using System;
 using System.IO;
-using System.Net;
 using System.Text;
 using System.Threading;
 using Funq;
 using NUnit.Framework;
-using ServiceStack.Common;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Support.Mocks;
 using ServiceStack.WebHost.Endpoints.Tests.Mocks;
-using ServiceStack.WebHost.Endpoints.Wrappers;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -31,7 +26,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [Route("/partialfiles/text")]
     public class PartialFromText { }
 
-    public class PartialContentService : ServiceInterface.Service
+    public class PartialContentService : Service
     {
         public object Get(PartialFile request)
         {

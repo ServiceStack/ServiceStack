@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Reflection;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.ServiceHost.Tests.Support;
-using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceHost.Tests
@@ -196,7 +194,7 @@ namespace ServiceStack.ServiceHost.Tests
     public class GetRequestResponse {}
 
     [DefaultRequest(typeof(GetRequest))]
-    public class GetMarkerService : ServiceInterface.Service
+    public class GetMarkerService : Service
     {
         public object Get(GetRequest request)
         {

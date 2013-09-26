@@ -39,7 +39,7 @@ namespace ServiceStack.Api.Swagger
     }
 
     [DefaultRequest(typeof(Resources))]
-    public class SwaggerResourcesService : ServiceInterface.Service
+    public class SwaggerResourcesService : Service
     {
         private readonly Regex resourcePathCleanerRegex = new Regex(@"/[^\/\{]*", RegexOptions.Compiled);
         internal static Regex resourceFilterRegex;

@@ -3,9 +3,8 @@ using System.Text;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
+using ServiceStack.Auth;
 using ServiceStack.Caching;
-using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
 
 namespace ServiceStack.Mvc

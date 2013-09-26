@@ -3,24 +3,18 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Clients;
-using ServiceStack.Clients;
 using ServiceStack.FluentValidation;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceInterface.Validation;
-using ServiceStack.ServiceModel;
-using ServiceStack.Text;
+using ServiceStack.Validation;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Tests;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
-using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -87,7 +81,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	}
 
     [DefaultRequest(typeof(Customers))]
-	public class CustomerService : ServiceInterface.Service
+	public class CustomerService : Service
 	{
 		public object Get(Customers request)
 		{

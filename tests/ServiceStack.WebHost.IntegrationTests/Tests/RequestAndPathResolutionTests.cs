@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Web;
 using NUnit.Framework;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Testing;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.IntegrationTests.Services;
 

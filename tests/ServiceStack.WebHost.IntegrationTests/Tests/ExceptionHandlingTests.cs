@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Net;
 using ServiceStack.Clients;
-using ServiceStack.ServiceHost;
 using NUnit.Framework;
-using ServiceStack.Clients;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -16,7 +14,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         public ResponseStatus ResponseStatus { get; set; }
     }
 
-    public class UserService : ServiceInterface.Service
+    public class UserService : Service
     {
         public object Get(User request)
         {
@@ -49,7 +47,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
     {
         public ResponseStatus ResponseStatus { get; set; }
     }
-    public class ExceptionWithResponseStatusService : ServiceInterface.Service
+    public class ExceptionWithResponseStatusService : Service
     {
         public object Any(ExceptionWithResponseStatus request)
         {
@@ -59,7 +57,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
     public class ExceptionNoResponseStatus { }
     public class ExceptionNoResponseStatusResponse { }
-    public class ExceptionNoResponseStatusService : ServiceInterface.Service
+    public class ExceptionNoResponseStatusService : Service
     {
         public object Any(ExceptionNoResponseStatus request)
         {
@@ -68,7 +66,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
     }
 
     public class ExceptionNoResponseDto { }
-    public class ExceptionNoResponseDtoService : ServiceInterface.Service
+    public class ExceptionNoResponseDtoService : Service
     {
         public object Any(ExceptionNoResponseDto request)
         {

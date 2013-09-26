@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.Serialization;
-using ServiceStack.ServiceInterface;
 using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
@@ -31,7 +30,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	}
 
 	public class AlwaysThrowsService 
-		: ServiceInterface.Service
+		: Service
 	{
 		public object Any(AlwaysThrows request)
 		{

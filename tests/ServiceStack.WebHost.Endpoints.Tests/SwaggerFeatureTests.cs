@@ -5,10 +5,8 @@ using System.Linq;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Clients;
-using ServiceStack.ServiceHost;
-using ServiceStack.Clients;
+using ServiceStack.Cors;
 using ServiceStack.Api.Swagger;
-using ServiceStack.ServiceInterface.Cors;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -146,7 +144,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		public int? Position { get; set; }
 	}
 	
-	public class NullableService : ServiceInterface.Service
+	public class NullableService : Service
 	{
 		public object Get(NullableInRequest request)
 		{
@@ -160,7 +158,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public bool IsSuccess { get; set; }
     }
 
-    public class MultipleTestRequestService : ServiceInterface.Service
+    public class MultipleTestRequestService : Service
     {
         public object Get(MultipleTestRequest request)
         {
@@ -177,7 +175,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return null;
         }
     }
-    public class MultipleTest2RequestService : ServiceInterface.Service
+    public class MultipleTest2RequestService : Service
     {
         public object Get(MultipleTest4Request request)
         {
@@ -186,7 +184,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
 
-    public class SwaggerFeatureService : ServiceInterface.Service
+    public class SwaggerFeatureService : Service
     {
         public object Get(SwaggerFeatureRequest request)
         {

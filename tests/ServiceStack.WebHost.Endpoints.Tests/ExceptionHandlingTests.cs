@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Net;
 using ServiceStack.Clients;
-using ServiceStack.Common;
-using ServiceStack.ServiceHost;
 using NUnit.Framework;
 using Funq;
-using ServiceStack.Clients;
-using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -19,7 +15,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public ResponseStatus ResponseStatus { get; set; }
     }
 
-    public class UserService : ServiceInterface.Service
+    public class UserService : Service
     {
         public object Get(User request)
         {
@@ -52,7 +48,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public ResponseStatus ResponseStatus { get; set; }
     }
-    public class ExceptionWithResponseStatusService : ServiceInterface.Service
+    public class ExceptionWithResponseStatusService : Service
     {
         public object Any(ExceptionWithResponseStatus request)
         {
@@ -62,7 +58,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class ExceptionNoResponseStatus { }
     public class ExceptionNoResponseStatusResponse { }
-    public class ExceptionNoResponseStatusService : ServiceInterface.Service
+    public class ExceptionNoResponseStatusService : Service
     {
         public object Any(ExceptionNoResponseStatus request)
         {
@@ -71,7 +67,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     public class ExceptionNoResponseDto { }
-    public class ExceptionNoResponseDtoService : ServiceInterface.Service
+    public class ExceptionNoResponseDtoService : Service
     {
         public object Any(ExceptionNoResponseDto request)
         {
@@ -81,7 +77,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class UncatchedException { }
     public class UncatchedExceptionResponse { }
-    public class UncatchedExceptionService : ServiceInterface.Service
+    public class UncatchedExceptionService : Service
     {
         public object Any(UncatchedException request)
         {

@@ -1,10 +1,8 @@
 ﻿using System.Linq;
 using NUnit.Framework;
-using ServiceStack.Common;
 using ServiceStack.DataAnnotations;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Types;

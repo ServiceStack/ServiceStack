@@ -4,7 +4,6 @@ using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
-using ServiceStack.Server;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 using System.Linq;
 
@@ -66,7 +65,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			public int Milliseconds { get; set; }
 		}
 
-		public class TimedService : ServiceInterface.Service
+		public class TimedService : Service
 		{
             public object Any(Timed request)
 			{

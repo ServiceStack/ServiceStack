@@ -1,7 +1,6 @@
 using System.IO;
 using System.Web;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.WebHost.Endpoints;

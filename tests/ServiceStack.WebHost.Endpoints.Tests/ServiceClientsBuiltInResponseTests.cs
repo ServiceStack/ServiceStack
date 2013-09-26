@@ -7,9 +7,6 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Clients;
 using ServiceStack.Server;
-using ServiceStack.Clients;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -56,7 +53,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Text { get; set; }
     }
 
-    public class BuiltInTypesService : ServiceInterface.Service
+    public class BuiltInTypesService : Service
     {
         public PocoResponse Any(Poco request)
         {

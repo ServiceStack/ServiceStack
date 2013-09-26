@@ -4,15 +4,14 @@ using System.Collections.Generic;
 using System.IO;
 using Moq;
 using NUnit.Framework;
+using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.SqlServer;
 using ServiceStack.Redis;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
-using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Testing;
 using ServiceStack.Utils;
 
 namespace ServiceStack.Common.Tests.OAuth

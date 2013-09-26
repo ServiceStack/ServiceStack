@@ -6,12 +6,11 @@ using System.Net;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack;
-using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Razor;
 using ServiceStack.Clients;
-using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 
 namespace RazorRockstars.Console.Files

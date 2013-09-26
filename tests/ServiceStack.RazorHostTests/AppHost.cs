@@ -37,7 +37,7 @@ namespace ServiceStack.RazorHostTests
         public List<Rockstar> Results { get; set; }
     }
 
-    public class RockstarsService : ServiceInterface.Service
+    public class RockstarsService : Service
     {
         public IDbConnectionFactory DbFactory { get; set; }
 
@@ -87,7 +87,7 @@ namespace ServiceStack.RazorHostTests
         public List<string> Results { get; set; }
     }
 
-    public class ViewService : ServiceInterface.Service
+    public class ViewService : Service
     {
         public object Any(ViewThatUsesLayoutAndModel request)
         {

@@ -6,12 +6,9 @@ using DotNetOpenAuth.OpenId;
 using DotNetOpenAuth.OpenId.Extensions.AttributeExchange;
 using DotNetOpenAuth.OpenId.Extensions.SimpleRegistration;
 using DotNetOpenAuth.OpenId.RelyingParty;
-using ServiceStack.Common;
+using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
 using ServiceStack.Web;
 

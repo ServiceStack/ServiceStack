@@ -1,5 +1,4 @@
-﻿using ServiceStack.ServiceHost;
-using ServiceStack.Web;
+﻿using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 {
@@ -22,7 +21,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 
     public class ReturnsHttpResult { }
 
-    public class EndpointAccessService : ServiceInterface.Service
+    public class EndpointAccessService : Service
     {
         public Response Get(GetsOnly request)
         {

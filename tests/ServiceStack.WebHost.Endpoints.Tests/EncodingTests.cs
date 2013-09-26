@@ -1,9 +1,6 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using NUnit.Framework;
 using ServiceStack.Clients;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -21,7 +18,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Greeting { get; set; }
     }
 
-    public class HelloWorldService : ServiceInterface.Service
+    public class HelloWorldService : Service
     {
         public HelloWorldGreeting Get(HelloWorldName request)
         {

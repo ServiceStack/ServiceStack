@@ -1,8 +1,8 @@
 ﻿using NUnit.Framework;
+using ServiceStack.Auth;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface.Auth;
-using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Testing;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints;
 

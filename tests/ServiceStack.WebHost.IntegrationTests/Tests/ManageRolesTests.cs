@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Net;
 using NUnit.Framework;
+using ServiceStack.Auth;
 using ServiceStack.Clients;
-using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
 using ServiceStack.WebHost.IntegrationTests.Services;
 

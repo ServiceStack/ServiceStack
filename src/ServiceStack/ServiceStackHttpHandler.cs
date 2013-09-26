@@ -1,6 +1,5 @@
 ﻿using System.Web;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack

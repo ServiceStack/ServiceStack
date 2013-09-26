@@ -17,7 +17,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	}
 
     [DefaultRequest(typeof(EchoMethod))]
-	public class EchoMethodService : ServiceInterface.Service
+	public class EchoMethodService : Service
 	{
 		public object Get(EchoMethod request)
 		{

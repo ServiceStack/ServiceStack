@@ -47,7 +47,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         public int CustomerId { get; set; }
 	}
 
-	public class FileUploadService : ServiceInterface.Service
+	public class FileUploadService : Service
 	{
 		public object Get(FileUpload request)
 		{

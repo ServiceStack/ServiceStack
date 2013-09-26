@@ -1,9 +1,5 @@
 using System.Runtime.Serialization;
-using ServiceStack.Common;
 using ServiceStack.Data;
-using ServiceStack.OrmLite;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
@@ -17,7 +13,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 		public string Genre { get; set; }
 	}
 
-	public class CachedMoviesService : ServiceInterface.Service
+	public class CachedMoviesService : Service
 	{
 		public IDbConnectionFactory DbFactory { get; set; }
 

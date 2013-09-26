@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Runtime.Serialization;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
-using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -25,7 +24,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class ResetMoviesService : ServiceInterface.Service
+	public class ResetMoviesService : Service
 	{
 		public static List<Movie> Top5Movies = new List<Movie>
 		{

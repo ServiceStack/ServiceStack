@@ -3,7 +3,7 @@ using System.IO;
 using System.Net;
 using NUnit.Framework;
 using ServiceStack.Logging;
-using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints;

@@ -1,5 +1,4 @@
 using System.Runtime.Serialization;
-using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -34,7 +33,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public string Tail { get; set; }
     }
     
-	public class WildCardRequestService : ServiceStack.ServiceInterface.Service
+	public class WildCardRequestService : Service
 	{
         public object Get(WildCardRequest request)
         {

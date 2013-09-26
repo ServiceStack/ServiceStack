@@ -1,6 +1,4 @@
-﻿using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
-using ServiceStack.Web;
+﻿using ServiceStack.Web;
 
 namespace ServiceStack.Razor.Tests
 {
@@ -14,7 +12,7 @@ namespace ServiceStack.Razor.Tests
     }
 
     //https://github.com/ServiceStack/ServiceStack/wiki/New-Api
-    public class HelloService : ServiceInterface.Service, IAny<HelloRequest>
+    public class HelloService : Service, IAny<HelloRequest>
     {
         //public HelloResponse Any( Hello h )
         //{
@@ -51,7 +49,7 @@ namespace ServiceStack.Razor.Tests
         public string FooSaid { get; set; }
     }
 
-    public class FooController : ServiceInterface.Service, IGet<FooRequest>, IPost<FooRequest>
+    public class FooController : Service, IGet<FooRequest>, IPost<FooRequest>
     {
         public object Get(FooRequest request)
         {

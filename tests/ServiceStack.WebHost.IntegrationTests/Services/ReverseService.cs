@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.Serialization;
-using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -19,7 +18,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	}
 
 	public class ReverseService 
-		: ServiceInterface.Service
+		: Service
 	{
 		public object Any(Reverse request)
 		{

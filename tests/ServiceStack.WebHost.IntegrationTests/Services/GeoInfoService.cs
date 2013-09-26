@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -34,7 +33,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public ResponseStatus ResponseStatus { get; set; } //Where Exceptions get auto-serialized
 	}
 
-	public class GeoInfoService : ServiceInterface.Service
+	public class GeoInfoService : Service
 	{
 		public object Post(GeoInfo request)
 		{

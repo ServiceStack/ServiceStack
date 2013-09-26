@@ -1,6 +1,4 @@
-﻿using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
-using ServiceStack.WebHost.IntegrationTests.Tests;
+﻿using ServiceStack.WebHost.IntegrationTests.Tests;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -16,7 +14,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	}
 
 	[RequiredRole(ManageRolesTests.ContentManager)]
-	public class ContentManagerOnlyService : ServiceInterface.Service
+	public class ContentManagerOnlyService : Service
 	{
         public object Any(ContentManagerOnly request)
 		{
@@ -36,7 +34,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	}
 
 	[RequiredPermission(ManageRolesTests.ContentPermission)]
-	public class ContentPermissionOnlyService : ServiceInterface.Service
+	public class ContentPermissionOnlyService : Service
 	{
         public object Any(ContentPermissionOnly request)
 		{

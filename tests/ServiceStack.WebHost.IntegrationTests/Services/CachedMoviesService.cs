@@ -1,6 +1,4 @@
 using System.Runtime.Serialization;
-using ServiceStack.Common;
-using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -13,7 +11,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public string Genre { get; set; }
 	}
 
-	public class CachedMoviesService : ServiceInterface.Service
+	public class CachedMoviesService : Service
 	{
 		public object Get(CachedMovies request)
 		{

@@ -6,7 +6,7 @@ using System.Web;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Support.Mocks;
@@ -42,7 +42,7 @@ namespace ServiceStack.Common.Tests
             Assert.That(str, Is.EqualTo("ListOfA={ListOfB:[{Property:prop1},{Property:prop2}]}"));
         }
 
-        public class TestService : ServiceInterface.Service
+        public class TestService : Service
         {
             public object Get(TestRequest request)
             {

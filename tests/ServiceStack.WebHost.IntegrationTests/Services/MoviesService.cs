@@ -24,7 +24,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public List<Movie> Movies { get; set; }
 	}
 
-	public class MoviesService : ServiceInterface.Service
+	public class MoviesService : Service
 	{
 		/// <summary>
 		/// GET /movies 

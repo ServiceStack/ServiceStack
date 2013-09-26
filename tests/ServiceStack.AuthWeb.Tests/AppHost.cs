@@ -1,5 +1,7 @@
 ﻿//#define HTTP_LISTENER
 using Funq;
+using ServiceStack.Admin;
+using ServiceStack.Auth;
 using ServiceStack.Authentication.OAuth2;
 using ServiceStack.Authentication.OpenId;
 using ServiceStack.Caching;
@@ -10,8 +12,6 @@ using ServiceStack.MiniProfiler;
 using ServiceStack.MiniProfiler.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.Razor;
-using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceInterface.Admin;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;

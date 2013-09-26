@@ -1,5 +1,4 @@
-﻿using ServiceStack.ServiceHost;
-using ServiceStack.Web;
+﻿using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -66,7 +65,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public int Id { get; set; }
     }
 
-    public class EndpointAccessService : ServiceInterface.Service
+    public class EndpointAccessService : Service
     {
         public Response Get(GetsOnly request)
         {

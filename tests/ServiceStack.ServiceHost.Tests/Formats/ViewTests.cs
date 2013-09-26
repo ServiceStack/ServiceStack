@@ -9,7 +9,7 @@ using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost.Tests.AppData;
-using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.VirtualPath;

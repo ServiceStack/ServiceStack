@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
-using ServiceStack.Html;
 using ServiceStack.Razor;
 using ServiceStack.ServiceHost.Tests.Formats;
-using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 

@@ -1,6 +1,5 @@
 using System.Runtime.Serialization;
 using Funq;
-using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 {
@@ -25,7 +24,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		public string Password { get; set; }
 	}
 
-	public class BclDtoService : ServiceInterface.Service
+	public class BclDtoService : Service
 	{
 	    public object Any(BclDto request)
 		{

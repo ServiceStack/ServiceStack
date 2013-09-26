@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
+using ServiceStack.Auth;
 using ServiceStack.Messaging;
-using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests

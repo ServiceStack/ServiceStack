@@ -136,7 +136,7 @@ namespace ServiceStack.Api.Swagger
     }
 
     [DefaultRequest(typeof(ResourceRequest))]
-    public class SwaggerApiService : ServiceInterface.Service
+    public class SwaggerApiService : Service
     {
         internal static bool UseCamelCaseModelPropertyNames { get; set; }
         internal static bool UseLowercaseUnderscoreModelPropertyNames { get; set; }

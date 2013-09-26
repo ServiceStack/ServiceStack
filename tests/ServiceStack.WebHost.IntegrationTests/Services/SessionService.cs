@@ -1,5 +1,3 @@
-using ServiceStack.ServiceHost;
-
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
 	public class CustomSession
@@ -19,7 +17,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public CustomSession UnTyped { get; set; }
 	}
 
-	public class SessionService : ServiceInterface.Service
+	public class SessionService : Service
 	{
         public object Any(Session request)
 		{

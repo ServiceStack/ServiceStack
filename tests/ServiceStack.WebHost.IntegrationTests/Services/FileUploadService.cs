@@ -34,7 +34,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public string Contents { get; set; }
 	}
 
-	public class FileUploadService : ServiceInterface.Service
+	public class FileUploadService : Service
 	{
 		public object Get(FileUpload request)
 		{

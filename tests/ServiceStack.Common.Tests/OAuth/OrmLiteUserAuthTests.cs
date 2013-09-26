@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
 using NUnit.Framework;
+using ServiceStack.Auth;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
-using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 

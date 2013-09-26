@@ -4,7 +4,6 @@ using System.Net;
 using System.Runtime.Serialization;
 using System.Threading;
 using Funq;
-using ServiceStack.Common;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
@@ -13,9 +12,6 @@ using ServiceStack.Logging.Support.Logging;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.Plugins.ProtoBuf;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Tests.IntegrationTests;
@@ -62,7 +58,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class AlwaysThrowsService : ServiceInterface.Service
+	public class AlwaysThrowsService : Service
 	{
 	    public object Any(AlwaysThrows request)
 		{
@@ -143,7 +139,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 	}
 
 
-    public class MovieService : ServiceInterface.Service
+    public class MovieService : Service
 	{
 		public IDbConnectionFactory DbFactory { get; set; }
 
@@ -235,7 +231,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		public List<Movie> Movies { get; set; }
 	}
 
-    public class MoviesService : ServiceInterface.Service
+    public class MoviesService : Service
 	{
 		/// <summary>
 		/// GET /movies 
@@ -269,7 +265,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		public List<Movie> Movies { get; set; }
 	}
 
-    public class MoviesZipService : ServiceInterface.Service
+    public class MoviesZipService : Service
 	{
 		public IDbConnectionFactory DbFactory { get; set; }
 
@@ -312,7 +308,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class ResetMoviesService : ServiceInterface.Service
+	public class ResetMoviesService : Service
 	{
 		public static List<Movie> Top5Movies = new List<Movie>
 		{
@@ -373,7 +369,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
         public string PageElementResponse { get; set; }
     }
 
-    public class InboxPostResponseRequestService : ServiceInterface.Service
+    public class InboxPostResponseRequestService : Service
     {
         public object Any(InboxPostResponseRequest request)
         {
@@ -395,7 +391,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
         public int Id { get; set; }
     }
 
-    public class InboxPostService : ServiceInterface.Service
+    public class InboxPostService : Service
     {
         public object Any(InboxPost request)
         {
@@ -410,7 +406,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
     [Route("/long_running")]
     public class LongRunning { }
 
-    public class LongRunningService : ServiceInterface.Service
+    public class LongRunningService : Service
     {
         public object Any(LongRunning request)
         {

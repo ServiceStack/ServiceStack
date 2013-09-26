@@ -21,7 +21,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class ResetMoviesService : ServiceInterface.Service
+	public class ResetMoviesService : Service
 	{
 		public object Post(ResetMovies request)
 		{

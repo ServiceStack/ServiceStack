@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 using ServiceStack.ServiceHost.Tests.Formats;
-using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints;

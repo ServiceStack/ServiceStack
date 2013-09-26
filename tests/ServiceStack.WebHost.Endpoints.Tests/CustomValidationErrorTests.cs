@@ -5,10 +5,8 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Results;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceInterface.Validation;
 using ServiceStack.Text;
+using ServiceStack.Validation;
 using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -53,7 +51,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    public class CustomValidationService : ServiceInterface.Service
+    public class CustomValidationService : Service
     {
         public object Get(CustomError request)
         {

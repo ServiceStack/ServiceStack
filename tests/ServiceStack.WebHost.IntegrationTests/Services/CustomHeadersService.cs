@@ -1,5 +1,4 @@
 ﻿using System.Runtime.Serialization;
-using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -17,7 +16,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public string Bar { get; set; }
     }
 
-    public class CustomHeadersService : ServiceInterface.Service
+    public class CustomHeadersService : Service
     {
         public CustomHeadersResponse Any(CustomHeaders c)
         {

@@ -7,7 +7,7 @@ using System.Web.UI;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Testing;
 using ServiceStack.WebHost.Endpoints.Support.Metadata.Controls;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;

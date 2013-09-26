@@ -2,8 +2,6 @@ using System.Collections.Generic;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Clients;
-using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceModel;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.ServiceHost;
 
@@ -59,7 +57,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	}
 
     [DefaultRequest(typeof(TodoList))]
-	public class TodoListService : ServiceInterface.Service
+	public class TodoListService : Service
 	{
 		public object Get(TodoList request)
 		{

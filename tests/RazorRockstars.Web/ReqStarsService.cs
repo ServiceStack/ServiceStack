@@ -7,15 +7,11 @@ using System.Net;
 using NUnit.Framework;
 using ServiceStack;
 using ServiceStack.Clients;
-using ServiceStack.Common;
+using ServiceStack.Cors;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.OrmLite;
 using ServiceStack.Plugins.MsgPack;
-using ServiceStack.Clients;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceInterface.Cors;
 using ServiceStack.Text;
 using ServiceStack.Web;
 

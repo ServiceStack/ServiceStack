@@ -1,5 +1,4 @@
 using System.Runtime.Serialization;
-using ServiceStack.ServiceInterface;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
@@ -19,7 +18,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	}
 
 	public class Rot13Service 
-		: ServiceInterface.Service
+		: Service
 	{
 		public object Any(Rot13 request)
 		{

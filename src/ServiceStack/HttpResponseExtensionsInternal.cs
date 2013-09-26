@@ -6,8 +6,6 @@ using System.IO;
 using System.Net;
 using System.Web;
 using System.Collections.Generic;
-using ServiceStack.Clients;
-using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Server;

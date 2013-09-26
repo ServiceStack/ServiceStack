@@ -1,8 +1,4 @@
-﻿using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceModel;
-
-namespace ServiceStack.WebHost.Endpoints.Tests.Support.Operations
+﻿namespace ServiceStack.WebHost.Endpoints.Tests.Support.Operations
 {
 	[Route("/customrequestbinder")]
 	public class CustomRequestBinder
@@ -17,7 +13,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Operations
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-    public class CustomRequestBinderService : ServiceInterface.Service
+    public class CustomRequestBinderService : Service
 	{
         public object Any(CustomRequestBinder request)
 		{

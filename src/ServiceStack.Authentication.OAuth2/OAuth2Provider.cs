@@ -2,14 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Web;
 using DotNetOpenAuth.Messaging;
 using DotNetOpenAuth.OAuth2;
-
-using ServiceStack.Common;
+using ServiceStack.Auth;
 using ServiceStack.Configuration;
-using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints;

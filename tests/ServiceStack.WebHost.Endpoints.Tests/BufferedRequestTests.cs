@@ -1,17 +1,10 @@
 ﻿using Funq;
 using NUnit.Framework;
+using ServiceStack.Admin;
 using ServiceStack.Clients;
 using ServiceStack.Server;
-using ServiceStack.ServiceInterface.Admin;
 using ServiceStack.Text;
-using ServiceStack.Clients;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 using System.Runtime.Serialization;
-using ServiceStack.Messaging;
-using System.ServiceModel.Channels;
-using System;
-using System.Diagnostics;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

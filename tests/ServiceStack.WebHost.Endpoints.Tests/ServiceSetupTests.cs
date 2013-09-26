@@ -1,7 +1,6 @@
 ﻿using Funq;
 using NUnit.Framework;
 using ServiceStack.Clients;
-using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -10,7 +9,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int Id { get; set; }
     }
 
-    public class BaseService<T> : ServiceInterface.Service
+    public class BaseService<T> : Service
     {
         public virtual object Get(T dto)
         {

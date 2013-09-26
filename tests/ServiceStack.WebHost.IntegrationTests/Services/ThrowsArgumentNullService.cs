@@ -1,7 +1,5 @@
 using System;
 using System.Runtime.Serialization;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -29,7 +27,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class ThrowsArgumentNullService : ServiceInterface.Service
+	public class ThrowsArgumentNullService : Service
 	{
         public object Any(ThrowsArgumentNull request)
 		{

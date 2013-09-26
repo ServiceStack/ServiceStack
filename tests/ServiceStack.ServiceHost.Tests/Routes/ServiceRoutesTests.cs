@@ -1,8 +1,6 @@
 ﻿using System.Linq;
 using NUnit.Framework;
-using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceInterface.Testing;
-using ServiceStack.WebHost.Endpoints;
+using ServiceStack.Testing;
 
 namespace ServiceStack.ServiceHost.Tests.Routes
 {

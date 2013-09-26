@@ -1,6 +1,4 @@
 ﻿using System.Runtime.Serialization;
-using ServiceStack.Common;
-using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.IntegrationTests.Tests;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
@@ -23,7 +21,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public string FromAddress { get; set; }
     }
 
-    class UncachedProtoBufEmailService : ServiceInterface.Service
+    class UncachedProtoBufEmailService : Service
     {
         public object Any(UncachedProtoBufEmail request)
         {
@@ -31,7 +29,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         }
     }
 
-    class CachedProtoBufEmailService : ServiceInterface.Service
+    class CachedProtoBufEmailService : Service
     {
         public object Any(CachedProtoBufEmail request)
         {

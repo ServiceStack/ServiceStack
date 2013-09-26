@@ -5,7 +5,6 @@ using System.Net;
 using System.Web;
 using ServiceStack.Logging;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using HttpResponseWrapper = ServiceStack.WebHost.Endpoints.Wrappers.HttpResponseWrapper;

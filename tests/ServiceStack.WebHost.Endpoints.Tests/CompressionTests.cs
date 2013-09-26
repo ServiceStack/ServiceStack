@@ -1,18 +1,14 @@
 using System;
 using System.Runtime.Serialization;
 using Funq;
-using Moq;
 using NUnit.Framework;
-using ServiceStack.Common;
-using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.Serialization;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Tests.Mocks;
-using ServiceStack.WebHost.Endpoints.Wrappers;
 using DataContractSerializer = ServiceStack.Serialization.DataContractSerializer;
 
 namespace ServiceStack.WebHost.Endpoints.Tests

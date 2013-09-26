@@ -1,10 +1,8 @@
 ﻿using System.Linq;
 using NUnit.Framework;
+using ServiceStack.Auth;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceInterface.Auth;
-using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Testing;
 
 namespace ServiceStack.Common.Tests.OAuth
 {

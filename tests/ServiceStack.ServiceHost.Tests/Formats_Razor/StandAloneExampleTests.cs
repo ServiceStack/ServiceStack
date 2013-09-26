@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 using ServiceStack.Razor;
-using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 

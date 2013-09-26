@@ -5,7 +5,7 @@ using NUnit.Framework;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Razor;
-using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Formats;
 

@@ -1,8 +1,7 @@
 ﻿using System.IO;
 using System.Web;
+using ServiceStack.Admin;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface.Admin;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Razor.Tests

@@ -2,7 +2,6 @@
 using ServiceStack.Data;
 using ServiceStack.MiniProfiler;
 using ServiceStack.OrmLite;
-using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -13,7 +12,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public string Type { get; set; }
 	}
 
-	public class MiniProfilerService : ServiceInterface.Service
+	public class MiniProfilerService : Service
 	{
 		public IDbConnectionFactory DbFactory { get; set; }
 

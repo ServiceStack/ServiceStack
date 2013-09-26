@@ -1,18 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
 using ServiceStack.Clients;
 using ServiceStack.FluentValidation;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 using NUnit.Framework;
-using ServiceStack.ServiceInterface.Validation;
 using System.Collections;
 using Funq;
-using ServiceStack.Clients;
+using ServiceStack.Validation;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
 
@@ -59,7 +54,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public UserValidation Result { get; set; }
     }
 
-    public class UserValidationService : ServiceInterface.Service
+    public class UserValidationService : Service
     {
         public object Get(UserValidation request)
         {

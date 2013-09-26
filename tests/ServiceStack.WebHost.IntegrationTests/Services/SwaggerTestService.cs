@@ -1,8 +1,6 @@
 ﻿using System.Drawing;
 using System.Net;
 using System.Runtime.Serialization;
-using ServiceStack.Api.Swagger;
-using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -30,7 +28,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public string NotAliased { get; set; }
     }
 
-    public class SwaggerTestService : ServiceInterface.Service
+    public class SwaggerTestService : Service
     {
          public object Get(SwaggerTest request)
          {

@@ -17,7 +17,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public string Result { get; set; }
 	}
 
-	public class MqHostStatsService : ServiceInterface.Service
+	public class MqHostStatsService : Service
 	{
 		public IMessageService MessageService { get; set; }
 

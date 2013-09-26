@@ -1,8 +1,6 @@
-﻿using ServiceStack.ServiceHost;
-
-namespace ServiceStack.Razor.Tests
+﻿namespace ServiceStack.Razor.Tests
 {
-    public class CheckBoxService : ServiceInterface.Service
+    public class CheckBoxService : Service
     {
         public CheckBoxData Get(GetCheckBox request)
         {

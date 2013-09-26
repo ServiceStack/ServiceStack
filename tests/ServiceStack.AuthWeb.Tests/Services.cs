@@ -1,12 +1,11 @@
 ﻿//#define HTTP_LISTENER
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints;
@@ -36,7 +35,7 @@ namespace ServiceStack.AuthWeb.Tests
     }
 
     [Authenticate]
-    public class UserProfileService : ServiceInterface.Service
+    public class UserProfileService : Service
     {
         public UserProfile Get(GetUserProfile request)
         {
@@ -57,7 +56,7 @@ namespace ServiceStack.AuthWeb.Tests
 
     [Route("/reset-userauth")]
     public class ResetUserAuth {}
-    public class ResetUserAuthService : ServiceInterface.Service
+    public class ResetUserAuthService : Service
     {
         public object Get(ResetUserAuth request)
         {
@@ -130,7 +129,7 @@ namespace ServiceStack.AuthWeb.Tests
     }
 
     [DefaultRequest(typeof(Rockstars))]
-    public class RockstarsService : ServiceInterface.Service
+    public class RockstarsService : Service
     {
         public IDbConnectionFactory DbFactory { get; set; }
 
@@ -177,7 +176,7 @@ namespace ServiceStack.AuthWeb.Tests
         public List<string> Results { get; set; }
     }
 
-    public class ViewService : ServiceInterface.Service
+    public class ViewService : Service
     {
         public object Any(ViewThatUsesLayoutAndModel request)
         {

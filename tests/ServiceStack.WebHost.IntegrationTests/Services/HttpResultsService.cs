@@ -1,8 +1,5 @@
-using System;
 using System.Net;
 using System.Runtime.Serialization;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
@@ -31,7 +28,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-    public class HttpResultsService : ServiceInterface.Service
+    public class HttpResultsService : Service
 	{
         public object Any(HttpResults request)
 		{

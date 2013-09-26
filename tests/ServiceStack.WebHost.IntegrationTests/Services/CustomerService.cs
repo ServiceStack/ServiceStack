@@ -1,8 +1,5 @@
-using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using ServiceStack.FluentValidation;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -51,7 +48,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		}
 	}
 
-    public class CustomerService : ServiceInterface.Service
+    public class CustomerService : Service
 	{
 		public object Get(Customers request)
 		{

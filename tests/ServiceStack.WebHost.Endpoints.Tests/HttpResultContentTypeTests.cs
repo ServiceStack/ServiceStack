@@ -1,15 +1,10 @@
 using System;
 using System.IO;
 using System.Net;
-using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
-using ServiceStack.Clients;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
-using System.Collections.Specialized;
-using System.Linq;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -51,7 +46,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public string Text { get; set; }
         }
 
-        public class TimedService : ServiceStack.ServiceInterface.Service
+        public class TimedService : Service
         {
             public object Any(PlainText request) 
             {

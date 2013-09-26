@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
-using ServiceStack.Html;
 using ServiceStack.Markdown;
-using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Testing;
 using ServiceStack.VirtualPath;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Formats;

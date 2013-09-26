@@ -1,8 +1,6 @@
 ﻿using Funq;
 using NUnit.Framework;
 using ServiceStack.Clients;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Support;
 
@@ -27,7 +25,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public string PathInfoParam { get; set; }
         }
 
-        public class EchoService : ServiceInterface.Service
+        public class EchoService : Service
         {
             public Echo Any(Echo request)
             {

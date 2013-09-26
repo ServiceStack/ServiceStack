@@ -3,7 +3,7 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.ServiceHost.Tests.Support;
 using ServiceStack.ServiceHost.Tests.TypeFactory;
-using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Testing;
 using ServiceStack.Web;
 
 namespace ServiceStack.ServiceHost.Tests

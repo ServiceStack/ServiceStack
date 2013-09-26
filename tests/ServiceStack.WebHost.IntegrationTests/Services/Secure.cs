@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.Serialization;
-using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -26,7 +25,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public string Value { get; set; }
 	}
 
-	public class SecureService : ServiceInterface.Service
+	public class SecureService : Service
 	{
         public object Any(Secure request)
 		{

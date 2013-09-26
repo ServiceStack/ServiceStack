@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using NUnit.Framework;
 using ServiceStack.Clients;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {
@@ -47,7 +45,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 		public Error Inner { get; set; }
 	}
 
-	public class ErrorService : ServiceInterface.Service
+	public class ErrorService : Service
 	{
 		public object Get(Error request)
 		{

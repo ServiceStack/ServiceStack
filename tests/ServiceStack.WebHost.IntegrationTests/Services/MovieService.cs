@@ -2,11 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Runtime.Serialization;
-using ServiceStack.Common;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -84,7 +81,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public Movie Movie { get; set; }
 	}
 
-	public class MovieService : ServiceInterface.Service
+	public class MovieService : Service
 	{
 		/// <summary>
 		/// GET /movies/{Id} 

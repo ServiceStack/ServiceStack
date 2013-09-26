@@ -1,7 +1,5 @@
 using System.Runtime.Serialization;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -25,7 +23,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class CustomFormDataService : ServiceInterface.Service
+	public class CustomFormDataService : Service
 	{
 		//Parsing: &first-name=tom&item-0=blah&item-1-delete=1
 		public object Post(CustomFormData request)

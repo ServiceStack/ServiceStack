@@ -36,7 +36,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class HttpErrorService : ServiceInterface.Service
+	public class HttpErrorService : Service
 	{
 	    public object Any(HttpError request)
 		{

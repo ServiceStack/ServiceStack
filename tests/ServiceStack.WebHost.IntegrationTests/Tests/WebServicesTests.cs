@@ -1,10 +1,8 @@
 using System;
-using System.Net;
 using NUnit.Framework;
 using ServiceStack.Clients;
-using ServiceStack.Clients;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.IntegrationTests.Services;
