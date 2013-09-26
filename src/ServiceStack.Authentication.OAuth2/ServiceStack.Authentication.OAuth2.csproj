@@ -52,9 +52,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\GlobalAssemblyInfo.cs">
-      <Link>Properties\GlobalAssemblyInfo.cs</Link>
-    </Compile>
     <Compile Include="GoogleOAuth2Provider.cs" />
     <Compile Include="LinkedInOAuth2Provider.cs" />
     <Compile Include="OAuth2Provider.cs" />
