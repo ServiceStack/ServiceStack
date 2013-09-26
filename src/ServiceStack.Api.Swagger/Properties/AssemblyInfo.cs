@@ -23,5 +23,7 @@ using System.Runtime.Serialization;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("1dfebd7c-72e5-423e-8e0b-6da176ba34b8")]
 
+[assembly: AssemblyVersion("1.0.0.0")]
+
 [assembly: ContractNamespace("http://schemas.servicestack.net/types",
     ClrNamespace = "ServiceStack.Api.Swagger")]

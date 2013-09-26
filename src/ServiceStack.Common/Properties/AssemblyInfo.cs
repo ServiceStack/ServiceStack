@@ -23,6 +23,8 @@ using System.Runtime.Serialization;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("3871f659-64fb-4dfb-a49f-17dc2f8a47e2")]
 
+[assembly: AssemblyVersion("1.0.0.0")]
+
 // CCB Custom
 [assembly: ContractNamespace("http://schemas.servicestack.net/types",
  ClrNamespace = "ServiceStack.Common.ServiceClient.Web")]
