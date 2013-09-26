@@ -47,9 +47,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\GlobalAssemblyInfo.cs">
-      <Link>Properties\GlobalAssemblyInfo.cs</Link>
-    </Compile>
     <Compile Include="CSharpRazorBuildProvider.cs" />
     <Compile Include="json\DynamicJson.cs" />
     <Compile Include="Compilation\CompilerServices.cs" />

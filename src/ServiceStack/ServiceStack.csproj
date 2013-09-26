@@ -104,9 +104,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\GlobalAssemblyInfo.cs">
-      <Link>Properties\GlobalAssemblyInfo.cs</Link>
-    </Compile>
     <Compile Include="CacheAccess.Providers\BasicPersistenceProviderCacheBase.cs" />
     <Compile Include="CacheAccess.Providers\CacheClientExtensions.cs" />
     <Compile Include="CacheAccess.Providers\FileAndCacheTextManager.cs" />
