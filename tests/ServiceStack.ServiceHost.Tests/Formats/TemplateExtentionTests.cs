@@ -1,5 +1,5 @@
 ﻿using NUnit.Framework;
-using ServiceStack.WebHost.Endpoints.Support.Markdown;
+using ServiceStack.Support.Markdown;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
 {

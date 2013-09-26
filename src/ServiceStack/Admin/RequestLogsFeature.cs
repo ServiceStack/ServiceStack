@@ -1,6 +1,9 @@
 ﻿using System;
-using ServiceStack.Providers;
+using ServiceStack.Configuration;
+using ServiceStack.Host;
 using ServiceStack.Server;
+using ServiceStack.ServiceHost;
+using ServiceStack.WebHost;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Admin

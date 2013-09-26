@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Funq;
+using ServiceStack.Host;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Server;
 using ServiceStack.VirtualPath;
 using ServiceStack.ServiceHost;
+using ServiceStack.WebHost;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Testing
@@ -69,12 +71,12 @@ namespace ServiceStack.Testing
             get { throw new NotImplementedException(); }
         }
 
-        private EndpointHostConfig config;
-        public EndpointHostConfig Config
+        private AppHostConfig config;
+        public AppHostConfig Config
         {
             get
             {
-                return config ?? (new EndpointHostConfig("BasicAppHost", new ServiceManager(Container, Assembly.GetExecutingAssembly())));
+                return config ?? (new AppHostConfig("BasicAppHost", new ServiceManager(Container, Assembly.GetExecutingAssembly())));
             }
             set { config = value; }
         }

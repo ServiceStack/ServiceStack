@@ -7,7 +7,9 @@ using ServiceStack.Logging;
 using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using HttpResponseWrapper = ServiceStack.WebHost.Endpoints.Wrappers.HttpResponseWrapper;
+using ServiceStack.WebHost.AspNet;
+using ServiceStack.WebHost.Endpoints;
+using HttpListenerResponse = System.Net.HttpListenerResponse;
 
 namespace ServiceStack
 {
@@ -73,7 +75,7 @@ namespace ServiceStack
 
 		public static void TransmitFile(this IHttpResponse httpRes, string filePath)
 		{
-			var aspNetRes = httpRes as HttpResponseWrapper;
+			var aspNetRes = httpRes as AspNetResponse;
 			if (aspNetRes != null)
 			{
 				aspNetRes.Response.TransmitFile(filePath);
@@ -90,7 +92,7 @@ namespace ServiceStack
 
 		public static void WriteFile(this IHttpResponse httpRes, string filePath)
 		{
-			var aspNetRes = httpRes as HttpResponseWrapper;
+			var aspNetRes = httpRes as AspNetResponse;
 			if (aspNetRes != null)
 			{
 				aspNetRes.Response.WriteFile(filePath);

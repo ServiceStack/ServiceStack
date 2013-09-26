@@ -5,6 +5,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
 using Funq;
+using ServiceStack.Host;
 using ServiceStack.ServiceHost;
 using System.Collections.Generic;
 

@@ -3,11 +3,11 @@ using System.IO;
 using System.Net;
 using ServiceStack.Clients;
 using ServiceStack.Clients;
+using ServiceStack.Host;
 using ServiceStack.ServiceHost;
+using ServiceStack.Support.Mocks;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints.Support.Mocks;
-using ServiceStack.WebHost.Endpoints.Tests.Mocks;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support
 {

@@ -1,4 +1,5 @@
 using System.Runtime.Serialization;
+using ServiceStack.Host;
 using ServiceStack.ServiceHost;
 using ServiceStack.Web;
 

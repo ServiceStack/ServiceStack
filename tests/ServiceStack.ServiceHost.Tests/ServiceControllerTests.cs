@@ -1,6 +1,7 @@
 ﻿using System;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Host;
 using ServiceStack.ServiceHost.Tests.Support;
 using ServiceStack.WebHost.Endpoints;
 
@@ -12,7 +13,7 @@ namespace ServiceStack.ServiceHost.Tests
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
-            EndpointHostConfig.SkipRouteValidation = true;
+            AppHostConfig.SkipRouteValidation = true;
         }
 
         [Test]
@@ -162,7 +163,7 @@ namespace ServiceStack.ServiceHost.Tests
         [Test]
         public void Does_throw_on_invalid_Route_Definitions()
         {
-            EndpointHostConfig.SkipRouteValidation = false;
+            AppHostConfig.SkipRouteValidation = false;
 
             var controller = new ServiceController(() => new[] { typeof(MyService) });
 
@@ -172,7 +173,7 @@ namespace ServiceStack.ServiceHost.Tests
             Assert.Throws<ArgumentException>(
                 () => controller.RegisterRestPaths(typeof(UsesQueryString)));
 
-            EndpointHostConfig.SkipRouteValidation = true;
+            AppHostConfig.SkipRouteValidation = true;
         }
 
         [Test]

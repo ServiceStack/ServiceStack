@@ -67,7 +67,7 @@ namespace ServiceStack.AuthWeb.Tests
             using (var db = container.Resolve<IDbConnectionFactory>().Open())
                 db.DropAndCreateTable<UserTable>();
 
-            SetConfig(new EndpointHostConfig {
+            SetConfig(new AppHostConfig {
                 DebugMode = true,
             });
         }

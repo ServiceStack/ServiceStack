@@ -4,11 +4,11 @@ using System.Text;
 using System.Threading;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Configuration;
+using ServiceStack.Support.Mocks;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints.Support.Mocks;
-using ServiceStack.WebHost.Endpoints.Tests.Mocks;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

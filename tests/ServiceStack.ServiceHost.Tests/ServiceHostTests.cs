@@ -1,10 +1,12 @@
 ﻿using System;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Host;
 using ServiceStack.ServiceHost.Tests.Support;
 using ServiceStack.ServiceHost.Tests.TypeFactory;
 using ServiceStack.Testing;
 using ServiceStack.Web;
+using BasicRequest = ServiceStack.ServiceHost.Tests.Support.BasicRequest;
 
 namespace ServiceStack.ServiceHost.Tests
 {

@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Text.RegularExpressions;
+using ServiceStack.WebHost;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Api.Swagger

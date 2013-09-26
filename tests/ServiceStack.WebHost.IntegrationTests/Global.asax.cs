@@ -111,7 +111,7 @@ namespace ServiceStack.WebHost.IntegrationTests
 
 
                 //var onlyEnableFeatures = Feature.All.Remove(Feature.Jsv | Feature.Soap);
-                SetConfig(new EndpointHostConfig {
+                SetConfig(new AppHostConfig {
                     GlobalResponseHeaders = {
                         { "Access-Control-Allow-Origin", "*" },
                         { "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS" },

@@ -6,6 +6,7 @@ using ServiceStack.Data;
 using ServiceStack.Messaging;
 using ServiceStack.Redis;
 using ServiceStack.Server;
+using ServiceStack.WebHost;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack

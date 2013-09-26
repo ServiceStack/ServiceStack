@@ -5,13 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Web;
 using ServiceStack.Server;
+using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.MiniProfiler.Helpers;
 using ServiceStack.ServiceHost;
+using ServiceStack.WebHost.AspNet;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Support;
-using HttpRequestWrapper = ServiceStack.WebHost.Endpoints.Wrappers.HttpRequestWrapper;
-using HttpResponseWrapper = ServiceStack.WebHost.Endpoints.Wrappers.HttpResponseWrapper;
 
 namespace ServiceStack.MiniProfiler.UI
 {
@@ -140,8 +140,8 @@ namespace ServiceStack.MiniProfiler.UI
 		{
 			string path = context.Request.AppRelativeCurrentExecutionFilePath;
 			ProcessRequest(
-				new HttpRequestWrapper(null, context.Request),
-				new HttpResponseWrapper(context.Response),
+				new AspNetRequest(null, context.Request),
+				new AspNetResponse(context.Response),
 				null);
 		}
 

@@ -6,6 +6,8 @@ using Moq;
 using NUnit.Framework;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
+using ServiceStack.Support;
+using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Support.Tests

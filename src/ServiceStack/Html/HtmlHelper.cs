@@ -11,9 +11,9 @@ using System.Web;
 using ServiceStack.Html.AntiXsrf;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
+using ServiceStack.Support.Markdown;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
 namespace ServiceStack.Html
 {

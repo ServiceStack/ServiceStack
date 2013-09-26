@@ -6,6 +6,7 @@ using System.IO;
 using System.Net;
 using System.Web;
 using System.Collections.Generic;
+using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Server;
@@ -13,6 +14,7 @@ using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints;
+using HttpListenerResponse = System.Net.HttpListenerResponse;
 
 namespace ServiceStack
 {

@@ -6,6 +6,7 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
+using ServiceStack.Host;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.ServiceHost.Tests.Support;

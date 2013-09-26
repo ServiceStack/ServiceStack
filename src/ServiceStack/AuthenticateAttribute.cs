@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using ServiceStack.Auth;
+using ServiceStack.Host;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;

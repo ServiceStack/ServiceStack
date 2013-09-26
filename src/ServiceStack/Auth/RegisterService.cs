@@ -2,6 +2,7 @@
 using System.Configuration;
 using System.Globalization;
 using ServiceStack.FluentValidation;
+using ServiceStack.Host;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;

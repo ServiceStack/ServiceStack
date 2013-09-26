@@ -6,6 +6,7 @@ using System.Threading;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Clients;
+using ServiceStack.Configuration;
 using ServiceStack.Server;
 using ServiceStack.Text;
 

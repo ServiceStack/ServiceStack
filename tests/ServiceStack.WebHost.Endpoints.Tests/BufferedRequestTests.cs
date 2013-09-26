@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using ServiceStack.Admin;
 using ServiceStack.Clients;
+using ServiceStack.Configuration;
 using ServiceStack.Server;
 using ServiceStack.Text;
 using System.Runtime.Serialization;

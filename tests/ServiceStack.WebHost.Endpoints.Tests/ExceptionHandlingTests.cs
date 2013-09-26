@@ -104,7 +104,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 JsConfig.EmitCamelCaseNames = true;
 
-                SetConfig(new EndpointHostConfig { DebugMode = false });
+                SetConfig(new AppHostConfig { DebugMode = false });
 
                 //Custom global uncaught exception handling strategy
                 this.ExceptionHandler = (req, res, operationName, ex) =>

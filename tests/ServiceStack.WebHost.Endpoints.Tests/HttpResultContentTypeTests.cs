@@ -24,7 +24,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             /// </summary>
             /// <param name="container">SS's funq container</param>
             public override void Configure(Funq.Container container) {
-                EndpointHostConfig.Instance.GlobalResponseHeaders.Clear();
+                AppHostConfig.Instance.GlobalResponseHeaders.Clear();
 
 			//Signal advanced web browsers what HTTP Methods you accept
 			//base.SetConfig(new EndpointHostConfig());

@@ -56,7 +56,7 @@ namespace ServiceStack.ServiceHost.Tests
         [TestFixtureSetUp]
         public void OnTestFixtureSetUp()
         {
-            EndpointHostConfig.SkipRouteValidation = true;
+            AppHostConfig.SkipRouteValidation = true;
 
             appHost = new AttributeFiltersAppHostHttpListener();
             appHost.Init();

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
-using ServiceStack.WebHost.Endpoints.Wrappers;
+using ServiceStack.WebHost.HttpListener;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TestExistingDir
 {
@@ -16,7 +16,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TestExistingDir
         {
             var ct = "Content-Type: text/plain; charset=KOI8-R";
 
-            var encoding = HttpListenerRequestWrapper.GetEncoding(ct);
+            var encoding = ListenerRequest.GetEncoding(ct);
 
             Assert.AreEqual("koi8-r", encoding.BodyName);
 
@@ -27,7 +27,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TestExistingDir
         {
             var ct = "Content-Type: text/plain";
 
-            var encoding = HttpListenerRequestWrapper.GetEncoding(ct);
+            var encoding = ListenerRequest.GetEncoding(ct);
 
             Assert.IsNull(encoding);
 
@@ -38,7 +38,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TestExistingDir
         {
             var ct = "Content-Type: text/plain; charset=ASDFG";
 
-            var encoding = HttpListenerRequestWrapper.GetEncoding(ct);
+            var encoding = ListenerRequest.GetEncoding(ct);
 
             Assert.IsNull(encoding);
 

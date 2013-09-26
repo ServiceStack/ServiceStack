@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using ServiceStack.Configuration;
+using ServiceStack.Host;
 using ServiceStack.ServiceHost;
 using ServiceStack.Web;
 

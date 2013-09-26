@@ -1,6 +1,7 @@
 using NUnit.Framework;
+using ServiceStack.Host;
+using ServiceStack.Metadata;
 using ServiceStack.ServiceHost;
-using ServiceStack.WebHost.Endpoints.Metadata;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;
 

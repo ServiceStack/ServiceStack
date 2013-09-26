@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Host;
 using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -67,7 +68,7 @@ namespace ServiceStack.AuthWeb.Tests
 
             var referrer = Request.UrlReferrer != null
                 ? Request.UrlReferrer.AbsoluteUri
-                : ServiceStackHttpHandlerFactory.GetBaseUrl();
+                : HttpHandlerFactory.GetBaseUrl();
 
             return HttpResult.Redirect(referrer);
         }

@@ -5,11 +5,13 @@ using System.Linq;
 using System.Web;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Host;
 using ServiceStack.ServiceHost;
+using ServiceStack.Support.Mocks;
 using ServiceStack.Testing;
 using ServiceStack.Text;
+using ServiceStack.WebHost;
 using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Support.Mocks;
 
 namespace ServiceStack.Common.Tests
 {

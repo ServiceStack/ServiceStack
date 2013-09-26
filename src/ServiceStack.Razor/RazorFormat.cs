@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using ServiceStack.Host;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
@@ -10,6 +11,7 @@ using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;
+using ServiceStack.WebHost;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Razor
@@ -211,15 +213,15 @@ namespace ServiceStack.Razor
             if (razorPage == null)
                 throw new ArgumentNullException("razorPage");
 
-            var mqContext = new MqRequestContext();
+            var mqContext = new BasicRequestContext();
 
-            var httpReq = new MqRequest(mqContext);
+            var httpReq = new BasicRequest(mqContext);
             if (layout != null)
             {
                 httpReq.Items[RazorPageResolver.LayoutKey] = layout;
             }
 
-            var httpRes = new MqResponse(mqContext);
+            var httpRes = new BasicResponse(mqContext);
 
             razorView = PageResolver.ResolveAndExecuteRazorPage(
                 httpReq: httpReq,

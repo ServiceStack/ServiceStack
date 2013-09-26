@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using NUnit.Framework;
+using ServiceStack.Host;
 using ServiceStack.Testing;
 
 namespace ServiceStack.ServiceHost.Tests.Routes

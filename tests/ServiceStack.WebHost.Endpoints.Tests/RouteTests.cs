@@ -1,11 +1,12 @@
 ﻿using Funq;
 using NUnit.Framework;
 using ServiceStack.Common;
+using ServiceStack.Configuration;
+using ServiceStack.Formats;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints.Formats;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -101,7 +102,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public override void Configure(Container container)
         {
-            SetConfig(new EndpointHostConfig {
+            SetConfig(new AppHostConfig {
                 AllowRouteContentTypeExtensions = true
             });
 

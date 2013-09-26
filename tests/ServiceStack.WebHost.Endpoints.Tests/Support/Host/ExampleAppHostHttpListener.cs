@@ -432,10 +432,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 
 		public override void Configure(Container container)
 		{
-			EndpointHostConfig.Instance.GlobalResponseHeaders.Clear();
+			AppHostConfig.Instance.GlobalResponseHeaders.Clear();
 
 			//Signal advanced web browsers what HTTP Methods you accept
-			base.SetConfig(new EndpointHostConfig {
+			base.SetConfig(new AppHostConfig {
 				GlobalResponseHeaders =
 				{
 					{ "Access-Control-Allow-Origin", "*" },
@@ -503,10 +503,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 
         public override void Configure(Container container)
         {
-            EndpointHostConfig.Instance.GlobalResponseHeaders.Clear();
+            AppHostConfig.Instance.GlobalResponseHeaders.Clear();
 
             //Signal advanced web browsers what HTTP Methods you accept
-            base.SetConfig(new EndpointHostConfig
+            base.SetConfig(new AppHostConfig
             {
                 GlobalResponseHeaders =
 				{

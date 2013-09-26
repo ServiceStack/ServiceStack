@@ -19,7 +19,7 @@ namespace ServiceStack.Razor.Compilation.CodeTransformers
         {
             //read the base type here from the web.config here
 
-            EndpointHostConfig.RazorNamespaces
+            AppHostConfig.RazorNamespaces
                               .Each(ns => razorHost.NamespaceImports.Add(ns));
 
             base.Initialize(razorHost, directives);

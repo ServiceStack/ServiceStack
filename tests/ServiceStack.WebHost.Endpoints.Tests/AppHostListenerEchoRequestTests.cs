@@ -1,6 +1,8 @@
 ﻿using Funq;
 using NUnit.Framework;
 using ServiceStack.Clients;
+using ServiceStack.Configuration;
+using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Support;
 

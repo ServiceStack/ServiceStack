@@ -1,6 +1,7 @@
 ﻿using System;
 using Funq;
 using ServiceStack.FluentValidation;
+using ServiceStack.Host;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
 

@@ -6,6 +6,7 @@ using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.Web;
+using ServiceStack.WebHost;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack

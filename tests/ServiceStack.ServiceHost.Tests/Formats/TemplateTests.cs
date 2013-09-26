@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using NUnit.Framework;
+using ServiceStack.Formats;
 using ServiceStack.Markdown;
+using ServiceStack.Support.Markdown;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.VirtualPath;
-using ServiceStack.WebHost.Endpoints.Formats;
-using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
 {

@@ -1,5 +1,6 @@
 using System;
 using System.Configuration;
+using ServiceStack.Host;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;

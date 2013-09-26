@@ -1,4 +1,6 @@
 ﻿using System.Web;
+using ServiceStack.Support.WebHost;
+using ServiceStack.WebHost;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Support;
 

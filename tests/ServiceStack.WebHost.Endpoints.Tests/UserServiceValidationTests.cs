@@ -2,11 +2,14 @@
 using System.Net;
 using ServiceStack.Clients;
 using ServiceStack.FluentValidation;
+using ServiceStack.Host;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using NUnit.Framework;
 using System.Collections;
 using Funq;
+using ServiceStack.Support;
+using ServiceStack.Support.WebHost;
 using ServiceStack.Validation;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support;

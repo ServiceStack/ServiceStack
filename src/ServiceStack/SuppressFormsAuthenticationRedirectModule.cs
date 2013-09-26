@@ -16,7 +16,6 @@ namespace ServiceStack
     /// </summary>
     public class SuppressFormsAuthenticationRedirectModule : IHttpModule
     {
-
         public static string PathToSupress { get; set; }
 
         public virtual void Init(HttpApplication context)
@@ -39,7 +38,6 @@ namespace ServiceStack
         {
 
         }
-
         
         private void OnPostReleaseRequestState(object source, EventArgs args)
         {

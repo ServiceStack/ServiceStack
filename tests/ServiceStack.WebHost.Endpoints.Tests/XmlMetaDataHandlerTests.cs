@@ -1,5 +1,5 @@
 ﻿using NUnit.Framework;
-using ServiceStack.WebHost.Endpoints.Metadata;
+using ServiceStack.Metadata;
 using System.Runtime.Serialization;
 
 namespace ServiceStack.WebHost.Endpoints.Tests

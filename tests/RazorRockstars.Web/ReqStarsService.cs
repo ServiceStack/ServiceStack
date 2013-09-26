@@ -7,7 +7,6 @@ using System.Net;
 using NUnit.Framework;
 using ServiceStack;
 using ServiceStack.Clients;
-using ServiceStack.Cors;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.OrmLite;

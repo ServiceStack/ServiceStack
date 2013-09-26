@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
+using ServiceStack.Host;
+using ServiceStack.Metadata;
 using ServiceStack.ServiceHost;
 using ServiceStack.Testing;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints.Metadata;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -54,7 +55,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             foreach (var item in pathInfoMap)
             {
                 var expectedType = item.Value;
-                var handler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(null, item.Key, null, null);
+                var handler = HttpHandlerFactory.GetHandlerForPathInfo(null, item.Key, null, null);
                 Assert.That(handler.GetType(), Is.EqualTo(expectedType));
             }
         }
@@ -74,7 +75,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var expectedType = item.Value;
                 var lowerPathInfo = item.Key.ToLower();
                 lowerPathInfo.Print();
-                var handler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(null, lowerPathInfo, null, null);
+                var handler = HttpHandlerFactory.GetHandlerForPathInfo(null, lowerPathInfo, null, null);
                 Assert.That(handler.GetType(), Is.EqualTo(expectedType));
             }
         }

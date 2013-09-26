@@ -8,14 +8,16 @@ using System.Text;
 using System.Web;
 using ServiceStack.Logging;
 using ServiceStack.Server;
+using ServiceStack.Support;
+using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.Web;
+using ServiceStack.WebHost;
+using ServiceStack.WebHost.AspNet;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Support;
-using ServiceStack.WebHost.Endpoints.Wrappers;
-using HttpRequestWrapper = ServiceStack.WebHost.Endpoints.Wrappers.HttpRequestWrapper;
-using HttpResponseWrapper = ServiceStack.WebHost.Endpoints.Wrappers.HttpResponseWrapper;
+using ServiceStack.WebHost.HttpListener;
 
 namespace ServiceStack
 {
@@ -105,7 +107,7 @@ namespace ServiceStack
 
 		public static string GetUrlHostName(this IHttpRequest httpReq)
 		{
-			var aspNetReq = httpReq as HttpRequestWrapper;
+			var aspNetReq = httpReq as AspNetRequest;
 			if (aspNetReq != null)
 			{
 				return aspNetReq.UrlHostName;
@@ -122,10 +124,10 @@ namespace ServiceStack
 
 		public static string GetPhysicalPath(this IHttpRequest httpReq)
 		{
-		    var aspNetReq = httpReq as HttpRequestWrapper;
+		    var aspNetReq = httpReq as AspNetRequest;
 			var res = aspNetReq != null 
                 ? aspNetReq.Request.PhysicalPath 
-                : EndpointHostConfig.Instance.WebHostPhysicalPath.CombineWith(httpReq.PathInfo);
+                : AppHostConfig.Instance.WebHostPhysicalPath.CombineWith(httpReq.PathInfo);
 
 			return res;
 		}
@@ -487,12 +489,12 @@ namespace ServiceStack
 
         public static IHttpRequest GetHttpRequest(this HttpRequest request)
         {
-            return new HttpRequestWrapper(null, request);
+            return new AspNetRequest(null, request);
         }
 
         public static IHttpRequest GetHttpRequest(this HttpListenerRequest request)
         {
-            return new HttpListenerRequestWrapper(null, request);
+            return new ListenerRequest(null, request);
         }
 
         public static Dictionary<string, string> GetRequestParams(this IHttpRequest request)
@@ -660,7 +662,7 @@ namespace ServiceStack
 
         public static string GetBaseUrl(this IHttpRequest httpReq)
         {
-            var baseUrl = ServiceStackHttpHandlerFactory.GetBaseUrl();
+            var baseUrl = HttpHandlerFactory.GetBaseUrl();
             if (baseUrl != null) return baseUrl;
 
             var handlerPath = EndpointHost.Config.ServiceStackHandlerFactoryPath;
@@ -789,7 +791,7 @@ namespace ServiceStack
 
         public static IHttpRequest ToRequest(this HttpRequest aspnetHttpReq, string operationName = null)
         {
-            return new HttpRequestWrapper(aspnetHttpReq)
+            return new AspNetRequest(aspnetHttpReq)
             {
                 OperationName = operationName,
                 Container = AppHostBase.Instance != null ? AppHostBase.Instance.Container : null
@@ -798,7 +800,7 @@ namespace ServiceStack
 
         public static IHttpRequest ToRequest(this HttpListenerRequest listenerHttpReq, string operationName = null)
         {
-            return new HttpListenerRequestWrapper(listenerHttpReq)
+            return new ListenerRequest(listenerHttpReq)
             {
                 OperationName = operationName,
                 Container = AppHostBase.Instance != null ? AppHostBase.Instance.Container : null
@@ -807,26 +809,26 @@ namespace ServiceStack
 
         public static IHttpResponse ToResponse(this HttpResponse aspnetHttpRes)
         {
-            return new HttpResponseWrapper(aspnetHttpRes);
+            return new AspNetResponse(aspnetHttpRes);
         }
 
-        public static IHttpResponse ToResponse(this HttpListenerResponse listenerHttpRes)
+        public static IHttpResponse ToResponse(this System.Net.HttpListenerResponse listenerHttpRes)
         {
-            return new HttpListenerResponseWrapper(listenerHttpRes);
+            return new ListenerResponse(listenerHttpRes);
         }
 
         public static void SetOperationName(this IHttpRequest httpReq, string operationName)
         {
             if (httpReq.OperationName == null)
             {
-                var aspReq = httpReq as HttpRequestWrapper;
+                var aspReq = httpReq as AspNetRequest;
                 if (aspReq != null)
                 {
                     aspReq.OperationName = operationName;
                     return;
                 }
 
-                var listenerReq = httpReq as HttpListenerRequestWrapper;
+                var listenerReq = httpReq as ListenerRequest;
                 if (listenerReq != null)
                 {
                     listenerReq.OperationName = operationName;

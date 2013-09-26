@@ -2,6 +2,8 @@ using System.Net;
 using ServiceStack.Razor.Managers;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
+using ServiceStack.Support;
+using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Support;
 

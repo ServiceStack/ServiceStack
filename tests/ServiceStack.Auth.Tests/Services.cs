@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Host;
 using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;

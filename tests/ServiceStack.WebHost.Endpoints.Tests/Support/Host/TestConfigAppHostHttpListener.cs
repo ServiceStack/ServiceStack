@@ -46,7 +46,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 
 		public override void Configure(Container container)
 		{
-			SetConfig(new EndpointHostConfig
+			SetConfig(new AppHostConfig
 			{
 				UseBclJsonSerializers = true,
 			});

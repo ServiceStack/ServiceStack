@@ -5,10 +5,15 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using ServiceStack.Clients;
+using ServiceStack.Host;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
+using ServiceStack.Support;
+using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
+using ServiceStack.Utils;
 using ServiceStack.Web;
+using ServiceStack.WebHost;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Support;
 
@@ -538,7 +543,7 @@ namespace ServiceStack.Testing
 
         private static EndpointHandlerBase GetHandler(string httpMethod, string pathInfo)
         {
-            var httpHandler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(httpMethod, pathInfo, pathInfo, null) as EndpointHandlerBase;
+            var httpHandler = HttpHandlerFactory.GetHandlerForPathInfo(httpMethod, pathInfo, pathInfo, null) as EndpointHandlerBase;
             if (httpHandler == null)
                 throw new NotSupportedException(pathInfo);
             return httpHandler;

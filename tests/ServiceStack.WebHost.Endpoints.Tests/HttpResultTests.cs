@@ -1,10 +1,11 @@
 using System.IO;
 using NUnit.Framework;
+using ServiceStack.Host;
 using ServiceStack.ServiceHost;
+using ServiceStack.Support.Mocks;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints.Tests.Mocks;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

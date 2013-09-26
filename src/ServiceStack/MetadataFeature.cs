@@ -1,7 +1,9 @@
 ﻿using System.Web;
+using ServiceStack.Host;
+using ServiceStack.Metadata;
 using ServiceStack.Web;
+using ServiceStack.WebHost;
 using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Metadata;
 
 namespace ServiceStack
 {
@@ -65,7 +67,7 @@ namespace ServiceStack
                         return null;
 
                     if (EndpointHost.Config.MetadataTypesConfig.BaseUrl == null)
-                        EndpointHost.Config.MetadataTypesConfig.BaseUrl = ServiceStackHttpHandlerFactory.GetBaseUrl();
+                        EndpointHost.Config.MetadataTypesConfig.BaseUrl = HttpHandlerFactory.GetBaseUrl();
 
                     return new MetadataTypesHandler { Config = EndpointHost.AppHost.Config.MetadataTypesConfig };
 

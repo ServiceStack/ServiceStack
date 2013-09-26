@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using ServiceStack.Common;
+using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 
@@ -39,7 +40,7 @@ namespace ServiceStack.ServiceHost.Tests
         [Test]
         public void ShowAllow()
         {
-            var config = EndpointHostConfig.Instance;
+            var config = AppHostConfig.Instance;
 
             const string fileName = "/path/to/image.GIF";
             var fileExt = fileName.Substring(fileName.LastIndexOf('.') + 1);

@@ -1,7 +1,10 @@
 using System;
 using NUnit.Framework;
 using ServiceStack.Clients;
+using ServiceStack.Host;
 using ServiceStack.ServiceHost;
+using ServiceStack.Support;
+using ServiceStack.Support.WebHost;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Support;

@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Clients;
-using ServiceStack.Cors;
 using ServiceStack.Api.Swagger;
 using ServiceStack.Text;
 
@@ -236,7 +235,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Plugins.Add(new SwaggerFeature());
 
-                SetConfig(new EndpointHostConfig
+                SetConfig(new AppHostConfig
                 {
                     DebugMode = true //Show StackTraces for easier debugging
                 });

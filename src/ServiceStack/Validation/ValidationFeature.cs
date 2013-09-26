@@ -5,6 +5,7 @@ using Funq;
 using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Results;
 using ServiceStack.Logging;
+using ServiceStack.WebHost;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.Text;
 

@@ -5,18 +5,20 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using ServiceStack.Formats;
+using ServiceStack.Host;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost.Tests.AppData;
+using ServiceStack.Support.Markdown;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
+using ServiceStack.WebHost;
 using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Formats;
-using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
 {
@@ -48,7 +50,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		{
 			public AppHost()
 			{
-				this.Config = new EndpointHostConfig {
+				this.Config = new AppHostConfig {
 					HtmlReplaceTokens = new Dictionary<string, string>(),
 					IgnoreFormatsInMetadata = new HashSet<string>(),
 				};
@@ -101,7 +103,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 				get { throw new NotImplementedException(); }
 			}
 
-			public EndpointHostConfig Config { get; set; }
+			public AppHostConfig Config { get; set; }
 
 			public void RegisterService(Type serviceType, params string[] atRestPaths)
 			{

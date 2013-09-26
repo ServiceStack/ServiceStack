@@ -1,5 +1,6 @@
 ﻿using ServiceStack.Auth;
 using ServiceStack.FluentValidation;
+using ServiceStack.WebHost;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack

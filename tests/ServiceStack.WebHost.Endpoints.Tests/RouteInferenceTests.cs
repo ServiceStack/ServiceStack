@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using NUnit.Framework;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Host;
 using ServiceStack.ServiceHost;
 using ServiceStack.Testing;
 using ServiceStack.Text;

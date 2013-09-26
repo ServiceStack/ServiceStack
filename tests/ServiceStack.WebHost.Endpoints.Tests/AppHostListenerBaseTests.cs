@@ -13,7 +13,7 @@ using ServiceStack.Clients;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
-using ServiceStack.WebHost.Endpoints.Wrappers;
+using ServiceStack.WebHost.HttpListener;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -228,7 +228,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             foreach (var entry in map)
             {
-                var handlerPath = HttpListenerRequestWrapper.GetHandlerPathIfAny(entry.Key);
+                var handlerPath = ListenerRequest.GetHandlerPathIfAny(entry.Key);
                 Assert.That(handlerPath, Is.EqualTo(entry.Value));
             }
         }

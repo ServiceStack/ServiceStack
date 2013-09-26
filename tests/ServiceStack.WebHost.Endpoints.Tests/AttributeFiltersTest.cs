@@ -5,13 +5,15 @@ using ServiceStack.Caching;
 using ServiceStack.Clients;
 using ServiceStack.Common;
 using ServiceStack.Common.Tests.ServiceClient.Web;
+using ServiceStack.Host;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using NUnit.Framework;
 using ServiceStack.Clients;
 using ServiceStack.ServiceInterface;
+using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints.Utils;
+using ServiceStack.Utils;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -181,7 +183,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public override void Configure(Funq.Container container)
             {
                 container.Register<ICacheClient>(c => new MemoryCacheClient()).ReusedWithin(Funq.ReuseScope.None);
-                SetConfig(new EndpointHostConfig { DebugMode = true }); //show stacktraces
+                SetConfig(new AppHostConfig { DebugMode = true }); //show stacktraces
             }
         }
 

@@ -2,7 +2,6 @@
 using System.Threading;
 using ServiceStack.Clients;
 using NUnit.Framework;
-using ServiceStack.Cors;
 using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests

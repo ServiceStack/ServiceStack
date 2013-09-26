@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Funq;
+using ServiceStack.Host;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
+using ServiceStack.WebHost;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Testing
@@ -26,9 +28,9 @@ namespace ServiceStack.Testing
             if (serviceAssemblies.Length == 0)
                 serviceAssemblies = new[] { Assembly.GetExecutingAssembly() };
             
-            var createInstance = EndpointHostConfig.Instance;
+            var createInstance = AppHostConfig.Instance;
 
-            this.Config = EndpointHost.Config = new EndpointHostConfig(
+            this.Config = EndpointHost.Config = new AppHostConfig(
                 GetType().Name,
                 new ServiceManager(this.container, serviceAssemblies).Init());
 
@@ -83,7 +85,7 @@ namespace ServiceStack.Testing
             get { throw new NotImplementedException(); }
         }
 
-        public EndpointHostConfig Config { get; set; }
+        public AppHostConfig Config { get; set; }
 
         public void RegisterService(Type serviceType, params string[] atRestPaths)
         {

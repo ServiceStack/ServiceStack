@@ -2,6 +2,7 @@
 using System.IO;
 using ServiceStack.IO;
 using ServiceStack.Text;
+using ServiceStack.WebHost;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.VirtualPath

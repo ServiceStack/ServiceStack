@@ -1,6 +1,6 @@
-﻿using ServiceStack.VirtualPath;
-using ServiceStack.WebHost.Endpoints.Formats;
-using ServiceStack.WebHost.Endpoints.Support.Markdown;
+﻿using ServiceStack.Formats;
+using ServiceStack.Support.Markdown;
+using ServiceStack.VirtualPath;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
 {

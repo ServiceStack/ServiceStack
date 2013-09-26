@@ -109,13 +109,13 @@ namespace ServiceStack.ServiceHost.Tests
 			// Note: due to the static nature of EndpointHostConfig.Instance, running this
 			// test twice withing NUnit fails the test. You'll need to reload betwen each
 			// run.
-			Assert.AreNotEqual( EndpointHostConfig.Instance.WebHostPhysicalPath, root );
+			Assert.AreNotEqual( AppHostConfig.Instance.WebHostPhysicalPath, root );
 
-			string originalPath = EndpointHostConfig.Instance.WebHostPhysicalPath;
+			string originalPath = AppHostConfig.Instance.WebHostPhysicalPath;
 			string path = mock.GetPhysicalPath();
 			Assert.AreEqual( string.Format( "{0}/{1}", originalPath, mock.PathInfo ), path );
 
-			EndpointHostConfig.Instance.WebHostPhysicalPath = root;
+			AppHostConfig.Instance.WebHostPhysicalPath = root;
 			path = mock.GetPhysicalPath();
 			Assert.AreEqual( string.Format( "{0}/{1}", root, mock.PathInfo ), path );
 		}

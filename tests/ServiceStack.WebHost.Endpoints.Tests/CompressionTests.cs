@@ -2,13 +2,14 @@ using System;
 using System.Runtime.Serialization;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.Serialization;
 using ServiceStack.ServiceHost;
+using ServiceStack.Support.Mocks;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints.Tests.Mocks;
 using DataContractSerializer = ServiceStack.Serialization.DataContractSerializer;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -67,7 +68,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Test_response_with_CompressedResult()
 		{
-			EndpointHost.Config = new EndpointHostConfig(
+			EndpointHost.Config = new AppHostConfig(
 				"ServiceName",
 				new ServiceManager(GetType().Assembly));
 

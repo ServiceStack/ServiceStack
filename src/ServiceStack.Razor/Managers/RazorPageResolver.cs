@@ -8,6 +8,8 @@ using ServiceStack.Common;
 using ServiceStack.Html;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
+using ServiceStack.Support;
+using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Support;
 
