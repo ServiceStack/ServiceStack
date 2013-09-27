@@ -235,7 +235,7 @@ namespace ServiceStack.ServiceInterface
             }
             catch (Exception ex)
             {
-                var result = HandleException(request, ex);
+                var result = HandleException(RequestContext.Get<IHttpRequest>(), request, ex);
 
                 if (result == null) throw;
 
@@ -249,10 +249,10 @@ namespace ServiceStack.ServiceInterface
         /// <param name="request"></param>
         /// <param name="ex"></param>
         /// <returns></returns>
-        protected virtual object HandleException(TRequest request, Exception ex)
+        protected virtual object HandleException(IHttpRequest httpReq, TRequest request, Exception ex)
         {
             var errorResponse = ServiceExceptionHandler != null
-                ? ServiceExceptionHandler(request, ex)
+                ? ServiceExceptionHandler(httpReq, request, ex)
                 : DtoUtils.HandleException(GetResolver(), request, ex);
 
             AfterEachRequest(request, errorResponse ?? ex);

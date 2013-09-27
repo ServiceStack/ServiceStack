@@ -56,7 +56,7 @@ namespace ServiceStack.ServiceInterface
             }
             catch (Exception ex)
             {
-                var result = HandleException(request, ex);
+                var result = HandleException(RequestContext.Get<IHttpRequest>(), request, ex);
 
                 if (result == null) throw;
 
@@ -92,7 +92,7 @@ namespace ServiceStack.ServiceInterface
             }
             catch (Exception ex)
             {
-                var result = HandleException(request, ex);
+                var result = HandleException(RequestContext.Get<IHttpRequest>(), request, ex);
 
                 if (result == null) throw;
 
@@ -128,7 +128,7 @@ namespace ServiceStack.ServiceInterface
             }
             catch (Exception ex)
             {
-                var result = HandleException(request, ex);
+                var result = HandleException(RequestContext.Get<IHttpRequest>(), request, ex);
 
                 if (result == null) throw;
 
@@ -164,7 +164,7 @@ namespace ServiceStack.ServiceInterface
             }
             catch (Exception ex)
             {
-                var result = HandleException(request, ex);
+                var result = HandleException(RequestContext.Get<IHttpRequest>(), request, ex);
 
                 if (result == null) throw;
 
@@ -200,7 +200,7 @@ namespace ServiceStack.ServiceInterface
             }
             catch (Exception ex)
             {
-                var result = HandleException(request, ex);
+                var result = HandleException(RequestContext.Get<IHttpRequest>(), request, ex);
 
                 if (result == null) throw;
 
