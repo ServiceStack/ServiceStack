@@ -116,7 +116,7 @@ namespace ServiceStack
     public enum Endpoint : long
     {
         Http = 1 << 26,
-        MessageQueue = 1 << 27,
+        Mq = 1 << 27,
         Tcp = 1 << 28,
         Other = 1 << 29,
     }

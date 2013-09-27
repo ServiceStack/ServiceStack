@@ -162,6 +162,7 @@
     <Compile Include="Commands\ICommand.Generic.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="IO\IEndpoint.cs" />
     <Compile Include="Model\IHasGuidId.cs">
       <SubType>Code</SubType>
     </Compile>

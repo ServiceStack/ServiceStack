@@ -451,13 +451,13 @@
             Need to provide async request options
             http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
         </member>
-        <member name="P:ServiceStack.Clients.AsyncServiceClient.HttpWebRequestFilter">
+        <member name="P:ServiceStack.Clients.AsyncServiceClient.RequestFilter">
             <summary>
             The request filter is called before any request.
             This request filter is executed globally.
             </summary>
         </member>
-        <member name="P:ServiceStack.Clients.AsyncServiceClient.HttpWebResponseFilter">
+        <member name="P:ServiceStack.Clients.AsyncServiceClient.ResponseFilter">
             <summary>
             The response action is called once the server response is available.
             It will allow you to access raw response information. 
@@ -498,13 +498,13 @@
             Need to provide async request options
             http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
         </member>
-        <member name="F:ServiceStack.Clients.ServiceClientBase.httpWebRequestFilter">
+        <member name="F:ServiceStack.Clients.ServiceClientBase.globalRequestFilter">
             <summary>
             The request filter is called before any request.
             This request filter is executed globally.
             </summary>
         </member>
-        <member name="F:ServiceStack.Clients.ServiceClientBase.httpWebResponseFilter">
+        <member name="F:ServiceStack.Clients.ServiceClientBase.globalResponseFilter">
             <summary>
             The response action is called once the server response is available.
             It will allow you to access raw response information. 
@@ -578,13 +578,13 @@
             Called before request resend, when the initial request required authentication
             </summary>
         </member>
-        <member name="P:ServiceStack.Clients.ServiceClientBase.localHttpWebRequestFilter">
+        <member name="P:ServiceStack.Clients.ServiceClientBase.requestFilter">
             <summary>
             The request filter is called before any request.
             This request filter only works with the instance where it was set (not global).
             </summary>
         </member>
-        <member name="P:ServiceStack.Clients.ServiceClientBase.localHttpWebResponseFilter">
+        <member name="P:ServiceStack.Clients.ServiceClientBase.responseFilter">
             <summary>
             The response action is called once the server response is available.
             It will allow you to access raw response information. 
@@ -928,7 +928,7 @@
             rangeHeader should be of the format "bytes=0-" or "bytes=0-12345" or "bytes=123-456"
             </summary>
         </member>
-        <member name="M:ServiceStack.HttpResultExtensions.AddHttpRangeResponseHeaders(ServiceStack.Server.IHttpResponse,System.Int64,System.Int64,System.Int64)">
+        <member name="M:ServiceStack.HttpResultExtensions.AddHttpRangeResponseHeaders(ServiceStack.Web.IHttpResponse,System.Int64,System.Int64,System.Int64)">
             <summary>
             Adds 206 PartialContent Status, Content-Range and Content-Length headers
             </summary>
@@ -938,22 +938,22 @@
             Writes partial range as specified by start-end, from fromStream to toStream.
             </summary>
         </member>
-        <member name="M:ServiceStack.RequestContextExtensions.SetItem(ServiceStack.Server.IRequestContext,System.String,System.Object)">
+        <member name="M:ServiceStack.RequestContextExtensions.SetItem(ServiceStack.Web.IRequestContext,System.String,System.Object)">
             <summary>
             Store an entry in the IHttpRequest.Items Dictionary
             </summary>
         </member>
-        <member name="M:ServiceStack.RequestContextExtensions.SetItem(ServiceStack.Server.IHttpRequest,System.String,System.Object)">
+        <member name="M:ServiceStack.RequestContextExtensions.SetItem(ServiceStack.Web.IHttpRequest,System.String,System.Object)">
             <summary>
             Store an entry in the IHttpRequest.Items Dictionary
             </summary>
         </member>
-        <member name="M:ServiceStack.RequestContextExtensions.GetItem(ServiceStack.Server.IRequestContext,System.String)">
+        <member name="M:ServiceStack.RequestContextExtensions.GetItem(ServiceStack.Web.IRequestContext,System.String)">
             <summary>
             Get an entry from the IHttpRequest.Items Dictionary
             </summary>
         </member>
-        <member name="M:ServiceStack.RequestContextExtensions.GetItem(ServiceStack.Server.IHttpRequest,System.String)">
+        <member name="M:ServiceStack.RequestContextExtensions.GetItem(ServiceStack.Web.IHttpRequest,System.String)">
             <summary>
             Get an entry from the IHttpRequest.Items Dictionary
             </summary>
