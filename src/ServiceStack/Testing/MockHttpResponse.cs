@@ -49,7 +49,6 @@ namespace ServiceStack.Testing
         public void Close()
         {
             this.IsClosed = true;
-            OutputStream.Position = 0;
         }
 
         public void End()
@@ -64,14 +63,14 @@ namespace ServiceStack.Testing
 
         public string ReadAsString()
         {
-            this.OutputStream.Seek(0, SeekOrigin.Begin);
+            if (!IsClosed) this.OutputStream.Seek(0, SeekOrigin.Begin);
             var bytes = ((MemoryStream)OutputStream).ToArray();
             return bytes.FromUtf8Bytes();
         }
 
         public byte[] ReadAsBytes()
         {
-            this.OutputStream.Seek(0, SeekOrigin.Begin);
+            if (!IsClosed) this.OutputStream.Seek(0, SeekOrigin.Begin);
             var ms = (MemoryStream)this.OutputStream;
             return ms.ToArray();
         }
