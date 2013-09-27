@@ -5,6 +5,7 @@ using System.IO;
 using System.Net;
 using Funq;
 using ServiceStack.Server;
+using ServiceStack.Text;
 
 namespace ServiceStack.Testing
 {
@@ -17,7 +18,7 @@ namespace ServiceStack.Testing
             this.QueryString = new NameValueCollection();
             this.Cookies = new Dictionary<string, Cookie>();
             this.Items = new Dictionary<string, object>();
-            this.Container = new Container();
+            this.Container = EndpointHost.Container ?? new Container();
         }
 
         public MockHttpRequest(string operationName, string httpMethod,
@@ -57,7 +58,7 @@ namespace ServiceStack.Testing
         private string responseContentType;
         public string ResponseContentType
         {
-            get { return responseContentType ?? this.ContentType; }
+            get { return responseContentType ?? this.ContentType ?? MimeTypes.Json; }
             set { responseContentType = value; }
         }
 
@@ -69,11 +70,7 @@ namespace ServiceStack.Testing
 
         public bool UseBufferedStream { get; set; }
 
-        public Dictionary<string, object> Items
-        {
-            get;
-            private set;
-        }
+        public Dictionary<string, object> Items { get; set; }
 
         private string rawBody;
         public string GetRawBody()
