@@ -22,6 +22,8 @@ namespace ServiceStack.Testing
             this.ViewEngines = new List<IViewEngine>();
             this.CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
             VirtualPathProvider = new FileSystemVirtualPathProvider(this, "~".MapServerPath());
+
+            this.Config = AppHostConfig.Init("BasicAppHost", new ServiceManager(Container, Assembly.GetExecutingAssembly()));
         }
 
         public BasicAppHost(Container container, params Assembly[] serviceAssemblies) : this()
@@ -31,7 +33,7 @@ namespace ServiceStack.Testing
             if (serviceAssemblies.Length == 0)
                 serviceAssemblies = new[] { Assembly.GetExecutingAssembly() };
 
-            Config.ServiceManager = new ServiceManager(this.Container, serviceAssemblies).Init();
+            this.Config = AppHostConfig.Init(GetType().Name, new ServiceManager(this.Container, serviceAssemblies));
         }
 
         public void RegisterAs<T, TAs>() where T : TAs
@@ -78,15 +80,7 @@ namespace ServiceStack.Testing
             get { throw new NotImplementedException(); }
         }
 
-        private AppHostConfig config;
-        public AppHostConfig Config
-        {
-            get
-            {
-                return config ?? (new AppHostConfig("BasicAppHost", new ServiceManager(Container, Assembly.GetExecutingAssembly())));
-            }
-            set { config = value; }
-        }
+        public AppHostConfig Config { get; set; }
 
         public void RegisterService(Type serviceType, params string[] atRestPaths)
         {
@@ -114,7 +108,7 @@ namespace ServiceStack.Testing
 
         public BasicAppHost Init()
         {
-            EndpointHost.ConfigureHost(this, GetType().Name, Config.ServiceManager);
+            EndpointHost.ConfigureHost(this, GetType().Name, Config.ServiceManager.Init());
             
             return this;
         }

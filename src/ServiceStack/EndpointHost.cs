@@ -69,7 +69,7 @@ namespace ServiceStack
             };
 
             //Default Config for projects that want to use components but not WebFramework (e.g. MVC)
-            Config = new AppHostConfig(
+            Config = AppHostConfig.Init(
                 "Empty Config",
                 new ServiceManager(new Container(), new ServiceController(null)));
         }
@@ -78,13 +78,10 @@ namespace ServiceStack
         public static void ConfigureHost(IAppHost appHost, string serviceName, ServiceManager serviceManager)
         {
             Reset();
+
             AppHost = appHost;
+            Config = AppHostConfig.Init(serviceName, serviceManager);
 
-            AppHostConfig.Instance.ServiceName = serviceName;
-            AppHostConfig.Instance.ServiceManager = serviceManager;
-
-            var config = AppHostConfig.Instance;
-            Config = config; // avoid cross-dependency on Config setter
             VirtualPathProvider = new FileSystemVirtualPathProvider(AppHost, Config.WebHostPhysicalPath);
 
             Config.DebugMode = appHost.GetType().Assembly.IsDebugBuild();

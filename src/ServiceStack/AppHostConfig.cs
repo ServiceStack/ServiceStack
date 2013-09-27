@@ -131,12 +131,13 @@ namespace ServiceStack
             }
         }
 
-        public AppHostConfig(string serviceName, ServiceManager serviceManager)
-            : this()
+        public static AppHostConfig Init(string serviceName, ServiceManager serviceManager)
         {
-            this.ServiceName = serviceName;
-            this.ServiceManager = serviceManager;
-
+            var config = Instance;
+            config.ServiceName = serviceName;
+            config.ServiceManager = serviceManager;
+            EndpointHost.Config = config;
+            return config;
         }
 
         public AppHostConfig()
