@@ -1,11 +1,10 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Web.UI;
-using ServiceStack.Metadata;
 using ServiceStack.Server;
 using ServiceStack.Support.Html;
 
-namespace ServiceStack.Support.Metadata
+namespace ServiceStack.Metadata
 {
     internal class IndexOperationsControl : System.Web.UI.Control
     {

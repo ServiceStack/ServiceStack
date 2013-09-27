@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ServiceStack.Support.Metadata
+namespace ServiceStack.Metadata
 {
 	public abstract class WsdlTemplateBase
 	{

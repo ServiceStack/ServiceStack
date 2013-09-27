@@ -1,13 +1,12 @@
 using System;
 using System.Web;
 using ServiceStack.Host;
-using ServiceStack.Metadata;
 using ServiceStack.Server;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Logging;
 
-namespace ServiceStack.Support.Metadata
+namespace ServiceStack.Metadata
 {
     public abstract class WsdlMetadataHandlerBase : HttpHandlerBase
     {

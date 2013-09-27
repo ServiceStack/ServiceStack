@@ -1,4 +1,4 @@
-namespace ServiceStack.Support.Metadata
+namespace ServiceStack.Metadata
 {
     internal enum XsdTypeNames
     {

@@ -11,6 +11,7 @@ using ServiceStack.Text;
 using ServiceStack.WebHost;
 using ServiceStack.WebHost.AspNet;
 using ServiceStack.WebHost.Handlers;
+using ServiceStack.WebHost.HttpListener;
 
 namespace ServiceStack
 {

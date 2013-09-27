@@ -1,5 +1,4 @@
 using System;
-using ServiceStack.Support.Metadata;
 using ServiceStack.Text;
 using ServiceStack.Serialization;
 using ServiceStack.Server;

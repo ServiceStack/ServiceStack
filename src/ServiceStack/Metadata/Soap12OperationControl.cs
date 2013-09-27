@@ -1,19 +1,19 @@
 using System.Web;
 
-namespace ServiceStack.Support.Metadata
+namespace ServiceStack.Metadata
 {
-    internal class Soap11OperationControl : OperationControl
+    internal class Soap12OperationControl : OperationControl
     {
-        public Soap11OperationControl()
+        public Soap12OperationControl()
         {
-            Format = Format.Soap11;
+            Format = Format.Soap12;
         }
 
         public override string RequestUri
         {
             get
             {
-                var endpointConfig = MetadataConfig.Soap11;
+                var endpointConfig = MetadataConfig.Soap12;
                 var endpontPath = ResponseMessage != null ? endpointConfig.SyncReplyUri : endpointConfig.AsyncOneWayUri;
                 return string.Format("{0}", endpontPath);
             }
@@ -28,9 +28,8 @@ namespace ServiceStack.Support.Metadata
 Host: {1} 
 Content-Type: text/xml; charset=utf-8
 Content-Length: <span class=""value"">length</span>
-SOAPAction: {2}
 
-{3}", RequestUri, HostName, base.OperationName, HttpUtility.HtmlEncode(RequestMessage));
+{2}", RequestUri, HostName, HttpUtility.HtmlEncode(RequestMessage));
             }
         }
 

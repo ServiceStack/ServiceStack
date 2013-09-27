@@ -16,6 +16,7 @@ using ServiceStack.Server;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;
+using ServiceStack.WebHost.HttpListener;
 
 namespace ServiceStack
 {

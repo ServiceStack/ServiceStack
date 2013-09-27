@@ -3,7 +3,6 @@ using System.Web.UI;
 using ServiceStack.Host;
 using ServiceStack.Serialization;
 using ServiceStack.Server;
-using ServiceStack.Support.Metadata;
 using ServiceStack.Utils;
 using ServiceStack.Text;
 

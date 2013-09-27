@@ -4,7 +4,6 @@ using System.Web.UI;
 using System.Xml.Schema;
 using ServiceStack.Host;
 using ServiceStack.Server;
-using ServiceStack.Support.Metadata;
 using ServiceStack.Utils;
 using ServiceStack.WebHost.AspNet;
 using ServiceStack.WebHost.Handlers;

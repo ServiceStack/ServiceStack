@@ -14,9 +14,8 @@ using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Serialization;
 using ServiceStack.Server;
-using ServiceStack.WebHost.HttpListener;
 
-namespace ServiceStack.Support.WebHost
+namespace ServiceStack.WebHost.HttpListener
 {
 	public delegate void DelReceiveWebRequest(HttpListenerContext context);
 
@@ -31,7 +30,7 @@ namespace ServiceStack.Support.WebHost
 
 		private const int RequestThreadAbortedException = 995;
 
-		protected HttpListener Listener;
+		protected System.Net.HttpListener Listener;
 		protected bool IsStarted = false;
 	    protected string registeredReservedUrl = null;
 
@@ -129,7 +128,7 @@ namespace ServiceStack.Support.WebHost
 	            return;
 
 	        if (this.Listener == null)
-	            Listener = new HttpListener();
+	            Listener = new System.Net.HttpListener();
 
 	        EndpointHost.Config.ServiceStackHandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(urlBase);
 
@@ -188,7 +187,7 @@ namespace ServiceStack.Support.WebHost
 		// Handle the processing of a request in here.
 		private void ListenerCallback(IAsyncResult asyncResult)
 		{
-			var listener = asyncResult.AsyncState as HttpListener;
+			var listener = asyncResult.AsyncState as System.Net.HttpListener;
 			HttpListenerContext context = null;
 
 			if (listener == null) return;

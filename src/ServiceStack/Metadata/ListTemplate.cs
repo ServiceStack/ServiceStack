@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ServiceStack.Support.Metadata
+namespace ServiceStack.Metadata
 {
     internal class ListTemplate
     {

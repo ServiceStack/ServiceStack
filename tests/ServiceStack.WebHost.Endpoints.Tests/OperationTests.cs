@@ -8,7 +8,6 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Metadata;
 using ServiceStack.ServiceHost;
-using ServiceStack.Support.Metadata;
 using ServiceStack.Testing;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;

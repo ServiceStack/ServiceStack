@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Web.UI;
 using ServiceStack.Support.Html;
 
-namespace ServiceStack.Support.Metadata
+namespace ServiceStack.Metadata
 {
     internal class OperationsControl : System.Web.UI.Control
     {

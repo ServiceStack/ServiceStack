@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ServiceStack.Support.Metadata
+namespace ServiceStack.Metadata
 {
     internal static class XsdTypes
     {

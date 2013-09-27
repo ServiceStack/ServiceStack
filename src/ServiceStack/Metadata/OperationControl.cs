@@ -1,11 +1,10 @@
 using System.Web;
 using System.Web.UI;
-using ServiceStack.Metadata;
 using ServiceStack.Server;
 using ServiceStack.Support.Html;
 using ServiceStack.Text;
 
-namespace ServiceStack.Support.Metadata
+namespace ServiceStack.Metadata
 {
     public class OperationControl
     {
