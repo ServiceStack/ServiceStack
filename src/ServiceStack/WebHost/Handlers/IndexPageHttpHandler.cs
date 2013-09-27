@@ -2,10 +2,8 @@ using System.Net;
 using System.Web;
 using ServiceStack.Server;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Support;
 
-namespace ServiceStack.Support.WebHost
+namespace ServiceStack.WebHost.Handlers
 {
 	public class IndexPageHttpHandler
 		: IServiceStackHttpHandler, IHttpHandler

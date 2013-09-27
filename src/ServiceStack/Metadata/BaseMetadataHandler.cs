@@ -12,10 +12,8 @@ using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.Web;
 using ServiceStack.WebHost.AspNet;
-using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Support;
 using System.Text;
-using ServiceStack.ServiceHost;
+using ServiceStack.WebHost.Handlers;
 
 namespace ServiceStack.Metadata
 {

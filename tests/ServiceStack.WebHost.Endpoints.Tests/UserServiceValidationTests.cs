@@ -13,6 +13,7 @@ using ServiceStack.Support.WebHost;
 using ServiceStack.Validation;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
+using ServiceStack.WebHost.Handlers;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

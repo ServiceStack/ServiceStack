@@ -9,9 +9,7 @@ using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Serialization;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Host
 {

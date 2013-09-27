@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using ServiceStack.Html;
 using ServiceStack.Support.Markdown;
-using ServiceStack.WebHost;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Markdown
 {

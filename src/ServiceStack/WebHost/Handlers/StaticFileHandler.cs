@@ -37,9 +37,8 @@ using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.WebHost.AspNet;
-using ServiceStack.WebHost.Endpoints;
 
-namespace ServiceStack.Support.WebHost
+namespace ServiceStack.WebHost.Handlers
 {
     public class StaticFileHandler : IHttpHandler, IServiceStackHttpHandler
 	{

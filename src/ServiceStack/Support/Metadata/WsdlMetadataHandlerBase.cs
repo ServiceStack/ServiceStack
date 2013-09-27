@@ -3,13 +3,9 @@ using System.Web;
 using ServiceStack.Host;
 using ServiceStack.Metadata;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
-using ServiceStack.Support.Templates;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Logging;
-using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.Support.Metadata
 {

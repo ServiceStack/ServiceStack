@@ -1,7 +1,5 @@
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.WebHost;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Metadata
 {

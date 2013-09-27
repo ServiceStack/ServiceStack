@@ -3,10 +3,7 @@ using System.Net;
 using System.Text;
 using System.Web;
 using ServiceStack.Server;
-using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints;
-using HttpListenerResponse = System.Net.HttpListenerResponse;
 
 namespace ServiceStack.ServiceHost
 {

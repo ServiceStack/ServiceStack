@@ -12,8 +12,6 @@ using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Server;
-using ServiceStack.WebHost;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack
 {

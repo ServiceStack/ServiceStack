@@ -1,6 +1,6 @@
 using ServiceStack.Text;
 
-namespace ServiceStack.WebHost
+namespace ServiceStack.WebHost.Handlers
 {
     public class JsonAsyncOneWayHandler : GenericHandler
     {

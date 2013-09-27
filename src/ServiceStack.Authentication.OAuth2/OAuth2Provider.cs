@@ -8,7 +8,6 @@ using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Authentication.OAuth2
 {

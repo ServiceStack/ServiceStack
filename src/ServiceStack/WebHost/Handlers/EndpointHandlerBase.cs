@@ -7,16 +7,12 @@ using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.Serialization;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.WebHost;
 using ServiceStack.WebHost.AspNet;
-using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.HttpListener;
 
-namespace ServiceStack.Support.WebHost
+namespace ServiceStack.WebHost.Handlers
 {
     public abstract class EndpointHandlerBase
         : IServiceStackHttpHandler, IHttpHandler

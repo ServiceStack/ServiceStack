@@ -6,7 +6,6 @@ using ServiceStack.Logging;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests

@@ -3,8 +3,6 @@ using System.Net;
 using Funq;
 using ServiceStack.Auth;
 using ServiceStack.Server;
-using ServiceStack.WebHost;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Testing
 {

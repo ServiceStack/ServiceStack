@@ -5,7 +5,7 @@ using ServiceStack.ServiceHost;
 using ServiceStack.Support;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints.Support;
+using ServiceStack.WebHost.Handlers;
 
 namespace ServiceStack.Razor
 {

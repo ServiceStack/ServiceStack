@@ -7,12 +7,9 @@ using ServiceStack.Logging;
 using ServiceStack.Markdown;
 using ServiceStack.Server;
 using ServiceStack.Support.Markdown;
-using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.WebHost;
-using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Support;
+using ServiceStack.WebHost.Handlers;
 
 namespace ServiceStack.Formats
 {

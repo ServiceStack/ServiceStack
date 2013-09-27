@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Text;
 using System.Web;
 using ServiceStack.Server;
-using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Logging;
 using ServiceStack.WebHost.AspNet;
 
-namespace ServiceStack.WebHost.Endpoints.Support
+namespace ServiceStack.WebHost.Handlers
 {
 	public class NotFoundHttpHandler
 		: IServiceStackHttpHandler, IHttpHandler

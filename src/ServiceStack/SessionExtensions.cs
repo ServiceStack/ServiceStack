@@ -5,7 +5,6 @@ using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Server;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack
 {

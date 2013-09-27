@@ -6,7 +6,6 @@ using System.Text;
 using ServiceStack.Serialization;
 using ServiceStack.Server;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Host
 {

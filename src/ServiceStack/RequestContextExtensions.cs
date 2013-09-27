@@ -2,7 +2,6 @@ using System;
 using ServiceStack.Caching;
 using ServiceStack.Server;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack
 {

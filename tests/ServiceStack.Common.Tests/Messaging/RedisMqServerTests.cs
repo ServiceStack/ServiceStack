@@ -5,8 +5,6 @@ using ServiceStack.Messaging;
 using ServiceStack.Redis;
 using ServiceStack.Redis.Messaging;
 using ServiceStack.Clients;
-using ServiceStack.ServiceHost;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Common.Tests.Messaging
 {

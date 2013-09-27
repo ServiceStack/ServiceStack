@@ -8,15 +8,11 @@ using System.Text;
 using System.Web;
 using ServiceStack.Logging;
 using ServiceStack.Server;
-using ServiceStack.Support;
-using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.Web;
-using ServiceStack.WebHost;
 using ServiceStack.WebHost.AspNet;
-using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Support;
+using ServiceStack.WebHost.Handlers;
 using ServiceStack.WebHost.HttpListener;
 
 namespace ServiceStack

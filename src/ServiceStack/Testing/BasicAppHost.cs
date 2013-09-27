@@ -8,9 +8,6 @@ using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Server;
 using ServiceStack.VirtualPath;
-using ServiceStack.ServiceHost;
-using ServiceStack.WebHost;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Testing
 {

@@ -1,14 +1,9 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Web.UI;
-using ServiceStack.Host;
 using ServiceStack.Metadata;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.Support.Html;
-using ServiceStack.Support.Templates;
-using ServiceStack.WebHost;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Support.Metadata
 {

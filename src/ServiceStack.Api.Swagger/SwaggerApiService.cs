@@ -7,10 +7,8 @@ using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using ServiceStack.Host;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Api.Swagger
 {

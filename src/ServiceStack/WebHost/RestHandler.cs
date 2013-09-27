@@ -6,6 +6,7 @@ using ServiceStack.Server;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
+using ServiceStack.WebHost.Handlers;
 
 namespace ServiceStack.WebHost
 {

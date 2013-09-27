@@ -1,6 +1,6 @@
 using ServiceStack.Server;
 
-namespace ServiceStack.Support.WebHost
+namespace ServiceStack.WebHost.Handlers
 {
 	public interface IServiceStackHttpHandler
 	{

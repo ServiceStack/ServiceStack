@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Text;
 using ServiceStack.Logging;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Support.Markdown
 {

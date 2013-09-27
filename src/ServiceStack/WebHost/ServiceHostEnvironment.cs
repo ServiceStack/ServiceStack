@@ -1,6 +1,4 @@
-﻿using ServiceStack.WebHost.Endpoints;
-
-namespace ServiceStack.WebHost
+﻿namespace ServiceStack.WebHost
 {
 	public class ServiceHostEnvironment
 	{

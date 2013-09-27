@@ -9,6 +9,7 @@ using ServiceStack.ServiceHost;
 using ServiceStack.Support;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Handlers;
 
 namespace ServiceStack.WebHost.Endpoints.Support.Tests
 {

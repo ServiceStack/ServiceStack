@@ -3,13 +3,13 @@ using ServiceStack.Server;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.AspNet;
-using ServiceStack.WebHost.Endpoints;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using ServiceStack.WebHost.Handlers;
 
 namespace ServiceStack.Metadata
 {

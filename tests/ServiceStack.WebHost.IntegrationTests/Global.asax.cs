@@ -18,7 +18,6 @@ using ServiceStack.Api.Swagger;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.Validation;
-using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.IntegrationTests.Services;
 using ServiceStack.WebHost.IntegrationTests.Tests;
 

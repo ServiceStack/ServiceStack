@@ -14,9 +14,6 @@ using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Serialization;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
-using ServiceStack.WebHost;
-using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.HttpListener;
 
 namespace ServiceStack.Support.WebHost

@@ -5,11 +5,9 @@ using System.Web.UI;
 using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.Support.Metadata;
 using ServiceStack.Utils;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Metadata
 {

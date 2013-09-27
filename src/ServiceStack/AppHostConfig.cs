@@ -21,7 +21,7 @@ using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints.Support;
+using ServiceStack.WebHost.Handlers;
 
 namespace ServiceStack
 {

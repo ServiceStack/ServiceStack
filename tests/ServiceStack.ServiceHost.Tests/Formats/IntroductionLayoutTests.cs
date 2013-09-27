@@ -7,7 +7,6 @@ using ServiceStack.Markdown;
 using ServiceStack.Support.Markdown;
 using ServiceStack.Testing;
 using ServiceStack.VirtualPath;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
 {

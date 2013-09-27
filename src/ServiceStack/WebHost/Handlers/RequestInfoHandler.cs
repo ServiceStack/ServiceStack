@@ -6,9 +6,8 @@ using System.Web;
 using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.WebHost.AspNet;
-using ServiceStack.WebHost.Endpoints;
 
-namespace ServiceStack.Support.WebHost
+namespace ServiceStack.WebHost.Handlers
 {
 	[DataContract]
 	public class RequestInfo { }

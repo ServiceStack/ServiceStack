@@ -3,9 +3,7 @@ using System.Net;
 using System.Web;
 using ServiceStack.Host;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack
 {

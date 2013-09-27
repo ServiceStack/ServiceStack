@@ -4,13 +4,10 @@ using System.Web.UI;
 using System.Xml.Schema;
 using ServiceStack.Host;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.Support.Metadata;
-using ServiceStack.Support.WebHost;
 using ServiceStack.Utils;
 using ServiceStack.WebHost.AspNet;
-using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Support;
+using ServiceStack.WebHost.Handlers;
 
 namespace ServiceStack.Metadata
 {

@@ -7,11 +7,8 @@ using ServiceStack.Host;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
-using ServiceStack.WebHost;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Testing
 {

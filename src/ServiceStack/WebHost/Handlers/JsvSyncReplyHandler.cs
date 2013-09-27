@@ -4,7 +4,7 @@ using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
-namespace ServiceStack.WebHost
+namespace ServiceStack.WebHost.Handlers
 {
     public class JsvAsyncOneWayHandler : GenericHandler
     {

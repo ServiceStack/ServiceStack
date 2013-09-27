@@ -2,7 +2,6 @@ using System.Web.UI;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
-using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.IntegrationTests.Tests;
 
 namespace ServiceStack.WebHost.IntegrationTests

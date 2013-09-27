@@ -10,8 +10,7 @@ using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost;
 using ServiceStack.WebHost.AspNet;
-using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Support;
+using ServiceStack.WebHost.Handlers;
 
 namespace ServiceStack
 {
@@ -345,7 +344,7 @@ namespace ServiceStack
                     if (!pathInfo.EndsWith("/"))
                     {
                         var appFilePath = filePath.Substring(0, filePath.Length - requestPath.Length);
-                        var redirect = ServiceStack.Support.WebHost.StaticFileHandler.DirectoryExists(filePath, appFilePath);
+                        var redirect = WebHost.Handlers.StaticFileHandler.DirectoryExists(filePath, appFilePath);
                         if (redirect)
                         {
                             return new RedirectHttpHandler

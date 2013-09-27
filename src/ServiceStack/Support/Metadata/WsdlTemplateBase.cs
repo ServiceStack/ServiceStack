@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Text;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Support.Metadata
 {

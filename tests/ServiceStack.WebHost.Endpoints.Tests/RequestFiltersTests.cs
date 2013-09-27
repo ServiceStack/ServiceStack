@@ -16,6 +16,7 @@ using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
+using ServiceStack.WebHost.Handlers;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

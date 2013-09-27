@@ -5,7 +5,7 @@ using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
-namespace ServiceStack.WebHost
+namespace ServiceStack.WebHost.Handlers
 {
 	public class GenericHandler : EndpointHandlerBase
 	{

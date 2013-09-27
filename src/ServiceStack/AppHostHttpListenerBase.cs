@@ -4,7 +4,7 @@ using System.Reflection;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Utils;
 using ServiceStack.WebHost;
-using ServiceStack.WebHost.Endpoints;
+using ServiceStack.WebHost.Handlers;
 using ServiceStack.WebHost.HttpListener;
 
 namespace ServiceStack

@@ -4,7 +4,6 @@ using ServiceStack.Text;
 using ServiceStack.Serialization;
 using ServiceStack.Server;
 using ServiceStack.Utils;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Metadata
 {

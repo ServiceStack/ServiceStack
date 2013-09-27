@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using ServiceStack.Utils;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Support.Html
 {

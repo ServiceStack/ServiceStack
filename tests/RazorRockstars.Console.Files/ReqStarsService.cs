@@ -16,10 +16,8 @@ using ServiceStack.Logging.Support.Logging;
 using ServiceStack.OrmLite;
 using ServiceStack.Plugins.MsgPack;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints;
 
 namespace RazorRockstars.Console.Files
 {

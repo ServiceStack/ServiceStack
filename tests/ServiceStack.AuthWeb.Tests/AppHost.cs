@@ -14,7 +14,6 @@ using ServiceStack.OrmLite;
 using ServiceStack.Razor;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints;
 
 #if HTTP_LISTENER
 namespace ServiceStack.Auth.Tests

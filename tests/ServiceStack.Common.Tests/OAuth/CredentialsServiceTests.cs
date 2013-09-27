@@ -2,12 +2,9 @@
 using ServiceStack.Auth;
 using ServiceStack.Host;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.Testing;
 using ServiceStack.Utils;
 using ServiceStack.Web;
-using ServiceStack.WebHost;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Common.Tests.OAuth
 {

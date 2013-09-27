@@ -2,8 +2,6 @@
 using ServiceStack.Host;
 using ServiceStack.Metadata;
 using ServiceStack.Web;
-using ServiceStack.WebHost;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack
 {

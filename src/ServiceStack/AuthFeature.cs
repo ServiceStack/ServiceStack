@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Auth;
-using ServiceStack.WebHost;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack
 {

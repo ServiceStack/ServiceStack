@@ -4,7 +4,7 @@ using System.Web;
 using ServiceStack.Server;
 using ServiceStack.Web;
 
-namespace ServiceStack.Support.WebHost
+namespace ServiceStack.WebHost.Handlers
 {
 	public class RedirectHttpHandler
 		: IServiceStackHttpHandler, IHttpHandler

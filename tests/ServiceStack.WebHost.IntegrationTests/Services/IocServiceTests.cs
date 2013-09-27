@@ -4,7 +4,6 @@ using NUnit.Framework;
 using ServiceStack.Server;
 using ServiceStack.Clients;
 using ServiceStack.WebHost.IntegrationTests.Tests;
-using Config = ServiceStack.Configuration.Config;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {

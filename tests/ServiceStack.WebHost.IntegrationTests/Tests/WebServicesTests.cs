@@ -7,7 +7,7 @@ using ServiceStack.Support;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Testing;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints.Support;
+using ServiceStack.WebHost.Handlers;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests

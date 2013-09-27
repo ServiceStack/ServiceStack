@@ -8,8 +8,6 @@ using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.WebHost.AspNet;
-using ServiceStack.WebHost.Endpoints;
-using HttpListenerResponse = System.Net.HttpListenerResponse;
 
 namespace ServiceStack
 {

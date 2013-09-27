@@ -5,7 +5,6 @@ using System.IO;
 using System.Net;
 using ServiceStack.Server;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Support.Mocks
 {

@@ -9,7 +9,6 @@ using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Utils
 {

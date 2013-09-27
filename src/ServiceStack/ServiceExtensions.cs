@@ -6,12 +6,9 @@ using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Redis;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.WebHost;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack
 {

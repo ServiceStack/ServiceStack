@@ -1,12 +1,8 @@
 ﻿using System;
 using System.IO;
-using ProtoBuf;
 using ProtoBuf.Meta;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.Text;
-using ServiceStack.WebHost;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Plugins.ProtoBuf
 {

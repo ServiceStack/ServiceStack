@@ -5,7 +5,6 @@ using System.Net;
 using ServiceStack.Auth;
 using ServiceStack.Server;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack
 {

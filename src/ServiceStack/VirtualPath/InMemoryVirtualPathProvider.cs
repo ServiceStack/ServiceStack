@@ -2,11 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using ServiceStack.Common;
 using ServiceStack.IO;
 using ServiceStack.Text;
-using ServiceStack.WebHost;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.VirtualPath
 {

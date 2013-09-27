@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 using ServiceStack.Web;
-using ServiceStack.WebHost;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack
 {

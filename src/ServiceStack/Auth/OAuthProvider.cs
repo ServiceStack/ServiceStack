@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Auth
 {

@@ -5,8 +5,6 @@ using ServiceStack.Serialization;
 using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.WebHost;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Formats
 {

@@ -1,6 +1,5 @@
 using NUnit.Framework;
 using ServiceStack.Testing;
-using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests

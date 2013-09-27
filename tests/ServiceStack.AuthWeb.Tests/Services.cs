@@ -4,12 +4,9 @@ using System.Runtime.Serialization;
 using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
-using ServiceStack.Host;
 using ServiceStack.OrmLite;
-using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints;
 
 #if HTTP_LISTENER
 namespace ServiceStack.Auth.Tests

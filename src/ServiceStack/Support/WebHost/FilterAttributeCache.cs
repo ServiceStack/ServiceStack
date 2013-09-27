@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using ServiceStack.Server;
 using System.Threading;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Support.WebHost
 {

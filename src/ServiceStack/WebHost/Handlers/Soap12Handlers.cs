@@ -2,10 +2,9 @@ using System.Web;
 using System.Xml;
 using ServiceStack.Metadata;
 using ServiceStack.Server;
-using ServiceStack.Support.WebHost;
 using ServiceStack.Web;
 
-namespace ServiceStack.WebHost
+namespace ServiceStack.WebHost.Handlers
 {
     public class Soap12Handler : SoapHandler
     {
