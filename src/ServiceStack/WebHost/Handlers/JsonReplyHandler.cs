@@ -2,17 +2,17 @@ using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Handlers
 {
-    public class JsonAsyncOneWayHandler : GenericHandler
+    public class JsonOneWayHandler : GenericHandler
     {
-        public JsonAsyncOneWayHandler()
+        public JsonOneWayHandler()
             : base(MimeTypes.Json, EndpointAttributes.OneWay | EndpointAttributes.Json, Feature.Json)
         {
         }
     }
 
-    public class JsonSyncReplyHandler : GenericHandler
+    public class JsonReplyHandler : GenericHandler
     {
-        public JsonSyncReplyHandler()
+        public JsonReplyHandler()
             : base(MimeTypes.Json, EndpointAttributes.Reply | EndpointAttributes.Json, Feature.Json)
         {
         }

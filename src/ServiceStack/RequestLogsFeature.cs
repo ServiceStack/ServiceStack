@@ -1,9 +1,10 @@
 ﻿using System;
+using ServiceStack.Admin;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Server;
 
-namespace ServiceStack.Admin
+namespace ServiceStack
 {
     public class RequestLogsFeature : IPlugin
     {

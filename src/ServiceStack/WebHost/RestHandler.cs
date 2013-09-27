@@ -3,7 +3,6 @@ using System.Runtime.Serialization;
 using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Server;
-using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Handlers;
@@ -98,7 +97,7 @@ namespace ServiceStack.WebHost
 
                 if (responseContentType.Contains("jsv") && !string.IsNullOrEmpty(httpReq.QueryString["debug"]))
                 {
-                    JsvSyncReplyHandler.WriteDebugResponse(httpRes, response);
+                    JsvReplyHandler.WriteDebugResponse(httpRes, response);
                     return;
                 }
 

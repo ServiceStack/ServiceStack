@@ -6,15 +6,15 @@ using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Handlers
 {
-    public class JsvAsyncOneWayHandler : GenericHandler
+    public class JsvOneWayHandler : GenericHandler
     {
-        public JsvAsyncOneWayHandler()
+        public JsvOneWayHandler()
             : base(MimeTypes.Jsv, EndpointAttributes.OneWay | EndpointAttributes.Jsv, Feature.Jsv) { }
     }
 
-    public class JsvSyncReplyHandler : GenericHandler
+    public class JsvReplyHandler : GenericHandler
     {
-        public JsvSyncReplyHandler()
+        public JsvReplyHandler()
             : base(MimeTypes.JsvText, EndpointAttributes.Reply | EndpointAttributes.Jsv, Feature.Jsv) { }
 
         private static void WriteDebugRequest(IRequestContext requestContext, object dto, IHttpResponse httpRes)

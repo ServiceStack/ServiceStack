@@ -24,9 +24,9 @@ namespace ServiceStack
             if (pathParts.Length == 1)
             {
                 if (pathController == "soap11")
-                    return new Soap11MessageSyncReplyHttpHandler();
+                    return new Soap11MessageReplyHttpHandler();
                 if (pathController == "soap12")
-                    return new Soap12MessageSyncReplyHttpHandler();
+                    return new Soap12MessageReplyHttpHandler();
 
                 return null;
             }
@@ -39,23 +39,23 @@ namespace ServiceStack
             {
                 case "json":
                     if (isReply)
-                        return new JsonSyncReplyHandler { RequestName = requestName };
+                        return new JsonReplyHandler { RequestName = requestName };
                     if (isOneWay)
-                        return new JsonAsyncOneWayHandler { RequestName = requestName };
+                        return new JsonOneWayHandler { RequestName = requestName };
                     break;
 
                 case "xml":
                     if (isReply)
-                        return new XmlSyncReplyHandler { RequestName = requestName };
+                        return new XmlReplyHandler { RequestName = requestName };
                     if (isOneWay)
-                        return new XmlAsyncOneWayHandler { RequestName = requestName };
+                        return new XmlOneWayHandler { RequestName = requestName };
                     break;
 
                 case "jsv":
                     if (isReply)
-                        return new JsvSyncReplyHandler { RequestName = requestName };
+                        return new JsvReplyHandler { RequestName = requestName };
                     if (isOneWay)
-                        return new JsvAsyncOneWayHandler { RequestName = requestName };
+                        return new JsvOneWayHandler { RequestName = requestName };
                     break;
 
                 default:

@@ -106,7 +106,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AddHeaderAttribute.cs" />
-    <Compile Include="Admin\RequestLogsFeature.cs" />
+    <Compile Include="RequestLogsFeature.cs" />
     <Compile Include="Admin\RequestLogsService.cs" />
     <Compile Include="ApplyTo.cs" />
     <Compile Include="AuthenticateAttribute.cs" />
@@ -453,7 +453,7 @@
     <Compile Include="WebHost\Handlers\RedirectHttpHandler.cs" />
     <Compile Include="WebHost\Handlers\IServiceStackHttpHandler.cs" />
     <Compile Include="WebHost\Handlers\NotFoundHttpHandler.cs" />
-    <Compile Include="WebHost\Handlers\JsvSyncReplyHandler.cs" />
+    <Compile Include="WebHost\Handlers\JsvReplyHandler.cs" />
     <Compile Include="HttpResponseExtensionsInternal.cs" />
     <Compile Include="WebHost\HttpListener\ListenerResponse.cs" />
     <Compile Include="WebHost\AspNet\AspNetResponse.cs" />
@@ -477,14 +477,14 @@
     <Compile Include="Metadata\Soap11WsdlTemplate.cs" />
     <Compile Include="Metadata\WsdlTemplateBase.cs" />
     <Compile Include="WebHost\Handlers\Soap12Handlers.cs" />
-    <Compile Include="WebHost\Handlers\JsonSyncReplyHandler.cs" />
+    <Compile Include="WebHost\Handlers\JsonReplyHandler.cs" />
     <Compile Include="WebHost\Handlers\EndpointHandlerBase.cs" />
     <Compile Include="EndpointHost.cs" />
     <Compile Include="AppHostConfig.cs" />
     <Compile Include="WebHost\Handlers\SoapHandler.cs" />
     <Compile Include="Support\WebHost\FilterAttributeCache.cs" />
     <Compile Include="WebHost\WebServerType.cs" />
-    <Compile Include="WebHost\Handlers\XmlSyncReplyHandler.cs" />
+    <Compile Include="WebHost\Handlers\XmlReplyHandler.cs" />
     <Compile Include="Metadata\IndexMetadataHandler.cs" />
     <Compile Include="Metadata\Soap11MetadataHandler.cs" />
     <Compile Include="Metadata\Soap12MetadataHandler.cs" />

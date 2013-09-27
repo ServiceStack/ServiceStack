@@ -16,14 +16,14 @@ namespace ServiceStack.WebHost.Handlers
         }
     }
 
-    public class Soap11SyncReplyHandler : Soap11Handler
+    public class Soap11ReplyHandler : Soap11Handler
     {
-        public Soap11SyncReplyHandler() : base(EndpointAttributes.Soap11) { }
+        public Soap11ReplyHandler() : base(EndpointAttributes.Soap11) { }
     }
 
-    public class Soap11AsyncOneWayHandler : Soap11Handler
+    public class Soap11OneWayHandler : Soap11Handler
     {
-        public Soap11AsyncOneWayHandler() : base(EndpointAttributes.Soap11) { }
+        public Soap11OneWayHandler() : base(EndpointAttributes.Soap11) { }
 
         public override void ProcessRequest(HttpContext context)
         {
@@ -38,9 +38,9 @@ namespace ServiceStack.WebHost.Handlers
         }
     }
 
-    public class Soap11MessageSyncReplyHttpHandler : Soap11Handler, IHttpHandler
+    public class Soap11MessageReplyHttpHandler : Soap11Handler, IHttpHandler
     {
-        public Soap11MessageSyncReplyHttpHandler() : base(EndpointAttributes.Soap11) { }
+        public Soap11MessageReplyHttpHandler() : base(EndpointAttributes.Soap11) { }
 
         public new void ProcessRequest(HttpContext context)
         {

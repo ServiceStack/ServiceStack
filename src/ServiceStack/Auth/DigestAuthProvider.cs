@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using ServiceStack.Host;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.Configuration;
 using ServiceStack.FluentValidation;
 using ServiceStack.Text;

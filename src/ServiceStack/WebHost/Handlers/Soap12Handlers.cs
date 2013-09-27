@@ -21,15 +21,15 @@ namespace ServiceStack.WebHost.Handlers
         public Soap12Handlers() : base(EndpointAttributes.Soap12) { }
     }
 
-    public class Soap12AsyncOneWayHandler : Soap12Handler
+    public class Soap12OneWayHandler : Soap12Handler
     {
-        public Soap12AsyncOneWayHandler() : base(EndpointAttributes.Soap12) { }
+        public Soap12OneWayHandler() : base(EndpointAttributes.Soap12) { }
     }
 
-    public class Soap12MessageAsyncOneWayHttpHandler
+    public class Soap12MessageOneWayHttpHandler
         : Soap12Handler, IHttpHandler
     {
-        public Soap12MessageAsyncOneWayHttpHandler() : base(EndpointAttributes.Soap12) { }
+        public Soap12MessageOneWayHttpHandler() : base(EndpointAttributes.Soap12) { }
 
         public new void ProcessRequest(HttpContext context)
         {
@@ -44,9 +44,9 @@ namespace ServiceStack.WebHost.Handlers
         }
     }
 
-    public class Soap12MessageSyncReplyHttpHandler : Soap12Handler, IHttpHandler
+    public class Soap12MessageReplyHttpHandler : Soap12Handler, IHttpHandler
     {
-        public Soap12MessageSyncReplyHttpHandler() : base(EndpointAttributes.Soap12) { }
+        public Soap12MessageReplyHttpHandler() : base(EndpointAttributes.Soap12) { }
 
         public new void ProcessRequest(HttpContext context)
         {

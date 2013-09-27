@@ -2,17 +2,17 @@ using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Handlers
 {
-	public class XmlAsyncOneWayHandler : GenericHandler
+	public class XmlOneWayHandler : GenericHandler
 	{
-		public XmlAsyncOneWayHandler()
+		public XmlOneWayHandler()
             : base(MimeTypes.Xml, EndpointAttributes.OneWay | EndpointAttributes.Xml, Feature.Xml)
 		{
 		}
 	}
 
-	public class XmlSyncReplyHandler : GenericHandler
+	public class XmlReplyHandler : GenericHandler
 	{
-		public XmlSyncReplyHandler()
+		public XmlReplyHandler()
             : base(MimeTypes.Xml, EndpointAttributes.Reply | EndpointAttributes.Xml, Feature.Xml)
 		{
 		}
