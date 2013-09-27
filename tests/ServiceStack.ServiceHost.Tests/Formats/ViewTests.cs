@@ -51,7 +51,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 					HtmlReplaceTokens = new Dictionary<string, string>(),
 					IgnoreFormatsInMetadata = new HashSet<string>(),
 				};
-				this.ContentTypeses = ContentTypes.Instance;
+				this.ContentTypes = Web.ContentTypes.Instance;
 				this.GlobalResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
 				this.ViewEngines = new List<IViewEngine>();
 				this.CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
@@ -79,7 +79,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 				throw new NotImplementedException();
 			}
 
-			public IContentTypes ContentTypeses { get; set; }
+			public IContentTypes ContentTypes { get; set; }
 
             public List<Action<IHttpRequest, IHttpResponse>> PreRequestFilters { get; set; }
 

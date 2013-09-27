@@ -55,7 +55,7 @@ namespace ServiceStack.ServiceHost.Tests
             var appHost = new TestAppHost();
             if (pluginFormat != null) pluginFormat.Register(appHost);
 
-            EndpointHost.ContentTypes = appHost.ContentTypeses;
+            EndpointHost.ContentTypes = appHost.ContentTypes;
 
             object result = httpRequestContext.ToOptimizedResult(dto);
             Assert.IsNotNull(result);

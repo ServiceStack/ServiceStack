@@ -60,7 +60,7 @@ namespace ServiceStack
 
         public static bool WriteToResponse(this IHttpResponse httpRes, object result, string contentType)
         {
-            var serializer = EndpointHost.AppHost.ContentTypeses.GetResponseSerializer(contentType);
+            var serializer = EndpointHost.AppHost.ContentTypes.GetResponseSerializer(contentType);
             return httpRes.WriteToResponse(result, serializer, new SerializationContext(contentType));
         }
 
@@ -83,7 +83,7 @@ namespace ServiceStack
             {
                 if (httpResult.ResponseFilter == null)
                 {
-                    httpResult.ResponseFilter = EndpointHost.AppHost.ContentTypeses;
+                    httpResult.ResponseFilter = EndpointHost.AppHost.ContentTypes;
                 }
                 httpResult.RequestContext = serializationContext;
                 serializationContext.ResponseContentType = httpResult.ContentType ?? httpReq.ResponseContentType;
@@ -91,7 +91,7 @@ namespace ServiceStack
                 return httpRes.WriteToResponse(httpResult, httpResSerializer, serializationContext, bodyPrefix, bodySuffix);
             }
 
-            var serializer = EndpointHost.AppHost.ContentTypeses.GetResponseSerializer(httpReq.ResponseContentType);
+            var serializer = EndpointHost.AppHost.ContentTypes.GetResponseSerializer(httpReq.ResponseContentType);
             return httpRes.WriteToResponse(result, serializer, serializationContext, bodyPrefix, bodySuffix);
         }
 
@@ -310,7 +310,7 @@ namespace ServiceStack
             httpRes.StatusCode = statusCode;
             var serializationCtx = new SerializationContext(contentType);
 
-            var serializer = EndpointHost.AppHost.ContentTypeses.GetResponseSerializer(contentType);
+            var serializer = EndpointHost.AppHost.ContentTypes.GetResponseSerializer(contentType);
             if (serializer != null)
             {
                 serializer(serializationCtx, errorDto, httpRes);

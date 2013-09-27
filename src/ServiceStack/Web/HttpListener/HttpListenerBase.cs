@@ -450,7 +450,7 @@ namespace ServiceStack.Web.HttpListener
 			get { return EndpointHost.ServiceManager.ServiceController.RequestTypeFactoryMap; }
 		}
 
-		public IContentTypes ContentTypeses
+		public IContentTypes ContentTypes
 		{
 			get
 			{

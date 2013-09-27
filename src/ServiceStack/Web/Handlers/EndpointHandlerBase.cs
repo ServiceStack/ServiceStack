@@ -92,7 +92,7 @@ namespace ServiceStack.Web.Handlers
             {
                 if (!string.IsNullOrEmpty(contentType) && httpReq.ContentLength > 0)
                 {
-                    var deserializer = EndpointHost.AppHost.ContentTypeses.GetStreamDeserializer(contentType);
+                    var deserializer = EndpointHost.AppHost.ContentTypes.GetStreamDeserializer(contentType);
                     if (deserializer != null)
                     {
                         return deserializer(requestType, httpReq.InputStream);

@@ -47,7 +47,7 @@ namespace ServiceStack.Testing
 
         public Container Container { get; set; }
 
-        public IContentTypes ContentTypeses { get; set; }
+        public IContentTypes ContentTypes { get; set; }
 
         public List<Action<IHttpRequest, IHttpResponse>> PreRequestFilters { get; set; }
 

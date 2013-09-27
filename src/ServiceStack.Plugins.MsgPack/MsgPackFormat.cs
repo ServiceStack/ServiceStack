@@ -66,7 +66,7 @@ namespace ServiceStack.Plugins.MsgPack
 	{
 		public void Register(IAppHost appHost)
 		{
-            appHost.ContentTypeses.Register(MimeTypes.MsgPack,
+            appHost.ContentTypes.Register(MimeTypes.MsgPack,
                 Serialize,
                 Deserialize);
 		}

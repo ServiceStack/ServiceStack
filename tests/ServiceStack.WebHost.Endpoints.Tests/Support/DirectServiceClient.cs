@@ -52,7 +52,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 
 				try
 				{
-					var deserializer = EndpointHost.AppHost.ContentTypeses.GetStreamDeserializer(httpReq.ResponseContentType);
+					var deserializer = EndpointHost.AppHost.ContentTypes.GetStreamDeserializer(httpReq.ResponseContentType);
 					webEx.ResponseDto = deserializer(typeof(TResponse), httpRes.OutputStream);
 				}
 				catch (Exception ex)

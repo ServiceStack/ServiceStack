@@ -30,7 +30,7 @@ namespace ServiceStack.Testing
                 GetType().Name,
                 new ServiceManager(this.container, serviceAssemblies).Init());
 
-            this.ContentTypeses = new ContentTypes();
+            this.ContentTypes = new ContentTypes();
             this.PreRequestFilters = new List<Action<IHttpRequest, IHttpResponse>>();
             this.GlobalRequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
             this.GlobalResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
@@ -60,7 +60,7 @@ namespace ServiceStack.Testing
             return container.TryResolve<T>();
         }
 
-        public IContentTypes ContentTypeses { get; set; }
+        public IContentTypes ContentTypes { get; set; }
 
         public List<Action<IHttpRequest, IHttpResponse>> PreRequestFilters { get; set; }
 

@@ -23,8 +23,8 @@ namespace ServiceStack.Formats
 		{
 			AppHost = appHost;
 			//Register this in ServiceStack with the custom formats
-            appHost.ContentTypeses.Register(MimeTypes.Html, SerializeToStream, null);
-            appHost.ContentTypeses.Register(MimeTypes.JsonReport, SerializeToStream, null);
+            appHost.ContentTypes.Register(MimeTypes.Html, SerializeToStream, null);
+            appHost.ContentTypes.Register(MimeTypes.JsonReport, SerializeToStream, null);
 
             appHost.Config.DefaultContentType = MimeTypes.Html;
             appHost.Config.IgnoreFormatsInMetadata.Add(MimeTypes.Html.ToContentFormat());

@@ -10,7 +10,7 @@ namespace ServiceStack.Plugins.ProtoBuf
 	{
 		public void Register(IAppHost appHost)
 		{
-            appHost.ContentTypeses.Register(MimeTypes.ProtoBuf, Serialize, Deserialize);
+            appHost.ContentTypes.Register(MimeTypes.ProtoBuf, Serialize, Deserialize);
 		}
 
 	    private static RuntimeTypeModel model;

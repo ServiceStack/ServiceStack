@@ -163,8 +163,8 @@ namespace ServiceStack.Formats
                 };
             });
 
-            appHost.ContentTypeses.Register(MimeTypes.MarkdownText, SerializeToStream, null);
-            appHost.ContentTypeses.Register(MimeTypes.PlainText, SerializeToStream, null);
+            appHost.ContentTypes.Register(MimeTypes.MarkdownText, SerializeToStream, null);
+            appHost.ContentTypes.Register(MimeTypes.PlainText, SerializeToStream, null);
             appHost.Config.IgnoreFormatsInMetadata.Add(MimeTypes.MarkdownText.ToContentFormat());
             appHost.Config.IgnoreFormatsInMetadata.Add(MimeTypes.PlainText.ToContentFormat());
         }
