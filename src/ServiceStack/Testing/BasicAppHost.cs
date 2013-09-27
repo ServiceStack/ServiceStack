@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Funq;
 using ServiceStack.Host;
@@ -16,12 +15,23 @@ namespace ServiceStack.Testing
         public BasicAppHost()
         {
             this.Container = new Container();
+            this.ContentTypes = new ContentTypes();
             this.PreRequestFilters = new List<Action<IHttpRequest, IHttpResponse>>();
             this.GlobalRequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
             this.GlobalResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
             this.ViewEngines = new List<IViewEngine>();
             this.CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
             VirtualPathProvider = new FileSystemVirtualPathProvider(this, "~".MapServerPath());
+        }
+
+        public BasicAppHost(Container container, params Assembly[] serviceAssemblies) : this()
+        {
+            this.Container = container ?? this.Container;
+
+            if (serviceAssemblies.Length == 0)
+                serviceAssemblies = new[] { Assembly.GetExecutingAssembly() };
+
+            Config.ServiceManager = new ServiceManager(serviceAssemblies);
         }
 
         public void RegisterAs<T, TAs>() where T : TAs
@@ -87,7 +97,7 @@ namespace ServiceStack.Testing
 
         public void LoadPlugin(params IPlugin[] plugins)
         {
-            plugins.ToList().ForEach(x => x.Register(this));
+            plugins.Each(x => x.Register(this));
         }
 	
 		public IVirtualPathProvider VirtualPathProvider { get; set; }

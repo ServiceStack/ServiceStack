@@ -1,5 +1,6 @@
 using System.IO;
 using NUnit.Framework;
+using ServiceStack.Common.Tests;
 using ServiceStack.Host;
 using ServiceStack.Testing;
 using ServiceStack.Text;

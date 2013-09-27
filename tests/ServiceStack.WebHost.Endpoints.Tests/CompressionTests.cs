@@ -66,13 +66,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Test_response_with_CompressedResult()
 		{
-			EndpointHost.Config = new AppHostConfig(
-				"ServiceName",
-				new ServiceManager(GetType().Assembly));
-
-			var assembly = typeof (CompressionTests).Assembly;
-			EndpointHost.ConfigureHost(
-				new TestAppHost(new Container(), assembly), "Name", new ServiceManager(assembly));
+            new BasicAppHost(new Container(), typeof(CompressionTests).Assembly).Init();
 
             var mockResponse = new MockHttpResponse();
 

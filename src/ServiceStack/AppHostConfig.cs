@@ -16,7 +16,6 @@ using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Markdown;
 using ServiceStack.Metadata;
-using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.Web;

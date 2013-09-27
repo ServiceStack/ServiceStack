@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using ServiceStack.Common.Tests;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;

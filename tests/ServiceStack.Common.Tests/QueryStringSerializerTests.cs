@@ -19,7 +19,7 @@ namespace ServiceStack.Common.Tests
         public void Can_deserialize_TestRequest_QueryStringSerializer_output()
         {
             // Setup
-            var testAppHost = new TestAppHost(new Container(), typeof(TestService).Assembly);
+            new BasicAppHost(new Container(), typeof(TestService).Assembly).Init();
             var restPath = new RestPath(typeof(TestRequest), "/service", "GET");
             var restHandler = new RestHandler { RestPath = restPath };
 

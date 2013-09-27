@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using ServiceStack.Testing;
+using ServiceStack.Common.Tests;
 using ServiceStack.Web;
 using ServiceStack.WebHost.IntegrationTests.Services;
 

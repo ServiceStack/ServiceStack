@@ -57,13 +57,6 @@ namespace ServiceStack.Testing
             return httpReq.GetSession() as AuthUserSession;
         }
 
-        public void Dispose()
-        {
-        }
-
-        public IAppHost CreateAppHost()
-        {
-            return new TestAppHost(this.Container);
-        }
+        public void Dispose() {}
     }
 }

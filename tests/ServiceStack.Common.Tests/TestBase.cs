@@ -6,12 +6,13 @@ using System.Reflection;
 using System.Text;
 using ServiceStack.Clients;
 using ServiceStack.Host;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.Web;
 using ServiceStack.Web.Handlers;
 
-namespace ServiceStack.Testing
+namespace ServiceStack.Common.Tests
 {
     public abstract class TestBase
     {
@@ -30,11 +31,7 @@ namespace ServiceStack.Testing
             ServiceClientBaseUri = serviceClientBaseUri;
             ServiceAssemblies = serviceAssemblies;
 
-            this.AppHost = new TestAppHost(null, serviceAssemblies);
-
-            EndpointHost.ServiceManager = this.AppHost.Config.ServiceManager;
-
-            EndpointHost.ConfigureHost(this.AppHost, "TestBase", EndpointHost.ServiceManager);
+            this.AppHost = new BasicAppHost(null, serviceAssemblies).Init();
         }
 
         protected abstract void Configure(Funq.Container container);

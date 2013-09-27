@@ -1,12 +1,12 @@
 using NUnit.Framework;
-using ServiceStack.Testing;
+using ServiceStack.Common.Tests;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
 {
 	[TestFixture]
 	public class RequestAndPathResolutionTests
-		: TestBase
+        : TestBase
 	{
 		public RequestAndPathResolutionTests()
 			: base(Config.ServiceStackBaseUri, typeof(ReverseService).Assembly)

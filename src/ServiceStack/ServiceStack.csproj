@@ -369,8 +369,6 @@
     <Compile Include="Testing\MockHttpRequest.cs" />
     <Compile Include="Testing\MockHttpResponse.cs" />
     <Compile Include="Testing\MockRequestContext.cs" />
-    <Compile Include="Testing\TestAppHost.cs" />
-    <Compile Include="Testing\TestBase.cs" />
     <Compile Include="ValidationResultExtensions.cs" />
     <Compile Include="Validation\ExecOnlyOnce.cs" />
     <Compile Include="Validation\MultiRuleSetValidatorSelector.cs" />
