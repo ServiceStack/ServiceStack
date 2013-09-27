@@ -4,12 +4,10 @@ using MsgPack;
 using MsgPack.Serialization;
 using NUnit.Framework;
 using ServiceStack;
-using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Plugins.MsgPack;
 using ServiceStack.Clients;
-using ServiceStack.ServiceInterface;
 using ServiceStack.Text;
 
 namespace RazorRockstars.Console.Files

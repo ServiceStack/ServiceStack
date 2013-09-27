@@ -4,8 +4,6 @@ using System.ComponentModel;
 using System.Runtime.Serialization;
 using DeliveryService.Model.Types;
 using ServiceStack;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 
 namespace DeliveryService.Model.Operations
 {

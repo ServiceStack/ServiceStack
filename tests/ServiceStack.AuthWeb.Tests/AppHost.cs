@@ -12,7 +12,6 @@ using ServiceStack.MiniProfiler;
 using ServiceStack.MiniProfiler.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.Razor;
-using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
 
 #if HTTP_LISTENER

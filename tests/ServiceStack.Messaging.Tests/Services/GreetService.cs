@@ -1,5 +1,4 @@
 using System.Runtime.Serialization;
-using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.Messaging.Tests.Services
 {

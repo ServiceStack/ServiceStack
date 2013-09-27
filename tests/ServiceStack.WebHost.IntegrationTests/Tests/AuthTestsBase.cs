@@ -3,7 +3,6 @@ using System.Net;
 using NUnit.Framework;
 using ServiceStack.Clients;
 using ServiceStack.Clients;
-using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests

@@ -10,7 +10,6 @@ using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.SqlServer;
 using ServiceStack.Redis;
 using ServiceStack.Server;
-using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Testing;
 using ServiceStack.Utils;
 

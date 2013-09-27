@@ -3,17 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Caching;
 using ServiceStack.Clients;
-using ServiceStack.Common;
 using ServiceStack.Common.Tests.ServiceClient.Web;
 using ServiceStack.Host;
 using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using NUnit.Framework;
-using ServiceStack.Clients;
-using ServiceStack.ServiceInterface;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
-using ServiceStack.Utils;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

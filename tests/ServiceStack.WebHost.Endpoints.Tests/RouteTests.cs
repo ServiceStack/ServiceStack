@@ -1,10 +1,7 @@
 ﻿using Funq;
 using NUnit.Framework;
-using ServiceStack.Common;
 using ServiceStack.Configuration;
 using ServiceStack.Formats;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 using ServiceStack.Text;
 using ServiceStack.Web;
 

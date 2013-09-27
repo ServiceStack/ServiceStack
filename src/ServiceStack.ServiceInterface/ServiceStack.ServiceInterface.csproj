@@ -8,7 +8,7 @@
     <ProjectGuid>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceStack.ServiceInterface</RootNamespace>
+    <RootNamespace>ServiceStack</RootNamespace>
     <AssemblyName>ServiceStack.ServiceInterface</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using ServiceStack.Configuration;
-using ServiceStack.ServiceInterface;
 using ServiceStack.Text;
 
 namespace ServiceStack.Authentication.OAuth2

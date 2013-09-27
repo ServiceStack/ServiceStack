@@ -1,8 +1,4 @@
-﻿using Funq;
-using NUnit.Framework;
-using ServiceStack.Common;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
+﻿using NUnit.Framework;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests

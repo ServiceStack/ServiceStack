@@ -1,6 +1,4 @@
-﻿using ServiceStack.ServiceInterface;
-using ServiceStack.Text;
-using ServiceStack.ServiceHost;
+﻿using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 {

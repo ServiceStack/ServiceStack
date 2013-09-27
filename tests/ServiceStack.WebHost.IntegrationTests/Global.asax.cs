@@ -13,7 +13,6 @@ using ServiceStack.OrmLite;
 using ServiceStack.Plugins.ProtoBuf;
 using ServiceStack.Redis;
 using ServiceStack.Redis.Messaging;
-using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Api.Swagger;
 using ServiceStack.Text;
 using ServiceStack.Utils;
