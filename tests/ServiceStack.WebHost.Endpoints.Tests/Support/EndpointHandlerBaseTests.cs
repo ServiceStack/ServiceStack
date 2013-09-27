@@ -4,12 +4,12 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using Moq;
 using NUnit.Framework;
-using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Support;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Handlers;
+using ServiceStack.Web;
+using ServiceStack.Web.Handlers;
 
 namespace ServiceStack.WebHost.Endpoints.Support.Tests
 {

@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
-using ServiceStack.Common;
-using ServiceStack.Server;
 using ServiceStack.Text;
 
 namespace ServiceStack.Web

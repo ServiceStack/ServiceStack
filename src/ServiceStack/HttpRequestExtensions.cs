@@ -7,13 +7,12 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Web;
 using ServiceStack.Logging;
-using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.Web;
-using ServiceStack.WebHost.AspNet;
-using ServiceStack.WebHost.Handlers;
-using ServiceStack.WebHost.HttpListener;
+using ServiceStack.Web.AspNet;
+using ServiceStack.Web.Handlers;
+using ServiceStack.Web.HttpListener;
 
 namespace ServiceStack
 {

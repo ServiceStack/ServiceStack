@@ -1,10 +1,10 @@
 using System;
 using System.Web;
 using ServiceStack.Host;
-using ServiceStack.Server;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Logging;
+using ServiceStack.Web;
 
 namespace ServiceStack.Metadata
 {

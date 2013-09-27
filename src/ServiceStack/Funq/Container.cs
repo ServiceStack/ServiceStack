@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using ServiceStack.Common;
-using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace Funq
 {

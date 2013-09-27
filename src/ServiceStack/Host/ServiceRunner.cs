@@ -2,9 +2,9 @@
 using System.Diagnostics;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
-using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.Utils;
+using ServiceStack.Web;
 
 namespace ServiceStack.Host
 {

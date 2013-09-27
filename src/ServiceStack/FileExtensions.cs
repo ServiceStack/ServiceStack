@@ -1,26 +1,26 @@
 using System.IO;
 using System.Web;
-using ServiceStack.Server;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Utils;
-using ServiceStack.WebHost.HttpListener;
+using ServiceStack.Web;
+using ServiceStack.Web.HttpListener;
 
 namespace ServiceStack
 {
 	public static class FileExtensions
 	{
-		public static void SaveTo(this IFile file, string filePath)
+		public static void SaveTo(this IHttpFile httpFile, string filePath)
 		{
 			using (var sw = new StreamWriter(filePath, false))
 			{
-				file.InputStream.WriteTo(sw.BaseStream);
+				httpFile.InputStream.WriteTo(sw.BaseStream);
 			}
 		}
 
-		public static void WriteTo(this IFile file, Stream stream)
+		public static void WriteTo(this IHttpFile httpFile, Stream stream)
 		{
-			file.InputStream.WriteTo(stream);
+			httpFile.InputStream.WriteTo(stream);
 		}
 
 		public static string MapServerPath(this string relativePath)

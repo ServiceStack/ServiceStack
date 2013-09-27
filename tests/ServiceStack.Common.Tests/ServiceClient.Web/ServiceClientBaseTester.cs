@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ServiceStack.Server;
 using ServiceStack.Clients;
+using ServiceStack.Web;
 
 namespace ServiceStack.Common.Tests.ServiceClient.Web
 {
@@ -21,7 +21,7 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
             throw new NotImplementedException();
         }
 
-        public override ServiceHost.StreamDeserializerDelegate StreamDeserializer
+        public override StreamDeserializerDelegate StreamDeserializer
         {
             get
             {

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using ServiceStack.Server;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services

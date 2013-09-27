@@ -362,7 +362,7 @@
     <Compile Include="Web\ContentFormat.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Web\EndPoint.cs">
+    <Compile Include="Web\Endpoint.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Web\HttpError.cs">

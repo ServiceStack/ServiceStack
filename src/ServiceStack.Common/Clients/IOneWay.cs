@@ -1,7 +1,6 @@
 #if !SILVERLIGHT && !MONOTOUCH && !XBOX && !ANDROIDINDIE
 using System.ServiceModel;
 using System.ServiceModel.Channels;
-using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Clients
 {

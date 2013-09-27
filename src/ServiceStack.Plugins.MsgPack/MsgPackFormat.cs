@@ -6,8 +6,8 @@ using System.Runtime.Serialization;
 using System.Threading;
 using MsgPack;
 using MsgPack.Serialization;
-using ServiceStack.Server;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Plugins.MsgPack
 {

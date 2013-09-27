@@ -8,7 +8,7 @@ using NUnit.Framework;
 using ServiceStack.Host;
 using ServiceStack.Testing;
 using ServiceStack.Text;
-using ServiceStack.WebHost;
+using ServiceStack.Web;
 
 namespace ServiceStack.Common.Tests
 {

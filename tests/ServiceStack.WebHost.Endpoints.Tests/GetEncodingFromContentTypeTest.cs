@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
-using ServiceStack.WebHost.HttpListener;
+using ServiceStack.Web.HttpListener;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TestExistingDir
 {

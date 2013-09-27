@@ -1,6 +1,6 @@
-﻿using ServiceStack.Server;
-using ServiceStack.FluentValidation;
+﻿using ServiceStack.FluentValidation;
 using ServiceStack.Utils;
+using ServiceStack.Web;
 
 namespace ServiceStack.Validation
 {

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
-using ServiceStack.Server;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {

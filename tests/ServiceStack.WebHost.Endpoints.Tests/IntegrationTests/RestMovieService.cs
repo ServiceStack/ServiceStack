@@ -1,6 +1,6 @@
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
-using ServiceStack.Server;
+using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {

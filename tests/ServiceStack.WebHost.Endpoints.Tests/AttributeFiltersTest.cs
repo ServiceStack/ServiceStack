@@ -5,10 +5,10 @@ using ServiceStack.Caching;
 using ServiceStack.Clients;
 using ServiceStack.Common.Tests.ServiceClient.Web;
 using ServiceStack.Host;
-using ServiceStack.Server;
 using NUnit.Framework;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

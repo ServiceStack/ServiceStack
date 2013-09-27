@@ -5,7 +5,6 @@ using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Redis;
-using ServiceStack.Server;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;

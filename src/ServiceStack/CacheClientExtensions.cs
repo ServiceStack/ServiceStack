@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using ServiceStack.Caching;
-using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.Web;
 

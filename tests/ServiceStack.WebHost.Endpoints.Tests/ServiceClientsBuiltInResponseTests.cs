@@ -7,8 +7,8 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Clients;
 using ServiceStack.Configuration;
-using ServiceStack.Server;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

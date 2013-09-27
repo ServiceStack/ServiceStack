@@ -1,10 +1,9 @@
 using System.IO;
 using System.Xml;
 using ServiceStack.Serialization;
-using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using System;
+using ServiceStack.Web;
 
 namespace ServiceStack.Clients
 {

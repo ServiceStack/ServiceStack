@@ -11,8 +11,6 @@ using System.Web;
 using System.Reflection;
 #endif
 using ServiceStack.Logging;
-using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.Web;

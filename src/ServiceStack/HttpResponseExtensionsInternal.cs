@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
-using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.Web;
 

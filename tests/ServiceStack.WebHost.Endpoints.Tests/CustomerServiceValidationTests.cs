@@ -15,11 +15,11 @@ using ServiceStack.Support.WebHost;
 using ServiceStack.Utils;
 using ServiceStack.Validation;
 using ServiceStack.Web;
+using ServiceStack.Web.Handlers;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Tests;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
-using ServiceStack.WebHost.Handlers;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {

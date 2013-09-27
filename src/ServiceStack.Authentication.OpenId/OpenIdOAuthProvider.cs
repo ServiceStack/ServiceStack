@@ -8,7 +8,6 @@ using DotNetOpenAuth.OpenId.Extensions.SimpleRegistration;
 using DotNetOpenAuth.OpenId.RelyingParty;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
-using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.Web;
 

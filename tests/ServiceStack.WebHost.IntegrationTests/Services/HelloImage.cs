@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using ServiceStack.Server;
 using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services

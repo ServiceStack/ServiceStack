@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using ServiceStack.Markdown;
-using ServiceStack.Server;
+using ServiceStack.Web;
 
 namespace ServiceStack.Support.Markdown
 {

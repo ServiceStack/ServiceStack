@@ -4,10 +4,9 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using ServiceStack.Logging;
-using ServiceStack.Server;
-using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.Utils;
+using ServiceStack.Web;
 
 #if NETFX_CORE
 using Windows.System.Threading;

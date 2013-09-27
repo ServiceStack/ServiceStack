@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Net;
-using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.Web;

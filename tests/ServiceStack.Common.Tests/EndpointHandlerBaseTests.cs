@@ -1,6 +1,5 @@
 ﻿using System;
 using NUnit.Framework;
-using ServiceStack.Server;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Net;
 using Funq;
 using ServiceStack.Auth;
-using ServiceStack.Server;
+using ServiceStack.Web;
 
 namespace ServiceStack.Testing
 {
@@ -11,7 +11,7 @@ namespace ServiceStack.Testing
         public MockRequestContext()
         {
             this.Cookies = new Dictionary<string, Cookie>();
-            this.Files = new IFile[0];
+            this.Files = new IHttpFile[0];
             this.Container = new Container();
             var httpReq = new MockHttpRequest { Container = this.Container };
             httpReq.AddSessionCookies();
@@ -42,7 +42,7 @@ namespace ServiceStack.Testing
         public string CompressionType { get; private set; }
         public string AbsoluteUri { get; private set; }
         public string PathInfo { get; private set; }
-        public IFile[] Files { get; private set; }
+        public IHttpFile[] Files { get; private set; }
 
         public AuthUserSession RemoveSession()
         {

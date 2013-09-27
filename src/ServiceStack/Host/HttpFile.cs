@@ -1,9 +1,9 @@
 using System.IO;
-using ServiceStack.Server;
+using ServiceStack.Web;
 
 namespace ServiceStack.Host
 {
-	public class HttpFile : IFile
+	public class HttpFile : IHttpFile
 	{
 		public string FileName { get; set; }
 		public long ContentLength { get; set; }

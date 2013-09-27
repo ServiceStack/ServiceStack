@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Web;
-using ServiceStack.Server;
 using ServiceStack.Support.WebHost;
-using ServiceStack.WebHost.Handlers;
+using ServiceStack.Web;
+using ServiceStack.Web.Handlers;
 
 namespace ServiceStack.Host
 {

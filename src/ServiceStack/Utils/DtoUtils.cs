@@ -5,7 +5,6 @@ using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Model;
 using ServiceStack.Redis;
-using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.Web;

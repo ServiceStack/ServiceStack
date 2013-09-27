@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using ServiceStack.Server;
 
 namespace ServiceStack.Web
 {
@@ -57,9 +56,9 @@ namespace ServiceStack.Web
             get { throw new NotImplementedException(); }
         }
 
-        public IFile[] Files
+        public IHttpFile[] Files
         {
-            get { return new IFile[0]; }
+            get { return new IHttpFile[0]; }
         }
 
         public void Dispose()

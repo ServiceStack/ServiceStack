@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Clients
 {

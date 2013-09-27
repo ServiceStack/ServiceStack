@@ -1,6 +1,5 @@
 using System;
 using System.Web;
-using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.Web;
 

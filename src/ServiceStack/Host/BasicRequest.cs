@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
-using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -150,7 +149,7 @@ namespace ServiceStack.Host
             get { return (GetRawBody() ?? "").Length; }
         }
 
-        public IFile[] Files
+        public IHttpFile[] Files
         {
             get { return null; }
         }

@@ -8,8 +8,8 @@ using System.Threading;
 using ServiceStack.Formats;
 using ServiceStack.Logging;
 using ServiceStack.Markdown;
-using ServiceStack.Server;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Support.Markdown
 {

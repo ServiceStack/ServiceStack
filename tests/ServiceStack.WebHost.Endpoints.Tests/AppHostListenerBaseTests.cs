@@ -11,9 +11,9 @@ using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Clients;
 using ServiceStack.Text;
+using ServiceStack.Web.HttpListener;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
-using ServiceStack.WebHost.HttpListener;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

@@ -1,6 +1,5 @@
 using System;
 using ServiceStack.Caching;
-using ServiceStack.Server;
 using ServiceStack.Web;
 
 namespace ServiceStack

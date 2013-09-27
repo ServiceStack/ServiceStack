@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net;
-using ServiceStack.Server;
 using ServiceStack.Web;
 
 namespace ServiceStack

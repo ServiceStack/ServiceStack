@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Web;
 using ServiceStack.Configuration;
-using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -56,7 +55,7 @@ namespace ServiceStack.Host
 			this.EndpointAttributes = endpointAttributes;
 			this.Factory = factory;
 			this.RequestAttributes = new RequestAttributes(HttpContext.Current);
-			this.Files = new IFile[0];
+			this.Files = new IHttpFile[0];
 		}
 
 		public bool AutoDispose { get; set; }
@@ -152,7 +151,7 @@ namespace ServiceStack.Host
 			get { return this.httpReq != null ? this.httpReq.PathInfo : null; }
 		}
 
-		public IFile[] Files { get; set; }
+		public IHttpFile[] Files { get; set; }
 
 		private string ipAddress;
 		public string IpAddress

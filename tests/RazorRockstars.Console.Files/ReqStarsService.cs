@@ -15,7 +15,6 @@ using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.OrmLite;
 using ServiceStack.Plugins.MsgPack;
-using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.Web;
 

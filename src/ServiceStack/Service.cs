@@ -5,7 +5,7 @@ using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.Messaging;
 using ServiceStack.Redis;
-using ServiceStack.Server;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {

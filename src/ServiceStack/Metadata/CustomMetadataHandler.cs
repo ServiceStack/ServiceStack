@@ -4,7 +4,6 @@ using System.Text;
 using System.Web.UI;
 using ServiceStack.Host;
 using ServiceStack.Logging;
-using ServiceStack.Server;
 using ServiceStack.Utils;
 using ServiceStack.Web;
 

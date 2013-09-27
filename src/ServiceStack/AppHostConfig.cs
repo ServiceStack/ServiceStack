@@ -16,12 +16,11 @@ using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Markdown;
 using ServiceStack.Metadata;
-using ServiceStack.Server;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Handlers;
+using ServiceStack.Web.Handlers;
 
 namespace ServiceStack
 {

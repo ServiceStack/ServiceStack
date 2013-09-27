@@ -353,80 +353,76 @@
     <Compile Include="ApiMemberAttribute.cs" />
     <Compile Include="ApiResponse.cs" />
     <Compile Include="IService.cs" />
-    <Compile Include="Server\IExpress.cs" />
-    <Compile Include="Server\IRequiresHttpRequest.cs" />
-    <Compile Include="Server\IRequiresRequestStream.cs" />
+    <Compile Include="Web\IRequiresHttpRequest.cs" />
+    <Compile Include="Web\IRequiresRequestStream.cs" />
     <Compile Include="EndpointAttributes.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Feature.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IAsyncService.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Configuration\IResolver.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IContentTypes.cs">
+    <Compile Include="Web\IContentTypes.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IContentTypeReader.cs">
+    <Compile Include="Web\IContentTypeReader.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IContentTypeWriter.cs">
+    <Compile Include="Web\IContentTypeWriter.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\ICookies.cs">
+    <Compile Include="Web\ICookies.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IExpirable.cs">
+    <Compile Include="Web\IExpirable.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IFile.cs">
+    <Compile Include="Web\IHttpFile.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IHasOptions.cs">
+    <Compile Include="Web\IHasOptions.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IHasRequestFilter.cs">
+    <Compile Include="Web\IHasRequestFilter.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IHasResponseFilter.cs">
+    <Compile Include="Web\IHasResponseFilter.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IHttpError.cs">
+    <Compile Include="Web\IHttpError.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IHttpRequest.cs">
+    <Compile Include="Web\IHttpRequest.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IHttpResponse.cs">
+    <Compile Include="Web\IHttpResponse.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IHttpResult.cs">
+    <Compile Include="Web\IHttpResult.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IRequestAttributes.cs">
+    <Compile Include="Web\IRequestAttributes.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IRequestContext.cs">
+    <Compile Include="Web\IRequestContext.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IRequestLogger.cs">
+    <Compile Include="Web\IRequestLogger.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IRequiresRequestContext.cs">
+    <Compile Include="Web\IRequiresRequestContext.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IRestPath.cs">
+    <Compile Include="Web\IRestPath.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IServiceRunner.cs" />
-    <Compile Include="Server\IServiceController.cs">
+    <Compile Include="Web\IServiceRunner.cs" />
+    <Compile Include="Web\IServiceController.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IServiceRoutes.cs">
+    <Compile Include="Web\IServiceRoutes.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="RouteAttribute.cs" />
@@ -460,7 +456,7 @@
     <Compile Include="ResponseStatus.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IPartialWriter.cs" />
+    <Compile Include="Web\IPartialWriter.cs" />
     <Compile Include="Clients\IOneWayClient.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -482,7 +478,7 @@
     <Compile Include="Clients\IServiceClientAsync.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Server\IStreamWriter.cs">
+    <Compile Include="Web\IStreamWriter.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

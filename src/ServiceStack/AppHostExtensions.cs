@@ -3,8 +3,8 @@ using System.Linq;
 using System.Reflection;
 using Funq;
 using ServiceStack.Logging;
-using ServiceStack.Server;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {

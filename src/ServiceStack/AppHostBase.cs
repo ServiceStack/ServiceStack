@@ -11,7 +11,7 @@ using ServiceStack.Host;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
-using ServiceStack.Server;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {

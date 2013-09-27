@@ -9,7 +9,6 @@ using ServiceStack.Formats;
 using ServiceStack.Host;
 using ServiceStack.Html;
 using ServiceStack.IO;
-using ServiceStack.Server;
 using ServiceStack.ServiceHost.Tests.AppData;
 using ServiceStack.Support.Markdown;
 using ServiceStack.Testing;

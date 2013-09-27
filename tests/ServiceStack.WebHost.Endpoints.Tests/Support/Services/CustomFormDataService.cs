@@ -1,4 +1,4 @@
-using ServiceStack.Server;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services

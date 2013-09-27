@@ -8,8 +8,8 @@ using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Serialization;
-using ServiceStack.Server;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Host
 {

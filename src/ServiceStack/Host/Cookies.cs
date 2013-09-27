@@ -2,7 +2,6 @@
 using System.Net;
 using System.Text;
 using System.Web;
-using ServiceStack.Server;
 using ServiceStack.Web;
 
 namespace ServiceStack.ServiceHost

@@ -1,8 +1,8 @@
 using System;
 using ServiceStack.Text;
 using ServiceStack.Serialization;
-using ServiceStack.Server;
 using ServiceStack.Utils;
+using ServiceStack.Web;
 
 namespace ServiceStack.Metadata
 {

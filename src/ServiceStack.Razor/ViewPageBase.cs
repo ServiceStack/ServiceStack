@@ -13,8 +13,8 @@ using ServiceStack.Html;
 using ServiceStack.Messaging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Redis;
-using ServiceStack.Server;
 using ServiceStack.Text;
+using ServiceStack.Web;
 using IHtmlString = System.Web.IHtmlString;
 
 namespace ServiceStack.Razor

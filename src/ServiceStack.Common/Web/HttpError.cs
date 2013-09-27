@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using ServiceStack.Common;
-using ServiceStack.Server;
 
 namespace ServiceStack.Web
 {

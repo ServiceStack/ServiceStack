@@ -1,6 +1,6 @@
 ﻿using System.IO;
-using ServiceStack.Server;
 using ServiceStack.ServiceHost;
+using ServiceStack.Web;
 
 namespace ServiceStack.Html
 {

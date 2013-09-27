@@ -5,11 +5,10 @@ using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Markdown;
-using ServiceStack.Server;
 using ServiceStack.Support.Markdown;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Handlers;
+using ServiceStack.Web.Handlers;
 
 namespace ServiceStack.Formats
 {

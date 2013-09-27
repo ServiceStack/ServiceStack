@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using NUnit.Framework;
 using ServiceStack.Auth;
-using ServiceStack.Server;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Common.Tests.OAuth
 {

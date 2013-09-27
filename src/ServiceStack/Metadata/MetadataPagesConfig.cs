@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using ServiceStack.Host;
-using ServiceStack.Server;
+using ServiceStack.Web;
 
 namespace ServiceStack.Metadata
 {

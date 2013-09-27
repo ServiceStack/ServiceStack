@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 using ServiceStack.FluentValidation;
-using ServiceStack.Server;
+using ServiceStack.Web;
 
 namespace ServiceStack.Validation
 {

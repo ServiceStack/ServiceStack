@@ -6,8 +6,8 @@ using Funq;
 using ServiceStack.Host;
 using ServiceStack.Html;
 using ServiceStack.IO;
-using ServiceStack.Server;
 using ServiceStack.VirtualPath;
+using ServiceStack.Web;
 
 namespace ServiceStack.Testing
 {

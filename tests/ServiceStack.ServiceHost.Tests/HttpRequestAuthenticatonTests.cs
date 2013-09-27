@@ -2,7 +2,7 @@
 using NUnit.Framework;
 using Moq;
 using ServiceStack.Host;
-using ServiceStack.Server;
+using ServiceStack.Web;
 
 namespace ServiceStack.ServiceHost.Tests
 {

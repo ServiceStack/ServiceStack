@@ -4,10 +4,9 @@ using System.IO;
 using System.Net;
 using System.Web;
 using ServiceStack.Logging;
-using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.WebHost.AspNet;
+using ServiceStack.Web.AspNet;
 
 namespace ServiceStack
 {

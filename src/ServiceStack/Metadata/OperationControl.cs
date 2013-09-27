@@ -1,8 +1,8 @@
 using System.Web;
 using System.Web.UI;
-using ServiceStack.Server;
 using ServiceStack.Support.Html;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Metadata
 {

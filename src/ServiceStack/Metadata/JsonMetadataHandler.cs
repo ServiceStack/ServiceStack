@@ -2,9 +2,9 @@ using System;
 using System.Web.UI;
 using ServiceStack.Host;
 using ServiceStack.Serialization;
-using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.Utils;
+using ServiceStack.Web;
 
 namespace ServiceStack.Metadata
 {

@@ -2,8 +2,8 @@
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
-using ServiceStack.Server;
 using ServiceStack.Testing;
+using ServiceStack.Web;
 
 namespace ServiceStack.Common.Tests.OAuth
 {

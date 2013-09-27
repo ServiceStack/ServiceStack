@@ -3,8 +3,8 @@ using System.Globalization;
 using System.Net;
 using ServiceStack.Configuration;
 using ServiceStack.Messaging;
-using ServiceStack.Server;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Host
 {
@@ -92,7 +92,7 @@ namespace ServiceStack.Host
 
         public string PathInfo { get; set; }
 
-        public IFile[] Files { get; set; }
+        public IHttpFile[] Files { get; set; }
 
         public void Dispose()
         {

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using ServiceStack.Server;
 using ServiceStack.Clients;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Common.Tests.ServiceClient.Web
 {

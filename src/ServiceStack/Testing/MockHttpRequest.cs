@@ -4,8 +4,8 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using Funq;
-using ServiceStack.Server;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Testing
 {
@@ -111,7 +111,7 @@ namespace ServiceStack.Testing
             }
         }
 
-        public IFile[] Files { get; set; }
+        public IHttpFile[] Files { get; set; }
 
         public string ApplicationFilePath { get; set; }
 

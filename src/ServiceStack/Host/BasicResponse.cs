@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
-using ServiceStack.Server;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Host
 {

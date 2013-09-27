@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using ServiceStack.Server;
 using System.Threading;
+using ServiceStack.Web;
 
 namespace ServiceStack.Support.WebHost
 {

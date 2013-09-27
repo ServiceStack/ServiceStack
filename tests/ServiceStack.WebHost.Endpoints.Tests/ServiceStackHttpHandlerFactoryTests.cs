@@ -6,7 +6,7 @@ using ServiceStack.Metadata;
 using ServiceStack.ServiceHost;
 using ServiceStack.Testing;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Handlers;
+using ServiceStack.Web.Handlers;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

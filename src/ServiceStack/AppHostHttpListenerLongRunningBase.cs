@@ -6,7 +6,7 @@ using System.Threading;
 using ServiceStack.Logging;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
-using ServiceStack.WebHost.HttpListener;
+using ServiceStack.Web.HttpListener;
 
 namespace ServiceStack
 {

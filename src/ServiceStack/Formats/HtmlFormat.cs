@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Linq;
 using ServiceStack.Serialization;
-using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.Web;
 

@@ -12,11 +12,11 @@ using ServiceStack.Messaging;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Serialization;
-using ServiceStack.Server;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;
-using ServiceStack.WebHost.HttpListener;
+using ServiceStack.Web;
+using ServiceStack.Web.HttpListener;
 
 namespace ServiceStack
 {

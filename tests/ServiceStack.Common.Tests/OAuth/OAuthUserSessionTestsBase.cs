@@ -9,9 +9,9 @@ using ServiceStack.Configuration;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.SqlServer;
 using ServiceStack.Redis;
-using ServiceStack.Server;
 using ServiceStack.Testing;
 using ServiceStack.Utils;
+using ServiceStack.Web;
 
 namespace ServiceStack.Common.Tests.OAuth
 {

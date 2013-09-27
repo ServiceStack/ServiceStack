@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ServiceStack.Server;
 using ServiceStack.Utils;
+using ServiceStack.Web;
 
 namespace ServiceStack.ServiceHost.Tests
 {
@@ -139,7 +139,7 @@ namespace ServiceStack.ServiceHost.Tests
 			get { throw new NotImplementedException(); }
 		}
 
-		public IFile[] Files
+		public IHttpFile[] Files
 		{
 			get { throw new NotImplementedException(); }
 		}

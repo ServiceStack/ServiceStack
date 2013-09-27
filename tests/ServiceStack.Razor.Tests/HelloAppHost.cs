@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Web;
 using ServiceStack.Admin;
-using ServiceStack.Server;
+using ServiceStack.Web;
 
 namespace ServiceStack.Razor.Tests
 {

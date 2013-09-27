@@ -4,8 +4,8 @@ using ServiceStack.Clients;
 using ServiceStack.Configuration;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
+using ServiceStack.Web.Handlers;
 using ServiceStack.WebHost.Endpoints.Support;
-using ServiceStack.WebHost.Handlers;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

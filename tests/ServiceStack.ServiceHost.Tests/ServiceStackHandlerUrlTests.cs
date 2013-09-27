@@ -5,8 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using NUnit.Framework;
-using ServiceStack.Server;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.ServiceHost.Tests
 {
@@ -73,7 +73,7 @@ namespace ServiceStack.ServiceHost.Tests
 			public string PathInfo { get; private set; }
 			public Stream InputStream { get; private set; }
 			public long ContentLength { get; private set; }
-			public IFile[] Files { get; private set; }
+			public IHttpFile[] Files { get; private set; }
 
 			public string ApplicationFilePath { get; private set; }
 		}

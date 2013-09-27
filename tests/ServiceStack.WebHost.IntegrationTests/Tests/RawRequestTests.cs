@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using NUnit.Framework;
-using ServiceStack.Server;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
 {

@@ -5,9 +5,9 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using ServiceStack.Logging;
-using ServiceStack.Server;
 using ServiceStack.Support;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Utils
 {

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
-using ServiceStack.Server;
 using ServiceStack.Text;
 using ServiceStack.Web;
 

@@ -2,10 +2,10 @@ using System;
 using System.IO;
 using System.Runtime.Serialization;
 using ProtoBuf;
-using ServiceStack.Server;
 using ServiceStack.Clients;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Plugins.ProtoBuf
 {

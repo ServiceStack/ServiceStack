@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
-using ServiceStack.Server;
 using ServiceStack.ServiceHost;
+using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 {
