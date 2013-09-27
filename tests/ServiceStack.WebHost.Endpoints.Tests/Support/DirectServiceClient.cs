@@ -2,10 +2,8 @@ using System;
 using System.IO;
 using System.Net;
 using ServiceStack.Clients;
-using ServiceStack.Clients;
 using ServiceStack.Host;
-using ServiceStack.ServiceHost;
-using ServiceStack.Support.Mocks;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -15,8 +13,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 	{
 		ServiceManager ServiceManager { get; set; }
 
-		readonly HttpRequestMock httpReq = new HttpRequestMock();
-		readonly HttpResponseMock httpRes = new HttpResponseMock();
+        readonly MockHttpRequest httpReq = new MockHttpRequest();
+        readonly MockHttpResponse httpRes = new MockHttpResponse();
 
 		public DirectServiceClient(ServiceManager serviceManager)
 		{
@@ -43,7 +41,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 			return false;
 		}
 
-		private void ThrowIfError<TResponse>(HttpResponseMock httpRes)
+        private void ThrowIfError<TResponse>(MockHttpResponse httpRes)
 		{
 			if (httpRes.StatusCode >= 400)
 			{

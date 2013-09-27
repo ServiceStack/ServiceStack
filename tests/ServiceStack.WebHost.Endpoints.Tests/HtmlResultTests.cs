@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using ServiceStack.Support.Mocks;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -29,7 +28,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Test_response_with_html_result()
 		{
-			var mockResponse = new HttpResponseMock();
+            var mockResponse = new MockHttpResponse();
 
 			const string url = "http://www.servicestack.net";
 			var htmlResult = Html.RedirectTo(url);
@@ -41,7 +40,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			var expectedOutput = string.Format(
 				"<html><head><meta http-equiv=\"refresh\" content=\"0;url={0}\"></head></html>", url);
 
-			var writtenString = mockResponse.GetOutputStreamAsString();
+			var writtenString = mockResponse.ReadAsString();
 			Assert.That(writtenString, Is.EqualTo(expectedOutput));
 			Assert.That(mockResponse.Headers["Location"], Is.EqualTo(url));
 		}

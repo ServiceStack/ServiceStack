@@ -450,8 +450,6 @@
     <Compile Include="Metadata\JsvMetadataHandler.cs" />
     <Compile Include="WebHost\ServiceHostEnvironment.cs" />
     <Compile Include="WebHost\Handlers\ForbiddenHttpHandler.cs" />
-    <Compile Include="Support\Mocks\HttpRequestMock.cs" />
-    <Compile Include="Support\Mocks\HttpResponseMock.cs" />
     <Compile Include="WebHost\Handlers\RedirectHttpHandler.cs" />
     <Compile Include="WebHost\Handlers\IServiceStackHttpHandler.cs" />
     <Compile Include="WebHost\Handlers\NotFoundHttpHandler.cs" />

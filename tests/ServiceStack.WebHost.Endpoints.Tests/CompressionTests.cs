@@ -5,8 +5,6 @@ using NUnit.Framework;
 using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.Serialization;
-using ServiceStack.ServiceHost;
-using ServiceStack.Support.Mocks;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -76,7 +74,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			EndpointHost.ConfigureHost(
 				new TestAppHost(new Container(), assembly), "Name", new ServiceManager(assembly));
 
-			var mockResponse = new HttpResponseMock();
+            var mockResponse = new MockHttpResponse();
 
 			var simpleDto = new TestCompress(1, "name");
 
@@ -102,7 +100,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			var bytesToWriteToResponseStream = simpleDtoZip;
 
-			var writtenBytes = mockResponse.GetOutputStreamAsBytes();
+			var writtenBytes = mockResponse.ReadAsBytes();
 			Assert.That(writtenBytes, Is.EqualTo(bytesToWriteToResponseStream));
 			Assert.That(mockResponse.ContentType, Is.EqualTo(MimeTypes.Xml));
 			Assert.That(mockResponse.Headers[HttpHeaders.ContentEncoding], Is.EqualTo(CompressionTypes.Deflate));

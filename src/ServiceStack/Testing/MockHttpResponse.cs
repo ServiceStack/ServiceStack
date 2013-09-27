@@ -1,7 +1,11 @@
+using System.Collections.Specialized;
+using System.Globalization;
 using System.IO;
+using System.Text;
 using ServiceStack.Server;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Testing
 {
@@ -9,8 +13,10 @@ namespace ServiceStack.Testing
     {
         public MockHttpResponse()
         {
-            this.Cookies = new Cookies(this);
+            this.Headers = new NameValueCollection();
             this.OutputStream = new MemoryStream();
+            this.TextWritten = new StringBuilder();
+            this.Cookies = new Cookies(this);
         }
 
         public object OriginalResponse { get; private set; }
@@ -18,25 +24,32 @@ namespace ServiceStack.Testing
         public string StatusDescription { set; get; }
         public string ContentType { get; set; }
 
+        public StringBuilder TextWritten { get; set; }
+
+        public NameValueCollection Headers { get; set; }
         public ICookies Cookies { get; set; }
 
         public void AddHeader(string name, string value)
         {
+            this.Headers.Add(name, value);
         }
 
         public void Redirect(string url)
         {
+            this.Headers.Add(HttpHeaders.Location, url.MapServerPath());
         }
 
         public Stream OutputStream { get; private set; }
 
         public void Write(string text)
         {
+            this.TextWritten.Append(text);
         }
 
         public void Close()
         {
-            IsClosed = true;
+            this.IsClosed = true;
+            OutputStream.Position = 0;
         }
 
         public void End()
@@ -46,7 +59,7 @@ namespace ServiceStack.Testing
 
         public void Flush()
         {
-            this.OutputStream.Position = 0;
+            OutputStream.Flush();
         }
 
         public string ReadAsString()
@@ -55,8 +68,17 @@ namespace ServiceStack.Testing
             return bytes.FromUtf8Bytes();
         }
 
+        public byte[] ReadAsBytes()
+        {
+            var ms = (MemoryStream)this.OutputStream;
+            return ms.ToArray();
+        }
+
         public bool IsClosed { get; private set; }
 
-        public void SetContentLength(long contentLength) {}
+        public void SetContentLength(long contentLength)
+        {
+            Headers[HttpHeaders.ContentLength] = contentLength.ToString(CultureInfo.InvariantCulture);
+        }
     }
 }

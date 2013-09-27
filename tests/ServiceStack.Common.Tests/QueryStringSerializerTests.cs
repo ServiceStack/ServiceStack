@@ -6,7 +6,6 @@ using System.Web;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Host;
-using ServiceStack.Support.Mocks;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.WebHost;
@@ -26,7 +25,7 @@ namespace ServiceStack.Common.Tests
 
             var requestString = "ListOfA={ListOfB:[{Property:prop1},{Property:prop2}]}";
             NameValueCollection queryString = HttpUtility.ParseQueryString(requestString);
-            var httpReq = new HttpRequestMock("service", "GET", "application/json", "service", queryString, new MemoryStream(), new NameValueCollection());
+            var httpReq = new MockHttpRequest("service", "GET", "application/json", "service", queryString, new MemoryStream(), new NameValueCollection());
 
             var request2 = (TestRequest)restHandler.CreateRequest(httpReq, "service");
 
