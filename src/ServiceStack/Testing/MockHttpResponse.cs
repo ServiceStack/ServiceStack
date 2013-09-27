@@ -64,12 +64,14 @@ namespace ServiceStack.Testing
 
         public string ReadAsString()
         {
+            this.OutputStream.Seek(0, SeekOrigin.Begin);
             var bytes = ((MemoryStream)OutputStream).ToArray();
             return bytes.FromUtf8Bytes();
         }
 
         public byte[] ReadAsBytes()
         {
+            this.OutputStream.Seek(0, SeekOrigin.Begin);
             var ms = (MemoryStream)this.OutputStream;
             return ms.ToArray();
         }
