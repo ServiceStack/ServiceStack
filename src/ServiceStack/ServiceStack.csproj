@@ -248,7 +248,7 @@
     <Compile Include="Html\HttpVerbs.cs" />
     <Compile Include="Html\InputType.cs" />
     <Compile Include="Html\IRazorView.cs" />
-    <Compile Include="Html\IResolver.cs" />
+    <Compile Include="IResolver.cs" />
     <Compile Include="Html\IViewDataContainer.cs" />
     <Compile Include="Html\ModelClientValidationRule.cs" />
     <Compile Include="Html\ModelError.cs" />

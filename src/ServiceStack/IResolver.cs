@@ -1,5 +1,5 @@
 ﻿
-namespace ServiceStack.Html
+namespace ServiceStack
 {
 	internal interface IResolver<T>
 	{
