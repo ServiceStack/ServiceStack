@@ -153,7 +153,7 @@ namespace ServiceStack.Host
             object errorResponse = null;
 
             if (useAppHost != null && useAppHost.ServiceExceptionHandler != null)
-                errorResponse = useAppHost.ServiceExceptionHandler(request, ex);
+                errorResponse = useAppHost.ServiceExceptionHandler(requestContext.Get<IHttpRequest>(), request, ex);
 
             if (errorResponse == null)
                 errorResponse = DtoUtils.HandleException(useAppHost, request, ex);

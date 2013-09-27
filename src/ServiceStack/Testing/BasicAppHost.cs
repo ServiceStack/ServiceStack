@@ -31,7 +31,7 @@ namespace ServiceStack.Testing
             if (serviceAssemblies.Length == 0)
                 serviceAssemblies = new[] { Assembly.GetExecutingAssembly() };
 
-            Config.ServiceManager = new ServiceManager(serviceAssemblies);
+            Config.ServiceManager = new ServiceManager(this.Container, serviceAssemblies).Init();
         }
 
         public void RegisterAs<T, TAs>() where T : TAs
@@ -115,6 +115,7 @@ namespace ServiceStack.Testing
         public BasicAppHost Init()
         {
             EndpointHost.ConfigureHost(this, GetType().Name, Config.ServiceManager);
+            
             return this;
         }
 
