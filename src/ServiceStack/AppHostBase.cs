@@ -185,7 +185,7 @@ namespace ServiceStack
 		{
 			get
 			{
-				return EndpointHost.RawRequestFilters;
+				return EndpointHost.PreRequestFilters;
 			}
 		}
 
@@ -193,7 +193,7 @@ namespace ServiceStack
 		{
 			get
 			{
-				return EndpointHost.RequestFilters;
+				return EndpointHost.GlobalRequestFilters;
 			}
 		}
 
@@ -201,7 +201,7 @@ namespace ServiceStack
 		{
 			get
 			{
-				return EndpointHost.ResponseFilters;
+				return EndpointHost.GlobalResponseFilters;
 			}
 		}
 

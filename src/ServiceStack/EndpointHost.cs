@@ -26,11 +26,11 @@ namespace ServiceStack
 
         public static IContentTypes ContentTypes { get; set; }
 
-        public static List<Action<IHttpRequest, IHttpResponse>> RawRequestFilters { get; private set; }
+        public static List<Action<IHttpRequest, IHttpResponse>> PreRequestFilters { get; private set; }
 
-        public static List<Action<IHttpRequest, IHttpResponse, object>> RequestFilters { get; private set; }
+        public static List<Action<IHttpRequest, IHttpResponse, object>> GlobalRequestFilters { get; private set; }
 
-        public static List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters { get; private set; }
+        public static List<Action<IHttpRequest, IHttpResponse, object>> GlobalResponseFilters { get; private set; }
 
         public static List<IViewEngine> ViewEngines { get; set; }
 
@@ -56,9 +56,9 @@ namespace ServiceStack
         public static void ConfigureHost(IAppHost appHost, string serviceName, ServiceManager serviceManager)
         {
             ContentTypes = Web.ContentTypes.Instance;
-            RawRequestFilters = new List<Action<IHttpRequest, IHttpResponse>>();
-            RequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
-            ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
+            PreRequestFilters = new List<Action<IHttpRequest, IHttpResponse>>();
+            GlobalRequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
+            GlobalResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
             ViewEngines = new List<IViewEngine>();
             CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
             Plugins = new List<IPlugin> {
@@ -303,7 +303,7 @@ namespace ServiceStack
         /// <returns></returns>
         public static bool ApplyPreRequestFilters(IHttpRequest httpReq, IHttpResponse httpRes)
         {
-            foreach (var requestFilter in RawRequestFilters)
+            foreach (var requestFilter in PreRequestFilters)
             {
                 requestFilter(httpReq, httpRes);
                 if (httpRes.IsClosed) break;
@@ -338,7 +338,7 @@ namespace ServiceStack
                 }
 
                 //Exec global filters
-                foreach (var requestFilter in RequestFilters)
+                foreach (var requestFilter in GlobalRequestFilters)
                 {
                     requestFilter(httpReq, httpRes, requestDto);
                     if (httpRes.IsClosed) return httpRes.IsClosed;
@@ -392,7 +392,7 @@ namespace ServiceStack
                 }
 
                 //Exec global filters
-                foreach (var responseFilter in ResponseFilters)
+                foreach (var responseFilter in GlobalResponseFilters)
                 {
                     responseFilter(httpReq, httpRes, response);
                     if (httpRes.IsClosed) return httpRes.IsClosed;

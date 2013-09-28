@@ -533,8 +533,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 
             container.Register<IAppSettings>(new ConfigurationResourceManager());
 
-            //var appSettings = container.Resolve<IResourceManager>();
-
             container.Register(c => new ExampleConfig(c.Resolve<IAppSettings>()));
             //var appConfig = container.Resolve<ExampleConfig>();
 

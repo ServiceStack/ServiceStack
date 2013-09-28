@@ -103,7 +103,7 @@ namespace ServiceStack.Web.Handlers
                 httpReq.OperationName = requestType.Name;
                 httpReq.SetItem("SoapMessage", requestMsg);
 
-                var hasRequestFilters = EndpointHost.RequestFilters.Count > 0
+                var hasRequestFilters = EndpointHost.GlobalRequestFilters.Count > 0
                     || FilterAttributeCache.GetRequestFilterAttributes(request.GetType()).Any();
 
                 if (hasRequestFilters && EndpointHost.ApplyRequestFilters(httpReq, httpRes, request))
@@ -111,7 +111,7 @@ namespace ServiceStack.Web.Handlers
 
                 var response = ExecuteService(request, endpointAttributes, httpReq, httpRes);
 
-                var hasResponseFilters = EndpointHost.ResponseFilters.Count > 0
+                var hasResponseFilters = EndpointHost.GlobalResponseFilters.Count > 0
                    || FilterAttributeCache.GetResponseFilterAttributes(response.GetType()).Any();
 
                 if (hasResponseFilters && EndpointHost.ApplyResponseFilters(httpReq, httpRes, response))

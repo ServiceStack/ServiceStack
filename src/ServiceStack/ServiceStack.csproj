@@ -347,6 +347,7 @@
     <Compile Include="Host\ContainerResolveCache.cs" />
     <Compile Include="Host\Cookies.cs" />
     <Compile Include="DefaultRequestAttribute.cs" />
+    <Compile Include="ServiceStackHost.cs" />
     <Compile Include="Utils\DtoUtils.cs" />
     <Compile Include="IRequiresSoapMessage.cs" />
     <Compile Include="Metadata\MetadataPagesConfig.cs" />

@@ -65,8 +65,8 @@ namespace ServiceStack.Auth
         /// </summary>
         public object Post(Register request)
         {
-            if (EndpointHost.RequestFilters == null
-                || !EndpointHost.RequestFilters.Contains(ValidationFilters.RequestFilter)) //Already gets run
+            if (EndpointHost.GlobalRequestFilters == null
+                || !EndpointHost.GlobalRequestFilters.Contains(ValidationFilters.RequestFilter)) //Already gets run
                 RegistrationValidator.ValidateAndThrow(request, ApplyTo.Post);
 
             AssertUserAuthRepo();
@@ -154,8 +154,8 @@ namespace ServiceStack.Auth
         /// </summary>
         public object UpdateUserAuth(Register request)
         {
-            if (EndpointHost.RequestFilters == null 
-                || !EndpointHost.RequestFilters.Contains(ValidationFilters.RequestFilter))
+            if (EndpointHost.GlobalRequestFilters == null 
+                || !EndpointHost.GlobalRequestFilters.Contains(ValidationFilters.RequestFilter))
                 RegistrationValidator.ValidateAndThrow(request, ApplyTo.Put);
 
             if (ValidateFn != null)

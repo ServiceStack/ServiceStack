@@ -81,8 +81,8 @@ namespace ServiceStack.Web.HttpListener
 			}
 
 			EndpointHost.AfterInit();
+
             SetAppDomainData();
-            
             var elapsed = DateTime.UtcNow - this.startTime;
 			Log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
 		}
@@ -462,7 +462,7 @@ namespace ServiceStack.Web.HttpListener
 		{
 			get
 			{
-				return EndpointHost.RawRequestFilters;
+				return EndpointHost.PreRequestFilters;
 			}
 		}
 
@@ -470,7 +470,7 @@ namespace ServiceStack.Web.HttpListener
 		{
 			get
 			{
-				return EndpointHost.RequestFilters;
+				return EndpointHost.GlobalRequestFilters;
 			}
 		}
 
@@ -478,7 +478,7 @@ namespace ServiceStack.Web.HttpListener
 		{
 			get
 			{
-				return EndpointHost.ResponseFilters;
+				return EndpointHost.GlobalResponseFilters;
 			}
 		}
 
