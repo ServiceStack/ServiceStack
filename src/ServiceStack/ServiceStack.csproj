@@ -477,7 +477,7 @@
     <Compile Include="Metadata\WsdlTemplateBase.cs" />
     <Compile Include="Web\Handlers\Soap12Handlers.cs" />
     <Compile Include="Web\Handlers\JsonReplyHandler.cs" />
-    <Compile Include="Web\Handlers\EndpointHandlerBase.cs" />
+    <Compile Include="Web\Handlers\ServiceStackHandlerBase.cs" />
     <Compile Include="EndpointHost.cs" />
     <Compile Include="AppHostConfig.cs" />
     <Compile Include="Web\Handlers\SoapHandler.cs" />

@@ -14,7 +14,7 @@ using ServiceStack.Web.AspNet;
 
 namespace ServiceStack.Web.Handlers
 {
-    public abstract class SoapHandler : EndpointHandlerBase, IOneWay, ISyncReply
+    public abstract class SoapHandler : ServiceStackHandlerBase, IOneWay, ISyncReply
     {
         public SoapHandler(EndpointAttributes soapType)
         {

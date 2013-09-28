@@ -12,16 +12,16 @@ using ServiceStack.Web.HttpListener;
 
 namespace ServiceStack.Web.Handlers
 {
-    public abstract class EndpointHandlerBase
+    public abstract class ServiceStackHandlerBase
         : IServiceStackHttpHandler, IHttpHandler
     {
-        internal static readonly ILog Log = LogManager.GetLogger(typeof(EndpointHandlerBase));
+        internal static readonly ILog Log = LogManager.GetLogger(typeof(ServiceStackHandlerBase));
         internal static readonly Dictionary<byte[], byte[]> NetworkInterfaceIpv4Addresses = new Dictionary<byte[], byte[]>();
         internal static readonly byte[][] NetworkInterfaceIpv6Addresses = new byte[0][];
 
         public string RequestName { get; set; }
 
-        static EndpointHandlerBase()
+        static ServiceStackHandlerBase()
         {
             try
             {

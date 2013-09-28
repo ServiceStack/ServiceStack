@@ -29,7 +29,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         [TestFixtureTearDown]
         public void TestFixtureTearDown()
         {
-            EndpointHandlerBase.ServiceManager = null;
+            ServiceStackHandlerBase.ServiceManager = null;
         }
 
 		[Test]
@@ -95,8 +95,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 	{
 		protected override IServiceClient CreateNewServiceClient()
 		{
-            EndpointHandlerBase.ServiceManager = new ServiceManager(typeof(ReverseService).Assembly).Init();
-			return new DirectServiceClient(this, EndpointHandlerBase.ServiceManager);
+            ServiceStackHandlerBase.ServiceManager = new ServiceManager(typeof(ReverseService).Assembly).Init();
+			return new DirectServiceClient(this, ServiceStackHandlerBase.ServiceManager);
 		}
 	}
 

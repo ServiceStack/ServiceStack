@@ -4,7 +4,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Web.Handlers
 {
-	public class GenericHandler : EndpointHandlerBase
+	public class GenericHandler : ServiceStackHandlerBase
 	{
 		public GenericHandler(string contentType, EndpointAttributes handlerAttributes, Feature format)
 		{

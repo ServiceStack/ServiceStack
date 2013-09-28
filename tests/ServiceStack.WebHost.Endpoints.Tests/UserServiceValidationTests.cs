@@ -95,15 +95,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();
-            EndpointHandlerBase.ServiceManager = null;
+            ServiceStackHandlerBase.ServiceManager = null;
         }
 
         private static string ExpectedErrorCode = "ShouldNotBeEmpty";
 
         protected static IServiceClient UnitTestServiceClient()
         {
-            EndpointHandlerBase.ServiceManager = new ServiceManager(typeof(SecureService).Assembly).Init();
-            return new DirectServiceClient(EndpointHandlerBase.ServiceManager);
+            ServiceStackHandlerBase.ServiceManager = new ServiceManager(typeof(SecureService).Assembly).Init();
+            return new DirectServiceClient(ServiceStackHandlerBase.ServiceManager);
         }
 
         public static IEnumerable ServiceClients

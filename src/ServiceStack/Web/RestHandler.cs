@@ -8,7 +8,7 @@ using ServiceStack.Web.Handlers;
 namespace ServiceStack.Web
 {
     public class RestHandler
-        : EndpointHandlerBase
+        : ServiceStackHandlerBase
     {
         public RestHandler()
         {

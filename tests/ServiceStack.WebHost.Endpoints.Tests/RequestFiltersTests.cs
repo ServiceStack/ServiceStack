@@ -139,7 +139,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		public void OnTestFixtureTearDown()
 		{
 			appHost.Dispose();
-            EndpointHandlerBase.ServiceManager = null;
+            ServiceStackHandlerBase.ServiceManager = null;
 		}
 
 		protected abstract IServiceClient CreateNewServiceClient();
@@ -410,8 +410,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			protected override IServiceClient CreateNewServiceClient()
 			{
-                EndpointHandlerBase.ServiceManager = new ServiceManager(typeof(SecureService).Assembly).Init();
-				return new DirectServiceClient(EndpointHandlerBase.ServiceManager);
+                ServiceStackHandlerBase.ServiceManager = new ServiceManager(typeof(SecureService).Assembly).Init();
+				return new DirectServiceClient(ServiceStackHandlerBase.ServiceManager);
 			}
 
 			protected override IRestClientAsync CreateNewRestClientAsync()

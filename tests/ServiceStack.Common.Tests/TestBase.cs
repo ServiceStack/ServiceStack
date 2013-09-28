@@ -532,9 +532,9 @@ namespace ServiceStack.Common.Tests
             return request;
         }
 
-        private static EndpointHandlerBase GetHandler(string httpMethod, string pathInfo)
+        private static ServiceStackHandlerBase GetHandler(string httpMethod, string pathInfo)
         {
-            var httpHandler = HttpHandlerFactory.GetHandlerForPathInfo(httpMethod, pathInfo, pathInfo, null) as EndpointHandlerBase;
+            var httpHandler = HttpHandlerFactory.GetHandlerForPathInfo(httpMethod, pathInfo, pathInfo, null) as ServiceStackHandlerBase;
             if (httpHandler == null)
                 throw new NotSupportedException(pathInfo);
             return httpHandler;

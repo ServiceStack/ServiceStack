@@ -16,7 +16,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Tests
     [TestFixture]
     public class EndpointHandlerBaseTests
     {
-        class TestHandler : EndpointHandlerBase
+        class TestHandler : ServiceStackHandlerBase
         {
             public override object CreateRequest(IHttpRequest request, string operationName)
             {

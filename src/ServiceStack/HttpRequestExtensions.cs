@@ -761,7 +761,7 @@ namespace ServiceStack
             switch (ipAddress.AddressFamily)
             {
                 case AddressFamily.InterNetwork:
-                    foreach (var localIpv4AddressAndMask in EndpointHandlerBase.NetworkInterfaceIpv4Addresses)
+                    foreach (var localIpv4AddressAndMask in ServiceStackHandlerBase.NetworkInterfaceIpv4Addresses)
                     {
                         if (ipAddressBytes.IsInSameIpv4Subnet(localIpv4AddressAndMask.Key, localIpv4AddressAndMask.Value))
                         {
@@ -771,7 +771,7 @@ namespace ServiceStack
                     break;
 
                 case AddressFamily.InterNetworkV6:
-                    foreach (var localIpv6Address in EndpointHandlerBase.NetworkInterfaceIpv6Addresses)
+                    foreach (var localIpv6Address in ServiceStackHandlerBase.NetworkInterfaceIpv6Addresses)
                     {
                         if (ipAddressBytes.IsInSameIpv6Subnet(localIpv6Address))
                         {

@@ -9,7 +9,7 @@ using ServiceStack.Web.Handlers;
 
 namespace ServiceStack.Razor
 {
-    public class RazorHandler : EndpointHandlerBase
+    public class RazorHandler : ServiceStackHandlerBase
     {
         public RazorFormat RazorFormat { get; set; }
         public RazorPage RazorPage { get; set; }

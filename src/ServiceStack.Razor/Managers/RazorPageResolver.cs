@@ -20,7 +20,7 @@ namespace ServiceStack.Razor.Managers
     /// <summary>
     /// A common hook into ServiceStack and the hosting infrastructure used to resolve requests.
     /// </summary>
-    public class RazorPageResolver : EndpointHandlerBase, IViewEngine
+    public class RazorPageResolver : ServiceStackHandlerBase, IViewEngine
     {
         public const string ViewKey = "View";
         public const string LayoutKey = "Template";

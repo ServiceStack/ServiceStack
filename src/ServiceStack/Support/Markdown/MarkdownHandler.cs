@@ -6,7 +6,7 @@ using ServiceStack.Web.Handlers;
 
 namespace ServiceStack.Support.Markdown
 {
-    public class MarkdownHandler : EndpointHandlerBase
+    public class MarkdownHandler : ServiceStackHandlerBase
     {
         public MarkdownFormat MarkdownFormat { get; set; }
         public MarkdownPage MarkdownPage { get; set; }
