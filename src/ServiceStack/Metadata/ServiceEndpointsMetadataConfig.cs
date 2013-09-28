@@ -10,8 +10,6 @@ namespace ServiceStack.Metadata
         /// <summary>
         /// Changes the links for the servicestack/metadata page
         /// </summary>
-        /// <param name="serviceStackHandlerPrefix"></param>
-        /// <returns></returns>
         public static ServiceEndpointsMetadataConfig Create(string serviceStackHandlerPrefix)
         {
             var config = new MetadataConfig("{0}", "{0}", "/{0}/reply", "/{0}/oneway", "/{0}/metadata");

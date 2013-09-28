@@ -4,9 +4,7 @@ using System.Reflection;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Host.HttpListener;
-using ServiceStack.Support.WebHost;
 using ServiceStack.Utils;
-using ServiceStack.Web;
 
 namespace ServiceStack
 {
@@ -33,7 +31,8 @@ namespace ServiceStack
 			: base(serviceName, assembliesWithServices)
 		{
 			AppHostConfig.Instance.ServiceStackHandlerFactoryPath = string.IsNullOrEmpty(handlerPath)
-				? null : handlerPath;			
+				? null 
+                : handlerPath;			
 			AppHostConfig.Instance.MetadataRedirectPath = handlerPath == null 
 				? "metadata"
 				: PathUtils.CombinePaths(handlerPath, "metadata");

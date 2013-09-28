@@ -12,82 +12,83 @@ using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Serialization;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.HttpListener
 {
-	public delegate void DelReceiveWebRequest(HttpListenerContext context);
+    public delegate void DelReceiveWebRequest(HttpListenerContext context);
 
-	/// <summary>
-	/// Wrapper class for the HTTPListener to allow easier access to the
-	/// server, for start and stop management and event routing of the actual
-	/// inbound requests.
-	/// </summary>
+    /// <summary>
+    /// Wrapper class for the HTTPListener to allow easier access to the
+    /// server, for start and stop management and event routing of the actual
+    /// inbound requests.
+    /// </summary>
     public abstract class HttpListenerBase : IDisposable, IAppHost, IHasContainer
-	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof(HttpListenerBase));
+    {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(HttpListenerBase));
 
-		private const int RequestThreadAbortedException = 995;
+        private const int RequestThreadAbortedException = 995;
 
-		protected System.Net.HttpListener Listener;
-		protected bool IsStarted = false;
-	    protected string registeredReservedUrl = null;
+        protected System.Net.HttpListener Listener;
+        protected bool IsStarted = false;
+        protected string registeredReservedUrl = null;
 
-		private readonly DateTime startTime;
+        private readonly DateTime startTime;
 
-		public static HttpListenerBase Instance { get; protected set; }
+        public static HttpListenerBase Instance { get; protected set; }
 
-		private readonly AutoResetEvent ListenForNextRequest = new AutoResetEvent(false);
+        private readonly AutoResetEvent ListenForNextRequest = new AutoResetEvent(false);
 
-		public event DelReceiveWebRequest ReceiveWebRequest;
+        public event DelReceiveWebRequest ReceiveWebRequest;
 
-		protected HttpListenerBase()
-		{
+        protected HttpListenerBase()
+        {
             this.startTime = DateTime.UtcNow;
-			Log.Info("Begin Initializing Application...");
+            Log.Info("Begin Initializing Application...");
 
-			AppHostConfig.SkipPathValidation = true;
-		}
+            AppHostConfig.SkipPathValidation = true;
+        }
 
-		protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
-			: this()
-		{
-			EndpointHost.ConfigureHost(this, serviceName, CreateServiceManager(assembliesWithServices));
-		}
+        protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
+            : this()
+        {
+            EndpointHost.ConfigureHost(this, serviceName, CreateServiceManager(assembliesWithServices));
+        }
 
-		protected virtual ServiceManager CreateServiceManager(params Assembly[] assembliesWithServices)
-		{
-			return new ServiceManager(assembliesWithServices);
-		}
+        protected virtual ServiceManager CreateServiceManager(params Assembly[] assembliesWithServices)
+        {
+            return new ServiceManager(assembliesWithServices);
+        }
 
-		public void Init()
-		{
-			if (Instance != null)
-			{
-				throw new InvalidDataException("HttpListenerBase.Instance has already been set");
-			}
+        public void Init()
+        {
+            if (Instance != null)
+            {
+                throw new InvalidDataException("HttpListenerBase.Instance has already been set");
+            }
 
-			Instance = this;
+            Instance = this;
 
-			var serviceManager = EndpointHost.Config.ServiceManager;
-			if (serviceManager != null)
-			{
-				serviceManager.Init();
-				Configure(EndpointHost.Config.ServiceManager.Container);
-			}
-			else
-			{
-				Configure(null);
-			}
+            var serviceManager = EndpointHost.Config.ServiceManager;
+            if (serviceManager != null)
+            {
+                serviceManager.Init();
+                Configure(EndpointHost.Config.ServiceManager.Container);
+            }
+            else
+            {
+                Configure(null);
+            }
 
-			EndpointHost.AfterInit();
+            EndpointHost.AfterInit();
 
             SetAppDomainData();
             var elapsed = DateTime.UtcNow - this.startTime;
-			Log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
-		}
+            Log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
+        }
 
-		public abstract void Configure(Container container);
+        public abstract void Configure(Container container);
 
         public virtual void SetAppDomainData()
         {
@@ -106,10 +107,10 @@ namespace ServiceStack.Host.HttpListener
             }
         }
 
-		public virtual void Start(string urlBase)
-		{
-		    Start(urlBase, Listen);
-		}
+        public virtual void Start(string urlBase)
+        {
+            Start(urlBase, Listen);
+        }
 
         /// <summary>
         /// Starts the Web Service
@@ -121,26 +122,26 @@ namespace ServiceStack.Host.HttpListener
         /// HttpListener.Prefixes property on MSDN.
         /// </param>
         protected void Start(string urlBase, WaitCallback listenCallback)
-	    {
+        {
             // *** Already running - just leave it in place
-	        if (this.IsStarted)
-	            return;
+            if (this.IsStarted)
+                return;
 
-	        if (this.Listener == null)
-	            Listener = new System.Net.HttpListener();
+            if (this.Listener == null)
+                Listener = new System.Net.HttpListener();
 
-	        EndpointHost.Config.ServiceStackHandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(urlBase);
+            EndpointHost.Config.ServiceStackHandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(urlBase);
 
-	        Listener.Prefixes.Add(urlBase);
+            Listener.Prefixes.Add(urlBase);
 
-	        IsStarted = true;
+            IsStarted = true;
 
-	        try
-	        {
-	            Listener.Start();
-	        }
-	        catch (HttpListenerException ex)
-	        {
+            try
+            {
+                Listener.Start();
+            }
+            catch (HttpListenerException ex)
+            {
                 if (Config.AllowAclUrlReservation && ex.ErrorCode == 5 && registeredReservedUrl == null)
                 {
                     registeredReservedUrl = AddUrlReservationToAcl(urlBase);
@@ -151,155 +152,161 @@ namespace ServiceStack.Host.HttpListener
                     }
                 }
 
-	            throw ex;
-	        }
+                throw ex;
+            }
 
-	        ThreadPool.QueueUserWorkItem(listenCallback);
-	    }
+            ThreadPool.QueueUserWorkItem(listenCallback);
+        }
 
-	    private bool IsListening
-	    {
+        private bool IsListening
+        {
             get { return this.IsStarted && this.Listener != null && this.Listener.IsListening; }
-	    }
+        }
 
-		// Loop here to begin processing of new requests.
-		private void Listen(object state)
-		{
-			while (IsListening)
-			{
-				if (Listener == null) return;
+        // Loop here to begin processing of new requests.
+        private void Listen(object state)
+        {
+            while (IsListening)
+            {
+                if (Listener == null) return;
 
-				try
-				{
-					Listener.BeginGetContext(ListenerCallback, Listener);
-					ListenForNextRequest.WaitOne();
-				}
-				catch (Exception ex)
-				{
-					Log.Error("Listen()", ex);
-					return;
-				}
-				if (Listener == null) return;
-			}
-		}
+                try
+                {
+                    Listener.BeginGetContext(ListenerCallback, Listener);
+                    ListenForNextRequest.WaitOne();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Listen()", ex);
+                    return;
+                }
+                if (Listener == null) return;
+            }
+        }
 
-		// Handle the processing of a request in here.
-		private void ListenerCallback(IAsyncResult asyncResult)
-		{
-			var listener = asyncResult.AsyncState as System.Net.HttpListener;
-			HttpListenerContext context = null;
+        // Handle the processing of a request in here.
+        private void ListenerCallback(IAsyncResult asyncResult)
+        {
+            var listener = asyncResult.AsyncState as System.Net.HttpListener;
+            HttpListenerContext context = null;
 
-			if (listener == null) return;
+            if (listener == null) return;
 
-			try
-			{
-				if (!IsListening)
-				{
-					Log.DebugFormat("Ignoring ListenerCallback() as HttpListener is no longer listening");
-					return;
-				}
-				// The EndGetContext() method, as with all Begin/End asynchronous methods in the .NET Framework,
-				// blocks until there is a request to be processed or some type of data is available.
-				context = listener.EndGetContext(asyncResult);				
-			}
-			catch (Exception ex)
-			{
-				// You will get an exception when httpListener.Stop() is called
-				// because there will be a thread stopped waiting on the .EndGetContext()
-				// method, and again, that is just the way most Begin/End asynchronous
-				// methods of the .NET Framework work.
+            try
+            {
+                if (!IsListening)
+                {
+                    Log.DebugFormat("Ignoring ListenerCallback() as HttpListener is no longer listening");
+                    return;
+                }
+                // The EndGetContext() method, as with all Begin/End asynchronous methods in the .NET Framework,
+                // blocks until there is a request to be processed or some type of data is available.
+                context = listener.EndGetContext(asyncResult);
+            }
+            catch (Exception ex)
+            {
+                // You will get an exception when httpListener.Stop() is called
+                // because there will be a thread stopped waiting on the .EndGetContext()
+                // method, and again, that is just the way most Begin/End asynchronous
+                // methods of the .NET Framework work.
                 var errMsg = ex + ": " + IsListening;
-				Log.Warn(errMsg);
-				return;
-			}
-			finally
-			{
-				// Once we know we have a request (or exception), we signal the other thread
-				// so that it calls the BeginGetContext() (or possibly exits if we're not
-				// listening any more) method to start handling the next incoming request
-				// while we continue to process this request on a different thread.
-				ListenForNextRequest.Set();
-			}
+                Log.Warn(errMsg);
+                return;
+            }
+            finally
+            {
+                // Once we know we have a request (or exception), we signal the other thread
+                // so that it calls the BeginGetContext() (or possibly exits if we're not
+                // listening any more) method to start handling the next incoming request
+                // while we continue to process this request on a different thread.
+                ListenForNextRequest.Set();
+            }
 
-			if (context == null) return;
+            if (context == null) return;
 
             Log.InfoFormat("{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
 
             //System.Diagnostics.Debug.WriteLine("Start: " + requestNumber + " at " + DateTime.UtcNow);
-			//var request = context.Request;
+            //var request = context.Request;
 
-			//if (request.HasEntityBody)
+            //if (request.HasEntityBody)
 
-			RaiseReceiveWebRequest(context);
+            RaiseReceiveWebRequest(context);
 
             try
             {
-	            this.ProcessRequest(context);
+                this.ProcessRequest(context);
             }
             catch (Exception ex)
             {
                 var error = string.Format("Error this.ProcessRequest(context): [{0}]: {1}", ex.GetType().Name, ex.Message);
                 Log.ErrorFormat(error);
 
-                try
-                {
-	                var errorResponse = new ErrorResponse
-	                {
-                        ResponseStatus = new ResponseStatus
-                        {
-                            ErrorCode = ex.GetType().Name,
-                            Message = ex.Message,
-                            StackTrace = ex.StackTrace,
-                        }
-	                };
-
-                    var operationName = context.Request.GetOperationName();
-                    var httpReq = new ListenerRequest(operationName, context.Request);
-                    var httpRes = new ListenerResponse(context.Response);
-	                var requestCtx = new HttpRequestContext(httpReq, httpRes, errorResponse);
-	                var contentType = requestCtx.ResponseContentType;
-
-	                var serializer = EndpointHost.ContentTypes.GetResponseSerializer(contentType);
-                    if (serializer == null)
-                    {
-                        contentType = EndpointHost.Config.DefaultContentType;
-                        serializer = EndpointHost.ContentTypes.GetResponseSerializer(contentType);
-                    }
-
-                    httpRes.StatusCode = 500;
-                    httpRes.ContentType = contentType;
-
-	                serializer(requestCtx, errorResponse, httpRes);
-
-                    httpRes.Close();
-                }
-                catch (Exception errorEx)
-                {
-	                error = string.Format("Error this.ProcessRequest(context)(Exception while writing error to the response): [{0}]: {1}", errorEx.GetType().Name, errorEx.Message);
-	                Log.ErrorFormat(error);
-                }
+                HandleError(ex, context);
             }
 
             //System.Diagnostics.Debug.WriteLine("End: " + requestNumber + " at " + DateTime.UtcNow);
-		}
+        }
 
-	    protected void RaiseReceiveWebRequest(HttpListenerContext context)
-	    {
-	        if (this.ReceiveWebRequest != null)
-	            this.ReceiveWebRequest(context);
-	    }
+        public static void HandleError(Exception ex, HttpListenerContext context)
+        {
+            try
+            {
+                var errorResponse = new ErrorResponse
+                {
+                    ResponseStatus = new ResponseStatus
+                    {
+                        ErrorCode = ex.GetType().Name,
+                        Message = ex.Message,
+                        StackTrace = ex.StackTrace,
+                    }
+                };
+
+                var operationName = context.Request.GetOperationName();
+                var httpReq = new ListenerRequest(operationName, context.Request);
+                var httpRes = new ListenerResponse(context.Response);
+                var requestCtx = new HttpRequestContext(httpReq, httpRes, errorResponse);
+                var contentType = requestCtx.ResponseContentType;
+
+                var serializer = EndpointHost.ContentTypes.GetResponseSerializer(contentType);
+                if (serializer == null)
+                {
+                    contentType = EndpointHost.Config.DefaultContentType;
+                    serializer = EndpointHost.ContentTypes.GetResponseSerializer(contentType);
+                }
+
+                httpRes.StatusCode = 500;
+                httpRes.ContentType = contentType;
+
+                serializer(requestCtx, errorResponse, httpRes);
+
+                httpRes.Close();
+            }
+            catch (Exception errorEx)
+            {
+                var error = "Error this.ProcessRequest(context)(Exception while writing error to the response): [{0}]: {1}"
+                            .Fmt(errorEx.GetType().Name, errorEx.Message);
+                Log.ErrorFormat(error);
+            }
+        }
+
+        protected void RaiseReceiveWebRequest(HttpListenerContext context)
+        {
+            if (this.ReceiveWebRequest != null)
+                this.ReceiveWebRequest(context);
+        }
 
 
-	    /// <summary>
-		/// Shut down the Web Service
-		/// </summary>
-		public virtual void Stop()
-		{
-			if (Listener == null) return;
+        /// <summary>
+        /// Shut down the Web Service
+        /// </summary>
+        public virtual void Stop()
+        {
+            if (Listener == null) return;
 
-			try
-			{
-				this.Listener.Close();
+            try
+            {
+                this.Listener.Close();
 
                 // remove Url Reservation if one was made
                 if (registeredReservedUrl != null)
@@ -307,51 +314,51 @@ namespace ServiceStack.Host.HttpListener
                     RemoveUrlReservationFromAcl(registeredReservedUrl);
                     registeredReservedUrl = null;
                 }
-			}
-			catch (HttpListenerException ex)
-			{
-				if (ex.ErrorCode != RequestThreadAbortedException) throw;
+            }
+            catch (HttpListenerException ex)
+            {
+                if (ex.ErrorCode != RequestThreadAbortedException) throw;
 
-				Log.ErrorFormat("Swallowing HttpListenerException({0}) Thread exit or aborted request", RequestThreadAbortedException);
-			}
+                Log.ErrorFormat("Swallowing HttpListenerException({0}) Thread exit or aborted request", RequestThreadAbortedException);
+            }
             this.IsStarted = false;
             this.Listener = null;
-		}
+        }
 
-		/// <summary>
-		/// Overridable method that can be used to implement a custom hnandler
-		/// </summary>
-		/// <param name="context"></param>
-		protected abstract void ProcessRequest(HttpListenerContext context);
+        /// <summary>
+        /// Overridable method that can be used to implement a custom hnandler
+        /// </summary>
+        /// <param name="context"></param>
+        protected abstract void ProcessRequest(HttpListenerContext context);
 
-		protected void SetConfig(AppHostConfig config)
-		{
-			if (config.ServiceName == null)
-				config.ServiceName = EndpointHost.Config.ServiceName;
+        protected void SetConfig(AppHostConfig config)
+        {
+            if (config.ServiceName == null)
+                config.ServiceName = EndpointHost.Config.ServiceName;
 
-			if (config.ServiceManager == null)
-				config.ServiceManager = EndpointHost.Config.ServiceManager;
+            if (config.ServiceManager == null)
+                config.ServiceManager = EndpointHost.Config.ServiceManager;
 
-			config.ServiceManager.ServiceController.EnableAccessRestrictions = config.EnableAccessRestrictions;
+            config.ServiceManager.ServiceController.EnableAccessRestrictions = config.EnableAccessRestrictions;
 
-			EndpointHost.Config = config;
+            EndpointHost.Config = config;
 
-			JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
-			JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;
-		}
+            JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
+            JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;
+        }
 
-		public Container Container
-		{
-			get
-			{
-				return EndpointHost.Config.ServiceManager.Container;
-			}
-		}
+        public Container Container
+        {
+            get
+            {
+                return EndpointHost.Config.ServiceManager.Container;
+            }
+        }
 
-		public void RegisterAs<T, TAs>() where T : TAs
-		{
-			this.Container.RegisterAutoWiredAs<T, TAs>();
-		}
+        public void RegisterAs<T, TAs>() where T : TAs
+        {
+            this.Container.RegisterAutoWiredAs<T, TAs>();
+        }
 
         public virtual void Release(object instance)
         {
@@ -362,7 +369,7 @@ namespace ServiceStack.Host.HttpListener
                 {
                     iocAdapterReleases.Release(instance);
                 }
-                else 
+                else
                 {
                     var disposable = instance as IDisposable;
                     if (disposable != null)
@@ -382,14 +389,14 @@ namespace ServiceStack.Host.HttpListener
             HostContext.Instance.EndRequest();
         }
 
-	    public void Register<T>(T instance)
-		{
-			this.Container.Register(instance);
-		}
+        public void Register<T>(T instance)
+        {
+            this.Container.Register(instance);
+        }
 
-		public T TryResolve<T>()
-		{
-			return this.Container.TryResolve<T>();
+        public T TryResolve<T>()
+        {
+            return this.Container.TryResolve<T>();
         }
 
         /// <summary>
@@ -440,47 +447,47 @@ namespace ServiceStack.Host.HttpListener
             }
         }
 
-		public IServiceRoutes Routes
-		{
-			get { return EndpointHost.Config.ServiceController.Routes; }
-		}
+        public IServiceRoutes Routes
+        {
+            get { return EndpointHost.Config.ServiceController.Routes; }
+        }
 
-		public Dictionary<Type, Func<IHttpRequest, object>> RequestBinders
-		{
-			get { return EndpointHost.ServiceManager.ServiceController.RequestTypeFactoryMap; }
-		}
+        public Dictionary<Type, Func<IHttpRequest, object>> RequestBinders
+        {
+            get { return EndpointHost.ServiceManager.ServiceController.RequestTypeFactoryMap; }
+        }
 
-		public IContentTypes ContentTypes
-		{
-			get
-			{
-				return EndpointHost.ContentTypes;
-			}
-		}
+        public IContentTypes ContentTypes
+        {
+            get
+            {
+                return EndpointHost.ContentTypes;
+            }
+        }
 
-		public List<Action<IHttpRequest, IHttpResponse>> PreRequestFilters
-		{
-			get
-			{
-				return EndpointHost.PreRequestFilters;
-			}
-		}
+        public List<Action<IHttpRequest, IHttpResponse>> PreRequestFilters
+        {
+            get
+            {
+                return EndpointHost.PreRequestFilters;
+            }
+        }
 
-		public List<Action<IHttpRequest, IHttpResponse, object>> GlobalRequestFilters
-		{
-			get
-			{
-				return EndpointHost.GlobalRequestFilters;
-			}
-		}
+        public List<Action<IHttpRequest, IHttpResponse, object>> GlobalRequestFilters
+        {
+            get
+            {
+                return EndpointHost.GlobalRequestFilters;
+            }
+        }
 
-		public List<Action<IHttpRequest, IHttpResponse, object>> GlobalResponseFilters
-		{
-			get
-			{
-				return EndpointHost.GlobalResponseFilters;
-			}
-		}
+        public List<Action<IHttpRequest, IHttpResponse, object>> GlobalResponseFilters
+        {
+            get
+            {
+                return EndpointHost.GlobalResponseFilters;
+            }
+        }
 
         public List<IViewEngine> ViewEngines
         {
@@ -503,54 +510,54 @@ namespace ServiceStack.Host.HttpListener
         }
 
         public List<HttpHandlerResolverDelegate> CatchAllHandlers
-		{
-			get { return EndpointHost.CatchAllHandlers; }
-		}
+        {
+            get { return EndpointHost.CatchAllHandlers; }
+        }
 
-		public AppHostConfig Config
-		{
-			get { return EndpointHost.Config; }
-		}
+        public AppHostConfig Config
+        {
+            get { return EndpointHost.Config; }
+        }
 
         ///TODO: plugin added with .Add method after host initialization won't be configured. Each plugin should have state so we can invoke Register method if host was already started.  
-		public List<IPlugin> Plugins
-		{
-			get { return EndpointHost.Plugins; }
-		}
-		
-		public IVirtualPathProvider VirtualPathProvider
-		{
-			get { return EndpointHost.VirtualPathProvider; }
-			set { EndpointHost.VirtualPathProvider = value; }
-		}
+        public List<IPlugin> Plugins
+        {
+            get { return EndpointHost.Plugins; }
+        }
+
+        public IVirtualPathProvider VirtualPathProvider
+        {
+            get { return EndpointHost.VirtualPathProvider; }
+            set { EndpointHost.VirtualPathProvider = value; }
+        }
 
         public virtual IServiceRunner<TRequest> CreateServiceRunner<TRequest>(ActionContext actionContext)
         {
             return new ServiceRunner<TRequest>(this, actionContext);
         }
 
-	    public virtual string ResolveAbsoluteUrl(string virtualPath, IHttpRequest httpReq)
-	    {
+        public virtual string ResolveAbsoluteUrl(string virtualPath, IHttpRequest httpReq)
+        {
             return httpReq.GetAbsoluteUrl(virtualPath);
-	    }
+        }
 
-	    public virtual void LoadPlugin(params IPlugin[] plugins)
-		{
-			foreach (var plugin in plugins)
-			{
-				try
-				{
-					plugin.Register(this);
-				}
-				catch (Exception ex)
-				{
-					Log.Warn("Error loading plugin " + plugin.GetType().Name, ex);
-				}
-			}
-		}
+        public virtual void LoadPlugin(params IPlugin[] plugins)
+        {
+            foreach (var plugin in plugins)
+            {
+                try
+                {
+                    plugin.Register(this);
+                }
+                catch (Exception ex)
+                {
+                    Log.Warn("Error loading plugin " + plugin.GetType().Name, ex);
+                }
+            }
+        }
 
-		public void RegisterService(Type serviceType, params string[] atRestPaths)
-		{
+        public void RegisterService(Type serviceType, params string[] atRestPaths)
+        {
             EndpointHost.Config.ServiceManager.RegisterService(serviceType);
             var reqAttr = serviceType.GetCustomAttributes(true).OfType<DefaultRequestAttribute>().FirstOrDefault();
             if (reqAttr != null)

@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Net;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
-using ServiceStack.Support.WebHost;
-using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -190,29 +187,7 @@ namespace ServiceStack
                     string error = string.Format("Error this.ProcessRequest(context): [{0}]: {1}", ex.GetType().Name, ex.Message);
                     log.ErrorFormat(error);
 
-                    try
-                    {
-                        var sb = new StringBuilder();
-                        sb.AppendLine("{");
-                        sb.AppendLine("\"ResponseStatus\":{");
-                        sb.AppendFormat(" \"ErrorCode\":{0},\n", ex.GetType().Name.EncodeJson());
-                        sb.AppendFormat(" \"Message\":{0},\n", ex.Message.EncodeJson());
-                        sb.AppendFormat(" \"StackTrace\":{0}\n", ex.StackTrace.EncodeJson());
-                        sb.AppendLine("}");
-                        sb.AppendLine("}");
-
-                        context.Response.StatusCode = 500;
-                        context.Response.ContentType = MimeTypes.Json;
-                        byte[] sbBytes = sb.ToString().ToUtf8Bytes();
-                        context.Response.OutputStream.Write(sbBytes, 0, sbBytes.Length);
-                        context.Response.Close();
-                    }
-                    catch (Exception errorEx)
-                    {
-                        error = string.Format("Error this.ProcessRequest(context)(Exception while writing error to the response): [{0}]: {1}",
-                                              errorEx.GetType().Name, errorEx.Message);
-                        log.ErrorFormat(error);
-                    }
+                    HandleError(ex, context);
                 }
 
                 threadPoolManager.Free();

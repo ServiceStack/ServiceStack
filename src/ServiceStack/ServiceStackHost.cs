@@ -19,7 +19,7 @@ using ServiceStack.Web;
 namespace ServiceStack
 {
     public abstract class ServiceStackHost
-        : IFunqlet, IDisposable, IAppHost, IHasContainer
+        : IAppHost, IFunqlet, IHasContainer, IDisposable
     {
         private readonly ILog log = LogManager.GetLogger(typeof(ServiceStackHost));
         public static ServiceStackHost Instance { get; protected set; }
