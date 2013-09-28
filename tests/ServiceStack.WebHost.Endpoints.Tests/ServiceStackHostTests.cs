@@ -41,7 +41,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			TestService.ResetStats();
 
 			var request = new Test();
-			var response = host.ExecuteService(request, EndpointAttributes.OneWay) as TestResponse;
+			var response = host.ExecuteService(request, RequestAttributes.OneWay) as TestResponse;
 
 			Assert.That(response, Is.Not.Null);
 			Assert.That(response.ExecuteTimes, Is.EqualTo(1));

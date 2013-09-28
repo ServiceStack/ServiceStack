@@ -40,27 +40,27 @@ namespace ServiceStack.Web
         public const string Head = "HEAD";
         public const string Patch = "PATCH";
 
-        public static EndpointAttributes GetEndpointAttribute(string httpMethod)
+        public static RequestAttributes GetEndpointAttribute(string httpMethod)
         {
             switch (httpMethod.ToUpper())
             {
                 case Get:
-                    return EndpointAttributes.HttpGet;
+                    return RequestAttributes.HttpGet;
                 case Put:
-                    return EndpointAttributes.HttpPut;
+                    return RequestAttributes.HttpPut;
                 case Post:
-                    return EndpointAttributes.HttpPost;
+                    return RequestAttributes.HttpPost;
                 case Delete:
-                    return EndpointAttributes.HttpDelete;
+                    return RequestAttributes.HttpDelete;
                 case Patch:
-                    return EndpointAttributes.HttpPatch;
+                    return RequestAttributes.HttpPatch;
                 case Head:
-                    return EndpointAttributes.HttpHead;
+                    return RequestAttributes.HttpHead;
                 case Options:
-                    return EndpointAttributes.HttpOptions;
+                    return RequestAttributes.HttpOptions;
             }
 
-            return EndpointAttributes.HttpOther;
+            return RequestAttributes.HttpOther;
         }
     }
 }

@@ -122,13 +122,13 @@ namespace ServiceStack.Web
             var contentTypeAttr = ContentFormat.GetEndpointAttributes(contentType);
             switch (contentTypeAttr)
             {
-                case EndpointAttributes.Xml:
+                case RequestAttributes.Xml:
                     return XmlSerializer.SerializeToString(response).ToUtf8Bytes();
 
-                case EndpointAttributes.Json:
+                case RequestAttributes.Json:
                     return JsonDataContractSerializer.Instance.SerializeToString(response).ToUtf8Bytes();
 
-                case EndpointAttributes.Jsv:
+                case RequestAttributes.Jsv:
                     return TypeSerializer.SerializeToString(response).ToUtf8Bytes();
             }
 
@@ -178,13 +178,13 @@ namespace ServiceStack.Web
             var contentTypeAttr = ContentFormat.GetEndpointAttributes(contentType);
             switch (contentTypeAttr)
             {
-                case EndpointAttributes.Xml:
+                case RequestAttributes.Xml:
                     return XmlSerializer.SerializeToString(response);
 
-                case EndpointAttributes.Json:
+                case RequestAttributes.Json:
                     return JsonDataContractSerializer.Instance.SerializeToString(response);
 
-                case EndpointAttributes.Jsv:
+                case RequestAttributes.Jsv:
                     return TypeSerializer.SerializeToString(response);
             }
 
@@ -239,13 +239,13 @@ namespace ServiceStack.Web
             var contentTypeAttr = ContentFormat.GetEndpointAttributes(contentType);
             switch (contentTypeAttr)
             {
-                case EndpointAttributes.Xml:
+                case RequestAttributes.Xml:
                     return (r, o, s) => XmlSerializer.SerializeToStream(o, s);
 
-                case EndpointAttributes.Json:
+                case RequestAttributes.Json:
                     return (r, o, s) => JsonDataContractSerializer.Instance.SerializeToStream(o, s);
 
-                case EndpointAttributes.Jsv:
+                case RequestAttributes.Jsv:
                     return (r, o, s) => TypeSerializer.SerializeToStream(o, s);
             }
 
@@ -257,13 +257,13 @@ namespace ServiceStack.Web
             var contentTypeAttr = ContentFormat.GetEndpointAttributes(contentType);
             switch (contentTypeAttr)
             {
-                case EndpointAttributes.Xml:
+                case RequestAttributes.Xml:
                     return XmlSerializer.DeserializeFromString(request, type);
 
-                case EndpointAttributes.Json:
+                case RequestAttributes.Json:
                     return JsonDataContractDeserializer.Instance.DeserializeFromString(request, type);
 
-                case EndpointAttributes.Jsv:
+                case RequestAttributes.Jsv:
                     return TypeSerializer.DeserializeFromString(request, type);
 
                 default:
@@ -292,13 +292,13 @@ namespace ServiceStack.Web
             var contentTypeAttr = ContentFormat.GetEndpointAttributes(contentType);
             switch (contentTypeAttr)
             {
-                case EndpointAttributes.Xml:
+                case RequestAttributes.Xml:
                     return XmlSerializer.DeserializeFromStream;
 
-                case EndpointAttributes.Json:
+                case RequestAttributes.Json:
                     return JsonDataContractDeserializer.Instance.DeserializeFromStream;
 
-                case EndpointAttributes.Jsv:
+                case RequestAttributes.Jsv:
                     return TypeSerializer.DeserializeFromStream;
             }
 

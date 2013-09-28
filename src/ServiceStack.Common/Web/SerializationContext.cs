@@ -30,9 +30,9 @@ namespace ServiceStack.Web
             get { return new Dictionary<string, System.Net.Cookie>(); }
         }
 
-        public EndpointAttributes EndpointAttributes
+        public RequestAttributes RequestAttributes
         {
-            get { return EndpointAttributes.None; }
+            get { return RequestAttributes.None; }
         }
 
         public IRequestPreferences RequestPreferences

@@ -282,13 +282,13 @@ namespace ServiceStack
 
 		public virtual object ExecuteService(object requestDto)
 		{
-			return ExecuteService(requestDto, EndpointAttributes.None);
+			return ExecuteService(requestDto, RequestAttributes.None);
 		}
 
-		public object ExecuteService(object requestDto, EndpointAttributes endpointAttributes)
+		public object ExecuteService(object requestDto, RequestAttributes requestAttributes)
 		{
 			return EndpointHost.Config.ServiceController.Execute(requestDto,
-				new HttpRequestContext(requestDto, endpointAttributes));
+				new HttpRequestContext(requestDto, requestAttributes));
 		}
 
 		public void RegisterService(Type serviceType, params string[] atRestPaths)

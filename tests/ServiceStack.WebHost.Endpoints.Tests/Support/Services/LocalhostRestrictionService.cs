@@ -3,7 +3,7 @@ using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 {
-	[Restrict(EndpointAttributes.Localhost)]
+	[Restrict(RequestAttributes.Localhost)]
 	[DataContract]
 	public class LocalhostRestriction { }
 

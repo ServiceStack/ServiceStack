@@ -112,7 +112,7 @@ namespace ServiceStack
                         OnlySendSessionCookiesSecurely = false,
                         RestrictAllCookiesToDomain = null,
                         DefaultJsonpCacheExpiration = new TimeSpan(0, 20, 0),
-                        MetadataVisibility = EndpointAttributes.Any,
+                        MetadataVisibility = RequestAttributes.Any,
                         Return204NoContentForEmptyResponse = true,
                         AllowPartialResponses = true,
                         AllowAclUrlReservation = true,
@@ -383,8 +383,8 @@ namespace ServiceStack
         public MetadataTypesConfig MetadataTypesConfig { get; set; }
         public string WsdlServiceNamespace { get; set; }
 
-        private EndpointAttributes metadataVisibility;
-        public EndpointAttributes MetadataVisibility
+        private RequestAttributes metadataVisibility;
+        public RequestAttributes MetadataVisibility
         {
             get { return metadataVisibility; }
             set { metadataVisibility = value.ToAllowedFlagsSet(); }
@@ -512,7 +512,7 @@ namespace ServiceStack
             }
         }
 
-        public UnauthorizedAccessException UnauthorizedAccess(EndpointAttributes requestAttrs)
+        public UnauthorizedAccessException UnauthorizedAccess(RequestAttributes requestAttrs)
         {
             return new UnauthorizedAccessException(
                 String.Format("Request with '{0}' is not allowed", requestAttrs));
@@ -545,7 +545,7 @@ namespace ServiceStack
                 return false;
             }
 
-            if (MetadataVisibility != EndpointAttributes.Any)
+            if (MetadataVisibility != RequestAttributes.Any)
             {
                 var actualAttributes = httpReq.GetAttributes();
                 if ((actualAttributes & MetadataVisibility) != MetadataVisibility)

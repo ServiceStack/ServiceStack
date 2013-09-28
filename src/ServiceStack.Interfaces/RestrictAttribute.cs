@@ -19,13 +19,13 @@ namespace ServiceStack
         /// </summary>
         public bool VisibleInternalOnly
         {
-            get { return CanShowTo(EndpointAttributes.InternalNetworkAccess); }
+            get { return CanShowTo(RequestAttributes.InternalNetworkAccess); }
             set
             {
                 if (value == false)
                     throw new Exception("Only true allowed");
 
-                VisibilityTo = EndpointAttributes.InternalNetworkAccess.ToAllowedFlagsSet();
+                VisibilityTo = RequestAttributes.InternalNetworkAccess.ToAllowedFlagsSet();
             }
         }
 
@@ -34,13 +34,13 @@ namespace ServiceStack
         /// </summary>
         public bool VisibleLocalhostOnly
         {
-            get { return CanShowTo(EndpointAttributes.Localhost); }
+            get { return CanShowTo(RequestAttributes.Localhost); }
             set
             {
                 if (value == false)
                     throw new Exception("Only true allowed");
 
-                VisibilityTo = EndpointAttributes.Localhost.ToAllowedFlagsSet(); 
+                VisibilityTo = RequestAttributes.Localhost.ToAllowedFlagsSet(); 
             }
         }
 
@@ -49,14 +49,14 @@ namespace ServiceStack
         /// </summary>
         public bool InternalOnly
         {
-            get { return HasAccessTo(EndpointAttributes.InternalNetworkAccess) && CanShowTo(EndpointAttributes.InternalNetworkAccess); }
+            get { return HasAccessTo(RequestAttributes.InternalNetworkAccess) && CanShowTo(RequestAttributes.InternalNetworkAccess); }
             set
             {
                 if (value == false)
                     throw new Exception("Only true allowed");
 
-                AccessTo = EndpointAttributes.InternalNetworkAccess.ToAllowedFlagsSet();
-                VisibilityTo = EndpointAttributes.InternalNetworkAccess.ToAllowedFlagsSet();
+                AccessTo = RequestAttributes.InternalNetworkAccess.ToAllowedFlagsSet();
+                VisibilityTo = RequestAttributes.InternalNetworkAccess.ToAllowedFlagsSet();
             }
         }
 
@@ -65,14 +65,14 @@ namespace ServiceStack
         /// </summary>
         public bool LocalhostOnly
         {
-            get { return HasAccessTo(EndpointAttributes.Localhost) && CanShowTo(EndpointAttributes.Localhost); }
+            get { return HasAccessTo(RequestAttributes.Localhost) && CanShowTo(RequestAttributes.Localhost); }
             set
             {
                 if (value == false)
                     throw new Exception("Only true allowed");
 
-                AccessTo = EndpointAttributes.Localhost.ToAllowedFlagsSet();
-                VisibilityTo = EndpointAttributes.Localhost.ToAllowedFlagsSet(); 
+                AccessTo = RequestAttributes.Localhost.ToAllowedFlagsSet();
+                VisibilityTo = RequestAttributes.Localhost.ToAllowedFlagsSet(); 
             }
         }
 
@@ -80,12 +80,12 @@ namespace ServiceStack
         /// Sets a single access restriction
         /// </summary>
         /// <value>Restrict Access to.</value>
-        public EndpointAttributes AccessTo
+        public RequestAttributes AccessTo
         {
             get
             {
                 return this.AccessibleToAny.Length == 0
-                    ? EndpointAttributes.Any
+                    ? RequestAttributes.Any
                     : this.AccessibleToAny[0];
             }
             set
@@ -98,18 +98,18 @@ namespace ServiceStack
         /// Restrict access to any of the specified access scenarios
         /// </summary>
         /// <value>Access restrictions</value>
-        public EndpointAttributes[] AccessibleToAny { get; private set; }
+        public RequestAttributes[] AccessibleToAny { get; private set; }
 
         /// <summary>
         /// Sets a single metadata Visibility restriction
         /// </summary>
         /// <value>Restrict metadata Visibility to.</value>
-        public EndpointAttributes VisibilityTo
+        public RequestAttributes VisibilityTo
         {
             get
             {
                 return this.VisibleToAny.Length == 0
-                    ? EndpointAttributes.Any
+                    ? RequestAttributes.Any
                     : this.VisibleToAny[0];
             }
             set
@@ -122,19 +122,19 @@ namespace ServiceStack
         /// Restrict metadata visibility to any of the specified access scenarios
         /// </summary>
         /// <value>Visibility restrictions</value>
-        public EndpointAttributes[] VisibleToAny { get; private set; }
+        public RequestAttributes[] VisibleToAny { get; private set; }
 
         public RestrictAttribute()
         {
-            this.AccessTo = EndpointAttributes.Any;
-            this.VisibilityTo = EndpointAttributes.Any;
+            this.AccessTo = RequestAttributes.Any;
+            this.VisibilityTo = RequestAttributes.Any;
         }
 
         /// <summary>
         /// Restrict access and metadata visibility to any of the specified access scenarios
         /// </summary>
         /// <value>The restrict access to scenarios.</value>
-        public RestrictAttribute(params EndpointAttributes[] restrictAccessAndVisibilityToScenarios)
+        public RestrictAttribute(params RequestAttributes[] restrictAccessAndVisibilityToScenarios)
         {
             this.AccessibleToAny = ToAllowedFlagsSet(restrictAccessAndVisibilityToScenarios);
             this.VisibleToAny = ToAllowedFlagsSet(restrictAccessAndVisibilityToScenarios);
@@ -144,7 +144,7 @@ namespace ServiceStack
         /// Restrict access and metadata visibility to any of the specified access scenarios
         /// </summary>
         /// <value>The restrict access to scenarios.</value>
-        public RestrictAttribute(EndpointAttributes[] allowedAccessScenarios, EndpointAttributes[] visibleToScenarios)
+        public RestrictAttribute(RequestAttributes[] allowedAccessScenarios, RequestAttributes[] visibleToScenarios)
             : this()
         {
             this.AccessibleToAny = ToAllowedFlagsSet(allowedAccessScenarios);
@@ -156,12 +156,12 @@ namespace ServiceStack
         /// </summary>
         /// <param name="restrictToAny"></param>
         /// <returns></returns>
-        private static EndpointAttributes[] ToAllowedFlagsSet(EndpointAttributes[] restrictToAny)
+        private static RequestAttributes[] ToAllowedFlagsSet(RequestAttributes[] restrictToAny)
 	    {
 	        if (restrictToAny.Length == 0)
-                return new[] { EndpointAttributes.Any };
+                return new[] { RequestAttributes.Any };
 
-	        var scenarios = new List<EndpointAttributes>();
+	        var scenarios = new List<RequestAttributes>();
 	        foreach (var restrictToScenario in restrictToAny)
 	        {
 	            var restrictTo = restrictToScenario.ToAllowedFlagsSet();
@@ -172,12 +172,12 @@ namespace ServiceStack
             return scenarios.ToArray();
 	    }
 
-        public bool CanShowTo(EndpointAttributes restrictions)
+        public bool CanShowTo(RequestAttributes restrictions)
         {
             return this.VisibleToAny.Any(scenario => (restrictions & scenario) == restrictions);
         }
 
-        public bool HasAccessTo(EndpointAttributes restrictions)
+        public bool HasAccessTo(RequestAttributes restrictions)
         {
             return this.AccessibleToAny.Any(scenario => (restrictions & scenario) == restrictions);
         }
@@ -186,7 +186,7 @@ namespace ServiceStack
         {
             get
             {
-                return this.AccessTo == EndpointAttributes.Any;
+                return this.AccessTo == RequestAttributes.Any;
             }
         }
 
@@ -194,7 +194,7 @@ namespace ServiceStack
         {
             get
             {
-                return this.VisibilityTo == EndpointAttributes.Any;
+                return this.VisibilityTo == RequestAttributes.Any;
             }
         }
 	}
@@ -214,53 +214,53 @@ namespace ServiceStack
 	    /// </summary>
 	    /// <param name="restrictTo"></param>
 	    /// <returns></returns>
-	    public static EndpointAttributes ToAllowedFlagsSet(this EndpointAttributes restrictTo)
+	    public static RequestAttributes ToAllowedFlagsSet(this RequestAttributes restrictTo)
 	    {
-            if (restrictTo == EndpointAttributes.Any)
-                return EndpointAttributes.Any;
+            if (restrictTo == RequestAttributes.Any)
+                return RequestAttributes.Any;
 
-	        var allowedAttrs = EndpointAttributes.None;
+	        var allowedAttrs = RequestAttributes.None;
 
 	        //Network access
-	        if (!HasAnyRestrictionsOf(restrictTo, EndpointAttributes.AnyNetworkAccessType))
-	            allowedAttrs |= EndpointAttributes.AnyNetworkAccessType;
+	        if (!HasAnyRestrictionsOf(restrictTo, RequestAttributes.AnyNetworkAccessType))
+	            allowedAttrs |= RequestAttributes.AnyNetworkAccessType;
 	        else
-	            allowedAttrs |= (restrictTo & EndpointAttributes.AnyNetworkAccessType);
+	            allowedAttrs |= (restrictTo & RequestAttributes.AnyNetworkAccessType);
 
 	        //Security
-	        if (!HasAnyRestrictionsOf(restrictTo, EndpointAttributes.AnySecurityMode))
-	            allowedAttrs |= EndpointAttributes.AnySecurityMode;
+	        if (!HasAnyRestrictionsOf(restrictTo, RequestAttributes.AnySecurityMode))
+	            allowedAttrs |= RequestAttributes.AnySecurityMode;
 	        else
-	            allowedAttrs |= (restrictTo & EndpointAttributes.AnySecurityMode);
+	            allowedAttrs |= (restrictTo & RequestAttributes.AnySecurityMode);
 
 	        //Http Method
-	        if (!HasAnyRestrictionsOf(restrictTo, EndpointAttributes.AnyHttpMethod))
-	            allowedAttrs |= EndpointAttributes.AnyHttpMethod;
+	        if (!HasAnyRestrictionsOf(restrictTo, RequestAttributes.AnyHttpMethod))
+	            allowedAttrs |= RequestAttributes.AnyHttpMethod;
 	        else
-	            allowedAttrs |= (restrictTo & EndpointAttributes.AnyHttpMethod);
+	            allowedAttrs |= (restrictTo & RequestAttributes.AnyHttpMethod);
 
 	        //Call Style
-	        if (!HasAnyRestrictionsOf(restrictTo, EndpointAttributes.AnyCallStyle))
-	            allowedAttrs |= EndpointAttributes.AnyCallStyle;
+	        if (!HasAnyRestrictionsOf(restrictTo, RequestAttributes.AnyCallStyle))
+	            allowedAttrs |= RequestAttributes.AnyCallStyle;
 	        else
-	            allowedAttrs |= (restrictTo & EndpointAttributes.AnyCallStyle);
+	            allowedAttrs |= (restrictTo & RequestAttributes.AnyCallStyle);
 
 	        //Format
-	        if (!HasAnyRestrictionsOf(restrictTo, EndpointAttributes.AnyFormat))
-	            allowedAttrs |= EndpointAttributes.AnyFormat;
+	        if (!HasAnyRestrictionsOf(restrictTo, RequestAttributes.AnyFormat))
+	            allowedAttrs |= RequestAttributes.AnyFormat;
 	        else
-	            allowedAttrs |= (restrictTo & EndpointAttributes.AnyFormat);
+	            allowedAttrs |= (restrictTo & RequestAttributes.AnyFormat);
 
 	        //Endpoint
-	        if (!HasAnyRestrictionsOf(restrictTo, EndpointAttributes.AnyEndpoint))
-	            allowedAttrs |= EndpointAttributes.AnyEndpoint;
+	        if (!HasAnyRestrictionsOf(restrictTo, RequestAttributes.AnyEndpoint))
+	            allowedAttrs |= RequestAttributes.AnyEndpoint;
 	        else
-	            allowedAttrs |= (restrictTo & EndpointAttributes.AnyEndpoint);
+	            allowedAttrs |= (restrictTo & RequestAttributes.AnyEndpoint);
 
 	        return allowedAttrs;
 	    }
 
-        public static bool HasAnyRestrictionsOf(EndpointAttributes allRestrictions, EndpointAttributes restrictions)
+        public static bool HasAnyRestrictionsOf(RequestAttributes allRestrictions, RequestAttributes restrictions)
         {
             return (allRestrictions & restrictions) != 0;
         }

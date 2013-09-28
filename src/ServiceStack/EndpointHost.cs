@@ -416,12 +416,12 @@ namespace ServiceStack
             }
         }
 
-        internal static object ExecuteService(object request, EndpointAttributes endpointAttributes, IHttpRequest httpReq, IHttpResponse httpRes)
+        internal static object ExecuteService(object request, RequestAttributes requestAttributes, IHttpRequest httpReq, IHttpResponse httpRes)
         {
             using (Profiler.Current.Step("Execute Service"))
             {
                 return config.ServiceController.Execute(request,
-                    new HttpRequestContext(httpReq, httpRes, request, endpointAttributes));
+                    new HttpRequestContext(httpReq, httpRes, request, requestAttributes));
             }
         }
 

@@ -7,7 +7,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
     //[Route("/HelloWorld/Greeting/{FirstName}/{LastName}", "GET")]
     [Route("/HelloWorld/Greeting/{FirstName}", "GET")]
-    [Restrict(EndpointAttributes.InternalNetworkAccess)]
+    [Restrict(RequestAttributes.InternalNetworkAccess)]
     public class HelloWorldName : IReturn<HelloWorldGreeting>
     {
         public string FirstName { get; set; }

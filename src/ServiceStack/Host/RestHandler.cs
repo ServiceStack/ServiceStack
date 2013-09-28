@@ -13,7 +13,7 @@ namespace ServiceStack.Host
     {
         public RestHandler()
         {
-            this.HandlerAttributes = EndpointAttributes.Reply;
+            this.HandlerAttributes = RequestAttributes.Reply;
         }
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(RestHandler));

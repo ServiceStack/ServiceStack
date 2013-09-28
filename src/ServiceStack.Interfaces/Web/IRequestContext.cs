@@ -14,7 +14,7 @@ namespace ServiceStack.Web
 
 		IDictionary<string, Cookie> Cookies { get; }
 
-		EndpointAttributes EndpointAttributes { get; }
+		RequestAttributes RequestAttributes { get; }
 		
 		IRequestPreferences RequestPreferences { get; }
 

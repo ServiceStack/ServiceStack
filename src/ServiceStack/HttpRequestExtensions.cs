@@ -675,18 +675,18 @@ namespace ServiceStack
             return "/"; //Can't infer Absolute Uri, fallback to root relative path
         }
 
-        public static EndpointAttributes ToEndpointAttributes(string[] attrNames)
+        public static RequestAttributes ToEndpointAttributes(string[] attrNames)
         {
-            var attrs = EndpointAttributes.None;
+            var attrs = RequestAttributes.None;
             foreach (var simulatedAttr in attrNames)
             {
-                var attr = (EndpointAttributes)Enum.Parse(typeof(EndpointAttributes), simulatedAttr, true);
+                var attr = (RequestAttributes)Enum.Parse(typeof(RequestAttributes), simulatedAttr, true);
                 attrs |= attr;
             }
             return attrs;
         }
 
-        public static EndpointAttributes GetAttributes(this IHttpRequest request)
+        public static RequestAttributes GetAttributes(this IHttpRequest request)
         {
             if (EndpointHost.DebugMode
                 && request.QueryString != null) //Mock<IHttpRequest>
@@ -698,10 +698,10 @@ namespace ServiceStack
                 }
             }
 
-            var portRestrictions = EndpointAttributes.None;
+            var portRestrictions = RequestAttributes.None;
 
             portRestrictions |= HttpMethods.GetEndpointAttribute(request.HttpMethod);
-            portRestrictions |= request.IsSecureConnection ? EndpointAttributes.Secure : EndpointAttributes.InSecure;
+            portRestrictions |= request.IsSecureConnection ? RequestAttributes.Secure : RequestAttributes.InSecure;
 
             if (request.UserHostAddress != null)
             {
@@ -745,14 +745,14 @@ namespace ServiceStack
             return portRestrictions;
         }
 
-        public static EndpointAttributes GetAttributes(IPAddress ipAddress)
+        public static RequestAttributes GetAttributes(IPAddress ipAddress)
         {
             if (IPAddress.IsLoopback(ipAddress))
-                return EndpointAttributes.Localhost;
+                return RequestAttributes.Localhost;
 
             return IsInLocalSubnet(ipAddress)
-                   ? EndpointAttributes.LocalSubnet
-                   : EndpointAttributes.External;
+                   ? RequestAttributes.LocalSubnet
+                   : RequestAttributes.External;
         }
 
         public static bool IsInLocalSubnet(IPAddress ipAddress)

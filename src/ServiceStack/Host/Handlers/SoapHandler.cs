@@ -17,7 +17,7 @@ namespace ServiceStack.Host.Handlers
 {
     public abstract class SoapHandler : ServiceStackHandlerBase, IOneWay, ISyncReply
     {
-        public SoapHandler(EndpointAttributes soapType)
+        public SoapHandler(RequestAttributes soapType)
         {
             this.HandlerAttributes = soapType;
         }
@@ -29,7 +29,7 @@ namespace ServiceStack.Host.Handlers
 
         protected void SendOneWay(Message requestMsg, IHttpRequest httpRequest, IHttpResponse httpResponse)
         {
-            var endpointAttributes = EndpointAttributes.OneWay | this.HandlerAttributes;
+            var endpointAttributes = RequestAttributes.OneWay | this.HandlerAttributes;
 
             ExecuteMessage(requestMsg, endpointAttributes, httpRequest, httpResponse);
         }
@@ -38,14 +38,14 @@ namespace ServiceStack.Host.Handlers
 
         public Message Send(Message requestMsg)
         {
-            var endpointAttributes = EndpointAttributes.Reply | this.HandlerAttributes;
+            var endpointAttributes = RequestAttributes.Reply | this.HandlerAttributes;
 
             return ExecuteMessage(requestMsg, endpointAttributes, null, null);
         }
         
         protected Message Send(Message requestMsg, IHttpRequest httpRequest, IHttpResponse httpResponse)
         {
-            var endpointAttributes = EndpointAttributes.Reply | this.HandlerAttributes;
+            var endpointAttributes = RequestAttributes.Reply | this.HandlerAttributes;
 
             return ExecuteMessage(requestMsg, endpointAttributes, httpRequest, httpResponse);
         }
@@ -60,9 +60,9 @@ namespace ServiceStack.Host.Handlers
                 : Message.CreateMessage(requestMsg.Version, requestType.Name + "Response", response);
         }
 
-        protected Message ExecuteMessage(Message message, EndpointAttributes endpointAttributes, IHttpRequest httpRequest, IHttpResponse httpResponse)
+        protected Message ExecuteMessage(Message message, RequestAttributes requestAttributes, IHttpRequest httpRequest, IHttpResponse httpResponse)
         {
-            var soapFeature = endpointAttributes.ToSoapFeature();
+            var soapFeature = requestAttributes.ToSoapFeature();
             EndpointHost.Config.AssertFeatures(soapFeature);
 
             var httpReq = HttpContext.Current != null && httpRequest == null
@@ -84,8 +84,8 @@ namespace ServiceStack.Host.Handlers
             var requestMsg = message ?? GetRequestMessageFromStream(httpReq.InputStream);
             string requestXml = GetRequestXml(requestMsg);
             var requestType = GetRequestType(requestMsg, requestXml);
-            if (!EndpointHost.Metadata.CanAccess(endpointAttributes, soapFeature.ToFormat(), requestType.Name))
-                throw EndpointHost.Config.UnauthorizedAccess(endpointAttributes);
+            if (!EndpointHost.Metadata.CanAccess(requestAttributes, soapFeature.ToFormat(), requestType.Name))
+                throw EndpointHost.Config.UnauthorizedAccess(requestAttributes);
 
             try
             {
@@ -110,7 +110,7 @@ namespace ServiceStack.Host.Handlers
                 if (hasRequestFilters && EndpointHost.ApplyRequestFilters(httpReq, httpRes, request))
                     return EmptyResponse(requestMsg, requestType);
 
-                var response = ExecuteService(request, endpointAttributes, httpReq, httpRes);
+                var response = ExecuteService(request, requestAttributes, httpReq, httpRes);
 
                 var hasResponseFilters = EndpointHost.GlobalResponseFilters.Count > 0
                    || FilterAttributeCache.GetResponseFilterAttributes(response.GetType()).Any();
@@ -249,7 +249,7 @@ namespace ServiceStack.Host.Handlers
             var requestOperationName = GetAction(contentType);
             return requestOperationName != null
                     ? contentType.Replace(requestOperationName, requestOperationName + "Response")
-                    : (this.HandlerAttributes == EndpointAttributes.Soap11 ? MimeTypes.Soap11 : MimeTypes.Soap12);
+                    : (this.HandlerAttributes == RequestAttributes.Soap11 ? MimeTypes.Soap11 : MimeTypes.Soap12);
         }
 
         public override object CreateRequest(IHttpRequest request, string operationName)

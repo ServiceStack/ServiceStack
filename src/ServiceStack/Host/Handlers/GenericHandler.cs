@@ -7,7 +7,7 @@ namespace ServiceStack.Host.Handlers
 {
 	public class GenericHandler : ServiceStackHandlerBase
 	{
-		public GenericHandler(string contentType, EndpointAttributes handlerAttributes, Feature format)
+		public GenericHandler(string contentType, RequestAttributes handlerAttributes, Feature format)
 		{
 			this.HandlerContentType = contentType;
 			this.ContentTypeAttribute = ContentFormat.GetEndpointAttributes(contentType);
@@ -18,7 +18,7 @@ namespace ServiceStack.Host.Handlers
         private Feature format;
 		public string HandlerContentType { get; set; }
 
-		public EndpointAttributes ContentTypeAttribute { get; set; }
+		public RequestAttributes ContentTypeAttribute { get; set; }
 
 		public override object CreateRequest(IHttpRequest request, string operationName)
 		{

@@ -82,7 +82,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             if (ApplyRequestFilters<TResponse>(request)) return default(TResponse);
 
             var response = ServiceManager.ServiceController.Execute(request,
-                new HttpRequestContext(httpReq, httpRes, request, EndpointAttributes.HttpPost));
+                new HttpRequestContext(httpReq, httpRes, request, RequestAttributes.HttpPost));
 
             if (ApplyResponseFilters<TResponse>(response)) return (TResponse)response;
 
@@ -123,7 +123,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             if (ApplyRequestFilters<TResponse>(request)) return default(TResponse);
 
             var response = ServiceManager.ServiceController.Execute(request,
-                new HttpRequestContext(httpReq, httpRes, request, EndpointAttributes.HttpGet));
+                new HttpRequestContext(httpReq, httpRes, request, RequestAttributes.HttpGet));
 
             if (ApplyResponseFilters<TResponse>(response)) return (TResponse)response;
 

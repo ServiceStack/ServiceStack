@@ -75,9 +75,9 @@ namespace ServiceStack.Host
             get { return new Dictionary<string, Cookie>(); }
         }
 
-        public EndpointAttributes EndpointAttributes
+        public RequestAttributes RequestAttributes
         {
-            get { return EndpointAttributes.LocalSubnet | EndpointAttributes.MessageQueue; }
+            get { return RequestAttributes.LocalSubnet | RequestAttributes.MessageQueue; }
         }
 
         public Web.IRequestPreferences RequestPreferences { get; set; }

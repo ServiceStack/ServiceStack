@@ -7,7 +7,7 @@ namespace ServiceStack.Host.Handlers
 {
     public class Soap11Handler : SoapHandler
     {
-        public Soap11Handler(EndpointAttributes soapType) : base(soapType) { }
+        public Soap11Handler(RequestAttributes soapType) : base(soapType) { }
 
         protected override System.ServiceModel.Channels.Message GetRequestMessageFromStream(System.IO.Stream requestStream)
         {
@@ -17,12 +17,12 @@ namespace ServiceStack.Host.Handlers
 
     public class Soap11ReplyHandler : Soap11Handler
     {
-        public Soap11ReplyHandler() : base(EndpointAttributes.Soap11) { }
+        public Soap11ReplyHandler() : base(RequestAttributes.Soap11) { }
     }
 
     public class Soap11OneWayHandler : Soap11Handler
     {
-        public Soap11OneWayHandler() : base(EndpointAttributes.Soap11) { }
+        public Soap11OneWayHandler() : base(RequestAttributes.Soap11) { }
 
         public override void ProcessRequest(HttpContext context)
         {
@@ -39,7 +39,7 @@ namespace ServiceStack.Host.Handlers
 
     public class Soap11MessageReplyHttpHandler : Soap11Handler, IHttpHandler
     {
-        public Soap11MessageReplyHttpHandler() : base(EndpointAttributes.Soap11) { }
+        public Soap11MessageReplyHttpHandler() : base(RequestAttributes.Soap11) { }
 
         public new void ProcessRequest(HttpContext context)
         {

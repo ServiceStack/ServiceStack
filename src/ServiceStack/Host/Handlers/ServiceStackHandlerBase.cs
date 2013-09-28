@@ -35,7 +35,7 @@ namespace ServiceStack.Host.Handlers
             }
         }
 
-        public EndpointAttributes HandlerAttributes { get; set; }
+        public RequestAttributes HandlerAttributes { get; set; }
 
         public bool IsReusable
         {
@@ -164,17 +164,17 @@ namespace ServiceStack.Host.Handlers
                 : EndpointHost.Metadata.GetOperationType(operationName);
         }
 
-        protected static object ExecuteService(object request, EndpointAttributes endpointAttributes,
+        protected static object ExecuteService(object request, RequestAttributes requestAttributes,
             IHttpRequest httpReq, IHttpResponse httpRes)
         {
-            return EndpointHost.ExecuteService(request, endpointAttributes, httpReq, httpRes);
+            return EndpointHost.ExecuteService(request, requestAttributes, httpReq, httpRes);
         }
 
-        public EndpointAttributes GetEndpointAttributes(System.ServiceModel.OperationContext operationContext)
+        public RequestAttributes GetEndpointAttributes(System.ServiceModel.OperationContext operationContext)
         {
-            if (!EndpointHost.Config.EnableAccessRestrictions) return default(EndpointAttributes);
+            if (!EndpointHost.Config.EnableAccessRestrictions) return default(RequestAttributes);
 
-            var portRestrictions = default(EndpointAttributes);
+            var portRestrictions = default(RequestAttributes);
             var ipAddress = GetIpAddress(operationContext);
 
             portRestrictions |= HttpRequestExtensions.GetAttributes(ipAddress);

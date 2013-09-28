@@ -6,7 +6,7 @@ using System;
 namespace ServiceStack
 {
     [Flags]
-    public enum EndpointAttributes : long
+    public enum RequestAttributes : long
     {
         None = 0,
 
@@ -121,21 +121,21 @@ namespace ServiceStack
         Other = 1 << 29,
     }
 
-    public static class EndpointAttributesExtensions
+    public static class RequestAttributesExtensions
     {
-        public static bool IsLocalhost(this EndpointAttributes attrs)
+        public static bool IsLocalhost(this RequestAttributes attrs)
         {
-            return (EndpointAttributes.Localhost & attrs) == EndpointAttributes.Localhost;
+            return (RequestAttributes.Localhost & attrs) == RequestAttributes.Localhost;
         }
 
-        public static bool IsLocalSubnet(this EndpointAttributes attrs)
+        public static bool IsLocalSubnet(this RequestAttributes attrs)
         {
-            return (EndpointAttributes.LocalSubnet & attrs) == EndpointAttributes.LocalSubnet;
+            return (RequestAttributes.LocalSubnet & attrs) == RequestAttributes.LocalSubnet;
         }
 
-        public static bool IsExternal(this EndpointAttributes attrs)
+        public static bool IsExternal(this RequestAttributes attrs)
         {
-            return (EndpointAttributes.External & attrs) == EndpointAttributes.External;
+            return (RequestAttributes.External & attrs) == RequestAttributes.External;
         }
 
         public static Format ToFormat(this string format)
@@ -210,11 +210,11 @@ namespace ServiceStack
             return Feature.CustomFormat;
         }
 
-        public static Feature ToSoapFeature(this EndpointAttributes attributes)
+        public static Feature ToSoapFeature(this RequestAttributes attributes)
         {
-            if ((EndpointAttributes.Soap11 & attributes) == EndpointAttributes.Soap11)
+            if ((RequestAttributes.Soap11 & attributes) == RequestAttributes.Soap11)
                 return Feature.Soap11;
-            if ((EndpointAttributes.Soap12 & attributes) == EndpointAttributes.Soap12)
+            if ((RequestAttributes.Soap12 & attributes) == RequestAttributes.Soap12)
                 return Feature.Soap12;            
             return Feature.None;
         }

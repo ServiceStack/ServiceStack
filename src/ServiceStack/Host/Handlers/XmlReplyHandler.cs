@@ -5,7 +5,7 @@ namespace ServiceStack.Host.Handlers
 	public class XmlOneWayHandler : GenericHandler
 	{
 		public XmlOneWayHandler()
-            : base(MimeTypes.Xml, EndpointAttributes.OneWay | EndpointAttributes.Xml, Feature.Xml)
+            : base(MimeTypes.Xml, RequestAttributes.OneWay | RequestAttributes.Xml, Feature.Xml)
 		{
 		}
 	}
@@ -13,7 +13,7 @@ namespace ServiceStack.Host.Handlers
 	public class XmlReplyHandler : GenericHandler
 	{
 		public XmlReplyHandler()
-            : base(MimeTypes.Xml, EndpointAttributes.Reply | EndpointAttributes.Xml, Feature.Xml)
+            : base(MimeTypes.Xml, RequestAttributes.Reply | RequestAttributes.Xml, Feature.Xml)
 		{
 		}
 	}

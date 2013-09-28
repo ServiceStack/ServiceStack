@@ -23,9 +23,9 @@ namespace ServiceStack.Common.Tests
         {
             var result = CreateRequest("204.2.145.235").GetAttributes();
 
-            Assert.That(result.Has(EndpointAttributes.External));
-            Assert.That(result.Has(EndpointAttributes.HttpGet));
-            Assert.That(result.Has(EndpointAttributes.InSecure));
+            Assert.That(result.Has(RequestAttributes.External));
+            Assert.That(result.Has(RequestAttributes.HttpGet));
+            Assert.That(result.Has(RequestAttributes.InSecure));
         }
 
         [Flags]

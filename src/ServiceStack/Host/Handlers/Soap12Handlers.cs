@@ -7,7 +7,7 @@ namespace ServiceStack.Host.Handlers
 {
     public class Soap12Handler : SoapHandler
     {
-        public Soap12Handler(EndpointAttributes soapType) : base(soapType) { }
+        public Soap12Handler(RequestAttributes soapType) : base(soapType) { }
 
         protected override System.ServiceModel.Channels.Message GetRequestMessageFromStream(System.IO.Stream requestStream)
         {
@@ -17,18 +17,18 @@ namespace ServiceStack.Host.Handlers
 
     public class Soap12Handlers : Soap12Handler
     {
-        public Soap12Handlers() : base(EndpointAttributes.Soap12) { }
+        public Soap12Handlers() : base(RequestAttributes.Soap12) { }
     }
 
     public class Soap12OneWayHandler : Soap12Handler
     {
-        public Soap12OneWayHandler() : base(EndpointAttributes.Soap12) { }
+        public Soap12OneWayHandler() : base(RequestAttributes.Soap12) { }
     }
 
     public class Soap12MessageOneWayHttpHandler
         : Soap12Handler, IHttpHandler
     {
-        public Soap12MessageOneWayHttpHandler() : base(EndpointAttributes.Soap12) { }
+        public Soap12MessageOneWayHttpHandler() : base(RequestAttributes.Soap12) { }
 
         public new void ProcessRequest(HttpContext context)
         {
@@ -45,7 +45,7 @@ namespace ServiceStack.Host.Handlers
 
     public class Soap12MessageReplyHttpHandler : Soap12Handler, IHttpHandler
     {
-        public Soap12MessageReplyHttpHandler() : base(EndpointAttributes.Soap12) { }
+        public Soap12MessageReplyHttpHandler() : base(RequestAttributes.Soap12) { }
 
         public new void ProcessRequest(HttpContext context)
         {

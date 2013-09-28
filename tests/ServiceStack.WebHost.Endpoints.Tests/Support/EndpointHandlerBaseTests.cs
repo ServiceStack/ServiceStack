@@ -30,7 +30,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Tests
         }
 
         [Test, TestCaseSource(typeof(EndpointHandlerBaseTests), "EndpointExpectations")]
-        public void GetEndpointAttributes_AcceptsUserHostAddressFormats(string format, EndpointAttributes expected)
+        public void GetEndpointAttributes_AcceptsUserHostAddressFormats(string format, RequestAttributes expected)
         {
             var handler = new TestHandler();
             var request = new Mock<IHttpRequest>();
@@ -38,7 +38,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Tests
             request.Expect(req => req.IsSecureConnection).Returns(false);
             request.Expect(req => req.HttpMethod).Returns("GET");
 
-            Assert.AreEqual(expected | EndpointAttributes.HttpGet | EndpointAttributes.InSecure, request.Object.GetAttributes());
+            Assert.AreEqual(expected | RequestAttributes.HttpGet | RequestAttributes.InSecure, request.Object.GetAttributes());
         }
 
         public static IEnumerable EndpointExpectations
@@ -54,31 +54,31 @@ namespace ServiceStack.WebHost.Endpoints.Support.Tests
                 //this covers all the different flavors of ipv6 address -- scoped, link local, etc
                 foreach (var address in ipv6Addresses)
                 {
-                    yield return new TestCaseData(address.ToString(), EndpointAttributes.LocalSubnet);
-                    yield return new TestCaseData("[" + address + "]:57", EndpointAttributes.LocalSubnet);
+                    yield return new TestCaseData(address.ToString(), RequestAttributes.LocalSubnet);
+                    yield return new TestCaseData("[" + address + "]:57", RequestAttributes.LocalSubnet);
                     // HttpListener Format w/Port
-                    yield return new TestCaseData("[{0}]:8080".Fmt(address), EndpointAttributes.LocalSubnet);
+                    yield return new TestCaseData("[{0}]:8080".Fmt(address), RequestAttributes.LocalSubnet);
                 }
 
-                yield return new TestCaseData("fe80::100:7f:fffe%10", EndpointAttributes.LocalSubnet);
-                yield return new TestCaseData("[fe80::100:7f:fffe%10]:57", EndpointAttributes.LocalSubnet);
-                yield return new TestCaseData("[fe80::100:7f:fffe%10]:8080", EndpointAttributes.LocalSubnet);
+                yield return new TestCaseData("fe80::100:7f:fffe%10", RequestAttributes.LocalSubnet);
+                yield return new TestCaseData("[fe80::100:7f:fffe%10]:57", RequestAttributes.LocalSubnet);
+                yield return new TestCaseData("[fe80::100:7f:fffe%10]:8080", RequestAttributes.LocalSubnet);
 
                 //ipv6 loopback
-                yield return new TestCaseData("::1", EndpointAttributes.Localhost);
-                yield return new TestCaseData("[::1]:83", EndpointAttributes.Localhost);
+                yield return new TestCaseData("::1", RequestAttributes.Localhost);
+                yield return new TestCaseData("[::1]:83", RequestAttributes.Localhost);
 
                 //ipv4
-                yield return new TestCaseData("192.168.100.2", EndpointAttributes.External);
-                yield return new TestCaseData("192.168.100.2:47", EndpointAttributes.External);
+                yield return new TestCaseData("192.168.100.2", RequestAttributes.External);
+                yield return new TestCaseData("192.168.100.2:47", RequestAttributes.External);
 
                 //ipv4 loopback
-                yield return new TestCaseData("127.0.0.1", EndpointAttributes.Localhost);
-                yield return new TestCaseData("127.0.0.1:20", EndpointAttributes.Localhost);
+                yield return new TestCaseData("127.0.0.1", RequestAttributes.Localhost);
+                yield return new TestCaseData("127.0.0.1:20", RequestAttributes.Localhost);
 
                 //ipv4 in X-FORWARDED-FOR HTTP Header format
-                yield return new TestCaseData("192.168.100.2, 192.168.0.1", EndpointAttributes.External);
-                yield return new TestCaseData("192.168.100.2, 192.168.0.1, 10.1.1.1", EndpointAttributes.External);
+                yield return new TestCaseData("192.168.100.2, 192.168.0.1", RequestAttributes.External);
+                yield return new TestCaseData("192.168.100.2, 192.168.0.1, 10.1.1.1", RequestAttributes.External);
             }
         }
     }

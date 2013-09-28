@@ -6,50 +6,50 @@ namespace ServiceStack.Web
     {
         public const string Utf8Suffix = "; charset=utf-8";
 
-        public static EndpointAttributes GetEndpointAttributes(string contentType)
+        public static RequestAttributes GetEndpointAttributes(string contentType)
         {
             if (contentType == null)
-                return EndpointAttributes.None;
+                return RequestAttributes.None;
 
             var realContentType = GetRealContentType(contentType);
             switch (realContentType)
             {
                 case MimeTypes.Json:
                 case MimeTypes.JsonText:
-                    return EndpointAttributes.Json;
+                    return RequestAttributes.Json;
 
                 case MimeTypes.Xml:
                 case MimeTypes.XmlText:
-                    return EndpointAttributes.Xml;
+                    return RequestAttributes.Xml;
 
                 case MimeTypes.Html:
-                    return EndpointAttributes.Html;
+                    return RequestAttributes.Html;
 
                 case MimeTypes.Jsv:
                 case MimeTypes.JsvText:
-                    return EndpointAttributes.Jsv;
+                    return RequestAttributes.Jsv;
 
                 case MimeTypes.Yaml:
                 case MimeTypes.YamlText:
-                    return EndpointAttributes.Yaml;
+                    return RequestAttributes.Yaml;
 
                 case MimeTypes.Csv:
-                    return EndpointAttributes.Csv;
+                    return RequestAttributes.Csv;
 
                 case MimeTypes.Soap11:
-                    return EndpointAttributes.Soap11;
+                    return RequestAttributes.Soap11;
 
                 case MimeTypes.Soap12:
-                    return EndpointAttributes.Soap12;
+                    return RequestAttributes.Soap12;
 
                 case MimeTypes.ProtoBuf:
-                    return EndpointAttributes.ProtoBuf;
+                    return RequestAttributes.ProtoBuf;
 
                 case MimeTypes.MsgPack:
-                    return EndpointAttributes.MsgPack;
+                    return RequestAttributes.MsgPack;
             }
 
-            return EndpointAttributes.FormatOther;
+            return RequestAttributes.FormatOther;
         }
 
         public static string GetRealContentType(string contentType)

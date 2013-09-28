@@ -3,7 +3,7 @@ using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 {
-	[Restrict(EndpointAttributes.External | EndpointAttributes.InSecure | EndpointAttributes.HttpPost | EndpointAttributes.Xml)]
+	[Restrict(RequestAttributes.External | RequestAttributes.InSecure | RequestAttributes.HttpPost | RequestAttributes.Xml)]
 	[DataContract]
 	public class InSecureLiveEnvironmentRestriction { }
 

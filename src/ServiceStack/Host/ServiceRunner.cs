@@ -184,7 +184,7 @@ namespace ServiceStack.Host
         //signature matches ServiceExecFn
         public object Process(IRequestContext requestContext, object instance, object request)
         {
-            return requestContext != null && requestContext.EndpointAttributes.Has(EndpointAttributes.OneWay) 
+            return requestContext != null && requestContext.RequestAttributes.Has(RequestAttributes.OneWay) 
                 ? ExecuteOneWay(requestContext, instance, (TRequest)request) 
                 : Execute(requestContext, instance, (TRequest)request);
         }

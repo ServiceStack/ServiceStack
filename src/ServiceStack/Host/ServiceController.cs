@@ -374,7 +374,7 @@ namespace ServiceStack.Host
             if (EnableAccessRestrictions)
             {
                 AssertServiceRestrictions(requestType,
-                    requestContext != null ? requestContext.EndpointAttributes : EndpointAttributes.None);
+                    requestContext != null ? requestContext.RequestAttributes : RequestAttributes.None);
             }
 
             var handlerFn = GetService(requestType);
@@ -400,7 +400,7 @@ namespace ServiceStack.Host
             return responseXml;
         }
 
-        public void AssertServiceRestrictions(Type requestType, EndpointAttributes actualAttributes)
+        public void AssertServiceRestrictions(Type requestType, RequestAttributes actualAttributes)
         {
             if (EndpointHost.Config != null && !EndpointHost.Config.EnableAccessRestrictions) return;
 
@@ -428,7 +428,7 @@ namespace ServiceStack.Host
                 failedScenarios.AppendFormat("\n -[{0}]", failed);
             }
 
-            var internalDebugMsg = (EndpointAttributes.InternalNetworkAccess & actualAttributes) != 0
+            var internalDebugMsg = (RequestAttributes.InternalNetworkAccess & actualAttributes) != 0
                 ? "\n Unauthorized call was made from: " + actualAttributes
                 : "";
 

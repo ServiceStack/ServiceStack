@@ -8,13 +8,13 @@ namespace ServiceStack.Host.Handlers
     public class JsvOneWayHandler : GenericHandler
     {
         public JsvOneWayHandler()
-            : base(MimeTypes.Jsv, EndpointAttributes.OneWay | EndpointAttributes.Jsv, Feature.Jsv) { }
+            : base(MimeTypes.Jsv, RequestAttributes.OneWay | RequestAttributes.Jsv, Feature.Jsv) { }
     }
 
     public class JsvReplyHandler : GenericHandler
     {
         public JsvReplyHandler()
-            : base(MimeTypes.JsvText, EndpointAttributes.Reply | EndpointAttributes.Jsv, Feature.Jsv) { }
+            : base(MimeTypes.JsvText, RequestAttributes.Reply | RequestAttributes.Jsv, Feature.Jsv) { }
 
         private static void WriteDebugRequest(IRequestContext requestContext, object dto, IHttpResponse httpRes)
         {

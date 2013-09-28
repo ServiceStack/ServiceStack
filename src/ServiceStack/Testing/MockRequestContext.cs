@@ -35,7 +35,7 @@ namespace ServiceStack.Testing
 
         public Container Container { get; private set; }
         public IDictionary<string, Cookie> Cookies { get; private set; }
-        public EndpointAttributes EndpointAttributes { get; private set; }
+        public RequestAttributes RequestAttributes { get; private set; }
         public IRequestPreferences RequestPreferences { get; private set; }
         public string ContentType { get; private set; }
         public string ResponseContentType { get; set; }

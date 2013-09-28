@@ -340,7 +340,7 @@
     <Compile Include="IService.cs" />
     <Compile Include="Web\IRequiresHttpRequest.cs" />
     <Compile Include="Web\IRequiresRequestStream.cs" />
-    <Compile Include="EndpointAttributes.cs">
+    <Compile Include="RequestAttributes.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Feature.cs">

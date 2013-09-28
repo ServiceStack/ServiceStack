@@ -19,33 +19,33 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
     [Restrict(InternalOnly = true)]
     public class InternalOnly { }
 
-    [Restrict(EndpointAttributes.Xml)]
+    [Restrict(RequestAttributes.Xml)]
     public class XmlOnly { }
-    [Restrict(EndpointAttributes.Json)]
+    [Restrict(RequestAttributes.Json)]
     public class JsonOnly { }
-    [Restrict(EndpointAttributes.Jsv)]
+    [Restrict(RequestAttributes.Jsv)]
     public class JsvOnly { }
-    [Restrict(EndpointAttributes.Csv)]
+    [Restrict(RequestAttributes.Csv)]
     public class CsvOnly { }
-    [Restrict(EndpointAttributes.ProtoBuf)]
+    [Restrict(RequestAttributes.ProtoBuf)]
     public class ProtoBufOnly { }
-    [Restrict(EndpointAttributes.Soap11)]
+    [Restrict(RequestAttributes.Soap11)]
     public class Soap11Only { }
-    [Restrict(EndpointAttributes.Soap12)]
+    [Restrict(RequestAttributes.Soap12)]
     public class Soap12Only { }
-    [Restrict(EndpointAttributes.FormatOther)]
+    [Restrict(RequestAttributes.FormatOther)]
     public class OtherFormatOnly { }
 
     [Restrict(
-        EndpointAttributes.InternalNetworkAccess | EndpointAttributes.Json,
-        EndpointAttributes.External | EndpointAttributes.Xml)]
+        RequestAttributes.InternalNetworkAccess | RequestAttributes.Json,
+        RequestAttributes.External | RequestAttributes.Xml)]
     public class JsonInternalXmlExternal { }
 
-    [Restrict(EndpointAttributes.Secure)]
+    [Restrict(RequestAttributes.Secure)]
     public class SslOnly { }
 
-    [Restrict(EndpointAttributes.Secure   | EndpointAttributes.External,
-              EndpointAttributes.InSecure | EndpointAttributes.InternalNetworkAccess)]
+    [Restrict(RequestAttributes.Secure   | RequestAttributes.External,
+              RequestAttributes.InSecure | RequestAttributes.InternalNetworkAccess)]
     public class SslExternalAndInsecureInternal { }
 
 

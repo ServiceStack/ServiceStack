@@ -19,18 +19,18 @@ namespace ServiceStack.Host
 		{
 		}
 
-		public HttpRequestContext(object dto, EndpointAttributes endpointAttributes)
-			: this(dto, endpointAttributes, null)
+		public HttpRequestContext(object dto, RequestAttributes requestAttributes)
+			: this(dto, requestAttributes, null)
 		{
 		}
 
 		public HttpRequestContext(IHttpRequest httpReq, IHttpResponse httpRes, object dto)
-			: this(httpReq, httpRes, dto, EndpointAttributes.None)
+			: this(httpReq, httpRes, dto, RequestAttributes.None)
 		{
 		}
 
-		public HttpRequestContext(IHttpRequest httpReq, IHttpResponse httpRes, object dto, EndpointAttributes endpointAttributes)
-			: this(dto, endpointAttributes, null)
+		public HttpRequestContext(IHttpRequest httpReq, IHttpResponse httpRes, object dto, RequestAttributes requestAttributes)
+			: this(dto, requestAttributes, null)
 		{
 			this.httpReq = httpReq;
 			this.httpRes = httpRes;
@@ -45,14 +45,14 @@ namespace ServiceStack.Host
 		}
 
 		public HttpRequestContext(object requestDto, IFactoryProvider factory)
-			: this(requestDto, EndpointAttributes.None, factory)
+			: this(requestDto, RequestAttributes.None, factory)
 		{
 		}
 
-		public HttpRequestContext(object dto, EndpointAttributes endpointAttributes, IFactoryProvider factory)
+		public HttpRequestContext(object dto, RequestAttributes requestAttributes, IFactoryProvider factory)
 		{
 			this.Dto = dto;
-			this.EndpointAttributes = endpointAttributes;
+			this.RequestAttributes = requestAttributes;
 			this.Factory = factory;
 			this.RequestPreferences = new RequestPreferences(HttpContext.Current);
 			this.Files = new IHttpFile[0];
@@ -67,7 +67,7 @@ namespace ServiceStack.Host
 			get { return this.httpReq.Cookies; }
 		}
 
-		public EndpointAttributes EndpointAttributes { get; private set; }
+		public RequestAttributes RequestAttributes { get; private set; }
 
 		public Web.IRequestPreferences RequestPreferences { get; private set; }
 		
@@ -105,19 +105,19 @@ namespace ServiceStack.Host
 		{
 			get
 			{
-				if ((this.EndpointAttributes & EndpointAttributes.Json) == EndpointAttributes.Json)
+				if ((this.RequestAttributes & RequestAttributes.Json) == RequestAttributes.Json)
 					return MimeTypes.Json;
 
-				if ((this.EndpointAttributes & EndpointAttributes.Xml) == EndpointAttributes.Xml)
+				if ((this.RequestAttributes & RequestAttributes.Xml) == RequestAttributes.Xml)
 					return MimeTypes.Xml;
 
-				if ((this.EndpointAttributes & EndpointAttributes.Jsv) == EndpointAttributes.Jsv)
+				if ((this.RequestAttributes & RequestAttributes.Jsv) == RequestAttributes.Jsv)
 					return MimeTypes.Jsv;
 
-				if ((this.EndpointAttributes & EndpointAttributes.Csv) == EndpointAttributes.Csv)
+				if ((this.RequestAttributes & RequestAttributes.Csv) == RequestAttributes.Csv)
 					return MimeTypes.Csv;
 
-				if ((this.EndpointAttributes & EndpointAttributes.ProtoBuf) == EndpointAttributes.ProtoBuf)
+				if ((this.RequestAttributes & RequestAttributes.ProtoBuf) == RequestAttributes.ProtoBuf)
 					return MimeTypes.ProtoBuf;
 
 				return null;

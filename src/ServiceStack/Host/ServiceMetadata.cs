@@ -215,7 +215,7 @@ namespace ServiceStack.Host
             if (!isVisible) return false;
 
             if (operation.RestrictTo == null) return true;
-            var allowsFormat = operation.RestrictTo.CanShowTo((EndpointAttributes)(long)format);
+            var allowsFormat = operation.RestrictTo.CanShowTo((RequestAttributes)(long)format);
             return allowsFormat;
         }
 
@@ -225,7 +225,7 @@ namespace ServiceStack.Host
             return CanAccess(reqAttrs, format, operationName);
         }
 
-        public bool CanAccess(EndpointAttributes reqAttrs, Format format, string operationName)
+        public bool CanAccess(RequestAttributes reqAttrs, Format format, string operationName)
         {
             if (EndpointHost.Config != null && !EndpointHost.Config.EnableAccessRestrictions)
                 return true;
@@ -242,7 +242,7 @@ namespace ServiceStack.Host
             var allow = operation.RestrictTo.HasAccessTo(reqAttrs);
             if (!allow) return false;
 
-            var allowsFormat = operation.RestrictTo.HasAccessTo((EndpointAttributes)(long)format);
+            var allowsFormat = operation.RestrictTo.HasAccessTo((RequestAttributes)(long)format);
             return allowsFormat;
         }
 
@@ -260,7 +260,7 @@ namespace ServiceStack.Host
 
             if (operation.RestrictTo == null) return true;
 
-            var allowsFormat = operation.RestrictTo.HasAccessTo((EndpointAttributes)(long)format);
+            var allowsFormat = operation.RestrictTo.HasAccessTo((RequestAttributes)(long)format);
             return allowsFormat;
         }
 
@@ -276,16 +276,16 @@ namespace ServiceStack.Host
             return true;
         }
 
-        private static bool CanShowToNetwork(Operation operation, EndpointAttributes reqAttrs)
+        private static bool CanShowToNetwork(Operation operation, RequestAttributes reqAttrs)
         {
             if (reqAttrs.IsLocalhost())
-                return operation.RestrictTo.CanShowTo(EndpointAttributes.Localhost)
-                       || operation.RestrictTo.CanShowTo(EndpointAttributes.LocalSubnet);
+                return operation.RestrictTo.CanShowTo(RequestAttributes.Localhost)
+                       || operation.RestrictTo.CanShowTo(RequestAttributes.LocalSubnet);
 
             return operation.RestrictTo.CanShowTo(
                 reqAttrs.IsLocalSubnet()
-                    ? EndpointAttributes.LocalSubnet
-                    : EndpointAttributes.External);
+                    ? RequestAttributes.LocalSubnet
+                    : RequestAttributes.External);
         }
 
     }
