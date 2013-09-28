@@ -3,8 +3,8 @@ using NUnit.Framework;
 using ServiceStack.Clients;
 using ServiceStack.Common.Tests;
 using ServiceStack.Host;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Text;
-using ServiceStack.Web.Handlers;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests

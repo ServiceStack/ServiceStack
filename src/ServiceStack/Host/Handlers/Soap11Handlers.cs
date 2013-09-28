@@ -1,39 +1,34 @@
-using System.Web;
+﻿using System.Web;
 using System.Xml;
 using ServiceStack.Metadata;
+using ServiceStack.Web;
 
-namespace ServiceStack.Web.Handlers
+namespace ServiceStack.Host.Handlers
 {
-    public class Soap12Handler : SoapHandler
+    public class Soap11Handler : SoapHandler
     {
-        public Soap12Handler(EndpointAttributes soapType) : base(soapType) { }
+        public Soap11Handler(EndpointAttributes soapType) : base(soapType) { }
 
         protected override System.ServiceModel.Channels.Message GetRequestMessageFromStream(System.IO.Stream requestStream)
         {
-            return GetSoap12RequestMessage(requestStream);
+            return GetSoap11RequestMessage(requestStream);
         }
     }
 
-    public class Soap12Handlers : Soap12Handler
+    public class Soap11ReplyHandler : Soap11Handler
     {
-        public Soap12Handlers() : base(EndpointAttributes.Soap12) { }
+        public Soap11ReplyHandler() : base(EndpointAttributes.Soap11) { }
     }
 
-    public class Soap12OneWayHandler : Soap12Handler
+    public class Soap11OneWayHandler : Soap11Handler
     {
-        public Soap12OneWayHandler() : base(EndpointAttributes.Soap12) { }
-    }
+        public Soap11OneWayHandler() : base(EndpointAttributes.Soap11) { }
 
-    public class Soap12MessageOneWayHttpHandler
-        : Soap12Handler, IHttpHandler
-    {
-        public Soap12MessageOneWayHttpHandler() : base(EndpointAttributes.Soap12) { }
-
-        public new void ProcessRequest(HttpContext context)
+        public override void ProcessRequest(HttpContext context)
         {
             if (context.Request.HttpMethod == HttpMethods.Get)
             {
-                var wsdl = new Soap12WsdlMetadataHandler();
+                var wsdl = new Soap11WsdlMetadataHandler();
                 wsdl.Execute(context);
                 return;
             }
@@ -42,15 +37,15 @@ namespace ServiceStack.Web.Handlers
         }
     }
 
-    public class Soap12MessageReplyHttpHandler : Soap12Handler, IHttpHandler
+    public class Soap11MessageReplyHttpHandler : Soap11Handler, IHttpHandler
     {
-        public Soap12MessageReplyHttpHandler() : base(EndpointAttributes.Soap12) { }
+        public Soap11MessageReplyHttpHandler() : base(EndpointAttributes.Soap11) { }
 
         public new void ProcessRequest(HttpContext context)
         {
             if (context.Request.HttpMethod == HttpMethods.Get)
             {
-                var wsdl = new Soap12WsdlMetadataHandler();
+                var wsdl = new Soap11WsdlMetadataHandler();
                 wsdl.Execute(context);
                 return;
             }
@@ -68,7 +63,7 @@ namespace ServiceStack.Web.Handlers
         {
             if (httpReq.HttpMethod == HttpMethods.Get)
             {
-                var wsdl = new Soap12WsdlMetadataHandler();
+                var wsdl = new Soap11WsdlMetadataHandler();
                 wsdl.Execute(httpReq, httpRes);
                 return;
             }

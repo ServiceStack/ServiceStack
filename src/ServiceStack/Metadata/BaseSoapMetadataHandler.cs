@@ -3,10 +3,10 @@ using System.IO;
 using System.Web.UI;
 using System.Xml.Schema;
 using ServiceStack.Host;
+using ServiceStack.Host.AspNet;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Utils;
 using ServiceStack.Web;
-using ServiceStack.Web.AspNet;
-using ServiceStack.Web.Handlers;
 
 namespace ServiceStack.Metadata
 {

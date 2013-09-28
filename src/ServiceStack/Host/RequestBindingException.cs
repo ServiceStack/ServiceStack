@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace ServiceStack.Web
+namespace ServiceStack.Host
 {
     public class RequestBindingException : SerializationException
     {

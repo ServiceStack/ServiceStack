@@ -2,9 +2,9 @@
 using NUnit.Framework;
 using ServiceStack.Clients;
 using ServiceStack.Configuration;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
-using ServiceStack.Web.Handlers;
 using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints.Tests

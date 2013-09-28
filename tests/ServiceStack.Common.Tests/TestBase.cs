@@ -6,11 +6,11 @@ using System.Reflection;
 using System.Text;
 using ServiceStack.Clients;
 using ServiceStack.Host;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.Web;
-using ServiceStack.Web.Handlers;
 
 namespace ServiceStack.Common.Tests
 {

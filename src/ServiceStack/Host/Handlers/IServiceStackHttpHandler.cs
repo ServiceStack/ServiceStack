@@ -1,4 +1,6 @@
-namespace ServiceStack.Web.Handlers
+using ServiceStack.Web;
+
+namespace ServiceStack.Host.Handlers
 {
 	public interface IServiceStackHttpHandler
 	{

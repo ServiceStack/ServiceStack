@@ -6,8 +6,9 @@ using System.Globalization;
 using System.IO;
 using System.Web;
 using ServiceStack.ServiceHost;
+using ServiceStack.Web;
 
-namespace ServiceStack.Web.AspNet
+namespace ServiceStack.Host.AspNet
 {
     public class AspNetResponse : IHttpResponse
     {

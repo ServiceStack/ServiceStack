@@ -1,9 +1,9 @@
 using System.IO;
 using System.Web;
+using ServiceStack.Host.HttpListener;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.Web;
-using ServiceStack.Web.HttpListener;
 
 namespace ServiceStack
 {

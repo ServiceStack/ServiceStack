@@ -5,13 +5,13 @@ using System.Net;
 using System.Web;
 using System.Web.UI;
 using ServiceStack.Host;
+using ServiceStack.Host.AspNet;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.Web;
-using ServiceStack.Web.AspNet;
 using System.Text;
-using ServiceStack.Web.Handlers;
 
 namespace ServiceStack.Metadata
 {

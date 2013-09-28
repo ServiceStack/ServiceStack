@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Web;
-using ServiceStack.Host;
+using ServiceStack.Host.AspNet;
+using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
 using ServiceStack.Serialization;
 using ServiceStack.Text;
-using ServiceStack.Web.AspNet;
-using ServiceStack.Web.HttpListener;
+using ServiceStack.Web;
 
-namespace ServiceStack.Web.Handlers
+namespace ServiceStack.Host.Handlers
 {
     public abstract class ServiceStackHandlerBase
         : IServiceStackHttpHandler, IHttpHandler

@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Web;
+using ServiceStack.Host.AspNet;
 using ServiceStack.Text;
 using ServiceStack.Logging;
-using ServiceStack.Web.AspNet;
+using ServiceStack.Web;
 
-namespace ServiceStack.Web.Handlers
+namespace ServiceStack.Host.Handlers
 {
 	public class NotFoundHttpHandler
 		: IServiceStackHttpHandler, IHttpHandler

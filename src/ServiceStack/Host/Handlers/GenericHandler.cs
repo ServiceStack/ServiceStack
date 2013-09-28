@@ -1,8 +1,9 @@
 using System;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
-namespace ServiceStack.Web.Handlers
+namespace ServiceStack.Host.Handlers
 {
 	public class GenericHandler : ServiceStackHandlerBase
 	{

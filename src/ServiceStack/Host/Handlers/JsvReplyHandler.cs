@@ -1,8 +1,9 @@
 using System;
 using System.Text;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
-namespace ServiceStack.Web.Handlers
+namespace ServiceStack.Host.Handlers
 {
     public class JsvOneWayHandler : GenericHandler
     {

@@ -5,11 +5,11 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host
 {
-	public class RequestAttributes : IRequestAttributes
+	public class RequestPreferences : IRequestPreferences
 	{
 		private readonly HttpContext httpContext;
 
-		public RequestAttributes(IHttpRequest httpRequest)
+		public RequestPreferences(IHttpRequest httpRequest)
 		{
 			this.acceptEncoding = httpRequest.Headers[HttpHeaders.AcceptEncoding];
 			if (this.acceptEncoding.IsNullOrEmpty())
@@ -20,7 +20,7 @@ namespace ServiceStack.Host
 			this.acceptEncoding = this.acceptEncoding.ToLower();
 		}
 
-		public RequestAttributes(HttpContext httpContext)
+		public RequestPreferences(HttpContext httpContext)
 		{
 			this.httpContext = httpContext;
 		}

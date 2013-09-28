@@ -9,11 +9,11 @@ using System.Net;
 using System.Text;
 using System.Web;
 using Funq;
-using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Utils;
+using ServiceStack.Web;
 
-namespace ServiceStack.Web.HttpListener
+namespace ServiceStack.Host.HttpListener
 {
     public partial class ListenerRequest : IHttpRequest
     {

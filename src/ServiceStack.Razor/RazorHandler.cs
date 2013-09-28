@@ -1,11 +1,11 @@
 using System.Net;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Razor.Managers;
 using ServiceStack.ServiceHost;
 using ServiceStack.Support;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.Web.Handlers;
 
 namespace ServiceStack.Razor
 {

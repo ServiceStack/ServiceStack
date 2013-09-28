@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Runtime.Serialization;
 using System.Web;
+using ServiceStack.Host.AspNet;
 using ServiceStack.Text;
-using ServiceStack.Web.AspNet;
+using ServiceStack.Web;
 
-namespace ServiceStack.Web.Handlers
+namespace ServiceStack.Host.Handlers
 {
 	[DataContract]
 	public class RequestInfo { }

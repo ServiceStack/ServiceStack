@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Host;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Metadata;
 using ServiceStack.ServiceHost;
 using ServiceStack.Testing;
 using ServiceStack.Text;
-using ServiceStack.Web.Handlers;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

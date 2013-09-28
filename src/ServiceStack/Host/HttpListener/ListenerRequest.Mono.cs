@@ -39,7 +39,7 @@ using System.IO;
 using System.Text;
 using System.Web;
 
-namespace ServiceStack.Web.HttpListener
+namespace ServiceStack.Host.HttpListener
 {
     public partial class ListenerRequest 
     {

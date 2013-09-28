@@ -5,8 +5,9 @@ using System;
 using System.IO;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
+using ServiceStack.Web;
 
-namespace ServiceStack.Web.HttpListener
+namespace ServiceStack.Host.HttpListener
 {
     public class ListenerResponse
         : IHttpResponse

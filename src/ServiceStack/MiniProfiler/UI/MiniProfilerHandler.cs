@@ -4,11 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Web;
+using ServiceStack.Host.AspNet;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Text;
 using ServiceStack.MiniProfiler.Helpers;
 using ServiceStack.Web;
-using ServiceStack.Web.AspNet;
-using ServiceStack.Web.Handlers;
 
 namespace ServiceStack.MiniProfiler.UI
 {

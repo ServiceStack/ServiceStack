@@ -40,7 +40,7 @@ namespace ServiceStack.Host
 			}
 			if (HttpContext.Current == null && httpReq != null)
 			{
-				this.RequestAttributes = new RequestAttributes(httpReq);
+				this.RequestPreferences = new RequestPreferences(httpReq);
 			}
 		}
 
@@ -54,7 +54,7 @@ namespace ServiceStack.Host
 			this.Dto = dto;
 			this.EndpointAttributes = endpointAttributes;
 			this.Factory = factory;
-			this.RequestAttributes = new RequestAttributes(HttpContext.Current);
+			this.RequestPreferences = new RequestPreferences(HttpContext.Current);
 			this.Files = new IHttpFile[0];
 		}
 
@@ -69,7 +69,7 @@ namespace ServiceStack.Host
 
 		public EndpointAttributes EndpointAttributes { get; private set; }
 
-		public IRequestAttributes RequestAttributes { get; private set; }
+		public Web.IRequestPreferences RequestPreferences { get; private set; }
 		
 		public string ContentType
 		{
@@ -128,10 +128,10 @@ namespace ServiceStack.Host
 		{
 			get
 			{
-				if (this.RequestAttributes.AcceptsDeflate)
+				if (this.RequestPreferences.AcceptsDeflate)
 					return CompressionTypes.Deflate;
 
-				if (this.RequestAttributes.AcceptsGzip)
+				if (this.RequestPreferences.AcceptsGzip)
 					return CompressionTypes.GZip;
 
 				return null;

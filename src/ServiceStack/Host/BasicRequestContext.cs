@@ -80,7 +80,7 @@ namespace ServiceStack.Host
             get { return EndpointAttributes.LocalSubnet | EndpointAttributes.MessageQueue; }
         }
 
-        public IRequestAttributes RequestAttributes { get; set; }
+        public Web.IRequestPreferences RequestPreferences { get; set; }
 
         public string ContentType { get; set; }
 

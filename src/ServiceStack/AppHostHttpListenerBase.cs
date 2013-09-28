@@ -1,11 +1,12 @@
 using System;
 using System.Net;
 using System.Reflection;
+using ServiceStack.Host;
+using ServiceStack.Host.Handlers;
+using ServiceStack.Host.HttpListener;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Utils;
 using ServiceStack.Web;
-using ServiceStack.Web.Handlers;
-using ServiceStack.Web.HttpListener;
 
 namespace ServiceStack
 {

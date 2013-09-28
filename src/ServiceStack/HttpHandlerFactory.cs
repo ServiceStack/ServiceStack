@@ -4,13 +4,14 @@ using System.Configuration;
 using System.IO;
 using System.Net;
 using System.Web;
+using ServiceStack.Host;
+using ServiceStack.Host.AspNet;
+using ServiceStack.Host.Handlers;
+using ServiceStack.Host.HttpListener;
 using ServiceStack.MiniProfiler.UI;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.Web.AspNet;
-using ServiceStack.Web.Handlers;
-using ServiceStack.Web.HttpListener;
 
 namespace ServiceStack
 {
@@ -344,7 +345,7 @@ namespace ServiceStack
                     if (!pathInfo.EndsWith("/"))
                     {
                         var appFilePath = filePath.Substring(0, filePath.Length - requestPath.Length);
-                        var redirect = Web.Handlers.StaticFileHandler.DirectoryExists(filePath, appFilePath);
+                        var redirect = Host.Handlers.StaticFileHandler.DirectoryExists(filePath, appFilePath);
                         if (redirect)
                         {
                             return new RedirectHttpHandler

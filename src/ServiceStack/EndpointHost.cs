@@ -6,6 +6,7 @@ using Funq;
 using ServiceStack.Caching;
 using ServiceStack.Formats;
 using ServiceStack.Host;
+using ServiceStack.Host.HttpListener;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Messaging;
@@ -16,7 +17,6 @@ using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
-using ServiceStack.Web.HttpListener;
 
 namespace ServiceStack
 {

@@ -35,7 +35,7 @@ namespace ServiceStack.Web
             get { return EndpointAttributes.None; }
         }
 
-        public IRequestAttributes RequestAttributes
+        public IRequestPreferences RequestPreferences
         {
             get { throw new NotImplementedException(); }
         }

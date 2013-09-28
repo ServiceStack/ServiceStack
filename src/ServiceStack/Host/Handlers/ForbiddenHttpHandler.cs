@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Web;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
-namespace ServiceStack.Web.Handlers
+namespace ServiceStack.Host.Handlers
 {
     public class ForbiddenHttpHandler
         : IServiceStackHttpHandler, IHttpHandler

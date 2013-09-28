@@ -1,11 +1,12 @@
 using System;
 using System.Runtime.Serialization;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Text;
-using ServiceStack.Web.Handlers;
+using ServiceStack.Web;
 
-namespace ServiceStack.Web
+namespace ServiceStack.Host
 {
     public class RestHandler
         : ServiceStackHandlerBase

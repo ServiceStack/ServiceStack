@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Web;
+using ServiceStack.Host.AspNet;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.Web.AspNet;
 
 namespace ServiceStack
 {

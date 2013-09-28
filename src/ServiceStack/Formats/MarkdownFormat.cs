@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
@@ -8,7 +9,6 @@ using ServiceStack.Markdown;
 using ServiceStack.Support.Markdown;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.Web.Handlers;
 
 namespace ServiceStack.Formats
 {

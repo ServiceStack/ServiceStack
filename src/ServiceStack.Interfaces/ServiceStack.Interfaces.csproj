@@ -388,7 +388,7 @@
     <Compile Include="Web\IHttpResult.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Web\IRequestAttributes.cs">
+    <Compile Include="Web\IRequestPreferences.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Web\IRequestContext.cs">

@@ -1,8 +1,9 @@
 using System;
 using System.Net;
 using System.Web;
+using ServiceStack.Web;
 
-namespace ServiceStack.Web.Handlers
+namespace ServiceStack.Host.Handlers
 {
 	public class RedirectHttpHandler
 		: IServiceStackHttpHandler, IHttpHandler

@@ -32,11 +32,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Web;
+using ServiceStack.Host.AspNet;
 using ServiceStack.Logging;
 using ServiceStack.Text;
-using ServiceStack.Web.AspNet;
+using ServiceStack.Web;
 
-namespace ServiceStack.Web.Handlers
+namespace ServiceStack.Host.Handlers
 {
     public class StaticFileHandler : IHttpHandler, IServiceStackHttpHandler
 	{

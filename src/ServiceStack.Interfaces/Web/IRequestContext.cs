@@ -16,7 +16,7 @@ namespace ServiceStack.Web
 
 		EndpointAttributes EndpointAttributes { get; }
 		
-		IRequestAttributes RequestAttributes { get; }
+		IRequestPreferences RequestPreferences { get; }
 
 		string ContentType { get; }
 

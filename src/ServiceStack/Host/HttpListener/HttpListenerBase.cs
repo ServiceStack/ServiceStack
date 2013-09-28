@@ -8,13 +8,13 @@ using System.Reflection;
 using System.Threading;
 using Funq;
 using ServiceStack.Configuration;
-using ServiceStack.Host;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Serialization;
+using ServiceStack.Web;
 
-namespace ServiceStack.Web.HttpListener
+namespace ServiceStack.Host.HttpListener
 {
 	public delegate void DelReceiveWebRequest(HttpListenerContext context);
 

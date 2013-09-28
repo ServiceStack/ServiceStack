@@ -8,11 +8,11 @@ using System.IO;
 using System.Net;
 using System.Web;
 using Funq;
-using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Utils;
+using ServiceStack.Web;
 
-namespace ServiceStack.Web.AspNet
+namespace ServiceStack.Host.AspNet
 {
     public class AspNetRequest
         : IHttpRequest

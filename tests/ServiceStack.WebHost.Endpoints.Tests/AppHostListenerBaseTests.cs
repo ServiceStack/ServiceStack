@@ -7,10 +7,10 @@ using System.Net.Sockets;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Common;
+using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
 using ServiceStack.Clients;
 using ServiceStack.Text;
-using ServiceStack.Web.HttpListener;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 

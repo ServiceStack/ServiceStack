@@ -6,13 +6,14 @@ using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Web;
 using System.Xml;
+using ServiceStack.Host.AspNet;
 using ServiceStack.Serialization;
 using ServiceStack.Clients;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
-using ServiceStack.Web.AspNet;
+using ServiceStack.Web;
 
-namespace ServiceStack.Web.Handlers
+namespace ServiceStack.Host.Handlers
 {
     public abstract class SoapHandler : ServiceStackHandlerBase, IOneWay, ISyncReply
     {

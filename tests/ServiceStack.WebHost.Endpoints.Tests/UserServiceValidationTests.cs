@@ -6,9 +6,9 @@ using ServiceStack.Host;
 using NUnit.Framework;
 using System.Collections;
 using Funq;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Validation;
 using ServiceStack.Web;
-using ServiceStack.Web.Handlers;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
 
 namespace ServiceStack.WebHost.Endpoints.Tests

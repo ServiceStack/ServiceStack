@@ -3,10 +3,10 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
-using ServiceStack.Web.HttpListener;
 
 namespace ServiceStack
 {

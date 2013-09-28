@@ -6,13 +6,13 @@ using System.Net.Sockets;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Web;
+using ServiceStack.Host.AspNet;
+using ServiceStack.Host.Handlers;
+using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.Web;
-using ServiceStack.Web.AspNet;
-using ServiceStack.Web.Handlers;
-using ServiceStack.Web.HttpListener;
 
 namespace ServiceStack
 {

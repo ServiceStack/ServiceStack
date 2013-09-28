@@ -1,15 +1,15 @@
 using System.Web;
+using ServiceStack.Host.AspNet;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.Web.AspNet;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
-using ServiceStack.Web.Handlers;
 
 namespace ServiceStack.Metadata
 {

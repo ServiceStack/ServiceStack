@@ -12,13 +12,13 @@ using System.Xml.Linq;
 using MarkdownSharp;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Logging;
 using ServiceStack.Markdown;
 using ServiceStack.Metadata;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.Web;
-using ServiceStack.Web.Handlers;
 
 namespace ServiceStack
 {

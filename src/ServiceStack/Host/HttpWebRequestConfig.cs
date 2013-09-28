@@ -3,7 +3,7 @@ using System.Web;
 using System.Web.Security;
 using ServiceStack.Clients;
 
-namespace ServiceStack.Web
+namespace ServiceStack.Host
 {
 	public static class HttpWebRequestConfig
 	{
