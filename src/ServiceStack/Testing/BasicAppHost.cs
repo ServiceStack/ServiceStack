@@ -23,7 +23,8 @@ namespace ServiceStack.Testing
             this.CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
             VirtualPathProvider = new FileSystemVirtualPathProvider(this, "~".MapServerPath());
 
-            this.Config = AppHostConfig.Init("BasicAppHost", new ServiceManager(Container, Assembly.GetExecutingAssembly()));
+            this.Config = EndpointHost.Config = 
+                AppHostConfig.Init("BasicAppHost", new ServiceManager(Container, Assembly.GetExecutingAssembly()));
         }
 
         public BasicAppHost(Container container, params Assembly[] serviceAssemblies) : this()
@@ -33,7 +34,8 @@ namespace ServiceStack.Testing
             if (serviceAssemblies.Length == 0)
                 serviceAssemblies = new[] { Assembly.GetExecutingAssembly() };
 
-            this.Config = AppHostConfig.Init(GetType().Name, new ServiceManager(this.Container, serviceAssemblies));
+            this.Config = EndpointHost.Config = 
+                AppHostConfig.Init(GetType().Name, new ServiceManager(this.Container, serviceAssemblies));
         }
 
         public void RegisterAs<T, TAs>() where T : TAs

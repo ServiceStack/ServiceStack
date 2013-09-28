@@ -133,10 +133,10 @@ namespace ServiceStack
 
         public static AppHostConfig Init(string serviceName, ServiceManager serviceManager)
         {
-            var config = Instance;
+            instance = null;        //Clear existing instance
+            var config = Instance;  //Create new instance with defaults
             config.ServiceName = serviceName;
             config.ServiceManager = serviceManager;
-            EndpointHost.Config = config;
             return config;
         }
 

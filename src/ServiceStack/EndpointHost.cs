@@ -52,7 +52,8 @@ namespace ServiceStack
 
         public static DateTime ReadyAt { get; set; }
 
-        private static void Reset()
+        // Pre user config
+        public static void ConfigureHost(IAppHost appHost, string serviceName, ServiceManager serviceManager)
         {
             ContentTypes = Web.ContentTypes.Instance;
             RawRequestFilters = new List<Action<IHttpRequest, IHttpResponse>>();
@@ -67,17 +68,6 @@ namespace ServiceStack
                 new PredefinedRoutesFeature(),
                 new MetadataFeature(),
             };
-
-            //Default Config for projects that want to use components but not WebFramework (e.g. MVC)
-            Config = AppHostConfig.Init(
-                "Empty Config",
-                new ServiceManager(new Container(), new ServiceController(null)));
-        }
-
-        // Pre user config
-        public static void ConfigureHost(IAppHost appHost, string serviceName, ServiceManager serviceManager)
-        {
-            Reset();
 
             AppHost = appHost;
             Config = AppHostConfig.Init(serviceName, serviceManager);
