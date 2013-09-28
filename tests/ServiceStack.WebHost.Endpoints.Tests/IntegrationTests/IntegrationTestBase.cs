@@ -3,7 +3,6 @@ using Funq;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.Logging;
-using ServiceStack.Logging.Support.Logging;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.Clients;

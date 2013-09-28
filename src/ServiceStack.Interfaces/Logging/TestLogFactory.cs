@@ -1,6 +1,6 @@
 using System;
 
-namespace ServiceStack.Logging.Support.Logging
+namespace ServiceStack.Logging
 {
     /// <summary>
     /// Creates a test Logger, that stores all log messages in a member list

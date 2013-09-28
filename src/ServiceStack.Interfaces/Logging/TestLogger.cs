@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
 
-namespace ServiceStack.Logging.Support.Logging {
+namespace ServiceStack.Logging 
+{
     /// <summary>
     /// Tests logger which  stores all log messages in a member list which can be examined later
     /// 
@@ -34,8 +35,6 @@ namespace ServiceStack.Logging.Support.Logging {
 
 
         static public IList<KeyValuePair<Levels, string>> GetLogs() { return _logs; }
-
-        #region ILog Members
 
         public bool IsDebugEnabled { get { return true; } }
 
@@ -130,7 +129,5 @@ namespace ServiceStack.Logging.Support.Logging {
         public void WarnFormat(string format, params object[] args) {
             LogFormat(Levels.WARN, format, args);
         }
-
-        #endregion
     }
 }

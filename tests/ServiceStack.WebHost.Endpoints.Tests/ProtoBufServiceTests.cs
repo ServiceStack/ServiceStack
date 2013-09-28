@@ -3,7 +3,6 @@ using System.Runtime.Serialization;
 using System.Text;
 using NUnit.Framework;
 using ServiceStack.Logging;
-using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Plugins.ProtoBuf;
 using ServiceStack.Clients;
 using ServiceStack.Text;

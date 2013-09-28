@@ -1,72 +1,104 @@
+#if !NETFX_CORE
 using System;
+using System.Text;
 
-namespace ServiceStack.Logging.Support.Logging
+namespace ServiceStack.Logging
 {
     /// <summary>
-	/// Default logger is to System.Diagnostics.Debug.WriteLine
-    /// 
+    /// StringBuilderLog writes to shared StringBuffer.
     /// Made public so its testable
     /// </summary>
-    public class DebugLogger : ILog
+    public class StringBuilderLogFactory : ILogFactory
+    {
+        private StringBuilder sb;
+
+        public StringBuilderLogFactory()
+        {
+            sb = new StringBuilder();
+        }
+
+        public ILog GetLogger(Type type)
+        {
+            return new StringBuilderLog(type, sb);
+        }
+
+        public ILog GetLogger(string typeName)
+        {
+            return new StringBuilderLog(typeName, sb);
+        }
+
+        public string GetLogs()
+        {
+            lock (sb)
+                return sb.ToString();
+        }
+
+        public void ClearLogs()
+        {
+            lock (sb)
+                sb.Remove(0, sb.Length - 1);
+        }
+    }
+
+    public class StringBuilderLog : ILog
     {
         const string DEBUG = "DEBUG: ";
         const string ERROR = "ERROR: ";
         const string FATAL = "FATAL: ";
         const string INFO = "INFO: ";
         const string WARN = "WARN: ";
+        private readonly StringBuilder logs;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DebugLogger"/> class.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        public DebugLogger(string type)
+        public StringBuilderLog(string type, StringBuilder logs)
         {
+            this.logs = logs;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DebugLogger"/> class.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        public DebugLogger(Type type)
+        public StringBuilderLog(Type type, StringBuilder logs)
         {
+            this.logs = logs;
         }
 
-        #region ILog Members
+        public bool IsDebugEnabled { get { return true; } }
 
         /// <summary>
         /// Logs the specified message.
         /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="exception">The exception.</param>
-        private static void Log(object message, Exception exception)
+        private void Log(object message, Exception exception)
         {
             string msg = message == null ? string.Empty : message.ToString();
             if (exception != null)
             {
                 msg += ", Exception: " + exception.Message;
             }
-			System.Diagnostics.Debug.WriteLine(msg);
+            lock (logs)
+                logs.AppendLine(msg);
         }
 
         /// <summary>
         /// Logs the format.
         /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="args">The args.</param>
-        private static void LogFormat(object message, params object[] args)
+        private void LogFormat(object message, params object[] args)
         {
             string msg = message == null ? string.Empty : message.ToString();
-			System.Diagnostics.Debug.WriteLine(string.Format(msg, args));
+            lock (logs)
+            {
+                logs.AppendFormat(msg, args);
+                logs.AppendLine();
+            }
         }
 
         /// <summary>
         /// Logs the specified message.
         /// </summary>
         /// <param name="message">The message.</param>
-        private static void Log(object message)
+        private void Log(object message)
         {
             string msg = message == null ? string.Empty : message.ToString();
-			System.Diagnostics.Debug.WriteLine(msg);
+            lock (logs)
+            {
+                logs.AppendLine(msg);
+            }
         }
 
         public void Debug(object message, Exception exception)
@@ -74,9 +106,7 @@ namespace ServiceStack.Logging.Support.Logging
             Log(DEBUG + message, exception);
         }
 
-		public bool IsDebugEnabled { get { return true; } }
-
-    	public void Debug(object message)
+        public void Debug(object message)
         {
             Log(DEBUG + message);
         }
@@ -145,7 +175,6 @@ namespace ServiceStack.Logging.Support.Logging
         {
             LogFormat(WARN + format, args);
         }
-
-        #endregion
     }
 }
+#endif

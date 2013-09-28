@@ -3,7 +3,6 @@ using System.IO;
 using System.Net;
 using NUnit.Framework;
 using ServiceStack.Logging;
-using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests

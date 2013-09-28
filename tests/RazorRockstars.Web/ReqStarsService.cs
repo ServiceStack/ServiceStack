@@ -8,7 +8,6 @@ using NUnit.Framework;
 using ServiceStack;
 using ServiceStack.Clients;
 using ServiceStack.Logging;
-using ServiceStack.Logging.Support.Logging;
 using ServiceStack.OrmLite;
 using ServiceStack.Plugins.MsgPack;
 using ServiceStack.Text;

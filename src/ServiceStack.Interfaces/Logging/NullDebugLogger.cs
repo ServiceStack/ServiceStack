@@ -1,6 +1,6 @@
 using System;
 
-namespace ServiceStack.Logging.Support.Logging
+namespace ServiceStack.Logging
 {
     /// <summary>
     /// Default logger is to System.Diagnostics.Debug.Print
@@ -12,7 +12,6 @@ namespace ServiceStack.Logging.Support.Logging
         /// <summary>
         /// Initializes a new instance of the <see cref="DebugLogger"/> class.
         /// </summary>
-        /// <param name="type">The type.</param>
         public NullDebugLogger(string type)
         {
         }
@@ -20,18 +19,13 @@ namespace ServiceStack.Logging.Support.Logging
         /// <summary>
         /// Initializes a new instance of the <see cref="DebugLogger"/> class.
         /// </summary>
-        /// <param name="type">The type.</param>
 		public NullDebugLogger(Type type)
         {
         }
 
-        #region ILog Members
-
         /// <summary>
         /// Logs the specified message.
         /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="exception">The exception.</param>
         private static void Log(object message, Exception exception)
 		{
         }
@@ -39,8 +33,6 @@ namespace ServiceStack.Logging.Support.Logging
         /// <summary>
         /// Logs the format.
         /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="args">The args.</param>
         private static void LogFormat(object message, params object[] args)
 		{
 		}
@@ -48,7 +40,6 @@ namespace ServiceStack.Logging.Support.Logging
         /// <summary>
         /// Logs the specified message.
         /// </summary>
-        /// <param name="message">The message.</param>
         private static void Log(object message)
 		{
 		}
@@ -114,7 +105,5 @@ namespace ServiceStack.Logging.Support.Logging
         public void WarnFormat(string format, params object[] args)
 		{
 		}
-
-        #endregion
     }
 }

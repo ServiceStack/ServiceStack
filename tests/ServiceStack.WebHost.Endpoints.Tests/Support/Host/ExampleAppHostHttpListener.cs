@@ -8,7 +8,6 @@ using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Logging;
-using ServiceStack.Logging.Support.Logging;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.Plugins.ProtoBuf;

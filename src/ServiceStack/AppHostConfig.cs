@@ -13,7 +13,6 @@ using MarkdownSharp;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Logging;
-using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Markdown;
 using ServiceStack.Metadata;
 using ServiceStack.Text;

@@ -5,7 +5,6 @@ using NUnit.Framework;
 using ServiceStack.Clients;
 using ServiceStack.Common;
 using ServiceStack.Logging;
-using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Clients;
 using ServiceStack.Serialization;
 using ServiceStack.Text;

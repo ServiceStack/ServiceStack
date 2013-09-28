@@ -1,5 +1,4 @@
 using System;
-using ServiceStack.Logging.Support.Logging;
 
 namespace ServiceStack.Logging
 {
@@ -15,7 +14,6 @@ namespace ServiceStack.Logging
         /// Gets or sets the log factory.
         /// Use this to override the factory that is used to create loggers
         /// </summary>
-        /// <value>The log factory.</value>
         public static ILogFactory LogFactory
         {
             get
@@ -32,8 +30,6 @@ namespace ServiceStack.Logging
         /// <summary>
         /// Gets the logger.
         /// </summary>
-        /// <param name="type">The type.</param>
-        /// <returns></returns>
         public static ILog GetLogger(Type type)
         {
             return LogFactory.GetLogger(type);
@@ -42,8 +38,6 @@ namespace ServiceStack.Logging
         /// <summary>
         /// Gets the logger.
         /// </summary>
-        /// <param name="typeName">Name of the type.</param>
-        /// <returns></returns>
         public static ILog GetLogger(string typeName)
         {
             return LogFactory.GetLogger(typeName);

@@ -1,14 +1,13 @@
-#if !NETFX_CORE
 using System;
 
-namespace ServiceStack.Logging.Support.Logging
+namespace ServiceStack.Logging
 {
     /// <summary>
-    /// Default logger is to Console.WriteLine
+	/// Default logger is to System.Diagnostics.Debug.WriteLine
     /// 
     /// Made public so its testable
     /// </summary>
-    public class ConsoleLogger : ILog
+    public class DebugLogger : ILog
     {
         const string DEBUG = "DEBUG: ";
         const string ERROR = "ERROR: ";
@@ -19,28 +18,20 @@ namespace ServiceStack.Logging.Support.Logging
         /// <summary>
         /// Initializes a new instance of the <see cref="DebugLogger"/> class.
         /// </summary>
-        /// <param name="type">The type.</param>
-        public ConsoleLogger(string type)
+        public DebugLogger(string type)
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DebugLogger"/> class.
         /// </summary>
-        /// <param name="type">The type.</param>
-		public ConsoleLogger(Type type)
+        public DebugLogger(Type type)
         {
         }
 
-        #region ILog Members
-
-		public bool IsDebugEnabled { get { return true; } }
-		
-		/// <summary>
+        /// <summary>
         /// Logs the specified message.
         /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="exception">The exception.</param>
         private static void Log(object message, Exception exception)
         {
             string msg = message == null ? string.Empty : message.ToString();
@@ -48,28 +39,25 @@ namespace ServiceStack.Logging.Support.Logging
             {
                 msg += ", Exception: " + exception.Message;
             }
-            Console.WriteLine(msg);
+			System.Diagnostics.Debug.WriteLine(msg);
         }
 
         /// <summary>
         /// Logs the format.
         /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="args">The args.</param>
         private static void LogFormat(object message, params object[] args)
         {
             string msg = message == null ? string.Empty : message.ToString();
-            Console.WriteLine(msg, args);
+			System.Diagnostics.Debug.WriteLine(string.Format(msg, args));
         }
 
         /// <summary>
         /// Logs the specified message.
         /// </summary>
-        /// <param name="message">The message.</param>
         private static void Log(object message)
         {
             string msg = message == null ? string.Empty : message.ToString();
-            Console.WriteLine(msg);
+			System.Diagnostics.Debug.WriteLine(msg);
         }
 
         public void Debug(object message, Exception exception)
@@ -77,7 +65,9 @@ namespace ServiceStack.Logging.Support.Logging
             Log(DEBUG + message, exception);
         }
 
-        public void Debug(object message)
+		public bool IsDebugEnabled { get { return true; } }
+
+    	public void Debug(object message)
         {
             Log(DEBUG + message);
         }
@@ -146,8 +136,5 @@ namespace ServiceStack.Logging.Support.Logging
         {
             LogFormat(WARN + format, args);
         }
-
-        #endregion
     }
 }
-#endif

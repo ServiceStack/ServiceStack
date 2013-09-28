@@ -2,7 +2,6 @@
 using System.Net;
 using NUnit.Framework;
 using ServiceStack.Logging;
-using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 

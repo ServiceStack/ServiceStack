@@ -4,7 +4,6 @@ using System.Linq;
 using NUnit.Framework;
 using ServiceStack.Formats;
 using ServiceStack.Logging;
-using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Razor;
 using ServiceStack.Testing;
 using ServiceStack.Text;

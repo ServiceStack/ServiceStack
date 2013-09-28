@@ -7,7 +7,6 @@ using System.Threading;
 using NUnit.Framework;
 using ServiceStack;
 using ServiceStack.Logging;
-using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Razor;
 using ServiceStack.Clients;
 using ServiceStack.Testing;

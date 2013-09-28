@@ -1,7 +1,7 @@
 #if !NETFX_CORE
 using System;
 
-namespace ServiceStack.Logging.Support.Logging
+namespace ServiceStack.Logging
 {
     /// <summary>
     /// Creates a Console Logger, that logs all messages to: System.Console
