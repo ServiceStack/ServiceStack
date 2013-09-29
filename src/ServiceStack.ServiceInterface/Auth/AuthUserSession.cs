@@ -47,6 +47,7 @@ namespace ServiceStack.ServiceInterface.Auth
         [DataMember(Order = 31)] public List<string> Permissions { get; set; }
         [DataMember(Order = 32)] public virtual bool IsAuthenticated { get; set; }
         [DataMember(Order = 33)] public virtual string Sequence { get; set; }
+        [DataMember(Order = 34)] public virtual long Tag { get; set; }
 
         public virtual bool IsAuthorized(string provider)
         {

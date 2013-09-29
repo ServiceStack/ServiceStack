@@ -72,8 +72,13 @@ namespace ServiceStack.ServiceInterface
 
         public static TimeSpan? GetDefaultSessionExpiry()
         {
+            if (AuthService.AuthProviders == null)
+                return SessionFeature.DefaultSessionExpiry;
+
             var authProvider = AuthService.AuthProviders.FirstOrDefault() as AuthProvider;
-            return authProvider == null ? null : authProvider.SessionExpiry;
+            return authProvider != null 
+                ? authProvider.SessionExpiry
+                : SessionFeature.DefaultSessionExpiry;
         }
     }
 }

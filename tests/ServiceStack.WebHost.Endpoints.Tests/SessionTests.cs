@@ -1,13 +1,11 @@
-﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
-// License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
-
-
-using System;
+﻿using System;
 using Funq;
 using NUnit.Framework;
-using ServiceStack.Auth;
-using ServiceStack.Clients;
-using ServiceStack.Configuration;
+using ServiceStack.Common;
+using ServiceStack.ServiceClient.Web;
+using ServiceStack.ServiceHost;
+using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceInterface.Auth;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -30,7 +28,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class SessionTypedIncr : IReturn<AuthUserSession> {}
 
-    public class SessionService : Service
+    public class SessionService : ServiceInterface.Service
     {
         public SessionResponse Get(SessionIncr request)
         {
