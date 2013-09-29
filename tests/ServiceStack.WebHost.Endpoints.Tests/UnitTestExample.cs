@@ -9,7 +9,6 @@ using System.Linq;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Data;
-using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.Testing;
 using ServiceStack.Text;
@@ -29,29 +28,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string LastName { get; set; }
     }
 
-    public class RockstarStatus
-    {
-        public int Age { get; set; }
-        public bool Alive { get; set; }
-    }
-
     // Types
     public class Rockstar
     {
-        [AutoIncrement]
         public int Id { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public int? Age { get; set; }
+    }
 
-        public Rockstar() { }
-        public Rockstar(int id, string firstName, string lastName, int age)
-        {
-            Id = id;
-            FirstName = firstName;
-            LastName = lastName;
-            Age = age;
-        }
+    public class RockstarStatus
+    {
+        public int Age { get; set; }
+        public bool Alive { get; set; }
     }
 
     // Implementation
@@ -127,21 +116,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class UnitTestExample
     {
         public static List<Rockstar> SeedData = new[] {
-            new Rockstar(1, "Jimi", "Hendrix", 27), 
-            new Rockstar(2, "Jim", "Hendrix", 27), 
-            new Rockstar(3, "Kurt", "Cobain", 27),              
-            new Rockstar(4, "Elvis", "Presley", 42), 
-            new Rockstar(5, "David", "Grohl", 44), 
-            new Rockstar(6, "Eddie", "Vedder", 48), 
-            new Rockstar(7, "Michael", "Jackson", 50), 
+            new Rockstar { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27 },
+            new Rockstar { Id = 2, FirstName = "Jim", LastName = "Morrison", Age = 27 },
+            new Rockstar { Id = 3, FirstName = "Kurt", LastName = "Cobain", Age = 27 },
+            new Rockstar { Id = 4, FirstName = "Elvis", LastName = "Presley", Age = 42 },
+            new Rockstar { Id = 5, FirstName = "David", LastName = "Grohl", Age = 44 },
+            new Rockstar { Id = 6, FirstName = "Eddie", LastName = "Vedder", Age = 48 },
+            new Rockstar { Id = 7, FirstName = "Michael", LastName = "Jackson", Age = 27 },
         }.ToList();
 
-        private Container container;
+        private ServiceStackHost appHost;
 
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
-            container = new Container();
+            appHost = new BasicAppHost().Init();
+            var container = appHost.Container;
 
             container.Register<IDbConnectionFactory>(
                 new OrmLiteConnectionFactory(":memory:", false, SqliteDialect.Provider));
@@ -157,11 +147,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
+
         [Test]
         public void Using_in_memory_database()
         {
-            var service = container.Resolve<SimpleService>();  //Resolve auto-wired service
-            service.SetResolver(new BasicResolver(container)); //For Service base class dependencies
+            var service = appHost.Container.Resolve<SimpleService>();  //Resolve auto-wired service
 
             var rockstars = service.Get(new FindRockstars { Aged = 27 });
 
@@ -186,7 +181,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public Rockstar GetByLastName(string lastName)
             {
                 return lastName == "Vedder"
-                    ? new Rockstar(6, "Eddie", "Vedder", 48)
+                    ? new Rockstar { Id = 6, FirstName = "Eddie", LastName = "Vedder", Age = 48 }
                     : null;
             }
 
