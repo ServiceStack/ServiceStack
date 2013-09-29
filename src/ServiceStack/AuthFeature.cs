@@ -69,10 +69,12 @@ namespace ServiceStack
             RegisterPlugins.ForEach(x => appHost.LoadPlugin(x));
         }
 
-        public static TimeSpan? GetDefaultSessionExpiry()
+        public TimeSpan GetDefaultSessionExpiry()
         {
-            var authProvider = AuthenticateService.AuthProviders.FirstOrDefault() as AuthProvider;
-            return authProvider == null ? null : authProvider.SessionExpiry;
+            var authProvider = authProviders.FirstOrDefault() as AuthProvider;
+            return authProvider != null 
+                ? authProvider.SessionExpiry
+                : SessionFeature.DefaultSessionExpiry;
         }
     }
 }

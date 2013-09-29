@@ -11,17 +11,20 @@ namespace ServiceStack.Auth
     public abstract class AuthProvider : IAuthProvider
     {
         protected static readonly ILog Log = LogManager.GetLogger(typeof(AuthProvider));
-        public static TimeSpan DefaultSessionExpiry = TimeSpan.FromDays(7 * 2); //2 weeks
 
-        public TimeSpan? SessionExpiry { get; set; }
+        public TimeSpan SessionExpiry { get; set; }
         public string AuthRealm { get; set; }
         public string Provider { get; set; }
         public string CallbackUrl { get; set; }
         public string RedirectUrl { get; set; }
 
-        protected AuthProvider() { }
+        protected AuthProvider()
+        {
+            this.SessionExpiry = SessionFeature.DefaultSessionExpiry;
+        }
 
         protected AuthProvider(IAppSettings appSettings, string authRealm, string oAuthProvider)
+            : this()
         {
             // Enhancement per https://github.com/ServiceStack/ServiceStack/issues/741
             this.AuthRealm = appSettings != null ? appSettings.Get("OAuthRealm", authRealm) : authRealm;
@@ -34,7 +37,6 @@ namespace ServiceStack.Auth
                 this.RedirectUrl = appSettings.GetString("oauth.{0}.RedirectUrl".Fmt(oAuthProvider))
                     ?? FallbackConfig(appSettings.GetString("oauth.RedirectUrl"));
             }
-            this.SessionExpiry = DefaultSessionExpiry;
         }
 
         /// <summary>

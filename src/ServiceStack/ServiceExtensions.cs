@@ -99,7 +99,7 @@ namespace ServiceStack
             using (var cache = httpReq.GetCacheClient())
             {
                 var sessionKey = SessionFeature.GetSessionKey(httpReq.GetSessionId());
-                cache.CacheSet(sessionKey, session, expiresIn ?? AuthFeature.GetDefaultSessionExpiry());
+                cache.CacheSet(sessionKey, session, expiresIn ?? HostContext.GetDefaultSessionExpiry());
             }
 
             httpReq.Items[RequestItemsSessionKey] = session;

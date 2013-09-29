@@ -2,6 +2,7 @@
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 
+using System;
 using System.Linq;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler;
@@ -138,6 +139,18 @@ namespace ServiceStack
                     Config.IgnoreFormatsInMetadata,
                     ContentTypes.ContentTypeFormats.Keys.ToList());
             }
+        }
+
+        public virtual TimeSpan GetDefaultSessionExpiry()
+        {
+            var authFeature = GetPlugin<AuthFeature>();
+            if (authFeature != null)
+                return authFeature.GetDefaultSessionExpiry();
+
+            var sessionFeature = GetPlugin<SessionFeature>();
+            return sessionFeature != null 
+                ? sessionFeature.SessionExpiry 
+                : SessionFeature.DefaultSessionExpiry;
         }
     }
 }

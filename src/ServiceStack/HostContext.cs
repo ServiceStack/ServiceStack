@@ -386,6 +386,13 @@ namespace ServiceStack
             return null;
         }
 
+        public static TimeSpan GetDefaultSessionExpiry()
+        {
+            return ServiceStackHost.Instance == null 
+                ? SessionFeature.DefaultSessionExpiry 
+                : ServiceStackHost.Instance.GetDefaultSessionExpiry();
+        }
+
         public static object RaiseServiceException(IHttpRequest httpReq, object request, Exception ex)
         {
             return AssertAppHost().OnServiceException(httpReq, request, ex);

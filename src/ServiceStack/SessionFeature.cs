@@ -15,6 +15,13 @@ namespace ServiceStack
         public const string PermanentSessionId = "ss-pid";
         public const string SessionOptionsKey = "ss-opt";
         public const string XUserAuthId = HttpHeaders.XUserAuthId;
+        public static TimeSpan DefaultSessionExpiry = TimeSpan.FromDays(7 * 2); //2 weeks
+        public TimeSpan SessionExpiry { get; set; }
+
+        public SessionFeature()
+        {
+            this.SessionExpiry = DefaultSessionExpiry;
+        }
 
         private static bool alreadyConfigured;
 
