@@ -7,7 +7,7 @@ namespace ServiceStack.Common.Tests.OAuth
 	{
 		static MockAuthHttpGateway()
 		{
-			Tokens = new OAuthTokens {
+			Tokens = new AuthTokens {
 				UserId = "623501766",
 				DisplayName = "Demis Bellot",
 				FirstName = "Demis",
@@ -16,7 +16,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			};
 		}
 
-		public static IOAuthTokens Tokens { get; set; }
+		public static IAuthTokens Tokens { get; set; }
 
 		static string JsonFacebook = @"{{
    ""id"": ""{0}"",

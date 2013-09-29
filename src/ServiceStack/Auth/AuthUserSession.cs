@@ -11,7 +11,7 @@ namespace ServiceStack.Auth
     {
         public AuthUserSession()
         {
-            this.ProviderOAuthAccess = new List<IOAuthTokens>();
+            this.ProviderOAuthAccess = new List<IAuthTokens>();
         }
 
         [DataMember(Order = 01)] public string ReferrerUrl { get; set; }
@@ -42,7 +42,7 @@ namespace ServiceStack.Auth
         [DataMember(Order = 26)] public string RequestTokenSecret { get; set; }
         [DataMember(Order = 27)] public DateTime CreatedAt { get; set; }
         [DataMember(Order = 28)] public DateTime LastModified { get; set; }
-        [DataMember(Order = 29)] public List<IOAuthTokens> ProviderOAuthAccess { get; set; }
+        [DataMember(Order = 29)] public List<IAuthTokens> ProviderOAuthAccess { get; set; }
         [DataMember(Order = 30)] public List<string> Roles { get; set; }
         [DataMember(Order = 31)] public List<string> Permissions { get; set; }
         [DataMember(Order = 32)] public virtual bool IsAuthenticated { get; set; }
@@ -65,14 +65,14 @@ namespace ServiceStack.Auth
         }
 
         public virtual void OnRegistered(IServiceBase registrationService) {}
-        public virtual void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, Dictionary<string, string> authInfo) {}
+        public virtual void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo) {}
         public virtual void OnLogout(IServiceBase authService) {}
         public virtual void OnCreated(IHttpRequest httpReq) {}
     }
 
     public static class AuthSessionExtensions
     {
-        public static IOAuthTokens GetOAuthTokens(this IAuthSession session, string provider)
+        public static IAuthTokens GetOAuthTokens(this IAuthSession session, string provider)
         {
             foreach (var tokens in session.ProviderOAuthAccess)
             {

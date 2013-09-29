@@ -17,7 +17,7 @@ namespace ServiceStack.Auth
         public TwitterAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name) {}
 
-        protected override void LoadUserAuthInfo(AuthUserSession userSession, IOAuthTokens tokens, Dictionary<string, string> authInfo)
+        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
             if (authInfo.ContainsKey("user_id"))
                 tokens.UserId = authInfo.GetValueOrDefault("user_id");
@@ -46,7 +46,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public override void LoadUserOAuthProvider(IAuthSession authSession, IOAuthTokens tokens)
+        public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
         {
             var userSession = authSession as AuthUserSession;
             if (userSession == null) return;

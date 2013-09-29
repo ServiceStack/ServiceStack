@@ -43,7 +43,7 @@ namespace ServiceStack.Common.Tests.OAuth
                 return userAuth;
             }
 
-            public override UserAuth GetUserAuth(IAuthSession authSession, IOAuthTokens tokens)
+            public override UserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens)
             {
                 return userAuth;
             }

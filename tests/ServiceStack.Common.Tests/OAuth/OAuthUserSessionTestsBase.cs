@@ -94,21 +94,21 @@ namespace ServiceStack.Common.Tests.OAuth
 		protected MockRequestContext requestContext;
 		protected IServiceBase service;
 
-		protected OAuthTokens facebookGatewayTokens = new OAuthTokens {
+		protected AuthTokens facebookGatewayTokens = new AuthTokens {
 			UserId = "623501766",
 			DisplayName = "Demis Bellot FB",
 			FirstName = "Demis",
 			LastName = "Bellot",
 			Email = "demis.bellot@gmail.com",
 		};
-		protected OAuthTokens twitterGatewayTokens = new OAuthTokens {
+		protected AuthTokens twitterGatewayTokens = new AuthTokens {
 			DisplayName = "Demis Bellot TW"
 		};
-		protected OAuthTokens facebookAuthTokens = new OAuthTokens {
+		protected AuthTokens facebookAuthTokens = new AuthTokens {
 			Provider = FacebookAuthProvider.Name,
 			AccessTokenSecret = "AAADDDCCCoR848BAMkQIZCRIKnVWZAvcKWqo7Ibvec8ebV9vJrfZAz8qVupdu5EbjFzmMmbwUFDbcNDea9H6rOn5SVn8es7KYZD",
 		};
-		protected OAuthTokens twitterAuthTokens = new OAuthTokens {
+		protected AuthTokens twitterAuthTokens = new AuthTokens {
 			Provider = TwitterAuthProvider.Name,
 			RequestToken = "JGGZZ22CCqgB1GR5e0EmGFxzyxGTw2rwEFFcC8a9o7g",
 			RequestTokenSecret = "qKKCCUUJ2R10bMieVQZZad7iSwWkPYJmtBYzPoM9q0",

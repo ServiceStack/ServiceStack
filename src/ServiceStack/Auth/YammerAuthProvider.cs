@@ -188,7 +188,7 @@ namespace ServiceStack.Auth
         /// <param name="authInfo">
         /// The auth info.
         /// </param>
-        protected override void LoadUserAuthInfo(AuthUserSession userSession, IOAuthTokens tokens, Dictionary<string, string> authInfo)
+        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
             try
             {
@@ -234,7 +234,7 @@ namespace ServiceStack.Auth
         /// <param name="tokens">
         /// The OAuth tokens.
         /// </param>
-        public override void LoadUserOAuthProvider(IAuthSession authSession, IOAuthTokens tokens)
+        public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
         {
             var userSession = authSession as AuthUserSession;
             if (userSession == null)

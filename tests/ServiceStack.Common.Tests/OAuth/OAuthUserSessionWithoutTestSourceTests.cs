@@ -48,7 +48,7 @@ namespace ServiceStack.Common.Tests.OAuth
                     using (var db = dbFactory.Open())
                     {
 						db.DropAndCreateTable<UserAuth>();
-						db.DropAndCreateTable<UserOAuthProvider>();
+						db.DropAndCreateTable<UserAuthProvider>();
 					}
 					sqliteInMemoryRepo.Clear();
 					userAuthRepositorys.Add(sqliteInMemoryRepo);

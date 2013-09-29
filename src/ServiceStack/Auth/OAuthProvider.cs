@@ -40,7 +40,7 @@ namespace ServiceStack.Auth
         public string AccessTokenUrl { get; set; }
         public OAuthAuthorizer OAuthUtils { get; set; }
 
-        public override bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Authenticate request = null)
+        public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)
         {
             if (request != null)
             {
@@ -110,7 +110,7 @@ namespace ServiceStack.Auth
         /// <param name="session"></param>
         /// <param name="request"> </param>
         /// <returns></returns>
-        protected IOAuthTokens Init(IServiceBase authService, ref IAuthSession session, Authenticate request)
+        protected IAuthTokens Init(IServiceBase authService, ref IAuthSession session, Authenticate request)
         {
             if (request != null && !LoginMatchesSession(session, request.UserName))
             {
@@ -134,11 +134,11 @@ namespace ServiceStack.Auth
 
             var tokens = session.ProviderOAuthAccess.FirstOrDefault(x => x.Provider == Provider);
             if (tokens == null)
-                session.ProviderOAuthAccess.Add(tokens = new OAuthTokens { Provider = Provider });
+                session.ProviderOAuthAccess.Add(tokens = new AuthTokens { Provider = Provider });
 
             return tokens;
         }
 
-        public virtual void LoadUserOAuthProvider(IAuthSession userSession, IOAuthTokens tokens) { }
+        public virtual void LoadUserOAuthProvider(IAuthSession userSession, IAuthTokens tokens) { }
     }
 }

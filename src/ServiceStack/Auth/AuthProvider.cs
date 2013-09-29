@@ -78,7 +78,7 @@ namespace ServiceStack.Auth
         /// Saves the Auth Tokens for this request. Called in OnAuthenticated(). 
         /// Overrideable, the default behaviour is to call IUserAuthRepository.CreateOrMergeAuthSession().
         /// </summary>
-        protected virtual void SaveUserAuth(IServiceBase authService, IAuthSession session, IUserAuthRepository authRepo, IOAuthTokens tokens)
+        protected virtual void SaveUserAuth(IServiceBase authService, IAuthSession session, IUserAuthRepository authRepo, IAuthTokens tokens)
         {
             if (authRepo == null) return;
             if (tokens != null)
@@ -111,7 +111,7 @@ namespace ServiceStack.Auth
 
         public virtual void OnSaveUserAuth(IServiceBase authService, IAuthSession session) { }
 
-        public virtual void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, Dictionary<string, string> authInfo)
+        public virtual void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
             var userSession = session as AuthUserSession;
             if (userSession != null)
@@ -155,7 +155,7 @@ namespace ServiceStack.Auth
             session.OnAuthenticated(authService, session, tokens, authInfo);
         }
 
-        protected virtual void LoadUserAuthInfo(AuthUserSession userSession, IOAuthTokens tokens, Dictionary<string, string> authInfo) { }
+        protected virtual void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo) { }
 
         protected static bool LoginMatchesSession(IAuthSession session, string userName)
         {
@@ -174,7 +174,7 @@ namespace ServiceStack.Auth
             return true;
         }
 
-        public abstract bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Authenticate request = null);
+        public abstract bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null);
 
         public abstract object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request);
 
@@ -205,7 +205,7 @@ namespace ServiceStack.Auth
 
     public static class AuthConfigExtensions
     {
-        public static bool IsAuthorizedSafe(this IAuthProvider authProvider, IAuthSession session, IOAuthTokens tokens)
+        public static bool IsAuthorizedSafe(this IAuthProvider authProvider, IAuthSession session, IAuthTokens tokens)
         {
             return authProvider != null && authProvider.IsAuthorized(session, tokens);
         }

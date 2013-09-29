@@ -172,7 +172,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class CustomUserSession : AuthUserSession
     {
-        public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, System.Collections.Generic.Dictionary<string, string> authInfo)
+        public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, System.Collections.Generic.Dictionary<string, string> authInfo)
         {
             if (session.UserName == AuthTests.UserNameWithSessionRedirect)
                 session.ReferrerUrl = AuthTests.SessionRedirectUrl;
@@ -186,7 +186,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             this.Provider = "custom";
         }
 
-        public override bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Authenticate request = null)
+        public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)
         {
             return false;
         }

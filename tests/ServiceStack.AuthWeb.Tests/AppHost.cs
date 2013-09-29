@@ -131,7 +131,7 @@ namespace ServiceStack.AuthWeb.Tests
 
     public class CustomUserSession : AuthUserSession
     {
-        public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, System.Collections.Generic.Dictionary<string, string> authInfo)
+        public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, System.Collections.Generic.Dictionary<string, string> authInfo)
         {
             "OnAuthenticated()".Print();
         }

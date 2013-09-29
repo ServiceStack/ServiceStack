@@ -72,7 +72,7 @@ namespace ServiceStack.Auth
             return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "Unknown"));
         }
 
-        protected override void LoadUserAuthInfo(AuthUserSession userSession, IOAuthTokens tokens, System.Collections.Generic.Dictionary<string, string> authInfo)
+        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, System.Collections.Generic.Dictionary<string, string> authInfo)
         {
             try
             {
@@ -93,7 +93,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public override void LoadUserOAuthProvider(IAuthSession authSession, IOAuthTokens tokens)
+        public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
         {
             var userSession = authSession as AuthUserSession;
             if (userSession == null) return;

@@ -220,7 +220,7 @@ namespace ServiceStack.Auth
             return false;
         }
 
-        public virtual void LoadUserAuth(IAuthSession session, IOAuthTokens tokens)
+        public virtual void LoadUserAuth(IAuthSession session, IAuthTokens tokens)
         {
             session.ThrowIfNull("session");
 
@@ -235,7 +235,7 @@ namespace ServiceStack.Auth
             session.PopulateWith(userAuth);
             session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
             session.ProviderOAuthAccess = GetUserOAuthProviders(session.UserAuthId)
-                .ConvertAll(x => (IOAuthTokens)x);
+                .ConvertAll(x => (IAuthTokens)x);
         }
 
         private UserAuth GetUserAuth(IRedisClientFacade redis, string userAuthId)
@@ -289,7 +289,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public List<UserOAuthProvider> GetUserOAuthProviders(string userAuthId)
+        public List<UserAuthProvider> GetUserOAuthProviders(string userAuthId)
         {
             userAuthId.ThrowIfNullOrEmpty("userAuthId");
 
@@ -297,17 +297,17 @@ namespace ServiceStack.Auth
             {
                 var idx = IndexUserAuthAndProviderIdsSet(long.Parse(userAuthId));
                 var authProiverIds = redis.GetAllItemsFromSet(idx);
-                return redis.As<UserOAuthProvider>().GetByIds(authProiverIds).OrderBy(x => x.ModifiedDate).ToList();
+                return redis.As<UserAuthProvider>().GetByIds(authProiverIds).OrderBy(x => x.ModifiedDate).ToList();
             }
         }
 
-        public virtual UserAuth GetUserAuth(IAuthSession authSession, IOAuthTokens tokens)
+        public virtual UserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens)
         {
             using (var redis = factory.GetClient())
                 return GetUserAuth(redis, authSession, tokens);
         }
 
-        private UserAuth GetUserAuth(IRedisClientFacade redis, IAuthSession authSession, IOAuthTokens tokens)
+        private UserAuth GetUserAuth(IRedisClientFacade redis, IAuthSession authSession, IAuthTokens tokens)
         {
             if (!authSession.UserAuthId.IsNullOrEmpty())
             {
@@ -325,49 +325,49 @@ namespace ServiceStack.Auth
             var oAuthProviderId = GetAuthProviderByUserId(redis, tokens.Provider, tokens.UserId);
             if (!oAuthProviderId.IsNullOrEmpty())
             {
-                var oauthProvider = redis.As<UserOAuthProvider>().GetById(oAuthProviderId);
+                var oauthProvider = redis.As<UserAuthProvider>().GetById(oAuthProviderId);
                 if (oauthProvider != null)
                     return redis.As<UserAuth>().GetById(oauthProvider.UserAuthId);
             }
             return null;
         } 
 
-        public string CreateOrMergeAuthSession(IAuthSession authSession, IOAuthTokens tokens)
+        public string CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
         {
             using (var redis = factory.GetClient())
             {
-                UserOAuthProvider oAuthProvider = null;
+                UserAuthProvider authProvider = null;
 
                 var oAuthProviderId = GetAuthProviderByUserId(redis, tokens.Provider, tokens.UserId);
                 if (!oAuthProviderId.IsNullOrEmpty())
-                    oAuthProvider = redis.As<UserOAuthProvider>().GetById(oAuthProviderId);
+                    authProvider = redis.As<UserAuthProvider>().GetById(oAuthProviderId);
 
                 var userAuth = GetUserAuth(redis, authSession, tokens) 
                     ?? new UserAuth { Id = redis.As<UserAuth>().GetNextSequence(), };
                  
-                if (oAuthProvider == null)
+                if (authProvider == null)
                 {
-                    oAuthProvider = new UserOAuthProvider {
-                        Id = redis.As<UserOAuthProvider>().GetNextSequence(),
+                    authProvider = new UserAuthProvider {
+                        Id = redis.As<UserAuthProvider>().GetNextSequence(),
                         UserAuthId = userAuth.Id,
                         Provider = tokens.Provider,
                         UserId = tokens.UserId,
                     };
                     var idx = IndexProviderToUserIdHash(tokens.Provider);
-                    redis.SetEntryInHash(idx, tokens.UserId, oAuthProvider.Id.ToString(CultureInfo.InvariantCulture));
+                    redis.SetEntryInHash(idx, tokens.UserId, authProvider.Id.ToString(CultureInfo.InvariantCulture));
                 }
 
-                oAuthProvider.PopulateMissing(tokens);
-                userAuth.PopulateMissing(oAuthProvider);
+                authProvider.PopulateMissing(tokens);
+                userAuth.PopulateMissing(authProvider);
 
                 userAuth.ModifiedDate = DateTime.UtcNow;
-                if (oAuthProvider.CreatedDate == default(DateTime))
-                    oAuthProvider.CreatedDate = userAuth.ModifiedDate;
-                oAuthProvider.ModifiedDate = userAuth.ModifiedDate;
+                if (authProvider.CreatedDate == default(DateTime))
+                    authProvider.CreatedDate = userAuth.ModifiedDate;
+                authProvider.ModifiedDate = userAuth.ModifiedDate;
 
                 redis.Store(userAuth);
-                redis.Store(oAuthProvider);
-                redis.AddItemToSet(IndexUserAuthAndProviderIdsSet(userAuth.Id), oAuthProvider.Id.ToString(CultureInfo.InvariantCulture));
+                redis.Store(authProvider);
+                redis.AddItemToSet(IndexUserAuthAndProviderIdsSet(userAuth.Id), authProvider.Id.ToString(CultureInfo.InvariantCulture));
 
                 return userAuth.Id.ToString(CultureInfo.InvariantCulture);
             }

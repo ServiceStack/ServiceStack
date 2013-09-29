@@ -23,7 +23,7 @@ namespace ServiceStack.Auth
         /// <summary>
         /// Determine if the current session is already authenticated with this AuthProvider
         /// </summary>
-        bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Authenticate request = null);
+        bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null);
     }
 
     public interface IOAuthProvider : IAuthProvider

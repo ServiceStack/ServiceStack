@@ -146,7 +146,7 @@ namespace ServiceStack.Authentication.OpenId
             return authInfo;
         }
 
-        protected override void LoadUserAuthInfo(AuthUserSession userSession, IOAuthTokens tokens, Dictionary<string, string> authInfo)
+        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
             if (authInfo.ContainsKey("user_id"))
                 tokens.UserId = authInfo.GetValueOrDefault("user_id");
@@ -194,7 +194,7 @@ namespace ServiceStack.Authentication.OpenId
             LoadUserOAuthProvider(userSession, tokens);
         }
 
-        public override void LoadUserOAuthProvider(IAuthSession authSession, IOAuthTokens tokens)
+        public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
         {
             var userSession = authSession as AuthUserSession;
             if (userSession == null) return;
@@ -272,7 +272,7 @@ namespace ServiceStack.Authentication.OpenId
             return ret;
         }
 
-        public override bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Authenticate request = null)
+        public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)
         {
             if (request != null)
             {

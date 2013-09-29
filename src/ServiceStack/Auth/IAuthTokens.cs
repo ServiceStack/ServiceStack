@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ServiceStack.Auth
 {
-    public interface IOAuthTokens
+    public interface IAuthTokens
     {
         string Provider { get; set; }
         string UserId { get; set; }
@@ -32,9 +32,9 @@ namespace ServiceStack.Auth
         Dictionary<string, string> Items { get; set; }
     }
 
-    public class OAuthTokens : IOAuthTokens
+    public class AuthTokens : IAuthTokens
     {
-        public OAuthTokens()
+        public AuthTokens()
         {
             this.Items = new Dictionary<string, string>();
         }

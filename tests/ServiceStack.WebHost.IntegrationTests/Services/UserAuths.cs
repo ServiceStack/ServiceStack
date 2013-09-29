@@ -16,12 +16,12 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public UserAuthsResponse()
 		{
 			this.Results = new List<UserAuth>();
-			this.OAuthProviders = new List<UserOAuthProvider>();
+			this.OAuthProviders = new List<UserAuthProvider>();
 		}
 
 		public List<UserAuth> Results { get; set; }
 
-		public List<UserOAuthProvider> OAuthProviders { get; set; }
+		public List<UserAuthProvider> OAuthProviders { get; set; }
 
 		public ResponseStatus ResponseStatus { get; set; }
 	}
@@ -35,7 +35,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		{
 			return new UserAuthsResponse {
 				Results = Db.Select<UserAuth>(),
-				OAuthProviders = Db.Select<UserOAuthProvider>(),
+				OAuthProviders = Db.Select<UserAuthProvider>(),
 			};
 		}
 	}

@@ -57,14 +57,14 @@ namespace ServiceStack.Auth
                 session.Sequence = digestInfo["nc"];
                 session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
                 session.ProviderOAuthAccess = authRepo.GetUserOAuthProviders(session.UserAuthId)
-                .ConvertAll(x => (IOAuthTokens)x);
+                .ConvertAll(x => (IAuthTokens)x);
                 
                 return true;
             }
             return false;
         }
 
-        public override bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Authenticate request = null)
+        public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)
         {
             if (request != null)
             {
@@ -105,7 +105,7 @@ namespace ServiceStack.Auth
             throw HttpError.Unauthorized("Invalid UserName or Password");
         }
 
-        public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, Dictionary<string, string> authInfo)
+        public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
             var userSession = session as AuthUserSession;
             if (userSession != null)

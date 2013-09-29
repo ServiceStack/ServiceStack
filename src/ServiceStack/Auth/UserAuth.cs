@@ -58,7 +58,7 @@ namespace ServiceStack.Auth
             Meta[typeof(T).Name] = TypeSerializer.SerializeToString(value);
         }
 
-        public virtual void PopulateMissing(UserOAuthProvider authProvider)
+        public virtual void PopulateMissing(UserAuthProvider authProvider)
         {
             //Don't explicitly override after if values exist
             if (!authProvider.DisplayName.IsNullOrEmpty() && this.DisplayName.IsNullOrEmpty())
@@ -93,9 +93,9 @@ namespace ServiceStack.Auth
         }
     }
 
-    public class UserOAuthProvider : IOAuthTokens
+    public class UserAuthProvider : IAuthTokens
     {
-        public UserOAuthProvider()
+        public UserAuthProvider()
         {
             this.Items = new Dictionary<string, string>();
         }
@@ -151,7 +151,7 @@ namespace ServiceStack.Auth
             Meta[typeof(T).Name] = TypeSerializer.SerializeToString(value);
         }
 
-        public virtual void PopulateMissing(IOAuthTokens withTokens)
+        public virtual void PopulateMissing(IAuthTokens withTokens)
         {
             if (!withTokens.UserId.IsNullOrEmpty())
                 this.UserId = withTokens.UserId;

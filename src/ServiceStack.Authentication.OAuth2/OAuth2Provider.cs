@@ -118,7 +118,7 @@ namespace ServiceStack.Authentication.OAuth2
             return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "RequestTokenFailed"));
         }
 
-        public override bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Authenticate request = null)
+        public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)
         {
             if (request != null)
             {
@@ -131,7 +131,7 @@ namespace ServiceStack.Authentication.OAuth2
             return tokens != null && !string.IsNullOrEmpty(tokens.UserId);
         }
 
-        public void LoadUserOAuthProvider(IAuthSession authSession, IOAuthTokens tokens)
+        public void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
         {
             var userSession = authSession as AuthUserSession;
             if (userSession == null)
@@ -149,7 +149,7 @@ namespace ServiceStack.Authentication.OAuth2
 
         protected abstract Dictionary<string, string> CreateAuthInfo(string accessToken);
 
-        protected override void LoadUserAuthInfo(AuthUserSession userSession, IOAuthTokens tokens, Dictionary<string, string> authInfo)
+        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
             try
             {
@@ -169,7 +169,7 @@ namespace ServiceStack.Authentication.OAuth2
             }
         }
 
-        protected IOAuthTokens Init(IServiceBase authService, ref IAuthSession session, Authenticate request)
+        protected IAuthTokens Init(IServiceBase authService, ref IAuthSession session, Authenticate request)
         {
             var requestUri = authService.RequestContext.AbsoluteUri;
             if (this.CallbackUrl.IsNullOrEmpty())
@@ -192,7 +192,7 @@ namespace ServiceStack.Authentication.OAuth2
             var tokens = session.ProviderOAuthAccess.FirstOrDefault(x => x.Provider == this.Provider);
             if (tokens == null)
             {
-                session.ProviderOAuthAccess.Add(tokens = new OAuthTokens { Provider = this.Provider });
+                session.ProviderOAuthAccess.Add(tokens = new AuthTokens { Provider = this.Provider });
             }
 
             return tokens;

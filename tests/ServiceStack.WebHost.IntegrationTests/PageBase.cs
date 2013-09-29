@@ -10,7 +10,7 @@ namespace ServiceStack.WebHost.IntegrationTests
 	{
 		public string CustomPropety { get; set; }
 
-		public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, System.Collections.Generic.Dictionary<string, string> authInfo)
+		public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, System.Collections.Generic.Dictionary<string, string> authInfo)
 		{
 			base.OnAuthenticated(authService, session, tokens, authInfo);
 

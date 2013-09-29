@@ -33,7 +33,7 @@ namespace ServiceStack.Auth
             using (var db = dbFactory.Open())
             {
                 db.CreateTable<UserAuth>();
-                db.CreateTable<UserOAuthProvider>();
+                db.CreateTable<UserAuthProvider>();
             }
         }
 
@@ -42,7 +42,7 @@ namespace ServiceStack.Auth
             using (var db = dbFactory.Open())
             {
                 db.DropAndCreateTable<UserAuth>();
-                db.DropAndCreateTable<UserOAuthProvider>();
+                db.DropAndCreateTable<UserAuthProvider>();
             };
         }
 
@@ -186,7 +186,7 @@ namespace ServiceStack.Auth
             return false;
         }
 
-        public void LoadUserAuth(IAuthSession session, IOAuthTokens tokens)
+        public void LoadUserAuth(IAuthSession session, IAuthTokens tokens)
         {
             session.ThrowIfNull("session");
 
@@ -204,7 +204,7 @@ namespace ServiceStack.Auth
 
             session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
             session.ProviderOAuthAccess = GetUserOAuthProviders(session.UserAuthId)
-                .ConvertAll(x => (IOAuthTokens)x);
+                .ConvertAll(x => (IAuthTokens)x);
             
         }
 
@@ -243,16 +243,16 @@ namespace ServiceStack.Auth
                 db.Save(userAuth);
         }
 
-        public List<UserOAuthProvider> GetUserOAuthProviders(string userAuthId)
+        public List<UserAuthProvider> GetUserOAuthProviders(string userAuthId)
         {
             var id = int.Parse(userAuthId);
             using (var db = dbFactory.Open())
             {
-                return db.Select<UserOAuthProvider>(q => q.UserAuthId == id).OrderBy(x => x.ModifiedDate).ToList();
+                return db.Select<UserAuthProvider>(q => q.UserAuthId == id).OrderBy(x => x.ModifiedDate).ToList();
             }
         }
 
-        public UserAuth GetUserAuth(IAuthSession authSession, IOAuthTokens tokens)
+        public UserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens)
         {
             if (!authSession.UserAuthId.IsNullOrEmpty())
             {
@@ -270,7 +270,7 @@ namespace ServiceStack.Auth
 
             using (var db = dbFactory.Open())
             {
-                var oAuthProvider = db.Select<UserOAuthProvider>(q => 
+                var oAuthProvider = db.Select<UserAuthProvider>(q => 
                     q.Provider == tokens.Provider && q.UserId == tokens.UserId).FirstOrDefault();
 
                 if (oAuthProvider != null)
@@ -282,18 +282,18 @@ namespace ServiceStack.Auth
             };
         }
 
-        public string CreateOrMergeAuthSession(IAuthSession authSession, IOAuthTokens tokens)
+        public string CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
         {
             var userAuth = GetUserAuth(authSession, tokens) ?? new UserAuth();
 
             using (var db = dbFactory.Open())
             {
-                var oAuthProvider = db.Select<UserOAuthProvider>(q =>
+                var oAuthProvider = db.Select<UserAuthProvider>(q =>
                     q.Provider == tokens.Provider && q.UserId == tokens.UserId).FirstOrDefault();
 
                 if (oAuthProvider == null)
                 {
-                    oAuthProvider = new UserOAuthProvider {
+                    oAuthProvider = new UserAuthProvider {
                         Provider = tokens.Provider,
                         UserId = tokens.UserId,
                     };
@@ -327,7 +327,7 @@ namespace ServiceStack.Auth
             using (var db = dbFactory.Open())
             {
                 db.DeleteAll<UserAuth>();
-                db.DeleteAll<UserOAuthProvider>();
+                db.DeleteAll<UserAuthProvider>();
             }
         }
     }
