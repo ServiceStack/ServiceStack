@@ -150,7 +150,7 @@ namespace ServiceStack.Metadata
                 var overrideExtCopy = HostContext.Config.AllowRouteContentTypeExtensions
                    ? " the <b>.{0}</b> suffix or ".Fmt(ContentFormat)
                    : "";
-                sb.AppendFormat(@"<p>To override the Content-type in your clients HTTP <b>Accept</b> Header, append {1} <b>?format={0}</b></p>", ContentFormat, overrideExtCopy);
+                sb.AppendFormat(@"<p>To override the Content-type in your clients, use the HTTP <b>Accept</b> Header, append {1} <b>?format={0}</b></p>", ContentFormat, overrideExtCopy);
                 if (ContentFormat == "json")
                 {
                     sb.Append("<p>To embed the response in a <b>jsonp</b> callback, append <b>?callback=myCallback</b></p>");

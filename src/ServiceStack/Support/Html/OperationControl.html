@@ -6,14 +6,63 @@
         BODY  {
             background-color:white;
             color:#000000;
-            font-family:Verdana;
+            font-family: "Helvetica Neue", Helvetica, Verdana, Arial;
             margin: 0;
+            font-size: 13px;
+        }
+        a#logo {
+            position: absolute;
+            top: 8px;
+            right: 5px;
+            width: 46px;
+            height: 30px;
+            background-repeat: no-repeat;
+            background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC4AAAAeCAYAAABTwyyaAAADCklEQVRYw+3YXUhTYRgH8FUXQR8gEV10G5RXdqMIkQV9YWEXEmaQ9jHCXAMrFcNN7YSWkm1Nps2p2Uxzdcyshh9LdLRkqDG3Y3PuM5DuBMkSIlJ5et61E8uW2077UOriD4fDBr/znv97nrPxAIC3GsP5i263O9Fms+1adXCTyRSH+CmMyeVyFWC2rQo4idPpPI5wIEH4N8wTPN674uHeyuhZvE9G8SLSeTzemhUL9111PzE7HI60mMP5JcojFEWt9T1H0/Q6XN3pZfCkRjrcyAkxg2eL7gm3HLiykJZ3151ZVNtWKnucRM4jrGU5uDcLGCnDMBtjUpVzpQ2Spo5XMGxkoKqxCzIK5TNnxEq7zmCEIPAk77E++2LS8UO51S7rpP0nhhzXPuqGsyVKEMnUMMZMBMIv4l0qJzWLKrxUpk5G4KI/FEFfr6MhW1wPHT16CND9AbvdvjWqT5XDudVTgWrR+mIQsooVIG/rBtef8W7Ex0cNfrpYoTK8NQfV6x7dsOcOkDoh1N9nZrD3yVGBX5O2nySbNMgN6YlmwACniuqgs++Nv5WfC2XqcoZT8qeJlY3PQoKzUah7IVtUD+Z31qX4z1ibpIjCxTXqPVLVS05wkolJGwgqmqGB1i7FT+M03hExeF6VStiu0XGGs3n4fAAuUE1gdzh98VactJsjAsfp2T8+MfnXcJKRsXEyyICx/FIdOiLw9Ks1M+FAs3E4nZAlUoDRbPE9fz6scEHFg/zmzn4IJ5xN3P7LoH09wlbmE1Zme1jglFKz4ahQ8jESaDYp/FtgZCwsXh0W+MGLty0hvFBxChlSmfi8t1htP2rkZziFhE4VSIY6evURRbMhG5/gvRfSxwlO1dGbUviVjmBHfLjSpR0CWYvGc4yDaXdIcGF5swA7PTs0aooqmk3OjfueyuCqKwPCM/A9+dJNVUGq8M4H8mYXCzAbsknzq1vJ8SxO1PW/wXMoZXyWuL7wmFA6uDNdPJeQSX3FHwZf+GUN8/yyxoVY5kShfB6f82bfTcr75/6C+w/nmO/AJ8aemGSrCwAAAABJRU5ErkJggg==);
+        }
+        H1 {
+            color: #FFF;
+            font-size: 26px;
+            font-weight: normal;
+            margin: 0;
+            padding: 0 0 0 15px;
+
+            line-height: 48px;
+            min-height: 48px;
+	        border-radius: 0px;
+	        border-bottom: 1px solid #191e23;
+	        background: #2c3742; /* Old browsers */
+	        background: -moz-linear-gradient(top,  #2c3742 0%, #28303a 100%); /* FF3.6+ */
+	        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#2c3742), color-stop(100%,#28303a)); /* Chrome,Safari4+ */
+	        background: -webkit-linear-gradient(top,  #2c3742 0%,#28303a 100%); /* Chrome10+,Safari5.1+ */
+	        background: -o-linear-gradient(top,  #2c3742 0%,#28303a 100%); /* Opera 11.10+ */
+	        background: -ms-linear-gradient(top,  #2c3742 0%,#28303a 100%); /* IE10+ */
+	        background: linear-gradient(to bottom,  #2c3742 0%,#28303a 100%); /* W3C */
+	        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c3742', endColorstr='#28303a',GradientType=0 ); /* IE6-9 */
+        }
+        A {
+            color: #428bca;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        A:hover, A:focus {
+            color: #2a6496;
+            text-decoration: underline;
+        }
+        H2 {
+	        margin: 25px 0 20px 0;
+            color: #29323D;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 24px;
+        }
+        h3 {
+            color: #29323D;
+            font-size: 18px;
+            font-family: 'Open Sans', sans-serif;
         }
         table {
             border-collapse: collapse;
             border-spacing: 0;
             margin: 0 0 20px 0;
-            font-size: 12px;
         }
         caption {
             text-align: left;
@@ -25,23 +74,16 @@
             text-align: left;
         }
         thead th {
-            background-color: #E5E5CC;
+            border: 1px solid #DEE3EA;
+            border-bottom: none;
             text-align: left;
+            text-transform: uppercase;
         }
         th, td {
             padding: 5px 15px;
         }
         .call-info {
             margin: 0 0 20px 0;
-        }
-        a#logo {
-            position: absolute;
-            top: 8px;
-            right: 5px;
-            width: 46px;
-            height: 30px;
-            background-repeat: no-repeat;
-            background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC4AAAAeCAYAAABTwyyaAAADCklEQVRYw+3YXUhTYRgH8FUXQR8gEV10G5RXdqMIkQV9YWEXEmaQ9jHCXAMrFcNN7YSWkm1Nps2p2Uxzdcyshh9LdLRkqDG3Y3PuM5DuBMkSIlJ5et61E8uW2077UOriD4fDBr/znv97nrPxAIC3GsP5i263O9Fms+1adXCTyRSH+CmMyeVyFWC2rQo4idPpPI5wIEH4N8wTPN674uHeyuhZvE9G8SLSeTzemhUL9111PzE7HI60mMP5JcojFEWt9T1H0/Q6XN3pZfCkRjrcyAkxg2eL7gm3HLiykJZ3151ZVNtWKnucRM4jrGU5uDcLGCnDMBtjUpVzpQ2Spo5XMGxkoKqxCzIK5TNnxEq7zmCEIPAk77E++2LS8UO51S7rpP0nhhzXPuqGsyVKEMnUMMZMBMIv4l0qJzWLKrxUpk5G4KI/FEFfr6MhW1wPHT16CND9AbvdvjWqT5XDudVTgWrR+mIQsooVIG/rBtef8W7Ex0cNfrpYoTK8NQfV6x7dsOcOkDoh1N9nZrD3yVGBX5O2nySbNMgN6YlmwACniuqgs++Nv5WfC2XqcoZT8qeJlY3PQoKzUah7IVtUD+Z31qX4z1ibpIjCxTXqPVLVS05wkolJGwgqmqGB1i7FT+M03hExeF6VStiu0XGGs3n4fAAuUE1gdzh98VactJsjAsfp2T8+MfnXcJKRsXEyyICx/FIdOiLw9Ks1M+FAs3E4nZAlUoDRbPE9fz6scEHFg/zmzn4IJ5xN3P7LoH09wlbmE1Zme1jglFKz4ahQ8jESaDYp/FtgZCwsXh0W+MGLty0hvFBxChlSmfi8t1htP2rkZziFhE4VSIY6evURRbMhG5/gvRfSxwlO1dGbUviVjmBHfLjSpR0CWYvGc4yDaXdIcGF5swA7PTs0aooqmk3OjfueyuCqKwPCM/A9+dJNVUGq8M4H8mYXCzAbsknzq1vJ8SxO1PW/wXMoZXyWuL7wmFA6uDNdPJeQSX3FHwZf+GUN8/yyxoVY5kShfB6f82bfTcr75/6C+w/nmO/AJ8aemGSrCwAAAABJRU5ErkJggg==);
         }
 		#desc{
 			margin: 0;
@@ -54,17 +96,7 @@
 			line-height: 20px;
 			color: #444;
 		}
-        H1 {
-            background-color: #036;
-            color: #FFF;
-            font-family: Tahoma;
-            font-size: 26px;
-            font-weight: normal;
-            margin: 0;
-            padding: 10px 0 3px 15px;
-        }
         FORM {
-            font-size: 0.7em;
             margin-left: 20px;
             padding-bottom: 2em;
         }
@@ -74,35 +106,18 @@
         LI {
             margin-top: 10px;
         }
-        LI A {
-            color: #369;
-            font-weight: bold;
-            text-decoration: underline;
-        }
-        LI A:hover {
-            color: #C30;
-        }
-
-        H2 {
-	        border-top: 1px solid #003366;
-	        color: #036;
-	        font-size: 1.5em;
-	        font-weight: bold;
-	        margin: 25px 0 20px 0;
-        }
         .example {
 	        padding-left: 15px;
         }
         .example h3 { 
 	        color:#000000;
-	        font-size:1.1em;
 	        margin: 10px 0 0 -15px;
         }
         .example pre {
 	        background-color: #E5E5CC;
 	        border: 1px solid #F0F0E0;
 	        font-family: Courier New;
-	        font-size: small;
+	        font-size: 15px;
 	        padding: 5px;
 	        margin-right: 15px;
 	        white-space: pre-wrap;
