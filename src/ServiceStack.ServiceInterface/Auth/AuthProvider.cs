@@ -7,14 +7,12 @@ using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
     public abstract class AuthProvider : IAuthProvider
     {
         protected static readonly ILog Log = LogManager.GetLogger(typeof(AuthProvider));
-        public static TimeSpan DefaultSessionExpiry = TimeSpan.FromDays(7 * 2); //2 weeks
 
         public TimeSpan? SessionExpiry { get; set; }
         public string AuthRealm { get; set; }
@@ -37,7 +35,7 @@ namespace ServiceStack.ServiceInterface.Auth
                 this.RedirectUrl = appSettings.GetString("oauth.{0}.RedirectUrl".Fmt(oAuthProvider))
                     ?? FallbackConfig(appSettings.GetString("oauth.RedirectUrl"));
             }
-            this.SessionExpiry = DefaultSessionExpiry;
+            this.SessionExpiry = SessionFeature.DefaultSessionExpiry;
         }
 
         /// <summary>
