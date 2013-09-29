@@ -22,7 +22,7 @@ namespace ServiceStack.Host
         {
             var controller = ServiceManager != null
                 ? ServiceManager.ServiceController
-                : EndpointHost.Config.ServiceController;
+                : HostContext.ServiceController;
 
             pathInfo = GetSanitizedPathInfo(pathInfo, out contentType);
 
@@ -32,13 +32,13 @@ namespace ServiceStack.Host
         private static string GetSanitizedPathInfo(string pathInfo, out string contentType)
         {
             contentType = null;
-            if (EndpointHost.Config.AllowRouteContentTypeExtensions)
+            if (HostContext.Config.AllowRouteContentTypeExtensions)
             {
                 var pos = pathInfo.LastIndexOf('.');
                 if (pos >= 0)
                 {
                     var format = pathInfo.Substring(pos + 1);
-                    contentType = EndpointHost.ContentTypes.GetFormatContentType(format);
+                    contentType = HostContext.ContentTypes.GetFormatContentType(format);
                     if (contentType != null)
                     {
                         pathInfo = pathInfo.Substring(0, pos);
@@ -70,7 +70,7 @@ namespace ServiceStack.Host
         {
             try
             {
-                if (EndpointHost.ApplyPreRequestFilters(httpReq, httpRes)) return;
+                if (HostContext.ApplyPreRequestFilters(httpReq, httpRes)) return;
 
                 var restPath = GetRestPath(httpReq.HttpMethod, httpReq.PathInfo);
                 if (restPath == null)
@@ -79,20 +79,20 @@ namespace ServiceStack.Host
                 operationName = restPath.RequestType.Name;
 
                 var callback = httpReq.GetJsonpCallback();
-                var doJsonp = EndpointHost.Config.AllowJsonpRequests
+                var doJsonp = HostContext.Config.AllowJsonpRequests
                               && !string.IsNullOrEmpty(callback);
 
                 if (ResponseContentType != null)
                     httpReq.ResponseContentType = ResponseContentType;
 
                 var responseContentType = httpReq.ResponseContentType;
-                EndpointHost.Config.AssertContentType(responseContentType);
+                HostContext.AssertContentType(responseContentType);
 
                 var request = GetRequest(httpReq, restPath);
-                if (EndpointHost.ApplyRequestFilters(httpReq, httpRes, request)) return;
+                if (HostContext.ApplyRequestFilters(httpReq, httpRes, request)) return;
 
                 var response = GetResponse(httpReq, httpRes, request);
-                if (EndpointHost.ApplyResponseFilters(httpReq, httpRes, response)) return;
+                if (HostContext.ApplyResponseFilters(httpReq, httpRes, response)) return;
 
                 if (responseContentType.Contains("jsv") && !string.IsNullOrEmpty(httpReq.QueryString["debug"]))
                 {
@@ -107,7 +107,7 @@ namespace ServiceStack.Host
             }
             catch (Exception ex)
             {
-                if (!EndpointHost.Config.WriteErrorsToResponse) throw;
+                if (!HostContext.Config.WriteErrorsToResponse) throw;
                 HandleException(httpReq, httpRes, operationName, ex);
             }
         }

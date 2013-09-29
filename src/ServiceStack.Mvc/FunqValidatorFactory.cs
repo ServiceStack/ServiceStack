@@ -11,7 +11,7 @@ namespace ServiceStack.Mvc
 
 		public FunqValidatorFactory(Container container=null)
 		{
-			this.funqBuilder = new ContainerResolveCache(container ?? AppHostBase.Instance.Container);
+            this.funqBuilder = new ContainerResolveCache(container ?? HostContext.Container);
 		}
 
 		public override IValidator CreateInstance(Type validatorType)

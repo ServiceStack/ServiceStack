@@ -48,9 +48,9 @@ namespace ServiceStack.Metadata
             if (string.IsNullOrEmpty(baseUrl))
                 baseUrl = "/";
             // use a fully qualified path if WebHostUrl is set
-            if (EndpointHost.Config.WebHostUrl != null)
+            if (HostContext.Config.WebHostUrl != null)
             {
-                baseUrl = EndpointHost.Config.WebHostUrl.CombineWith(baseUrl);
+                baseUrl = HostContext.Config.WebHostUrl.CombineWith(baseUrl);
             }
 
             var renderedTemplate = HtmlTemplates.Format(HtmlTemplates.OperationControlTemplate,

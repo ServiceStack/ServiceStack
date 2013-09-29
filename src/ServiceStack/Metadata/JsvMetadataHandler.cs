@@ -14,16 +14,16 @@ namespace ServiceStack.Metadata
 		protected override string CreateMessage(Type dtoType)
         {
             var requestObj = ReflectionUtils.PopulateObject(Activator.CreateInstance(dtoType));
-			return TypeSerializer.SerializeAndFormat(requestObj);
+			return requestObj.SerializeAndFormat();
         }
 
         protected override void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, ServiceMetadata metadata)
         {
             var defaultPage = new OperationsControl
             {
-				Title = EndpointHost.Config.ServiceName,
+				Title = HostContext.ServiceName,
                 OperationNames = metadata.GetOperationNamesForMetadata(httpReq, Format),
-                MetadataOperationPageBodyHtml = EndpointHost.Config.MetadataOperationPageBodyHtml,
+                MetadataOperationPageBodyHtml = HostContext.Config.MetadataOperationPageBodyHtml,
             };
 
             defaultPage.RenderControl(writer);

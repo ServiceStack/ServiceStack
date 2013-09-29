@@ -50,9 +50,9 @@ namespace ServiceStack.Host.AspNet
 
         public T TryResolve<T>()
         {
-            return Container == null
-                ? EndpointHost.AppHost.TryResolve<T>()
-                : Container.TryResolve<T>();
+            return Container != null
+                ? Container.TryResolve<T>()
+                : HostContext.TryResolve<T>();
         }
 
         public string OperationName { get; set; }

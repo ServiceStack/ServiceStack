@@ -32,7 +32,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			if (appHost != null)
 			{
 				appHost.Dispose();
-				appHost = null;
 			}
 		}
 

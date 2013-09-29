@@ -455,7 +455,7 @@ namespace ServiceStack.Host
                 }
             }
 
-            return this.typeDeserializer.PopulateFromMap(fromInstance, requestKeyValuesMap, AppHostConfig.Instance.IgnoreWarningsOnPropertyNames);
+            return this.typeDeserializer.PopulateFromMap(fromInstance, requestKeyValuesMap, HostContext.Config.IgnoreWarningsOnPropertyNames);
         }
 
         public override int GetHashCode()

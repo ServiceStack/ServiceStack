@@ -124,7 +124,7 @@
     <Compile Include="Reflection\DelegateFactory.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="HostContext.cs" />
+    <Compile Include="RequestContext.cs" />
     <Compile Include="IPAddressExtensions.cs">
       <SubType>Code</SubType>
     </Compile>

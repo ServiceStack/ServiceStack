@@ -1,19 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading;
-using Funq;
-using ServiceStack.Configuration;
-using ServiceStack.Html;
-using ServiceStack.IO;
 using ServiceStack.Logging;
-using ServiceStack.Serialization;
 using ServiceStack.Text;
-using ServiceStack.Web;
 
 namespace ServiceStack.Host.HttpListener
 {
@@ -24,7 +15,7 @@ namespace ServiceStack.Host.HttpListener
     /// server, for start and stop management and event routing of the actual
     /// inbound requests.
     /// </summary>
-    public abstract class HttpListenerBase : IDisposable, IAppHost, IHasContainer
+    public abstract class HttpListenerBase : ServiceStackHost
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(HttpListenerBase));
 
@@ -34,61 +25,20 @@ namespace ServiceStack.Host.HttpListener
         protected bool IsStarted = false;
         protected string registeredReservedUrl = null;
 
-        private readonly DateTime startTime;
-
-        public static HttpListenerBase Instance { get; protected set; }
-
         private readonly AutoResetEvent ListenForNextRequest = new AutoResetEvent(false);
 
         public event DelReceiveWebRequest ReceiveWebRequest;
 
-        protected HttpListenerBase()
-        {
-            this.startTime = DateTime.UtcNow;
-            Log.Info("Begin Initializing Application...");
-
-            AppHostConfig.SkipPathValidation = true;
-        }
-
         protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
-            : this()
+            : base(serviceName, assembliesWithServices)
         {
-            EndpointHost.ConfigureHost(this, serviceName, CreateServiceManager(assembliesWithServices));
+            HostContext.SkipPathValidation = true;
         }
 
-        protected virtual ServiceManager CreateServiceManager(params Assembly[] assembliesWithServices)
+        public virtual void OnAfterInit()
         {
-            return new ServiceManager(assembliesWithServices);
-        }
-
-        public void Init()
-        {
-            if (Instance != null)
-            {
-                throw new InvalidDataException("HttpListenerBase.Instance has already been set");
-            }
-
-            Instance = this;
-
-            var serviceManager = EndpointHost.Config.ServiceManager;
-            if (serviceManager != null)
-            {
-                serviceManager.Init();
-                Configure(EndpointHost.Config.ServiceManager.Container);
-            }
-            else
-            {
-                Configure(null);
-            }
-
-            EndpointHost.AfterInit();
-
             SetAppDomainData();
-            var elapsed = DateTime.UtcNow - this.startTime;
-            Log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
         }
-
-        public abstract void Configure(Container container);
 
         public virtual void SetAppDomainData()
         {
@@ -130,7 +80,7 @@ namespace ServiceStack.Host.HttpListener
             if (this.Listener == null)
                 Listener = new System.Net.HttpListener();
 
-            EndpointHost.Config.ServiceStackHandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(urlBase);
+            HostContext.Config.ServiceStackHandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(urlBase);
 
             Listener.Prefixes.Add(urlBase);
 
@@ -268,11 +218,11 @@ namespace ServiceStack.Host.HttpListener
                 var requestCtx = new HttpRequestContext(httpReq, httpRes, errorResponse);
                 var contentType = requestCtx.ResponseContentType;
 
-                var serializer = EndpointHost.ContentTypes.GetResponseSerializer(contentType);
+                var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
                 if (serializer == null)
                 {
-                    contentType = EndpointHost.Config.DefaultContentType;
-                    serializer = EndpointHost.ContentTypes.GetResponseSerializer(contentType);
+                    contentType = HostContext.Config.DefaultContentType;
+                    serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
                 }
 
                 httpRes.StatusCode = 500;
@@ -330,244 +280,6 @@ namespace ServiceStack.Host.HttpListener
         /// </summary>
         /// <param name="context"></param>
         protected abstract void ProcessRequest(HttpListenerContext context);
-
-        protected void SetConfig(AppHostConfig config)
-        {
-            if (config.ServiceName == null)
-                config.ServiceName = EndpointHost.Config.ServiceName;
-
-            if (config.ServiceManager == null)
-                config.ServiceManager = EndpointHost.Config.ServiceManager;
-
-            config.ServiceManager.ServiceController.EnableAccessRestrictions = config.EnableAccessRestrictions;
-
-            EndpointHost.Config = config;
-
-            JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
-            JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;
-        }
-
-        public Container Container
-        {
-            get
-            {
-                return EndpointHost.Config.ServiceManager.Container;
-            }
-        }
-
-        public void RegisterAs<T, TAs>() where T : TAs
-        {
-            this.Container.RegisterAutoWiredAs<T, TAs>();
-        }
-
-        public virtual void Release(object instance)
-        {
-            try
-            {
-                var iocAdapterReleases = Container.Adapter as IRelease;
-                if (iocAdapterReleases != null)
-                {
-                    iocAdapterReleases.Release(instance);
-                }
-                else
-                {
-                    var disposable = instance as IDisposable;
-                    if (disposable != null)
-                        disposable.Dispose();
-                }
-            }
-            catch {/*ignore*/}
-        }
-
-        public virtual void OnEndRequest()
-        {
-            foreach (var item in HostContext.Instance.Items.Values)
-            {
-                Release(item);
-            }
-
-            HostContext.Instance.EndRequest();
-        }
-
-        public void Register<T>(T instance)
-        {
-            this.Container.Register(instance);
-        }
-
-        public T TryResolve<T>()
-        {
-            return this.Container.TryResolve<T>();
-        }
-
-        /// <summary>
-        /// Resolves from IoC container a specified type instance.
-        /// </summary>
-        /// <typeparam name="T">Type to be resolved.</typeparam>
-        /// <returns>Instance of <typeparamref name="T"/>.</returns>
-        public static T Resolve<T>()
-        {
-            if (Instance == null) throw new InvalidOperationException("AppHostBase is not initialized.");
-            return Instance.Container.Resolve<T>();
-        }
-
-        /// <summary>
-        /// Resolves and auto-wires a ServiceStack Service
-        /// </summary>
-        /// <typeparam name="T">Type to be resolved.</typeparam>
-        /// <returns>Instance of <typeparamref name="T"/>.</returns>
-        public static T ResolveService<T>(HttpListenerContext httpCtx) where T : class, IRequiresRequestContext
-        {
-            if (Instance == null) throw new InvalidOperationException("AppHostBase is not initialized.");
-            var service = Instance.Container.Resolve<T>();
-            if (service == null) return null;
-            service.RequestContext = httpCtx.ToRequestContext();
-            return service;
-        }
-
-        public static T ResolveService<T>(HttpListenerRequest httpReq, System.Net.HttpListenerResponse httpRes)
-            where T : class, IRequiresRequestContext
-        {
-            return ResolveService<T>(httpReq.ToRequest(), httpRes.ToResponse());
-        }
-
-        public static T ResolveService<T>(IHttpRequest httpReq, IHttpResponse httpRes) where T : class, IRequiresRequestContext
-        {
-            if (Instance == null) throw new InvalidOperationException("AppHostBase is not initialized.");
-            var service = Instance.Container.Resolve<T>();
-            if (service == null) return null;
-            service.RequestContext = new HttpRequestContext(httpReq, httpRes, null);
-            return service;
-        }
-
-        protected IServiceController ServiceController
-        {
-            get
-            {
-                return EndpointHost.Config.ServiceController;
-            }
-        }
-
-        public IServiceRoutes Routes
-        {
-            get { return EndpointHost.Config.ServiceController.Routes; }
-        }
-
-        public Dictionary<Type, Func<IHttpRequest, object>> RequestBinders
-        {
-            get { return EndpointHost.ServiceManager.ServiceController.RequestTypeFactoryMap; }
-        }
-
-        public IContentTypes ContentTypes
-        {
-            get
-            {
-                return EndpointHost.ContentTypes;
-            }
-        }
-
-        public List<Action<IHttpRequest, IHttpResponse>> PreRequestFilters
-        {
-            get
-            {
-                return EndpointHost.PreRequestFilters;
-            }
-        }
-
-        public List<Action<IHttpRequest, IHttpResponse, object>> GlobalRequestFilters
-        {
-            get
-            {
-                return EndpointHost.GlobalRequestFilters;
-            }
-        }
-
-        public List<Action<IHttpRequest, IHttpResponse, object>> GlobalResponseFilters
-        {
-            get
-            {
-                return EndpointHost.GlobalResponseFilters;
-            }
-        }
-
-        public List<IViewEngine> ViewEngines
-        {
-            get
-            {
-                return EndpointHost.ViewEngines;
-            }
-        }
-
-        public HandleUncaughtExceptionDelegate ExceptionHandler
-        {
-            get { return EndpointHost.ExceptionHandler; }
-            set { EndpointHost.ExceptionHandler = value; }
-        }
-
-        public HandleServiceExceptionDelegate ServiceExceptionHandler
-        {
-            get { return EndpointHost.ServiceExceptionHandler; }
-            set { EndpointHost.ServiceExceptionHandler = value; }
-        }
-
-        public List<HttpHandlerResolverDelegate> CatchAllHandlers
-        {
-            get { return EndpointHost.CatchAllHandlers; }
-        }
-
-        public AppHostConfig Config
-        {
-            get { return EndpointHost.Config; }
-        }
-
-        ///TODO: plugin added with .Add method after host initialization won't be configured. Each plugin should have state so we can invoke Register method if host was already started.  
-        public List<IPlugin> Plugins
-        {
-            get { return EndpointHost.Plugins; }
-        }
-
-        public IVirtualPathProvider VirtualPathProvider
-        {
-            get { return EndpointHost.VirtualPathProvider; }
-            set { EndpointHost.VirtualPathProvider = value; }
-        }
-
-        public virtual IServiceRunner<TRequest> CreateServiceRunner<TRequest>(ActionContext actionContext)
-        {
-            return new ServiceRunner<TRequest>(this, actionContext);
-        }
-
-        public virtual string ResolveAbsoluteUrl(string virtualPath, IHttpRequest httpReq)
-        {
-            return httpReq.GetAbsoluteUrl(virtualPath);
-        }
-
-        public virtual void LoadPlugin(params IPlugin[] plugins)
-        {
-            foreach (var plugin in plugins)
-            {
-                try
-                {
-                    plugin.Register(this);
-                }
-                catch (Exception ex)
-                {
-                    Log.Warn("Error loading plugin " + plugin.GetType().Name, ex);
-                }
-            }
-        }
-
-        public void RegisterService(Type serviceType, params string[] atRestPaths)
-        {
-            EndpointHost.Config.ServiceManager.RegisterService(serviceType);
-            var reqAttr = serviceType.GetCustomAttributes(true).OfType<DefaultRequestAttribute>().FirstOrDefault();
-            if (reqAttr != null)
-            {
-                foreach (var atRestPath in atRestPaths)
-                {
-                    this.Routes.Add(reqAttr.RequestType, atRestPath, null);
-                }
-            }
-        }
 
         /// <summary>
         /// Reserves the specified URL for non-administrator users and accounts. 
@@ -655,6 +367,7 @@ namespace ServiceStack.Host.HttpListener
         protected virtual void Dispose(bool disposing)
         {
             if (disposed) return;
+            base.Dispose();
 
             lock (this)
             {
@@ -663,26 +376,17 @@ namespace ServiceStack.Host.HttpListener
                 if (disposing)
                 {
                     this.Stop();
-
-                    if (EndpointHost.Config.ServiceManager != null)
-                    {
-                        EndpointHost.Config.ServiceManager.Dispose();
-                    }
-
-                    Instance = null;
                 }
 
                 //release unmanaged resources here...
-
                 disposed = true;
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
     }
 }

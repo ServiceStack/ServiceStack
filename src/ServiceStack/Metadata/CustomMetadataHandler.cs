@@ -33,7 +33,7 @@ namespace ServiceStack.Metadata
 
 				using (var ms = new MemoryStream())
 				{
-					EndpointHost.ContentTypes.SerializeToStream(
+					HostContext.ContentTypes.SerializeToStream(
 						new SerializationContext(this.ContentType), requestObj, ms);
 
 					return Encoding.UTF8.GetString(ms.ToArray());
@@ -54,9 +54,9 @@ namespace ServiceStack.Metadata
 		{
 			var defaultPage = new OperationsControl
 			{
-				Title = EndpointHost.Config.ServiceName,
+				Title = HostContext.ServiceName,
                 OperationNames = metadata.GetOperationNamesForMetadata(httpReq, Format),
-                MetadataOperationPageBodyHtml = EndpointHost.Config.MetadataOperationPageBodyHtml,
+                MetadataOperationPageBodyHtml = HostContext.Config.MetadataOperationPageBodyHtml,
 			};
 
 			defaultPage.RenderControl(writer);

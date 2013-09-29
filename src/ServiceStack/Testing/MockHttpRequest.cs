@@ -18,7 +18,7 @@ namespace ServiceStack.Testing
             this.QueryString = new NameValueCollection();
             this.Cookies = new Dictionary<string, Cookie>();
             this.Items = new Dictionary<string, object>();
-            this.Container = EndpointHost.Container ?? new Container();
+            this.Container = ServiceStackHost.Instance != null ? ServiceStackHost.Instance.Container : new Container();
         }
 
         public MockHttpRequest(string operationName, string httpMethod,

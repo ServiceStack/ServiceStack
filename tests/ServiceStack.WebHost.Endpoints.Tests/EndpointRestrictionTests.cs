@@ -12,18 +12,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	public class EndpointRestrictionTests
 		: ServiceHostTestBase
 	{
-
 		//Localhost and LocalSubnet is always included with the Internal flag
 		private const int EndpointAttributeCount = 17;
         private static readonly List<RequestAttributes> AllAttributes = (EndpointAttributeCount).Times().Map<RequestAttributes>(x => (RequestAttributes)(1 << (int)x));
 
-		TestAppHost appHost;
+		ServiceStackHost appHost;
 
-		[TestFixtureSetUp]
-		public void TestFixtureSetUp()
-		{
-			appHost = CreateAppHost();
-		}
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
+        {
+            appHost = new TestAppHost().Init();
+        }
+
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
 
 		public void ShouldAllowAccessWhen<TRequestDto>(RequestAttributes withScenario)
 		{

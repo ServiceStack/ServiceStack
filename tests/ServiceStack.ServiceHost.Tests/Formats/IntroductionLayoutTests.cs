@@ -44,11 +44,25 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 	{
 	    private InMemoryVirtualPathProvider pathProvider;
 	    private MarkdownFormat markdownFormat;
+
+	    private ServiceStackHost appHost;
+
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
+        {
+            appHost = new BasicAppHost().Init();
+        }
+
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
         
 	    [SetUp]
 	    public void SetUp()
 	    {
-	        EndpointHost.VirtualPathProvider = pathProvider = new InMemoryVirtualPathProvider(new BasicAppHost());
+            ServiceStackHost.Instance.VirtualPathProvider = pathProvider = new InMemoryVirtualPathProvider(new BasicAppHost());
             markdownFormat = new MarkdownFormat {
                 VirtualPathProvider = pathProvider,
             };

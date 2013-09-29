@@ -24,8 +24,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
         private void RegisterConfig()
         {
-            EndpointHost.CatchAllHandlers.Add(new PredefinedRoutesFeature().ProcessRequest);
-            EndpointHost.CatchAllHandlers.Add(new MetadataFeature().ProcessRequest);
+            HostContext.CatchAllHandlers.Add(new PredefinedRoutesFeature().ProcessRequest);
+            HostContext.CatchAllHandlers.Add(new MetadataFeature().ProcessRequest);
         }
 
 		[Test]

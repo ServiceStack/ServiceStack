@@ -50,20 +50,20 @@ namespace ServiceStack.Host.Handlers
 		{
 			try
 			{
-                EndpointHost.Config.AssertFeatures(format);
+                HostContext.AssertFeatures(format);
 
-                if (EndpointHost.ApplyPreRequestFilters(httpReq, httpRes)) return;
+                if (HostContext.ApplyPreRequestFilters(httpReq, httpRes)) return;
 
 				httpReq.ResponseContentType = httpReq.GetQueryStringContentType() ?? this.HandlerContentType;
 				var callback = httpReq.QueryString["callback"];
-				var doJsonp = EndpointHost.Config.AllowJsonpRequests
+				var doJsonp = HostContext.Config.AllowJsonpRequests
 							  && !string.IsNullOrEmpty(callback);
 
 				var request = CreateRequest(httpReq, operationName);
-				if (EndpointHost.ApplyRequestFilters(httpReq, httpRes, request)) return;
+				if (HostContext.ApplyRequestFilters(httpReq, httpRes, request)) return;
 
 				var response = GetResponse(httpReq, httpRes, request);
-				if (EndpointHost.ApplyResponseFilters(httpReq, httpRes, response)) return;
+				if (HostContext.ApplyResponseFilters(httpReq, httpRes, response)) return;
 
 				if (doJsonp && !(response is CompressedResult))
 					httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
@@ -72,7 +72,7 @@ namespace ServiceStack.Host.Handlers
 			}
 			catch (Exception ex)
 			{
-				if (!EndpointHost.Config.WriteErrorsToResponse) throw;
+				if (!HostContext.Config.WriteErrorsToResponse) throw;
 				HandleException(httpReq, httpRes, operationName, ex);
 			}
 		}

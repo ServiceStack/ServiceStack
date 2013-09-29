@@ -77,7 +77,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
-            appHost = null;
         }
 
         [Test]

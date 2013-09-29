@@ -1,6 +1,5 @@
 ﻿using System;
 using Funq;
-using ServiceStack.Admin;
 using ServiceStack.Auth;
 using ServiceStack.Authentication.OpenId;
 using ServiceStack.Caching;
@@ -109,7 +108,7 @@ namespace ServiceStack.WebHost.IntegrationTests
 
 
                 //var onlyEnableFeatures = Feature.All.Remove(Feature.Jsv | Feature.Soap);
-                SetConfig(new AppHostConfig {
+                SetConfig(new HostConfig {
                     GlobalResponseHeaders = {
                         { "Access-Control-Allow-Origin", "*" },
                         { "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS" },
@@ -178,7 +177,7 @@ namespace ServiceStack.WebHost.IntegrationTests
         {
             Profiler.Stop();
 
-            var mqHost = AppHostBase.Instance.Container.TryResolve<IMessageService>();
+            var mqHost = HostContext.TryResolve<IMessageService>();
             if (mqHost != null)
                 mqHost.Start();
         }

@@ -84,7 +84,7 @@ namespace ServiceStack
         {
             var sessionId = CreateRandomSessionId();
             res.Cookies.AddSessionCookie(SessionFeature.SessionId, sessionId,
-                (EndpointHost.Config != null && EndpointHost.Config.OnlySendSessionCookiesSecurely && req.IsSecureConnection));
+                (HostContext.Config.OnlySendSessionCookiesSecurely && req.IsSecureConnection));
             req.Items[SessionFeature.SessionId] = sessionId;
             return sessionId;
         }

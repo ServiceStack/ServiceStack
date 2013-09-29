@@ -18,13 +18,13 @@ namespace ServiceStack.Metadata
 
         public string RenderRow(string operation)
         {
-            var show = EndpointHost.DebugMode; //Always show in DebugMode
+            var show = HostContext.DebugMode; //Always show in DebugMode
 
             // use a fully qualified path if WebHostUrl is set
             string baseUrl = HttpRequest.GetParentAbsolutePath();
-            if (EndpointHost.Config.WebHostUrl != null)
+            if (HostContext.Config.WebHostUrl != null)
             {
-                baseUrl = EndpointHost.Config.WebHostUrl.CombineWith(baseUrl);
+                baseUrl = HostContext.Config.WebHostUrl.CombineWith(baseUrl);
             }
 
             var opTemplate = new StringBuilder("<tr><th>{0}</th>");
@@ -84,7 +84,7 @@ namespace ServiceStack.Metadata
             }
 
             var debugOnlyInfo = new StringBuilder();
-            if (EndpointHost.DebugMode)
+            if (HostContext.DebugMode)
             {
                 debugOnlyInfo.Append("<h3>Debug Info:</h3>");
                 debugOnlyInfo.AppendLine("<ul>");

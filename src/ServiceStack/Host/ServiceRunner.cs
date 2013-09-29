@@ -27,21 +27,9 @@ namespace ServiceStack.Host
             this.ResponseFilters = actionContext.ResponseFilters;
         }
 
-        public IAppHost GetAppHost()
-        {
-            return AppHost ?? EndpointHost.AppHost;
-        }
-
-        public T TryResolve<T>()
-        {
-            return this.GetAppHost() == null
-                ? default(T)
-                : this.GetAppHost().TryResolve<T>();
-        }
-
         public T ResolveService<T>(IRequestContext requestContext)
         {
-            var service = this.GetAppHost().TryResolve<T>();
+            var service = HostContext.TryResolve<T>();
             var requiresContext = service as IRequiresRequestContext;
             if (requiresContext != null)
             {
@@ -54,7 +42,7 @@ namespace ServiceStack.Host
         {
             OnBeforeExecute(requestContext, request);
 
-            var requestLogger = TryResolve<IRequestLogger>();
+            var requestLogger = HostContext.TryResolve<IRequestLogger>();
             if (requestLogger != null)
             {
                 requestContext.SetItem("_requestDurationStopwatch", Stopwatch.StartNew());
@@ -63,7 +51,7 @@ namespace ServiceStack.Host
 
         public virtual object AfterEachRequest(IRequestContext requestContext, TRequest request, object response)
         {
-            var requestLogger = TryResolve<IRequestLogger>();
+            var requestLogger = HostContext.TryResolve<IRequestLogger>();
             if (requestLogger != null)
             {
                 try
@@ -94,8 +82,7 @@ namespace ServiceStack.Host
             {
                 BeforeEachRequest(requestContext, request);
 
-                var appHost = GetAppHost();
-                var container = appHost != null ? appHost.Config.ServiceManager.Container : null;
+                var container = HostContext.Container;
                 var httpReq = requestContext != null ? requestContext.Get<IHttpRequest>() : null;
                 var httpRes = requestContext != null ? requestContext.Get<IHttpResponse>() : null;
 
@@ -104,11 +91,9 @@ namespace ServiceStack.Host
                     foreach (var requestFilter in RequestFilters)
                     {
                         var attrInstance = requestFilter.Copy();
-                        if (container != null)
-                            container.AutoWire(attrInstance);
+                        container.AutoWire(attrInstance);
                         attrInstance.RequestFilter(httpReq, httpRes, request);
-                        if (appHost != null)
-                            appHost.Release(attrInstance);
+                        HostContext.Release(attrInstance);
                         if (httpRes != null && httpRes.IsClosed) return null;
                     }
                 }
@@ -120,11 +105,9 @@ namespace ServiceStack.Host
                     foreach (var responseFilter in ResponseFilters)
                     {
                         var attrInstance = responseFilter.Copy();
-                        if (container != null)
-                            container.AutoWire(attrInstance);
+                        container.AutoWire(attrInstance);
                         attrInstance.ResponseFilter(httpReq, httpRes, response);
-                        if (appHost != null)
-                            appHost.Release(attrInstance);
+                        HostContext.Release(attrInstance);
                         if (httpRes != null && httpRes.IsClosed) return null;
                     }
                 }
@@ -148,15 +131,8 @@ namespace ServiceStack.Host
 
         public virtual object HandleException(IRequestContext requestContext, TRequest request, Exception ex)
         {
-            var useAppHost = GetAppHost();
-
-            object errorResponse = null;
-
-            if (useAppHost != null && useAppHost.ServiceExceptionHandler != null)
-                errorResponse = useAppHost.ServiceExceptionHandler(requestContext.Get<IHttpRequest>(), request, ex);
-
-            if (errorResponse == null)
-                errorResponse = DtoUtils.HandleException(useAppHost, request, ex);
+            var errorResponse = HostContext.RaiseServiceException(requestContext.Get<IHttpRequest>(), request, ex) 
+                                ?? DtoUtils.CreateErrorResponse(request, ex);
 
             AfterEachRequest(requestContext, request, errorResponse ?? ex);
             
@@ -165,7 +141,7 @@ namespace ServiceStack.Host
 
         public object ExecuteOneWay(IRequestContext requestContext, object instance, TRequest request)
         {
-            var msgFactory = TryResolve<IMessageFactory>();
+            var msgFactory = HostContext.TryResolve<IMessageFactory>();
             if (msgFactory == null)
             {
                 return Execute(requestContext, instance, request);

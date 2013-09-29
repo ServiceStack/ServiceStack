@@ -23,7 +23,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             /// </summary>
             /// <param name="container">SS's funq container</param>
             public override void Configure(Funq.Container container) {
-                AppHostConfig.Instance.GlobalResponseHeaders.Clear();
+                HostContext.Config.GlobalResponseHeaders.Clear();
 
 			//Signal advanced web browsers what HTTP Methods you accept
 			//base.SetConfig(new EndpointHostConfig());
@@ -83,7 +83,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		public void OnTestFixtureTearDown()
 		{
 			appHost.Dispose();
-			appHost = null;
 
             //Clear the logs so other tests dont inherit log entries
             TestLogger.GetLogs().Clear();

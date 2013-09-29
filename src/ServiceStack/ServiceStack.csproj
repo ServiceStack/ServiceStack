@@ -106,6 +106,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AddHeaderAttribute.cs" />
+    <Compile Include="RedisErrorLoggerFeature.cs" />
     <Compile Include="RequestLogsFeature.cs" />
     <Compile Include="Admin\RequestLogsService.cs" />
     <Compile Include="ApplyTo.cs" />
@@ -348,6 +349,7 @@
     <Compile Include="Host\Cookies.cs" />
     <Compile Include="DefaultRequestAttribute.cs" />
     <Compile Include="ServiceStackHost.cs" />
+    <Compile Include="ServiceStackHost.Runtime.cs" />
     <Compile Include="Utils\DtoUtils.cs" />
     <Compile Include="IRequiresSoapMessage.cs" />
     <Compile Include="Metadata\MetadataPagesConfig.cs" />
@@ -422,7 +424,7 @@
     <Compile Include="Host\ServiceMetadata.cs" />
     <Compile Include="Host\ServiceRoutes.cs" />
     <Compile Include="AppHostBase.cs" />
-    <Compile Include="AppHostHttpListenerLongRunningBase.cs" />
+    <Compile Include="AppHostHttpListenerPoolBase.cs" />
     <Compile Include="Host\HttpListener\ListenerRequest.Mono.cs" />
     <Compile Include="Formats\CsvFormat.cs" />
     <Compile Include="Host\HttpListener\ListenerRequest.cs" />
@@ -477,8 +479,8 @@
     <Compile Include="Host\Handlers\Soap12Handlers.cs" />
     <Compile Include="Host\Handlers\JsonReplyHandler.cs" />
     <Compile Include="Host\Handlers\ServiceStackHandlerBase.cs" />
-    <Compile Include="EndpointHost.cs" />
-    <Compile Include="AppHostConfig.cs" />
+    <Compile Include="HostContext.cs" />
+    <Compile Include="HostConfig.cs" />
     <Compile Include="Host\Handlers\SoapHandler.cs" />
     <Compile Include="Support\WebHost\FilterAttributeCache.cs" />
     <Compile Include="Host\Handlers\XmlReplyHandler.cs" />

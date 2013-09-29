@@ -1,6 +1,4 @@
 using System.IO;
-using System.Web;
-using ServiceStack.Host.HttpListener;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.Web;
@@ -24,16 +22,9 @@ namespace ServiceStack
 
 		public static string MapServerPath(this string relativePath)
 		{
-			var isAspNetHost = HttpListenerBase.Instance == null || HttpContext.Current != null;
-			var appHost = EndpointHost.AppHost;
-			if (appHost != null)
-			{
-				isAspNetHost = !(appHost is HttpListenerBase);
-			}
-
-			return isAspNetHost
-			       ? relativePath.MapHostAbsolutePath()
-			       : relativePath.MapAbsolutePath();
+			return HostContext.IsAspNetHost
+			    ? relativePath.MapHostAbsolutePath()
+			    : relativePath.MapAbsolutePath();
 		}
 
 		public static bool IsRelativePath(this string relativeOrAbsolutePath)

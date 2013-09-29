@@ -9,6 +9,20 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
     [TestFixture]
     public class StandAloneExampleTests
     {
+        private ServiceStackHost appHost;
+
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
+        {
+            appHost = new BasicAppHost().Init();
+        }
+
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
+
         [Test]
         public void Simple_static_example()
         {

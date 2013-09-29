@@ -86,7 +86,6 @@ namespace ServiceStack.Common.Tests.Messaging
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
-            appHost = null;
         }
 
         [Test]

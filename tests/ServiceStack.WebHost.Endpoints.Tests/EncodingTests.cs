@@ -54,7 +54,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
-            appHost = null;
         }
 
         private HelloWorldGreeting PerformRequest(string firstName, string lastName)

@@ -15,7 +15,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	public class RouteInferenceTests
 	{
 		ServiceRoutes routes = new ServiceRoutes();
-        BasicAppHost loadAppHost;
+        ServiceStackHost loadAppHost;
 
 		[TestFixtureSetUp]
 		public void InferRoutes()

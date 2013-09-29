@@ -4,8 +4,6 @@ using System.Net;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Clients;
-using ServiceStack.Common;
-using ServiceStack.Clients;
 using ServiceStack.Text;
 using ServiceStack.Utils;
 using ServiceStack.Web;
@@ -35,18 +33,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			}
 		}
 
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
+
 		[Test]
 		[Explicit("Helps debugging when you need to find out WTF is going on")]
 		public void Run_for_30secs()
 		{
 			Thread.Sleep(30000);
-		}
-
-		[TestFixtureTearDown]
-		public void TestFixtureTearDown()
-		{
-			if (appHost != null) appHost.Dispose();
-			appHost = null;
 		}
 
 		public void AssertResponse<T>(HttpWebResponse response, Action<T> customAssert)

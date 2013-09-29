@@ -1,5 +1,6 @@
 ﻿using System;
 using Funq;
+using NUnit.Framework;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.Logging;
@@ -11,53 +12,55 @@ using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {
 	public class IntegrationTestBase
-		: AppHostHttpListenerBase
 	{
 		protected const string BaseUrl = "http://localhost:82/";
 
-		//Fiddler can debug local HTTP requests when using the hostname
+        private readonly IntegrationTestAppHost appHost;
+	    public IntegrationTestBase()
+	    {
+            appHost = new IntegrationTestAppHost();
+	        appHost.Init();
+            appHost.Start(BaseUrl);
+        }
+
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
+
+	    //Fiddler can debug local HTTP requests when using the hostname
 		//private const string BaseUrl = "http://io:8081/";
 
-		//private static ILog log;
-
-		public IntegrationTestBase()
-			: base("ServiceStack Examples", typeof(RestMovieService).Assembly)
+		public class IntegrationTestAppHost : AppHostHttpListenerBase 
 		{
-			LogManager.LogFactory = new DebugLogFactory();
-			//log = LogManager.GetLogger(GetType());
-			Instance = null;
+            public IntegrationTestAppHost()
+                : base("ServiceStack Examples", typeof(RestMovieService).Assembly)
+            {
+                LogManager.LogFactory = new DebugLogFactory();
+            }
 
-			Init();
-			try
-			{
-				Start(BaseUrl);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine("Error trying to run ConsoleHost: " + ex.Message);
-			}
-		}
+            public override void Configure(Container container)
+            {
+                container.Register<IAppSettings>(new ConfigurationResourceManager());
 
-		public override void Configure(Container container)
-		{
-			container.Register<IAppSettings>(new ConfigurationResourceManager());
+                container.Register(c => new ExampleConfig(c.Resolve<IAppSettings>()));
+                //var appConfig = container.Resolve<ExampleConfig>();
 
-			container.Register(c => new ExampleConfig(c.Resolve<IAppSettings>()));
-			//var appConfig = container.Resolve<ExampleConfig>();
+                container.Register<IDbConnectionFactory>(c =>
+                     new OrmLiteConnectionFactory(
+                        ":memory:",			//Use an in-memory database instead
+                        false,				//keep the same in-memory db connection open
+                        SqliteOrmLiteDialectProvider.Instance));
 
-			container.Register<IDbConnectionFactory>(c =>
-				 new OrmLiteConnectionFactory(
-					":memory:",			//Use an in-memory database instead
-					false,				//keep the same in-memory db connection open
-					SqliteOrmLiteDialectProvider.Instance));
+                Routes.Add<Movies>("/custom-movies", "GET")
+                      .Add<Movies>("/custom-movies/genres/{Genre}")
+                      .Add<Movie>("/custom-movies", "POST,PUT")
+                      .Add<Movie>("/custom-movies/{Id}");
 
-			Routes.Add<Movies>("/custom-movies", "GET")
-				  .Add<Movies>("/custom-movies/genres/{Genre}")
-				  .Add<Movie>("/custom-movies", "POST,PUT")
-				  .Add<Movie>("/custom-movies/{Id}");
-
-			ConfigureDatabase.Init(container.Resolve<IDbConnectionFactory>());
-		}
+                ConfigureDatabase.Init(container.Resolve<IDbConnectionFactory>());
+            }
+        }
 
 		public void SendToEachEndpoint<TRes>(object request, Action<TRes> validate)
 		{

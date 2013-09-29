@@ -28,9 +28,9 @@ namespace ServiceStack
         {
             var relativeUrl = request.ToUrl(
                 httpMethod ?? HttpMethods.Get,
-                formatFallbackToPredefinedRoute ?? EndpointHost.Config.DefaultContentType.ToContentFormat());
+                formatFallbackToPredefinedRoute ?? HostContext.Config.DefaultContentType.ToContentFormat());
 
-            var absoluteUrl = EndpointHost.Config.WebHostUrl.CombineWith(relativeUrl);
+            var absoluteUrl = HostContext.Config.WebHostUrl.CombineWith(relativeUrl);
             return absoluteUrl;
         }
 
@@ -41,7 +41,7 @@ namespace ServiceStack
         {
             if (!skipHeaders) httpRes.ApplyGlobalResponseHeaders();
             httpRes.Close();
-            EndpointHost.CompleteRequest();
+            HostContext.CompleteRequest();
         }
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace ServiceStack
         public static void EndRequest(this IHttpResponse httpRes, bool skipHeaders = false)
         {
             httpRes.EndHttpHandlerRequest(skipHeaders: skipHeaders);
-            EndpointHost.CompleteRequest();
+            HostContext.CompleteRequest();
         }
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace ServiceStack
         /// </summary>
         public static void EndRequestWithNoContent(this IHttpResponse httpRes)
         {
-            if (EndpointHost.Config == null || EndpointHost.Config.Return204NoContentForEmptyResponse)
+            if (HostContext.Config == null || HostContext.Config.Return204NoContentForEmptyResponse)
             {
                 if (httpRes.StatusCode == (int)HttpStatusCode.OK)
                 {

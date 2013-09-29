@@ -1,6 +1,7 @@
 using System;
 using System.Configuration;
 using ServiceStack.Host;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -56,8 +57,6 @@ namespace ServiceStack.Auth
 
         public static void Init(Func<IAuthSession> sessionFactory, params IAuthProvider[] authProviders)
         {
-            EndpointHost.AssertTestConfig();
-
             if (authProviders.Length == 0)
                 throw new ArgumentNullException("authProviders");
 

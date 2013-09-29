@@ -14,11 +14,19 @@ namespace ServiceStack.ServiceHost.Tests
 	public class ServiceHostTests
 	{
 	    private ServiceManager serviceManager;
+	    private ServiceStackHost appHost;
 
 		[SetUp]
-		public void OnBeforeEachTest()
+        public void SetUp()
 		{
-            serviceManager = new ServiceManager(null, new ServiceController(null));
+            appHost = new BasicAppHost().Init();
+		    serviceManager = appHost.ServiceManager;
+		}
+        
+        [TearDown]
+        public void TearDown()
+        {
+            appHost.Dispose();
         }
 
 		[Test]

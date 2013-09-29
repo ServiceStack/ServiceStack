@@ -122,7 +122,7 @@ namespace ServiceStack
 		    var aspNetReq = httpReq as AspNetRequest;
 			var res = aspNetReq != null 
                 ? aspNetReq.Request.PhysicalPath 
-                : AppHostConfig.Instance.WebHostPhysicalPath.CombineWith(httpReq.PathInfo);
+                : HostContext.Config.WebHostPhysicalPath.CombineWith(httpReq.PathInfo);
 
 			return res;
 		}
@@ -141,7 +141,7 @@ namespace ServiceStack
             var url = new Uri(httpReq.AbsoluteUri);
             var baseUrl = url.Scheme + "://" + url.Host;
             if (url.Port != 80) baseUrl += ":" + url.Port;
-            var appUrl = baseUrl.CombineWith(EndpointHost.Config.ServiceStackHandlerFactoryPath);
+            var appUrl = baseUrl.CombineWith(HostContext.Config.ServiceStackHandlerFactoryPath);
             return appUrl;
         }
 
@@ -248,7 +248,7 @@ namespace ServiceStack
         public static int ToStatusCode(this Exception ex)
         {
             int errorStatus;
-            if (EndpointHost.Config != null && EndpointHost.Config.MapExceptionToStatusCode.TryGetValue(ex.GetType(), out errorStatus))
+            if (HostContext.Config != null && HostContext.Config.MapExceptionToStatusCode.TryGetValue(ex.GetType(), out errorStatus))
             {
                 return errorStatus;
             }
@@ -410,7 +410,7 @@ namespace ServiceStack
         {
             if (!String.IsNullOrEmpty(request.PathInfo)) return request.PathInfo.TrimEnd('/');
 
-            var mode = EndpointHost.Config.ServiceStackHandlerFactoryPath;
+            var mode = HostContext.Config.ServiceStackHandlerFactoryPath;
             var appPath = String.IsNullOrEmpty(request.ApplicationPath)
                           ? WebHostDirectoryName
                           : request.ApplicationPath.TrimStart('/');
@@ -537,7 +537,7 @@ namespace ServiceStack
             if (format.Contains("jsv")) return MimeTypes.Jsv;
 
             string contentType;
-            EndpointHost.ContentTypes.ContentTypeFormats.TryGetValue(format, out contentType);
+            HostContext.ContentTypes.ContentTypeFormats.TryGetValue(format, out contentType);
 
             return contentType;
         }
@@ -572,10 +572,10 @@ namespace ServiceStack
             var defaultContentType = httpReq.ContentType;
             if (httpReq.HasAnyOfContentTypes(MimeTypes.FormUrlEncoded, MimeTypes.MultiPartFormData))
             {
-                defaultContentType = EndpointHost.Config.DefaultContentType;
+                defaultContentType = HostContext.Config.DefaultContentType;
             }
 
-            var customContentTypes = EndpointHost.ContentTypes.ContentTypeFormats.Values;
+            var customContentTypes = HostContext.ContentTypes.ContentTypeFormats.Values;
 
             var acceptsAnything = false;
             var hasDefaultContentType = !String.IsNullOrEmpty(defaultContentType);
@@ -613,7 +613,7 @@ namespace ServiceStack
             }
 
             //We could also send a '406 Not Acceptable', but this is allowed also
-            return EndpointHost.Config.DefaultContentType;
+            return HostContext.Config.DefaultContentType;
         }
 
         public static void SetView(this IHttpRequest httpReq, string viewName)
@@ -638,12 +638,12 @@ namespace ServiceStack
 
         public static string ResolveAbsoluteUrl(this IHttpRequest httpReq, string url)
         {
-            return EndpointHost.AppHost.ResolveAbsoluteUrl(url, httpReq);
+            return HostContext.ResolveAbsoluteUrl(url, httpReq);
         }
 
         public static string ResolveBaseUrl(this IHttpRequest httpReq)
         {
-            return EndpointHost.AppHost.ResolveAbsoluteUrl("~/", httpReq);
+            return HostContext.ResolveAbsoluteUrl("~/", httpReq);
         }
 
         public static string GetAbsoluteUrl(this IHttpRequest httpReq, string url)
@@ -660,7 +660,7 @@ namespace ServiceStack
             var baseUrl = HttpHandlerFactory.GetBaseUrl();
             if (baseUrl != null) return baseUrl;
 
-            var handlerPath = EndpointHost.Config.ServiceStackHandlerFactoryPath;
+            var handlerPath = HostContext.Config.ServiceStackHandlerFactoryPath;
             if (handlerPath != null)
             {
                 var pos = httpReq.AbsoluteUri.IndexOf(handlerPath, StringComparison.InvariantCultureIgnoreCase);
@@ -688,7 +688,7 @@ namespace ServiceStack
 
         public static RequestAttributes GetAttributes(this IHttpRequest request)
         {
-            if (EndpointHost.DebugMode
+            if (HostContext.DebugMode
                 && request.QueryString != null) //Mock<IHttpRequest>
             {
                 var simulate = request.QueryString["simulate"];
@@ -789,7 +789,7 @@ namespace ServiceStack
             return new AspNetRequest(aspnetHttpReq)
             {
                 OperationName = operationName,
-                Container = AppHostBase.Instance != null ? AppHostBase.Instance.Container : null
+                Container = HostContext.Container
             };
         }
 
@@ -798,7 +798,7 @@ namespace ServiceStack
             return new ListenerRequest(listenerHttpReq)
             {
                 OperationName = operationName,
-                Container = AppHostBase.Instance != null ? AppHostBase.Instance.Container : null
+                Container = HostContext.Container
             };
         }
 

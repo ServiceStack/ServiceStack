@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceHost.Tests
@@ -102,21 +103,19 @@ namespace ServiceStack.ServiceHost.Tests
 		[Test]
 		public void GetPhysicalPath_Honours_WebHostPhysicalPath()
 		{
-			string root = "c:/MyWebRoot";
-			HttpRequestMock mock = new HttpRequestMock();
+            using (new BasicAppHost().Init())
+            {
+                string root = "c:/MyWebRoot";
+                var mock = new HttpRequestMock();
 
-			// Note: due to the static nature of EndpointHostConfig.Instance, running this
-			// test twice withing NUnit fails the test. You'll need to reload betwen each
-			// run.
-			Assert.AreNotEqual( AppHostConfig.Instance.WebHostPhysicalPath, root );
+                string originalPath = HostContext.Config.WebHostPhysicalPath;
+                string path = mock.GetPhysicalPath();
+                Assert.AreEqual(string.Format("{0}/{1}", originalPath, mock.PathInfo), path);
 
-			string originalPath = AppHostConfig.Instance.WebHostPhysicalPath;
-			string path = mock.GetPhysicalPath();
-			Assert.AreEqual( string.Format( "{0}/{1}", originalPath, mock.PathInfo ), path );
-
-			AppHostConfig.Instance.WebHostPhysicalPath = root;
-			path = mock.GetPhysicalPath();
-			Assert.AreEqual( string.Format( "{0}/{1}", root, mock.PathInfo ), path );
+                HostContext.Config.WebHostPhysicalPath = root;
+                path = mock.GetPhysicalPath();
+                Assert.AreEqual(string.Format("{0}/{1}", root, mock.PathInfo), path);
+            }
 		}
 	}
 

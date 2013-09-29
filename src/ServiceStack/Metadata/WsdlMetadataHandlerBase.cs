@@ -16,18 +16,18 @@ namespace ServiceStack.Metadata
 
         public override void Execute(HttpContext context)
         {
-            EndpointHost.Config.AssertFeatures(Feature.Metadata);
+            HostContext.AssertFeatures(Feature.Metadata);
 
             context.Response.ContentType = "text/xml";
 
             var baseUri = context.Request.GetParentBaseUrl();
             var optimizeForFlash = context.Request.QueryString["flash"] != null;
             var operations = new XsdMetadata(
-                EndpointHost.Metadata, flash: optimizeForFlash);
+                HostContext.Metadata, flash: optimizeForFlash);
 
             try
             {
-                var wsdlTemplate = GetWsdlTemplate(operations, baseUri, optimizeForFlash, context.Request.GetBaseUrl(), EndpointHost.Config.SoapServiceName);
+                var wsdlTemplate = GetWsdlTemplate(operations, baseUri, optimizeForFlash, context.Request.GetBaseUrl(), HostContext.Config.SoapServiceName);
                 context.Response.Write(wsdlTemplate.ToString());
             }
             catch (Exception ex)
@@ -42,17 +42,17 @@ namespace ServiceStack.Metadata
         public void Execute(IHttpRequest httpReq, IHttpResponse httpRes)
         {
 
-            EndpointHost.Config.AssertFeatures(Feature.Metadata);
+            HostContext.AssertFeatures(Feature.Metadata);
 
             httpRes.ContentType = "text/xml";
 
             var baseUri = httpReq.GetParentBaseUrl();
             var optimizeForFlash = httpReq.QueryString["flash"] != null;
-            var operations = new XsdMetadata(EndpointHost.Metadata, flash: optimizeForFlash);
+            var operations = new XsdMetadata(HostContext.Metadata, flash: optimizeForFlash);
 
             try
             {
-                var wsdlTemplate = GetWsdlTemplate(operations, baseUri, optimizeForFlash, httpReq.ResolveBaseUrl(), EndpointHost.Config.SoapServiceName);
+                var wsdlTemplate = GetWsdlTemplate(operations, baseUri, optimizeForFlash, httpReq.ResolveBaseUrl(), HostContext.Config.SoapServiceName);
                 httpRes.Write(wsdlTemplate.ToString());
             }
             catch (Exception ex)

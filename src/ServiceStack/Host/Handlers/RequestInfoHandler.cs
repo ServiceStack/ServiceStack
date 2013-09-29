@@ -154,9 +154,9 @@ namespace ServiceStack.Host.Handlers
 		{
 			var response = new RequestInfoResponse
 			{
-				Host = EndpointHost.Config.DebugHttpListenerHostEnvironment + "_v" + Env.ServiceStackVersion + "_" + EndpointHost.Config.ServiceName,
+				Host = HostContext.Config.DebugHttpListenerHostEnvironment + "_v" + Env.ServiceStackVersion + "_" + HostContext.ServiceName,
 				Date = DateTime.UtcNow,
-				ServiceName = EndpointHost.Config.ServiceName,
+				ServiceName = HostContext.ServiceName,
 				UserHostAddress = httpReq.UserHostAddress,
 				HttpMethod = httpReq.HttpMethod,
 				AbsoluteUri = httpReq.AbsoluteUri,

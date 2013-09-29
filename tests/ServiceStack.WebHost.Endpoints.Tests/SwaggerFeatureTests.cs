@@ -227,7 +227,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public class SwaggerFeatureAppHostHttpListener
             : AppHostHttpListenerBase
         {
-
             public SwaggerFeatureAppHostHttpListener()
                 : base("Swagger Feature Tests", typeof(SwaggerFeatureServiceTests).Assembly) { }
 
@@ -235,7 +234,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Plugins.Add(new SwaggerFeature());
 
-                SetConfig(new AppHostConfig
+                SetConfig(new HostConfig
                 {
                     DebugMode = true //Show StackTraces for easier debugging
                 });
@@ -245,7 +244,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         SwaggerFeatureAppHostHttpListener appHost;
 
         [TestFixtureSetUp]
-        public void OnTestFixtureSetUp()
+        public void TestFixtureSetUp()
         {
             appHost = new SwaggerFeatureAppHostHttpListener();
             appHost.Init();
@@ -253,7 +252,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [TestFixtureTearDown]
-        public void OnTestFixtureTearDown()
+        public void TestFixtureTearDown()
         {
             appHost.Dispose();
         }

@@ -36,7 +36,7 @@ namespace ServiceStack.Metadata
                 typeof(ErrorResponse),
             };
 
-            var meta = EndpointHost.Metadata;
+            var meta = HostContext.Metadata;
             foreach (var operation in meta.Operations)
             {
                 if (!meta.IsVisible(httpReq, operation))
@@ -105,7 +105,7 @@ namespace ServiceStack.Metadata
             //return;
 
             httpRes.ContentType = "application/x-ssz-metatypes";
-            var encJson = CryptUtils.Encrypt(AppHostConfig.PublicKey, json, RsaKeyLengths.Bit2048);
+            var encJson = CryptUtils.Encrypt(HostConfig.PublicKey, json, RsaKeyLengths.Bit2048);
             httpRes.Write(encJson);
         }
     }

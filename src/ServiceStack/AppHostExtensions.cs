@@ -24,6 +24,7 @@ namespace ServiceStack
 
 		public static void AddPluginsFromAssembly(this IAppHost appHost, params Assembly[] assembliesWithPlugins)
 		{
+		    var ssHost = (ServiceStackHost)appHost;
 			foreach (Assembly assembly in assembliesWithPlugins)
 			{
 				var pluginTypes =
@@ -38,7 +39,7 @@ namespace ServiceStack
                         var plugin = pluginType.CreateInstance() as IPlugin;
 						if (plugin != null)
 						{
-							EndpointHost.AddPlugin(plugin);
+                            ssHost.AddPlugin(plugin);
 						}
 					}
 					catch (Exception ex)
@@ -58,6 +59,8 @@ namespace ServiceStack
         /// <returns></returns>
         public static Container GetContainer(this IAppHost appHost)
         {
+            if (appHost == null) return null;
+
             var hasContainer = appHost as IHasContainer;
             return hasContainer != null ? hasContainer.Container : null;
         }

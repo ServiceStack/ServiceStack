@@ -66,41 +66,42 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Test_response_with_CompressedResult()
 		{
-            new BasicAppHost(new Container(), typeof(CompressionTests).Assembly).Init();
+            using (new BasicAppHost(typeof(CompressionTests).Assembly).Init())
+		    {
+                var mockResponse = new MockHttpResponse();
 
-            var mockResponse = new MockHttpResponse();
+                var simpleDto = new TestCompress(1, "name");
 
-			var simpleDto = new TestCompress(1, "name");
+                var simpleDtoXml = DataContractSerializer.Instance.Parse(simpleDto);
 
-			var simpleDtoXml = DataContractSerializer.Instance.Parse(simpleDto);
+                const string expectedXml = "<TestCompress xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.ddnglobal.com/types/\"><Id>1</Id><Name>name</Name></TestCompress>";
 
-			const string expectedXml = "<TestCompress xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.ddnglobal.com/types/\"><Id>1</Id><Name>name</Name></TestCompress>";
+                Assert.That(simpleDtoXml, Is.EqualTo(expectedXml));
 
-			Assert.That(simpleDtoXml, Is.EqualTo(expectedXml));
+                var simpleDtoZip = simpleDtoXml.Deflate();
 
-			var simpleDtoZip = simpleDtoXml.Deflate();
+                Assert.That(simpleDtoZip.Length, Is.GreaterThan(0));
 
-			Assert.That(simpleDtoZip.Length, Is.GreaterThan(0));
+                var compressedResult = new CompressedResult(simpleDtoZip);
 
-			var compressedResult = new CompressedResult(simpleDtoZip);
+                var reponseWasAutoHandled = mockResponse.WriteToResponse(
+                    compressedResult, CompressionTypes.Deflate);
 
-			var reponseWasAutoHandled = mockResponse.WriteToResponse(
-				compressedResult, CompressionTypes.Deflate);
+                Assert.That(reponseWasAutoHandled, Is.True);
 
-			Assert.That(reponseWasAutoHandled, Is.True);
+                //var bytesToWriteToResponseStream = new byte[simpleDtoZip.Length - 4];
+                //Array.Copy(simpleDtoZip, CompressedResult.Adler32ChecksumLength, bytesToWriteToResponseStream, 0, bytesToWriteToResponseStream.Length);
 
-			//var bytesToWriteToResponseStream = new byte[simpleDtoZip.Length - 4];
-			//Array.Copy(simpleDtoZip, CompressedResult.Adler32ChecksumLength, bytesToWriteToResponseStream, 0, bytesToWriteToResponseStream.Length);
+                var bytesToWriteToResponseStream = simpleDtoZip;
 
-			var bytesToWriteToResponseStream = simpleDtoZip;
+                var writtenBytes = mockResponse.ReadAsBytes();
+                Assert.That(writtenBytes, Is.EqualTo(bytesToWriteToResponseStream));
+                Assert.That(mockResponse.ContentType, Is.EqualTo(MimeTypes.Xml));
+                Assert.That(mockResponse.Headers[HttpHeaders.ContentEncoding], Is.EqualTo(CompressionTypes.Deflate));
 
-			var writtenBytes = mockResponse.ReadAsBytes();
-			Assert.That(writtenBytes, Is.EqualTo(bytesToWriteToResponseStream));
-			Assert.That(mockResponse.ContentType, Is.EqualTo(MimeTypes.Xml));
-			Assert.That(mockResponse.Headers[HttpHeaders.ContentEncoding], Is.EqualTo(CompressionTypes.Deflate));
-
-			Log.Debug("Content-length: " + writtenBytes.Length);
-			Log.Debug(BitConverter.ToString(writtenBytes));
+                Log.Debug("Content-length: " + writtenBytes.Length);
+                Log.Debug(BitConverter.ToString(writtenBytes));
+            }
 		}
 
 		[Test]

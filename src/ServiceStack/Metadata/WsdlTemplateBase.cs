@@ -164,7 +164,7 @@ namespace ServiceStack.Metadata
 
 		public override string ToString()
 		{
-            var wsdlSoapActionNamespace = EndpointHost.Config.WsdlServiceNamespace;
+            var wsdlSoapActionNamespace = HostContext.Config.WsdlServiceNamespace;
             if (!wsdlSoapActionNamespace.EndsWith("/"))
                 wsdlSoapActionNamespace += '/';
             
@@ -202,7 +202,7 @@ namespace ServiceStack.Metadata
 				oneWayBindings, 
 				replyEndpointUri, 
 				oneWayEndpointUri,
-				EndpointHost.Config.WsdlServiceNamespace);
+				HostContext.Config.WsdlServiceNamespace);
             
 			return wsdl;
 		}

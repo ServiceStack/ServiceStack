@@ -40,13 +40,13 @@ namespace ServiceStack.WebHost.IntegrationTests
 
         public new ICacheClient Cache
         {
-            get { return AppHostBase.Resolve<ICacheClient>(); }
+            get { return HostContext.Resolve<ICacheClient>(); }
         }
 
         private ISessionFactory sessionFactory;
         public virtual ISessionFactory SessionFactory
         {
-            get { return sessionFactory ?? (sessionFactory = AppHostBase.Resolve<ISessionFactory>()) ?? new SessionFactory(Cache); }
+            get { return sessionFactory ?? (sessionFactory = HostContext.Resolve<ISessionFactory>()) ?? new SessionFactory(Cache); }
         }
 
         /// <summary>

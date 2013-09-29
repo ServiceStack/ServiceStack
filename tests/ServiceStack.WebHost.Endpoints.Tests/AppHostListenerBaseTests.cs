@@ -42,7 +42,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();
-            appHost = null;
         }
 
         [Test]

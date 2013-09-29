@@ -7,7 +7,7 @@ using ServiceStack.Logging;
 
 namespace ServiceStack
 {
-    public abstract class AppHostHttpListenerLongRunningBase : AppHostHttpListenerBase
+    public abstract class AppHostHttpListenerPoolBase : AppHostHttpListenerBase
     {
         private class ThreadPoolManager : IDisposable
         {
@@ -65,18 +65,16 @@ namespace ServiceStack
         private readonly ThreadPoolManager threadPoolManager;
         private readonly ILog log = LogManager.GetLogger(typeof(HttpListenerBase));
 
-        protected AppHostHttpListenerLongRunningBase(int poolSize = 500) { threadPoolManager = new ThreadPoolManager(poolSize); }
-
-        protected AppHostHttpListenerLongRunningBase(string serviceName, params Assembly[] assembliesWithServices)
+        protected AppHostHttpListenerPoolBase(string serviceName, params Assembly[] assembliesWithServices)
             : this(serviceName, 500, assembliesWithServices) { }
 
-        protected AppHostHttpListenerLongRunningBase(string serviceName, int poolSize, params Assembly[] assembliesWithServices)
+        protected AppHostHttpListenerPoolBase(string serviceName, int poolSize, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices) { threadPoolManager = new ThreadPoolManager(poolSize); }
 
-        protected AppHostHttpListenerLongRunningBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
+        protected AppHostHttpListenerPoolBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
             : this(serviceName, handlerPath, 500, assembliesWithServices) { }
 
-        protected AppHostHttpListenerLongRunningBase(string serviceName, string handlerPath, int poolSize, params Assembly[] assembliesWithServices)
+        protected AppHostHttpListenerPoolBase(string serviceName, string handlerPath, int poolSize, params Assembly[] assembliesWithServices)
             : base(serviceName, handlerPath, assembliesWithServices) { threadPoolManager = new ThreadPoolManager(poolSize); }
 
 

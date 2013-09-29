@@ -16,9 +16,7 @@ namespace ServiceStack.Razor.Compilation.CodeTransformers
         public override void Initialize(RazorPageHost razorHost, IDictionary<string, string> directives)
         {
             //read the base type here from the web.config here
-
-            AppHostConfig.RazorNamespaces
-                              .Each(ns => razorHost.NamespaceImports.Add(ns));
+            HostContext.Config.RazorNamespaces.Each(ns => razorHost.NamespaceImports.Add(ns));
 
             base.Initialize(razorHost, directives);
         }

@@ -410,7 +410,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			protected override IServiceClient CreateNewServiceClient()
 			{
-                ServiceStackHandlerBase.ServiceManager = new ServiceManager(typeof(SecureService).Assembly).Init();
+                ServiceStackHandlerBase.ServiceManager = new ServiceManager(new Container(), typeof(SecureService).Assembly).Init();
 				return new DirectServiceClient(ServiceStackHandlerBase.ServiceManager);
 			}
 

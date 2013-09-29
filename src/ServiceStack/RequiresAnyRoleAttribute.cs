@@ -28,7 +28,7 @@ namespace ServiceStack
 
         public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
         {
-            if (EndpointHost.Config.HasValidAuthSecret(req))
+            if (HostContext.HasValidAuthSecret(req))
                 return;
 
             base.Execute(req, res, requestDto); //first check if session is authenticated
@@ -75,7 +75,7 @@ namespace ServiceStack
             if (requiredRoles.IsEmpty()) return;
 
             var req = requestContext.Get<IHttpRequest>();
-            if (EndpointHost.Config.HasValidAuthSecret(req))
+            if (HostContext.HasValidAuthSecret(req))
                 return;
 
             var session = req.GetSession();

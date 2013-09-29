@@ -279,7 +279,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             public override void Configure(Container container)
             {
-                SetConfig(new AppHostConfig { WebHostUrl = WebHostUrl });
+                SetConfig(new HostConfig { WebHostUrl = WebHostUrl });
 
                 Plugins.Add(new AuthFeature(() => new CustomUserSession(),
                     new IAuthProvider[] { //Www-Authenticate should contain basic auth, therefore register this provider first

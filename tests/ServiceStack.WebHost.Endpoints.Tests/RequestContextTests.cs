@@ -24,10 +24,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			public override void Configure(Container container)
 			{
-				AppHostConfig.Instance.GlobalResponseHeaders.Clear();
+                HostContext.Config.GlobalResponseHeaders.Clear();
 
 				//Signal advanced web browsers what HTTP Methods you accept
-				base.SetConfig(new AppHostConfig
+				base.SetConfig(new HostConfig
 				{
 					GlobalResponseHeaders =
 					{

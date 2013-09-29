@@ -70,14 +70,14 @@ namespace ServiceStack
 		List<IViewEngine> ViewEngines { get; }
 
         /// <summary>
-        /// Provide an exception handler for un-caught exceptions
-        /// </summary>
-        HandleUncaughtExceptionDelegate ExceptionHandler { get; set; }
-
-        /// <summary>
         /// Provide an exception handler for unhandled exceptions
         /// </summary>
-        HandleServiceExceptionDelegate ServiceExceptionHandler { get; set; }
+        List<HandleServiceExceptionDelegate> ServiceExceptionHandlers { get; set; }
+
+        /// <summary>
+        /// Provide an exception handler for un-caught exceptions
+        /// </summary>
+        List<HandleUncaughtExceptionDelegate> UncaughtExceptionHandlers { get; set; }
 
 		/// <summary>
 		/// Provide a catch-all handler that doesn't match any routes
@@ -92,7 +92,7 @@ namespace ServiceStack
 		/// <summary>
 		/// The AppHost config
 		/// </summary>
-		AppHostConfig Config { get; }
+		HostConfig Config { get; }
 
 		/// <summary>
 		/// Register an Adhoc web service on Startup

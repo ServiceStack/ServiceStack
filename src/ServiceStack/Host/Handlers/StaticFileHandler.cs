@@ -83,7 +83,7 @@ namespace ServiceStack.Host.Handlers
                 {
                     if ((fi.Attributes & FileAttributes.Directory) != 0)
                     {
-                        foreach (var defaultDoc in EndpointHost.Config.DefaultDocuments)
+                        foreach (var defaultDoc in HostContext.Config.DefaultDocuments)
                         {
                             var defaultFileName = Path.Combine(fi.FullName, defaultDoc);
                             if (!File.Exists(defaultFileName)) continue;
@@ -120,7 +120,7 @@ namespace ServiceStack.Host.Handlers
                 }
 
                 TimeSpan maxAge;
-                if (r.ContentType != null && EndpointHost.Config.AddMaxAgeForStaticMimeTypes.TryGetValue(r.ContentType, out maxAge))
+                if (r.ContentType != null && HostContext.Config.AddMaxAgeForStaticMimeTypes.TryGetValue(r.ContentType, out maxAge))
                 {
                     r.AddHeader(HttpHeaders.CacheControl, "max-age=" + maxAge.TotalSeconds);
                 }
@@ -147,12 +147,12 @@ namespace ServiceStack.Host.Handlers
                         return;
                     }
 
-                    if (EndpointHost.Config.AllowPartialResponses)
+                    if (HostContext.Config.AllowPartialResponses)
                         r.AddHeader(HttpHeaders.AcceptRanges, "bytes");
                     long contentLength = fi.Length;
                     long rangeStart, rangeEnd;
                     var rangeHeader = request.Headers[HttpHeaders.Range];
-                    if (EndpointHost.Config.AllowPartialResponses && rangeHeader != null)
+                    if (HostContext.Config.AllowPartialResponses && rangeHeader != null)
                     {
                         rangeHeader.ExtractHttpRanges(contentLength, out rangeStart, out rangeEnd);
                         r.AddHttpRangeResponseHeaders(rangeStart: rangeStart, rangeEnd: rangeEnd, contentLength: contentLength);

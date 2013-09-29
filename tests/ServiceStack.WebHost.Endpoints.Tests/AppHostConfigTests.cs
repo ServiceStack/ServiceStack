@@ -1,7 +1,5 @@
-using System;
 using NUnit.Framework;
 using ServiceStack.Logging;
-using ServiceStack.Clients;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
@@ -27,23 +25,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[TestFixtureTearDown]
 		public void OnTestFixtureTearDown()
 		{
-			Dispose();
-		}
-
-		public void Dispose()
-		{
-			if (appHost == null) return;
-			appHost.Dispose();
-			appHost = null;
-		}
-
-		
+            appHost.Dispose();
+        }
+        
 		[Test]
 		public void Actually_uses_the_BclJsonSerializers()
 		{
 			var json = (ListeningOn + "login/user/pass").GetJsonFromUrl();
 
-			Console.WriteLine(json);
+			json.Print();
 			Assert.That(json, Is.EqualTo("{\"pwd\":\"pass\",\"uname\":\"user\"}"));
 		}
 	}

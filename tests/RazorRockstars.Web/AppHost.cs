@@ -28,7 +28,7 @@ namespace RazorRockstars.Web
 
             InitData(container);
 
-            SetConfig(new AppHostConfig {
+            SetConfig(new HostConfig {
                 DebugMode = true,
                 CustomHttpHandlers = {
                   { HttpStatusCode.ExpectationFailed, new RazorHandler("/expectationfailed") }

@@ -9,7 +9,6 @@ using ServiceStack.Host.AspNet;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Host.HttpListener;
 using ServiceStack.MiniProfiler.UI;
-using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -29,7 +28,7 @@ namespace ServiceStack
         private static readonly bool IsIntegratedPipeline = false;
         private static readonly bool ServeDefaultHandler = false;
         private static readonly bool AutoRedirectsDirs = false;
-        private static Func<IHttpRequest, IHttpHandler>[] RawHttpHandlers;
+        private static readonly Func<IHttpRequest, IHttpHandler>[] RawHttpHandlers;
 
         [ThreadStatic]
         public static string DebugLastHandlerArgs;
@@ -43,7 +42,7 @@ namespace ServiceStack
                 IsIntegratedPipeline = (bool)pi.GetGetMethod().Invoke(null, new object[0]);
             }
 
-            var config = EndpointHost.Config;
+            var config = HostContext.Config;
             if (config == null)
             {
                 throw new ConfigurationErrorsException(
@@ -109,7 +108,7 @@ namespace ServiceStack
 
             SetApplicationBaseUrl(config.WebHostUrl);
 
-            ForbiddenHttpHandler = config.GetCustomErrorHttpHandler(HttpStatusCode.Forbidden);
+            ForbiddenHttpHandler = HostContext.GetCustomErrorHttpHandler(HttpStatusCode.Forbidden);
             if (ForbiddenHttpHandler == null)
             {
                 ForbiddenHttpHandler = new ForbiddenHttpHandler
@@ -123,7 +122,7 @@ namespace ServiceStack
                 };
             }
 
-            NotFoundHttpHandler = config.GetCustomErrorHttpHandler(HttpStatusCode.NotFound);
+            NotFoundHttpHandler = HostContext.GetCustomErrorHttpHandler(HttpStatusCode.NotFound);
             if (NotFoundHttpHandler == null)
             {
                 NotFoundHttpHandler = new NotFoundHttpHandler
@@ -154,7 +153,7 @@ namespace ServiceStack
                 if (reqInfo != null) return reqInfo;
             }
 
-            var mode = EndpointHost.Config.ServiceStackHandlerFactoryPath;
+            var mode = HostContext.Config.ServiceStackHandlerFactoryPath;
             var pathInfo = context.Request.GetPathInfo();
 
             //WebDev Server auto requests '/default.aspx' so recorrect path to different default document
@@ -219,7 +218,7 @@ namespace ServiceStack
 
         public static string GetBaseUrl()
         {
-            return EndpointHost.Config.WebHostUrl ?? ApplicationBaseUrl;
+            return HostContext.Config.WebHostUrl ?? ApplicationBaseUrl;
         }
 
         // Entry point for HttpListener
@@ -231,7 +230,7 @@ namespace ServiceStack
                 if (reqInfo != null) return reqInfo;
             }
 
-            var mode = EndpointHost.Config.ServiceStackHandlerFactoryPath;
+            var mode = HostContext.Config.ServiceStackHandlerFactoryPath;
             var pathInfo = httpReq.PathInfo;
 
             //Default Request /
@@ -278,13 +277,13 @@ namespace ServiceStack
         /// <returns></returns>
         private static IHttpHandler ReturnRequestInfo(HttpRequest httpReq)
         {
-            if (EndpointHost.Config.DebugOnlyReturnRequestInfo
-                || (EndpointHost.DebugMode && httpReq.PathInfo.EndsWith("__requestinfo")))
+            if (HostContext.Config.DebugOnlyReturnRequestInfo
+                || (HostContext.DebugMode && httpReq.PathInfo.EndsWith("__requestinfo")))
             {
                 var reqInfo = RequestInfoHandler.GetRequestInfo(
                     new AspNetRequest(typeof(RequestInfo).Name, httpReq));
 
-                reqInfo.Host = EndpointHost.Config.DebugAspNetHostEnvironment + "_v" + Env.ServiceStackVersion + "_" + EndpointHost.Config.ServiceName;
+                reqInfo.Host = HostContext.Config.DebugAspNetHostEnvironment + "_v" + Env.ServiceStackVersion + "_" + HostContext.ServiceName;
                 //reqInfo.FactoryUrl = url; //Just RawUrl without QueryString 
                 //reqInfo.FactoryPathTranslated = pathTranslated; //Local path on filesystem
                 reqInfo.PathInfo = httpReq.PathInfo;
@@ -299,12 +298,12 @@ namespace ServiceStack
 
         private static IHttpHandler ReturnRequestInfo(IHttpRequest httpReq)
         {
-            if (EndpointHost.Config.DebugOnlyReturnRequestInfo
-                || (EndpointHost.DebugMode && httpReq.PathInfo.EndsWith("__requestinfo")))
+            if (HostContext.Config.DebugOnlyReturnRequestInfo
+                || (HostContext.DebugMode && httpReq.PathInfo.EndsWith("__requestinfo")))
             {
                 var reqInfo = RequestInfoHandler.GetRequestInfo(httpReq);
 
-                reqInfo.Host = EndpointHost.Config.DebugHttpListenerHostEnvironment + "_v" + Env.ServiceStackVersion + "_" + EndpointHost.Config.ServiceName;
+                reqInfo.Host = HostContext.Config.DebugHttpListenerHostEnvironment + "_v" + Env.ServiceStackVersion + "_" + HostContext.ServiceName;
                 reqInfo.PathInfo = httpReq.PathInfo;
                 reqInfo.Path = httpReq.GetPathUrl();
 
@@ -320,7 +319,7 @@ namespace ServiceStack
         {
             var fileExt = Path.GetExtension(filePath);
             if (string.IsNullOrEmpty(fileExt)) return false;
-            return EndpointHost.Config.AllowFileExtensions.Contains(fileExt.Substring(1));
+            return HostContext.Config.AllowFileExtensions.Contains(fileExt.Substring(1));
         }
 
         public static IHttpHandler GetHandlerForPathInfo(string httpMethod, string pathInfo, string requestPath, string filePath)
@@ -368,9 +367,9 @@ namespace ServiceStack
             var handler = GetCatchAllHandlerIfAny(httpMethod, pathInfo, filePath);
             if (handler != null) return handler;
 
-            if (EndpointHost.Config.FallbackRestPath != null)
+            if (HostContext.Config.FallbackRestPath != null)
             {
-                restPath = EndpointHost.Config.FallbackRestPath(httpMethod, pathInfo, filePath);
+                restPath = HostContext.Config.FallbackRestPath(httpMethod, pathInfo, filePath);
                 if (restPath != null)
                 {
                     return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.Name, ResponseContentType = contentType };
@@ -382,14 +381,11 @@ namespace ServiceStack
 
         private static IHttpHandler GetCatchAllHandlerIfAny(string httpMethod, string pathInfo, string filePath)
         {
-            if (EndpointHost.CatchAllHandlers != null)
+            foreach (var httpHandlerResolver in HostContext.CatchAllHandlers)
             {
-                foreach (var httpHandlerResolver in EndpointHost.CatchAllHandlers)
-                {
-                    var httpHandler = httpHandlerResolver(httpMethod, pathInfo, filePath);
-                    if (httpHandler != null)
-                        return httpHandler;
-                }
+                var httpHandler = httpHandlerResolver(httpMethod, pathInfo, filePath);
+                if (httpHandler != null)
+                    return httpHandler;
             }
 
             return null;

@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using NUnit.Framework;
 using ServiceStack.Clients;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
@@ -16,7 +17,7 @@ namespace ServiceStack.Common.Tests
 {
     public abstract class TestBase
     {
-        protected IAppHost AppHost { get; set; }
+        protected ServiceStackHost AppHost { get; set; }
 
         protected bool HasConfigured { get; set; }
 
@@ -31,19 +32,25 @@ namespace ServiceStack.Common.Tests
             ServiceClientBaseUri = serviceClientBaseUri;
             ServiceAssemblies = serviceAssemblies;
 
-            this.AppHost = new BasicAppHost(null, serviceAssemblies).Init();
+            this.AppHost = new BasicAppHost(serviceAssemblies).Init();
+        }
+
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            this.AppHost.Dispose();
         }
 
         protected abstract void Configure(Funq.Container container);
 
         protected Funq.Container Container
         {
-            get { return EndpointHost.ServiceManager.Container; }
+            get { return HostContext.ServiceManager.Container; }
         }
 
         protected IServiceRoutes Routes
         {
-            get { return EndpointHost.ServiceManager.ServiceController.Routes; }
+            get { return HostContext.ServiceManager.ServiceController.Routes; }
         }
 
         //All integration tests call the Webservices hosted at the following location:
@@ -61,7 +68,7 @@ namespace ServiceStack.Common.Tests
 
             HasConfigured = true;
             Configure(Container);
-            EndpointHost.AfterInit();
+            ServiceStackHost.Instance.OnAfterInit();
         }
 
         public virtual void OnBeforeEachTest()
@@ -71,17 +78,17 @@ namespace ServiceStack.Common.Tests
 
         protected virtual IServiceClient CreateNewServiceClient()
         {
-            return new DirectServiceClient(this, EndpointHost.ServiceManager);
+            return new DirectServiceClient(this, HostContext.ServiceManager);
         }
 
         protected virtual IRestClient CreateNewRestClient()
         {
-            return new DirectServiceClient(this, EndpointHost.ServiceManager);
+            return new DirectServiceClient(this, HostContext.ServiceManager);
         }
 
         protected virtual IRestClientAsync CreateNewRestClientAsync()
         {
-            return new DirectServiceClient(this, EndpointHost.ServiceManager);
+            return new DirectServiceClient(this, HostContext.ServiceManager);
         }
 
         public class DirectServiceClient : IServiceClient, IRestClient
@@ -457,7 +464,7 @@ namespace ServiceStack.Common.Tests
             }
             catch (Exception ex)
             {
-                response = DtoUtils.HandleException(AppHost, request, ex);
+                response = DtoUtils.CreateErrorResponse(request, ex);
             }
 
             var httpRes = response as IHttpResult;

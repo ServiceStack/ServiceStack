@@ -431,10 +431,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 
 		public override void Configure(Container container)
 		{
-			AppHostConfig.Instance.GlobalResponseHeaders.Clear();
-
 			//Signal advanced web browsers what HTTP Methods you accept
-			base.SetConfig(new AppHostConfig {
+			base.SetConfig(new HostConfig {
 				GlobalResponseHeaders =
 				{
 					{ "Access-Control-Allow-Origin", "*" },
@@ -486,12 +484,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		}
 	}
 
-    public class ExampleAppHostHttpListenerLongRunning
-    : AppHostHttpListenerLongRunningBase
+    public class ExampleAppHostHttpListenerPool : AppHostHttpListenerPoolBase
     {
         //private static ILog log;
 
-        public ExampleAppHostHttpListenerLongRunning()
+        public ExampleAppHostHttpListenerPool()
             : base("ServiceStack Examples", 500, typeof(GetFactorialService).Assembly)
         {
             LogManager.LogFactory = new DebugLogFactory();
@@ -502,10 +499,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 
         public override void Configure(Container container)
         {
-            AppHostConfig.Instance.GlobalResponseHeaders.Clear();
-
             //Signal advanced web browsers what HTTP Methods you accept
-            base.SetConfig(new AppHostConfig
+            base.SetConfig(new HostConfig
             {
                 GlobalResponseHeaders =
 				{

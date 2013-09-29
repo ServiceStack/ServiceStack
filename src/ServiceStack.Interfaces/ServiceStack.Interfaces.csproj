@@ -109,9 +109,6 @@
     <Compile Include="Configuration\IContainerAdapter.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Configuration\IFactoryProvider.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Configuration\IRelease.cs" />
     <Compile Include="Configuration\IAppSettings.cs">
       <SubType>Code</SubType>

@@ -10,24 +10,26 @@ namespace ServiceStack.Host
 {
     public class BasicRequestContext : IRequestContext
     {
-        public IResolver Resolver { get; set; }
         public IMessage Message { get; set; }
         public BasicRequest Request { get; set; }
         public BasicResponse Response { get; set; }
 
-        public BasicRequestContext()
-            : this(null, new Message()) {}
-
-        public BasicRequestContext(IResolver resolver, IMessage message)
+        private IResolver resolver;
+        public IResolver Resolver
         {
-            this.Resolver = resolver;
-            this.Message = message;
-            this.ContentType = this.ResponseContentType = MimeTypes.Json;
-            if (message.Body != null)
-                this.PathInfo = "/json/oneway/" + OperationName;
+            get { return resolver ?? Service.GlobalResolver; }
+            set { resolver = value; }
+        }
+
+        public BasicRequestContext(IMessage message=null)
+        {
+            Message = message ?? new Message();
+            ContentType = this.ResponseContentType = MimeTypes.Json;
+            if (Message.Body != null)
+                PathInfo = "/json/oneway/" + OperationName;
             
-            this.Request = new BasicRequest(this);
-            this.Response = new BasicResponse(this);
+            Request = new BasicRequest(this);
+            Response = new BasicResponse(this);
         }
 
         private string operationName;

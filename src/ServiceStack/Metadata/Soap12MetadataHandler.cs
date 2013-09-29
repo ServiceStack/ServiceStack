@@ -30,8 +30,8 @@ namespace ServiceStack.Metadata
             var operationControl = new Soap12OperationControl
             {
                 HttpRequest = httpReq,
-                MetadataConfig = EndpointHost.Config.ServiceEndpointsMetadataConfig,
-                Title = EndpointHost.Config.ServiceName,
+                MetadataConfig = HostContext.Config.ServiceEndpointsMetadataConfig,
+                Title = HostContext.ServiceName,
                 Format = this.Format,
                 OperationName = operationName,
                 HostName = httpReq.GetUrlHostName(),

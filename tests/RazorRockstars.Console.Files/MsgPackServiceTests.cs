@@ -94,7 +94,6 @@ namespace RazorRockstars.Console.Files
         {
             if (appHost == null) return;
             appHost.Dispose();
-            appHost = null;
         }
 
         MsgPackEmail request = new MsgPackEmail {

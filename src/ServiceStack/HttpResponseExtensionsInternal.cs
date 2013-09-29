@@ -21,7 +21,7 @@ namespace ServiceStack
         public static bool WriteToOutputStream(IHttpResponse response, object result, byte[] bodyPrefix, byte[] bodySuffix)
         {
             var partialResult = result as IPartialWriter;
-            if (EndpointHost.Config.AllowPartialResponses && partialResult != null && partialResult.IsPartialRequest)
+            if (HostContext.Config.AllowPartialResponses && partialResult != null && partialResult.IsPartialRequest)
             {
                 partialResult.WritePartialTo(response);
                 return true;
@@ -60,7 +60,7 @@ namespace ServiceStack
 
         public static bool WriteToResponse(this IHttpResponse httpRes, object result, string contentType)
         {
-            var serializer = EndpointHost.AppHost.ContentTypes.GetResponseSerializer(contentType);
+            var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
             return httpRes.WriteToResponse(result, serializer, new SerializationContext(contentType));
         }
 
@@ -83,7 +83,7 @@ namespace ServiceStack
             {
                 if (httpResult.ResponseFilter == null)
                 {
-                    httpResult.ResponseFilter = EndpointHost.AppHost.ContentTypes;
+                    httpResult.ResponseFilter = HostContext.ContentTypes;
                 }
                 httpResult.RequestContext = serializationContext;
                 serializationContext.ResponseContentType = httpResult.ContentType ?? httpReq.ResponseContentType;
@@ -91,7 +91,7 @@ namespace ServiceStack
                 return httpRes.WriteToResponse(httpResult, httpResSerializer, serializationContext, bodyPrefix, bodySuffix);
             }
 
-            var serializer = EndpointHost.AppHost.ContentTypes.GetResponseSerializer(httpReq.ResponseContentType);
+            var serializer = HostContext.ContentTypes.GetResponseSerializer(httpReq.ResponseContentType);
             return httpRes.WriteToResponse(result, serializer, serializationContext, bodyPrefix, bodySuffix);
         }
 
@@ -193,7 +193,7 @@ namespace ServiceStack
                         response.ContentType = MimeTypes.JavaScript;
                     }
 
-                    if (EndpointHost.Config.AppendUtf8CharsetOnContentTypes.Contains(response.ContentType))
+                    if (HostContext.Config.AppendUtf8CharsetOnContentTypes.Contains(response.ContentType))
                     {
                         response.ContentType += ContentFormat.Utf8Suffix;
                     }
@@ -227,7 +227,7 @@ namespace ServiceStack
                     //TM: It would be good to handle 'remote end dropped connection' problems here. Arguably they should at least be suppressible via configuration
 
                     //DB: Using standard ServiceStack configuration method
-                    if (!EndpointHost.Config.WriteErrorsToResponse) throw;
+                    if (!HostContext.Config.WriteErrorsToResponse) throw;
 
                     var errorMessage = String.Format(
                     "Error occured while Processing Request: [{0}] {1}", originalEx.GetType().Name, originalEx.Message);
@@ -302,7 +302,7 @@ namespace ServiceStack
             {
                 httpRes.ContentType = contentType;
             }
-            if (EndpointHost.Config.AppendUtf8CharsetOnContentTypes.Contains(contentType))
+            if (HostContext.Config.AppendUtf8CharsetOnContentTypes.Contains(contentType))
             {
                 httpRes.ContentType += ContentFormat.Utf8Suffix;
             }
@@ -310,7 +310,7 @@ namespace ServiceStack
             httpRes.StatusCode = statusCode;
             var serializationCtx = new SerializationContext(contentType);
 
-            var serializer = EndpointHost.AppHost.ContentTypes.GetResponseSerializer(contentType);
+            var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
             if (serializer != null)
             {
                 serializer(serializationCtx, errorDto, httpRes);
@@ -324,7 +324,7 @@ namespace ServiceStack
         {
             if (httpReq != null && MimeTypes.Html.MatchesContentType(contentType))
             {
-                var errorHandler = EndpointHost.Config.GetCustomErrorHandler(statusCode);
+                var errorHandler = HostContext.GetCustomErrorHandler(statusCode);
                 if (errorHandler != null)
                 {
                     httpReq.Items["Model"] = errorDto;
@@ -341,7 +341,7 @@ namespace ServiceStack
 
             // For some exception types, we'll need to extract additional information in debug mode
             // (for example, so people can fix errors in their pages).
-            if(EndpointHost.DebugMode)
+            if(HostContext.DebugMode)
             {
                 var compileEx = ex as HttpCompileException;
                 if (compileEx != null && compileEx.Results.Errors.HasErrors)
@@ -358,7 +358,7 @@ namespace ServiceStack
                 ResponseStatus = new ResponseStatus {
                     ErrorCode = ex.ToErrorCode(),
                     Message = ex.Message,
-                    StackTrace = EndpointHost.DebugMode ? ex.StackTrace : null,
+                    StackTrace = HostContext.DebugMode ? ex.StackTrace : null,
                     Errors = errors
                 }
             };
@@ -367,8 +367,8 @@ namespace ServiceStack
 
         public static void ApplyGlobalResponseHeaders(this HttpListenerResponse httpRes)
         {
-            if (EndpointHost.Config == null) return;
-            foreach (var globalResponseHeader in EndpointHost.Config.GlobalResponseHeaders)
+            if (HostContext.Config == null) return;
+            foreach (var globalResponseHeader in HostContext.Config.GlobalResponseHeaders)
             {
                 httpRes.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
             }
@@ -376,8 +376,8 @@ namespace ServiceStack
 
         public static void ApplyGlobalResponseHeaders(this HttpResponse httpRes)
         {
-            if (EndpointHost.Config == null) return;
-            foreach (var globalResponseHeader in EndpointHost.Config.GlobalResponseHeaders)
+            if (HostContext.Config == null) return;
+            foreach (var globalResponseHeader in HostContext.Config.GlobalResponseHeaders)
             {
                 httpRes.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
             }
@@ -385,8 +385,8 @@ namespace ServiceStack
 
         public static void ApplyGlobalResponseHeaders(this IHttpResponse httpRes)
         {
-            if (EndpointHost.Config == null) return;
-            foreach (var globalResponseHeader in EndpointHost.Config.GlobalResponseHeaders)
+            if (HostContext.Config == null) return;
+            foreach (var globalResponseHeader in HostContext.Config.GlobalResponseHeaders)
             {
                 httpRes.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
             }

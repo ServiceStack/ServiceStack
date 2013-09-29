@@ -33,7 +33,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 
         private bool ApplyRequestFilters<TResponse>(object request)
         {
-            if (EndpointHost.ApplyRequestFilters(httpReq, httpRes, request))
+            if (HostContext.ApplyRequestFilters(httpReq, httpRes, request))
             {
                 ThrowIfError<TResponse>(httpRes);
                 return true;
@@ -53,7 +53,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 
                 try
                 {
-                    var deserializer = EndpointHost.AppHost.ContentTypes.GetStreamDeserializer(httpReq.ResponseContentType);
+                    var deserializer = HostContext.ContentTypes.GetStreamDeserializer(httpReq.ResponseContentType);
                     webEx.ResponseDto = deserializer(typeof(TResponse), new MemoryStream(httpRes.ReadAsBytes()));
                 }
                 catch (Exception ex)
@@ -67,7 +67,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 
         private bool ApplyResponseFilters<TResponse>(object response)
         {
-            if (EndpointHost.ApplyResponseFilters(httpReq, httpRes, response))
+            if (HostContext.ApplyResponseFilters(httpReq, httpRes, response))
             {
                 ThrowIfError<TResponse>(httpRes);
                 return true;

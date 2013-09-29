@@ -15,7 +15,7 @@ namespace ServiceStack
 		/// <returns></returns>
 		public static object ToOptimizedResult<T>(this IRequestContext requestContext, T dto) 
 		{
-			string serializedDto = EndpointHost.ContentTypes.SerializeToString(requestContext, dto);
+			string serializedDto = HostContext.ContentTypes.SerializeToString(requestContext, dto);
 			if (requestContext.CompressionType == null)
 				return (object)serializedDto;
 

@@ -46,6 +46,20 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
     [TestFixture]
     public class IntroductionLayoutRazorTests : RazorTestBase
     {
+        private ServiceStackHost appHost;
+
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
+        {
+            appHost = new BasicAppHost().Init();
+        }
+
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
+
         [SetUp]
         public void OnBeforeEachTest()
         {

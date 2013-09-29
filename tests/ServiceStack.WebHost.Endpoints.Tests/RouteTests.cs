@@ -24,7 +24,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
-            appHost = null;
         }
 
         [Test]
@@ -99,7 +98,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public override void Configure(Container container)
         {
-            SetConfig(new AppHostConfig {
+            SetConfig(new HostConfig {
                 AllowRouteContentTypeExtensions = true
             });
 

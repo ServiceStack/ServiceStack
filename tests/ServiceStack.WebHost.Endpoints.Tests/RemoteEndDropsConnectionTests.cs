@@ -35,7 +35,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		public void OnTestFixtureTearDown()
 		{
 			appHost.Dispose();
-			appHost = null;
 		}
 
 		[SetUp]
@@ -83,7 +82,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[TestCase(true)]
 		public void TestClientDropsConnection(bool writeErrorsToResponse)
 		{
-			EndpointHost.Config.WriteErrorsToResponse = writeErrorsToResponse;
+			HostContext.Config.WriteErrorsToResponse = writeErrorsToResponse;
 
 			const int sleepMs = 1000;
 			var url = string.Format("{0}test/timed?Milliseconds={1}", ListeningOn, sleepMs);

@@ -177,7 +177,7 @@ namespace ServiceStack
             };
 
             requestContext = requestContext ?? new MockRequestContext();
-            var runner = new ServiceRunner<TRequest>(EndpointHost.AppHost, actionCtx);
+            var runner = HostContext.CreateServiceRunner<TRequest>(actionCtx);
             var response = runner.Execute(requestContext, service, request);
             return response;
         }

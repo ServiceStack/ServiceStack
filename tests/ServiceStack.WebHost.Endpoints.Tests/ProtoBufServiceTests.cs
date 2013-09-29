@@ -101,7 +101,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			if (appHost == null) return;
 			appHost.Dispose();
-			appHost = null;
 		}
 
 		[Test]

@@ -84,7 +84,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         UserAppHostHttpListener appHost;
 
         [TestFixtureSetUp]
-        public void OnTestFixtureSetUp()
+        public void TestFixtureSetUp()
         {
             appHost = new UserAppHostHttpListener();
             appHost.Init();
@@ -92,7 +92,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [TestFixtureTearDown]
-        public void OnTestFixtureTearDown()
+        public void TestFixtureTearDown()
         {
             appHost.Dispose();
             ServiceStackHandlerBase.ServiceManager = null;
@@ -102,7 +102,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         protected static IServiceClient UnitTestServiceClient()
         {
-            ServiceStackHandlerBase.ServiceManager = new ServiceManager(typeof(SecureService).Assembly).Init();
+            ServiceStackHandlerBase.ServiceManager = new ServiceManager(new Container(), typeof(SecureService).Assembly).Init();
             return new DirectServiceClient(ServiceStackHandlerBase.ServiceManager);
         }
 

@@ -31,7 +31,7 @@ namespace ServiceStack.Metadata
     	{
             if (!AssertAccess(httpReq, httpRes, httpReq.QueryString["op"])) return;
 
-			var operationTypes = EndpointHost.Metadata.GetAllTypes();
+			var operationTypes = HostContext.Metadata.GetAllTypes();
 
     		if (httpReq.QueryString["xsd"] != null)
     		{
@@ -65,12 +65,12 @@ namespace ServiceStack.Metadata
     	{
 			var defaultPage = new IndexOperationsControl {
 				HttpRequest = httpReq,
-                MetadataConfig = EndpointHost.Config.MetadataPagesConfig,                
-				Title = EndpointHost.Config.ServiceName,
+                MetadataConfig = HostContext.MetadataPagesConfig,                
+				Title = HostContext.ServiceName,
 				Xsds = XsdTypes.Xsds,
 				XsdServiceTypesIndex = 1,
                 OperationNames = metadata.GetOperationNamesForMetadata(httpReq),
-				MetadataPageBodyHtml = EndpointHost.Config.MetadataPageBodyHtml,
+				MetadataPageBodyHtml = HostContext.Config.MetadataPageBodyHtml,
 			};
 
 			defaultPage.RenderControl(writer);

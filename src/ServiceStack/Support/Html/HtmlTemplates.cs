@@ -42,7 +42,7 @@ namespace ServiceStack.Support.Html
 
         static HtmlTemplates()
         {
-            if (EndpointHost.Config.UseCustomMetadataTemplates)
+            if (HostContext.Config.UseCustomMetadataTemplates)
             {
                 TryLoadExternal("IndexOperations.html", ref indexOperationsTemplate);
                 TryLoadExternal("OperationControl.html", ref operationControlTemplate);
@@ -55,8 +55,8 @@ namespace ServiceStack.Support.Html
             try
             {
                 var staticFilePath = PathUtils.CombinePaths(
-                    EndpointHost.AppHost.VirtualPathProvider.RootDirectory.RealPath, 
-                    EndpointHost.Config.MetadataCustomPath, 
+                    HostContext.VirtualPathProvider.RootDirectory.RealPath, 
+                    HostContext.Config.MetadataCustomPath, 
                     templateName);
 
                 template = File.ReadAllText(staticFilePath);

@@ -57,7 +57,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
             if (typeof(T) == typeof(AltDepDisposableProperty))
                 return (T)(object)new AltDepDisposableProperty();
             if (typeof(T) == typeof(AltRequestScopeDepDisposableProperty))
-                return (T)(object)HostContext.Instance.GetOrCreate(() => new AltRequestScopeDepDisposableProperty());
+                return (T)(object)RequestContext.Instance.GetOrCreate(() => new AltRequestScopeDepDisposableProperty());
             
 			return default(T);
 		}

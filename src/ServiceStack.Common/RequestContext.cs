@@ -5,9 +5,9 @@ using System.Web;
 
 namespace ServiceStack
 {
-    public class HostContext
+    public class RequestContext
     {
-        public static readonly HostContext Instance = new HostContext();
+        public static readonly RequestContext Instance = new RequestContext();
 
         [ThreadStatic] 
 		private static IDictionary items; //Thread Specific

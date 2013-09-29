@@ -324,7 +324,7 @@ namespace ServiceStack.Razor
 
         public IAppHost AppHost
         {
-            get { return appHost ?? EndpointHost.AppHost; }
+            get { return appHost ?? ServiceStackHost.Instance; }
             set { appHost = value; }
         }
 

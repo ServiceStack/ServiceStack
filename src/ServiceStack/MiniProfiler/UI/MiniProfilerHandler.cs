@@ -58,7 +58,7 @@ namespace ServiceStack.MiniProfiler.UI
 				var ids = Profiler.Settings.Storage.GetUnviewedIds(profiler.User);
 				ids.Add(profiler.Id);
 
-                path = (path ?? VirtualPathUtility.ToAbsolute(Profiler.Settings.RouteBasePath).EnsureTrailingSlash()) + EndpointHost.Config.ServiceStackHandlerFactoryPath;
+                path = (path ?? VirtualPathUtility.ToAbsolute(Profiler.Settings.RouteBasePath).EnsureTrailingSlash()) + HostContext.Config.ServiceStackHandlerFactoryPath;
 
 				result = format.Format(new {
 					//path = VirtualPathUtility.ToAbsolute(MiniProfiler.Settings.RouteBasePath).EnsureTrailingSlash(),

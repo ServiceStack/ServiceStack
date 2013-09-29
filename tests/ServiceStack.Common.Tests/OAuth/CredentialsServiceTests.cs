@@ -34,7 +34,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
             public override object HandleException(IRequestContext requestContext, T request, System.Exception ex)
             {
-                return DtoUtils.HandleException(new BasicResolver(), request, ex);
+                return DtoUtils.CreateErrorResponse(request, ex);
             }
         }
 
@@ -51,33 +51,39 @@ namespace ServiceStack.Common.Tests.OAuth
 	    [Test]
 		public void Empty_request_invalidates_all_fields()
 		{
-			var authService = GetAuthService();
+            using (new BasicAppHost().Init())
+            {
+                var authService = GetAuthService();
 
-            var response = (HttpError)GetAuthService(authService, new Authenticate());
-			var errors = response.GetFieldErrors();
+                var response = (HttpError)GetAuthService(authService, new Authenticate());
+                var errors = response.GetFieldErrors();
 
-			Assert.That(errors.Count, Is.EqualTo(2));
-			Assert.That(errors[0].ErrorCode, Is.EqualTo("NotEmpty"));
-			Assert.That(errors[0].FieldName, Is.EqualTo("UserName"));
-			Assert.That(errors[1].ErrorCode, Is.EqualTo("NotEmpty"));
-			Assert.That(errors[1].FieldName, Is.EqualTo("Password"));
+                Assert.That(errors.Count, Is.EqualTo(2));
+                Assert.That(errors[0].ErrorCode, Is.EqualTo("NotEmpty"));
+                Assert.That(errors[0].FieldName, Is.EqualTo("UserName"));
+                Assert.That(errors[1].ErrorCode, Is.EqualTo("NotEmpty"));
+                Assert.That(errors[1].FieldName, Is.EqualTo("Password"));
+            }
 		}
 
 		[Test]
 		public void Requires_UserName_and_Password()
 		{
-			var authService = GetAuthService();
+            using (new BasicAppHost().Init())
+            {
+                var authService = GetAuthService();
 
-            var response = (HttpError)GetAuthService(authService,
-                new Authenticate { provider = AuthenticateService.CredentialsProvider });
+                var response = (HttpError)GetAuthService(authService,
+                    new Authenticate { provider = AuthenticateService.CredentialsProvider });
 
-			var errors = response.GetFieldErrors();
+                var errors = response.GetFieldErrors();
 
-			Assert.That(errors.Count, Is.EqualTo(2));
-			Assert.That(errors[0].ErrorCode, Is.EqualTo("NotEmpty"));
-			Assert.That(errors[0].FieldName, Is.EqualTo("UserName"));
-			Assert.That(errors[1].FieldName, Is.EqualTo("Password"));
-			Assert.That(errors[1].ErrorCode, Is.EqualTo("NotEmpty"));
+                Assert.That(errors.Count, Is.EqualTo(2));
+                Assert.That(errors[0].ErrorCode, Is.EqualTo("NotEmpty"));
+                Assert.That(errors[0].FieldName, Is.EqualTo("UserName"));
+                Assert.That(errors[1].FieldName, Is.EqualTo("Password"));
+                Assert.That(errors[1].ErrorCode, Is.EqualTo("NotEmpty"));
+            }
 		}
 	}
 }

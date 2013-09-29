@@ -7,84 +7,116 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Web;
 using Funq;
+using ServiceStack.Caching;
 using ServiceStack.Configuration;
+using ServiceStack.Formats;
 using ServiceStack.Host;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
+using ServiceStack.Messaging;
+using ServiceStack.Metadata;
+using ServiceStack.Serialization;
+using ServiceStack.Text;
+using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public abstract class ServiceStackHost
+    public abstract partial class ServiceStackHost
         : IAppHost, IFunqlet, IHasContainer, IDisposable
     {
-        private readonly ILog log = LogManager.GetLogger(typeof(ServiceStackHost));
+        private readonly ILog Log = LogManager.GetLogger(typeof(ServiceStackHost));
+
         public static ServiceStackHost Instance { get; protected set; }
+
+        public DateTime StartedAt { get; set; }
+        public DateTime AfterInitAt { get; set; }
+        public DateTime ReadyAt { get; set; }
 
         protected ServiceStackHost(string serviceName, params Assembly[] assembliesWithServices)
         {
-            EndpointHost.ConfigureHost(this, serviceName, CreateServiceManager(assembliesWithServices));
+            this.StartedAt = DateTime.UtcNow;
+
+            ServiceName = serviceName;
+            Container = new Container { DefaultOwner = Owner.External };
+            ServiceManager = CreateServiceManager(assembliesWithServices);
+
+            ContentTypes = Web.ContentTypes.Instance;
+            PreRequestFilters = new List<Action<IHttpRequest, IHttpResponse>>();
+            GlobalRequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
+            GlobalResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
+            ViewEngines = new List<IViewEngine>();
+            ServiceExceptionHandlers = new List<HandleServiceExceptionDelegate>();
+            UncaughtExceptionHandlers = new List<HandleUncaughtExceptionDelegate>();
+            CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
+            Plugins = new List<IPlugin> {
+                new HtmlFormat(),
+                new CsvFormat(),
+                new MarkdownFormat(),
+                new PredefinedRoutesFeature(),
+                new MetadataFeature(),
+            };
         }
 
         public abstract void Configure(Container container);
 
         protected virtual ServiceManager CreateServiceManager(params Assembly[] assembliesWithServices)
         {
-            return new ServiceManager(assembliesWithServices);
+            return new ServiceManager(Container, assembliesWithServices);
             //Alternative way to inject Container + Service Resolver strategy
-            //return new ServiceManager(new Container(),
+            //return new ServiceManager(Container, 
             //    new ServiceController(() => assembliesWithServices.ToList().SelectMany(x => x.GetTypes())));
         }
 
-        public void SetConfig(AppHostConfig config)
+        public virtual void SetConfig(HostConfig config)
         {
-            if (config.ServiceName == null)
-                config.ServiceName = AppHostConfig.Instance.ServiceName;
-
-            if (config.ServiceManager == null)
-                config.ServiceManager = AppHostConfig.Instance.ServiceManager;
-
-            config.ServiceManager.ServiceController.EnableAccessRestrictions = config.EnableAccessRestrictions;
-
-            EndpointHost.Config = config;
+            Config = config;
         }
 
-        public void Init()
+        public virtual ServiceStackHost Init()
         {
             if (Instance != null)
             {
                 throw new InvalidDataException("ServiceStackHost.Instance has already been set");
             }
+            Service.GlobalResolver = Instance = this;
 
-            Instance = this;
+            Config = HostConfig.ResetInstance();
+            OnConfigLoad();
 
-            if (ServiceManager != null)
+            VirtualPathProvider = new FileSystemVirtualPathProvider(this, Config.WebHostPhysicalPath);
+            Config.DebugMode = GetType().Assembly.IsDebugBuild();
+            if (Config.DebugMode)
             {
-                ServiceManager.Init();
-                Configure(Container);
-            }
-            else
-            {
-                Configure(null);
+                Plugins.Add(new RequestInfoFeature());
             }
 
-            EndpointHost.AfterInit();
+            ServiceManager.Init();
+            Configure(Container);
+
             OnAfterInit();
+
+            var elapsed = DateTime.UtcNow - this.StartedAt;
+            Log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
+
+            return this;
         }
 
-        public virtual void OnAfterInit() {}
+        public string ServiceName { get; set; }
 
-        public ServiceManager ServiceManager { get; internal set; }
+        public ServiceManager ServiceManager { get; set; }
 
         public ServiceMetadata Metadata { get { return ServiceManager.Metadata; } }
-        
+
         public IServiceController ServiceController { get { return ServiceManager.ServiceController; } }
-        
-        public Container Container { get { return ServiceManager.Container; } }
-        
+
+        /// <summary>
+        /// The AppHost.Container. Note: it is not thread safe to register dependencies after AppStart.
+        /// </summary>
+        public Container Container { get; set; }
+
         public IServiceRoutes Routes { get { return ServiceController.Routes; } }
 
         public Dictionary<Type, Func<IHttpRequest, object>> RequestBinders
@@ -102,21 +134,223 @@ namespace ServiceStack
 
         public List<IViewEngine> ViewEngines { get; set; }
 
-        public HandleUncaughtExceptionDelegate ExceptionHandler { get; set; }
+        public List<HandleServiceExceptionDelegate> ServiceExceptionHandlers { get; set; }
 
-        public HandleServiceExceptionDelegate ServiceExceptionHandler { get; set; }
+        public List<HandleUncaughtExceptionDelegate> UncaughtExceptionHandlers { get; set; }
 
         public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
-
-        public AppHostConfig Config { get; set; }
 
         public List<IPlugin> Plugins { get; set; }
 
         public IVirtualPathProvider VirtualPathProvider { get; set; }
 
-        public virtual void RegisterAs<T, TAs>() where T : TAs
+        /// <summary>
+        /// Executed immediately before a Service is executed. Use return to change the request DTO used, must be of the same type.
+        /// </summary>
+        public virtual object OnPreExecuteServiceFilter(IService service, object request, IHttpRequest httpReq, IHttpResponse httpRes)
         {
-            this.Container.RegisterAutoWiredAs<T, TAs>();
+            return request;
+        }
+
+        /// <summary>
+        /// Executed immediately after a service is executed. Use return to change response used.
+        /// </summary>
+        public virtual object OnPostExecuteServiceFilter(IService service, object response, IHttpRequest httpReq, IHttpResponse httpRes)
+        {
+            return response;
+        }
+
+        /// <summary>
+        /// Occurs when the Service throws an Exception.
+        /// </summary>
+        public virtual object OnServiceException(IHttpRequest httpReq, object request, Exception ex)
+        {
+            object lastError = null;
+            foreach (var errorHandler in ServiceExceptionHandlers)
+            {
+                lastError = errorHandler(httpReq, request, ex) ?? lastError;
+            }
+            return lastError;
+        }
+
+        /// <summary>
+        /// Occurs when an exception is thrown whilst processing a request.
+        /// </summary>
+        public virtual void OnUncaughtException(IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Exception ex)
+        {
+            if (UncaughtExceptionHandlers.Count > 0)
+            {
+                foreach (var errorHandler in UncaughtExceptionHandlers)
+                {
+                    errorHandler(httpReq, httpRes, operationName, ex);
+                }
+            }
+            else
+            {
+                var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
+                var statusCode = ex.ToStatusCode();
+
+                //httpRes.WriteToResponse always calls .Close in it's finally statement so 
+                //if there is a problem writing to response, by now it will be closed
+                if (!httpRes.IsClosed)
+                {
+                    httpRes.WriteErrorToResponse(httpReq, httpReq.ResponseContentType, operationName, errorMessage, ex, statusCode);
+                }
+            }
+        }
+
+        private HostConfig config;
+        public HostConfig Config
+        {
+            get
+            {
+                return config;
+            }
+            set
+            {
+                config = value;
+                OnAfterConfigChanged();
+            }
+        }
+
+        public virtual void OnConfigLoad()
+        {
+        }
+
+        // Config has changed
+        public virtual void OnAfterConfigChanged()
+        {
+            config.ServiceEndpointsMetadataConfig = ServiceEndpointsMetadataConfig.Create(config.ServiceStackHandlerFactoryPath);
+            ServiceManager.ServiceController.EnableAccessRestrictions = config.EnableAccessRestrictions;
+
+            JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
+            JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;
+        }
+
+        //After configure called
+        public void OnAfterInit()
+        {
+            AfterInitAt = DateTime.UtcNow;
+
+            if (config.EnableFeatures != Feature.All)
+            {
+                if ((Feature.Xml & config.EnableFeatures) != Feature.Xml)
+                    config.IgnoreFormatsInMetadata.Add("xml");
+                if ((Feature.Json & config.EnableFeatures) != Feature.Json)
+                    config.IgnoreFormatsInMetadata.Add("json");
+                if ((Feature.Jsv & config.EnableFeatures) != Feature.Jsv)
+                    config.IgnoreFormatsInMetadata.Add("jsv");
+                if ((Feature.Csv & config.EnableFeatures) != Feature.Csv)
+                    config.IgnoreFormatsInMetadata.Add("csv");
+                if ((Feature.Html & config.EnableFeatures) != Feature.Html)
+                    config.IgnoreFormatsInMetadata.Add("html");
+                if ((Feature.Soap11 & config.EnableFeatures) != Feature.Soap11)
+                    config.IgnoreFormatsInMetadata.Add("soap11");
+                if ((Feature.Soap12 & config.EnableFeatures) != Feature.Soap12)
+                    config.IgnoreFormatsInMetadata.Add("soap12");
+            }
+
+            if ((Feature.Html & config.EnableFeatures) != Feature.Html)
+                Plugins.RemoveAll(x => x is HtmlFormat);
+
+            if ((Feature.Csv & config.EnableFeatures) != Feature.Csv)
+                Plugins.RemoveAll(x => x is CsvFormat);
+
+            if ((Feature.Markdown & config.EnableFeatures) != Feature.Markdown)
+                Plugins.RemoveAll(x => x is MarkdownFormat);
+
+            if ((Feature.PredefinedRoutes & config.EnableFeatures) != Feature.PredefinedRoutes)
+                Plugins.RemoveAll(x => x is PredefinedRoutesFeature);
+
+            if ((Feature.Metadata & config.EnableFeatures) != Feature.Metadata)
+                Plugins.RemoveAll(x => x is MetadataFeature);
+
+            if ((Feature.RequestInfo & config.EnableFeatures) != Feature.RequestInfo)
+                Plugins.RemoveAll(x => x is RequestInfoFeature);
+
+            if ((Feature.Razor & config.EnableFeatures) != Feature.Razor)
+                Plugins.RemoveAll(x => x is IRazorPlugin);    //external
+
+            if ((Feature.ProtoBuf & config.EnableFeatures) != Feature.ProtoBuf)
+                Plugins.RemoveAll(x => x is IProtoBufPlugin); //external
+
+            if ((Feature.MsgPack & config.EnableFeatures) != Feature.MsgPack)
+                Plugins.RemoveAll(x => x is IMsgPackPlugin);  //external
+
+            if (config.ServiceStackHandlerFactoryPath != null)
+                config.ServiceStackHandlerFactoryPath = config.ServiceStackHandlerFactoryPath.TrimStart('/');
+
+            var specifiedContentType = config.DefaultContentType; //Before plugins loaded
+
+            ConfigurePlugins();
+
+            LoadPlugin(Plugins.ToArray());
+            pluginsLoaded = true;
+
+            AfterPluginsLoaded(specifiedContentType);
+
+            var registeredCacheClient = TryResolve<ICacheClient>();
+            using (registeredCacheClient)
+            {
+                if (registeredCacheClient == null)
+                {
+                    Container.Register<ICacheClient>(new MemoryCacheClient());
+                }
+            }
+
+            var registeredMqService = TryResolve<IMessageService>();
+            var registeredMqFactory = TryResolve<IMessageFactory>();
+            if (registeredMqService != null && registeredMqFactory == null)
+            {
+                Container.Register(c => registeredMqService.MessageFactory);
+            }
+
+            ReadyAt = DateTime.UtcNow;
+        }
+
+        private void ConfigurePlugins()
+        {
+            //Some plugins need to initialize before other plugins are registered.
+
+            foreach (var plugin in Plugins)
+            {
+                var preInitPlugin = plugin as IPreInitPlugin;
+                if (preInitPlugin != null)
+                {
+                    preInitPlugin.Configure(this);
+                }
+            }
+        }
+
+        private void AfterPluginsLoaded(string specifiedContentType)
+        {
+            if (!String.IsNullOrEmpty(specifiedContentType))
+                config.DefaultContentType = specifiedContentType;
+            else if (String.IsNullOrEmpty(config.DefaultContentType))
+                config.DefaultContentType = MimeTypes.Json;
+
+            ServiceManager.AfterInit();
+        }
+
+        public T GetPlugin<T>() where T : class, IPlugin
+        {
+            return Plugins.FirstOrDefault(x => x is T) as T;
+        }
+
+        private bool pluginsLoaded;
+        public void AddPlugin(params IPlugin[] plugins)
+        {
+            if (pluginsLoaded)
+            {
+                LoadPlugin(plugins);
+            }
+            else
+            {
+                foreach (var plugin in plugins)
+                {
+                    Plugins.Add(plugin);
+                }
+            }
         }
 
         public virtual void Release(object instance)
@@ -140,43 +374,32 @@ namespace ServiceStack
 
         public virtual void OnEndRequest()
         {
-            foreach (var item in HostContext.Instance.Items.Values)
+            foreach (var item in RequestContext.Instance.Items.Values)
             {
                 Release(item);
             }
 
-            HostContext.Instance.EndRequest();
+            RequestContext.Instance.EndRequest();
         }
 
-        public void Register<T>(T instance)
+        public virtual void Register<T>(T instance)
         {
             this.Container.Register(instance);
         }
 
-        public T TryResolve<T>()
+        public virtual void RegisterAs<T, TAs>() where T : TAs
+        {
+            this.Container.RegisterAutoWiredAs<T, TAs>();
+        }
+
+        public virtual T TryResolve<T>()
         {
             return this.Container.TryResolve<T>();
         }
 
-        /// <summary>
-        /// Resolves from IoC container a specified type instance.
-        /// </summary>
-        public static T Resolve<T>()
+        public virtual T Resolve<T>()
         {
-            if (Instance == null) throw new InvalidOperationException("ServiceStackHost is not initialized.");
-            return Instance.Container.Resolve<T>();
-        }
-
-        /// <summary>
-        /// Resolves and auto-wires a ServiceStack Service
-        /// </summary>
-        public static T ResolveService<T>(HttpContext httpCtx) where T : class, IRequiresRequestContext
-        {
-            if (Instance == null) throw new InvalidOperationException("ServiceStackHost is not initialized.");
-            var service = Instance.Container.Resolve<T>();
-            if (service == null) return null;
-            service.RequestContext = httpCtx.ToRequestContext();
-            return service;
+            return this.Container.Resolve<T>();
         }
 
         public virtual IServiceRunner<TRequest> CreateServiceRunner<TRequest>(ActionContext actionContext)
@@ -200,7 +423,7 @@ namespace ServiceStack
                 }
                 catch (Exception ex)
                 {
-                    log.Warn("Error loading plugin " + plugin.GetType().Name, ex);
+                    Log.Warn("Error loading plugin " + plugin.GetType().Name, ex);
                 }
             }
         }
@@ -233,7 +456,10 @@ namespace ServiceStack
             if (ServiceManager != null)
             {
                 ServiceManager.Dispose();
+                ServiceManager = null;
             }
+
+            Instance = null;
         }
     }
 }

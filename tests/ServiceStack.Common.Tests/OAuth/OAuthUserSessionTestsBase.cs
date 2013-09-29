@@ -161,10 +161,9 @@ namespace ServiceStack.Common.Tests.OAuth
 			oAuthUserSession.Id = httpRes.CreateSessionId(httpReq);
 			httpReq.Items[ServiceExtensions.RequestItemsSessionKey] = oAuthUserSession;
 
-			var mockAppHost = new BasicAppHost {
-				Container = requestContext.Container
-			};
+			var mockAppHost = new BasicAppHost();
 
+		    requestContext.Container = mockAppHost.Container;
 			requestContext.Container.Register(userAuthRepository);
 
 		    var authService = new AuthenticateService {

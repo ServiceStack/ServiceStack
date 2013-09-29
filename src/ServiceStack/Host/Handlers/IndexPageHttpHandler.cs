@@ -16,7 +16,7 @@ namespace ServiceStack.Host.Handlers
 		/// <param name="operationName"></param>
 		public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
 		{
-			var defaultUrl = EndpointHost.Config.ServiceEndpointsMetadataConfig.DefaultMetadataUri;
+			var defaultUrl = HostContext.Config.ServiceEndpointsMetadataConfig.DefaultMetadataUri;
 
 			if (request.PathInfo == "/")
 			{
@@ -38,7 +38,7 @@ namespace ServiceStack.Host.Handlers
         /// <param name="context"></param>
 		public void ProcessRequest(HttpContext context)
 		{
-			var defaultUrl = EndpointHost.Config.ServiceEndpointsMetadataConfig.DefaultMetadataUri;
+			var defaultUrl = HostContext.Config.ServiceEndpointsMetadataConfig.DefaultMetadataUri;
 
 			if (context.Request.PathInfo == "/"
 				|| context.Request.FilePath.EndsWith("/"))

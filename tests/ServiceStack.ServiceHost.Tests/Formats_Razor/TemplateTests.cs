@@ -125,9 +125,13 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
                 },
         };
 
+        private ServiceStackHost appHost;
+
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
+            appHost = new BasicAppHost().Init();
+
             staticTemplatePath = "Views/Shared/_Layout.cshtml";
             staticTemplateContent = File.ReadAllText("~/{0}".Fmt(staticTemplatePath).MapProjectPath());
 
@@ -138,6 +142,12 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
             dynamicListPageContent = File.ReadAllText("~/{0}".Fmt(dynamicListPagePath).MapProjectPath());
 
             templateArgs = person;
+        }
+
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
         }
 
         [SetUp]

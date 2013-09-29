@@ -63,7 +63,7 @@ namespace ServiceStack.Host.Handlers
         protected Message ExecuteMessage(Message message, RequestAttributes requestAttributes, IHttpRequest httpRequest, IHttpResponse httpResponse)
         {
             var soapFeature = requestAttributes.ToSoapFeature();
-            EndpointHost.Config.AssertFeatures(soapFeature);
+            HostContext.AssertFeatures(soapFeature);
 
             var httpReq = HttpContext.Current != null && httpRequest == null
                     ? new AspNetRequest(HttpContext.Current.Request)
@@ -78,14 +78,14 @@ namespace ServiceStack.Host.Handlers
             if (httpRes == null)
                 throw new ArgumentNullException("httpResponse");
 
-            if (EndpointHost.ApplyPreRequestFilters(httpReq, httpRes))
+            if (HostContext.ApplyPreRequestFilters(httpReq, httpRes))
                 return PrepareEmptyResponse(message, httpReq);
 
             var requestMsg = message ?? GetRequestMessageFromStream(httpReq.InputStream);
             string requestXml = GetRequestXml(requestMsg);
             var requestType = GetRequestType(requestMsg, requestXml);
-            if (!EndpointHost.Metadata.CanAccess(requestAttributes, soapFeature.ToFormat(), requestType.Name))
-                throw EndpointHost.Config.UnauthorizedAccess(requestAttributes);
+            if (!HostContext.Metadata.CanAccess(requestAttributes, soapFeature.ToFormat(), requestType.Name))
+                throw HostContext.UnauthorizedAccess(requestAttributes);
 
             try
             {
@@ -104,18 +104,18 @@ namespace ServiceStack.Host.Handlers
                 httpReq.OperationName = requestType.Name;
                 httpReq.SetItem("SoapMessage", requestMsg);
 
-                var hasRequestFilters = EndpointHost.GlobalRequestFilters.Count > 0
+                var hasRequestFilters = HostContext.GlobalRequestFilters.Count > 0
                     || FilterAttributeCache.GetRequestFilterAttributes(request.GetType()).Any();
 
-                if (hasRequestFilters && EndpointHost.ApplyRequestFilters(httpReq, httpRes, request))
+                if (hasRequestFilters && HostContext.ApplyRequestFilters(httpReq, httpRes, request))
                     return EmptyResponse(requestMsg, requestType);
 
                 var response = ExecuteService(request, requestAttributes, httpReq, httpRes);
 
-                var hasResponseFilters = EndpointHost.GlobalResponseFilters.Count > 0
+                var hasResponseFilters = HostContext.GlobalResponseFilters.Count > 0
                    || FilterAttributeCache.GetResponseFilterAttributes(response.GetType()).Any();
 
-                if (hasResponseFilters && EndpointHost.ApplyResponseFilters(httpReq, httpRes, response))
+                if (hasResponseFilters && HostContext.ApplyResponseFilters(httpReq, httpRes, response))
                     return EmptyResponse(requestMsg, requestType);
 
                 var httpResult = response as IHttpResult;
@@ -189,7 +189,7 @@ namespace ServiceStack.Host.Handlers
         {
             var action = GetAction(requestMsg, xml);
 
-            var operationType = EndpointHost.Metadata.GetOperationType(action);
+            var operationType = HostContext.Metadata.GetOperationType(action);
             AssertOperationExists(action, operationType);
 
             return operationType;

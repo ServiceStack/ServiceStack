@@ -17,12 +17,6 @@ namespace ServiceStack.Utils
 			return exporter.Schemas;
 		}
 
-		//static readonly Regex StripXmlDeclarationRegex = new Regex(@"/\<?xml.+?\>/g", RegexOptions.Compiled);
-		//public static string StripXmlDeclaration(string xsd)
-		//{
-		//    return StripXmlDeclarationRegex.Replace(xsd, "");
-		//}
-
 		public static string GetXsd(XmlSchemaSet schemaSet)
 		{
 			var sb = new StringBuilder();

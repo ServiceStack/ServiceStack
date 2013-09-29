@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Metadata;
-using ServiceStack.ServiceHost;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 
@@ -13,6 +11,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class ServiceStackHttpHandlerFactoryTests
     {
+        ServiceStackHost appHost;
+
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
+        {
+            appHost = new BasicAppHost(GetType().Assembly).Init();
+            HostContext.CatchAllHandlers.Add(new PredefinedRoutesFeature().ProcessRequest);
+            HostContext.CatchAllHandlers.Add(new MetadataFeature().ProcessRequest);
+        }
+
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
+
         readonly Dictionary<string, Type> pathInfoMap = new Dictionary<string, Type>
 		{
             {"Metadata", typeof(IndexMetadataHandler)},
@@ -38,18 +52,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			{"Soap12/Metadata", typeof(Soap12MetadataHandler)},
 		};
 
-        [TestFixtureSetUp]
-        public void Setup()
-        {
-            RegisterConfig();
-        }
-
-        [TestFixtureTearDown]
-        public void TearDown()
-        {
-            EndpointHost.CatchAllHandlers.Clear();
-        }
-
         [Test]
         public void Resolves_the_right_handler_for_expexted_paths()
         {
@@ -59,13 +61,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var handler = HttpHandlerFactory.GetHandlerForPathInfo(null, item.Key, null, null);
                 Assert.That(handler.GetType(), Is.EqualTo(expectedType));
             }
-        }
-
-        private void RegisterConfig()
-        {
-            EndpointHost.ConfigureHost(new BasicAppHost(), "ServiceName", new ServiceManager(GetType().Assembly));
-            EndpointHost.CatchAllHandlers.Add(new PredefinedRoutesFeature().ProcessRequest);
-            EndpointHost.CatchAllHandlers.Add(new MetadataFeature().ProcessRequest);
         }
 
         [Test]

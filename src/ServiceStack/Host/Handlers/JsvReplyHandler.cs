@@ -42,7 +42,7 @@ namespace ServiceStack.Host.Handlers
             }
             catch (Exception ex)
             {
-                if (!EndpointHost.Config.WriteErrorsToResponse) throw;
+                if (!HostContext.Config.WriteErrorsToResponse) throw;
                 HandleException(httpReq, httpRes, operationName, ex);
             }
         }

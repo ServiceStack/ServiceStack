@@ -162,7 +162,7 @@ namespace ServiceStack.Host
             {
                 if (execMap.ContainsKey(actionCtx.Id)) continue;
 
-                var serviceRunner = EndpointHost.CreateServiceRunner<TRequest>(actionCtx);
+                var serviceRunner = HostContext.CreateServiceRunner<TRequest>(actionCtx);
                 execMap[actionCtx.Id] = serviceRunner.Process;
             }
         }

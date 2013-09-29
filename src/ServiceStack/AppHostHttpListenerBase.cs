@@ -18,24 +18,15 @@ namespace ServiceStack
 	public abstract class AppHostHttpListenerBase 
 		: HttpListenerBase
 	{
-		protected AppHostHttpListenerBase() {}
+        public string HandlerPath { get; set; }
 
 		protected AppHostHttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
-			: base(serviceName, assembliesWithServices)
-		{
-			AppHostConfig.Instance.ServiceStackHandlerFactoryPath = null;
-			AppHostConfig.Instance.MetadataRedirectPath = "metadata";
-		}
+			: base(serviceName, assembliesWithServices) {}
 
 		protected AppHostHttpListenerBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
 			: base(serviceName, assembliesWithServices)
 		{
-			AppHostConfig.Instance.ServiceStackHandlerFactoryPath = string.IsNullOrEmpty(handlerPath)
-				? null 
-                : handlerPath;			
-			AppHostConfig.Instance.MetadataRedirectPath = handlerPath == null 
-				? "metadata"
-				: PathUtils.CombinePaths(handlerPath, "metadata");
+		    HandlerPath = handlerPath;
 		}
 
 		protected override void ProcessRequest(HttpListenerContext context)
@@ -64,5 +55,17 @@ namespace ServiceStack
 			throw new NotImplementedException("Cannot execute handler: " + handler + " at PathInfo: " + httpReq.PathInfo);
 		}
 
+        public override void OnConfigLoad()
+        {
+            base.OnConfigLoad();
+
+            Config.ServiceStackHandlerFactoryPath = string.IsNullOrEmpty(HandlerPath)
+                ? null
+                : HandlerPath;
+
+            Config.MetadataRedirectPath = string.IsNullOrEmpty(HandlerPath)
+                ? "metadata"
+                : PathUtils.CombinePaths(HandlerPath, "metadata");
+        }
 	}
 }

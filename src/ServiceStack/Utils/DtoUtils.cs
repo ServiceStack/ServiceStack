@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
-using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Model;
-using ServiceStack.Redis;
 using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.Web;
@@ -13,7 +11,7 @@ namespace ServiceStack.Utils
 {
     public static class DtoUtils
     {
-        private static ILog Log = LogManager.GetLogger(typeof (DtoUtils));
+        private static readonly ILog Log = LogManager.GetLogger(typeof (DtoUtils));
 
         /// <summary>
         /// Naming convention for the ResponseStatus property name on the response DTO
@@ -146,9 +144,9 @@ namespace ServiceStack.Utils
         /// <param name="request"></param>
         /// <param name="ex"></param>
         /// <returns></returns>
-        public static object HandleException(IResolver iocResolver, object request, Exception ex)
+        public static object CreateErrorResponse(object request, Exception ex)
         {
-            if (EndpointHost.Config != null && EndpointHost.Config.ReturnsInnerException 
+            if (HostContext.Config.ReturnsInnerException 
                 && ex.InnerException != null && !(ex is IHttpError))
             {
                 ex = ex.InnerException;
@@ -156,7 +154,7 @@ namespace ServiceStack.Utils
 
             var responseStatus = ex.ToResponseStatus();
 
-            if (EndpointHost.DebugMode)
+            if (HostContext.DebugMode)
             {
                 // View stack trace in tests and on the client
                 responseStatus.StackTrace = GetRequestErrorBody(request) + "\n" + ex;
@@ -164,58 +162,11 @@ namespace ServiceStack.Utils
 
             Log.Error("ServiceBase<TRequest>::Service Exception", ex);
 
-            if (iocResolver != null)
-                LogErrorInRedisIfExists(iocResolver.TryResolve<IRedisClientsManager>(), request.GetType().Name, responseStatus);
-
             var errorResponse = CreateErrorResponse(request, ex, responseStatus);
 
             return errorResponse;
         }
-
-        /// <summary>
-        /// Service error logs are kept in 'urn:ServiceErrors:{ServiceName}'
-        /// </summary>
-        public const string UrnServiceErrorType = "ServiceErrors";
-
-        /// <summary>
-        /// Combined service error logs are maintained in 'urn:ServiceErrors:All'
-        /// </summary>
-        public const string CombinedServiceLogId = "All";
-
-        public static void LogErrorInRedisIfExists(
-            IRedisClientsManager redisManager, string operationName, ResponseStatus responseStatus)
-        {
-            //If Redis is configured, maintain rolling service error logs in Redis (an in-memory datastore)
-            if (redisManager == null) return;
-            try
-            {
-                //Get a thread-safe redis client from the client manager pool
-                using (var client = redisManager.GetClient())
-                {
-                    //Get a client with a native interface for storing 'ResponseStatus' objects
-                    var redis = client.As<ResponseStatus>();
-
-                    //Store the errors in predictable Redis-named lists i.e. 
-                    //'urn:ServiceErrors:{ServiceName}' and 'urn:ServiceErrors:All' 
-                    var redisSeriviceErrorList = redis.Lists[UrnId.Create(UrnServiceErrorType, operationName)];
-                    var redisCombinedErrorList = redis.Lists[UrnId.Create(UrnServiceErrorType, CombinedServiceLogId)];
-
-                    //Append the error at the start of the service-specific and combined error logs.
-                    redisSeriviceErrorList.Prepend(responseStatus);
-                    redisCombinedErrorList.Prepend(responseStatus);
-
-                    //Clip old error logs from the managed logs
-                    const int rollingErrorCount = 1000;
-                    redisSeriviceErrorList.Trim(0, rollingErrorCount);
-                    redisCombinedErrorList.Trim(0, rollingErrorCount);
-                }
-            }
-            catch (Exception suppressRedisException)
-            {
-                Log.Error("Could not append exception to redis service error logs", suppressRedisException);
-            }
-        }
-
+        
         /// <summary>
         /// Override to provide additional/less context about the Service Exception. 
         /// By default the request is serialized and appended to the ResponseStatus StackTrace.
@@ -232,7 +183,7 @@ namespace ServiceStack.Utils
                 //Serializing request successfully is not critical and only provides added error info
             }
 
-            return String.Format("[{0}: {1}]:\n[REQUEST: {2}]", (request?? new object()).GetType().Name, DateTime.UtcNow, requestString);
+            return string.Format("[{0}: {1}]:\n[REQUEST: {2}]", (request?? new object()).GetType().Name, DateTime.UtcNow, requestString);
         }
     }
 }

@@ -21,9 +21,9 @@ namespace ServiceStack.Metadata
 		protected override void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, ServiceMetadata metadata)
 		{
 			var defaultPage = new OperationsControl {
-				Title = EndpointHost.Config.ServiceName,
+				Title = HostContext.ServiceName,
                 OperationNames = metadata.GetOperationNamesForMetadata(httpReq, Format),
-				MetadataOperationPageBodyHtml = EndpointHost.Config.MetadataOperationPageBodyHtml,
+				MetadataOperationPageBodyHtml = HostContext.Config.MetadataOperationPageBodyHtml,
 			};
 
 			defaultPage.RenderControl(writer);

@@ -79,7 +79,7 @@ namespace ServiceStack
 
             if (!context.ResponseContentType.IsBinary())
             {
-                string serializedDto = EndpointHost.ContentTypes.SerializeToString(context, responseDto);
+                string serializedDto = HostContext.ContentTypes.SerializeToString(context, responseDto);
 
                 string modifiers = null;
                 if (context.ResponseContentType.MatchesContentType(MimeTypes.Json))
@@ -93,7 +93,7 @@ namespace ServiceStack
                         //Add a default expire timespan for jsonp requests,
                         //because they aren't cleared when calling ClearCaches()
                         if (expireCacheIn == null)
-                            expireCacheIn = EndpointHost.Config.DefaultJsonpCacheExpiration;
+                            expireCacheIn = HostContext.Config.DefaultJsonpCacheExpiration;
                     }
                 }
 
@@ -118,7 +118,7 @@ namespace ServiceStack
             else
             {
                 string modifiers = null;
-                byte[] serializedDto = EndpointHost.ContentTypes.SerializeToBytes(context, responseDto);
+                byte[] serializedDto = HostContext.ContentTypes.SerializeToBytes(context, responseDto);
                 var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, context.ResponseContentType, modifiers);
                 cacheClient.Set(cacheKeySerialized, serializedDto, expireCacheIn);
                 return serializedDto;
@@ -127,7 +127,7 @@ namespace ServiceStack
 
         public static void ClearCaches(this ICacheClient cacheClient, params string[] cacheKeys)
         {
-            var allContentTypes = new List<string>(EndpointHost.ContentTypes.ContentTypeFormats.Values) {
+            var allContentTypes = new List<string>(HostContext.ContentTypes.ContentTypeFormats.Values) {
 			    MimeTypes.XmlText, MimeTypes.JsonText, MimeTypes.JsvText
 			};
 

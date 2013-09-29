@@ -27,8 +27,8 @@ namespace Funq
 	        get
 	        {
                 if (Reuse == ReuseScope.Request)
-                    return HostContext.Instance.Items[this] is TService 
-                        ? (TService) HostContext.Instance.Items[this] 
+                    return RequestContext.Instance.Items[this] is TService 
+                        ? (TService) RequestContext.Instance.Items[this] 
                         : default(TService);
 	            
                 return instance;
@@ -36,7 +36,7 @@ namespace Funq
             set
             {
                 if (Reuse == ReuseScope.Request)
-                    HostContext.Instance.Items[this] = value;
+                    RequestContext.Instance.Items[this] = value;
                 else 
                     instance = value;
             }
@@ -58,7 +58,7 @@ namespace Funq
             else
             {
                 //Keep track of ReuseScope.None IDisposable instances to dispose of end of the request
-                HostContext.Instance.TrackDisposable(instance as IDisposable);
+                RequestContext.Instance.TrackDisposable(instance as IDisposable);
             }
 
 			// Track for disposal if necessary

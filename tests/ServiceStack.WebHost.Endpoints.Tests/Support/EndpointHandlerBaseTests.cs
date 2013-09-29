@@ -5,9 +5,7 @@ using System.Net.NetworkInformation;
 using Moq;
 using NUnit.Framework;
 using ServiceStack.Host.Handlers;
-using ServiceStack.ServiceHost;
-using ServiceStack.Support;
-using ServiceStack.Support.WebHost;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -16,6 +14,20 @@ namespace ServiceStack.WebHost.Endpoints.Support.Tests
     [TestFixture]
     public class EndpointHandlerBaseTests
     {
+        private ServiceStackHost appHost;
+
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
+        {
+            appHost = new BasicAppHost().Init();
+        }
+
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
+
         class TestHandler : ServiceStackHandlerBase
         {
             public override object CreateRequest(IHttpRequest request, string operationName)

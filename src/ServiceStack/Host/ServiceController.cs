@@ -52,7 +52,7 @@ namespace ServiceStack.Host
         private IResolver resolver;
         public IResolver Resolver
         {
-            get { return resolver ?? EndpointHost.AppHost; }
+            get { return resolver ?? Service.GlobalResolver; }
             set { resolver = value; }
         }
 
@@ -120,13 +120,13 @@ namespace ServiceStack.Host
                 var defaultAttr = attr as FallbackRouteAttribute;
                 if (defaultAttr != null)
                 {
-                    if (EndpointHost.Config != null)
+                    if (HostContext.Config != null)
                     {
-                        if (EndpointHost.Config.FallbackRestPath != null)
+                        if (HostContext.Config.FallbackRestPath != null)
                             throw new NotSupportedException(string.Format(
                                 "Config.FallbackRestPath is already defined. Only 1 [FallbackRoute] is allowed."));
 
-                        EndpointHost.Config.FallbackRestPath = (httpMethod, pathInfo, filePath) =>
+                        HostContext.Config.FallbackRestPath = (httpMethod, pathInfo, filePath) =>
                         {
                             var pathInfoParts = RestPath.GetPathPartsForMatching(pathInfo);
                             return restPath.IsMatch(httpMethod, pathInfoParts) ? restPath : null;
@@ -148,7 +148,7 @@ namespace ServiceStack.Host
 
         public void RegisterRestPath(RestPath restPath)
         {
-            if (!AppHostConfig.SkipRouteValidation)
+            if (!HostContext.SkipRouteValidation)
             {
                 if (!restPath.Path.StartsWith("/"))
                     throw new ArgumentException("Route '{0}' on '{1}' must start with a '/'".Fmt(restPath.Path, restPath.RequestType.Name));
@@ -258,7 +258,7 @@ namespace ServiceStack.Host
                 ServiceExecFn serviceExec = (reqCtx, req) =>
                     iserviceExec.Execute(reqCtx, service, req);
 
-                return ManagedServiceExec(serviceExec, service, requestContext, dto);
+                return ManagedServiceExec(serviceExec, (IService)service, requestContext, dto);
             };
 
             AddToRequestExecMap(requestType, serviceType, handlerFn);
@@ -284,9 +284,7 @@ namespace ServiceStack.Host
             }
         }
 
-        private static object ManagedServiceExec(
-            ServiceExecFn serviceExec,
-            object service, IRequestContext requestContext, object dto)
+        private static object ManagedServiceExec(ServiceExecFn serviceExec, IService service, IRequestContext requestContext, object request)
         {
             try
             {
@@ -294,37 +292,22 @@ namespace ServiceStack.Host
 
                 try
                 {
-                    if (EndpointHost.Config != null && EndpointHost.Config.PreExecuteServiceFilter != null)
-                    {
-                        EndpointHost.Config.PreExecuteServiceFilter(service, 
-                            requestContext.Get<IHttpRequest>(),
-                            requestContext.Get<IHttpResponse>());
-                    }
+                    var httpReq = requestContext.Get<IHttpRequest>();
+                    var httpRes = requestContext.Get<IHttpResponse>();
+
+                    request = HostContext.PreExecuteServiceFilter(service, request, httpReq, httpRes);
 
                     //Executes the service and returns the result
-                    var response = serviceExec(requestContext, dto);
+                    var response = serviceExec(requestContext, request);
 
-                    if (EndpointHost.Config != null && EndpointHost.Config.PostExecuteServiceFilter != null)
-                    {
-                        EndpointHost.Config.PostExecuteServiceFilter(service, 
-                            requestContext.Get<IHttpRequest>(),
-                            requestContext.Get<IHttpResponse>());
-
-                    }
-
+                    response = HostContext.PostExecuteServiceFilter(service, response, httpReq, httpRes);
+                    
                     return response;
                 }
                 finally
                 {
-                    if (EndpointHost.AppHost != null)
-                    {
-                        //Gets disposed by AppHost or ContainerAdapter if set
-                        EndpointHost.AppHost.Release(service);
-                    }
-                    else
-                    {
-                        using (service as IDisposable) { }
-                    }
+                    //Gets disposed by AppHost or ContainerAdapter if set
+                    HostContext.Release(service);
                 }
             }
             catch (TargetInvocationException tex)
@@ -352,7 +335,7 @@ namespace ServiceStack.Host
         //Execute MQ
         public object ExecuteMessage<T>(IMessage<T> mqMessage)
         {
-            return Execute(mqMessage.Body, new BasicRequestContext(this.Resolver, mqMessage));
+            return Execute(mqMessage.Body, new BasicRequestContext(mqMessage));
         }
 
         //Execute MQ with requestContext
@@ -363,7 +346,7 @@ namespace ServiceStack.Host
 
         public object Execute(object request)
         {
-            return Execute(request, null);
+            return Execute(request, new BasicRequestContext());
         }
 
         //Execute HTTP
@@ -402,7 +385,7 @@ namespace ServiceStack.Host
 
         public void AssertServiceRestrictions(Type requestType, RequestAttributes actualAttributes)
         {
-            if (EndpointHost.Config != null && !EndpointHost.Config.EnableAccessRestrictions) return;
+            if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions) return;
 
             RestrictAttribute restrictAttr;
             var hasNoAccessRestrictions = !requestServiceAttrs.TryGetValue(requestType, out restrictAttr)

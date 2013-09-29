@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Web;
-using ServiceStack.Configuration;
-using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -15,12 +13,12 @@ namespace ServiceStack.Host
 		private readonly IHttpResponse httpRes;
 
 		public HttpRequestContext(object dto)
-			: this(dto, null)
+            : this(null, null, dto, RequestAttributes.None)
 		{
 		}
 
 		public HttpRequestContext(object dto, RequestAttributes requestAttributes)
-			: this(dto, requestAttributes, null)
+            : this(null, null, dto, requestAttributes)
 		{
 		}
 
@@ -30,33 +28,17 @@ namespace ServiceStack.Host
 		}
 
 		public HttpRequestContext(IHttpRequest httpReq, IHttpResponse httpRes, object dto, RequestAttributes requestAttributes)
-			: this(dto, requestAttributes, null)
 		{
 			this.httpReq = httpReq;
 			this.httpRes = httpRes;
-			if (this.httpReq != null)
-			{
-				this.Files = httpReq.Files;
-			}
-			if (HttpContext.Current == null && httpReq != null)
-			{
-				this.RequestPreferences = new RequestPreferences(httpReq);
-			}
-		}
-
-		public HttpRequestContext(object requestDto, IFactoryProvider factory)
-			: this(requestDto, RequestAttributes.None, factory)
-		{
-		}
-
-		public HttpRequestContext(object dto, RequestAttributes requestAttributes, IFactoryProvider factory)
-		{
-			this.Dto = dto;
-			this.RequestAttributes = requestAttributes;
-			this.Factory = factory;
-			this.RequestPreferences = new RequestPreferences(HttpContext.Current);
-			this.Files = new IHttpFile[0];
-		}
+            this.Dto = dto;
+            this.RequestAttributes = requestAttributes;
+            
+            this.Files = this.httpReq != null ? httpReq.Files : new IHttpFile[0];
+		    this.RequestPreferences = HttpContext.Current == null && httpReq != null
+		        ? new RequestPreferences(httpReq)
+		        : new RequestPreferences(HttpContext.Current);
+        }
 
 		public bool AutoDispose { get; set; }
 
@@ -91,15 +73,13 @@ namespace ServiceStack.Host
 				return (T)this.httpRes;
 
 			var isDto = this.Dto as T;
-			return isDto ?? (this.Factory != null ? this.Factory.Resolve<T>() : null);
+		    return isDto ?? HostContext.TryResolve<T>();
 		}
 
 		public string GetHeader(string headerName)
 		{
 			return this.httpReq.Headers.Get(headerName);
 		}
-
-		public IFactoryProvider Factory { get; set; }
 
 		public string MimeType
 		{
@@ -190,11 +170,6 @@ namespace ServiceStack.Host
 		{
 			if (disposing)
 				GC.SuppressFinalize(this);
-
-			if (this.Factory != null)
-			{
-				this.Factory.Dispose();
-			}
 		}
 	}
 }

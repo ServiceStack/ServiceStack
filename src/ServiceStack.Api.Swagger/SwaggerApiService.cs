@@ -146,13 +146,13 @@ namespace ServiceStack.Api.Swagger
         {
             var httpReq = RequestContext.Get<IHttpRequest>();
             var path = "/" + request.Name;
-            var map = EndpointHost.ServiceManager.ServiceController.RestPathMap;
+            var map = HostContext.ServiceManager.ServiceController.RestPathMap;
             var paths = new List<RestPath>();
 
-            var basePath = EndpointHost.Config.WebHostUrl;
+            var basePath = HostContext.Config.WebHostUrl;
             if (basePath == null)
             {
-                basePath = EndpointHost.Config.UseHttpsLinks
+                basePath = HostContext.Config.UseHttpsLinks
                     ? httpReq.GetParentPathUrl().ToHttps()
                     : httpReq.GetParentPathUrl();
             }
@@ -161,7 +161,7 @@ namespace ServiceStack.Api.Swagger
             {
                 basePath = basePath.Substring(0, basePath.LastIndexOf(SwaggerResourcesService.RESOURCE_PATH, StringComparison.OrdinalIgnoreCase));
             }
-            var meta = EndpointHost.Metadata;
+            var meta = HostContext.Metadata;
             foreach (var key in map.Keys)
             {
                 paths.AddRange(map[key].Where(x => (x.Path == path || x.Path.StartsWith(path + "/") && meta.IsVisible(Request, Format.Json, x.RequestType.Name))));

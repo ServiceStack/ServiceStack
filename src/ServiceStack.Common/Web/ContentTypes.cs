@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using ServiceStack.Common;
 using ServiceStack.Serialization;
 using ServiceStack.Text;
 
@@ -173,8 +172,7 @@ namespace ServiceStack.Web
                     return result;
                 }
             }
-
-
+            
             var contentTypeAttr = ContentFormat.GetEndpointAttributes(contentType);
             switch (contentTypeAttr)
             {

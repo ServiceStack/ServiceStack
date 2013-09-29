@@ -31,7 +31,7 @@ namespace ServiceStack.Api.Swagger
 
         public static bool IsEnabled
         {
-            get { return EndpointHost.Plugins.Any(x => x is SwaggerFeature); }
+            get { return HostContext.HasPlugin<SwaggerFeature>(); }
         }
     }
 }

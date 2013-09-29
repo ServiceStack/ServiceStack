@@ -14,19 +14,14 @@ namespace ServiceStack
     /// </summary>
     public class Service : IService, IRequiresRequestContext, IServiceBase, IDisposable
     {
-        public static IResolver GlobalResolver { get; set; } //for testing
+        public static IResolver GlobalResolver { get; set; }
 
         public IRequestContext RequestContext { get; set; }
 
         private IResolver resolver;
         public virtual IResolver GetResolver()
         {
-            return resolver ?? GlobalResolver ?? EndpointHost.AppHost;
-        }
-
-        public virtual IAppHost GetAppHost()
-        {
-            return (resolver as IAppHost) ?? EndpointHost.AppHost;
+            return resolver ?? GlobalResolver;
         }
 
         public virtual Service SetResolver(IResolver resolver)

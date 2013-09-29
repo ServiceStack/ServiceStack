@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using ServiceStack.Host;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceHost.Tests
@@ -10,6 +11,20 @@ namespace ServiceStack.ServiceHost.Tests
     [TestFixture]
     public class RestPathTests
     {
+        private ServiceStackHost appHost;
+
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
+        {
+            appHost = new BasicAppHost().Init();
+        }
+
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
+
         public class SimpleType
         {
             public string Name { get; set; }
@@ -38,7 +53,7 @@ namespace ServiceStack.ServiceHost.Tests
         [Test]
         public void ShowAllow()
         {
-            var config = AppHostConfig.Instance;
+            var config = HostContext.Config;
 
             const string fileName = "/path/to/image.GIF";
             var fileExt = fileName.Substring(fileName.LastIndexOf('.') + 1);

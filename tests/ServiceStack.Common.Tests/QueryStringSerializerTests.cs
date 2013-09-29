@@ -3,12 +3,10 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Web;
-using Funq;
 using NUnit.Framework;
 using ServiceStack.Host;
 using ServiceStack.Testing;
 using ServiceStack.Text;
-using ServiceStack.Web;
 
 namespace ServiceStack.Common.Tests
 {
@@ -19,7 +17,7 @@ namespace ServiceStack.Common.Tests
         public void Can_deserialize_TestRequest_QueryStringSerializer_output()
         {
             // Setup
-            new BasicAppHost(new Container(), typeof(TestService).Assembly).Init();
+            new BasicAppHost(typeof(TestService).Assembly).Init();
             var restPath = new RestPath(typeof(TestRequest), "/service", "GET");
             var restHandler = new RestHandler { RestPath = restPath };
 

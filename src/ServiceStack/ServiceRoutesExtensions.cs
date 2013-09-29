@@ -64,7 +64,7 @@ namespace ServiceStack
 
         private static void AddRoute(this IServiceRoutes routes, Type requestType, string allowedVerbs)
         {
-            foreach (var strategy in EndpointHost.Config.RouteNamingConventions)
+            foreach (var strategy in HostContext.Config.RouteNamingConventions)
             {
                 strategy(routes, requestType, allowedVerbs);
             }

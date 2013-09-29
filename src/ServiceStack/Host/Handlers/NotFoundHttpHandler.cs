@@ -27,7 +27,7 @@ namespace ServiceStack.Host.Handlers
 
 		    var text = new StringBuilder();
 
-            if (EndpointHost.DebugMode)
+            if (HostContext.DebugMode)
             {
                 text.AppendLine("Handler for Request not found: \n\n")
                     .AppendLine("Request.HttpMethod: " + request.HttpMethod)

@@ -8,7 +8,7 @@ namespace ServiceStack.ServiceHost.Tests.Routes
     [TestFixture]
     public class ServiceRoutesTests
     {
-        BasicAppHost loadAppHost;
+        ServiceStackHost loadAppHost;
 
         [TestFixtureSetUp]
         public void TestFixtureSetUp()

@@ -2,21 +2,34 @@
 using Moq;
 using NUnit.Framework;
 using ServiceStack.Host;
-using ServiceStack.ServiceHost;
 using ServiceStack.Web;
+using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
 	[TestFixture]
 	public class RestHandlerTests
 	{
+        ServiceStackHost appHost;
+
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
+        {
+            appHost = new TestAppHost().Init();
+        }
+
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
+
 		[Test]
 		public void Throws_binding_exception_when_unable_to_match_path_values()
 		{
 			var path = "/request/{will_not_match_property_id}/pathh";
 			var request = ConfigureRequest(path);
 			var response = new Mock<IHttpResponse>().Object;
-			ConfigureHost();
 
 			var handler = new RestHandler
 			{
@@ -32,7 +45,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			var path = "/request/{id}/path";
 			var request = ConfigureRequest(path);
 			var response = new Mock<IHttpResponse>().Object;
-			ConfigureHost();
 
 			var handler = new RestHandler
 			{
@@ -49,12 +61,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			request.Expect(x => x.PathInfo).Returns(path);
 
 			return request.Object;
-		}
-
-		private void ConfigureHost()
-		{
-			var host = ServiceHostTestBase.CreateAppHost();
-			EndpointHost.ConfigureHost(host, string.Empty, new ServiceManager(typeof(RestHandlerTests).Assembly).Init());		
 		}
 
 		public class RequestType

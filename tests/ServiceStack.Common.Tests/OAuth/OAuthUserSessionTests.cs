@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using NUnit.Framework;
 using ServiceStack.Auth;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -11,6 +12,20 @@ namespace ServiceStack.Common.Tests.OAuth
     [TestFixture]
     public class OAuthUserSessionTests : OAuthUserSessionTestsBase
     {
+        private ServiceStackHost appHost;
+
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
+        {
+            appHost = new BasicAppHost().Init();
+        }
+
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
+
         [Test, TestCaseSource("UserAuthRepositorys")]
         public void Does_persist_TwitterOAuth(IUserAuthRepository userAuthRepository)
         {
@@ -304,13 +319,13 @@ namespace ServiceStack.Common.Tests.OAuth
 		[Test, TestCaseSource("UserAuthRepositorys")]
 		public void Can_AutoLogin_whilst_Registering(IUserAuthRepository userAuthRepository)
 		{
-			InitTest(userAuthRepository);
-			var oAuthUserSession = requestContext.ReloadSession();
-			RegisterDto.AutoLogin = true;
-			Register(userAuthRepository, oAuthUserSession, RegisterDto);
+            InitTest(userAuthRepository);
+            var oAuthUserSession = requestContext.ReloadSession();
+            RegisterDto.AutoLogin = true;
+            Register(userAuthRepository, oAuthUserSession, RegisterDto);
 
-			oAuthUserSession = requestContext.ReloadSession();
-			Assert.That(oAuthUserSession.IsAuthenticated, Is.True);
+            oAuthUserSession = requestContext.ReloadSession();
+            Assert.That(oAuthUserSession.IsAuthenticated, Is.True);
 		}
 
     }

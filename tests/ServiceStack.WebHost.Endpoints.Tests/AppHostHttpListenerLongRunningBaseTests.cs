@@ -15,7 +15,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     class AppHostHttpListenerLongRunningBaseTests
     {
         private const string ListeningOn = "http://localhost:82/";
-        ExampleAppHostHttpListenerLongRunning appHost;
+        ExampleAppHostHttpListenerPool appHost;
 
         static AppHostHttpListenerLongRunningBaseTests()
         {
@@ -25,7 +25,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [TestFixtureSetUp]
         public void OnTestFixtureStartUp()
         {
-            appHost = new ExampleAppHostHttpListenerLongRunning();
+            appHost = new ExampleAppHostHttpListenerPool();
             appHost.Init();
             appHost.Start(ListeningOn);
 
@@ -37,7 +37,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();
-            appHost = null;
         }
 
         [Test]

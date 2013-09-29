@@ -61,16 +61,16 @@ namespace ServiceStack.ServiceHost
             var httpCookie = new HttpCookie(cookie.Name, cookie.Value) {
                 Path = cookie.Path,
                 Expires = cookie.Expires,
-                HttpOnly = !EndpointHost.Config.AllowNonHttpOnlyCookies || cookie.HttpOnly,
+                HttpOnly = !HostContext.Config.AllowNonHttpOnlyCookies || cookie.HttpOnly,
                 Secure = cookie.Secure
             };
             if (!string.IsNullOrEmpty(cookie.Domain))
             {
                 httpCookie.Domain = cookie.Domain;
             }
-            else if (EndpointHost.Config.RestrictAllCookiesToDomain != null)
+            else if (HostContext.Config.RestrictAllCookiesToDomain != null)
             {
-                httpCookie.Domain = EndpointHost.Config.RestrictAllCookiesToDomain;
+                httpCookie.Domain = HostContext.Config.RestrictAllCookiesToDomain;
             }
             return httpCookie;
         }
@@ -94,9 +94,9 @@ namespace ServiceStack.ServiceHost
             {
                 sb.AppendFormat(";domain={0}", cookie.Domain);
             }
-            else if (EndpointHost.Config.RestrictAllCookiesToDomain != null)
+            else if (HostContext.Config.RestrictAllCookiesToDomain != null)
             {
-                sb.AppendFormat(";domain={0}", EndpointHost.Config.RestrictAllCookiesToDomain);
+                sb.AppendFormat(";domain={0}", HostContext.Config.RestrictAllCookiesToDomain);
             }
 
             if (cookie.Secure)

@@ -7,6 +7,7 @@ using ServiceStack.Common.Tests.ServiceClient.Web;
 using ServiceStack.Host;
 using NUnit.Framework;
 using ServiceStack.Support.WebHost;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -178,7 +179,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public override void Configure(Funq.Container container)
             {
                 container.Register<ICacheClient>(c => new MemoryCacheClient()).ReusedWithin(Funq.ReuseScope.None);
-                SetConfig(new AppHostConfig { DebugMode = true }); //show stacktraces
+                SetConfig(new HostConfig { DebugMode = true }); //show stacktraces
             }
         }
 
@@ -305,9 +306,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void RequestFilters_are_prioritized()
         {
-            EndpointHost.ServiceManager = new ServiceManager(typeof(DummyHolder).Assembly);
-
-            EndpointHost.ServiceManager.Metadata.Add(typeof(AttributeFilteredService), typeof(DummyHolder), null);
+            appHost.ServiceManager.Metadata.Add(typeof(AttributeFilteredService), typeof(DummyHolder), null);
 
             var attributes = FilterAttributeCache.GetRequestFilterAttributes(typeof(DummyHolder));
             var attrPriorities = attributes.ToList().ConvertAll(x => x.Priority);
@@ -330,7 +329,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
 
             var execOrderPriorities = execOrder.ToList().ConvertAll(x => x.Priority);
-            Console.WriteLine(execOrderPriorities.Dump());
+            execOrderPriorities.PrintDump();
             Assert.That(execOrderPriorities, Is.EquivalentTo(new[] { int.MinValue, -100, -90, -80, 0 }));
         }
     }

@@ -21,11 +21,14 @@ namespace ServiceStack.Common.Tests
         [Test]
         public void Can_parse_Ips()
         {
-            var result = CreateRequest("204.2.145.235").GetAttributes();
+            using (new BasicAppHost().Init())
+            {
+                var result = CreateRequest("204.2.145.235").GetAttributes();
 
-            Assert.That(result.Has(RequestAttributes.External));
-            Assert.That(result.Has(RequestAttributes.HttpGet));
-            Assert.That(result.Has(RequestAttributes.InSecure));
+                Assert.That(result.Has(RequestAttributes.External));
+                Assert.That(result.Has(RequestAttributes.HttpGet));
+                Assert.That(result.Has(RequestAttributes.InSecure));
+            }
         }
 
         [Flags]

@@ -104,22 +104,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 JsConfig.EmitCamelCaseNames = true;
 
-                SetConfig(new AppHostConfig { DebugMode = false });
+                SetConfig(new HostConfig { DebugMode = false });
 
                 //Custom global uncaught exception handling strategy
-                this.ExceptionHandler = (req, res, operationName, ex) =>
+                this.UncaughtExceptionHandlers.Add((req, res, operationName, ex) =>
                 {
                     res.Write(string.Format("Exception {0}", ex.GetType().Name));
                     res.EndRequest(skipHeaders: true);
-                };
+                });
 
-                this.ServiceExceptionHandler = (httpReq, request, exception) =>
+                this.ServiceExceptionHandlers.Add((httpReq, request, exception) =>
                 {
                     if (request is UncatchedException)
                         throw exception;
 
                     return null;
-                };
+                });
             }
         }
 
@@ -137,7 +137,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();
-            EndpointHost.ExceptionHandler = null;
+            appHost.UncaughtExceptionHandlers = null;
         }
 
         static IRestClient[] ServiceClients = 

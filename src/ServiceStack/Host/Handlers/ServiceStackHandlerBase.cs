@@ -92,7 +92,7 @@ namespace ServiceStack.Host.Handlers
             {
                 if (!string.IsNullOrEmpty(contentType) && httpReq.ContentLength > 0)
                 {
-                    var deserializer = EndpointHost.AppHost.ContentTypes.GetStreamDeserializer(contentType);
+                    var deserializer = HostContext.ContentTypes.GetStreamDeserializer(contentType);
                     if (deserializer != null)
                     {
                         return deserializer(requestType, httpReq.InputStream);
@@ -111,7 +111,7 @@ namespace ServiceStack.Host.Handlers
         protected static object GetCustomRequestFromBinder(IHttpRequest httpReq, Type requestType)
         {
             Func<IHttpRequest, object> requestFactoryFn;
-            (ServiceManager ?? EndpointHost.ServiceManager).ServiceController.RequestTypeFactoryMap.TryGetValue(
+            (ServiceManager ?? HostContext.ServiceManager).ServiceController.RequestTypeFactoryMap.TryGetValue(
                 requestType, out requestFactoryFn);
 
             return requestFactoryFn != null ? requestFactoryFn(httpReq) : null;
@@ -161,18 +161,18 @@ namespace ServiceStack.Host.Handlers
         {
             return ServiceManager != null
                 ? ServiceManager.Metadata.GetOperationType(operationName)
-                : EndpointHost.Metadata.GetOperationType(operationName);
+                : HostContext.Metadata.GetOperationType(operationName);
         }
 
         protected static object ExecuteService(object request, RequestAttributes requestAttributes,
             IHttpRequest httpReq, IHttpResponse httpRes)
         {
-            return EndpointHost.ExecuteService(request, requestAttributes, httpReq, httpRes);
+            return HostContext.ExecuteService(request, requestAttributes, httpReq, httpRes);
         }
 
         public RequestAttributes GetEndpointAttributes(System.ServiceModel.OperationContext operationContext)
         {
-            if (!EndpointHost.Config.EnableAccessRestrictions) return default(RequestAttributes);
+            if (!HostContext.Config.EnableAccessRestrictions) return default(RequestAttributes);
 
             var portRestrictions = default(RequestAttributes);
             var ipAddress = GetIpAddress(operationContext);
@@ -218,7 +218,7 @@ namespace ServiceStack.Host.Handlers
 
             try
             {
-                EndpointHost.ExceptionHandler(httpReq, httpRes, operationName, ex);
+                HostContext.RaiseUncaughtException(httpReq, httpRes, operationName, ex);
             }
             catch (Exception writeErrorEx)
             {
@@ -238,19 +238,19 @@ namespace ServiceStack.Host.Handlers
             if (operationName == null)
                 throw new ArgumentNullException("operationName");
 
-            if (EndpointHost.Config.EnableFeatures != Feature.All)
+            if (HostContext.Config.EnableFeatures != Feature.All)
             {
-                if (!EndpointHost.Config.HasFeature(feature))
+                if (!HostContext.HasFeature(feature))
                 {
-                    EndpointHost.Config.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Feature Not Available");
+                    HostContext.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Feature Not Available");
                     return false;
                 }
             }
 
             var format = feature.ToFormat();
-            if (!EndpointHost.Metadata.CanAccess(httpReq, format, operationName))
+            if (!HostContext.Metadata.CanAccess(httpReq, format, operationName))
             {
-                EndpointHost.Config.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Service Not Available");
+                HostContext.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Service Not Available");
                 return false;
             }
             return true;

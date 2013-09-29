@@ -117,7 +117,6 @@ namespace NewApi.Todos
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
-            appHost = null;
         }
 
         [Test]

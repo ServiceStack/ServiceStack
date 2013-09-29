@@ -10,10 +10,19 @@ namespace ServiceStack.Common.Tests.OAuth
     [TestFixture]
     public class RequiredRolesTests
     {
+        private ServiceStackHost appHost;
+
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
+            appHost = new BasicAppHost().Init();
             AuthenticateService.Init(() => new AuthUserSession(), new CredentialsAuthProvider());
+        }
+
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
         }
 
         public class MockUserAuthRepository : InMemoryAuthRepository

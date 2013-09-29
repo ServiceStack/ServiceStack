@@ -103,7 +103,7 @@ namespace ServiceStack.Formats
             if (!WatchForModifiedPages)
                 WatchForModifiedPages = appHost.Config.DebugMode;
 
-            foreach (var ns in AppHostConfig.RazorNamespaces)
+            foreach (var ns in appHost.Config.RazorNamespaces)
                 Evaluator.AddAssembly(ns);
 
             this.MarkdownBaseType = appHost.Config.MarkdownBaseType ?? this.MarkdownBaseType;

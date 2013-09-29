@@ -47,10 +47,10 @@ namespace ServiceStack.Api.Swagger
 
         public object Get(Resources request)
         {
-            var basePath = EndpointHost.Config.WebHostUrl;
+            var basePath = HostContext.Config.WebHostUrl;
             if (basePath == null)
             {
-                basePath = EndpointHost.Config.UseHttpsLinks
+                basePath = HostContext.Config.UseHttpsLinks
                     ? Request.GetParentPathUrl().ToHttps()
                     : Request.GetParentPathUrl();
             }
@@ -61,7 +61,7 @@ namespace ServiceStack.Api.Swagger
                 BasePath = basePath,
                 Apis = new List<RestService>()
             };
-            var operations = EndpointHost.Metadata;
+            var operations = HostContext.Metadata;
             var allTypes = operations.GetAllTypes();
             var allOperationNames = operations.GetAllOperationNames();
             foreach (var operationName in allOperationNames)
@@ -83,7 +83,7 @@ namespace ServiceStack.Api.Swagger
 
         protected void CreateRestPaths(List<RestService> apis, Type operationType, String operationName)
         {
-            var map = EndpointHost.ServiceManager.ServiceController.RestPathMap;
+            var map = HostContext.ServiceManager.ServiceController.RestPathMap;
             var paths = new List<string>();
             foreach (var key in map.Keys)
             {

@@ -1,3 +1,4 @@
+using System.Reflection;
 using Funq;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 
@@ -10,8 +11,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 	public class TestAppHost
 		: AppHostBase
 	{
-		public TestAppHost()
-			: base("Example Service", typeof(Nested).Assembly)
+        public TestAppHost(params Assembly[] assembliesWithServices)
+            : base("Example Service", 
+                    assembliesWithServices.Length > 0 ? assembliesWithServices : new[] { typeof(Nested).Assembly })
 		{
 			Instance = null;
 		}

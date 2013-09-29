@@ -12,17 +12,20 @@ namespace ServiceStack.Testing
         {
             this.Cookies = new Dictionary<string, Cookie>();
             this.Files = new IHttpFile[0];
-            this.Container = new Container();
+            this.Container = ServiceStackHost.Instance != null ? ServiceStackHost.Instance.Container : new Container();
             var httpReq = new MockHttpRequest { Container = this.Container };
             httpReq.AddSessionCookies();
-            this.Container.Register<IHttpRequest>(httpReq);
-            var httpRes = new MockHttpResponse();
-            this.Container.Register<IHttpResponse>(httpRes);
-            httpReq.Container = this.Container;
+            this.httpReq = httpReq;
+            this.httpRes = new MockHttpResponse();
         }
 
         public T Get<T>() where T : class
         {
+            if (typeof(T) == typeof(IHttpRequest))
+                return (T)this.httpReq;
+            if (typeof(T) == typeof(IHttpResponse))
+                return (T)this.httpRes;
+
             return Container.TryResolve<T>();
         }
 
@@ -33,7 +36,10 @@ namespace ServiceStack.Testing
             return Get<IHttpRequest>().Headers[headerName];
         }
 
-        public Container Container { get; private set; }
+        private readonly IHttpRequest httpReq;
+        private readonly IHttpResponse httpRes;
+        public Container Container { get; set; }
+
         public IDictionary<string, Cookie> Cookies { get; private set; }
         public RequestAttributes RequestAttributes { get; private set; }
         public IRequestPreferences RequestPreferences { get; private set; }

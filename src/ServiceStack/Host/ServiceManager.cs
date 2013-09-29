@@ -7,8 +7,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Host
 {
-	public class ServiceManager
-		: IDisposable
+	public class ServiceManager : IDisposable
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceManager));
 
@@ -16,26 +15,18 @@ namespace ServiceStack.Host
 		public ServiceController ServiceController { get; private set; }
         public ServiceMetadata Metadata { get; internal set; }
 
-        //public ServiceOperations ServiceOperations { get; set; }
-        //public ServiceOperations AllServiceOperations { get; set; }
-
-		public ServiceManager(params Assembly[] assembliesWithServices)
+        public ServiceManager(Container container, params Assembly[] assembliesWithServices)
 		{
 			if (assembliesWithServices == null || assembliesWithServices.Length == 0)
 				throw new ArgumentException(
 					"No Assemblies provided in your AppHost's base constructor.\n"
 					+ "To register your services, please provide the assemblies where your web services are defined.");
 
-			this.Container = new Container { DefaultOwner = Owner.External };
+			this.Container = container ?? new Container();
+            this.Container.DefaultOwner = Owner.External;
             this.Metadata = new ServiceMetadata();
             this.ServiceController = new ServiceController(() => GetAssemblyTypes(assembliesWithServices), this.Metadata);
 		}
-
-        public ServiceManager(Container container, params Assembly[] assembliesWithServices)
-            : this(assembliesWithServices)
-        {
-            this.Container = container ?? new Container();
-        }
 
         /// <summary>
         /// Inject alternative container and strategy for resolving Service Types
@@ -46,6 +37,7 @@ namespace ServiceStack.Host
                 throw new ArgumentNullException("serviceController");
 
             this.Container = container ?? new Container();
+            this.Container.DefaultOwner = Owner.External;
             this.Metadata = serviceController.Metadata; //always share the same metadata
             this.ServiceController = serviceController;
 
@@ -113,7 +105,7 @@ namespace ServiceStack.Host
 
 		public object Execute(object dto)
 		{
-			return this.ServiceController.Execute(dto, null);
+			return this.ServiceController.Execute(dto, new BasicRequestContext());
 		}
 
 		public void Dispose()

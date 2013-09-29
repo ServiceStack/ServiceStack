@@ -188,7 +188,7 @@ namespace ServiceStack.Host
 
         public bool IsVisible(IHttpRequest httpReq, Operation operation)
         {
-            if (EndpointHost.Config != null && !EndpointHost.Config.EnableAccessRestrictions)
+            if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
                 return true;
 
             if (operation.RestrictTo == null) return true;
@@ -201,7 +201,7 @@ namespace ServiceStack.Host
 
         public bool IsVisible(IHttpRequest httpReq, Format format, string operationName)
         {
-            if (EndpointHost.Config != null && !EndpointHost.Config.EnableAccessRestrictions)
+            if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
                 return true;
 
             Operation operation;
@@ -227,7 +227,7 @@ namespace ServiceStack.Host
 
         public bool CanAccess(RequestAttributes reqAttrs, Format format, string operationName)
         {
-            if (EndpointHost.Config != null && !EndpointHost.Config.EnableAccessRestrictions)
+            if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
                 return true;
 
             Operation operation;
@@ -248,7 +248,7 @@ namespace ServiceStack.Host
 
         public bool CanAccess(Format format, string operationName)
         {
-            if (EndpointHost.Config != null && !EndpointHost.Config.EnableAccessRestrictions)
+            if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
                 return true;
 
             Operation operation;
@@ -334,8 +334,8 @@ namespace ServiceStack.Host
         public List<string> GetReplyOperationNames(Format format)
         {
             return Metadata.OperationsMap.Values
-                .Where(x => EndpointHost.Config != null
-                    && EndpointHost.Config.MetadataPagesConfig.CanAccess(format, x.Name))
+                .Where(x => HostContext.Config != null
+                    && HostContext.MetadataPagesConfig.CanAccess(format, x.Name))
                 .Where(x => !x.IsOneWay)
                 .Select(x => x.RequestType.Name)
                 .ToList();
@@ -344,8 +344,8 @@ namespace ServiceStack.Host
         public List<string> GetOneWayOperationNames(Format format)
         {
             return Metadata.OperationsMap.Values
-                .Where(x => EndpointHost.Config != null
-                    && EndpointHost.Config.MetadataPagesConfig.CanAccess(format, x.Name))
+                .Where(x => HostContext.Config != null
+                    && HostContext.MetadataPagesConfig.CanAccess(format, x.Name))
                 .Where(x => x.IsOneWay)
                 .Select(x => x.RequestType.Name)
                 .ToList();

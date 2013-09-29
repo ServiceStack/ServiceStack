@@ -15,7 +15,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof (RestsTestBase));
 
-		readonly AppHostConfig defaultConfig = new AppHostConfig();
+		readonly HostConfig defaultConfig = new HostConfig();
 
 		public RestsTestBase()
 			: base(Config.ServiceStackBaseUri, typeof(HelloService).Assembly)

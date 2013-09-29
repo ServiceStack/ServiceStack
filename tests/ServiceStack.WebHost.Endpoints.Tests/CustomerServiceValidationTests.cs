@@ -280,7 +280,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 
 		protected static IServiceClient UnitTestServiceClient()
 		{
-            ServiceStackHandlerBase.ServiceManager = new ServiceManager(typeof(SecureService).Assembly).Init();
+            ServiceStackHandlerBase.ServiceManager = new ServiceManager(new Container(), typeof(SecureService).Assembly).Init();
 			return new DirectServiceClient(ServiceStackHandlerBase.ServiceManager);
 		}
 

@@ -49,7 +49,7 @@ namespace ServiceStack.Host.HttpListener
         public T TryResolve<T>()
         {
             return Container == null
-                ? EndpointHost.AppHost.TryResolve<T>()
+                ? HostContext.TryResolve<T>()
                 : Container.TryResolve<T>();
         }
 
@@ -141,7 +141,7 @@ namespace ServiceStack.Host.HttpListener
             {
                 if (this.pathInfo == null)
                 {
-                    var mode = EndpointHost.Config.ServiceStackHandlerFactoryPath;
+                    var mode = HostContext.Config.ServiceStackHandlerFactoryPath;
 
                     var pos = request.RawUrl.IndexOf("?");
                     if (pos != -1)

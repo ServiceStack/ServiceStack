@@ -61,7 +61,7 @@ namespace ServiceStack.Metadata
             if (!AssertAccess(httpReq, httpRes, operationName)) return;
 
             ContentFormat = Web.ContentFormat.GetContentFormat(Format);
-            var metadata = EndpointHost.Metadata;
+            var metadata = HostContext.Metadata;
             if (operationName != null)
             {
                 var allTypes = metadata.GetAllTypes();
@@ -104,7 +104,7 @@ namespace ServiceStack.Metadata
 
                         if (!isSoap)
                         {
-                            var path = "/" + PathUtils.CombinePaths(EndpointHost.Config.ServiceStackHandlerFactoryPath, route.Path);
+                            var path = "/" + PathUtils.CombinePaths(HostContext.Config.ServiceStackHandlerFactoryPath, route.Path);
 
                             sb.AppendFormat("<th>{0}</th>", verbs);
                             sb.AppendFormat("<th>{0}</th>", path);
@@ -147,7 +147,7 @@ namespace ServiceStack.Metadata
                 }
 
                 sb.Append(@"<div class=""call-info"">");
-                var overrideExtCopy = EndpointHost.Config.AllowRouteContentTypeExtensions
+                var overrideExtCopy = HostContext.Config.AllowRouteContentTypeExtensions
                    ? " the <b>.{0}</b> suffix or ".Fmt(ContentFormat)
                    : "";
                 sb.AppendFormat(@"<p>To override the Content-type in your clients HTTP <b>Accept</b> Header, append {1} <b>?format={0}</b></p>", ContentFormat, overrideExtCopy);
@@ -173,13 +173,13 @@ namespace ServiceStack.Metadata
 
         protected bool AssertAccess(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
         {
-            if (!EndpointHost.Config.HasAccessToMetadata(httpReq, httpRes)) return false;
+            if (!HostContext.HasAccessToMetadata(httpReq, httpRes)) return false;
 
             if (operationName == null) return true; //For non-operation pages we don't need to check further permissions
-            if (!EndpointHost.Config.EnableAccessRestrictions) return true;
-            if (!EndpointHost.Config.MetadataPagesConfig.IsVisible(httpReq, Format, operationName))
+            if (!HostContext.Config.EnableAccessRestrictions) return true;
+            if (!HostContext.MetadataPagesConfig.IsVisible(httpReq, Format, operationName))
             {
-                EndpointHost.Config.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Service Not Available");
+                HostContext.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Service Not Available");
                 return false;
             }
 
@@ -194,8 +194,8 @@ namespace ServiceStack.Metadata
             var operationControl = new OperationControl
             {
                 HttpRequest = httpReq,
-                MetadataConfig = EndpointHost.Config.ServiceEndpointsMetadataConfig,
-                Title = EndpointHost.Config.ServiceName,
+                MetadataConfig = HostContext.Config.ServiceEndpointsMetadataConfig,
+                Title = HostContext.ServiceName,
                 Format = this.Format,
                 OperationName = operationName,
                 HostName = httpReq.GetUrlHostName(),
