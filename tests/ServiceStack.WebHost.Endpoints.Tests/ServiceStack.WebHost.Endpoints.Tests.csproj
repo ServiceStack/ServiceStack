@@ -143,6 +143,7 @@
     <Compile Include="RestHandlerTests.cs" />
     <Compile Include="RouteInferenceTests.cs" />
     <Compile Include="ServiceClientsBuiltInResponseTests.cs" />
+    <Compile Include="SessionTests.cs" />
     <Compile Include="Support\Services\TestRestService.cs" />
     <Compile Include="Support\Types\KeyAttribute.cs" />
     <Compile Include="PartialContentResultTests.cs" />
