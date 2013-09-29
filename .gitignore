@@ -50,6 +50,9 @@ build/
 
 *.dotCover
 
+*.DotSettings
+*.DotSettings.user
+
 src/ServiceStack/Properties/Resources.resources
 
 src/ServiceStack.userprefs
