@@ -15,10 +15,6 @@ using System.Collections.Generic;
 using ServiceStack.Data;
 using ServiceStack.Model;
 
-#if WINDOWS_PHONE
-using ServiceStack.Text.WP;
-#endif
-
 namespace ServiceStack.Redis.Generic
 {
 	public interface IRedisTypedClient<T>

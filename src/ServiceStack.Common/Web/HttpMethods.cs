@@ -1,9 +1,5 @@
 using System.Collections.Generic;
 
-#if WINDOWS_PHONE && !WP
-using ServiceStack.Text.WP;
-#endif
-
 namespace ServiceStack.Web
 {
     public static class HttpMethods
