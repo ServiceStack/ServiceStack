@@ -9,7 +9,7 @@ using ServiceStack.Messaging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.MiniProfiler.Data;
 using ServiceStack.OrmLite;
-using ServiceStack.Plugins.ProtoBuf;
+using ServiceStack.ProtoBuf;
 using ServiceStack.Redis;
 using ServiceStack.Redis.Messaging;
 using ServiceStack.Api.Swagger;

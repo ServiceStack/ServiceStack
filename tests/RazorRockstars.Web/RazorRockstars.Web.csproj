@@ -159,17 +159,13 @@
       <Project>{42e1c8c0-a163-44cc-92b1-8f416f2c0b01}</Project>
       <Name>ServiceStack.Interfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Plugins.MsgPack\ServiceStack.Plugins.MsgPack.csproj">
-      <Project>{6B751A07-75D4-4A9D-B3A0-EEA27808E64C}</Project>
-      <Name>ServiceStack.Plugins.MsgPack</Name>
+    <ProjectReference Include="..\..\src\ServiceStack.MsgPack\ServiceStack.MsgPack.csproj">
+      <Project>{6b751a07-75d4-4a9d-b3a0-eea27808e64c}</Project>
+      <Name>ServiceStack.MsgPack</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj">
       <Project>{d73274ae-006b-4cee-ba60-0ecf5873048d}</Project>
       <Name>ServiceStack.Razor</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
-      <Project>{5a315f92-80d2-4c60-a5a4-22e027ac7e7e}</Project>
-      <Name>ServiceStack.ServiceInterface</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
       <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>

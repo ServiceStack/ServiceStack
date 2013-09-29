@@ -43,12 +43,13 @@
     <Reference Include="DCCreative.DNOA4Glimpse">
       <HintPath>..\..\src\packages\DCCreative.DNOA4Glimpse.1.3.0.1\lib\net40\DCCreative.DNOA4Glimpse.dll</HintPath>
     </Reference>
-    <Reference Include="Glimpse.AspNet">
-      <HintPath>..\..\src\packages\Glimpse.AspNet.1.4.0\lib\net40\Glimpse.AspNet.dll</HintPath>
-    </Reference>
-    <Reference Include="Glimpse.Core, Version=1.4.2.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Glimpse.AspNet, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\src\packages\Glimpse.1.4.2\lib\net40\Glimpse.Core.dll</HintPath>
+      <HintPath>..\..\src\packages\Glimpse.AspNet.1.4.1\lib\net40\Glimpse.AspNet.dll</HintPath>
+    </Reference>
+    <Reference Include="Glimpse.Core, Version=1.6.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\src\packages\Glimpse.1.6.1\lib\net40\Glimpse.Core.dll</HintPath>
     </Reference>
     <Reference Include="log4net">
       <HintPath>..\..\src\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
@@ -123,9 +124,9 @@
       <Project>{D73274AE-006B-4CEE-BA60-0ECF5873048D}</Project>
       <Name>ServiceStack.Razor</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
-      <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>
-      <Name>ServiceStack.ServiceInterface</Name>
+    <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj">
+      <Project>{5a315f92-80d2-4c60-a5a4-22e027ac7e7e}</Project>
+      <Name>ServiceStack.Server</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>

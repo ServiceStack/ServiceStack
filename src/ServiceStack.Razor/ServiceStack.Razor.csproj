@@ -95,10 +95,6 @@
       <Project>{42e1c8c0-a163-44cc-92b1-8f416f2c0b01}</Project>
       <Name>ServiceStack.Interfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
-      <Project>{5a315f92-80d2-4c60-a5a4-22e027ac7e7e}</Project>
-      <Name>ServiceStack.ServiceInterface</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj">
       <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>
       <Name>ServiceStack</Name>

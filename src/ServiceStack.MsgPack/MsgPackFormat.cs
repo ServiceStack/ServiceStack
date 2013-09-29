@@ -9,7 +9,7 @@ using MsgPack.Serialization;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
-namespace ServiceStack.Plugins.MsgPack
+namespace ServiceStack.MsgPack
 {
     public class MsgPackType<T> : IMsgPackType
     {
@@ -19,7 +19,7 @@ namespace ServiceStack.Plugins.MsgPack
 
         static MsgPackType()
         {
-            var genericType = typeof (T).GetGenericType();
+            var genericType = typeof(T).GetGenericType();
 
             isGenericCollection = genericType != null
                 && typeof(T).IsOrHasGenericInterfaceTypeOf(typeof(ICollection<>));
@@ -27,7 +27,7 @@ namespace ServiceStack.Plugins.MsgPack
             if (isGenericCollection)
             {
                 var elType = genericType.GetGenericArguments()[0];
-                var methods = typeof (CollectionExtensions).GetMethods();
+                var methods = typeof(CollectionExtensions).GetMethods();
                 var genericMi = methods.FirstOrDefault(x => x.Name == "Convert");
                 var mi = genericMi.MakeGenericMethod(elType);
                 collectionConvertFn = (Func<object, Type, object>)
@@ -47,7 +47,7 @@ namespace ServiceStack.Plugins.MsgPack
 
         public object Convert(object instance)
         {
-            if (!isGenericCollection) 
+            if (!isGenericCollection)
                 return instance;
 
             var ret = collectionConvertFn(instance, typeof(T));
@@ -63,24 +63,24 @@ namespace ServiceStack.Plugins.MsgPack
     }
 
     public class MsgPackFormat : IPlugin, IMsgPackPlugin
-	{
-		public void Register(IAppHost appHost)
-		{
+    {
+        public void Register(IAppHost appHost)
+        {
             appHost.ContentTypes.Register(MimeTypes.MsgPack,
                 Serialize,
                 Deserialize);
-		}
+        }
 
         private static Dictionary<Type, IMsgPackType> msgPackTypeCache = new Dictionary<Type, IMsgPackType>();
 
         internal static IMsgPackType GetMsgPackType(Type type)
         {
             IMsgPackType msgPackType;
-            if (msgPackTypeCache.TryGetValue(type, out msgPackType)) 
+            if (msgPackTypeCache.TryGetValue(type, out msgPackType))
                 return msgPackType;
 
             var genericType = typeof(MsgPackType<>).MakeGenericType(type);
-            msgPackType = (IMsgPackType) genericType.CreateInstance();
+            msgPackType = (IMsgPackType)genericType.CreateInstance();
 
             Dictionary<Type, IMsgPackType> snapshot, newCache;
             do
@@ -144,11 +144,11 @@ namespace ServiceStack.Plugins.MsgPack
         /// <returns></returns>
         public static object HandleException(Exception ex, Type type)
         {
-            if (ex is SerializationException 
+            if (ex is SerializationException
                 && ex.Message.Contains("does not have any serializable fields nor properties"))
                 return type.CreateInstance();
 
             throw ex;
         }
-	}
+    }
 }

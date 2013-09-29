@@ -1,31 +1,29 @@
 using System;
-using System.Runtime.Serialization;
 using MsgPack.Serialization;
 using System.IO;
 using ServiceStack.Clients;
-using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
-namespace ServiceStack.Plugins.MsgPack
+namespace ServiceStack.MsgPack
 {
-	public class MsgPackServiceClient : ServiceClientBase
-	{
+    public class MsgPackServiceClient : ServiceClientBase
+    {
         public override string Format
         {
             get { return "x-msgpack"; }
         }
 
-		public MsgPackServiceClient(string baseUri)
-		{
-			SetBaseUri(baseUri);
-		}
+        public MsgPackServiceClient(string baseUri)
+        {
+            SetBaseUri(baseUri);
+        }
 
         public MsgPackServiceClient(string syncReplyBaseUri, string asyncOneWayBaseUri)
-			: base(syncReplyBaseUri, asyncOneWayBaseUri) {}
+            : base(syncReplyBaseUri, asyncOneWayBaseUri) { }
 
-		public override void SerializeToStream(IRequestContext requestContext, object request, Stream stream)
-		{
+        public override void SerializeToStream(IRequestContext requestContext, object request, Stream stream)
+        {
             if (request == null) return;
             try
             {
@@ -37,8 +35,8 @@ namespace ServiceStack.Plugins.MsgPack
             }
         }
 
-		public override T DeserializeFromStream<T>(Stream stream)
-		{
+        public override T DeserializeFromStream<T>(Stream stream)
+        {
             try
             {
                 var serializer = MessagePackSerializer.Create<T>();
@@ -52,14 +50,14 @@ namespace ServiceStack.Plugins.MsgPack
             }
         }
 
-		public override string ContentType
-		{
+        public override string ContentType
+        {
             get { return MimeTypes.MsgPack; }
-		}
+        }
 
-		public override StreamDeserializerDelegate StreamDeserializer
-		{
+        public override StreamDeserializerDelegate StreamDeserializer
+        {
             get { return MsgPackFormat.Deserialize; }
-		}
-	}
+        }
+    }
 }

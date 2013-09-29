@@ -80,7 +80,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="protobuf-net">
-      <HintPath>..\..\src\packages\protobuf-net.2.0.0.640\lib\net40\protobuf-net.dll</HintPath>
+      <HintPath>..\..\src\packages\protobuf-net.2.0.0.666\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.OrmLite">
       <HintPath>..\..\lib\ServiceStack.OrmLite.dll</HintPath>
@@ -252,13 +252,13 @@
       <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
       <Name>ServiceStack.Interfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Plugins.ProtoBuf\ServiceStack.Plugins.ProtoBuf.csproj">
-      <Project>{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}</Project>
-      <Name>ServiceStack.Plugins.ProtoBuf</Name>
+    <ProjectReference Include="..\..\src\ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.csproj">
+      <Project>{ef36a253-c53f-4bf3-b0ec-4d29211fa67d}</Project>
+      <Name>ServiceStack.ProtoBuf</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
-      <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>
-      <Name>ServiceStack.ServiceInterface</Name>
+    <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj">
+      <Project>{5a315f92-80d2-4c60-a5a4-22e027ac7e7e}</Project>
+      <Name>ServiceStack.Server</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>

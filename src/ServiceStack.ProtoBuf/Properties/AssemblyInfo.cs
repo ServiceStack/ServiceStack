@@ -1,16 +1,16 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ServiceStack.Plugins.MsgPack")]
+[assembly: AssemblyTitle("ServiceStack.ProtoBuf")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ServiceStack.Plugins.MsgPack")]
-[assembly: AssemblyCopyright("Copyright ©  2012")]
+[assembly: AssemblyProduct("ServiceStack")]
+[assembly: AssemblyCopyright("Copyright (c) ServiceStack 2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,6 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("02fa8940-a0c1-42ef-82f8-34593498cc6e")]
+[assembly: Guid("2f1f3b1a-97f5-4447-bde5-75d3d8f9770d")]
 
 [assembly: AssemblyVersion("1.0.0.0")]
+

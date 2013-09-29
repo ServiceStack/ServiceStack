@@ -2,8 +2,8 @@
 using System.IO;
 using System.Text;
 using NUnit.Framework;
-using ServiceStack.Plugins.ProtoBuf;
 using ServiceStack.Clients;
+using ServiceStack.ProtoBuf;
 using ServiceStack.Text;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
@@ -29,9 +29,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             var rand = RandomString(32);
             using (var ms = new MemoryStream())
             {
-                ProtoBuf.Serializer.Serialize(ms, rand);
+                global::ProtoBuf.Serializer.Serialize(ms, rand);
                 ms.Position = 0;
-                var fromBytes = ProtoBuf.Serializer.Deserialize<string>(ms);
+                var fromBytes = global::ProtoBuf.Serializer.Deserialize<string>(ms);
 
                 Assert.That(rand, Is.EqualTo(fromBytes));
             }

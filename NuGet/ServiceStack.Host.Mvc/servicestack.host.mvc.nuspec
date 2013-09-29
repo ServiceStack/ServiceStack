@@ -12,11 +12,11 @@ Host ServiceStack side-by-side with an existing ASP.NET MVC application at the p
 ServiceStack is a modern, high-performance, code-first web service framework promoting code and web services best practices. Simple, Fast, Elegant. Website: http://www.servicestack.net
     </description> 
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
-    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/LICENSE</licenseUrl>
+    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/license.txt</licenseUrl>
     <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
     <tags>Fast JSON XML CSV HTML SOAP JSV REST Web Service Framework MONO ServiceStack</tags>
     <language>en-US</language>
-    <copyright>servicestack.net 2012 and contributors</copyright>
+    <copyright>Copyright 2013 Service Stack</copyright>
 	  <dependencies>
       <dependency id="WebActivator" version="1.5" />
       <dependency id="ServiceStack.Mvc" version="4.0" />

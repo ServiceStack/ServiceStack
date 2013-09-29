@@ -4,16 +4,16 @@ using ProtoBuf.Meta;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
-namespace ServiceStack.Plugins.ProtoBuf
+namespace ServiceStack.ProtoBuf
 {
-	public class ProtoBufFormat : IPlugin, IProtoBufPlugin
-	{
-		public void Register(IAppHost appHost)
-		{
+    public class ProtoBufFormat : IPlugin, IProtoBufPlugin
+    {
+        public void Register(IAppHost appHost)
+        {
             appHost.ContentTypes.Register(MimeTypes.ProtoBuf, Serialize, Deserialize);
-		}
+        }
 
-	    private static RuntimeTypeModel model;
+        private static RuntimeTypeModel model;
 
         public static RuntimeTypeModel Model
         {
@@ -25,10 +25,10 @@ namespace ServiceStack.Plugins.ProtoBuf
             Model.Serialize(outputStream, dto);
         }
 
-	    public static object Deserialize(Type type, Stream fromStream)
-	    {
-	        var obj = Model.Deserialize(fromStream, null, type);
-	        return obj;
-	    }
-	}
+        public static object Deserialize(Type type, Stream fromStream)
+        {
+            var obj = Model.Deserialize(fromStream, null, type);
+            return obj;
+        }
+    }
 }

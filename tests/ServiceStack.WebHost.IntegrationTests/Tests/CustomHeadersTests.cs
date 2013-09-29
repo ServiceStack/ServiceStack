@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
-using ServiceStack.Plugins.ProtoBuf;
 using ServiceStack.Clients;
+using ServiceStack.ProtoBuf;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests

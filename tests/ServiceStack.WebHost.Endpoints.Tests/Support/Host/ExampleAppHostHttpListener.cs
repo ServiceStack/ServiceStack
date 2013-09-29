@@ -10,7 +10,7 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.Logging;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
-using ServiceStack.Plugins.ProtoBuf;
+using ServiceStack.ProtoBuf;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Tests.IntegrationTests;

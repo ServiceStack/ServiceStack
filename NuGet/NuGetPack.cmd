@@ -1,5 +1,7 @@
 SET NUGET=..\src\.nuget\nuget
 %NUGET% pack ServiceStack\servicestack.nuspec -symbols
+%NUGET% pack ServiceStack.Server\servicestack.server.nuspec -symbols
+%NUGET% pack ServiceStack.Interfaces\servicestack.interfaces.nuspec -symbols
 %NUGET% pack ServiceStack.Common\servicestack.common.nuspec -symbols
 %NUGET% pack ServiceStack.Mvc\servicestack.mvc.nuspec -symbols
 %NUGET% pack ServiceStack.Api.Swagger\servicestack.api.swagger.nuspec -symbols
