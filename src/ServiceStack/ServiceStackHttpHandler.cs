@@ -1,6 +1,5 @@
 ﻿using System.Web;
 using ServiceStack.Host.Handlers;
-using ServiceStack.Support.WebHost;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -17,7 +16,7 @@ namespace ServiceStack
         public virtual void ProcessRequest(HttpContext context)
         {
             ProcessRequest(
-                context.Request.ToRequest(), 
+                context.Request.ToRequest(),
                 context.Response.ToResponse(),
                 null);
         }

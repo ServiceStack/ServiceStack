@@ -40,7 +40,7 @@ namespace ServiceStack
         public static bool SkipPathValidation { get; set; }
 
         public static bool SkipRouteValidation { get; set; }
-        
+
         public static bool IsAspNetHost
         {
             get { return ServiceStackHost.Instance is AppHostBase; }
@@ -110,7 +110,7 @@ namespace ServiceStack
 
         public static object PostExecuteServiceFilter(IService service, object response, IHttpRequest httpReq, IHttpResponse httpRes)
         {
-            return ServiceStackHost.Instance == null 
+            return ServiceStackHost.Instance == null
                 ? response
                 : ServiceStackHost.Instance.OnPostExecuteServiceFilter(service, response, httpReq, httpRes);
         }
@@ -217,7 +217,7 @@ namespace ServiceStack
             }
             else
             {
-                using (service as IDisposable) {}
+                using (service as IDisposable) { }
             }
         }
 

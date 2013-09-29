@@ -256,7 +256,7 @@ namespace ServiceStack
         public string AdminAuthSecret { get; set; }
 
         public FallbackRestPathDelegate FallbackRestPath { get; set; }
-        
+
         const string NamespacesAppSettingsKey = "servicestack.razor.namespaces";
         private HashSet<string> razorNamespaces;
         public HashSet<string> RazorNamespaces
