@@ -335,6 +335,7 @@
     <Compile Include="ApiMemberAttribute.cs" />
     <Compile Include="ApiResponse.cs" />
     <Compile Include="IService.cs" />
+    <Compile Include="SwaggerType.cs" />
     <Compile Include="Web\IRequiresHttpRequest.cs" />
     <Compile Include="Web\IRequiresRequestStream.cs" />
     <Compile Include="RequestAttributes.cs">

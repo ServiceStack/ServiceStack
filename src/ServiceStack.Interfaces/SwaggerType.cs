@@ -1,4 +1,4 @@
-﻿namespace ServiceStack.Api.Swagger
+﻿namespace ServiceStack
 {
     public static class SwaggerType
     {
