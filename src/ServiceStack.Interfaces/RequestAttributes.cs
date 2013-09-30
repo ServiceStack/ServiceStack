@@ -13,7 +13,7 @@ namespace ServiceStack
         Any = AnyNetworkAccessType | AnySecurityMode | AnyHttpMethod | AnyCallStyle | AnyFormat,
         AnyNetworkAccessType = External | Localhost | LocalSubnet,
         AnySecurityMode = Secure | InSecure,
-        AnyHttpMethod = HttpHead | HttpGet | HttpPost | HttpPut | HttpDelete | HttpOther,
+        AnyHttpMethod = HttpHead | HttpGet | HttpPost | HttpPut | HttpDelete | HttpPatch | HttpOptions | HttpOther,
         AnyCallStyle = OneWay | Reply,
         AnyFormat = Soap11 | Soap12 | Xml | Json | Jsv | Html | ProtoBuf | Csv | MsgPack | Yaml | FormatOther,
         AnyEndpoint = Http | MessageQueue | Tcp | EndpointOther,
