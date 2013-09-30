@@ -53,8 +53,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 		public void ShouldDenyAccessForOtherHttpRequestTypesScenarios<TRequestDto>(params RequestAttributes[] notIncluding)
 		{
-			var scenarios = new List<RequestAttributes> { RequestAttributes.HttpHead, RequestAttributes.HttpGet, 
-				RequestAttributes.HttpPost, RequestAttributes.HttpPut, RequestAttributes.HttpDelete };
+		    var scenarios = new List<RequestAttributes>
+		    {
+		        RequestAttributes.HttpHead,
+		        RequestAttributes.HttpGet,
+		        RequestAttributes.HttpPost,
+		        RequestAttributes.HttpPut,
+		        RequestAttributes.HttpDelete,
+		        RequestAttributes.HttpPatch,
+		        RequestAttributes.HttpOptions,
+		        RequestAttributes.HttpOther
+		    };
 			ShouldDenyAccessForOtherScenarios<TRequestDto>(scenarios.Where(x => !notIncluding.Contains(x)).ToList());
 		}
 
@@ -220,6 +229,35 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Console.WriteLine();
 		}
 
+	    [Test]
+	    public void Enum_masks_are_correct()
+	    {
+            const RequestAttributes network = RequestAttributes.Localhost | RequestAttributes.LocalSubnet | RequestAttributes.External;
+            Assert.That((network.ToAllowedFlagsSet() & network) == network);
+
+            const RequestAttributes security = RequestAttributes.Secure | RequestAttributes.InSecure;
+            Assert.That((security.ToAllowedFlagsSet() & security) == security);
+
+	        const RequestAttributes method =
+	            RequestAttributes.HttpHead | RequestAttributes.HttpGet | RequestAttributes.HttpPost |
+	            RequestAttributes.HttpPut | RequestAttributes.HttpDelete | RequestAttributes.HttpPatch |
+	            RequestAttributes.HttpOptions | RequestAttributes.HttpOther;
+            Assert.That((method.ToAllowedFlagsSet() & method) == method);
+
+            const RequestAttributes call = RequestAttributes.OneWay | RequestAttributes.Reply;
+            Assert.That((call.ToAllowedFlagsSet() & call) == call);
+
+	        const RequestAttributes format =
+	            RequestAttributes.Soap11 | RequestAttributes.Soap12 | RequestAttributes.Xml | RequestAttributes.Json |
+	            RequestAttributes.Jsv | RequestAttributes.ProtoBuf | RequestAttributes.Csv | RequestAttributes.Html |
+	            RequestAttributes.Yaml | RequestAttributes.MsgPack | RequestAttributes.FormatOther;
+            Assert.That((format.ToAllowedFlagsSet() & format) == format);
+
+	        const RequestAttributes endpoint =
+	            RequestAttributes.Http | RequestAttributes.MessageQueue | RequestAttributes.Tcp |
+	            RequestAttributes.EndpointOther;
+            Assert.That((endpoint.ToAllowedFlagsSet() & endpoint) == endpoint);
+        }
 	}
 
 }
