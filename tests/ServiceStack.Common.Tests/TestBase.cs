@@ -43,12 +43,12 @@ namespace ServiceStack.Common.Tests
 
         protected Funq.Container Container
         {
-            get { return HostContext.ServiceManager.Container; }
+            get { return HostContext.Container; }
         }
 
         protected IServiceRoutes Routes
         {
-            get { return HostContext.ServiceManager.ServiceController.Routes; }
+            get { return HostContext.AppHost.Routes; }
         }
 
         //All integration tests call the Webservices hosted at the following location:
@@ -66,7 +66,6 @@ namespace ServiceStack.Common.Tests
 
             HasConfigured = true;
             Configure(Container);
-            ServiceStackHost.Instance.OnAfterInit();
         }
 
         public virtual void OnBeforeEachTest()
@@ -76,25 +75,25 @@ namespace ServiceStack.Common.Tests
 
         protected virtual IServiceClient CreateNewServiceClient()
         {
-            return new DirectServiceClient(this, HostContext.ServiceManager);
+            return new DirectServiceClient(this, AppHost.ServiceController);
         }
 
         protected virtual IRestClient CreateNewRestClient()
         {
-            return new DirectServiceClient(this, HostContext.ServiceManager);
+            return new DirectServiceClient(this, AppHost.ServiceController);
         }
 
         protected virtual IRestClientAsync CreateNewRestClientAsync()
         {
-            return new DirectServiceClient(this, HostContext.ServiceManager);
+            return new DirectServiceClient(this, AppHost.ServiceController);
         }
 
         public class DirectServiceClient : IServiceClient, IRestClient
         {
             private readonly TestBase parent;
-            ServiceManager ServiceManager { get; set; }
+            ServiceController ServiceManager { get; set; }
 
-            public DirectServiceClient(TestBase parent, ServiceManager serviceManager)
+            public DirectServiceClient(TestBase parent, ServiceController serviceManager)
             {
                 this.parent = parent;
                 this.ServiceManager = serviceManager;

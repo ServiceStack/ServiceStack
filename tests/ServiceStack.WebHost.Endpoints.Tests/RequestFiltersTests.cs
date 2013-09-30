@@ -10,6 +10,7 @@ using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Support;
 using ServiceStack.Support.WebHost;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Support;
@@ -137,7 +138,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		public void OnTestFixtureTearDown()
 		{
 			appHost.Dispose();
-            ServiceStackHandlerBase.ServiceManager = null;
 		}
 
 		protected abstract IServiceClient CreateNewServiceClient();
@@ -408,9 +408,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			protected override IServiceClient CreateNewServiceClient()
 			{
-                ServiceStackHandlerBase.ServiceManager = new ServiceManager(new Container(), typeof(SecureService).Assembly).Init();
-				return new DirectServiceClient(ServiceStackHandlerBase.ServiceManager);
-			}
+                return new DirectServiceClient(appHost.ServiceController);
+            }
 
 			protected override IRestClientAsync CreateNewRestClientAsync()
 			{

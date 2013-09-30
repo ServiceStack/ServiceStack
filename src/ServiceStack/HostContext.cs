@@ -61,14 +61,9 @@ namespace ServiceStack
             get { return AssertAppHost().Container; }
         }
 
-        public static ServiceManager ServiceManager
-        {
-            get { return AssertAppHost().ServiceManager; }
-        }
-
         public static ServiceController ServiceController
         {
-            get { return AssertAppHost().ServiceManager.ServiceController; }
+            get { return AssertAppHost().ServiceController; }
         }
 
         public static MetadataPagesConfig MetadataPagesConfig
@@ -94,20 +89,6 @@ namespace ServiceStack
         public static string ServiceName
         {
             get { return AssertAppHost().ServiceName; }
-        }
-
-        public static object PreExecuteServiceFilter(IService service, object request, IHttpRequest httpReq, IHttpResponse httpRes)
-        {
-            return ServiceStackHost.Instance == null
-                ? request
-                : ServiceStackHost.Instance.OnPreExecuteServiceFilter(service, request, httpReq, httpRes);
-        }
-
-        public static object PostExecuteServiceFilter(IService service, object response, IHttpRequest httpReq, IHttpResponse httpRes)
-        {
-            return ServiceStackHost.Instance == null
-                ? response
-                : ServiceStackHost.Instance.OnPostExecuteServiceFilter(service, response, httpReq, httpRes);
         }
 
         public static bool DebugMode
@@ -361,8 +342,7 @@ namespace ServiceStack
 
         public static string GetDefaultNamespace()
         {
-            if (!String.IsNullOrEmpty(defaultOperationNamespace)
-                || ServiceManager.ServiceController == null) return null;
+            if (!String.IsNullOrEmpty(defaultOperationNamespace)) return null;
 
             foreach (var operationType in Metadata.RequestTypes)
             {

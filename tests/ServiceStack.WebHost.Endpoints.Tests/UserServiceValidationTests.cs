@@ -6,6 +6,7 @@ using NUnit.Framework;
 using System.Collections;
 using Funq;
 using ServiceStack.Host.Handlers;
+using ServiceStack.Testing;
 using ServiceStack.Validation;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
@@ -80,7 +81,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
-        UserAppHostHttpListener appHost;
+        static UserAppHostHttpListener appHost;
 
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
@@ -94,15 +95,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
-            ServiceStackHandlerBase.ServiceManager = null;
         }
 
         private static string ExpectedErrorCode = "ShouldNotBeEmpty";
 
         protected static IServiceClient UnitTestServiceClient()
         {
-            ServiceStackHandlerBase.ServiceManager = new ServiceManager(new Container(), typeof(SecureService).Assembly).Init();
-            return new DirectServiceClient(ServiceStackHandlerBase.ServiceManager);
+            return new DirectServiceClient(appHost.ServiceController);
         }
 
         public static IEnumerable ServiceClients

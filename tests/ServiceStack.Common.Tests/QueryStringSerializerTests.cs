@@ -17,18 +17,20 @@ namespace ServiceStack.Common.Tests
         public void Can_deserialize_TestRequest_QueryStringSerializer_output()
         {
             // Setup
-            new BasicAppHost(typeof(TestService).Assembly).Init();
-            var restPath = new RestPath(typeof(TestRequest), "/service", "GET");
-            var restHandler = new RestHandler { RestPath = restPath };
+            using (new BasicAppHost(typeof (TestService).Assembly).Init())
+            {
+                var restPath = new RestPath(typeof(TestRequest), "/service", "GET");
+                var restHandler = new RestHandler { RestPath = restPath };
 
-            var requestString = "ListOfA={ListOfB:[{Property:prop1},{Property:prop2}]}";
-            NameValueCollection queryString = HttpUtility.ParseQueryString(requestString);
-            var httpReq = new MockHttpRequest("service", "GET", "application/json", "service", queryString, new MemoryStream(), new NameValueCollection());
+                var requestString = "ListOfA={ListOfB:[{Property:prop1},{Property:prop2}]}";
+                NameValueCollection queryString = HttpUtility.ParseQueryString(requestString);
+                var httpReq = new MockHttpRequest("service", "GET", "application/json", "service", queryString, new MemoryStream(), new NameValueCollection());
 
-            var request2 = (TestRequest)restHandler.CreateRequest(httpReq, "service");
+                var request2 = (TestRequest)restHandler.CreateRequest(httpReq, "service");
 
-            Assert.That(request2.ListOfA.Count, Is.EqualTo(1));
-            Assert.That(request2.ListOfA.First().ListOfB.Count, Is.EqualTo(2));
+                Assert.That(request2.ListOfA.Count, Is.EqualTo(1));
+                Assert.That(request2.ListOfA.First().ListOfB.Count, Is.EqualTo(2));
+            }
         }
 
         [Test]

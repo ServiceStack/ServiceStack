@@ -83,7 +83,7 @@ namespace ServiceStack.Api.Swagger
 
         protected void CreateRestPaths(List<RestService> apis, Type operationType, String operationName)
         {
-            var map = HostContext.ServiceManager.ServiceController.RestPathMap;
+            var map = HostContext.ServiceController.RestPathMap;
             var paths = new List<string>();
             foreach (var key in map.Keys)
             {

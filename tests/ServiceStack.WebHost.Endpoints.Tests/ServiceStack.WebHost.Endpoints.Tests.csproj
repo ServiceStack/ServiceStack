@@ -230,7 +230,6 @@
     <Compile Include="Support\Operations\StoreCustomer.cs" />
     <Compile Include="Support\Services\TestServiceBase.cs" />
     <Compile Include="Support\Host\TestAppHost.cs" />
-    <Compile Include="Support\TestBase.cs" />
     <Compile Include="Support\Services\TestService.cs" />
     <Compile Include="WebServiceExceptionTests.cs" />
     <Compile Include="WsdlMetadataTests.cs" />

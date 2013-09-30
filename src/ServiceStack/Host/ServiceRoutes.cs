@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Logging;
 using ServiceStack.Text;
@@ -11,13 +10,17 @@ namespace ServiceStack.Host
     {
         private static ILog log = LogManager.GetLogger(typeof(ServiceRoutes));
 
-        public readonly List<RestPath> RestPaths = new List<RestPath>();
+        private readonly ServiceStackHost appHost;
+        public ServiceRoutes(ServiceStackHost appHost)
+        {
+            this.appHost = appHost;
+        }
 
         public IServiceRoutes Add<TRequest>(string restPath)
         {
             if (HasExistingRoute(typeof(TRequest), restPath)) return this;
 
-            RestPaths.Add(new RestPath(typeof(TRequest), restPath));
+            appHost.RestPaths.Add(new RestPath(typeof(TRequest), restPath));
             return this;
         }
 
@@ -25,7 +28,7 @@ namespace ServiceStack.Host
         {
             if (HasExistingRoute(typeof(TRequest), restPath)) return this;
 
-            RestPaths.Add(new RestPath(typeof(TRequest), restPath, verbs));
+            appHost.RestPaths.Add(new RestPath(typeof(TRequest), restPath, verbs));
             return this;
         }
 
@@ -33,7 +36,7 @@ namespace ServiceStack.Host
         {
             if (HasExistingRoute(requestType, restPath)) return this;
 
-            RestPaths.Add(new RestPath(requestType, restPath, verbs));
+            appHost.RestPaths.Add(new RestPath(requestType, restPath, verbs));
             return this;
         }
 
@@ -41,13 +44,13 @@ namespace ServiceStack.Host
         {
             if (HasExistingRoute(requestType, restPath)) return this;
 
-            RestPaths.Add(new RestPath(requestType, restPath, verbs, summary, notes));
+            appHost.RestPaths.Add(new RestPath(requestType, restPath, verbs, summary, notes));
             return this;
         }
 
         private bool HasExistingRoute(Type requestType, string restPath)
 	    {
-	        var existingRoute = RestPaths.FirstOrDefault(
+            var existingRoute = appHost.RestPaths.FirstOrDefault(
 	            x => x.RequestType == requestType && x.Path == restPath);
 	        
             if (existingRoute != null)

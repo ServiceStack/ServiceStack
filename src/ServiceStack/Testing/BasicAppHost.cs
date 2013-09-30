@@ -23,9 +23,9 @@ namespace ServiceStack.Testing
 
         public Action<HostConfig> ConfigFilter { get; set; }
 
-        public Func<Container, ServiceManager> UseServiceManager
+        public Func<BasicAppHost, ServiceController> UseServiceController
         {
-            set { ServiceManager = value(Container); }
+            set { ServiceController = value(this); }
         } 
 
         public override void OnConfigLoad()

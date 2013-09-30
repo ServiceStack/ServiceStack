@@ -7,15 +7,7 @@ using System.Text.RegularExpressions;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.FluentValidation;
-using ServiceStack.Host;
-using ServiceStack.Host.Handlers;
-using ServiceStack.Support;
-using ServiceStack.Support.WebHost;
 using ServiceStack.Validation;
-using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Support;
-using ServiceStack.WebHost.Endpoints.Tests;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
@@ -125,7 +117,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 			}
 		}
 
-		ValidationAppHostHttpListener appHost;
+		static ValidationAppHostHttpListener appHost;
 
 		[TestFixtureSetUp]
 		public void OnTestFixtureSetUp()
@@ -139,7 +131,6 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public void OnTestFixtureTearDown()
 		{
 			appHost.Dispose();
-		    ServiceStackHandlerBase.ServiceManager = null;
 		}
 
 		private static List<ResponseError> GetValidationFieldErrors(string httpMethod, Customers request)
@@ -277,9 +268,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 
 		protected static IServiceClient UnitTestServiceClient()
 		{
-            ServiceStackHandlerBase.ServiceManager = new ServiceManager(new Container(), typeof(SecureService).Assembly).Init();
-			return new DirectServiceClient(ServiceStackHandlerBase.ServiceManager);
-		}
+            return new DirectServiceClient(appHost.ServiceController);
+        }
 
 		public static IEnumerable ServiceClients
 		{

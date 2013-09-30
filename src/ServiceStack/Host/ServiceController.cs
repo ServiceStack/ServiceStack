@@ -4,10 +4,10 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Funq;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
-using ServiceStack.Serialization;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -23,14 +23,30 @@ namespace ServiceStack.Host
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceController));
         private const string ResponseDtoSuffix = "Response";
+        private readonly ServiceStackHost appHost;
 
-        public ServiceController(Func<IEnumerable<Type>> resolveServicesFn, ServiceMetadata metadata = null)
+        public ServiceController(ServiceStackHost appHost)
         {
-            this.Metadata = metadata ?? new ServiceMetadata();
-
+            this.appHost = appHost;
+            appHost.Container.DefaultOwner = Owner.External;
             this.RequestTypeFactoryMap = new Dictionary<Type, Func<IHttpRequest, object>>();
-            this.EnableAccessRestrictions = true;
+        }
+
+        public ServiceController(ServiceStackHost appHost, Func<IEnumerable<Type>> resolveServicesFn)
+            : this(appHost)
+        {
             this.ResolveServicesFn = resolveServicesFn;
+        }
+
+        public ServiceController(ServiceStackHost appHost, params Assembly[] assembliesWithServices)
+            : this(appHost)
+        {
+            if (assembliesWithServices == null || assembliesWithServices.Length == 0)
+                throw new ArgumentException(
+                    "No Assemblies provided in your AppHost's base constructor.\n"
+                    + "To register your services, please provide the assemblies where your web services are defined.");
+
+            this.ResolveServicesFn = () => GetAssemblyTypes(assembliesWithServices);
         }
 
         readonly Dictionary<Type, ServiceExecFn> requestExecMap
@@ -39,15 +55,9 @@ namespace ServiceStack.Host
         readonly Dictionary<Type, RestrictAttribute> requestServiceAttrs
 			= new Dictionary<Type, RestrictAttribute>();
 
-        public bool EnableAccessRestrictions { get; set; }
-
-        public ServiceMetadata Metadata { get; internal set; }
-
         public Dictionary<Type, Func<IHttpRequest, object>> RequestTypeFactoryMap { get; set; }
 
         public string DefaultOperationsNamespace { get; set; }
-
-        public IServiceRoutes Routes { get { return Metadata.Routes; } }
 
         private IResolver resolver;
         public IResolver Resolver
@@ -57,6 +67,65 @@ namespace ServiceStack.Host
         }
 
         public Func<IEnumerable<Type>> ResolveServicesFn { get; set; }
+
+        private ContainerResolveCache typeFactory;
+
+        public ServiceController Init()
+        {
+            typeFactory = new ContainerResolveCache(appHost.Container);
+
+            this.Register(typeFactory);
+
+            appHost.Container.RegisterAutoWiredTypes(appHost.Metadata.ServiceTypes);
+
+            return this;
+        }
+
+        private List<Type> GetAssemblyTypes(Assembly[] assembliesWithServices)
+        {
+            var results = new List<Type>();
+            string assemblyName = null;
+            string typeName = null;
+
+            try
+            {
+                foreach (var assembly in assembliesWithServices)
+                {
+                    assemblyName = assembly.FullName;
+                    foreach (var type in assembly.GetTypes())
+                    {
+                        typeName = type.Name;
+                        results.Add(type);
+                    }
+                }
+                return results;
+            }
+            catch (Exception ex)
+            {
+                var msg = string.Format("Failed loading types, last assembly '{0}', type: '{1}'", assemblyName, typeName);
+                Log.Error(msg, ex);
+                throw new Exception(msg, ex);
+            }
+        }
+
+        public void RegisterService(Type serviceType)
+        {
+            try
+            {
+                var isNService = typeof(IService).IsAssignableFrom(serviceType);
+                if (isNService)
+                {
+                    RegisterService(typeFactory, serviceType);
+                    appHost.Container.RegisterAutoWiredType(serviceType);
+                }
+
+                throw new ArgumentException("Type {0} is not a Web Service that inherits IService".Fmt(serviceType.FullName));
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+            }
+        }
 
         public void Register(ITypeFactory serviceFactoryFn)
         {
@@ -90,7 +159,7 @@ namespace ServiceStack.Host
 
                     RegisterRestPaths(requestType);
 
-                    Metadata.Add(serviceType, requestType, responseType);
+                    appHost.Metadata.Add(serviceType, requestType, responseType);
 
                     if (typeof(IRequiresRequestStream).IsAssignableFrom(requestType))
                     {
@@ -120,18 +189,15 @@ namespace ServiceStack.Host
                 var defaultAttr = attr as FallbackRouteAttribute;
                 if (defaultAttr != null)
                 {
-                    if (HostContext.Config != null)
-                    {
-                        if (HostContext.Config.FallbackRestPath != null)
-                            throw new NotSupportedException(string.Format(
-                                "Config.FallbackRestPath is already defined. Only 1 [FallbackRoute] is allowed."));
+                    if (appHost.Config.FallbackRestPath != null)
+                        throw new NotSupportedException(string.Format(
+                            "Config.FallbackRestPath is already defined. Only 1 [FallbackRoute] is allowed."));
 
-                        HostContext.Config.FallbackRestPath = (httpMethod, pathInfo, filePath) =>
-                        {
-                            var pathInfoParts = RestPath.GetPathPartsForMatching(pathInfo);
-                            return restPath.IsMatch(httpMethod, pathInfoParts) ? restPath : null;
-                        };
-                    }
+                    appHost.Config.FallbackRestPath = (httpMethod, pathInfo, filePath) =>
+                    {
+                        var pathInfoParts = RestPath.GetPathPartsForMatching(pathInfo);
+                        return restPath.IsMatch(httpMethod, pathInfoParts) ? restPath : null;
+                    };
                     
                     continue;
                 }
@@ -166,16 +232,16 @@ namespace ServiceStack.Host
         public void AfterInit()
         {
             //Register any routes configured on Metadata.Routes
-            foreach (var restPath in this.Metadata.Routes.RestPaths)
+            foreach (var restPath in appHost.RestPaths)
             {
                 RegisterRestPath(restPath);
             }
 
             //Sync the RestPaths collections
-            Metadata.Routes.RestPaths.Clear();
-            Metadata.Routes.RestPaths.AddRange(RestPathMap.Values.SelectMany(x => x));
+            appHost.RestPaths.Clear();
+            appHost.RestPaths.AddRange(RestPathMap.Values.SelectMany(x => x));
 
-            Metadata.AfterInit();
+            appHost.Metadata.AfterInit();
         }
 
         public IRestPath GetRestPathForRequest(string httpMethod, string pathInfo)
@@ -281,7 +347,7 @@ namespace ServiceStack.Host
             }
         }
 
-        private static object ManagedServiceExec(ServiceExecFn serviceExec, IService service, IRequestContext requestContext, object request)
+        private object ManagedServiceExec(ServiceExecFn serviceExec, IService service, IRequestContext requestContext, object request)
         {
             try
             {
@@ -292,19 +358,19 @@ namespace ServiceStack.Host
                     var httpReq = requestContext.Get<IHttpRequest>();
                     var httpRes = requestContext.Get<IHttpResponse>();
 
-                    request = HostContext.PreExecuteServiceFilter(service, request, httpReq, httpRes);
+                    request = appHost.OnPreExecuteServiceFilter(service, request, httpReq, httpRes);
 
                     //Executes the service and returns the result
                     var response = serviceExec(requestContext, request);
 
-                    response = HostContext.PostExecuteServiceFilter(service, response, httpReq, httpRes);
+                    response = appHost.OnPostExecuteServiceFilter(service, response, httpReq, httpRes);
                     
                     return response;
                 }
                 finally
                 {
                     //Gets disposed by AppHost or ContainerAdapter if set
-                    HostContext.Release(service);
+                    appHost.Release(service);
                 }
             }
             catch (TargetInvocationException tex)
@@ -329,29 +395,38 @@ namespace ServiceStack.Host
                 servicesRequiresHttpRequest.HttpRequest = requestContext.Get<IHttpRequest>();
         }
         
-        //Execute MQ
+        /// <summary>
+        /// Execute MQ
+        /// </summary>
         public object ExecuteMessage<T>(IMessage<T> mqMessage)
         {
             return Execute(mqMessage.Body, new BasicRequestContext(mqMessage));
         }
 
-        //Execute MQ with requestContext
+        /// <summary>
+        /// Execute MQ with requestContext
+        /// </summary>
         public object ExecuteMessage<T>(IMessage<T> dto, IRequestContext requestContext)
         {
             return Execute(dto.Body, requestContext);
         }
 
+        /// <summary>
+        /// Execute using empty RequestContext
+        /// </summary>
         public object Execute(object request)
         {
             return Execute(request, new BasicRequestContext());
         }
 
-        //Execute HTTP
+        /// <summary>
+        /// Execute HTTP
+        /// </summary>
         public object Execute(object request, IRequestContext requestContext)
         {
             var requestType = request.GetType();
 
-            if (EnableAccessRestrictions)
+            if (appHost.Config.EnableAccessRestrictions)
             {
                 AssertServiceRestrictions(requestType,
                     requestContext != null ? requestContext.RequestAttributes : RequestAttributes.None);
@@ -371,18 +446,10 @@ namespace ServiceStack.Host
 
             return handlerFn;
         }
-
-        public object ExecuteText(string requestXml, Type requestType, IRequestContext requestContext)
-        {
-            var request = DataContractDeserializer.Instance.Parse(requestXml, requestType);
-            var response = Execute(request, requestContext);
-            var responseXml = DataContractSerializer.Instance.Parse(response);
-            return responseXml;
-        }
-
+        
         public void AssertServiceRestrictions(Type requestType, RequestAttributes actualAttributes)
         {
-            if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions) return;
+            if (!appHost.Config.EnableAccessRestrictions) return;
 
             RestrictAttribute restrictAttr;
             var hasNoAccessRestrictions = !requestServiceAttrs.TryGetValue(requestType, out restrictAttr)

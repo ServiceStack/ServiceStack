@@ -427,7 +427,6 @@
     <Compile Include="RequestContextExtensions.cs" />
     <Compile Include="Host\RestPath.cs" />
     <Compile Include="Host\ServiceController.cs" />
-    <Compile Include="Host\ServiceManager.cs" />
     <Compile Include="Host\ServiceMetadata.cs" />
     <Compile Include="Host\ServiceRoutes.cs" />
     <Compile Include="AppHostBase.cs" />

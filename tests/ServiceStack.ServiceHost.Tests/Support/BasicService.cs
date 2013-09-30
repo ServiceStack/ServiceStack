@@ -3,16 +3,16 @@ using System.Runtime.Serialization;
 namespace ServiceStack.ServiceHost.Tests.Support
 {
 	[DataContract]
-	public class BasicRequest { }
+	public class EmptyRequest { }
 
 	[DataContract]
-	public class BasicRequestResponse { }
+	public class EmptyRequestResponse { }
 
 	public class BasicService : IService
 	{
-		public object Any(BasicRequest request)
+		public object Any(EmptyRequest request)
 		{
-			return new BasicRequestResponse();
+			return new EmptyRequestResponse();
 		}
 	}
 }

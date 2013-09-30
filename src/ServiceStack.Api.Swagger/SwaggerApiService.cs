@@ -146,7 +146,7 @@ namespace ServiceStack.Api.Swagger
         {
             var httpReq = RequestContext.Get<IHttpRequest>();
             var path = "/" + request.Name;
-            var map = HostContext.ServiceManager.ServiceController.RestPathMap;
+            var map = HostContext.ServiceController.RestPathMap;
             var paths = new List<RestPath>();
 
             var basePath = HostContext.Config.WebHostUrl;

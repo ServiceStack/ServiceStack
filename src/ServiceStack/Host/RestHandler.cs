@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.Serialization;
 using ServiceStack.Host.Handlers;
-using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -16,17 +15,11 @@ namespace ServiceStack.Host
             this.HandlerAttributes = RequestAttributes.Reply;
         }
 
-        private static readonly ILog Log = LogManager.GetLogger(typeof(RestHandler));
-
         public static IRestPath FindMatchingRestPath(string httpMethod, string pathInfo, out string contentType)
         {
-            var controller = ServiceManager != null
-                ? ServiceManager.ServiceController
-                : HostContext.ServiceController;
-
             pathInfo = GetSanitizedPathInfo(pathInfo, out contentType);
 
-            return controller.GetRestPathForRequest(httpMethod, pathInfo);
+            return HostContext.ServiceController.GetRestPathForRequest(httpMethod, pathInfo);
         }
 
         private static string GetSanitizedPathInfo(string pathInfo, out string contentType)

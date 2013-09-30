@@ -8,7 +8,6 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Metadata;
 using ServiceStack.Testing;
-using ServiceStack.WebHost.Endpoints.Tests.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -20,18 +19,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
 	[TestFixture]
-	public class OperationTests : MetadataTestBase
+	public class OperationTests
 	{
-        private OperationTestsAppHost _appHost;
-	    private OperationControl _operationControl;
+        private OperationTestsAppHost appHost;
+	    private OperationControl operationControl;
 
         [TestFixtureSetUp]
         public void OnTestFixtureSetUp()
         {
-            _appHost = new OperationTestsAppHost();
-            _appHost.Init();
+            appHost = new OperationTestsAppHost();
+            appHost.Init();
 
-            _operationControl = new OperationControl
+            var dummyServiceType = GetType();
+            appHost.Metadata.Add(dummyServiceType, typeof(GetCustomer), typeof(GetCustomerResponse));
+            appHost.Metadata.Add(dummyServiceType, typeof(GetCustomers), typeof(GetCustomersResponse));
+            appHost.Metadata.Add(dummyServiceType, typeof(StoreCustomer), null);
+
+            operationControl = new OperationControl
             {
                 HttpRequest = new MockHttpRequest {PathInfo = "", RawUrl = "http://localhost:4444/metadata"},
                 MetadataConfig = ServiceEndpointsMetadataConfig.Create(""),
@@ -48,22 +52,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [TestFixtureTearDown]
         public void OnTestFixtureTearDown()
         {
-            _appHost.Dispose();
+            appHost.Dispose();
         }
 
         [TearDown]
         public void OnTearDown()
         {
-            _appHost.Config.WebHostUrl = null;
+            appHost.Config.WebHostUrl = null;
         }
 
         [Test]
         public void OperationControl_render_creates_link_back_to_main_page_using_WebHostUrl_when_set()
         {
-            _appHost.Config.WebHostUrl = "https://host.example.com/_api";
+            appHost.Config.WebHostUrl = "https://host.example.com/_api";
 
             var stringWriter = new StringWriter();
-            _operationControl.Render(new HtmlTextWriter(stringWriter));
+            operationControl.Render(new HtmlTextWriter(stringWriter));
 
             string html = stringWriter.ToString();
             Assert.IsTrue(html.Contains("<a href=\"https://host.example.com/_api/metadata\">&lt;back to all web services</a>"));
@@ -73,7 +77,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void OperationControl_render_creates_link_back_to_main_page_using_relative_uri_when_WebHostUrl_not_set()
         {
             var stringWriter = new StringWriter();
-            _operationControl.Render(new HtmlTextWriter(stringWriter));
+            operationControl.Render(new HtmlTextWriter(stringWriter));
 
             string html = stringWriter.ToString();
             Assert.IsTrue(html.Contains("<a href=\"/metadata\">&lt;back to all web services</a>"));
@@ -82,11 +86,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void When_culture_is_turkish_operations_containing_capital_I_are_still_visible()
         {
-            Metadata.Add(GetType(), typeof(HelloImage), null);
+            appHost.Metadata.Add(GetType(), typeof(HelloImage), null);
 
             using (new CultureSwitch("tr-TR"))
             {
-                Assert.IsTrue(Metadata.IsVisible(_operationControl.HttpRequest, Format.Json, "HelloImage"));
+                Assert.IsTrue(appHost.Metadata.IsVisible(operationControl.HttpRequest, Format.Json, "HelloImage"));
             }
         }
 	}

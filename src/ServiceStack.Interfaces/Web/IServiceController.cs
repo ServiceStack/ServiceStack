@@ -13,11 +13,6 @@ namespace ServiceStack.Web
 		/// </summary>
 		IRestPath GetRestPathForRequest(string httpMethod, string pathInfo);
 
-		/// <summary>
-		/// Allow the registration of custom routes
-		/// </summary>
-		IServiceRoutes Routes { get; }
-
         /// <summary>
         /// Executes the MQ DTO request.
         /// </summary>

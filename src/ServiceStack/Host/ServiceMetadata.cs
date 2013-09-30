@@ -9,15 +9,15 @@ namespace ServiceStack.Host
 {
     public class ServiceMetadata
     {
-        public ServiceMetadata()
+        public ServiceMetadata(List<RestPath> restPaths)
         {
+            this.restPaths = restPaths;
             this.RequestTypes = new HashSet<Type>();
             this.ServiceTypes = new HashSet<Type>();
             this.ResponseTypes = new HashSet<Type>();
             this.OperationsMap = new Dictionary<Type, Operation>();
             this.OperationsResponseMap = new Dictionary<Type, Operation>();
             this.OperationNamesMap = new Dictionary<string, Operation>();
-            this.Routes = new ServiceRoutes();
         }
 
         public Dictionary<Type, Operation> OperationsMap { get; protected set; }
@@ -26,7 +26,7 @@ namespace ServiceStack.Host
         public HashSet<Type> RequestTypes { get; protected set; }
         public HashSet<Type> ServiceTypes { get; protected set; }
         public HashSet<Type> ResponseTypes { get; protected set; }
-        public ServiceRoutes Routes { get; set; }
+        private List<RestPath> restPaths;
 
         public IEnumerable<Operation> Operations
         {
@@ -64,7 +64,7 @@ namespace ServiceStack.Host
 
         public void AfterInit()
         {
-            foreach (var restPath in Routes.RestPaths)
+            foreach (var restPath in restPaths)
             {
                 Operation operation;
                 if (!OperationsMap.TryGetValue(restPath.RequestType, out operation))

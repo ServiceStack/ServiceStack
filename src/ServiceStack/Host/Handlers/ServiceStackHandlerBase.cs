@@ -111,7 +111,7 @@ namespace ServiceStack.Host.Handlers
         protected static object GetCustomRequestFromBinder(IHttpRequest httpReq, Type requestType)
         {
             Func<IHttpRequest, object> requestFactoryFn;
-            (ServiceManager ?? HostContext.ServiceManager).ServiceController.RequestTypeFactoryMap.TryGetValue(
+            HostContext.ServiceController.RequestTypeFactoryMap.TryGetValue(
                 requestType, out requestFactoryFn);
 
             return requestFactoryFn != null ? requestFactoryFn(httpReq) : null;
@@ -155,13 +155,9 @@ namespace ServiceStack.Host.Handlers
                 operationName);
         }
 
-        public static ServiceManager ServiceManager { get; set; }
-
         public static Type GetOperationType(string operationName)
         {
-            return ServiceManager != null
-                ? ServiceManager.Metadata.GetOperationType(operationName)
-                : HostContext.Metadata.GetOperationType(operationName);
+            return HostContext.Metadata.GetOperationType(operationName);
         }
 
         protected static object ExecuteService(object request, RequestAttributes requestAttributes,

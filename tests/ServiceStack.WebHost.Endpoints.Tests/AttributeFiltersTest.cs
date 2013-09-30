@@ -305,7 +305,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void RequestFilters_are_prioritized()
         {
-            appHost.ServiceManager.Metadata.Add(typeof(AttributeFilteredService), typeof(DummyHolder), null);
+            appHost.Metadata.Add(typeof(AttributeFilteredService), typeof(DummyHolder), null);
 
             var attributes = FilterAttributeCache.GetRequestFilterAttributes(typeof(DummyHolder));
             var attrPriorities = attributes.ToList().ConvertAll(x => x.Priority);

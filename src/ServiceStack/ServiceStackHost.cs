@@ -40,9 +40,12 @@ namespace ServiceStack
 
             ServiceName = serviceName;
             Container = new Container { DefaultOwner = Owner.External };
-            ServiceManager = CreateServiceManager(assembliesWithServices);
+            ServiceController = CreateServiceController(assembliesWithServices);
 
             ContentTypes = Host.ContentTypes.Instance;
+            RestPaths = new List<RestPath>();
+            Routes = new ServiceRoutes(this);
+            Metadata = new ServiceMetadata(RestPaths);
             PreRequestFilters = new List<Action<IHttpRequest, IHttpResponse>>();
             GlobalRequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
             GlobalResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
@@ -61,11 +64,11 @@ namespace ServiceStack
 
         public abstract void Configure(Container container);
 
-        protected virtual ServiceManager CreateServiceManager(params Assembly[] assembliesWithServices)
+        protected virtual ServiceController CreateServiceController(params Assembly[] assembliesWithServices)
         {
-            return new ServiceManager(Container, assembliesWithServices);
-            //Alternative way to inject Container + Service Resolver strategy
-            //return new ServiceManager(Container, 
+            return new ServiceController(this, assembliesWithServices);
+            //Alternative way to inject Service Resolver strategy
+            //return new ServiceManager(this, 
             //    new ServiceController(() => assembliesWithServices.ToList().SelectMany(x => x.GetTypes())));
         }
 
@@ -92,7 +95,7 @@ namespace ServiceStack
                 Plugins.Add(new RequestInfoFeature());
             }
 
-            ServiceManager.Init();
+            ServiceController.Init();
             Configure(Container);
 
             OnAfterInit();
@@ -105,22 +108,22 @@ namespace ServiceStack
 
         public string ServiceName { get; set; }
 
-        public ServiceManager ServiceManager { get; set; }
+        public ServiceMetadata Metadata { get; set; }
 
-        public ServiceMetadata Metadata { get { return ServiceManager.Metadata; } }
-
-        public IServiceController ServiceController { get { return ServiceManager.ServiceController; } }
+        public ServiceController ServiceController { get; set; }
 
         /// <summary>
         /// The AppHost.Container. Note: it is not thread safe to register dependencies after AppStart.
         /// </summary>
         public Container Container { get; set; }
 
-        public IServiceRoutes Routes { get { return ServiceController.Routes; } }
+        public IServiceRoutes Routes { get; set; }
+
+        public List<RestPath> RestPaths = new List<RestPath>();
 
         public Dictionary<Type, Func<IHttpRequest, object>> RequestBinders
         {
-            get { return ServiceManager.ServiceController.RequestTypeFactoryMap; }
+            get { return ServiceController.RequestTypeFactoryMap; }
         }
 
         public IContentTypes ContentTypes { get; set; }
@@ -220,7 +223,6 @@ namespace ServiceStack
         public virtual void OnAfterConfigChanged()
         {
             config.ServiceEndpointsMetadataConfig = ServiceEndpointsMetadataConfig.Create(config.ServiceStackHandlerFactoryPath);
-            ServiceManager.ServiceController.EnableAccessRestrictions = config.EnableAccessRestrictions;
 
             JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
             JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;
@@ -328,7 +330,7 @@ namespace ServiceStack
             else if (String.IsNullOrEmpty(config.DefaultContentType))
                 config.DefaultContentType = MimeTypes.Json;
 
-            ServiceManager.AfterInit();
+            ServiceController.AfterInit();
         }
 
         public T GetPlugin<T>() where T : class, IPlugin
@@ -439,7 +441,7 @@ namespace ServiceStack
 
         public virtual void RegisterService(Type serviceType, params string[] atRestPaths)
         {
-            ServiceManager.RegisterService(serviceType);
+            ServiceController.RegisterService(serviceType);
             var reqAttr = serviceType.GetCustomAttributes(true).OfType<DefaultRequestAttribute>().FirstOrDefault();
             if (reqAttr != null)
             {
@@ -452,10 +454,10 @@ namespace ServiceStack
 
         public virtual void Dispose()
         {
-            if (ServiceManager != null)
+            if (Container != null)
             {
-                ServiceManager.Dispose();
-                ServiceManager = null;
+                Container.Dispose();
+                Container = null;
             }
 
             Instance = null;

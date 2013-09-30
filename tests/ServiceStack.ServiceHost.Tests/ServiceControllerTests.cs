@@ -80,11 +80,9 @@ namespace ServiceStack.ServiceHost.Tests
         {
             using (var appHost = new BasicAppHost(typeof(GenericService<>).Assembly).Init())
             {
-                var serviceController = appHost.ServiceManager.ServiceController;
-
                 // We should definately *not* be able to call the generic service with a "T" request object :)
                 var requestType = typeof(GenericService<>).GetGenericArguments()[0];
-                var exception = Assert.Throws<NotImplementedException>(() => serviceController.GetService(requestType));
+                var exception = Assert.Throws<NotImplementedException>(() => appHost.ServiceController.GetService(requestType));
 
                 Assert.That(exception.Message, Is.StringContaining("Unable to resolve service"));
             }
@@ -93,16 +91,19 @@ namespace ServiceStack.ServiceHost.Tests
         [Test]
         public void Generic_service_with_recursive_ceneric_type_should_not_get_registered()
         {
-            // Tell manager to register GenericService<Generic3<>>, which should not be possible since Generic3<> is an open type
-            var serviceManager = new ServiceManager(null,
-                new ServiceController(() => new[] { typeof(GenericService<>).MakeGenericType(new[] { typeof(Generic3<>) }) }));
+            using (var appHost = new BasicAppHost {
+                UseServiceController = x => 
+                    new ServiceController(x, () => new[] {
+                        typeof(GenericService<>).MakeGenericType(new[] { typeof(Generic3<>) })
+                    })
+                }.Init())
+            {
+                // Tell manager to register GenericService<Generic3<>>, which should not be possible since Generic3<> is an open type
+                var exception = Assert.Throws<System.NotImplementedException>(() => 
+                    appHost.ServiceController.GetService(typeof(Generic3<>)));
 
-            serviceManager.Init();
-
-            var serviceController = serviceManager.ServiceController;
-            var exception = Assert.Throws<System.NotImplementedException>(() => serviceController.GetService(typeof(Generic3<>)));
-
-            Assert.That(exception.Message, Is.StringContaining("Unable to resolve service"));
+                Assert.That(exception.Message, Is.StringContaining("Unable to resolve service"));
+            }
         }
 
         [Test]
@@ -110,7 +111,7 @@ namespace ServiceStack.ServiceHost.Tests
         {
             using (var appHost = new BasicAppHost
             {
-                UseServiceManager = c => new ServiceManager(c, new ServiceController(() => new[]
+                UseServiceController = x => new ServiceController(x, () => new[]
                 {
                     typeof (GenericService<Generic1>),
                     typeof (GenericService<>).MakeGenericType(new[] {typeof (Generic2)}),
@@ -120,10 +121,10 @@ namespace ServiceStack.ServiceHost.Tests
                     typeof (GenericService<>).MakeGenericType(new[]
                         {typeof (Generic3<>).MakeGenericType(new[] {typeof (double)})}),
                     // GenericService<Generic3<double>> created through reflection
-                }))
+                })
             }.Init())
             {
-                var serviceController = appHost.ServiceManager.ServiceController;
+                var serviceController = appHost.ServiceController;
 
                 Assert.AreEqual(typeof(Generic1).FullName, ((Generic1Response)serviceController.Execute(new Generic1())).Data);
                 Assert.AreEqual(typeof(Generic2).FullName, ((Generic1Response)serviceController.Execute(new Generic2())).Data);
@@ -138,12 +139,11 @@ namespace ServiceStack.ServiceHost.Tests
         {
             var appHost = new AppHost();
 
-            var routes = (ServiceRoutes)appHost.Routes;
-            Assert.That(routes.RestPaths.Count, Is.EqualTo(0));
+            Assert.That(appHost.RestPaths.Count, Is.EqualTo(0));
 
             appHost.RegisterService<GetMarkerService>("/route");
 
-            Assert.That(routes.RestPaths.Count, Is.EqualTo(1));
+            Assert.That(appHost.RestPaths.Count, Is.EqualTo(1));
         }
     }
 

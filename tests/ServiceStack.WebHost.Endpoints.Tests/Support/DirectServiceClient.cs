@@ -10,24 +10,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 {
     public class DirectServiceClient : IServiceClient, IRestClient
     {
-        ServiceManager ServiceManager { get; set; }
+        ServiceController ServiceController { get; set; }
 
         readonly MockHttpRequest httpReq = new MockHttpRequest();
         readonly MockHttpResponse httpRes = new MockHttpResponse();
 
-        public DirectServiceClient(ServiceManager serviceManager)
+        public DirectServiceClient(ServiceController serviceController)
         {
-            this.ServiceManager = serviceManager;
+            this.ServiceController = serviceController;
         }
 
         public void SendOneWay(object request)
         {
-            ServiceManager.Execute(request);
+            ServiceController.Execute(request);
         }
 
         public void SendOneWay(string relativeOrAbsoluteUrl, object request)
         {
-            ServiceManager.Execute(request);
+            ServiceController.Execute(request);
         }
 
         private bool ApplyRequestFilters<TResponse>(object request)
@@ -80,7 +80,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 
             if (ApplyRequestFilters<TResponse>(request)) return default(TResponse);
 
-            var response = ServiceManager.ServiceController.Execute(request,
+            var response = ServiceController.Execute(request,
                 new HttpRequestContext(httpReq, httpRes, request, RequestAttributes.HttpPost));
 
             if (ApplyResponseFilters<TResponse>(response)) return (TResponse)response;
@@ -121,7 +121,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 
             if (ApplyRequestFilters<TResponse>(request)) return default(TResponse);
 
-            var response = ServiceManager.ServiceController.Execute(request,
+            var response = ServiceController.Execute(request,
                 new HttpRequestContext(httpReq, httpRes, request, RequestAttributes.HttpGet));
 
             if (ApplyResponseFilters<TResponse>(response)) return (TResponse)response;

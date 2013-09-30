@@ -47,7 +47,7 @@ namespace ServiceStack
                 for (; i < attributes.Length && attributes[i].Priority < 0; i++)
                 {
                     var attribute = attributes[i];
-                    ServiceManager.Container.AutoWire(attribute);
+                    Container.AutoWire(attribute);
                     attribute.RequestFilter(httpReq, httpRes, requestDto);
                     Release(attribute);
                     if (httpRes.IsClosed) return httpRes.IsClosed;
@@ -64,7 +64,7 @@ namespace ServiceStack
                 for (; i < attributes.Length; i++)
                 {
                     var attribute = attributes[i];
-                    ServiceManager.Container.AutoWire(attribute);
+                    Container.AutoWire(attribute);
                     attribute.RequestFilter(httpReq, httpRes, requestDto);
                     Release(attribute);
                     if (httpRes.IsClosed) return httpRes.IsClosed;
@@ -98,7 +98,7 @@ namespace ServiceStack
                     for (; i < attributes.Length && attributes[i].Priority < 0; i++)
                     {
                         var attribute = attributes[i];
-                        ServiceManager.Container.AutoWire(attribute);
+                        Container.AutoWire(attribute);
                         attribute.ResponseFilter(httpReq, httpRes, response);
                         Release(attribute);
                         if (httpRes.IsClosed) return httpRes.IsClosed;
@@ -118,7 +118,7 @@ namespace ServiceStack
                     for (; i < attributes.Length; i++)
                     {
                         var attribute = attributes[i];
-                        ServiceManager.Container.AutoWire(attribute);
+                        Container.AutoWire(attribute);
                         attribute.ResponseFilter(httpReq, httpRes, response);
                         Release(attribute);
                         if (httpRes.IsClosed) return httpRes.IsClosed;
