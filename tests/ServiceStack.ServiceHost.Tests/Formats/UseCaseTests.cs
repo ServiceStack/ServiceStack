@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using ServiceStack.Text;
-using ServiceStack.Utils;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
 {

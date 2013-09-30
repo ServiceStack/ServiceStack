@@ -182,6 +182,7 @@ namespace ServiceStack.Redis
 		byte[][] PSubscribe(params string[] toChannelsMatchingPatterns);
 		byte[][] PUnSubscribe(params string[] toChannelsMatchingPatterns);
 		byte[][] ReceiveMessages();
+        IRedisSubscription CreateSubscription();
 
         //Redis LUA support
 		long EvalInt(string luaBody, int numberOfKeys, params byte[][] keysAndArgs);

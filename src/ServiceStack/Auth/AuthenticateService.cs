@@ -1,7 +1,6 @@
 using System;
 using System.Configuration;
 using ServiceStack.Host;
-using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;
 

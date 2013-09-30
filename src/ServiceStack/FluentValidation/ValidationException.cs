@@ -18,7 +18,6 @@
 
 using ServiceStack.Common;
 using ServiceStack.Model;
-using ServiceStack.Utils;
 using ServiceStack.Validation;
 
 namespace ServiceStack.FluentValidation

@@ -2,7 +2,6 @@
 using NUnit.Framework;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
-using ServiceStack.ServiceHost;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;

@@ -30,10 +30,7 @@ namespace ServiceStack.Host.HttpListener
         public event DelReceiveWebRequest ReceiveWebRequest;
 
         protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
-            : base(serviceName, assembliesWithServices)
-        {
-            HostContext.SkipPathValidation = true;
-        }
+            : base(serviceName, assembliesWithServices) {}
 
         public virtual void OnAfterInit()
         {

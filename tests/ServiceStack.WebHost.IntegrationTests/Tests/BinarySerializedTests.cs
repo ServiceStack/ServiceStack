@@ -2,7 +2,6 @@
 using System.IO;
 using System.Text;
 using NUnit.Framework;
-using ServiceStack.Clients;
 using ServiceStack.ProtoBuf;
 using ServiceStack.Text;
 using ServiceStack.WebHost.IntegrationTests.Services;

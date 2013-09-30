@@ -15,7 +15,6 @@ using ServiceStack.Logging;
 using ServiceStack.Markdown;
 using ServiceStack.Metadata;
 using ServiceStack.Text;
-using ServiceStack.Utils;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -327,7 +326,7 @@ namespace ServiceStack
                     }
                 }
 
-                if (!HostContext.SkipPathValidation && MetadataRedirectPath == null)
+                if (HostContext.IsAspNetHost && MetadataRedirectPath == null)
                 {
                     throw new ConfigurationErrorsException(
                         "Unable to infer ServiceStack's <httpHandler.Path/> from the Web.Config\n"

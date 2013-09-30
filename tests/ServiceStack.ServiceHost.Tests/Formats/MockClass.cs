@@ -1,21 +1,11 @@
 ﻿using System;
 using System.IO;
-using System.Text;
-using System.Xml;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
 using NUnit.Framework;
-using ServiceStack.Html;
-using ServiceStack.Markdown;
-using ServiceStack.Utils;
+using ServiceStack;
 
 namespace CSharpEval
 {
-
-
-	[TestFixture]
+    [TestFixture]
 	public class _Expr
 	 : ServiceStack.ServiceHost.Tests.Formats.TemplateTests.CustomMarkdownViewBase
 	{

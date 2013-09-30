@@ -5,12 +5,10 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using NUnit.Framework;
-using ServiceStack.Clients;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Testing;
 using ServiceStack.Text;
-using ServiceStack.Utils;
 using ServiceStack.Web;
 
 namespace ServiceStack.Common.Tests

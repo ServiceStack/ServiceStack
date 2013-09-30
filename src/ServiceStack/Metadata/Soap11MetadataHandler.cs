@@ -1,7 +1,6 @@
 using System;
 using ServiceStack.Text;
 using ServiceStack.Serialization;
-using ServiceStack.Utils;
 using ServiceStack.Web;
 
 namespace ServiceStack.Metadata
@@ -12,7 +11,7 @@ namespace ServiceStack.Metadata
 
 		protected override string CreateMessage(Type dtoType)
 		{
-			var requestObj = ReflectionUtils.PopulateObject(Activator.CreateInstance(dtoType));
+			var requestObj = AutoMappingUtils.PopulateWith(Activator.CreateInstance(dtoType));
 			var xml = DataContractSerializer.Instance.Parse(requestObj, true);
 			var soapEnvelope = string.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <soap:Envelope xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:soap=""http://schemas.xmlsoap.org/soap/envelope/"">

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net;
 using NUnit.Framework;
 using ServiceStack.Auth;
-using ServiceStack.Clients;
 using ServiceStack.Text;
 using ServiceStack.WebHost.IntegrationTests.Services;
 

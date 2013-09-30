@@ -1,6 +1,5 @@
 ﻿using NUnit.Framework;
 using ServiceStack.Caching;
-using ServiceStack.Clients;
 using Funq;
 
 namespace ServiceStack.ServiceHost.Tests
@@ -55,8 +54,6 @@ namespace ServiceStack.ServiceHost.Tests
         [TestFixtureSetUp]
         public void OnTestFixtureSetUp()
         {
-            HostContext.SkipRouteValidation = true;
-
             appHost = new AttributeFiltersAppHostHttpListener();
             appHost.Init();
             appHost.Start(ListeningOn);

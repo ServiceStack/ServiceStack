@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using ServiceStack.Html;
-using ServiceStack.ServiceHost;
 using ServiceStack.Web;
 
 namespace ServiceStack.Razor

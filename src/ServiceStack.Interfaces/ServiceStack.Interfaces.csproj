@@ -439,25 +439,25 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Web\IPartialWriter.cs" />
-    <Compile Include="Clients\IOneWayClient.cs">
+    <Compile Include="IOneWayClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Clients\IReplyClient.cs">
+    <Compile Include="IReplyClient.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="IResponseStatus.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Clients\IRestClient.cs">
+    <Compile Include="IRestClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Clients\IRestClientAsync.cs">
+    <Compile Include="IRestClientAsync.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Clients\IServiceClient.cs">
+    <Compile Include="IServiceClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Clients\IServiceClientAsync.cs">
+    <Compile Include="IServiceClientAsync.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Web\IStreamWriter.cs">

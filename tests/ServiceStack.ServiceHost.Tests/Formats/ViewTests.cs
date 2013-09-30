@@ -5,11 +5,11 @@ using System.IO;
 using System.Text;
 using NUnit.Framework;
 using ServiceStack.Formats;
+using ServiceStack.Host;
 using ServiceStack.ServiceHost.Tests.AppData;
 using ServiceStack.Support.Markdown;
 using ServiceStack.Testing;
 using ServiceStack.Text;
-using ServiceStack.Utils;
 using ServiceStack.Web;
 
 namespace ServiceStack.ServiceHost.Tests.Formats

@@ -124,186 +124,30 @@
     <Compile Include="Reflection\DelegateFactory.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="RequestContext.cs" />
     <Compile Include="IPAddressExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Messaging\ClientFactory.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Messaging\IMessageHandler.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Messaging\IMessageHandlerDisposer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Messaging\IMessageHandlerFactory.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Messaging\InMemoryMessageQueueClient.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Messaging\InMemoryTransientMessageFactory.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Messaging\InMemoryTransientMessageService.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="MessageExtensions.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Messaging\MessageHandler.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Messaging\MessageHandlerFactory.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Messaging\MessageQueueClientFactory.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Messaging\Rcon\Client.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Messaging\Rcon\Packet.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Messaging\Rcon\PacketCodec.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Messaging\Rcon\PacketProcessingClient.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Messaging\Rcon\Server.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Messaging\TransientMessageServiceBase.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Clients\RouteMember.cs" />
     <Compile Include="MetadataTypes.cs" />
-    <Compile Include="Utils\ModelUtils.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="ModelConfig.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReflectionExtensions.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Reflection\PropertyAccessor.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Reflection\StaticAccessors.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Clients\AsyncServiceClient.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="AuthDtos.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Clients\GenericProxy.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Clients\IDuplex.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Clients\IDuplexCallback.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Clients\IOneWay.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Clients\ISyncReply.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Clients\IWcfServiceClient.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Clients\JsonServiceClient.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Clients\JsvServiceClient.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Clients\ServiceClientBase.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Clients\Soap11ServiceClient.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Clients\Soap12ServiceClient.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Serialization\IStringDeserializer.cs" />
-    <Compile Include="Serialization\IStringSerializer.cs" />
-    <Compile Include="Serialization\ITextSerializer.cs" />
-    <Compile Include="UrlExtensions.cs" />
-    <Compile Include="Clients\WcfServiceClient.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Utils\WebRequestUtils.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Clients\WebServiceException.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Clients\XmlServiceClient.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Serialization\DataContractDeserializer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Serialization\DataContractSerializer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Serialization\JsonDataContractDeserializer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Serialization\JsonDataContractSerializer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Serialization\KeyValueDataContractDeserializer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Serialization\StringMapTypeDeserializer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Serialization\XmlSerializableDeserializer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Serialization\XmlSerializableSerializer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Serialization\XmlSerializableWrapper.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Validation\ValidationError.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Validation\ValidationErrorField.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Validation\ValidationErrorResult.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="XLinqExtensions.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="StreamExtensions.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="PathExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Support\ActionExecHandler.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Support\AdapterBase.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Support\AssignmentDefinition.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Support\CommandExecsHandler.cs">
@@ -315,74 +159,23 @@
     <Compile Include="Support\InMemoryLogFactory.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Support\NetDeflateProvider.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Support\NetGZipProvider.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Support\PropertyInvoker.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Support\Thread.WinRT.cs" />
     <Compile Include="UrnId.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Utils\AssertUtils.cs">
+    <Compile Include="AssertUtils.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Utils\CommandsUtils.cs">
+    <Compile Include="CommandsUtils.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Utils\ResponseStatusUtils.cs" />
-    <Compile Include="Utils\FuncUtils.cs">
+    <Compile Include="FuncUtils.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Utils\IdUtils.cs">
+    <Compile Include="IdUtils.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Utils\PathUtils.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Utils\PerfUtils.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Utils\ReflectionUtils.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Web\CompressedFileResult.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Web\CompressedResult.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Web\CompressionTypes.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Web\ContentFormat.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Web\HttpError.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Web\HttpHeaders.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Web\HttpMethods.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Web\ContentTypes.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Web\HttpResponseStreamWrapper.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Web\HttpResult.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="HttpResultExtensions.cs" />
-    <Compile Include="RequestContextExtensions.cs" />
-    <Compile Include="Web\SerializationContext.cs">
+    <Compile Include="PerfUtils.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

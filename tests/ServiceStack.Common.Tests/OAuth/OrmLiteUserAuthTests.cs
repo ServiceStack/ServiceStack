@@ -5,7 +5,6 @@ using ServiceStack.Auth;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.Text;
-using ServiceStack.Utils;
 
 namespace ServiceStack.Common.Tests.OAuth
 {

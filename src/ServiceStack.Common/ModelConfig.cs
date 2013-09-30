@@ -1,5 +1,4 @@
 using System;
-using ServiceStack.Utils;
 
 namespace ServiceStack
 {

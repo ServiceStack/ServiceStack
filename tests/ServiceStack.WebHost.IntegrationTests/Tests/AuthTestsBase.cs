@@ -1,8 +1,6 @@
 using System;
 using System.Net;
 using NUnit.Framework;
-using ServiceStack.Clients;
-using ServiceStack.Clients;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests

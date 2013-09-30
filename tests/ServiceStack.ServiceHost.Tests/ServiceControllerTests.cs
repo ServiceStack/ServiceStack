@@ -10,12 +10,6 @@ namespace ServiceStack.ServiceHost.Tests
     [TestFixture]
     public class ServiceControllerTests
     {
-        [TestFixtureSetUp]
-        public void TestFixtureSetUp()
-        {
-            HostContext.SkipRouteValidation = true;
-        }
-
         [Test]
         public void Can_register_all_services_in_an_assembly()
         {
@@ -137,48 +131,6 @@ namespace ServiceStack.ServiceHost.Tests
                 Assert.AreEqual(typeof(Generic3<int>).FullName, ((Generic1Response)serviceController.Execute(new Generic3<int>())).Data);
                 Assert.AreEqual(typeof(Generic3<double>).FullName, ((Generic1Response)serviceController.Execute(new Generic3<double>())).Data);
             }
-        }
-
-
-        [Route("route/{Id}")]
-        public class NoSlashPrefix : IReturn
-        {
-            public long Id { get; set; }
-        }
-
-        [Route("/route?id={Id}")]
-        public class UsesQueryString : IReturn
-        {
-            public long Id { get; set; }
-        }
-
-        public class MyService : IService
-        {
-            public object Any(NoSlashPrefix request)
-            {
-                return null;
-            }
-
-            public object Any(UsesQueryString request)
-            {
-                return null;
-            }
-        }
-
-        [Test]
-        public void Does_throw_on_invalid_Route_Definitions()
-        {
-            HostContext.SkipRouteValidation = false;
-
-            var controller = new ServiceController(() => new[] { typeof(MyService) });
-
-            Assert.Throws<ArgumentException>(
-                () => controller.RegisterRestPaths(typeof(NoSlashPrefix)));
-
-            Assert.Throws<ArgumentException>(
-                () => controller.RegisterRestPaths(typeof(UsesQueryString)));
-
-            HostContext.SkipRouteValidation = true;
         }
 
         [Test]

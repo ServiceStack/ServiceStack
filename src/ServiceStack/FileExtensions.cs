@@ -1,6 +1,5 @@
 using System.IO;
 using ServiceStack.Text;
-using ServiceStack.Utils;
 using ServiceStack.Web;
 
 namespace ServiceStack

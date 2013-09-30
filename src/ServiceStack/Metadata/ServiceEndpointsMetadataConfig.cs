@@ -1,6 +1,3 @@
-using ServiceStack.Text;
-using ServiceStack.Web;
-
 namespace ServiceStack.Metadata
 {
     public class ServiceEndpointsMetadataConfig

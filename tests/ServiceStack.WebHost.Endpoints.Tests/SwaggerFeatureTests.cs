@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using NUnit.Framework;
-using ServiceStack.Clients;
 using ServiceStack.Api.Swagger;
 using ServiceStack.Text;
 

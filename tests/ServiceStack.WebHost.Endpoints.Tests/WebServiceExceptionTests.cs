@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using NUnit.Framework;
-using ServiceStack.Clients;
 using ServiceStack.ServiceModel;
 
 namespace ServiceStack.WebHost.Endpoints.Tests

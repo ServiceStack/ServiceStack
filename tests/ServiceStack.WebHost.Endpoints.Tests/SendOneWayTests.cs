@@ -3,7 +3,6 @@ using System.IO;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
-using ServiceStack.Clients;
 using NUnit.Framework;
 
 namespace ServiceStack.WebHost.Endpoints.Tests

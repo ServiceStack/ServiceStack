@@ -8,7 +8,6 @@ using System.Runtime.Serialization;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack;
-using ServiceStack.Clients;
 using ServiceStack.Data;
 using ServiceStack.Host;
 using ServiceStack.Logging;

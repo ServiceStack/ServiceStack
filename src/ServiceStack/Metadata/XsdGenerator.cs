@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ServiceStack.Host;
 using ServiceStack.Logging;
-using ServiceStack.Utils;
 
 namespace ServiceStack.Metadata
 {

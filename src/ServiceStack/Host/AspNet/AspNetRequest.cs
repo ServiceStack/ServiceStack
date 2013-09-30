@@ -9,7 +9,6 @@ using System.Net;
 using System.Web;
 using Funq;
 using ServiceStack.Text;
-using ServiceStack.Utils;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.AspNet

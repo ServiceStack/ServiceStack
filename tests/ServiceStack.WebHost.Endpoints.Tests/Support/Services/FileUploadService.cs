@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Runtime.Serialization;
 using ServiceStack.Text;
-using ServiceStack.Utils;
 using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services

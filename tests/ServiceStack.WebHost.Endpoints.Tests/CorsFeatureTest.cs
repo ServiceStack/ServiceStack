@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using ServiceStack.Clients;
 using NUnit.Framework;
 using ServiceStack.Web;
 

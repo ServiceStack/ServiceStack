@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net;
-using ServiceStack.Clients;
 using NUnit.Framework;
 using Funq;
 using ServiceStack.Text;

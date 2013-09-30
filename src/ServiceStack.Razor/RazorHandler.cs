@@ -1,7 +1,6 @@
 using System.Net;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Razor.Managers;
-using ServiceStack.ServiceHost;
 using ServiceStack.Support;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;

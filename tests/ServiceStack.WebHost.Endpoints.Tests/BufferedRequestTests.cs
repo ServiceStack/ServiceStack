@@ -1,7 +1,6 @@
 ﻿using Funq;
 using NUnit.Framework;
 using ServiceStack.Admin;
-using ServiceStack.Clients;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
 using System.Runtime.Serialization;

@@ -4,7 +4,6 @@ using NUnit.Framework;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
-using ServiceStack.Clients;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.WebHost.IntegrationTests.Services;

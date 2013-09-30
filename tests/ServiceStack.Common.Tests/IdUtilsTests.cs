@@ -3,7 +3,6 @@ using NUnit.Framework;
 using ServiceStack.Common.Tests.Models;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Model;
-using ServiceStack.Utils;
 
 namespace ServiceStack.Common.Tests
 {

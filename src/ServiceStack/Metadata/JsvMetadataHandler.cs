@@ -2,7 +2,6 @@ using System;
 using System.Web.UI;
 using ServiceStack.Host;
 using ServiceStack.Text;
-using ServiceStack.Utils;
 using ServiceStack.Web;
 
 namespace ServiceStack.Metadata
@@ -13,7 +12,7 @@ namespace ServiceStack.Metadata
 		
 		protected override string CreateMessage(Type dtoType)
         {
-            var requestObj = ReflectionUtils.PopulateObject(Activator.CreateInstance(dtoType));
+            var requestObj = AutoMappingUtils.PopulateWith(Activator.CreateInstance(dtoType));
 			return requestObj.SerializeAndFormat();
         }
 

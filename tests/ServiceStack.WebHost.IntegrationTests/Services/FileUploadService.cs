@@ -3,7 +3,6 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.ServiceModel.Dispatcher;
 using ServiceStack.Text;
-using ServiceStack.Utils;
 using ServiceStack.Validation;
 using ServiceStack.Web;
 

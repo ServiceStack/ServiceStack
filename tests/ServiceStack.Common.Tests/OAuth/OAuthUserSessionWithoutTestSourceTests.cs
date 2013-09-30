@@ -7,7 +7,6 @@ using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.SqlServer;
 using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.Redis;
-using ServiceStack.Utils;
 
 namespace ServiceStack.Common.Tests.OAuth
 {

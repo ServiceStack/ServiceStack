@@ -9,7 +9,6 @@ using ServiceStack.Host.AspNet;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
-using ServiceStack.Utils;
 using ServiceStack.Web;
 using System.Text;
 
@@ -60,7 +59,7 @@ namespace ServiceStack.Metadata
 
             if (!AssertAccess(httpReq, httpRes, operationName)) return;
 
-            ContentFormat = Web.ContentFormat.GetContentFormat(Format);
+            ContentFormat = ServiceStack.ContentFormat.GetContentFormat(Format);
             var metadata = HostContext.Metadata;
             if (operationName != null)
             {

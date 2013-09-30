@@ -5,7 +5,6 @@ using NUnit.Framework;
 using ServiceStack.Formats;
 using ServiceStack.Testing;
 using ServiceStack.Text;
-using ServiceStack.Utils;
 using ServiceStack.VirtualPath;
 
 namespace ServiceStack.ServiceHost.Tests.Formats

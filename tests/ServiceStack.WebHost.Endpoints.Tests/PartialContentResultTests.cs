@@ -7,7 +7,6 @@ using NUnit.Framework;
 using ServiceStack.Configuration;
 using ServiceStack.Testing;
 using ServiceStack.Text;
-using ServiceStack.Utils;
 using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests

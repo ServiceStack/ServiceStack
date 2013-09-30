@@ -8,7 +8,6 @@ using ServiceStack.Markdown;
 using ServiceStack.Support.Markdown;
 using ServiceStack.Testing;
 using ServiceStack.Text;
-using ServiceStack.Utils;
 using ServiceStack.VirtualPath;
 
 namespace ServiceStack.ServiceHost.Tests.Formats

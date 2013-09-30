@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using System.Web;
 using System.Web.Security;
-using ServiceStack.Clients;
 
 namespace ServiceStack.Host
 {

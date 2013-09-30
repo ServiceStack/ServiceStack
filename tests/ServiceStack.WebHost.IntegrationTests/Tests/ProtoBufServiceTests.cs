@@ -2,7 +2,6 @@
 using System.Runtime.Serialization;
 using System.Text;
 using NUnit.Framework;
-using ServiceStack.Clients;
 using ServiceStack.ProtoBuf;
 using ServiceStack.Text;
 

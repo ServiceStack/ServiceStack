@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using ServiceStack.Clients;
 using ServiceStack.Web;
 using ServiceStack.WebHost.IntegrationTests.Tests;
 

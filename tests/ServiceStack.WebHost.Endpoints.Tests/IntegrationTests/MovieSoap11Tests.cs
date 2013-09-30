@@ -1,5 +1,4 @@
 ﻿using NUnit.Framework;
-using ServiceStack.Clients;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {

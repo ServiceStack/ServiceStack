@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Caching;
-using ServiceStack.Clients;
 using ServiceStack.Common.Tests.ServiceClient.Web;
 using ServiceStack.Host;
 using NUnit.Framework;

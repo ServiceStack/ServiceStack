@@ -5,7 +5,6 @@ using System.Xml.Schema;
 using ServiceStack.Host;
 using ServiceStack.Host.AspNet;
 using ServiceStack.Host.Handlers;
-using ServiceStack.Utils;
 using ServiceStack.Web;
 
 namespace ServiceStack.Metadata

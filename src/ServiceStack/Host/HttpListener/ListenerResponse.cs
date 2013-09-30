@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using ServiceStack.Logging;
-using ServiceStack.ServiceHost;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.HttpListener

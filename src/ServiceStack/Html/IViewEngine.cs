@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using ServiceStack.ServiceHost;
 using ServiceStack.Web;
 
 namespace ServiceStack.Html

@@ -18,7 +18,6 @@ using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Metadata;
 using ServiceStack.Serialization;
-using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 
@@ -43,7 +42,7 @@ namespace ServiceStack
             Container = new Container { DefaultOwner = Owner.External };
             ServiceManager = CreateServiceManager(assembliesWithServices);
 
-            ContentTypes = Web.ContentTypes.Instance;
+            ContentTypes = Host.ContentTypes.Instance;
             PreRequestFilters = new List<Action<IHttpRequest, IHttpResponse>>();
             GlobalRequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
             GlobalResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();

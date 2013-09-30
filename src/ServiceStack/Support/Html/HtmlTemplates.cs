@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using ServiceStack.Utils;
 
 namespace ServiceStack.Support.Html
 {

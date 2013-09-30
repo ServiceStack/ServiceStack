@@ -1,5 +1,4 @@
 using System.Runtime.Serialization;
-using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests

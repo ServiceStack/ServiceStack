@@ -4,7 +4,7 @@ using System.Text;
 using System.Web.UI;
 using ServiceStack.Host;
 using ServiceStack.Logging;
-using ServiceStack.Utils;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Metadata
@@ -29,7 +29,7 @@ namespace ServiceStack.Metadata
 		{
 			try
 			{
-				var requestObj = ReflectionUtils.PopulateObject(Activator.CreateInstance(dtoType));
+				var requestObj = AutoMappingUtils.PopulateWith(Activator.CreateInstance(dtoType));
 
 				using (var ms = new MemoryStream())
 				{

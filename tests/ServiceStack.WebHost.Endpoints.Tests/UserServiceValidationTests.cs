@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net;
-using ServiceStack.Clients;
 using ServiceStack.FluentValidation;
 using ServiceStack.Host;
 using NUnit.Framework;

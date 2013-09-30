@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using NUnit.Framework;
-using ServiceStack.Clients;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {

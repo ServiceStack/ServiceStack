@@ -6,7 +6,6 @@ using ServiceStack.Common.Tests.Models;
 using ServiceStack.DataAnnotations;
 using System.Collections.Generic;
 using ServiceStack.Text;
-using ServiceStack.Utils;
 
 namespace ServiceStack.Common.Tests
 {
@@ -83,7 +82,7 @@ namespace ServiceStack.Common.Tests
         [Test]
         public void Can_PopulateRecursiveDto()
         {
-            var obj = (RecursiveDto)ReflectionUtils.PopulateObject(new RecursiveDto());
+            var obj = (RecursiveDto)AutoMappingUtils.PopulateWith(new RecursiveDto());
             Assert.IsNotNullOrEmpty(obj.Name);
             Assert.IsNotNull(obj.Child);
             Assert.IsNotNullOrEmpty(obj.Child.Name);
@@ -92,7 +91,7 @@ namespace ServiceStack.Common.Tests
         [Test]
         public void Can_PopulateArrayOfRecursiveDto()
         {
-            var obj = (DtoWithRecursiveArray)ReflectionUtils.PopulateObject(new DtoWithRecursiveArray());
+            var obj = (DtoWithRecursiveArray)AutoMappingUtils.PopulateWith(new DtoWithRecursiveArray());
             Assert.IsNotNull(obj.Paths);
             Assert.Greater(obj.Paths.Length, 0);
             Assert.IsNotNull(obj.Paths[0]);
@@ -104,7 +103,7 @@ namespace ServiceStack.Common.Tests
         [Test]
         public void Can_PopulateRecursiveArrayDto()
         {
-            var obj = (RecursiveArrayDto)ReflectionUtils.PopulateObject(new RecursiveArrayDto());
+            var obj = (RecursiveArrayDto)AutoMappingUtils.PopulateWith(new RecursiveArrayDto());
             Assert.IsNotNullOrEmpty(obj.Name);
             Assert.IsNotNull(obj.Nodes[0]);
             Assert.IsNotNullOrEmpty(obj.Nodes[0].Name);
@@ -115,7 +114,7 @@ namespace ServiceStack.Common.Tests
         [Test]
         public void Can_PopulateTheVortex()
         {
-            var obj = (MindTwister)ReflectionUtils.PopulateObject(new MindTwister());
+            var obj = (MindTwister)AutoMappingUtils.PopulateWith(new MindTwister());
             Console.WriteLine("Mindtwister = " + ServiceStack.Text.XmlSerializer.SerializeToString(obj)); // TypeSerializer and JsonSerializer blow up on this structure with a Null Reference Exception!
             Assert.IsNotNull(obj);
             Assert.IsNotNull(obj.Name);
@@ -126,7 +125,7 @@ namespace ServiceStack.Common.Tests
         [Test]
         public void Can_PopulateObjectWithStringArray()
         {
-            var obj = (DtoWithStringArray)ReflectionUtils.PopulateObject(new DtoWithStringArray());
+            var obj = (DtoWithStringArray)AutoMappingUtils.PopulateWith(new DtoWithStringArray());
             Assert.IsNotNull(obj.Data);
             Assert.Greater(obj.Data.Length, 0);
             Assert.IsNotNull(obj.Data[0]);
@@ -135,7 +134,7 @@ namespace ServiceStack.Common.Tests
         [Test]
         public void Can_PopulateObjectWithNonZeroEnumArray()
         {
-            var obj = (DtoWithEnumArray)ReflectionUtils.PopulateObject(new DtoWithEnumArray());
+            var obj = (DtoWithEnumArray)AutoMappingUtils.PopulateWith(new DtoWithEnumArray());
             Assert.IsNotNull(obj.Data);
             Assert.Greater(obj.Data.Length, 0);
             Assert.That(Enum.IsDefined(typeof(TestClassType), obj.Data[0]), "Values in created array should be valid for the enum");
@@ -144,21 +143,21 @@ namespace ServiceStack.Common.Tests
 		[Test]
 		public void PopulateObject_UsesDefinedEnum()
 		{
-			var requestObj = (TestClass2)ReflectionUtils.PopulateObject(Activator.CreateInstance(typeof(TestClass2)));
+			var requestObj = (TestClass2)AutoMappingUtils.PopulateWith(Activator.CreateInstance(typeof(TestClass2)));
 			Assert.True(Enum.IsDefined(typeof(TestClassType), requestObj.Type));
 		}
 
 		[Test]
 		public void PopulateObject_UsesDefinedEnum_OnNestedTypes()
 		{
-			var requestObj = (Dictionary<string, TestClass2>)ReflectionUtils.CreateDefaultValue(typeof(Dictionary<string,TestClass2>), new Dictionary<Type,int>());
+			var requestObj = (Dictionary<string, TestClass2>)AutoMappingUtils.CreateDefaultValue(typeof(Dictionary<string,TestClass2>), new Dictionary<Type,int>());
 			Assert.True(Enum.IsDefined(typeof(TestClassType), requestObj.First().Value.Type));
 		}
 
 		[Test]
 		public void GetTest()
 		{
-			var propertyAttributes = ReflectionUtils.GetPropertyAttributes<RequiredAttribute>(typeof(TestClass));
+			var propertyAttributes = AutoMappingUtils.GetPropertyAttributes<RequiredAttribute>(typeof(TestClass));
 			var propertyNames = propertyAttributes.ToList().ConvertAll(x => x.Key.Name);
 			Assert.That(propertyNames, Is.EquivalentTo(new[] { "Member1", "Member3" }));
 		}
@@ -169,7 +168,7 @@ namespace ServiceStack.Common.Tests
 			var toObj = ModelWithFieldsOfDifferentTypes.Create(1);
 			var fromObj = ModelWithFieldsOfDifferentTypes.Create(2);
 
-			var obj3 = ReflectionUtils.PopulateObject(toObj, fromObj);
+			var obj3 = AutoMappingUtils.PopulateWith(toObj, fromObj);
 
 			Assert.IsTrue(obj3 == toObj);
 			Assert.That(obj3.Bool, Is.EqualTo(fromObj.Bool));
@@ -187,7 +186,7 @@ namespace ServiceStack.Common.Tests
 			var toObj = ModelWithFieldsOfDifferentTypes.Create(1);
 			var fromObj = ModelWithOnlyStringFields.Create("2");
 
-			var obj3 = ReflectionUtils.PopulateObject(toObj, fromObj);
+			var obj3 = AutoMappingUtils.PopulateWith(toObj, fromObj);
 
 			Assert.IsTrue(obj3 == toObj);
 			Assert.That(obj3.Id, Is.EqualTo(2));
@@ -201,7 +200,7 @@ namespace ServiceStack.Common.Tests
 			var toObj = ModelWithOnlyStringFields.Create("id-1");
 			var fromObj = ModelWithOnlyStringFields.Create("id-2");
 
-			ReflectionUtils.PopulateFromPropertiesWithAttribute(toObj, fromObj,
+			AutoMappingUtils.PopulateFromPropertiesWithAttribute(toObj, fromObj,
 				typeof(IndexAttribute));
 
 			Assert.That(toObj.Id, Is.EqualTo(originalToObj.Id));
@@ -225,7 +224,7 @@ namespace ServiceStack.Common.Tests
 			fromObj.Double = default(double);
 			fromObj.Guid = default(Guid);
 
-			ReflectionUtils.PopulateWithNonDefaultValues(toObj, fromObj);
+			AutoMappingUtils.PopulateWithNonDefaultValues(toObj, fromObj);
 
 			Assert.That(toObj.Name, Is.EqualTo(originalToObj.Name));
 			Assert.That(toObj.Double, Is.EqualTo(originalToObj.Double));
@@ -250,7 +249,7 @@ namespace ServiceStack.Common.Tests
             fromObj.Guid = default(Guid);
             fromObj.Bool = default(bool);
 
-            ReflectionUtils.PopulateWithNonDefaultValues(toObj, fromObj);
+            AutoMappingUtils.PopulateWithNonDefaultValues(toObj, fromObj);
 
             Assert.That(toObj.Name, Is.EqualTo(originalToObj.Name));
 

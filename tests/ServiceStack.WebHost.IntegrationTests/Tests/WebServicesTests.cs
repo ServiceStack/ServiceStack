@@ -1,7 +1,6 @@
 using System;
 using Funq;
 using NUnit.Framework;
-using ServiceStack.Clients;
 using ServiceStack.Common.Tests;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;

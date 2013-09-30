@@ -1,10 +1,8 @@
 using System.Collections.Generic;
 using Funq;
 using NUnit.Framework;
-using ServiceStack.Clients;
 using ServiceStack.Host;
 using ServiceStack.WebHost.Endpoints;
-using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {

@@ -90,7 +90,7 @@ namespace ServiceStack.ServiceHost.Tests
         private HttpRequestContext CreateContext(string httpMethod)
         {
             var ctx = new MockHttpRequest { HttpMethod = httpMethod };
-            return new HttpRequestContext(ctx, new MockHttpResponse(), null, HttpMethods.GetEndpointAttribute(httpMethod));
+            return new HttpRequestContext(ctx, new MockHttpResponse(), null, ContentFormat.GetEndpointAttribute(httpMethod));
         }
 
 		[Test]

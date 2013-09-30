@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using NUnit.Framework;
 using ProtoBuf;
-using ServiceStack.Clients;
-using ServiceStack.Clients;
 using ServiceStack.ProtoBuf;
-using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 

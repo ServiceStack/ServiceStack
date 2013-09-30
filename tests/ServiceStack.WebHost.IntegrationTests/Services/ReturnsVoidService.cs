@@ -1,5 +1,3 @@
-using ServiceStack.ServiceHost;
-
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
 	[Route("/returnsvoid")]

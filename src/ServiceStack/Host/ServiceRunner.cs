@@ -3,7 +3,6 @@ using System.Diagnostics;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Text;
-using ServiceStack.Utils;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host

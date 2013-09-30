@@ -3,7 +3,7 @@ using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using ServiceStack.ServiceHost;
+using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Web;
 

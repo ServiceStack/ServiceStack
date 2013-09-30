@@ -4,5 +4,6 @@ namespace ServiceStack.Web
 	{
 		string Message { get; }
 		string ErrorCode { get; }
+        string StackTrace { get; }
 	}
 }

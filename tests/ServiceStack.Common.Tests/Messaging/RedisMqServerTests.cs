@@ -2,9 +2,8 @@
 using NUnit.Framework;
 using ServiceStack.Configuration;
 using ServiceStack.Messaging;
+using ServiceStack.Messaging.Redis;
 using ServiceStack.Redis;
-using ServiceStack.Redis.Messaging;
-using ServiceStack.Clients;
 
 namespace ServiceStack.Common.Tests.Messaging
 {

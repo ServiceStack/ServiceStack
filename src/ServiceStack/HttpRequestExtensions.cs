@@ -11,7 +11,6 @@ using ServiceStack.Host.Handlers;
 using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
 using ServiceStack.Text;
-using ServiceStack.Utils;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -700,7 +699,7 @@ namespace ServiceStack
 
             var portRestrictions = RequestAttributes.None;
 
-            portRestrictions |= HttpMethods.GetEndpointAttribute(request.HttpMethod);
+            portRestrictions |= ContentFormat.GetEndpointAttribute(request.HttpMethod);
             portRestrictions |= request.IsSecureConnection ? RequestAttributes.Secure : RequestAttributes.InSecure;
 
             if (request.UserHostAddress != null)

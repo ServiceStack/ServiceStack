@@ -13,7 +13,6 @@ using ServiceStack.IO;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Text;
-using ServiceStack.Utils;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -36,10 +35,6 @@ namespace ServiceStack
                 throw new InvalidOperationException("ServiceStackHost is not initialized.");
             return ServiceStackHost.Instance;
         }
-
-        public static bool SkipPathValidation { get; set; }
-
-        public static bool SkipRouteValidation { get; set; }
 
         public static bool IsAspNetHost
         {

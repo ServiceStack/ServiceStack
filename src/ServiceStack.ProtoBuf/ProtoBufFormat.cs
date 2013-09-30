@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using ProtoBuf.Meta;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.ProtoBuf

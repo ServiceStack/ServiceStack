@@ -8,7 +8,6 @@ using NUnit.Framework;
 using ServiceStack;
 using ServiceStack.Logging;
 using ServiceStack.Razor;
-using ServiceStack.Clients;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 

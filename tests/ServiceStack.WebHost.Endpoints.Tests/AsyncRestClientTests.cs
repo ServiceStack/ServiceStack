@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using NUnit.Framework;
-using ServiceStack.Clients;
 using ServiceStack.Logging;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 

@@ -106,6 +106,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AddHeaderAttribute.cs" />
+    <Compile Include="CompressedFileResult.cs" />
+    <Compile Include="CompressedResult.cs" />
+    <Compile Include="Host\ContentTypes.cs" />
+    <Compile Include="Host\HttpResponseStreamWrapper.cs" />
+    <Compile Include="Host\SerializationContext.cs" />
+    <Compile Include="HttpError.cs" />
+    <Compile Include="HttpResult.cs" />
+    <Compile Include="HttpResultExtensions.cs" />
     <Compile Include="RedisErrorLoggerFeature.cs" />
     <Compile Include="RequestLogsFeature.cs" />
     <Compile Include="Admin\RequestLogsService.cs" />
@@ -350,7 +358,7 @@
     <Compile Include="DefaultRequestAttribute.cs" />
     <Compile Include="ServiceStackHost.cs" />
     <Compile Include="ServiceStackHost.Runtime.cs" />
-    <Compile Include="Utils\DtoUtils.cs" />
+    <Compile Include="DtoUtils.cs" />
     <Compile Include="IRequiresSoapMessage.cs" />
     <Compile Include="Metadata\MetadataPagesConfig.cs" />
     <Compile Include="Host\BasicRequest.cs" />
@@ -419,7 +427,6 @@
     <Compile Include="RequestContextExtensions.cs" />
     <Compile Include="Host\RestPath.cs" />
     <Compile Include="Host\ServiceController.cs" />
-    <Compile Include="Host\ServiceExecOperations.cs" />
     <Compile Include="Host\ServiceManager.cs" />
     <Compile Include="Host\ServiceMetadata.cs" />
     <Compile Include="Host\ServiceRoutes.cs" />
@@ -503,7 +510,7 @@
     <Compile Include="Metadata\IndexOperationsControl.cs" />
     <Compile Include="Metadata\XsdTypeNames.cs" />
     <Compile Include="Metadata\XsdTypes.cs" />
-    <Compile Include="Utils\XsdUtils.cs" />
+    <Compile Include="XsdUtils.cs" />
     <Compile Include="Metadata\ListTemplate.cs" />
     <Compile Include="IAppHost.cs" />
     <Compile Include="IPlugin.cs" />
@@ -574,6 +581,10 @@
   </Target>
   -->
   <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj">
+      <Project>{c43f583f-abde-4dd4-bbe3-66322817a6ad}</Project>
+      <Name>ServiceStack.Client</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>

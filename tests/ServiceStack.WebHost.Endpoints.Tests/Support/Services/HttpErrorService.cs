@@ -55,7 +55,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 				throw ex;
 
 			var httpStatus = (HttpStatusCode)request.StatusCode.Value;
-			throw new Web.HttpError(httpStatus, ex);
+			throw new ServiceStack.HttpError(httpStatus, ex);
 		}
 	}
 

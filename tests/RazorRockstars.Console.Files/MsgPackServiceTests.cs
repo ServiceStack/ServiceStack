@@ -6,7 +6,6 @@ using NUnit.Framework;
 using ServiceStack;
 using ServiceStack.Logging;
 using ServiceStack.MsgPack;
-using ServiceStack.Clients;
 using ServiceStack.Text;
 
 namespace RazorRockstars.Console.Files

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ServiceStack.Clients;
 using ServiceStack.Web;
 
 namespace ServiceStack.Common.Tests.ServiceClient.Web

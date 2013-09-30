@@ -4,7 +4,7 @@ using System.Text;
 using System.Web;
 using ServiceStack.Web;
 
-namespace ServiceStack.ServiceHost
+namespace ServiceStack.Host
 {
     public class Cookies : ICookies
     {

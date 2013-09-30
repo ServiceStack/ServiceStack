@@ -1,7 +1,6 @@
 ﻿using System.Web;
 using ServiceStack.Host;
 using ServiceStack.Metadata;
-using ServiceStack.Web;
 
 namespace ServiceStack
 {

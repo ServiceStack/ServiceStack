@@ -84,6 +84,9 @@
 
       <ServiceStackRazorFiles Include="$(SrcDir)/ServiceStack.Razor/bin/$(Configuration)/ServiceStack.Razor.*"></ServiceStackRazorFiles>
 
+      <ServiceStackClientFiles Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/ServiceStack.Client.*"></ServiceStackClientFiles>
+      <ServiceStackClientFilesSL5 Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/ServiceStack.Client.*"></ServiceStackClientFilesSL5>
+
       <ServiceStackCommonFiles Include="$(SrcDir)/ServiceStack.Common/bin/$(Configuration)/ServiceStack.Common.*"></ServiceStackCommonFiles>
       <ServiceStackCommonFilesSL5 Include="$(SrcDir)/ServiceStack.Common.SL5/bin/$(Configuration)/ServiceStack.Common.*"></ServiceStackCommonFilesSL5>
 
@@ -225,6 +228,27 @@
       <Copy SourceFiles="%(ServiceStackInterfacesFilesSL5.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Interfaces/lib/sl5" />-->
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Interfaces/servicestack.interfaces.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
+
+    <!-- ServiceStack.Client -->
+
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Client/ServiceStack.Client.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Client/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Client/lib/net40')" />
+    <Copy SourceFiles="%(ServiceStackClientFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client/lib/net40" />
+
+    <!-- TODO re-add SL5 after re-factor -->
+    <!-- Silverlight -->
+    <!--<MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Client.SL5/ServiceStack.Client.SL5.csproj"
+               Targets="Build"
+               Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+      <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Client/lib/sl5" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Client/lib/sl5')" />
+      <Copy SourceFiles="%(ServiceStackClientFilesSL5.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client/lib/sl5" />-->
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Client/servicestack.client.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Common -->

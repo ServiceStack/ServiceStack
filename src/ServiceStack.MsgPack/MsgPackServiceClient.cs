@@ -1,8 +1,6 @@
 using System;
 using MsgPack.Serialization;
 using System.IO;
-using ServiceStack.Clients;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.MsgPack

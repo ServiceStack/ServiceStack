@@ -14,8 +14,8 @@ namespace ServiceStack.Metadata
         {
             set
             {
-                this.ContentType = Web.ContentFormat.ToContentType(value);
-                this.ContentFormat = Web.ContentFormat.GetContentFormat(value);
+                this.ContentType = ServiceStack.ContentFormat.ToContentType(value);
+                this.ContentFormat = ServiceStack.ContentFormat.GetContentFormat(value);
             }
         }
 

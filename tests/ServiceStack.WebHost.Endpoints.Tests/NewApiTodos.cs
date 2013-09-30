@@ -3,7 +3,6 @@ using System.Linq;
 using Funq;
 using NUnit.Framework;
 using ServiceStack;
-using ServiceStack.Clients;
 
 namespace NewApi.Todos
 {

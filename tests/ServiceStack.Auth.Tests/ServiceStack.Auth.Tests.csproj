@@ -73,6 +73,10 @@
       <Project>{6E240294-9D93-4C09-9BB0-38D82A22DEEE}</Project>
       <Name>ServiceStack.Authentication.OpenId</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj">
+      <Project>{c43f583f-abde-4dd4-bbe3-66322817a6ad}</Project>
+      <Name>ServiceStack.Client</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
