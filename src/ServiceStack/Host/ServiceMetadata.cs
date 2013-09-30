@@ -77,7 +77,7 @@ namespace ServiceStack.Host
         public List<OperationDto> GetOperationDtos()
         {
             return OperationsMap.Values
-                .SafeConvertAll(x => x.ToOperationDto())
+                .Map(x => x.ToOperationDto())
                 .OrderBy(x => x.Name)
                 .ToList();
         }

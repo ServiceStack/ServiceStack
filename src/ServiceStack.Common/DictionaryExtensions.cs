@@ -17,7 +17,7 @@ public static class DictionaryExtensions
         }
     }
 
-    public static bool EquivalentTo<K, V>(this IDictionary<K, V> thisMap, IDictionary<K, V> otherMap)
+    public static bool UnorderedEquivalentTo<K, V>(this IDictionary<K, V> thisMap, IDictionary<K, V> otherMap)
     {
         if (thisMap == null || otherMap == null) return thisMap == otherMap;
         if (thisMap.Count != otherMap.Count) return false;

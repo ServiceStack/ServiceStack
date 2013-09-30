@@ -15,15 +15,7 @@ namespace ServiceStack
             return new HashSet<T>(items);
         }
 
-        /// <summary>
-        /// Alias for SafeForEach
-        /// </summary>
         public static void Each<T>(this IEnumerable<T> values, Action<T> action)
-        {
-            SafeForEach(values, action);
-        }
-
-        public static void SafeForEach<T>(this IEnumerable<T> values, Action<T> action)
         {
             if (values == null) return;
 
@@ -33,15 +25,7 @@ namespace ServiceStack
             }
         }
 
-        /// <summary>
-        /// Alias for SafeForEach
-        /// </summary>
         public static void Each<T>(this IEnumerable<T> values, Action<int, T> action)
-        {
-            SafeForEach(values, action);
-        }
-
-        public static void SafeForEach<T>(this IEnumerable<T> values, Action<int,T> action)
         {
             if (values == null) return;
 
@@ -51,17 +35,9 @@ namespace ServiceStack
                 action(i++, value);
             }
         }
-
-        /// <summary>
-        /// Alias for SafeConvertAll
-        /// </summary>
+        
         public static List<To> Map<To, From>(this IEnumerable<From> items, Func<From, To> converter)
         {
-            return SafeConvertAll(items, converter);
-        }
-
-        public static List<To> SafeConvertAll<To, From>(this IEnumerable<From> items, Func<From, To> converter)
-        {
             if (items == null)
                 return new List<To>();
 
@@ -73,16 +49,8 @@ namespace ServiceStack
             return list;
         }
 
-        /// <summary>
-        /// Alias for SafeConvertAll
-        /// </summary>
         public static List<To> Map<To>(this System.Collections.IEnumerable items, Func<object, To> converter)
         {
-            return SafeConvertAll(items, converter);
-        }
-
-        public static List<To> SafeConvertAll<To>(this System.Collections.IEnumerable items, Func<object, To> converter)
-        {
             if (items == null)
                 return new List<To>();
 
@@ -92,18 +60,6 @@ namespace ServiceStack
                 list.Add(converter(item));
             }
             return list;
-        }
-
-        public static object SafeFirst(this System.Collections.IEnumerable items)
-        {
-            if (items == null)
-                return null;
-
-            foreach (var item in items)
-            {
-                return item;
-            }
-            return null;
         }
 
         public static List<object> ToObjects<T>(this IEnumerable<T> items)

@@ -40,9 +40,5 @@ namespace ServiceStack.Server.Tests
 				});
             }
         }
-
-        //public const string SingleHost = "chi-dev-mem1.ddnglobal.local";
-        //public static readonly string [] MasterHosts = new[] { "chi-dev-mem1.ddnglobal.local" };
-        //public static readonly string [] SlaveHosts = new[] { "chi-dev-mem1.ddnglobal.local", "chi-dev-mem2.ddnglobal.local" };
     }
 }
