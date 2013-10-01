@@ -1,8 +1,5 @@
 using System;
-using System.Web.UI;
-using ServiceStack.Host;
 using ServiceStack.Text;
-using ServiceStack.Web;
 
 namespace ServiceStack.Metadata
 {
@@ -15,18 +12,5 @@ namespace ServiceStack.Metadata
             var requestObj = AutoMappingUtils.PopulateWith(Activator.CreateInstance(dtoType));
 			return requestObj.SerializeAndFormat();
         }
-
-        protected override void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, ServiceMetadata metadata)
-        {
-            var defaultPage = new OperationsControl
-            {
-				Title = HostContext.ServiceName,
-                OperationNames = metadata.GetOperationNamesForMetadata(httpReq, Format),
-                MetadataOperationPageBodyHtml = HostContext.Config.MetadataOperationPageBodyHtml,
-            };
-
-            defaultPage.RenderControl(writer);
-        }
-
     }
 }

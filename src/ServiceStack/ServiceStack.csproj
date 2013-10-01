@@ -504,7 +504,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Metadata\Soap12OperationControl.cs" />
     <Compile Include="Metadata\OperationControl.cs" />
-    <Compile Include="Metadata\OperationsControl.cs" />
     <Compile Include="Metadata\Soap11OperationControl.cs" />
     <Compile Include="Metadata\IndexOperationsControl.cs" />
     <Compile Include="Metadata\XsdTypeNames.cs" />
@@ -541,7 +540,6 @@
   <ItemGroup>
     <Content Include="Funq\License.txt" />
     <EmbeddedResource Include="Support\Html\OperationControl.html" />
-    <EmbeddedResource Include="Support\Html\OperationsControl.html" />
     <EmbeddedResource Include="Support\Html\IndexOperations.html" />
     <EmbeddedResource Include="Formats\HtmlFormat.html" />
     <None Include="MiniProfiler\UI\jquery.tmpl.beta1.js.orig" />

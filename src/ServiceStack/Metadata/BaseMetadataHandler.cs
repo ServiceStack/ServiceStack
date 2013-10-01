@@ -163,6 +163,22 @@ namespace ServiceStack.Metadata
             RenderOperations(writer, httpReq, metadata);
         }
 
+        protected void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, ServiceMetadata metadata)
+        {
+            var defaultPage = new IndexOperationsControl
+            {
+                HttpRequest = httpReq,
+                MetadataConfig = HostContext.MetadataPagesConfig,
+                Title = HostContext.ServiceName,
+                Xsds = XsdTypes.Xsds,
+                XsdServiceTypesIndex = 1,
+                OperationNames = metadata.GetOperationNamesForMetadata(httpReq),
+                MetadataPageBodyHtml = HostContext.Config.MetadataPageBodyHtml,
+            };
+
+            defaultPage.RenderControl(writer);
+        }
+        
         private string ConvertToHtml(string text)
         {
             return text.Replace("<", "&lt;")
@@ -213,8 +229,6 @@ namespace ServiceStack.Metadata
 
             operationControl.Render(writer);
         }
-
-        protected abstract void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, ServiceMetadata metadata);
 
     }
 }

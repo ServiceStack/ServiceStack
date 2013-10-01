@@ -26,26 +26,13 @@ namespace ServiceStack.Support.Html
             }
             set { operationControlTemplate = value; }
         }
-
-        private static string operationsControlTemplate;
-        public static string OperationsControlTemplate
-        {
-            get
-            {
-                return operationsControlTemplate ??
-                       (operationsControlTemplate = LoadEmbeddedHtmlTemplate("OperationsControl.html"));
-            }
-            set { operationsControlTemplate = value; }
-        }
-
-
+        
         static HtmlTemplates()
         {
             if (HostContext.Config.UseCustomMetadataTemplates)
             {
                 TryLoadExternal("IndexOperations.html", ref indexOperationsTemplate);
                 TryLoadExternal("OperationControl.html", ref operationControlTemplate);
-                TryLoadExternal("OperationsControl.html", ref operationsControlTemplate);
             }
         }
 

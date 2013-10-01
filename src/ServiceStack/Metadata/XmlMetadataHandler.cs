@@ -1,9 +1,6 @@
 using System;
-using System.Web.UI;
-using ServiceStack.Host;
 using ServiceStack.Serialization;
 using ServiceStack.Text;
-using ServiceStack.Web;
 
 namespace ServiceStack.Metadata
 {
@@ -15,17 +12,6 @@ namespace ServiceStack.Metadata
 		{
 			var requestObj = AutoMappingUtils.PopulateWith(dtoType.CreateInstance());
 			return DataContractSerializer.Instance.Parse(requestObj, true);
-		}
-
-		protected override void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, ServiceMetadata metadata)
-		{
-			var defaultPage = new OperationsControl {
-				Title = HostContext.ServiceName,
-                OperationNames = metadata.GetOperationNamesForMetadata(httpReq, Format),
-				MetadataOperationPageBodyHtml = HostContext.Config.MetadataOperationPageBodyHtml,
-			};
-
-			defaultPage.RenderControl(writer);
 		}
 	}
 }

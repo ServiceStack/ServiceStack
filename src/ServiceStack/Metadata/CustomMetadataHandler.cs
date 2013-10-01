@@ -1,11 +1,8 @@
 using System;
 using System.IO;
 using System.Text;
-using System.Web.UI;
 using ServiceStack.Host;
 using ServiceStack.Logging;
-using ServiceStack.Text;
-using ServiceStack.Web;
 
 namespace ServiceStack.Metadata
 {
@@ -48,18 +45,6 @@ namespace ServiceStack.Metadata
 				return string.Format("{{Unable to show example output for type '{0}' using the custom '{1}' filter}}" + ex.Message,
 					dtoType.Name, this.ContentFormat);
 			}
-		}
-
-        protected override void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, ServiceMetadata metadata)
-		{
-			var defaultPage = new OperationsControl
-			{
-				Title = HostContext.ServiceName,
-                OperationNames = metadata.GetOperationNamesForMetadata(httpReq, Format),
-                MetadataOperationPageBodyHtml = HostContext.Config.MetadataOperationPageBodyHtml,
-			};
-
-			defaultPage.RenderControl(writer);
 		}
 	}
 }

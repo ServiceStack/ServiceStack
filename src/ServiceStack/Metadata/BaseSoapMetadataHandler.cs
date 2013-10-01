@@ -60,20 +60,5 @@ namespace ServiceStack.Metadata
 			}
     	}
 
-    	protected override void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, ServiceMetadata metadata)
-    	{
-			var defaultPage = new IndexOperationsControl {
-				HttpRequest = httpReq,
-                MetadataConfig = HostContext.MetadataPagesConfig,                
-				Title = HostContext.ServiceName,
-				Xsds = XsdTypes.Xsds,
-				XsdServiceTypesIndex = 1,
-                OperationNames = metadata.GetOperationNamesForMetadata(httpReq),
-				MetadataPageBodyHtml = HostContext.Config.MetadataPageBodyHtml,
-			};
-
-			defaultPage.RenderControl(writer);
-		}
-
     }
 }
