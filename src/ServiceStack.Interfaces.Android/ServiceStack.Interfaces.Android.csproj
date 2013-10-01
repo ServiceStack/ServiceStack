@@ -43,125 +43,68 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\ServiceStack.Interfaces\CacheAccess\ICacheClearable.cs">
-      <Link>CacheAccess\ICacheClearable.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\ApiAllowableValuesAttribute.cs">
+      <Link>ApiAllowableValuesAttribute.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\CacheAccess\ICacheClient.cs">
-      <Link>CacheAccess\ICacheClient.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\ApiAttribute.cs">
+      <Link>ApiAttribute.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\CacheAccess\ICacheHasContentType.cs">
-      <Link>CacheAccess\ICacheHasContentType.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\ApiMemberAttribute.cs">
+      <Link>ApiMemberAttribute.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\CacheAccess\ICacheManager.cs">
-      <Link>CacheAccess\ICacheManager.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\ApiResponse.cs">
+      <Link>ApiResponse.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\CacheAccess\ICacheTextManager.cs">
-      <Link>CacheAccess\ICacheTextManager.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Caching\ICacheClient.cs">
+      <Link>Caching\ICacheClient.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\CacheAccess\ICacheTextManagerFactory.cs">
-      <Link>CacheAccess\ICacheTextManagerFactory.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Caching\IDeflateProvider.cs">
+      <Link>Caching\IDeflateProvider.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\CacheAccess\ICompressableCacheTextManager.cs">
-      <Link>CacheAccess\ICompressableCacheTextManager.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Caching\IGZipProvider.cs">
+      <Link>Caching\IGZipProvider.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\CacheAccess\ICompressableCacheTextManagerFactory.cs">
-      <Link>CacheAccess\ICompressableCacheTextManagerFactory.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Caching\IMemcachedClient.cs">
+      <Link>Caching\IMemcachedClient.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\CacheAccess\IDeflateProvider.cs">
-      <Link>CacheAccess\IDeflateProvider.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Caching\IRemoveByPattern.cs">
+      <Link>Caching\IRemoveByPattern.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\CacheAccess\IGZipProvider.cs">
-      <Link>CacheAccess\IGZipProvider.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Caching\ISession.cs">
+      <Link>Caching\ISession.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\CacheAccess\IHasCacheClient.cs">
-      <Link>CacheAccess\IHasCacheClient.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Caching\ISessionFactory.cs">
+      <Link>Caching\ISessionFactory.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\CacheAccess\IMemcachedClient.cs">
-      <Link>CacheAccess\IMemcachedClient.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\CollectionTypes.cs">
+      <Link>CollectionTypes.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\CacheAccess\IPersistenceProviderCache.cs">
-      <Link>CacheAccess\IPersistenceProviderCache.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Commands\ICommand.cs">
+      <Link>Commands\ICommand.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\CacheAccess\IPersistenceProviderCacheFactory.cs">
-      <Link>CacheAccess\IPersistenceProviderCacheFactory.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Commands\ICommand.Generic.cs">
+      <Link>Commands\ICommand.Generic.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\CacheAccess\ISession.cs">
-      <Link>CacheAccess\ISession.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Commands\ICommandExec.cs">
+      <Link>Commands\ICommandExec.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\CacheAccess\ISessionFactory.cs">
-      <Link>CacheAccess\ISessionFactory.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Commands\ICommandList.cs">
+      <Link>Commands\ICommandList.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\Configuration\IAppSettings.cs">
+      <Link>Configuration\IAppSettings.cs</Link>
     </Compile>
     <Compile Include="..\ServiceStack.Interfaces\Configuration\IContainerAdapter.cs">
       <Link>Configuration\IContainerAdapter.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Configuration\IFactoryProvider.cs">
-      <Link>Configuration\IFactoryProvider.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Configuration\IRelease.cs">
+      <Link>Configuration\IRelease.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Configuration\IResourceManager.cs">
-      <Link>Configuration\IResourceManager.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Configuration\IResolver.cs">
+      <Link>Configuration\IResolver.cs</Link>
     </Compile>
     <Compile Include="..\ServiceStack.Interfaces\Configuration\ITypeFactory.cs">
       <Link>Configuration\ITypeFactory.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DataAccess\Criteria\ICriteria.cs">
-      <Link>DataAccess\Criteria\ICriteria.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DataAccess\Criteria\IOrderAscendingCriteria.cs">
-      <Link>DataAccess\Criteria\IOrderAscendingCriteria.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DataAccess\Criteria\IOrderDescendingCriteria.cs">
-      <Link>DataAccess\Criteria\IOrderDescendingCriteria.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DataAccess\Criteria\IPagingCriteria.cs">
-      <Link>DataAccess\Criteria\IPagingCriteria.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DataAccess\Criteria\PagingCriteria.cs">
-      <Link>DataAccess\Criteria\PagingCriteria.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DataAccess\DataAccessException.cs">
-      <Link>DataAccess\DataAccessException.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DataAccess\IAggregatable.cs">
-      <Link>DataAccess\IAggregatable.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DataAccess\IBasicPersistenceProvider.cs">
-      <Link>DataAccess\IBasicPersistenceProvider.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DataAccess\IBasicPersistenceProvider.Generic.cs">
-      <Link>DataAccess\IBasicPersistenceProvider.Generic.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DataAccess\IHasDbConnection.cs">
-      <Link>DataAccess\IHasDbConnection.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DataAccess\IPersistenceProvider.cs">
-      <Link>DataAccess\IPersistenceProvider.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DataAccess\IPersistenceProviderManager.cs">
-      <Link>DataAccess\IPersistenceProviderManager.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DataAccess\IPersistenceProviderManagerFactory.cs">
-      <Link>DataAccess\IPersistenceProviderManagerFactory.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DataAccess\IQueryable.cs">
-      <Link>DataAccess\IQueryable.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DataAccess\IQueryableByComparer.cs">
-      <Link>DataAccess\IQueryableByComparer.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DataAccess\IQueryableByExample.cs">
-      <Link>DataAccess\IQueryableByExample.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DataAccess\IQueryableByPredicate.cs">
-      <Link>DataAccess\IQueryableByPredicate.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DataAccess\IQueryablePersistenceProvider.cs">
-      <Link>DataAccess\IQueryablePersistenceProvider.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DataAccess\IResultSet.cs">
-      <Link>DataAccess\IResultSet.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DataAccess\ITransactionContext.cs">
-      <Link>DataAccess\ITransactionContext.cs</Link>
     </Compile>
     <Compile Include="..\ServiceStack.Interfaces\DataAnnotations\AliasAttribute.cs">
       <Link>DataAnnotations\AliasAttribute.cs</Link>
@@ -181,65 +124,83 @@
     <Compile Include="..\ServiceStack.Interfaces\DataAnnotations\ReferencesAttribute.cs">
       <Link>DataAnnotations\ReferencesAttribute.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DesignPatterns\Command\ICommand.cs">
-      <Link>DesignPatterns\Command\ICommand.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Data\DataException.cs">
+      <Link>Data\DataException.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DesignPatterns\Command\ICommandExec.cs">
-      <Link>DesignPatterns\Command\ICommandExec.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Data\DbConnectionFactory.cs">
+      <Link>Data\DbConnectionFactory.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DesignPatterns\Command\ICommandIEnumerable.cs">
-      <Link>DesignPatterns\Command\ICommandIEnumerable.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Data\IDbConnectionFactory.cs">
+      <Link>Data\IDbConnectionFactory.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DesignPatterns\Command\ICommandIList.cs">
-      <Link>DesignPatterns\Command\ICommandIList.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Data\IEntityStore.cs">
+      <Link>Data\IEntityStore.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DesignPatterns\Command\ICommandList.cs">
-      <Link>DesignPatterns\Command\ICommandList.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Data\IEntityStore.Generic.cs">
+      <Link>Data\IEntityStore.Generic.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DesignPatterns\Command\ICommandVoid.cs">
-      <Link>DesignPatterns\Command\ICommandVoid.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Data\IHasDbConnection.cs">
+      <Link>Data\IHasDbConnection.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DesignPatterns\Model\IHasGuidId.cs">
-      <Link>DesignPatterns\Model\IHasGuidId.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\ErrorResponse.cs">
+      <Link>ErrorResponse.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DesignPatterns\Model\IHasId.cs">
-      <Link>DesignPatterns\Model\IHasId.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Feature.cs">
+      <Link>Feature.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DesignPatterns\Model\IHasIntId.cs">
-      <Link>DesignPatterns\Model\IHasIntId.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\IHasResponseStatus.cs">
+      <Link>IHasResponseStatus.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DesignPatterns\Model\IHasLongId.cs">
-      <Link>DesignPatterns\Model\IHasLongId.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\IOneWayClient.cs">
+      <Link>IOneWayClient.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DesignPatterns\Model\IHasNamed.cs">
-      <Link>DesignPatterns\Model\IHasNamed.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\IO\IEndpoint.cs">
+      <Link>IO\IEndpoint.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DesignPatterns\Model\IHasNamedCollection.cs">
-      <Link>DesignPatterns\Model\IHasNamedCollection.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\IO\IVirtualDirectory.cs">
+      <Link>IO\IVirtualDirectory.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DesignPatterns\Model\IHasNamedList.cs">
-      <Link>DesignPatterns\Model\IHasNamedList.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\IO\IVirtualFile.cs">
+      <Link>IO\IVirtualFile.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DesignPatterns\Model\IHasStringId.cs">
-      <Link>DesignPatterns\Model\IHasStringId.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\IO\IVirtualNode.cs">
+      <Link>IO\IVirtualNode.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DesignPatterns\Model\IHasUserId.cs">
-      <Link>DesignPatterns\Model\IHasUserId.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\IO\IVirtualPathProvider.cs">
+      <Link>IO\IVirtualPathProvider.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DesignPatterns\Model\IHasUserSession.cs">
-      <Link>DesignPatterns\Model\IHasUserSession.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\IReplyClient.cs">
+      <Link>IReplyClient.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DesignPatterns\Serialization\IStringDeserializer.cs">
-      <Link>DesignPatterns\Serialization\IStringDeserializer.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\IResponseStatus.cs">
+      <Link>IResponseStatus.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DesignPatterns\Serialization\IStringSerializer.cs">
-      <Link>DesignPatterns\Serialization\IStringSerializer.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\IRestClient.cs">
+      <Link>IRestClient.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DesignPatterns\Serialization\ITextSerializer.cs">
-      <Link>DesignPatterns\Serialization\ITextSerializer.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\IRestClientAsync.cs">
+      <Link>IRestClientAsync.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\DesignPatterns\Translator\ITranslator.cs">
-      <Link>DesignPatterns\Translator\ITranslator.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\IService.cs">
+      <Link>IService.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\IServiceClient.cs">
+      <Link>IServiceClient.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\IServiceClientAsync.cs">
+      <Link>IServiceClientAsync.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\Logging\ConsoleLogFactory.cs">
+      <Link>Logging\ConsoleLogFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\Logging\ConsoleLogger.cs">
+      <Link>Logging\ConsoleLogger.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\Logging\DebugLogFactory.cs">
+      <Link>Logging\DebugLogFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\Logging\DebugLogger.cs">
+      <Link>Logging\DebugLogger.cs</Link>
     </Compile>
     <Compile Include="..\ServiceStack.Interfaces\Logging\ILog.cs">
       <Link>Logging\ILog.cs</Link>
@@ -250,50 +211,20 @@
     <Compile Include="..\ServiceStack.Interfaces\Logging\LogManager.cs">
       <Link>Logging\LogManager.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Logging\Support\Logging\ConsoleLogFactory.cs">
-      <Link>Logging\Support\Logging\ConsoleLogFactory.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Logging\NullDebugLogger.cs">
+      <Link>Logging\NullDebugLogger.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Logging\Support\Logging\ConsoleLogger.cs">
-      <Link>Logging\Support\Logging\ConsoleLogger.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Logging\NullLogFactory.cs">
+      <Link>Logging\NullLogFactory.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Logging\Support\Logging\DebugLogFactory.cs">
-      <Link>Logging\Support\Logging\DebugLogFactory.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Logging\StringBuilderLog.cs">
+      <Link>Logging\StringBuilderLog.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Logging\Support\Logging\DebugLogger.cs">
-      <Link>Logging\Support\Logging\DebugLogger.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Logging\TestLogFactory.cs">
+      <Link>Logging\TestLogFactory.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Logging\Support\Logging\NullDebugLogger.cs">
-      <Link>Logging\Support\Logging\NullDebugLogger.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Logging\Support\Logging\NullLogFactory.cs">
-      <Link>Logging\Support\Logging\NullLogFactory.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Logging\Support\Logging\TestLogFactory.cs">
-      <Link>Logging\Support\Logging\TestLogFactory.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Logging\Support\Logging\TestLogger.cs">
-      <Link>Logging\Support\Logging\TestLogger.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\LogicFacade\IApplicationContext.cs">
-      <Link>LogicFacade\IApplicationContext.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\LogicFacade\IInitContext.cs">
-      <Link>LogicFacade\IInitContext.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\LogicFacade\ILogicFacade.cs">
-      <Link>LogicFacade\ILogicFacade.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\LogicFacade\InitOptions.cs">
-      <Link>LogicFacade\InitOptions.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\LogicFacade\IOperationContext.cs">
-      <Link>LogicFacade\IOperationContext.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\LogicFacade\IServiceModelFinder.cs">
-      <Link>LogicFacade\IServiceModelFinder.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\LogicFacade\IXmlRequest.cs">
-      <Link>LogicFacade\IXmlRequest.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Logging\TestLogger.cs">
+      <Link>Logging\TestLogger.cs</Link>
     </Compile>
     <Compile Include="..\ServiceStack.Interfaces\Messaging\IMessage.cs">
       <Link>Messaging\IMessage.cs</Link>
@@ -333,6 +264,51 @@
     </Compile>
     <Compile Include="..\ServiceStack.Interfaces\Messaging\UnRetryableMessagingException.cs">
       <Link>Messaging\UnRetryableMessagingException.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\Model\ICacheByDateModified.cs">
+      <Link>Model\ICacheByDateModified.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\Model\ICacheByEtag.cs">
+      <Link>Model\ICacheByEtag.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\Model\IHasAction.cs">
+      <Link>Model\IHasAction.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\Model\IHasGuidId.cs">
+      <Link>Model\IHasGuidId.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\Model\IHasId.cs">
+      <Link>Model\IHasId.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\Model\IHasIntId.cs">
+      <Link>Model\IHasIntId.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\Model\IHasLongId.cs">
+      <Link>Model\IHasLongId.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\Model\IHasNamed.cs">
+      <Link>Model\IHasNamed.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\Model\IHasNamedCollection.cs">
+      <Link>Model\IHasNamedCollection.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\Model\IHasNamedList.cs">
+      <Link>Model\IHasNamedList.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\Model\IHasStringId.cs">
+      <Link>Model\IHasStringId.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\Model\IHasUserId.cs">
+      <Link>Model\IHasUserId.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\Model\IHasUserSession.cs">
+      <Link>Model\IHasUserSession.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\Model\IResponseStatusConvertible.cs">
+      <Link>Model\IResponseStatusConvertible.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\Property.cs">
+      <Link>Property.cs</Link>
     </Compile>
     <Compile Include="..\ServiceStack.Interfaces\Redis\Generic\IRedisHash.Generic.cs">
       <Link>Redis\Generic\IRedisHash.Generic.cs</Link>
@@ -412,198 +388,103 @@
     <Compile Include="..\ServiceStack.Interfaces\Redis\SortOptions.cs">
       <Link>Redis\SortOptions.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\SearchIndex\FullTextIndexAttribute.cs">
-      <Link>SearchIndex\FullTextIndexAttribute.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\RequestAttributes.cs">
+      <Link>RequestAttributes.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\SearchIndex\FullTextIndexDocumentAttribute.cs">
-      <Link>SearchIndex\FullTextIndexDocumentAttribute.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\RequestLogEntry.cs">
+      <Link>RequestLogEntry.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\SearchIndex\FullTextIndexFieldAttribute.cs">
-      <Link>SearchIndex\FullTextIndexFieldAttribute.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\ResponseError.cs">
+      <Link>ResponseError.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\EndpointAttributes.cs">
-      <Link>ServiceHost\EndpointAttributes.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\ResponseStatus.cs">
+      <Link>ResponseStatus.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\Feature.cs">
-      <Link>ServiceHost\Feature.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\RestrictAttribute.cs">
+      <Link>RestrictAttribute.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IAsyncService.cs">
-      <Link>ServiceHost\IAsyncService.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\RouteAttribute.cs">
+      <Link>RouteAttribute.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IContentTypeFilter.cs">
-      <Link>ServiceHost\IContentTypeFilter.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\SwaggerType.cs">
+      <Link>SwaggerType.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IContentTypeReader.cs">
-      <Link>ServiceHost\IContentTypeReader.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IContentTypeReader.cs">
+      <Link>Web\IContentTypeReader.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IContentTypeWriter.cs">
-      <Link>ServiceHost\IContentTypeWriter.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IContentTypes.cs">
+      <Link>Web\IContentTypes.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\ICookies.cs">
-      <Link>ServiceHost\ICookies.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IContentTypeWriter.cs">
+      <Link>Web\IContentTypeWriter.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IExpirable.cs">
-      <Link>ServiceHost\IExpirable.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\ICookies.cs">
+      <Link>Web\ICookies.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IFile.cs">
-      <Link>ServiceHost\IFile.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IExpirable.cs">
+      <Link>Web\IExpirable.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IHasOptions.cs">
-      <Link>ServiceHost\IHasOptions.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IHasOptions.cs">
+      <Link>Web\IHasOptions.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IHasRequestFilter.cs">
-      <Link>ServiceHost\IHasRequestFilter.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IHasRequestFilter.cs">
+      <Link>Web\IHasRequestFilter.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IHasResponseFilter.cs">
-      <Link>ServiceHost\IHasResponseFilter.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IHasResponseFilter.cs">
+      <Link>Web\IHasResponseFilter.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IHttpError.cs">
-      <Link>ServiceHost\IHttpError.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IHttpError.cs">
+      <Link>Web\IHttpError.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IHttpRequest.cs">
-      <Link>ServiceHost\IHttpRequest.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IHttpFile.cs">
+      <Link>Web\IHttpFile.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IHttpResponse.cs">
-      <Link>ServiceHost\IHttpResponse.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IHttpRequest.cs">
+      <Link>Web\IHttpRequest.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IHttpResult.cs">
-      <Link>ServiceHost\IHttpResult.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IHttpResponse.cs">
+      <Link>Web\IHttpResponse.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IRequestAttributes.cs">
-      <Link>ServiceHost\IRequestAttributes.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IHttpResult.cs">
+      <Link>Web\IHttpResult.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IRequestContext.cs">
-      <Link>ServiceHost\IRequestContext.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IPartialWriter.cs">
+      <Link>Web\IPartialWriter.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IRequestLogger.cs">
-      <Link>ServiceHost\IRequestLogger.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IRequestContext.cs">
+      <Link>Web\IRequestContext.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IRequiresRequestContext.cs">
-      <Link>ServiceHost\IRequiresRequestContext.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IRequestLogger.cs">
+      <Link>Web\IRequestLogger.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IRestDeleteService.cs">
-      <Link>ServiceHost\IRestDeleteService.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IRequestPreferences.cs">
+      <Link>Web\IRequestPreferences.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IRestGetService.cs">
-      <Link>ServiceHost\IRestGetService.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IRequiresHttpRequest.cs">
+      <Link>Web\IRequiresHttpRequest.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IRestPatchService.cs">
-      <Link>ServiceHost\IRestPatchService.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IRequiresRequestContext.cs">
+      <Link>Web\IRequiresRequestContext.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IRestPath.cs">
-      <Link>ServiceHost\IRestPath.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IRequiresRequestStream.cs">
+      <Link>Web\IRequiresRequestStream.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IRestPostService.cs">
-      <Link>ServiceHost\IRestPostService.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IRestPath.cs">
+      <Link>Web\IRestPath.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IRestPutService.cs">
-      <Link>ServiceHost\IRestPutService.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IServiceController.cs">
+      <Link>Web\IServiceController.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IRestService.cs">
-      <Link>ServiceHost\IRestService.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IServiceRoutes.cs">
+      <Link>Web\IServiceRoutes.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IService.cs">
-      <Link>ServiceHost\IService.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IServiceRunner.cs">
+      <Link>Web\IServiceRunner.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IServiceController.cs">
-      <Link>ServiceHost\IServiceController.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IServiceRoutes.cs">
-      <Link>ServiceHost\IServiceRoutes.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\RestServiceAttribute.cs">
-      <Link>ServiceHost\RestServiceAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\CollectionTypes.cs">
-      <Link>ServiceInterface.ServiceModel\CollectionTypes.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\ICacheByDateModified.cs">
-      <Link>ServiceInterface.ServiceModel\ICacheByDateModified.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\ICacheByEtag.cs">
-      <Link>ServiceInterface.ServiceModel\ICacheByEtag.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\IHasAction.cs">
-      <Link>ServiceInterface.ServiceModel\IHasAction.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\IHasResponseStatus.cs">
-      <Link>ServiceInterface.ServiceModel\IHasResponseStatus.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\Property.cs">
-      <Link>ServiceInterface.ServiceModel\Property.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\RequestLogEntry.cs">
-      <Link>ServiceInterface.ServiceModel\RequestLogEntry.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\ResponseError.cs">
-      <Link>ServiceInterface.ServiceModel\ResponseError.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\ResponseStatus.cs">
-      <Link>ServiceInterface.ServiceModel\ResponseStatus.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Service\IOneWayClient.cs">
-      <Link>Service\IOneWayClient.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Service\IReplyClient.cs">
-      <Link>Service\IReplyClient.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Service\IResponseBase.cs">
-      <Link>Service\IResponseBase.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Service\IResponseStatus.cs">
-      <Link>Service\IResponseStatus.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Service\IRestClient.cs">
-      <Link>Service\IRestClient.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Service\IRestClientAsync.cs">
-      <Link>Service\IRestClientAsync.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Service\IServiceClient.cs">
-      <Link>Service\IServiceClient.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Service\IServiceClientAsync.cs">
-      <Link>Service\IServiceClientAsync.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Service\IStreamWriter.cs">
-      <Link>Service\IStreamWriter.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Translators\TranslateAttribute.cs">
-      <Link>Translators\TranslateAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Translators\TranslateExtensionAttribute.cs">
-      <Link>Translators\TranslateExtensionAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Translators\TranslateMemberAttribute.cs">
-      <Link>Translators\TranslateMemberAttribute.cs</Link>
+    <Compile Include="..\ServiceStack.Interfaces\Web\IStreamWriter.cs">
+      <Link>Web\IStreamWriter.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IResolver.cs">
-      <Link>ServiceHost\IResolver.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\RouteAttribute.cs">
-      <Link>ServiceHost\RouteAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\ErrorResponse.cs">
-      <Link>ServiceInterface.ServiceModel\ErrorResponse.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Service\IPartialWriter.cs">
-      <Link>Service\IPartialWriter.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\OrmLite\DbConnectionFactory.cs">
-      <Link>OrmLite\DbConnectionFactory.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\OrmLite\IDbConnectionFactory.cs">
-      <Link>OrmLite\IDbConnectionFactory.cs</Link>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\README.md" />
-    <None Include="..\Redis\Redis.cd" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\Redis\Redis-annotated.png" />
-    <Content Include="..\Redis\Redis.png" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -613,7 +494,5 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <ItemGroup>
-    <Folder Include="OrmLite\" />
-  </ItemGroup>
+  <ItemGroup />
 </Project>
