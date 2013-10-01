@@ -49,7 +49,7 @@ namespace ServiceStack.Metadata
         {
             var operationsPart = new TableTemplate
             {
-                Title = "Operations:",
+                Title = "Operations",
                 Items = this.OperationNames,
                 ForEachItem = RenderRow
             }.ToString();
