@@ -3,8 +3,6 @@ using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.FluentValidation;
 using ServiceStack.Testing;
-using ServiceStack.Text;
-using ServiceStack.Web;
 
 namespace ServiceStack.Common.Tests.OAuth
 {

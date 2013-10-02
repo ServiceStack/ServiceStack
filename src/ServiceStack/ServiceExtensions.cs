@@ -172,7 +172,8 @@ namespace ServiceStack
             {
                 RequestFilters = new IHasRequestFilter[0],
                 ResponseFilters = new IHasResponseFilter[0],
-                RequestType = service.GetType(),
+                ServiceType = typeof(TService),
+                RequestType = typeof(TRequest),
                 ServiceAction = (instance, req) => invokeAction(service, request)
             };
 

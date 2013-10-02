@@ -73,6 +73,7 @@ namespace ServiceStack.Host
                 var requestType = args[0].ParameterType;
                 var actionCtx = new ActionContext {
                     Id = ActionContext.Key(actionName, requestType.Name),
+                    ServiceType = typeof(TService),
                     RequestType = requestType,
                 };
 
