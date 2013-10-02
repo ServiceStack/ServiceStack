@@ -12,6 +12,7 @@ namespace ServiceStack.WebHost.Endpoints
 
         public string Id { get; set; }
         public Type RequestType { get; set; }
+        public Type ServiceType { get; set; }
 
         public ActionInvokerFn ServiceAction { get; set; }
         public IHasRequestFilter[] RequestFilters { get; set; }
