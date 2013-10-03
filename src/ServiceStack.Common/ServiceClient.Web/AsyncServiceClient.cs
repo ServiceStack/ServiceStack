@@ -120,6 +120,8 @@ namespace ServiceStack.ServiceClient.Web
 
             public void HandleSuccess(TResponse response)
             {
+                StopTimer();
+
                 if (this.OnSuccess == null)
                     return;
 
@@ -135,6 +137,8 @@ namespace ServiceStack.ServiceClient.Web
 
             public void HandleError(TResponse response, Exception ex)
             {
+                StopTimer();
+
                 if (this.OnError == null)
                     return;
 
@@ -156,7 +160,7 @@ namespace ServiceStack.ServiceClient.Web
                     this.OnError(response, toReturn);
 #else
                 OnError(response, toReturn);
-#endif
+#endif                
             }
 
             public void StartTimer(TimeSpan timeOut)
@@ -168,6 +172,19 @@ namespace ServiceStack.ServiceClient.Web
 #endif
             }
 
+            public void StopTimer()
+            {
+                if (this.Timer != null)
+                {
+#if NETFX_CORE
+                    this.timer.Cancel();                   
+#else
+                    this.Timer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                    this.Timer.Dispose();
+#endif
+                    this.Timer = null;
+                }
+            }
 #if NETFX_CORE
             public void TimedOut(ThreadPoolTimer timer)
             {
@@ -194,9 +211,12 @@ namespace ServiceStack.ServiceClient.Web
                         this.WebRequest.Abort();
                     }
                 }
-                this.Timer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-                this.Timer.Dispose();
-                this.Timer = null;
+                if (this.Timer != null)
+                {
+                    this.Timer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                    this.Timer.Dispose();
+                    this.Timer = null;
+                }
                 this.Dispose();
             }
 #endif
