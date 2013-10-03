@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace ServiceStack.DataAnnotations
 {
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
-	public class CompositeIndexAttribute : Attribute
+    public class CompositeIndexAttribute : AttributeBase
 	{
 		public CompositeIndexAttribute()
 		{

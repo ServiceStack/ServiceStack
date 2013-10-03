@@ -251,8 +251,7 @@ namespace ServiceStack.Api.Swagger
             foreach (var prop in modelType.GetProperties())
             {
                 var allApiDocAttributes = prop
-                    .GetCustomAttributes(typeof(ApiMemberAttribute), true)
-                    .OfType<ApiMemberAttribute>()
+                    .AllAttributes<ApiMemberAttribute>()
                     .Where(attr => prop.Name.Equals(attr.Name, StringComparison.InvariantCultureIgnoreCase))
                     .ToList();
                 var apiDoc = allApiDocAttributes.FirstOrDefault(attr => attr.ParameterType == "body");
@@ -285,14 +284,14 @@ namespace ServiceStack.Api.Swagger
                     ParseModel(models, propertyType);
                 }
 
-                var descriptionAttr = prop.GetCustomAttributes(typeof(DescriptionAttribute), true).OfType<DescriptionAttribute>().FirstOrDefault();
+                var descriptionAttr = prop.FirstAttribute<DescriptionAttribute>();
                 if (descriptionAttr != null)
                     modelProp.Description = descriptionAttr.Description;
 
                 if (apiDoc != null)
                     modelProp.Description = apiDoc.Description;
 
-                var allowableValues = prop.GetCustomAttributes(typeof(ApiAllowableValuesAttribute), true).OfType<ApiAllowableValuesAttribute>().FirstOrDefault();
+                var allowableValues = prop.FirstAttribute<ApiAllowableValuesAttribute>();
                 if (allowableValues != null)
                     modelProp.AllowableValues = GetAllowableValue(allowableValues);
 
@@ -333,11 +332,10 @@ namespace ServiceStack.Api.Swagger
         private static List<ErrorResponseStatus> GetMethodResponseCodes(Type requestType)
         {
             return requestType
-                .GetCustomAttributes(typeof(IApiResponseDescription), true)
-                .OfType<IApiResponseDescription>()
+                .AllAttributes<IApiResponseDescription>()
                 .Select(x => new ErrorResponseStatus
                 {
-                    StatusCode = (int)x.StatusCode,
+                    StatusCode = x.StatusCode,
                     Reason = x.Description
                 }).ToList();
         }
@@ -393,7 +391,7 @@ namespace ServiceStack.Api.Swagger
 
         private static List<MethodOperationParameter> ParseParameters(string verb, Type operationType, IDictionary<string, SwaggerModel> models)
         {
-            var hasDataContract = operationType.GetCustomAttributes(typeof(DataContractAttribute), inherit: true).Length > 0;
+            var hasDataContract = operationType.HasAttribute<DataContractAttribute>();
 
             var properties = operationType.GetProperties();
             var paramAttrs = new Dictionary<string, ApiMemberAttribute[]>();
@@ -404,15 +402,14 @@ namespace ServiceStack.Api.Swagger
                 var propertyName = property.Name;
                 if (hasDataContract)
                 {
-                    var dataMemberAttr = property.GetCustomAttributes(typeof(DataMemberAttribute), inherit: true)
-                        .FirstOrDefault() as DataMemberAttribute;
+                    var dataMemberAttr = property.FirstAttribute<DataMemberAttribute>();
                     if (dataMemberAttr != null && dataMemberAttr.Name != null)
                     {
                         propertyName = dataMemberAttr.Name;
                     }
                 }
-                paramAttrs[propertyName] = (ApiMemberAttribute[])property.GetCustomAttributes(typeof(ApiMemberAttribute), true);
-                allowableParams.AddRange(property.GetCustomAttributes(typeof(ApiAllowableValuesAttribute), true).Cast<ApiAllowableValuesAttribute>().ToArray());
+                paramAttrs[propertyName] = property.AllAttributes<ApiMemberAttribute>();
+                allowableParams.AddRange(property.AllAttributes<ApiAllowableValuesAttribute>());
             }
 
             var methodOperationParameters = new List<MethodOperationParameter>();

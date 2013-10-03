@@ -6,7 +6,7 @@ using System;
 namespace ServiceStack
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
-    public class ApiMemberAttribute : Attribute
+    public class ApiMemberAttribute : AttributeBase
     {
         public ApiMemberAttribute()
         {

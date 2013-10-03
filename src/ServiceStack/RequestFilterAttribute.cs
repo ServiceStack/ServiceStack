@@ -13,7 +13,7 @@ namespace ServiceStack
     /// <summary>
     /// Base class to create request filter attributes only for specific HTTP methods (GET, POST...)
     /// </summary>
-    public abstract class RequestFilterAttribute : Attribute, IHasRequestFilter
+    public abstract class RequestFilterAttribute : AttributeBase, IHasRequestFilter
     {
         public int Priority { get; set; }
 

@@ -18,6 +18,7 @@ using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Metadata;
 using ServiceStack.Serialization;
+using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 
@@ -442,7 +443,7 @@ namespace ServiceStack
         public virtual void RegisterService(Type serviceType, params string[] atRestPaths)
         {
             ServiceController.RegisterService(serviceType);
-            var reqAttr = serviceType.GetCustomAttributes(true).OfType<DefaultRequestAttribute>().FirstOrDefault();
+            var reqAttr = serviceType.FirstAttribute<DefaultRequestAttribute>();
             if (reqAttr != null)
             {
                 foreach (var atRestPath in atRestPaths)

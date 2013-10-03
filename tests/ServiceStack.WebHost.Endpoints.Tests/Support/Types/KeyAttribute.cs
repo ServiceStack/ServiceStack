@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Types
 {
@@ -13,7 +10,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Types
 	/// <typeparamref name="RouteInferenceStrategies"/> available at runtime.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
-	sealed class KeyAttribute : Attribute
+    sealed class KeyAttribute : AttributeBase
 	{
 
 	}

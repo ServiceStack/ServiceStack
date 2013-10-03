@@ -3,7 +3,7 @@ using System;
 namespace ServiceStack.DataAnnotations
 {
 	[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
-	public class DefaultAttribute : Attribute
+    public class DefaultAttribute : AttributeBase
 	{
 		public int IntValue { get; set; }
 		public double DoubleValue { get; set; }

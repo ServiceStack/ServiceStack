@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Support.WebHost
@@ -38,12 +40,10 @@ namespace ServiceStack.Support.WebHost
         	IHasRequestFilter[] attrs;
             if (requestFilterAttributes.TryGetValue(requestDtoType, out attrs)) return attrs.ShallowCopy();
 
-			var attributes = new List<IHasRequestFilter>(
-				(IHasRequestFilter[])requestDtoType.GetCustomAttributes(typeof(IHasRequestFilter), true));
+            var attributes = requestDtoType.AllAttributes<IHasRequestFilter>().ToList();
 
             var serviceType = HostContext.Metadata.GetServiceTypeByRequest(requestDtoType);
-			attributes.AddRange(
-				(IHasRequestFilter[])serviceType.GetCustomAttributes(typeof(IHasRequestFilter), true));
+			attributes.AddRange(serviceType.AllAttributes<IHasRequestFilter>());
 
 			attributes.Sort((x,y) => x.Priority - y.Priority);
 			attrs = attributes.ToArray();
@@ -66,14 +66,12 @@ namespace ServiceStack.Support.WebHost
 			IHasResponseFilter[] attrs;
             if (responseFilterAttributes.TryGetValue(responseDtoType, out attrs)) return attrs.ShallowCopy();
 
-			var attributes = new List<IHasResponseFilter>(
-	            (IHasResponseFilter[])responseDtoType.GetCustomAttributes(typeof(IHasResponseFilter), true));
+			var attributes = responseDtoType.AllAttributes<IHasResponseFilter>().ToList();
 
         	var serviceType = HostContext.Metadata.GetServiceTypeByResponse(responseDtoType);
 			if (serviceType != null)
 			{
-				attributes.AddRange(
-					(IHasResponseFilter[])serviceType.GetCustomAttributes(typeof(IHasResponseFilter), true));
+				attributes.AddRange(serviceType.AllAttributes<IHasResponseFilter>());
 			}
 
 			attributes.Sort((x, y) => x.Priority - y.Priority);

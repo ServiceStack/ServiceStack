@@ -346,13 +346,11 @@ namespace ServiceStack
 
             foreach (var operationType in Metadata.RequestTypes)
             {
-                var attrs = operationType.GetCustomAttributes(
-                    typeof(DataContractAttribute), false);
+                var attrs = operationType.AllAttributes<DataContractAttribute>();
 
                 if (attrs.Length <= 0) continue;
 
-                var attr = (DataContractAttribute)attrs[0];
-
+                var attr = attrs[0];
                 if (String.IsNullOrEmpty(attr.Namespace)) continue;
 
                 return attr.Namespace;

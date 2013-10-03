@@ -34,8 +34,7 @@ namespace ServiceStack
                 }
 
                 foreach (var pi in typeof(T).GetPublicProperties()
-                    .Where(pi => pi.CustomAttributes()
-                             .Cast<Attribute>()
+                    .Where(pi => pi.AllAttributes<Attribute>()
                              .Any(attr => attr.GetType().Name == "PrimaryKeyAttribute")))
                 {
                     CanGetId = StaticAccessors<T>.ValueUnTypedGetPropertyTypeFn(pi);

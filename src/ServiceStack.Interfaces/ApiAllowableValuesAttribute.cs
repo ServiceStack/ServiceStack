@@ -6,7 +6,7 @@ using System;
 namespace ServiceStack
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-    public class ApiAllowableValuesAttribute : Attribute
+    public class ApiAllowableValuesAttribute : AttributeBase
     {
 		public ApiAllowableValuesAttribute(string name)
 		{

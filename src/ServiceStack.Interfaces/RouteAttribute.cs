@@ -11,7 +11,7 @@ namespace ServiceStack
     ///		each request DTO, to map multiple paths to the service.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-    public class RouteAttribute : Attribute
+    public class RouteAttribute : AttributeBase
     {
         /// <summary>
 		/// 	<para>Initializes an instance of the <see cref="RouteAttribute"/> class.</para>
@@ -110,24 +110,6 @@ namespace ServiceStack
 		///		by the service, <see langword="null"/> or empty if all verbs are supported.
 		/// </value>
 		public string Verbs { get; set; }
-
-#if NETFX_CORE || WINDOWS_PHONE || SILVERLIGHT
-        /// <summary>
-        /// Required when using a TypeDescriptor to make it unique
-        /// </summary>
-        public object TypeId
-        {
-            get { return string.Format("{0};{1}", Path, Verbs); }
-        }
-#else
-        /// <summary>
-        /// Required when using a TypeDescriptor to make it unique
-        /// </summary>
-        public override object TypeId
-        {
-            get { return string.Format("{0};{1}", Path, Verbs); }
-        }
-#endif
     }
 
 

@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Caching;
 using ServiceStack.Common.Tests.ServiceClient.Web;
-using ServiceStack.Host;
 using NUnit.Framework;
 using ServiceStack.Support.WebHost;
-using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -14,7 +12,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
 
     //Always executed
-    public class FilterTestAttribute : Attribute, IHasRequestFilter
+    public class FilterTestAttribute : AttributeBase, IHasRequestFilter
     {
         private static ICacheClient previousCache;
 
@@ -73,7 +71,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     //Always executed
-    public class ResponseFilterTestAttribute : Attribute, IHasResponseFilter
+    public class ResponseFilterTestAttribute : AttributeBase, IHasResponseFilter
     {
         private static ICacheClient previousCache;
 

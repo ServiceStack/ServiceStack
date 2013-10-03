@@ -91,7 +91,7 @@ namespace ServiceStack.Host
                 var reqFilters = new List<IHasRequestFilter>();
                 var resFilters = new List<IHasResponseFilter>();
 
-                foreach (var attr in mi.GetCustomAttributes(false))
+                foreach (var attr in mi.GetCustomAttributes(true))
                 {
                     var hasReqFilter = attr as IHasRequestFilter;
                     var hasResFilter = attr as IHasResponseFilter;

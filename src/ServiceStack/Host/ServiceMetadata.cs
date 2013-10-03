@@ -38,10 +38,8 @@ namespace ServiceStack.Host
             this.ServiceTypes.Add(serviceType);
             this.RequestTypes.Add(requestType);
 
-            var restrictTo = requestType.GetCustomAttributes(true)
-                    .OfType<RestrictAttribute>().FirstOrDefault()
-                ?? serviceType.GetCustomAttributes(true)
-                    .OfType<RestrictAttribute>().FirstOrDefault();
+            var restrictTo = requestType.FirstAttribute<RestrictAttribute>()
+                          ?? serviceType.FirstAttribute<RestrictAttribute>();
 
             var operation = new Operation {
                 ServiceType = serviceType,
@@ -397,18 +395,17 @@ namespace ServiceStack.Host
 
         public static string GetDescription(this Type operationType)
         {
-            var apiAttr = operationType.GetCustomAttributes(typeof(ApiAttribute), true).OfType<ApiAttribute>().FirstOrDefault();
+            var apiAttr = operationType.FirstAttribute<ApiAttribute>();
             return apiAttr != null ? apiAttr.Description : "";
         }
 
         public static List<ApiMemberAttribute> GetApiMembers(this Type operationType)
         {
             var members = operationType.GetMembers(BindingFlags.Instance | BindingFlags.Public);
-            List<ApiMemberAttribute> attrs = new List<ApiMemberAttribute>();
+            var attrs = new List<ApiMemberAttribute>();
             foreach (var member in members)
             {
-                var memattr = member.GetCustomAttributes(typeof(ApiMemberAttribute), true)
-                    .OfType<ApiMemberAttribute>()
+                var memattr = member.AllAttributes<ApiMemberAttribute>()
                     .Select(x => { x.Name = x.Name ?? member.Name; return x; });
 
                 attrs.AddRange(memattr);

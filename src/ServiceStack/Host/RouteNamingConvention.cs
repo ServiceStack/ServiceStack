@@ -27,7 +27,7 @@ namespace ServiceStack.Host
         public static void WithMatchingAttributes(IServiceRoutes routes, Type requestType, string allowedVerbs)
         {
             var membersWithAttribute = (from p in requestType.GetPublicProperties()
-                                        let attributes = p.CustomAttributes(inherit: false).Cast<Attribute>()
+                                        let attributes = p.AllAttributes<Attribute>()
                                         where attributes.Any(a => AttributeNamesToMatch.Contains(a.GetType().Name))
                                         select "{{{0}}}".Fmt(p.Name)).ToList();
 

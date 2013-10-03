@@ -6,7 +6,7 @@ namespace ServiceStack
     /// <summary>
     /// Base class to create response filter attributes only for specific HTTP methods (GET, POST...)
     /// </summary>
-    public abstract class ResponseFilterAttribute : Attribute, IHasResponseFilter
+    public abstract class ResponseFilterAttribute : AttributeBase, IHasResponseFilter
     {
         public int Priority { get; set; }
 

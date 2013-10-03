@@ -67,8 +67,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
             DisposedCount++;
         }
     }
-    
-    public class IocRequestFilterAttribute : Attribute, IHasRequestFilter
+
+    public class IocRequestFilterAttribute : AttributeBase, IHasRequestFilter
     {
         public FunqSingletonScope FunqSingletonScope { get; set; }
         public FunqRequestScope FunqRequestScope { get; set; }

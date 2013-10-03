@@ -6,7 +6,7 @@ using System;
 namespace ServiceStack
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public class ApiAttribute : Attribute
+    public class ApiAttribute : AttributeBase
     {
         /// <summary>
         /// The overall description of an API. Used by Swagger.

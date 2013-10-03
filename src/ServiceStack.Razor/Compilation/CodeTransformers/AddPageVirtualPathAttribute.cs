@@ -17,6 +17,7 @@ namespace ServiceStack.Razor.Compilation.CodeTransformers
 
         public string VirtualPath { get; private set; }
     }
+
     public class AddPageVirtualPathAttribute : RazorCodeTransformerBase
     {
         private const string VirtualPathDirectiveKey = "VirtualPath";

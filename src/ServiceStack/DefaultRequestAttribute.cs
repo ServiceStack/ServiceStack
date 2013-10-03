@@ -8,7 +8,7 @@ namespace ServiceStack
     /// this default Request Type
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-    public class DefaultRequestAttribute : Attribute
+    public class DefaultRequestAttribute : AttributeBase
     {
         public Type RequestType { get; set; }
 

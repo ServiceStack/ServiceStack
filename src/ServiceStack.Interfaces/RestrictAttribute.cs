@@ -11,8 +11,7 @@ namespace ServiceStack
 	/// Decorate on Request DTO's to alter the accessibility of a service and its visibility on /metadata pages
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-	public class RestrictAttribute
-		: Attribute
+	public class RestrictAttribute : AttributeBase
 	{
         /// <summary>
         /// Allow access but hide from metadata to requests from Localhost only

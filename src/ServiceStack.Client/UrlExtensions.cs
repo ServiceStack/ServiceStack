@@ -299,7 +299,7 @@ namespace ServiceStack
 
                 result.Append(queryProperty.Key)
                     .Append('=')
-                    .Append(RestRoute.FormatQueryParameterValue(value))
+                    .Append(FormatQueryParameterValue(value))
                     .Append('&');
             }
 
@@ -310,7 +310,7 @@ namespace ServiceStack
         internal static IDictionary<string, RouteMember> GetQueryProperties(Type requestType)
         {
             var result = new Dictionary<string, RouteMember>(Text.StringExtensions.InvariantComparerIgnoreCase()); 
-            var hasDataContract = requestType.HasAttr<DataContractAttribute>();
+            var hasDataContract = requestType.HasAttribute<DataContractAttribute>();
 
             foreach (var propertyInfo in requestType.GetPublicProperties())
             {
@@ -332,7 +332,7 @@ namespace ServiceStack
                     if (propertyInfo.IsDefined(typeof(IgnoreDataMemberAttribute), true)) continue;
                 }
 
-                result[Text.StringExtensions.ToCamelCase(propertyName)] = new PropertyRouteMember(propertyInfo);
+                result[propertyName.ToCamelCase()] = new PropertyRouteMember(propertyInfo);
             }
 
 			if (JsConfig.IncludePublicFields)
@@ -343,7 +343,7 @@ namespace ServiceStack
 
 					if (fieldInfo.IsDefined(typeof(IgnoreDataMemberAttribute), true)) continue;
 
-					result[Text.StringExtensions.ToCamelCase(fieldName)] = new FieldRouteMember(fieldInfo);
+					result[fieldName.ToCamelCase()] = new FieldRouteMember(fieldInfo);
 				}
 
 			}

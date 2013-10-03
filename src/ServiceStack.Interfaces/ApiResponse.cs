@@ -20,7 +20,7 @@ namespace ServiceStack
     }
 
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
-    public class ApiResponseAttribute : Attribute, IApiResponseDescription
+    public class ApiResponseAttribute : AttributeBase, IApiResponseDescription
     {
         public int StatusCode { get; set; }
 

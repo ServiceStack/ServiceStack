@@ -3,6 +3,7 @@ using System;
 using System.Runtime.Serialization;
 using System.Xml;
 using System.Xml.Serialization;
+using ServiceStack.Text;
 
 namespace ServiceStack.Serialization
 {
@@ -83,29 +84,25 @@ namespace ServiceStack.Serialization
         /// <returns>Namespace of type</returns>
         public static string GetNamespace(Type type)
         {
-            Attribute[] attrs = (Attribute[])type.GetCustomAttributes(typeof(DataContractAttribute), true);
-            if (attrs.Length > 0)
+            var dcAttr = type.FirstAttribute<DataContractAttribute>();
+            if (dcAttr != null)
             {
-                DataContractAttribute dcAttr = (DataContractAttribute)attrs[0];
                 return dcAttr.Namespace;
             }
-            attrs = (Attribute[])type.GetCustomAttributes(typeof(XmlRootAttribute), true);
-            if (attrs.Length > 0)
+            var xrAttr = type.FirstAttribute<XmlRootAttribute>();
+            if (xrAttr != null)
             {
-                XmlRootAttribute xmlAttr = (XmlRootAttribute)attrs[0];
-                return xmlAttr.Namespace;
+                return xrAttr.Namespace;
             }
-            attrs = (Attribute[])type.GetCustomAttributes(typeof(XmlTypeAttribute), true);
-            if (attrs.Length > 0)
+            var xtAttr = type.FirstAttribute<XmlTypeAttribute>();
+            if (xtAttr != null)
             {
-                XmlTypeAttribute xmlAttr = (XmlTypeAttribute)attrs[0];
-                return xmlAttr.Namespace;
+                return xtAttr.Namespace;
             }
-            attrs = (Attribute[])type.GetCustomAttributes(typeof(XmlElementAttribute), true);
-            if (attrs.Length > 0)
+            var xeAttr = type.FirstAttribute<XmlElementAttribute>();
+            if (xeAttr != null)
             {
-                XmlElementAttribute xmlAttr = (XmlElementAttribute)attrs[0];
-                return xmlAttr.Namespace;
+                return xeAttr.Namespace;
             }
             return null;
         }

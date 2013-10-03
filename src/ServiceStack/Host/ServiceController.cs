@@ -340,10 +340,10 @@ namespace ServiceStack.Host
 
             requestExecMap.Add(requestType, handlerFn);
 
-            var serviceAttrs = requestType.GetCustomAttributes(typeof(RestrictAttribute), false);
+            var serviceAttrs = requestType.AllAttributes<RestrictAttribute>();
             if (serviceAttrs.Length > 0)
             {
-                requestServiceAttrs.Add(requestType, (RestrictAttribute)serviceAttrs[0]);
+                requestServiceAttrs.Add(requestType, serviceAttrs[0]);
             }
         }
 
