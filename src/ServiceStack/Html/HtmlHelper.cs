@@ -23,10 +23,9 @@ namespace ServiceStack.Html
         public static readonly string ValidationMessageValidCssClassName = "field-validation-valid";
         public static readonly string ValidationSummaryCssClassName = "validation-summary-errors";
         public static readonly string ValidationSummaryValidCssClassName = "validation-summary-valid";
-#if NET_4_0
-        private DynamicViewDataDictionary _dynamicViewDataDictionary;
-#endif
-		public static List<Type> HtmlExtensions = new List<Type> 
+        private DynamicViewDataDictionary viewBag;
+
+        public static List<Type> HtmlExtensions = new List<Type> 
 		{
 			typeof(DisplayTextExtensions),
 			typeof(InputExtensions),
@@ -146,18 +145,11 @@ namespace ServiceStack.Html
             set { ViewContext.SetUnobtrusiveJavaScriptEnabled(value); }
         }
 
-#if NET_4_0
         public dynamic ViewBag
         {
-            get
-            {
-                if (_dynamicViewDataDictionary == null) {
-                    _dynamicViewDataDictionary = new DynamicViewDataDictionary(() => ViewData);
-                }
-                return _dynamicViewDataDictionary;
-            }
+            get { return viewBag ?? (viewBag = new DynamicViewDataDictionary(() => ViewData)); }
         }
-#endif
+
         public ViewContext ViewContext { get; private set; }
 
 	    public ViewDataDictionary ViewData
