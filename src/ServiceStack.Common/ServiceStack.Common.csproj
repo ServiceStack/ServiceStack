@@ -138,9 +138,6 @@
     <Compile Include="Reflection\StaticAccessors.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AuthDtos.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="XLinqExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
