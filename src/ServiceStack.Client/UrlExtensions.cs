@@ -35,12 +35,9 @@ namespace ServiceStack
         /// </summary>
         public static string ToUrl(this IReturn requestDto, string httpMethod, string formatFallbackToPredefinedRoute = null)
         {
-            return ToUrl(requestDto, httpMethod, formatFallbackToPredefinedRoute);
+            return ToUrl((object)requestDto, httpMethod, formatFallbackToPredefinedRoute);
         }
 
-        /// <summary>
-        /// Generate a url from a Request DTO. Pretty URL generation require Routes to be defined using `[Route]` on the Request DTO
-        /// </summary>
         public static string ToUrl(this object requestDto, string httpMethod="GET", string formatFallbackToPredefinedRoute = null)
         {
             httpMethod = httpMethod.ToUpper();
