@@ -117,6 +117,14 @@
     <Compile Include="Configuration\ITypeFactory.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="DataAnnotations\BelongToAttribute.cs" />
+    <Compile Include="DataAnnotations\ComputeAttribute.cs" />
+    <Compile Include="DataAnnotations\DecimalLengthAttribute.cs" />
+    <Compile Include="DataAnnotations\ForeignKeyAttribute.cs" />
+    <Compile Include="DataAnnotations\IgnoreAttribute.cs" />
+    <Compile Include="DataAnnotations\PrimaryKeyAttribute.cs" />
+    <Compile Include="DataAnnotations\SchemaAttribute.cs" />
+    <Compile Include="DataAnnotations\SequenceAttribute.cs" />
     <Compile Include="Data\DataException.cs">
       <SubType>Code</SubType>
     </Compile>
