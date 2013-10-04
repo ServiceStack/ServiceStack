@@ -11,12 +11,11 @@ namespace ServiceStack.Auth.Tests
 		[Test]
 		public void can_execute_secure_service ()
 		{
-			
-			var secure= Client.Post<SecureResponse>("/secure",
-			new Secure()
-			{
-				UserName="angel"
-			});
+
+            var secure = Client.Post<SecureResponse>("/secure", new Secure()
+            {
+                UserName = "angel"
+            });
 			//fails against webhost-xsp2!,   runs fine against console host 
             //DB: Could be a result of certain webhosts hijacking particular HTTP Exceptions
 			

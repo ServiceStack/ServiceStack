@@ -24,12 +24,26 @@ namespace ServiceStack
                 requestDto);
         }
 
-        public static string ToAbsoluteUri(this IReturn request, string httpMethod = null, string formatFallbackToPredefinedRoute = null)
+        public static string ToAbsoluteUri(this IReturn requestDto, string httpMethod = null, string formatFallbackToPredefinedRoute = null)
         {
-            var relativeUrl = request.ToUrl(
+            var relativeUrl = requestDto.ToUrl(
                 httpMethod ?? HttpMethods.Get,
                 formatFallbackToPredefinedRoute ?? HostContext.Config.DefaultContentType.ToContentFormat());
 
+            return relativeUrl.ToAbsoluteUri();
+        }
+
+        public static string ToAbsoluteUri(this object requestDto, string httpMethod = null, string formatFallbackToPredefinedRoute = null)
+        {
+            var relativeUrl = requestDto.ToUrl(
+                httpMethod ?? HttpMethods.Get,
+                formatFallbackToPredefinedRoute ?? HostContext.Config.DefaultContentType.ToContentFormat());
+
+            return relativeUrl.ToAbsoluteUri();
+        }
+
+        public static string ToAbsoluteUri(this string relativeUrl)
+        {
             var absoluteUrl = HostContext.Config.WebHostUrl.CombineWith(relativeUrl);
             return absoluteUrl;
         }

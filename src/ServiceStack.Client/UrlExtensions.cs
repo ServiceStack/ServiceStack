@@ -1,7 +1,6 @@
 ﻿using ServiceStack.Text;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -21,20 +20,32 @@ namespace ServiceStack
         private static readonly ConcurrentDictionary<Type, List<RestRoute>> routesCache =
             new ConcurrentDictionary<Type, List<RestRoute>>();
 
-        /// <summary>
-        /// Alias for ToUrl
-        /// </summary>
-        /// <returns></returns>
-        public static string ToRelativeUri(this IReturn request, string httpMethod, string formatFallbackToPredefinedRoute = null)
+        public static string ToRelativeUri(this IReturn requestDto, string httpMethod, string formatFallbackToPredefinedRoute = null)
         {
-            return request.ToUrl(httpMethod, formatFallbackToPredefinedRoute);
+            return requestDto.ToUrl(httpMethod, formatFallbackToPredefinedRoute);
         }
 
-        public static string ToUrl(this IReturn request, string httpMethod, string formatFallbackToPredefinedRoute = null)
+        public static string ToRelativeUri(this object requestDto, string httpMethod, string formatFallbackToPredefinedRoute = null)
+        {
+            return requestDto.ToUrl(httpMethod, formatFallbackToPredefinedRoute);
+        }
+
+        /// <summary>
+        /// Generate a url from a Request DTO. Pretty URL generation require Routes to be defined using `[Route]` on the Request DTO
+        /// </summary>
+        public static string ToUrl(this IReturn requestDto, string httpMethod, string formatFallbackToPredefinedRoute = null)
+        {
+            return ToUrl(requestDto, httpMethod, formatFallbackToPredefinedRoute);
+        }
+
+        /// <summary>
+        /// Generate a url from a Request DTO. Pretty URL generation require Routes to be defined using `[Route]` on the Request DTO
+        /// </summary>
+        public static string ToUrl(this object requestDto, string httpMethod="GET", string formatFallbackToPredefinedRoute = null)
         {
             httpMethod = httpMethod.ToUpper();
 
-            var requestType = request.GetType();
+            var requestType = requestDto.GetType();
             var requestRoutes = routesCache.GetOrAdd(requestType, GetRoutesForType);
             if (requestRoutes.Count == 0)
             {
@@ -46,14 +57,14 @@ namespace ServiceStack
                 var predefinedRoute = "/{0}/reply/{1}".Fmt(formatFallbackToPredefinedRoute, requestType.Name);
                 if (httpMethod == "GET" || httpMethod == "DELETE" || httpMethod == "OPTIONS" || httpMethod == "HEAD")
                 {
-                    var queryProperties = RestRoute.GetQueryProperties(request.GetType());
-                    predefinedRoute += "?" + RestRoute.GetQueryString(request, queryProperties);
+                    var queryProperties = RestRoute.GetQueryProperties(requestDto.GetType());
+                    predefinedRoute += "?" + RestRoute.GetQueryString(requestDto, queryProperties);
                 }
 
                 return predefinedRoute;
             }
 
-            var routesApplied = requestRoutes.Select(route => route.Apply(request, httpMethod)).ToList();
+            var routesApplied = requestRoutes.Select(route => route.Apply(requestDto, httpMethod)).ToList();
             var matchingRoutes = routesApplied.Where(x => x.Matches).ToList();
             if (matchingRoutes.Count == 0)
             {
@@ -83,7 +94,7 @@ namespace ServiceStack
             var url = matchingRoute.Uri;
             if (httpMethod == HttpMethods.Get || httpMethod == HttpMethods.Delete || httpMethod == HttpMethods.Head)
             {
-                var queryParams = matchingRoute.Route.FormatQueryParameters(request);
+                var queryParams = matchingRoute.Route.FormatQueryParameters(requestDto);
                 if (!String.IsNullOrEmpty(queryParams))
                 {
                     url += "?" + queryParams;
@@ -105,8 +116,7 @@ namespace ServiceStack
                 .Select(attr => new RestRoute(requestType, attr.Path, attr.Verbs))
                 .ToList();
 #else
-            var restRoutes = TypeDescriptor.GetAttributes(requestType)
-                .OfType<RouteAttribute>()
+            var restRoutes = requestType.AllAttributes<RouteAttribute>()
                 .Select(attr => new RestRoute(requestType, attr.Path, attr.Verbs))
                 .ToList();
 #endif

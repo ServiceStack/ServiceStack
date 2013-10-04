@@ -13,7 +13,7 @@ namespace ServiceStack
         Message Send(object request, string action);
         Message Send(XmlReader reader, string action);
         Message Send(Message message);
-        void SendOneWay(object request, string action);
+        void SendOneWay(object requestDto, string action);
         void SendOneWay(XmlReader reader, string action);
         void SendOneWay(Message message);
     }

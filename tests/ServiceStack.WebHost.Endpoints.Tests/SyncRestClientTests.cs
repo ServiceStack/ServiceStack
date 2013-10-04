@@ -170,9 +170,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 }
             };
 
-            var response = client.Put<InboxPostResponseRequestResponse>(
-                "inbox/123/responses",
-                request);
+            var response = client.Put<InboxPostResponseRequestResponse>("inbox/123/responses", request);
 
             Assert.That(response.Id, Is.EqualTo(request.Id));
             Assert.That(response.Responses[0].PageElementId,
@@ -186,9 +184,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             try
             {
-                var response = client.Put<InboxPostResponseRequestResponse>(
-                    "inbox/123/responses",
-                    new InboxPostResponseRequest());
+                var response = client.Put<InboxPostResponseRequestResponse>("inbox/123/responses", new InboxPostResponseRequest());
 
                 response.PrintDump();
 
@@ -207,9 +203,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             try
             {
-                var response = client.Put<InboxPost>(
-                    "inbox/123/responses",
-                    new InboxPost { Throw = true });
+                var response = client.Put<InboxPost>("inbox/123/responses", new InboxPost { Throw = true });
 
                 response.PrintDump();
 

@@ -87,7 +87,7 @@
     <Compile Include="StreamExtensions.cs" />
     <Compile Include="Support\NetDeflateProvider.cs" />
     <Compile Include="Support\NetGZipProvider.cs" />
-    <Compile Include="UrlUtils.cs" />
+    <Compile Include="UrlExtensions.cs" />
     <Compile Include="Validation\ValidationError.cs" />
     <Compile Include="Validation\ValidationErrorField.cs" />
     <Compile Include="Validation\ValidationErrorResult.cs" />

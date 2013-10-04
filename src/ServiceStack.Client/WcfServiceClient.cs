@@ -313,9 +313,9 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
-        public void SendOneWay(object request)
+        public void SendOneWay(object requestDto)
         {
-            SendOneWay(request, request.GetType().Name);
+            SendOneWay(requestDto, requestDto.GetType().Name);
         }
 
         public void SendOneWay(string relativeOrAbsoluteUrl, object request)
@@ -323,9 +323,9 @@ namespace ServiceStack
             SendOneWay(Message.CreateMessage(MessageVersion, relativeOrAbsoluteUrl, request));
         }
 
-        public void SendOneWay(object request, string action)
+        public void SendOneWay(object requestDto, string action)
         {
-            SendOneWay(Message.CreateMessage(MessageVersion, action, request));
+            SendOneWay(Message.CreateMessage(MessageVersion, action, requestDto));
         }
 
         public void SendOneWay(XmlReader reader, string action)
@@ -341,7 +341,7 @@ namespace ServiceStack
             }
         }
 
-        public void SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public void SendAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             throw new NotImplementedException();
         }
@@ -351,7 +351,12 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
-        public void GetAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public void GetAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void GetAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             throw new NotImplementedException();
         }
@@ -361,17 +366,27 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
+        public void DeleteAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            throw new NotImplementedException();
+        }
+
         public void DeleteAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             throw new NotImplementedException();
         }
 
-        public void DeleteAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public void DeleteAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             throw new NotImplementedException();
         }
 
-        public void PostAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public void PostAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void PostAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             throw new NotImplementedException();
         }
@@ -381,7 +396,12 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
-        public void PutAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public void PutAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void PutAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             throw new NotImplementedException();
         }
@@ -391,7 +411,12 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
-        public void CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public void CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CustomMethodAsync<TResponse>(string httpVerb, object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             throw new NotImplementedException();
         }

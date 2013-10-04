@@ -16,7 +16,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 			var errorList = restClient.Get<ErrorCollectionResponse>("error");
 			Assert.That(errorList.Result.Count, Is.EqualTo(1));
 
-			var error = restClient.Post<ErrorResponse>("error", new Error { Id = "Test" });
+            var error = restClient.Post<ErrorResponse>("error", new Error { Id = "Test" });
 			Assert.That(error, !Is.Null);
 		}
 

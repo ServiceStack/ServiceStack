@@ -44,11 +44,10 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             try
             {
                 var fromEmail = RandomString(32);
-                var response = client.Post<ProtoBufEmail>(
-                    "/cached/protobuf", 
-                    new CachedProtoBufEmail {
-                        FromAddress = fromEmail
-                    });
+                var response = client.Post<ProtoBufEmail>("/cached/protobuf", new CachedProtoBufEmail
+                {
+                    FromAddress = fromEmail
+                });
 
                 response.PrintDump();
 
@@ -71,11 +70,10 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             try
             {
                 var fromEmail = RandomString(32);
-                var response = client.Post<ProtoBufEmail>(
-                    "/cached/protobuf",
-                    new UncachedProtoBufEmail {
-                        FromAddress = fromEmail
-                    });
+                var response = client.Post<ProtoBufEmail>("/cached/protobuf", new UncachedProtoBufEmail
+                {
+                    FromAddress = fromEmail
+                });
 
                 response.PrintDump();
 

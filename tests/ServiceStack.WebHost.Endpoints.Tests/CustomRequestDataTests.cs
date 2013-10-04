@@ -100,7 +100,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Does_use_request_binder_for_POST()
 		{
-			var response = client.Post<CustomRequestBinderResponse>("/customrequestbinder", new CustomRequestBinder());
+            var response = client.Post<CustomRequestBinderResponse>("/customrequestbinder", new CustomRequestBinder());
 			Assert.That(response.FromBinder);
 		}
 
@@ -152,7 +152,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Does_use_request_binder_for_PUT()
 		{
-			var response = client.Put<CustomRequestBinderResponse>("/customrequestbinder", new CustomRequestBinder());
+            var response = client.Put<CustomRequestBinderResponse>("/customrequestbinder", new CustomRequestBinder());
 			Assert.That(response.FromBinder);
 		}
 

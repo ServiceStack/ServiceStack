@@ -563,8 +563,7 @@ namespace RazorRockstars.Web
         [Test, TestCaseSource("RestClients")]
         public void Can_CREATE_Reqstar(IRestClient client)
         {
-            var response = client.Post<List<Reqstar>>("/reqstars",
-                new Reqstar(4, "Just", "Created", 25));
+            var response = client.Post<List<Reqstar>>("/reqstars", new Reqstar(4, "Just", "Created", 25));
 
             Assert.That(response.Count,
                 Is.EqualTo(ReqstarsService.SeedData.Length + 1));

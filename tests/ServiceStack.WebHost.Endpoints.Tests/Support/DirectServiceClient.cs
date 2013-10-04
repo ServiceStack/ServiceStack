@@ -20,9 +20,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             this.ServiceController = serviceController;
         }
 
-        public void SendOneWay(object request)
+        public void SendOneWay(object requestDto)
         {
-            ServiceController.Execute(request);
+            ServiceController.Execute(requestDto);
         }
 
         public void SendOneWay(string relativeOrAbsoluteUrl, object request)
@@ -98,7 +98,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public TResponse Get<TResponse>(IReturn<TResponse> request)
+        public void Get(object request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Get<TResponse>(IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Get<TResponse>(object requestDto)
         {
             throw new NotImplementedException();
         }
@@ -129,12 +139,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             return (TResponse)response;
         }
 
+        public void Delete(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
         public TResponse Delete<TResponse>(IReturn<TResponse> request)
         {
             throw new NotImplementedException();
         }
 
-        public void Delete(IReturnVoid request)
+        public TResponse Delete<TResponse>(object request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Delete(IReturnVoid requestDto)
         {
             throw new NotImplementedException();
         }
@@ -144,12 +164,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public TResponse Post<TResponse>(IReturn<TResponse> request)
+        public void Post(object requestDto)
         {
             throw new NotImplementedException();
         }
 
-        public void Post(IReturnVoid request)
+        public TResponse Post<TResponse>(IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Post<TResponse>(object requestDto)
         {
             throw new NotImplementedException();
         }
@@ -159,32 +184,72 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public TResponse Put<TResponse>(IReturn<TResponse> request)
+        public void Post(IReturnVoid requestDto)
         {
             throw new NotImplementedException();
         }
 
-        public void Put(IReturnVoid request)
+        public TResponse Post<TResponse>(object request, string relativeOrAbsoluteUrl)
         {
             throw new NotImplementedException();
         }
 
-        public TResponse Put<TResponse>(string relativeOrAbsoluteUrl, object request)
+        public void Put(object requestDto)
         {
             throw new NotImplementedException();
         }
 
-        public TResponse Patch<TResponse>(IReturn<TResponse> request)
+        public TResponse Put<TResponse>(IReturn<TResponse> requestDto)
         {
             throw new NotImplementedException();
         }
 
-        public void Patch(IReturnVoid request)
+        public TResponse Put<TResponse>(object requestDto)
         {
             throw new NotImplementedException();
         }
 
-        public TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object request)
+        public TResponse Put<TResponse>(string relativeOrAbsoluteUrl, object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Put(IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Put<TResponse>(object requestDto, string relativeOrAbsoluteUrl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Patch(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Patch<TResponse>(IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Patch<TResponse>(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Patch(IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Patch<TResponse>(object requestDto, string relativeOrAbsoluteUrl)
         {
             throw new NotImplementedException();
         }
@@ -194,17 +259,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public void CustomMethod(string httpVerb, IReturnVoid request)
+        public void CustomMethod(string httpVerb, IReturnVoid requestDto)
         {
             throw new NotImplementedException();
         }
 
-        public TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> request)
+        public void CustomMethod(string httpVerb, object requestDto)
         {
             throw new NotImplementedException();
         }
 
-        public HttpWebResponse Head(IReturn request)
+        public TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse CustomMethod<TResponse>(string httpVerb, object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HttpWebResponse Head(IReturn requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HttpWebResponse Head(object requestDto)
         {
             throw new NotImplementedException();
         }
@@ -219,14 +299,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public void SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public void SendAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             var response = default(TResponse);
             try
             {
                 try
                 {
-                    if (ApplyRequestFilters<TResponse>(request))
+                    if (ApplyRequestFilters<TResponse>(requestDto))
                     {
                         onSuccess(default(TResponse));
                         return;
@@ -238,11 +318,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
                     return;
                 }
 
-                response = this.Send<TResponse>(request);
+                response = this.Send<TResponse>(requestDto);
 
                 try
                 {
-                    if (ApplyResponseFilters<TResponse>(request))
+                    if (ApplyResponseFilters<TResponse>(requestDto))
                     {
                         onSuccess(response);
                         return;
@@ -272,7 +352,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public void GetAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public void GetAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void GetAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             throw new NotImplementedException();
         }
@@ -282,17 +367,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
+        public void DeleteAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            throw new NotImplementedException();
+        }
+
         public void DeleteAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             throw new NotImplementedException();
         }
 
-        public void DeleteAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public void DeleteAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             throw new NotImplementedException();
         }
 
-        public void PostAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public void PostAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void PostAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             throw new NotImplementedException();
         }
@@ -302,7 +397,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public void PutAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public void PutAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void PutAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             throw new NotImplementedException();
         }
@@ -312,7 +412,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public void CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public void CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CustomMethodAsync<TResponse>(string httpVerb, object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             throw new NotImplementedException();
         }

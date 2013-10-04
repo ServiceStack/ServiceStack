@@ -5,34 +5,47 @@ namespace ServiceStack
 {
 	public interface IRestClient 
 	{
-	    TResponse Get<TResponse>(IReturn<TResponse> request);
         void Get(IReturnVoid request);
+        void Get(object request);
+        TResponse Get<TResponse>(IReturn<TResponse> requestDto);
+        TResponse Get<TResponse>(object requestDto);
         TResponse Get<TResponse>(string relativeOrAbsoluteUrl);
 
-	    TResponse Delete<TResponse>(IReturn<TResponse> request);
-        void Delete(IReturnVoid request);
+        void Delete(IReturnVoid requestDto);
+        void Delete(object requestDto);
+        TResponse Delete<TResponse>(IReturn<TResponse> request);
+        TResponse Delete<TResponse>(object request);
         TResponse Delete<TResponse>(string relativeOrAbsoluteUrl);
 
-	    TResponse Post<TResponse>(IReturn<TResponse> request);
-        void Post(IReturnVoid request);
+        void Post(IReturnVoid requestDto);
+        void Post(object requestDto);
+        TResponse Post<TResponse>(IReturn<TResponse> requestDto);
+        TResponse Post<TResponse>(object requestDto);
         TResponse Post<TResponse>(string relativeOrAbsoluteUrl, object request);
 
-	    TResponse Put<TResponse>(IReturn<TResponse> request);
-	    void Put(IReturnVoid request);
-        TResponse Put<TResponse>(string relativeOrAbsoluteUrl, object request);
+        void Put(IReturnVoid requestDto);
+        void Put(object requestDto);
+        TResponse Put<TResponse>(IReturn<TResponse> requestDto);
+        TResponse Put<TResponse>(object requestDto);
+        TResponse Put<TResponse>(string relativeOrAbsoluteUrl, object requestDto);
 
-	    TResponse Patch<TResponse>(IReturn<TResponse> request);
-	    void Patch(IReturnVoid request);
-		TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object request);
+        void Patch(IReturnVoid requestDto);
+        void Patch(object requestDto);
+        TResponse Patch<TResponse>(IReturn<TResponse> requestDto);
+        TResponse Patch<TResponse>(object requestDto);
+        TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object requestDto);
 
 #if !NETFX_CORE
 		TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType);
 #endif
 
-	    void CustomMethod(string httpVerb, IReturnVoid request);
-	    TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> request);
+        void CustomMethod(string httpVerb, IReturnVoid requestDto);
+        void CustomMethod(string httpVerb, object requestDto);
+        TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> requestDto);
+        TResponse CustomMethod<TResponse>(string httpVerb, object requestDto);
 
-        HttpWebResponse Head(IReturn request);
+        HttpWebResponse Head(IReturn requestDto);
+        HttpWebResponse Head(object requestDto);
         HttpWebResponse Head(string relativeOrAbsoluteUrl);
 	}
 }
