@@ -120,6 +120,8 @@ namespace ServiceStack
 
             public void HandleSuccess(TResponse response)
             {
+                StopTimer();
+
                 if (this.OnSuccess == null)
                     return;
 
@@ -135,6 +137,8 @@ namespace ServiceStack
 
             public void HandleError(TResponse response, Exception ex)
             {
+                StopTimer();
+
                 if (this.OnError == null)
                     return;
 
@@ -168,6 +172,20 @@ namespace ServiceStack
 #endif
             }
 
+            public void StopTimer()
+            {
+                if (this.Timer != null)
+                {
+#if NETFX_CORE
+                    this.Timer.Cancel();
+#else
+                    this.Timer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                    this.Timer.Dispose();
+#endif
+                    this.Timer = null;
+                }
+            }
+
 #if NETFX_CORE
             public void TimedOut(ThreadPoolTimer timer)
             {
@@ -179,8 +197,9 @@ namespace ServiceStack
                         this.WebRequest.Abort();
                     }
                 }
-                timer.Cancel();
-                timer = null;
+
+                StopTimer();
+
                 this.Dispose();
             }
 #else
@@ -194,9 +213,9 @@ namespace ServiceStack
                         this.WebRequest.Abort();
                     }
                 }
-                this.Timer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-                this.Timer.Dispose();
-                this.Timer = null;
+                
+                StopTimer();
+
                 this.Dispose();
             }
 #endif
