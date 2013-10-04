@@ -116,6 +116,7 @@ namespace ServiceStack.Redis
 		//Redis Set operations
 		byte[][] SMembers(string setId);
 		long SAdd(string setId, byte[] value);
+		long SAdd(string setId, byte[][] value);
 		long SRem(string setId, byte[] value);
 		byte[] SPop(string setId);
 		void SMove(string fromSetId, string toSetId, byte[] value);
