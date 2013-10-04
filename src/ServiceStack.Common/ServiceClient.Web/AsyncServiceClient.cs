@@ -177,7 +177,7 @@ namespace ServiceStack.ServiceClient.Web
                 if (this.Timer != null)
                 {
 #if NETFX_CORE
-                    this.timer.Cancel();                   
+                    this.Timer.Cancel();                   
 #else
                     this.Timer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
                     this.Timer.Dispose();
@@ -196,8 +196,10 @@ namespace ServiceStack.ServiceClient.Web
                         this.WebRequest.Abort();
                     }
                 }
+            
                 timer.Cancel();
                 timer = null;
+
                 this.Dispose();
             }
 #else
@@ -211,12 +213,9 @@ namespace ServiceStack.ServiceClient.Web
                         this.WebRequest.Abort();
                     }
                 }
-                if (this.Timer != null)
-                {
-                    this.Timer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-                    this.Timer.Dispose();
-                    this.Timer = null;
-                }
+                
+                StopTimer();
+
                 this.Dispose();
             }
 #endif
