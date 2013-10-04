@@ -103,20 +103,9 @@ namespace ServiceStack
 
         private static List<RestRoute> GetRoutesForType(Type requestType)
         {
-
-#if NETFX_CORE
-            var restRoutes = requestType.AttributesOfType<RouteAttribute>()
-                .Select(attr => new RestRoute(requestType, attr.Path, attr.Verbs))
-                .ToList();
-#elif WINDOWS_PHONE || SILVERLIGHT
-            var restRoutes = requestType.AttributesOfType<RouteAttribute>()
-                .Select(attr => new RestRoute(requestType, attr.Path, attr.Verbs))
-                .ToList();
-#else
             var restRoutes = requestType.AllAttributes<RouteAttribute>()
                 .Select(attr => new RestRoute(requestType, attr.Path, attr.Verbs))
                 .ToList();
-#endif
 
             return restRoutes;
         }

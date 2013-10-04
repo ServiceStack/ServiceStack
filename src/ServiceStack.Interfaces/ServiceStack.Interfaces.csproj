@@ -123,8 +123,10 @@
     <Compile Include="DataAnnotations\ForeignKeyAttribute.cs" />
     <Compile Include="DataAnnotations\IgnoreAttribute.cs" />
     <Compile Include="DataAnnotations\PrimaryKeyAttribute.cs" />
+    <Compile Include="DataAnnotations\RequiredAttribute.cs" />
     <Compile Include="DataAnnotations\SchemaAttribute.cs" />
     <Compile Include="DataAnnotations\SequenceAttribute.cs" />
+    <Compile Include="DataAnnotations\StringLengthAttribute.cs" />
     <Compile Include="Data\DataException.cs">
       <SubType>Code</SubType>
     </Compile>

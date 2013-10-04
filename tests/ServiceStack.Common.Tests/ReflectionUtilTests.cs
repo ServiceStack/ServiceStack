@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using NUnit.Framework;
 using ServiceStack.Common.Tests.Models;
@@ -224,7 +223,7 @@ namespace ServiceStack.Common.Tests
 			fromObj.Double = default(double);
 			fromObj.Guid = default(Guid);
 
-			AutoMappingUtils.PopulateWithNonDefaultValues(toObj, fromObj);
+			toObj.PopulateWithNonDefaultValues(fromObj);
 
 			Assert.That(toObj.Name, Is.EqualTo(originalToObj.Name));
 			Assert.That(toObj.Double, Is.EqualTo(originalToObj.Double));
@@ -249,7 +248,7 @@ namespace ServiceStack.Common.Tests
             fromObj.Guid = default(Guid);
             fromObj.Bool = default(bool);
 
-            AutoMappingUtils.PopulateWithNonDefaultValues(toObj, fromObj);
+            toObj.PopulateWithNonDefaultValues(fromObj);
 
             Assert.That(toObj.Name, Is.EqualTo(originalToObj.Name));
 
