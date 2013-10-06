@@ -5,16 +5,159 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Auth
 {
-    public class UserAuth
+    public interface IMeta
+    {
+        Dictionary<string, string> Meta { get; set; }
+    }
+
+    public static class MetaExtensions
+    {
+        public static T Get<T>(this IMeta instance)
+        {
+            if (instance == null) {
+                throw new ArgumentNullException("instance");
+            }
+            if (instance.Meta == null) {
+                return default(T);
+            }
+            string str;
+            instance.Meta.TryGetValue(typeof (T).Name, out str);
+            return str == null ? default(T) : TypeSerializer.DeserializeFromString<T>(str);
+        }
+
+        public static bool TryGet<T>(this IMeta instance, out T value)
+        {
+            value = default(T);
+            if (instance == null) {
+                throw new ArgumentNullException("instance");
+            }
+            string str;
+            if (!instance.Meta.TryGetValue(typeof (T).Name, out str)) {
+                return false;
+            }
+            value = TypeSerializer.DeserializeFromString<T>(str);
+            return true;
+        }
+
+        public static T Set<T>(this IMeta instance, T value)
+        {
+            if (instance == null) {
+                throw new ArgumentNullException("instance");
+            }
+            if (instance.Meta == null) {
+                instance.Meta = new Dictionary<string, string>();
+            }
+            instance.Meta[typeof (T).Name] = TypeSerializer.SerializeToString(value);
+            return value;
+        }
+    }
+
+    public interface IUserAuthDetails
+    {
+        string UserName { get; set; }
+        string DisplayName { get; set; }
+        string FirstName { get; set; }
+        string LastName { get; set; }
+        string Email { get; set; }
+        DateTime? BirthDate { get; set; }
+        string BirthDateRaw { get; set; }
+        string Country { get; set; }
+        string Culture { get; set; }
+        string FullName { get; set; }
+        string Gender { get; set; }
+        string Language { get; set; }
+        string MailAddress { get; set; }
+        string Nickname { get; set; }
+        string PostalCode { get; set; }
+        string TimeZone { get; set; }
+    }
+
+    public static class UserAuthDetailsExtensions
+    {
+        public static void PopulateMissing(this IUserAuthDetails instance, IUserAuthDetails other)
+        {
+            if (instance == null) {
+                throw new ArgumentNullException("instance");
+            }
+            if (other == null) {
+                throw new ArgumentNullException("other");
+            }
+            if (!other.UserName.IsNullOrEmpty()) {
+                instance.UserName = other.UserName;
+            }
+            if (!other.DisplayName.IsNullOrEmpty()) {
+                instance.DisplayName = other.DisplayName;
+            }
+            if (!other.FirstName.IsNullOrEmpty()) {
+                instance.FirstName = other.FirstName;
+            }
+            if (!other.LastName.IsNullOrEmpty()) {
+                instance.LastName = other.LastName;
+            }
+            if (!other.Email.IsNullOrEmpty()) {
+                instance.Email = other.Email;
+            }
+            if (!other.FullName.IsNullOrEmpty()) {
+                instance.FullName = other.FullName;
+            }
+            if (other.BirthDate != null) {
+                instance.BirthDate = other.BirthDate;
+            }
+            if (!other.BirthDateRaw.IsNullOrEmpty()) {
+                instance.BirthDateRaw = other.BirthDateRaw;
+            }
+            if (!other.Country.IsNullOrEmpty()) {
+                instance.Country = other.Country;
+            }
+            if (!other.Culture.IsNullOrEmpty()) {
+                instance.Culture = other.Culture;
+            }
+            if (!other.Gender.IsNullOrEmpty()) {
+                instance.Gender = other.Gender;
+            }
+            if (!other.MailAddress.IsNullOrEmpty()) {
+                instance.MailAddress = other.MailAddress;
+            }
+            if (!other.Nickname.IsNullOrEmpty()) {
+                instance.Nickname = other.Nickname;
+            }
+            if (!other.PostalCode.IsNullOrEmpty()) {
+                instance.PostalCode = other.PostalCode;
+            }
+            if (!other.TimeZone.IsNullOrEmpty()) {
+                instance.TimeZone = other.TimeZone;
+            }
+        }
+    }
+
+    public interface IUserAuth : IUserAuthDetails, IMeta
+    {
+        int Id { get; set; }
+        string PrimaryEmail { get; set; }
+        string Salt { get; set; }
+        string PasswordHash { get; set; }
+        string DigestHA1Hash { get; set; }
+        List<string> Roles { get; set; }
+        List<string> Permissions { get; set; }
+        //Custom reference data
+        int? RefId { get; set; }
+        string RefIdStr { get; set; }
+
+        DateTime CreatedDate { get; set; }
+        DateTime ModifiedDate { get; set; }
+    }
+
+    public class UserAuth : IUserAuth
     {
         public UserAuth()
         {
-            this.Roles = new List<string>();
-            this.Permissions = new List<string>();
+            Roles = new List<string>();
+            Permissions = new List<string>();
         }
 
         [AutoIncrement]
         public virtual int Id { get; set; }
+
         public virtual string UserName { get; set; }
         public virtual string Email { get; set; }
         public virtual string PrimaryEmail { get; set; }
@@ -44,64 +187,60 @@ namespace ServiceStack.Auth
         public virtual int? RefId { get; set; }
         public virtual string RefIdStr { get; set; }
         public virtual Dictionary<string, string> Meta { get; set; }
+    }
 
-        public virtual T Get<T>()
+    public interface IUserAuthProvider : IAuthTokens, IMeta
+    {
+        int Id { get; set; }
+        int UserAuthId { get; set; }
+        DateTime CreatedDate { get; set; }
+        DateTime ModifiedDate { get; set; }
+        int? RefId { get; set; }
+        string RefIdStr { get; set; }
+    }
+
+    public static class UserAuthProviderExtensions
+    {
+        public static void PopulateMissing(this IUserAuthProvider instance, IAuthTokens tokens)
         {
-            string str = null;
-            if (Meta != null) Meta.TryGetValue(typeof(T).Name, out str);
-            return str == null ? default(T) : TypeSerializer.DeserializeFromString<T>(str);
-        }
-
-        public virtual void Set<T>(T value)
-        {
-            if (Meta == null) Meta = new Dictionary<string, string>();
-            Meta[typeof(T).Name] = TypeSerializer.SerializeToString(value);
-        }
-
-        public virtual void PopulateMissing(UserAuthProvider authProvider)
-        {
-            //Don't explicitly override after if values exist
-            if (!authProvider.DisplayName.IsNullOrEmpty() && this.DisplayName.IsNullOrEmpty())
-                this.DisplayName = authProvider.DisplayName;
-            if (!authProvider.Email.IsNullOrEmpty() && this.PrimaryEmail.IsNullOrEmpty())
-                this.PrimaryEmail = authProvider.Email;
-
-            if (!authProvider.FirstName.IsNullOrEmpty())
-                this.FirstName = authProvider.FirstName;
-            if (!authProvider.LastName.IsNullOrEmpty())
-                this.LastName = authProvider.LastName;
-            if (!authProvider.FullName.IsNullOrEmpty())
-                this.FullName = authProvider.FullName;
-            if (authProvider.BirthDate != null)
-                this.BirthDate = authProvider.BirthDate;
-            if (!authProvider.BirthDateRaw.IsNullOrEmpty())
-                this.BirthDateRaw = authProvider.BirthDateRaw;
-            if (!authProvider.Country.IsNullOrEmpty())
-                this.Country = authProvider.Country;
-            if (!authProvider.Culture.IsNullOrEmpty())
-                this.Culture = authProvider.Culture;
-            if (!authProvider.Gender.IsNullOrEmpty())
-                this.Gender = authProvider.Gender;
-            if (!authProvider.MailAddress.IsNullOrEmpty())
-                this.MailAddress = authProvider.MailAddress;
-            if (!authProvider.Nickname.IsNullOrEmpty())
-                this.Nickname = authProvider.Nickname;
-            if (!authProvider.PostalCode.IsNullOrEmpty())
-                this.PostalCode = authProvider.PostalCode;
-            if (!authProvider.TimeZone.IsNullOrEmpty())
-                this.TimeZone = authProvider.TimeZone;
+            if (instance == null) {
+                throw new ArgumentNullException("instance");
+            }
+            if (tokens == null) {
+                throw new ArgumentNullException("tokens");
+            }
+            if (!tokens.UserId.IsNullOrEmpty()) {
+                instance.UserId = tokens.UserId;
+            }
+            if (!tokens.RefreshToken.IsNullOrEmpty()) {
+                instance.RefreshToken = tokens.RefreshToken;
+            }
+            if (tokens.RefreshTokenExpiry.HasValue) {
+                instance.RefreshTokenExpiry = tokens.RefreshTokenExpiry;
+            }
+            if (!tokens.RequestToken.IsNullOrEmpty()) {
+                instance.RequestToken = tokens.RequestToken;
+            }
+            if (!tokens.RequestTokenSecret.IsNullOrEmpty()) {
+                instance.RequestTokenSecret = tokens.RequestTokenSecret;
+            }
+            if (!tokens.AccessToken.IsNullOrEmpty()) {
+                instance.AccessToken = tokens.AccessToken;
+            }
+            if (!tokens.AccessTokenSecret.IsNullOrEmpty()) {
+                instance.AccessTokenSecret = tokens.AccessTokenSecret;
+            }
+            UserAuthDetailsExtensions.PopulateMissing(instance, tokens);
         }
     }
 
-    public class UserAuthProvider : IAuthTokens
+    public class UserAuthProvider : IUserAuthProvider
     {
-        public UserAuthProvider()
-        {
-            this.Items = new Dictionary<string, string>();
-        }
+        public UserAuthProvider() { Items = new Dictionary<string, string>(); }
 
         [AutoIncrement]
         public virtual int Id { get; set; }
+
         public virtual int UserAuthId { get; set; }
         public virtual string Provider { get; set; }
         public virtual string UserId { get; set; }
@@ -137,67 +276,5 @@ namespace ServiceStack.Auth
         public virtual int? RefId { get; set; }
         public virtual string RefIdStr { get; set; }
         public virtual Dictionary<string, string> Meta { get; set; }
-
-        public virtual T Get<T>()
-        {
-            string str = null;
-            if (Meta != null) Meta.TryGetValue(typeof(T).Name, out str);
-            return str == null ? default(T) : TypeSerializer.DeserializeFromString<T>(str);
-        }
-
-        public virtual void Set<T>(T value)
-        {
-            if (Meta == null) Meta = new Dictionary<string, string>();
-            Meta[typeof(T).Name] = TypeSerializer.SerializeToString(value);
-        }
-
-        public virtual void PopulateMissing(IAuthTokens withTokens)
-        {
-            if (!withTokens.UserId.IsNullOrEmpty())
-                this.UserId = withTokens.UserId;
-            if (!withTokens.UserName.IsNullOrEmpty())
-                this.UserName = withTokens.UserName;
-            if (!withTokens.RefreshToken.IsNullOrEmpty())
-                this.RefreshToken = withTokens.RefreshToken;
-            if (withTokens.RefreshTokenExpiry.HasValue)
-                this.RefreshTokenExpiry = withTokens.RefreshTokenExpiry;
-            if (!withTokens.RequestToken.IsNullOrEmpty())
-                this.RequestToken = withTokens.RequestToken;
-            if (!withTokens.RequestTokenSecret.IsNullOrEmpty())
-                this.RequestTokenSecret = withTokens.RequestTokenSecret;
-            if (!withTokens.AccessToken.IsNullOrEmpty())
-                this.AccessToken = withTokens.AccessToken;
-            if (!withTokens.AccessTokenSecret.IsNullOrEmpty())
-                this.AccessTokenSecret = withTokens.AccessTokenSecret;
-            if (!withTokens.DisplayName.IsNullOrEmpty())
-                this.DisplayName = withTokens.DisplayName;
-            if (!withTokens.FirstName.IsNullOrEmpty())
-                this.FirstName = withTokens.FirstName;
-            if (!withTokens.LastName.IsNullOrEmpty())
-                this.LastName = withTokens.LastName;
-            if (!withTokens.Email.IsNullOrEmpty())
-                this.Email = withTokens.Email;
-            if (!withTokens.FullName.IsNullOrEmpty())
-                this.FullName = withTokens.FullName;
-            if (withTokens.BirthDate != null)
-                this.BirthDate = withTokens.BirthDate;
-            if (!withTokens.BirthDateRaw.IsNullOrEmpty())
-                this.BirthDateRaw = withTokens.BirthDateRaw;
-            if (!withTokens.Country.IsNullOrEmpty())
-                this.Country = withTokens.Country;
-            if (!withTokens.Culture.IsNullOrEmpty())
-                this.Culture = withTokens.Culture;
-            if (!withTokens.Gender.IsNullOrEmpty())
-                this.Gender = withTokens.Gender;
-            if (!withTokens.MailAddress.IsNullOrEmpty())
-                this.MailAddress = withTokens.MailAddress;
-            if (!withTokens.Nickname.IsNullOrEmpty())
-                this.Nickname = withTokens.Nickname;
-            if (!withTokens.PostalCode.IsNullOrEmpty())
-                this.PostalCode = withTokens.PostalCode;
-            if (!withTokens.TimeZone.IsNullOrEmpty())
-                this.TimeZone = withTokens.TimeZone;
-        }
     }
-
 }

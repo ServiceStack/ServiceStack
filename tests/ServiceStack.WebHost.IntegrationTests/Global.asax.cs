@@ -149,10 +149,10 @@ namespace ServiceStack.WebHost.IntegrationTests
 
                 Plugins.Add(new RegistrationFeature());
 
-                container.Register<IUserAuthRepository>(c =>
+                container.Register<IAuthRepository>(c =>
                     new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()));
 
-                var authRepo = (OrmLiteAuthRepository)container.Resolve<IUserAuthRepository>();
+                var authRepo = (OrmLiteAuthRepository)container.Resolve<IAuthRepository>();
                 if (new AppSettings().Get("RecreateTables", true))
                     authRepo.DropAndReCreateTables();
                 else

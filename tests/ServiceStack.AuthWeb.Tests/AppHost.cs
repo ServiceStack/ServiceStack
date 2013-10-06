@@ -104,10 +104,10 @@ namespace ServiceStack.AuthWeb.Tests
             container.RegisterAs<CustomRegistrationValidator, IValidator<Register>>();
 
             //Store User Data into the referenced SqlServer database
-            container.Register<IUserAuthRepository>(c =>
+            container.Register<IAuthRepository>(c =>
                 new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>())); //Use OrmLite DB Connection to persist the UserAuth and AuthProvider info
 
-            var authRepo = (OrmLiteAuthRepository)container.Resolve<IUserAuthRepository>(); //If using and RDBMS to persist UserAuth, we must create required tables
+            var authRepo = (OrmLiteAuthRepository)container.Resolve<IAuthRepository>(); //If using and RDBMS to persist UserAuth, we must create required tables
             if (appSettings.Get("RecreateAuthTables", false))
                 authRepo.DropAndReCreateTables(); //Drop and re-create all Auth and registration tables
             else

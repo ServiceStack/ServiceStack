@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using ServiceStack.Model;
-using ServiceStack.Model;
 
 namespace ServiceStack.Redis
 {

@@ -44,7 +44,7 @@ namespace ServiceStack
             res.EndRequest();
         }
 
-        public bool HasAllRoles(IHttpRequest req, IAuthSession session, IUserAuthRepository userAuthRepo=null)
+        public bool HasAllRoles(IHttpRequest req, IAuthSession session, IAuthRepository userAuthRepo=null)
         {
             if (HasAllRoles(session)) return true;
 

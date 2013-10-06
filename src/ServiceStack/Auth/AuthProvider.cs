@@ -80,7 +80,7 @@ namespace ServiceStack.Auth
         /// Saves the Auth Tokens for this request. Called in OnAuthenticated(). 
         /// Overrideable, the default behaviour is to call IUserAuthRepository.CreateOrMergeAuthSession().
         /// </summary>
-        protected virtual void SaveUserAuth(IServiceBase authService, IAuthSession session, IUserAuthRepository authRepo, IAuthTokens tokens)
+        protected virtual void SaveUserAuth(IServiceBase authService, IAuthSession session, IAuthRepository authRepo, IAuthTokens tokens)
         {
             if (authRepo == null) return;
             if (tokens != null)
@@ -121,7 +121,7 @@ namespace ServiceStack.Auth
                 LoadUserAuthInfo(userSession, tokens, authInfo);
             }
 
-            var authRepo = authService.TryResolve<IUserAuthRepository>();
+            var authRepo = authService.TryResolve<IAuthRepository>();
             if (authRepo != null)
             {
                 if (tokens != null)
