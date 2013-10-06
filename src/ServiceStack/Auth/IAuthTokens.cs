@@ -3,26 +3,10 @@ using System.Collections.Generic;
 
 namespace ServiceStack.Auth
 {
-    public interface IAuthTokens
+    public interface IAuthTokens : IUserAuthDetails
     {
         string Provider { get; set; }
         string UserId { get; set; }
-        string UserName { get; set; }
-        string DisplayName { get; set; }
-        string FirstName { get; set; }
-        string LastName { get; set; }
-        string Email { get; set; }
-        DateTime? BirthDate { get; set; }
-        string BirthDateRaw { get; set; }
-        string Country { get; set; }
-        string Culture { get; set; }
-        string FullName { get; set; }
-        string Gender { get; set; }
-        string Language { get; set; }
-        string MailAddress { get; set; }
-        string Nickname { get; set; }
-        string PostalCode { get; set; }
-        string TimeZone { get; set; }
         string AccessToken { get; set; }
         string AccessTokenSecret { get; set; }
         string RefreshToken { get; set; }
@@ -34,10 +18,7 @@ namespace ServiceStack.Auth
 
     public class AuthTokens : IAuthTokens
     {
-        public AuthTokens()
-        {
-            this.Items = new Dictionary<string, string>();
-        }
+        public AuthTokens() { Items = new Dictionary<string, string>(); }
 
         public string Provider { get; set; }
         public string UserId { get; set; }

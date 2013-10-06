@@ -41,12 +41,12 @@ namespace ServiceStack
             res.EndRequest();
         }
 
-        public bool HasAnyPermissions(IHttpRequest req, IAuthSession session, IUserAuthRepository userAuthRepo = null)
+        public bool HasAnyPermissions(IHttpRequest req, IAuthSession session, IAuthRepository userAuthRepo = null)
         {
             if (HasAnyPermissions(session)) return true;
 
             if (userAuthRepo == null)
-                userAuthRepo = req.TryResolve<IUserAuthRepository>();
+                userAuthRepo = req.TryResolve<IAuthRepository>();
 
             if (userAuthRepo == null) return false;
 

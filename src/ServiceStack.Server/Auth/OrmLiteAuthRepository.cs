@@ -10,7 +10,16 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Auth
 {
-    public class OrmLiteAuthRepository : IUserAuthRepository, IClearable
+    public class OrmLiteAuthRepository : OrmLiteAuthRepository<UserAuth, UserAuthProvider>
+    {
+        public OrmLiteAuthRepository(IDbConnectionFactory dbFactory) : base(dbFactory) { }
+
+        public OrmLiteAuthRepository(IDbConnectionFactory dbFactory, IHashProvider passwordHasher) : base(dbFactory, passwordHasher) { }
+    }
+
+    public class OrmLiteAuthRepository<TUserAuth, TUserAuthProvider> : IUserAuthRepository<TUserAuth>, IClearable
+        where TUserAuth : class, IUserAuth, new()
+        where TUserAuthProvider : class, IUserAuthProvider, new()
     {
         //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
         public Regex ValidUserNameRegEx = new Regex(@"^(?=.{3,15}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
@@ -19,8 +28,7 @@ namespace ServiceStack.Auth
         private readonly IHashProvider passwordHasher;
 
         public OrmLiteAuthRepository(IDbConnectionFactory dbFactory)
-            : this(dbFactory, new SaltedHash())
-        { }
+            : this(dbFactory, new SaltedHash()) { }
 
         public OrmLiteAuthRepository(IDbConnectionFactory dbFactory, IHashProvider passwordHasher)
         {
@@ -30,43 +38,41 @@ namespace ServiceStack.Auth
 
         public void CreateMissingTables()
         {
-            using (var db = dbFactory.Open())
-            {
-                db.CreateTable<UserAuth>();
-                db.CreateTable<UserAuthProvider>();
+            using (var db = dbFactory.Open()) {
+                db.CreateTable<TUserAuth>();
+                db.CreateTable<TUserAuthProvider>();
             }
         }
 
         public void DropAndReCreateTables()
         {
-            using (var db = dbFactory.Open())
-            {
-                db.DropAndCreateTable<UserAuth>();
-                db.DropAndCreateTable<UserAuthProvider>();
-            };
+            using (var db = dbFactory.Open()) {
+                db.DropAndCreateTable<TUserAuth>();
+                db.DropAndCreateTable<TUserAuthProvider>();
+            }
         }
 
-        private void ValidateNewUser(UserAuth newUser, string password)
+        private void ValidateNewUser(TUserAuth newUser, string password)
         {
             newUser.ThrowIfNull("newUser");
             password.ThrowIfNullOrEmpty("password");
 
-            if (newUser.UserName.IsNullOrEmpty() && newUser.Email.IsNullOrEmpty())
+            if (newUser.UserName.IsNullOrEmpty() && newUser.Email.IsNullOrEmpty()) {
                 throw new ArgumentNullException("UserName or Email is required");
+            }
 
-            if (!newUser.UserName.IsNullOrEmpty())
-            {
-                if (!ValidUserNameRegEx.IsMatch(newUser.UserName))
+            if (!newUser.UserName.IsNullOrEmpty()) {
+                if (!ValidUserNameRegEx.IsMatch(newUser.UserName)) {
                     throw new ArgumentException("UserName contains invalid characters", "UserName");
+                }
             }
         }
 
-        public UserAuth CreateUserAuth(UserAuth newUser, string password)
+        public TUserAuth CreateUserAuth(TUserAuth newUser, string password)
         {
             ValidateNewUser(newUser, password);
 
-            using (var db = dbFactory.Open())
-            {
+            using (var db = dbFactory.Open()) {
                 AssertNoExistingUser(db, newUser);
 
                 string salt;
@@ -81,47 +87,44 @@ namespace ServiceStack.Auth
 
                 db.Insert(newUser);
 
-                newUser = db.GetById<UserAuth>(db.GetLastInsertId());
+                newUser = db.GetById<TUserAuth>(db.GetLastInsertId());
                 return newUser;
-            };
+            }
         }
 
-        private static void AssertNoExistingUser(IDbConnection db, UserAuth newUser, UserAuth exceptForExistingUser = null)
+        private static void AssertNoExistingUser(IDbConnection db, TUserAuth newUser, TUserAuth exceptForExistingUser = null)
         {
-            if (newUser.UserName != null)
-            {
+            if (newUser.UserName != null) {
                 var existingUser = GetUserAuthByUserName(db, newUser.UserName);
                 if (existingUser != null
-                    && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
+                    && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id)) {
                     throw new ArgumentException("User {0} already exists".Fmt(newUser.UserName));
+                }
             }
-            if (newUser.Email != null)
-            {
+            if (newUser.Email != null) {
                 var existingUser = GetUserAuthByUserName(db, newUser.Email);
                 if (existingUser != null
-                    && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
+                    && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id)) {
                     throw new ArgumentException("Email {0} already exists".Fmt(newUser.Email));
+                }
             }
         }
 
-        public UserAuth UpdateUserAuth(UserAuth existingUser, UserAuth newUser, string password)
+        public TUserAuth UpdateUserAuth(TUserAuth existingUser, TUserAuth newUser, string password)
         {
             ValidateNewUser(newUser, password);
 
-            using (var db = dbFactory.Open())
-            {
+            using (var db = dbFactory.Open()) {
                 AssertNoExistingUser(db, newUser, existingUser);
 
                 var hash = existingUser.PasswordHash;
                 var salt = existingUser.Salt;
-                if (password != null)
-                {
+                if (password != null) {
                     passwordHasher.GetHashAndSaltString(password, out hash, out salt);
                 }
                 // If either one changes the digest hash has to be recalculated
                 var digestHash = existingUser.DigestHA1Hash;
-                if (password != null || existingUser.UserName != newUser.UserName)
-                {
+                if (password != null || existingUser.UserName != newUser.UserName) {
                     var digestHelper = new DigestAuthFunctions();
                     digestHash = digestHelper.CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
                 }
@@ -138,30 +141,32 @@ namespace ServiceStack.Auth
             }
         }
 
-        public UserAuth GetUserAuthByUserName(string userNameOrEmail)
+        public TUserAuth GetUserAuthByUserName(string userNameOrEmail)
         {
-            using (var db = dbFactory.Open())
+            using (var db = dbFactory.Open()) {
                 return GetUserAuthByUserName(db, userNameOrEmail);
+            }
         }
 
-        private static UserAuth GetUserAuthByUserName(IDbConnection db, string userNameOrEmail)
+        private static TUserAuth GetUserAuthByUserName(IDbConnection db, string userNameOrEmail)
         {
             var isEmail = userNameOrEmail.Contains("@");
             var userAuth = isEmail
-                ? db.Select<UserAuth>(q => q.Email == userNameOrEmail).FirstOrDefault()
-                : db.Select<UserAuth>(q => q.UserName == userNameOrEmail).FirstOrDefault();
+                ? db.Select<TUserAuth>(q => q.Email == userNameOrEmail).FirstOrDefault()
+                : db.Select<TUserAuth>(q => q.UserName == userNameOrEmail).FirstOrDefault();
 
             return userAuth;
         }
 
-        public bool TryAuthenticate(string userName, string password, out UserAuth userAuth)
+        public bool TryAuthenticate(string userName, string password, out TUserAuth userAuth)
         {
             //userId = null;
             userAuth = GetUserAuthByUserName(userName);
-            if (userAuth == null) return false;
+            if (userAuth == null) {
+                return false;
+            }
 
-            if (passwordHasher.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
-            {
+            if (passwordHasher.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt)) {
                 //userId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
                 return true;
             }
@@ -170,15 +175,16 @@ namespace ServiceStack.Auth
             return false;
         }
 
-        public bool TryAuthenticate(Dictionary<string,string> digestHeaders, string PrivateKey, int NonceTimeOut, string sequence, out UserAuth userAuth)
+        public bool TryAuthenticate(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, out TUserAuth userAuth)
         {
             //userId = null;
             userAuth = GetUserAuthByUserName(digestHeaders["username"]);
-            if (userAuth == null) return false;
+            if (userAuth == null) {
+                return false;
+            }
 
             var digestHelper = new DigestAuthFunctions();
-            if (digestHelper.ValidateResponse(digestHeaders,PrivateKey,NonceTimeOut,userAuth.DigestHA1Hash,sequence))
-            {
+            if (digestHelper.ValidateResponse(digestHeaders, privateKey, nonceTimeOut, userAuth.DigestHA1Hash, sequence)) {
                 //userId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
                 return true;
             }
@@ -194,141 +200,171 @@ namespace ServiceStack.Auth
             LoadUserAuth(session, userAuth);
         }
 
-        private void LoadUserAuth(IAuthSession session, UserAuth userAuth)
+        private void LoadUserAuth(IAuthSession session, TUserAuth userAuth)
         {
-            if (userAuth == null) return;
+            if (userAuth == null) {
+                return;
+            }
 
-            var idSesije = session.Id;  //first record session Id (original session Id)
+            var idSesije = session.Id; //first record session Id (original session Id)
             session.PopulateWith(userAuth); //here, original sessionId is overwritten with facebook user Id
-            session.Id = idSesije;  //we return Id of original session here
+            session.Id = idSesije; //we return Id of original session here
 
             session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
             session.ProviderOAuthAccess = GetUserOAuthProviders(session.UserAuthId)
-                .ConvertAll(x => (IAuthTokens)x);
-            
+                .ConvertAll(x => (IAuthTokens) x);
         }
 
-        public UserAuth GetUserAuth(string userAuthId)
+        public TUserAuth GetUserAuth(string userAuthId)
         {
-            using (var db = dbFactory.Open())
-                return db.GetByIdOrDefault<UserAuth>(userAuthId);
+            using (var db = dbFactory.Open()) {
+                return db.GetByIdOrDefault<TUserAuth>(userAuthId);
+            }
         }
 
         public void SaveUserAuth(IAuthSession authSession)
         {
-            using (var db = dbFactory.Open())
-            {
+            using (var db = dbFactory.Open()) {
                 var userAuth = !authSession.UserAuthId.IsNullOrEmpty()
-                    ? db.GetByIdOrDefault<UserAuth>(authSession.UserAuthId)
-                    : authSession.ConvertTo<UserAuth>();
+                    ? db.GetByIdOrDefault<TUserAuth>(authSession.UserAuthId)
+                    : authSession.ConvertTo<TUserAuth>();
 
-                if (userAuth.Id == default(int) && !authSession.UserAuthId.IsNullOrEmpty())
+                if (userAuth.Id == default(int) && !authSession.UserAuthId.IsNullOrEmpty()) {
                     userAuth.Id = int.Parse(authSession.UserAuthId);
+                }
 
                 userAuth.ModifiedDate = DateTime.UtcNow;
-                if (userAuth.CreatedDate == default(DateTime))
+                if (userAuth.CreatedDate == default(DateTime)) {
                     userAuth.CreatedDate = userAuth.ModifiedDate;
+                }
 
                 db.Save(userAuth);
-            };
+            }
         }
 
-        public void SaveUserAuth(UserAuth userAuth)
+        public void SaveUserAuth(TUserAuth userAuth)
         {
             userAuth.ModifiedDate = DateTime.UtcNow;
-            if (userAuth.CreatedDate == default(DateTime))
+            if (userAuth.CreatedDate == default(DateTime)) {
                 userAuth.CreatedDate = userAuth.ModifiedDate;
+            }
 
-            using (var db = dbFactory.Open())
+            using (var db = dbFactory.Open()) {
                 db.Save(userAuth);
+            }
         }
 
-        public List<UserAuthProvider> GetUserOAuthProviders(string userAuthId)
+        public List<IUserAuthProvider> GetUserOAuthProviders(string userAuthId)
         {
             var id = int.Parse(userAuthId);
-            using (var db = dbFactory.Open())
-            {
-                return db.Select<UserAuthProvider>(q => q.UserAuthId == id).OrderBy(x => x.ModifiedDate).ToList();
+            using (var db = dbFactory.Open()) {
+                return db.Select<TUserAuthProvider>(q => q.UserAuthId == id).OrderBy(x => x.ModifiedDate).Cast<IUserAuthProvider>().ToList();
             }
         }
 
-        public UserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens)
+        public TUserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens)
         {
-            if (!authSession.UserAuthId.IsNullOrEmpty())
-            {
+            if (!authSession.UserAuthId.IsNullOrEmpty()) {
                 var userAuth = GetUserAuth(authSession.UserAuthId);
-                if (userAuth != null) return userAuth;
+                if (userAuth != null) {
+                    return userAuth;
+                }
             }
-            if (!authSession.UserAuthName.IsNullOrEmpty())
-            {
+            if (!authSession.UserAuthName.IsNullOrEmpty()) {
                 var userAuth = GetUserAuthByUserName(authSession.UserAuthName);
-                if (userAuth != null) return userAuth;
+                if (userAuth != null) {
+                    return userAuth;
+                }
             }
 
-            if (tokens == null || tokens.Provider.IsNullOrEmpty() || tokens.UserId.IsNullOrEmpty())
+            if (tokens == null || tokens.Provider.IsNullOrEmpty() || tokens.UserId.IsNullOrEmpty()) {
                 return null;
+            }
 
-            using (var db = dbFactory.Open())
-            {
-                var oAuthProvider = db.Select<UserAuthProvider>(q => 
-                    q.Provider == tokens.Provider && q.UserId == tokens.UserId).FirstOrDefault();
+            using (var db = dbFactory.Open()) {
+                var oAuthProvider = db.Select<TUserAuthProvider>(
+                    q =>
+                        q.Provider == tokens.Provider && q.UserId == tokens.UserId).FirstOrDefault();
 
-                if (oAuthProvider != null)
-                {
-                    var userAuth = db.GetByIdOrDefault<UserAuth>(oAuthProvider.UserAuthId);
+                if (oAuthProvider != null) {
+                    var userAuth = db.GetByIdOrDefault<TUserAuth>(oAuthProvider.UserAuthId);
                     return userAuth;
                 }
                 return null;
-            };
+            }
         }
 
         public string CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
         {
-            var userAuth = GetUserAuth(authSession, tokens) ?? new UserAuth();
+            var userAuth = GetUserAuth(authSession, tokens) ?? new TUserAuth();
 
-            using (var db = dbFactory.Open())
-            {
-                var oAuthProvider = db.Select<UserAuthProvider>(q =>
-                    q.Provider == tokens.Provider && q.UserId == tokens.UserId).FirstOrDefault();
-
-                if (oAuthProvider == null)
-                {
-                    oAuthProvider = new UserAuthProvider {
-                        Provider = tokens.Provider,
-                        UserId = tokens.UserId,
-                    };
-                }
+            using (var db = dbFactory.Open()) {
+                var oAuthProvider = db.Select<TUserAuthProvider>(
+                    q =>
+                        q.Provider == tokens.Provider && q.UserId == tokens.UserId).FirstOrDefault() ?? new TUserAuthProvider {
+                            Provider = tokens.Provider,
+                            UserId = tokens.UserId,
+                        };
 
                 oAuthProvider.PopulateMissing(tokens);
                 userAuth.PopulateMissing(oAuthProvider);
 
                 userAuth.ModifiedDate = DateTime.UtcNow;
-                if (userAuth.CreatedDate == default(DateTime))
+                if (userAuth.CreatedDate == default(DateTime)) {
                     userAuth.CreatedDate = userAuth.ModifiedDate;
+                }
 
                 db.Save(userAuth);
 
                 oAuthProvider.UserAuthId = userAuth.Id != default(int)
                     ? userAuth.Id
-                    : (int)db.GetLastInsertId();
+                    : (int) db.GetLastInsertId();
 
-                if (oAuthProvider.CreatedDate == default(DateTime))
+                if (oAuthProvider.CreatedDate == default(DateTime)) {
                     oAuthProvider.CreatedDate = userAuth.ModifiedDate;
+                }
                 oAuthProvider.ModifiedDate = userAuth.ModifiedDate;
 
                 db.Save(oAuthProvider);
 
                 return oAuthProvider.UserAuthId.ToString(CultureInfo.InvariantCulture);
-            };
+            }
         }
 
         public void Clear()
         {
-            using (var db = dbFactory.Open())
-            {
-                db.DeleteAll<UserAuth>();
-                db.DeleteAll<UserAuthProvider>();
+            using (var db = dbFactory.Open()) {
+                db.DeleteAll<TUserAuth>();
+                db.DeleteAll<TUserAuthProvider>();
             }
+        }
+
+        IUserAuth IAuthRepository.GetUserAuth(IAuthSession authSession, IAuthTokens tokens) { return GetUserAuth(authSession, tokens); }
+
+        IUserAuth IAuthRepository.GetUserAuthByUserName(string userNameOrEmail) { return GetUserAuthByUserName(userNameOrEmail); }
+
+        void IAuthRepository.SaveUserAuth(IUserAuth userAuth) { SaveUserAuth((TUserAuth) userAuth); }
+
+        bool IAuthRepository.TryAuthenticate(string userName, string password, out IUserAuth userAuth)
+        {
+            TUserAuth auth;
+            if (TryAuthenticate(userName, password, out auth)) {
+                userAuth = auth;
+                return true;
+            }
+            userAuth = null;
+            return false;
+        }
+
+        bool IAuthRepository.TryAuthenticate(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, out IUserAuth userAuth)
+        {
+            TUserAuth auth;
+            if (TryAuthenticate(digestHeaders, privateKey, nonceTimeOut, sequence, out auth)) {
+                userAuth = auth;
+                return true;
+            }
+            userAuth = null;
+            return false;
         }
     }
 }

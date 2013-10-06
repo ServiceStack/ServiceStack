@@ -97,17 +97,17 @@ namespace ServiceStack
                 : sessionOptions.Split(',').ToHashSet();
         }
 
-        public static void UpdateSession(this IAuthSession session, UserAuth userAuth)
+        public static void UpdateSession(this IAuthSession session, IUserAuth userAuth)
         {
             if (userAuth == null || session == null) return;
             session.Roles = userAuth.Roles;
             session.Permissions = userAuth.Permissions;
         }
 
-        public static void UpdateFromUserAuthRepo(this IAuthSession session, IHttpRequest req, IUserAuthRepository userAuthRepo = null)
+        public static void UpdateFromUserAuthRepo(this IAuthSession session, IHttpRequest req, IAuthRepository userAuthRepo = null)
         {
             if (userAuthRepo == null)
-                userAuthRepo = req.TryResolve<IUserAuthRepository>();
+                userAuthRepo = req.TryResolve<IAuthRepository>();
 
             if (userAuthRepo == null) return;
 

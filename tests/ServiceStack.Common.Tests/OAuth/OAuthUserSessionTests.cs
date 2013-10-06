@@ -27,7 +27,7 @@ namespace ServiceStack.Common.Tests.OAuth
         }
 
         [Test, TestCaseSource("UserAuthRepositorys")]
-        public void Does_persist_TwitterOAuth(IUserAuthRepository userAuthRepository)
+        public void Does_persist_TwitterOAuth(IUserAuthRepository<UserAuth> userAuthRepository)
         {
             InitTest(userAuthRepository);
 
@@ -65,7 +65,7 @@ namespace ServiceStack.Common.Tests.OAuth
         }
 
         [Test, TestCaseSource("UserAuthRepositorys")]
-        public void Does_persist_FacebookOAuth(IUserAuthRepository userAuthRepository)
+        public void Does_persist_FacebookOAuth(IUserAuthRepository<UserAuth> userAuthRepository)
         {
             InitTest(userAuthRepository);
 
@@ -106,7 +106,7 @@ namespace ServiceStack.Common.Tests.OAuth
         }
 
         [Test, TestCaseSource("UserAuthRepositorys")]
-        public void Does_merge_FacebookOAuth_TwitterOAuth(IUserAuthRepository userAuthRepository)
+        public void Does_merge_FacebookOAuth_TwitterOAuth(IUserAuthRepository<UserAuth> userAuthRepository)
         {
             InitTest(userAuthRepository);
 
@@ -146,7 +146,7 @@ namespace ServiceStack.Common.Tests.OAuth
         }
 
         [Test, TestCaseSource("UserAuthRepositorys")]
-        public void Can_login_with_user_created_CreateUserAuth(IUserAuthRepository userAuthRepository)
+        public void Can_login_with_user_created_CreateUserAuth(IUserAuthRepository<UserAuth> userAuthRepository)
         {
             InitTest(userAuthRepository);
 
@@ -317,7 +317,7 @@ namespace ServiceStack.Common.Tests.OAuth
         }
 
 		[Test, TestCaseSource("UserAuthRepositorys")]
-		public void Can_AutoLogin_whilst_Registering(IUserAuthRepository userAuthRepository)
+        public void Can_AutoLogin_whilst_Registering(IUserAuthRepository userAuthRepository)
 		{
             InitTest(userAuthRepository);
             var oAuthUserSession = requestContext.ReloadSession();
