@@ -39,7 +39,7 @@ namespace ServiceStack.Auth
     [DefaultRequest(typeof(AssignRoles))]
     public class AssignRolesService : Service
     {
-        public IUserAuthRepository UserAuthRepo { get; set; }
+        public IAuthRepository UserAuthRepo { get; set; }
 
         public object Post(AssignRoles request)
         {

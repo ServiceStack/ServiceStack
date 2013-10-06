@@ -14,7 +14,7 @@ namespace ServiceStack.Common.Tests.OAuth
     public class OAuthUserSessionWithoutTestSourceTests
     {
         private OAuthUserSessionTests tests;
-        private readonly List<IUserAuthRepository> userAuthRepositorys = new List<IUserAuthRepository>();
+        private readonly List<IUserAuthRepository<UserAuth>> userAuthRepositorys = new List<IUserAuthRepository<UserAuth>>();
 
         OrmLiteConnectionFactory dbFactory = new OrmLiteConnectionFactory(
             ":memory:", false, SqliteOrmLiteDialectProvider.Instance);

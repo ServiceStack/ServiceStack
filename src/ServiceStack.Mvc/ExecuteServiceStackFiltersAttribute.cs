@@ -29,7 +29,7 @@ namespace ServiceStack.Mvc
 			if (roleAttrs.Count + anyRoleAttrs.Count + permAttrs.Count + anyPermAttrs.Count == 0) return;
 
 			var httpReq = HttpContext.Current.Request.ToRequest();
-			var userAuthRepo = httpReq.TryResolve<IUserAuthRepository>();
+			var userAuthRepo = httpReq.TryResolve<IAuthRepository>();
 
 			var hasRoles = roleAttrs.All(x => x.HasAllRoles(httpReq, ssController.AuthSession, userAuthRepo));
 			if (!hasRoles)

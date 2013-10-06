@@ -115,7 +115,7 @@ namespace ServiceStack.Common.Tests.OAuth
 		};
 		protected Register RegisterDto;
 
-		protected void InitTest(IUserAuthRepository userAuthRepository)
+		protected void InitTest(IAuthRepository userAuthRepository)
 		{
 			((IClearable)userAuthRepository).Clear();
 
@@ -130,7 +130,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			}).Register(null);
 
 			mockService = new Mock<IServiceBase>();
-			mockService.Expect(x => x.TryResolve<IUserAuthRepository>()).Returns(userAuthRepository);
+			mockService.Expect(x => x.TryResolve<IAuthRepository>()).Returns(userAuthRepository);
 			requestContext = new MockRequestContext();
 			mockService.Expect(x => x.RequestContext).Returns(requestContext);
 			service = mockService.Object;
@@ -146,7 +146,7 @@ namespace ServiceStack.Common.Tests.OAuth
 		}
 
 		public static RegisterService GetRegistrationService(
-			IUserAuthRepository userAuthRepository,
+            IUserAuthRepository<UserAuth> userAuthRepository,
 			AuthUserSession oAuthUserSession = null,
 			MockRequestContext requestContext = null)
 		{
@@ -192,7 +192,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			Assert.That(userAuth.LastName, Is.EqualTo(request.LastName));
 		}
 
-		protected AuthUserSession RegisterAndLogin(IUserAuthRepository userAuthRepository, AuthUserSession oAuthUserSession)
+        protected AuthUserSession RegisterAndLogin(IUserAuthRepository userAuthRepository, AuthUserSession oAuthUserSession)
 		{
 			Register(userAuthRepository, oAuthUserSession);
 
@@ -216,7 +216,7 @@ namespace ServiceStack.Common.Tests.OAuth
 				});
 		}
 
-		protected object Register(IUserAuthRepository userAuthRepository, AuthUserSession oAuthUserSession, Register register = null)
+        protected object Register(IUserAuthRepository userAuthRepository, AuthUserSession oAuthUserSession, Register register = null)
 		{
 			if (register == null)
 				register = RegisterDto;

@@ -288,7 +288,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 container.Register<ICacheClient>(new MemoryCacheClient());
                 userRep = new InMemoryAuthRepository();
-                container.Register<IUserAuthRepository>(userRep);
+                container.Register<IAuthRepository>(userRep);
 
                 CreateUser(1, UserName, null, Password, new List<string> { "TheRole" }, new List<string> { "ThePermission" });
                 CreateUser(2, UserNameWithSessionRedirect, null, PasswordForSessionRedirect);

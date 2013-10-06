@@ -135,7 +135,7 @@
     <Compile Include="Auth\InMemoryAuthRepository.cs" />
     <Compile Include="Auth\IAuthTokens.cs" />
     <Compile Include="Auth\IRedisClientFacade.cs" />
-    <Compile Include="Auth\IUserAuthRepository.cs" />
+    <Compile Include="Auth\IAuthRepository.cs" />
     <Compile Include="Auth\OAuthAuthorizer.cs" />
     <Compile Include="Auth\OAuthProvider.cs" />
     <Compile Include="Auth\RedisAuthRepository.cs" />

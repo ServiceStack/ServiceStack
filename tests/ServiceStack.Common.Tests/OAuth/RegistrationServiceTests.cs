@@ -47,7 +47,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
         public static RegisterService GetRegistrationService(
             AbstractValidator<Register> validator = null,
-            IUserAuthRepository authRepo = null,
+            IUserAuthRepository<UserAuth> authRepo = null,
             string contentType = null)
         {
             var requestContext = new MockRequestContext();
