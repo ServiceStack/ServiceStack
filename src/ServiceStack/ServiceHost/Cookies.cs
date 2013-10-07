@@ -63,14 +63,15 @@ namespace ServiceStack.ServiceHost
             var httpCookie = new HttpCookie(cookie.Name, cookie.Value) {
                 Path = cookie.Path,
                 Expires = cookie.Expires,
-                HttpOnly = !EndpointHost.Config.AllowNonHttpOnlyCookies || cookie.HttpOnly,
+                HttpOnly = (EndpointHost.Config == null || !EndpointHost.Config.AllowNonHttpOnlyCookies) 
+                    || cookie.HttpOnly,
                 Secure = cookie.Secure
             };
             if (!string.IsNullOrEmpty(cookie.Domain))
             {
                 httpCookie.Domain = cookie.Domain;
             }
-            else if (EndpointHost.Config.RestrictAllCookiesToDomain != null)
+            else if (EndpointHost.Config != null && EndpointHost.Config.RestrictAllCookiesToDomain != null)
             {
                 httpCookie.Domain = EndpointHost.Config.RestrictAllCookiesToDomain;
             }
