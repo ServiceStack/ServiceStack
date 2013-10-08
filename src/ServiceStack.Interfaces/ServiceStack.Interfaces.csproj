@@ -119,6 +119,7 @@
     </Compile>
     <Compile Include="DataAnnotations\BelongToAttribute.cs" />
     <Compile Include="DataAnnotations\ComputeAttribute.cs" />
+    <Compile Include="DataAnnotations\ReferenceAttribute.cs" />
     <Compile Include="DataAnnotations\DecimalLengthAttribute.cs" />
     <Compile Include="DataAnnotations\ForeignKeyAttribute.cs" />
     <Compile Include="DataAnnotations\IgnoreAttribute.cs" />

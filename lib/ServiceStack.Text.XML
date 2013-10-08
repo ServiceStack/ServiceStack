@@ -479,6 +479,18 @@
             Creates a new instance from the default constructor of type
             </summary>
         </member>
+        <member name="M:ServiceStack.Text.PlatformExtensions.AddAttributes(System.Reflection.PropertyInfo,System.Attribute[])">
+            <summary>
+            Add a Property attribute at runtime. 
+            <para>Not threadsafe, should only add attributes on Startup.</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.PlatformExtensions.ReplaceAttribute(System.Reflection.PropertyInfo,System.Attribute)">
+            <summary>
+            Add a Property attribute at runtime. 
+            <para>Not threadsafe, should only add attributes on Startup.</para>
+            </summary>
+        </member>
         <member name="F:ServiceStack.Text.StreamExtensions.DefaultBufferSize">
             <summary>
             @jonskeet: Collection of utility methods which operate on streams.
