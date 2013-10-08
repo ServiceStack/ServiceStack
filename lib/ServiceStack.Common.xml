@@ -26,26 +26,6 @@
             </summary>        
             <returns>RsaKeyPair</returns>
         </member>
-        <member name="M:ServiceStack.EnumerableExtensions.Each``1(System.Collections.Generic.IEnumerable{``0},System.Action{``0})">
-            <summary>
-            Alias for SafeForEach
-            </summary>
-        </member>
-        <member name="M:ServiceStack.EnumerableExtensions.Each``1(System.Collections.Generic.IEnumerable{``0},System.Action{System.Int32,``0})">
-            <summary>
-            Alias for SafeForEach
-            </summary>
-        </member>
-        <member name="M:ServiceStack.EnumerableExtensions.Map``2(System.Collections.Generic.IEnumerable{``1},System.Func{``1,``0})">
-            <summary>
-            Alias for SafeConvertAll
-            </summary>
-        </member>
-        <member name="M:ServiceStack.EnumerableExtensions.Map``1(System.Collections.IEnumerable,System.Func{System.Object,``0})">
-            <summary>
-            Alias for SafeConvertAll
-            </summary>
-        </member>
         <member name="M:ServiceStack.EnumExtensions.ToDescription(System.Enum)">
             <summary>
             Gets the textual description of the enum if it has one. e.g.
