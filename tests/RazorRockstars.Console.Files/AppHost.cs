@@ -24,7 +24,7 @@ namespace RazorRockstars.Console.Files
                 Plugins.Add(new RazorFormat());
 
             container.Register<IDbConnectionFactory>(
-                new OrmLiteConnectionFactory(":memory:", false, SqliteDialect.Provider));
+                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
 
             using (var db = container.Resolve<IDbConnectionFactory>().OpenDbConnection())
             {
@@ -140,7 +140,7 @@ namespace RazorRockstars.Console.Files
 
             var response = new RockstarsResponse {
                 Aged = request.Age,
-                Total = Db.GetScalar<int>("select count(*) from Rockstar"),
+                Total = Db.Scalar<int>("select count(*) from Rockstar"),
                 Results = request.Id != default(int) ?
                     Db.Select<Rockstar>(q => q.Id == request.Id)
                       : request.Age.HasValue ?

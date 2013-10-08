@@ -160,7 +160,7 @@ namespace RazorRockstars.Console.Files
             return new ReqstarsResponse //matches ReqstarsResponse.cshtml razor view
             {
                 Aged = request.Age,
-                Total = Db.GetScalar<int>("select count(*) from Reqstar"),
+                Total = Db.Scalar<int>("select count(*) from Reqstar"),
                 Results = request.Age.HasValue
                     ? Db.Select<Reqstar>(q => q.Age == request.Age.Value)
                     : Db.Select<Reqstar>()
@@ -181,7 +181,7 @@ namespace RazorRockstars.Console.Files
             return base.RequestContext.ToOptimizedResultUsingCache(base.Cache, cacheKey, () => 
                 new ReqstarsResponse {
                     Aged = request.Aged,
-                    Total = Db.GetScalar<int>("select count(*) from Reqstar"),
+                    Total = Db.Scalar<int>("select count(*) from Reqstar"),
                     Results = Db.Select<Reqstar>(q => q.Age == request.Aged)
                 });
         }
@@ -189,7 +189,7 @@ namespace RazorRockstars.Console.Files
         [ClientCanSwapTemplates] //allow action-level filters
         public Reqstar Get(GetReqstar request)
         {
-            return Db.Id<Reqstar>(request.Id);
+            return Db.SingleById<Reqstar>(request.Id);
         }
 
         public object Post(Reqstar request)
@@ -204,7 +204,7 @@ namespace RazorRockstars.Console.Files
         public Reqstar Patch(UpdateReqstar request)
         {
             Db.Update<Reqstar>(request, x => x.Id == request.Id);
-            return Db.Id<Reqstar>(request.Id);
+            return Db.SingleById<Reqstar>(request.Id);
         }
 
         public void Any(DeleteReqstar request)

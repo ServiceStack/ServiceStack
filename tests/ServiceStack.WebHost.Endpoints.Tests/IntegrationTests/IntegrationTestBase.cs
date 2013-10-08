@@ -47,10 +47,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
                 //var appConfig = container.Resolve<ExampleConfig>();
 
                 container.Register<IDbConnectionFactory>(c =>
-                     new OrmLiteConnectionFactory(
-                        ":memory:",			//Use an in-memory database instead
-                        false,				//keep the same in-memory db connection open
-                        SqliteOrmLiteDialectProvider.Instance));
+                     new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
 
                 Routes.Add<Movies>("/custom-movies", "GET")
                       .Add<Movies>("/custom-movies/genres/{Genre}")

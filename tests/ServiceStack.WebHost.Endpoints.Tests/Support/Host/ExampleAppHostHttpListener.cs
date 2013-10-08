@@ -150,7 +150,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		    using (var db = DbFactory.Open())
 		    {
 		        return new MovieResponse {
-		            Movie = db.GetById<Movie>(movie.Id)
+		            Movie = db.SingleById<Movie>(movie.Id)
 		        };
 		    }
 		}
@@ -162,19 +162,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		{
 		    using (var db = DbFactory.Open())
 		    {
-                db.Insert(movie);
-                var newMovieId = db.GetLastInsertId();
+                db.Save(movie);
 
                 var newMovie = new MovieResponse
                 {
-                    Movie = db.GetById<Movie>(newMovieId)
+                    Movie = db.SingleById<Movie>(movie.Id)
                 };
 
                 return new HttpResult(newMovie)
                 {
                     StatusCode = HttpStatusCode.Created,
                     Headers = {
-					    { HttpHeaders.Location, this.RequestContext.AbsoluteUri.WithTrailingSlash() + newMovieId }
+					    { HttpHeaders.Location, this.RequestContext.AbsoluteUri.WithTrailingSlash() + movie.Id }
 				    }
                 };
             }
@@ -464,9 +463,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 			//var appConfig = container.Resolve<ExampleConfig>();
 
 			container.Register<IDbConnectionFactory>(c =>
-				new OrmLiteConnectionFactory(
-					":memory:", false,
-					SqliteOrmLiteDialectProvider.Instance));
+				new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
 
 			var resetMovies = container.Resolve<ResetMoviesService>();
 			resetMovies.Post(null);
@@ -531,9 +528,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
             //var appConfig = container.Resolve<ExampleConfig>();
 
             container.Register<IDbConnectionFactory>(c =>
-                new OrmLiteConnectionFactory(
-                    ":memory:", false,
-                    SqliteOrmLiteDialectProvider.Instance));
+                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
 
             var resetMovies = container.Resolve<ResetMoviesService>();
             resetMovies.Post(null);

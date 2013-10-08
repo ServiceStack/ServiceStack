@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
-using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.Text;
-using ServiceStack.Web;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
@@ -33,9 +31,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             base.OnBeforeEachTest();
 
             this.Container.Register<IDbConnectionFactory>(c =>
-                new OrmLiteConnectionFactory(
-                    ":memory:", false,
-                    SqliteOrmLiteDialectProvider.Instance));
+                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
 
             this.DbFactory = this.Container.Resolve<IDbConnectionFactory>();
 
@@ -50,12 +46,12 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
             using (var db = DbFactory.Open())
             {
-                var lastInsertId = (int)db.GetLastInsertId();
+                var lastInsertId = (int)db.LastInsertId();
 
                 var patchMovie = new Movie { Id = lastInsertId, Title = "PATCHED " + NewMovie.Title };
                 ExecutePath(HttpMethods.Patch, "/movies", null, null, patchMovie);
 
-                var movie = db.GetById<Movie>(lastInsertId);
+                var movie = db.SingleById<Movie>(lastInsertId);
                 Assert.That(movie, Is.Not.Null);
                 Assert.That(movie.Title, Is.EqualTo(patchMovie.Title));
             }
@@ -70,8 +66,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             response.PrintDump();
             using (var db = DbFactory.Open())
             {
-                var lastInsertId = db.GetLastInsertId();
-                var createdMovie = db.GetById<Movie>(lastInsertId);
+                var lastInsertId = db.LastInsertId();
+                var createdMovie = db.SingleById<Movie>(lastInsertId);
                 Assert.That(createdMovie, Is.Not.Null);
                 Assert.That(createdMovie, Is.EqualTo(NewMovie));
             };
@@ -84,8 +80,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             response.PrintDump();
             using (var db = DbFactory.Open())
             {
-                var lastInsertId = db.GetLastInsertId();
-                var createdMovie = db.GetById<Movie>(lastInsertId);
+                var lastInsertId = db.LastInsertId();
+                var createdMovie = db.SingleById<Movie>(lastInsertId);
                 Assert.That(createdMovie, Is.Not.Null);
                 Assert.That(createdMovie, Is.EqualTo(NewMovie));
             };

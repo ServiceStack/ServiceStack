@@ -85,9 +85,9 @@ namespace ServiceStack.Auth
                 newUser.CreatedDate = DateTime.UtcNow;
                 newUser.ModifiedDate = newUser.CreatedDate;
 
-                db.Insert(newUser);
+                db.Save(newUser);
 
-                newUser = db.GetById<TUserAuth>(db.GetLastInsertId());
+                newUser = db.SingleById<TUserAuth>(newUser.Id);
                 return newUser;
             }
         }
@@ -218,7 +218,7 @@ namespace ServiceStack.Auth
         public TUserAuth GetUserAuth(string userAuthId)
         {
             using (var db = dbFactory.Open()) {
-                return db.GetByIdOrDefault<TUserAuth>(userAuthId);
+                return db.SingleById<TUserAuth>(userAuthId);
             }
         }
 
@@ -226,7 +226,7 @@ namespace ServiceStack.Auth
         {
             using (var db = dbFactory.Open()) {
                 var userAuth = !authSession.UserAuthId.IsNullOrEmpty()
-                    ? db.GetByIdOrDefault<TUserAuth>(authSession.UserAuthId)
+                    ? db.SingleById<TUserAuth>(authSession.UserAuthId)
                     : authSession.ConvertTo<TUserAuth>();
 
                 if (userAuth.Id == default(int) && !authSession.UserAuthId.IsNullOrEmpty()) {
@@ -287,7 +287,7 @@ namespace ServiceStack.Auth
                         q.Provider == tokens.Provider && q.UserId == tokens.UserId).FirstOrDefault();
 
                 if (oAuthProvider != null) {
-                    var userAuth = db.GetByIdOrDefault<TUserAuth>(oAuthProvider.UserAuthId);
+                    var userAuth = db.SingleById<TUserAuth>(oAuthProvider.UserAuthId);
                     return userAuth;
                 }
                 return null;
@@ -316,9 +316,7 @@ namespace ServiceStack.Auth
 
                 db.Save(userAuth);
 
-                oAuthProvider.UserAuthId = userAuth.Id != default(int)
-                    ? userAuth.Id
-                    : (int) db.GetLastInsertId();
+                oAuthProvider.UserAuthId = userAuth.Id;
 
                 if (oAuthProvider.CreatedDate == default(DateTime)) {
                     oAuthProvider.CreatedDate = userAuth.ModifiedDate;

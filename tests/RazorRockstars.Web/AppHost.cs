@@ -24,7 +24,7 @@ namespace RazorRockstars.Web
             Plugins.Add(new MsgPackFormat());
 
             container.Register<IDbConnectionFactory>(
-                new OrmLiteConnectionFactory(":memory:", false, SqliteDialect.Provider));
+                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
 
             InitData(container);
 
@@ -138,7 +138,7 @@ namespace RazorRockstars.Web
             var response = new RockstarsResponse
             {
                 Aged = request.Age,
-                Total = Db.GetScalar<int>("select count(*) from Rockstar"),
+                Total = Db.Scalar<int>("select count(*) from Rockstar"),
                 Results = request.Id != default(int) ?
                     Db.Select<Rockstar>(q => q.Id == request.Id)
                       : request.Age.HasValue ?

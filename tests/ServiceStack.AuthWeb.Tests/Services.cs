@@ -43,7 +43,7 @@ namespace ServiceStack.AuthWeb.Tests
             {
                 Id = userAuthId,
                 Session = session,
-                UserAuth = Db.QueryById<UserAuth>(userAuthId),
+                UserAuth = Db.SingleById<UserAuth>(userAuthId),
                 UserAuthProviders = Db.Select<UserAuthProvider>(x => x.UserAuthId == userAuthId),
             };
 
@@ -145,7 +145,7 @@ namespace ServiceStack.AuthWeb.Tests
             return new RockstarsResponse
             {
                 Aged = request.Age,
-                Total = Db.GetScalar<int>("select count(*) from Rockstar"),
+                Total = Db.Scalar<int>("select count(*) from Rockstar"),
                 Results = request.Id != default(int) ?
                     Db.Select<Rockstar>(q => q.Id == request.Id)
                       : request.Age.HasValue ?

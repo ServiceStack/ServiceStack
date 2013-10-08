@@ -81,7 +81,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public Rockstar GetByLastName(string lastName)
         {
-            return Db.FirstOrDefault<Rockstar>(q => q.LastName == lastName);
+            return Db.Single<Rockstar>(q => q.LastName == lastName);
         }
 
         readonly HashSet<string> fallenLegends = new HashSet<string> {
@@ -134,7 +134,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var container = appHost.Container;
 
             container.Register<IDbConnectionFactory>(
-                new OrmLiteConnectionFactory(":memory:", false, SqliteDialect.Provider));
+                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
 
             container.RegisterAutoWiredAs<RockstarRepository, IRockstarRepository>();
 

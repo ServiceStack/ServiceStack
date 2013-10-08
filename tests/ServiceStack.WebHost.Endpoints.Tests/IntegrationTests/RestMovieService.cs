@@ -27,7 +27,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
             {
                 if (request.Id != null)
                 {
-                    var movie = db.GetByIdOrDefault<RestMovie>(request.Id);
+                    var movie = db.SingleById<RestMovie>(request.Id);
                     if (movie != null)
                     {
                         response.Movies.Add(movie);

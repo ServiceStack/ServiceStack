@@ -5,7 +5,6 @@ using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.SqlServer;
-using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.Redis;
 
 namespace ServiceStack.Common.Tests.OAuth
@@ -16,8 +15,7 @@ namespace ServiceStack.Common.Tests.OAuth
         private OAuthUserSessionTests tests;
         private readonly List<IUserAuthRepository<UserAuth>> userAuthRepositorys = new List<IUserAuthRepository<UserAuth>>();
 
-        OrmLiteConnectionFactory dbFactory = new OrmLiteConnectionFactory(
-            ":memory:", false, SqliteOrmLiteDialectProvider.Instance);
+        readonly OrmLiteConnectionFactory dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
 
         [SetUp]
         public void SetUp()

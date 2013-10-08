@@ -89,7 +89,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public object Get(Movie movie)
 		{
 			return new MovieResponse {
-				Movie = Db.GetById<Movie>(movie.Id)
+				Movie = Db.SingleById<Movie>(movie.Id)
 			};
 		}
 
@@ -98,16 +98,15 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		/// </summary>
 		public object Post(Movie movie)
 		{
-            Db.Insert(movie);
-			var newMovieId = Db.GetLastInsertId();
+            Db.Save(movie);
 
 			var newMovie = new MovieResponse {
-				Movie = Db.GetById<Movie>(newMovieId)
+				Movie = Db.SingleById<Movie>(movie.Id)
 			};
 			return new HttpResult(newMovie) {
 				StatusCode = HttpStatusCode.Created,
 				Headers = {
-					{ HttpHeaders.Location, this.RequestContext.AbsoluteUri.WithTrailingSlash() + newMovieId }
+					{ HttpHeaders.Location, this.RequestContext.AbsoluteUri.WithTrailingSlash() + movie.Id }
 				}
 			};
 		}
@@ -135,7 +134,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		/// </summary>
 		public object Patch(Movie movie)
 		{
-            var existingMovie = Db.GetById<Movie>(movie.Id);
+            var existingMovie = Db.SingleById<Movie>(movie.Id);
             if (movie.Title != null)
                 existingMovie.Title = movie.Title;
             Db.Save(existingMovie);

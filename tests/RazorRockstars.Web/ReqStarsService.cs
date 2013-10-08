@@ -177,7 +177,7 @@ namespace RazorRockstars.Web
             return new ReqstarsResponse //matches ReqstarsResponse.cshtml razor view
             {
                 Aged = request.Age,
-                Total = Db.GetScalar<int>("select count(*) from Reqstar"),
+                Total = Db.Scalar<int>("select count(*) from Reqstar"),
                 Results = request.Age.HasValue
                     ? Db.Select<Reqstar>(q => q.Age == request.Age.Value)
                     : Db.Select<Reqstar>()
@@ -192,7 +192,7 @@ namespace RazorRockstars.Web
         [ClientCanSwapTemplates] //allow action-level filters
         public object Get(GetReqstar request)
         {
-            return Db.Id<Reqstar>(request.Id);
+            return Db.SingleById<Reqstar>(request.Id);
         }
 
         public object Post(Reqstar request)
@@ -207,7 +207,7 @@ namespace RazorRockstars.Web
         public object Patch(UpdateReqstar request)
         {
             Db.Update<Reqstar>(request, x => x.Id == request.Id);
-            return Db.Id<Reqstar>(request.Id);
+            return Db.SingleById<Reqstar>(request.Id);
         }
 
         public void Any(DeleteReqstar request)

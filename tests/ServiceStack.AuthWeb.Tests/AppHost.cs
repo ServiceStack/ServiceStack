@@ -36,11 +36,9 @@ namespace ServiceStack.AuthWeb.Tests
             container.Register(new DataSource());
 
             container.Register<IDbConnectionFactory>(
-                new OrmLiteConnectionFactory(":memory:", false, //ConnectionString in Web.Config
-                    SqliteDialect.Provider)
-                    {
-                        ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
-                    });
+                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider) {
+                    ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
+                });
 
             using (var db = container.Resolve<IDbConnectionFactory>().Open())
             {

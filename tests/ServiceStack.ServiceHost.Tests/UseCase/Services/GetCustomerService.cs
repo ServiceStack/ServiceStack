@@ -30,7 +30,7 @@ namespace ServiceStack.ServiceHost.Tests.UseCase.Services
 			}
 
 			var response = new GetCustomerResponse {
-				Customer = db.GetById<Customer>(request.CustomerId)
+				Customer = db.SingleById<Customer>(request.CustomerId)
 			};
 
 			if (config.UseCache) 

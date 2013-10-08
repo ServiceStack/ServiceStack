@@ -10,10 +10,10 @@ using ServiceStack.Text;
 
 namespace ServiceStack.RazorHostTests
 {
-    [Route( "/rockstars" )]
-    [Route( "/rockstars/aged/{Age}" )]
-    [Route( "/rockstars/delete/{Delete}" )]
-    [Route( "/rockstars/{Id}" )]
+    [Route("/rockstars")]
+    [Route("/rockstars/aged/{Age}")]
+    [Route("/rockstars/delete/{Delete}")]
+    [Route("/rockstars/{Id}")]
     public class Rockstars
     {
         public int Id { get; set; }
@@ -55,7 +55,7 @@ namespace ServiceStack.RazorHostTests
             return new RockstarsResponse
             {
                 Aged = request.Age,
-                Total = Db.GetScalar<int>("select count(*) from Rockstar"),
+                Total = Db.Scalar<int>("select count(*) from Rockstar"),
                 Results = request.Id != default(int) ?
                     Db.Select<Rockstar>(q => q.Id == request.Id)
                       : request.Age.HasValue ?
@@ -66,15 +66,15 @@ namespace ServiceStack.RazorHostTests
 
         public object Post(Rockstars request)
         {
-            using( var db = DbFactory.OpenDbConnection() )
+            using (var db = DbFactory.OpenDbConnection())
             {
-                db.Insert( request.ConvertTo<Rockstar>() );
-                return Get( new Rockstars() );
+                db.Insert(request.ConvertTo<Rockstar>());
+                return Get(new Rockstars());
             }
         }
     }
 
-    [Route( "/viewmodel/{Id}" )]
+    [Route("/viewmodel/{Id}")]
     public class ViewThatUsesLayoutAndModel
     {
         public string Id { get; set; }
@@ -121,7 +121,7 @@ namespace ServiceStack.RazorHostTests
         public int? Age { get; set; }
 
         public Rockstar() { }
-        public Rockstar( int id, string firstName, string lastName, int age )
+        public Rockstar(int id, string firstName, string lastName, int age)
         {
             Id = id;
             FirstName = firstName;
@@ -130,8 +130,6 @@ namespace ServiceStack.RazorHostTests
         }
     }
 
-
-
     public class AppHost : AppHostBase
     {
         public AppHost()
@@ -139,15 +137,14 @@ namespace ServiceStack.RazorHostTests
 
         public override void Configure(Container container)
         {
-            Plugins.Add( new RazorFormat()
-                {
-                    //TemplateProvider = {CompileInParallelWithNoOfThreads = 0}
-                } );
+            Plugins.Add(new RazorFormat {
+                //TemplateProvider = {CompileInParallelWithNoOfThreads = 0}
+            });
 
             container.Register(new DataSource());
 
             container.Register<IDbConnectionFactory>(
-                new OrmLiteConnectionFactory(":memory:", false, SqliteOrmLiteDialectProvider.Instance));
+                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
 
             using (var db = container.Resolve<IDbConnectionFactory>().OpenDbConnection())
             {

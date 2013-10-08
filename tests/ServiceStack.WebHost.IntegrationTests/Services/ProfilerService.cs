@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.Data;
 using ServiceStack.MiniProfiler;
 using ServiceStack.OrmLite;
@@ -27,12 +28,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 				{
 					using (profiler.Step("N + 1 query"))
 					{
-						var results = new List<Movie>();
-						foreach (var movie in db.Select<Movie>())
-						{
-							results.Add(db.QueryById<Movie>(movie.Id));
-						}
-						return results;
+					    return db.Select<Movie>().Select(movie => db.SingleById<Movie>(movie.Id)).ToList();
 					}
 				}
 
