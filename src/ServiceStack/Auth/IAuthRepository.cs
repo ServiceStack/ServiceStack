@@ -22,7 +22,7 @@ namespace ServiceStack.Auth
 
 
     public interface IUserAuthRepository<TUserAuth> : IAuthRepository
-        where TUserAuth : class, IUserAuth, new()
+        where TUserAuth : class, IUserAuth
     {
         TUserAuth CreateUserAuth(TUserAuth newUser, string password);
         TUserAuth UpdateUserAuth(TUserAuth existingUser, TUserAuth newUser, string password);
