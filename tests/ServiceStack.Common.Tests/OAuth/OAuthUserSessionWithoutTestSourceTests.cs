@@ -13,7 +13,7 @@ namespace ServiceStack.Common.Tests.OAuth
     public class OAuthUserSessionWithoutTestSourceTests
     {
         private OAuthUserSessionTests tests;
-        private readonly List<IUserAuthRepository<UserAuth>> userAuthRepositorys = new List<IUserAuthRepository<UserAuth>>();
+        private readonly List<IUserAuthRepository> userAuthRepositorys = new List<IUserAuthRepository>();
 
         readonly OrmLiteConnectionFactory dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
 
@@ -45,7 +45,7 @@ namespace ServiceStack.Common.Tests.OAuth
                     using (var db = dbFactory.Open())
                     {
 						db.DropAndCreateTable<UserAuth>();
-						db.DropAndCreateTable<UserAuthProvider>();
+						db.DropAndCreateTable<UserAuthDetails>();
 					}
 					sqliteInMemoryRepo.Clear();
 					userAuthRepositorys.Add(sqliteInMemoryRepo);

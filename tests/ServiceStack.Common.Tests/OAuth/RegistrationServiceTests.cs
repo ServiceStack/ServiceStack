@@ -59,7 +59,7 @@ namespace ServiceStack.Common.Tests.OAuth
             var service = new RegisterService
             {
                 RegistrationValidator = validator ?? new RegistrationValidator { UserAuthRepo = userAuthRepository },
-                UserAuthRepo = userAuthRepository,
+                AuthRepo = userAuthRepository,
                 RequestContext = requestContext,
             };
 
@@ -148,7 +148,7 @@ namespace ServiceStack.Common.Tests.OAuth
             var service = new RegisterService
             {
                 RegistrationValidator = new RegistrationValidator { UserAuthRepo = mock.Object },
-                UserAuthRepo = mock.Object,
+                AuthRepo = mock.Object,
             };
 
             var request = new Register

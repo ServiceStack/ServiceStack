@@ -8,7 +8,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Auth
 {
-    public class RedisAuthRepository : RedisAuthRepository<UserAuth, UserAuthProvider>, IUserAuthRepository
+    public class RedisAuthRepository : RedisAuthRepository<UserAuth, UserAuthDetails>, IUserAuthRepository
     {
         public RedisAuthRepository(IRedisClientsManager factory) : base(factory) { }
 
@@ -17,7 +17,7 @@ namespace ServiceStack.Auth
 
     public class RedisAuthRepository<TUserAuth, TUserAuthProvider> : IUserAuthRepository<TUserAuth>, IClearable
         where TUserAuth : class, IUserAuth
-        where TUserAuthProvider : class, IUserAuthProvider
+        where TUserAuthProvider : class, IUserAuthDetails
     {
         //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
         public Regex ValidUserNameRegEx = new Regex(@"^(?=.{3,15}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
@@ -314,7 +314,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public List<IUserAuthProvider> GetUserOAuthProviders(string userAuthId)
+        public List<IUserAuthDetails> GetUserOAuthProviders(string userAuthId)
         {
             userAuthId.ThrowIfNullOrEmpty("userAuthId");
 
@@ -322,7 +322,7 @@ namespace ServiceStack.Auth
             {
                 var idx = IndexUserAuthAndProviderIdsSet(long.Parse(userAuthId));
                 var authProiverIds = redis.GetAllItemsFromSet(idx);
-                return redis.As<TUserAuthProvider>().GetByIds(authProiverIds).OrderBy(x => x.ModifiedDate).Cast<IUserAuthProvider>().ToList();
+                return redis.As<TUserAuthProvider>().GetByIds(authProiverIds).OrderBy(x => x.ModifiedDate).Cast<IUserAuthDetails>().ToList();
             }
         }
 
@@ -400,8 +400,8 @@ namespace ServiceStack.Auth
                     redis.SetEntryInHash(idx, tokens.UserId, authProvider.Id.ToString(CultureInfo.InvariantCulture));
                 }
 
-                authProvider.PopulateMissing(tokens);
-                userAuth.PopulateMissing(authProvider);
+                authProvider.PopulateMissing(tokens, overwriteReserved:true);
+                userAuth.PopulateMissingExtended(authProvider);
 
                 userAuth.ModifiedDate = DateTime.UtcNow;
                 if (authProvider.CreatedDate == default(DateTime))

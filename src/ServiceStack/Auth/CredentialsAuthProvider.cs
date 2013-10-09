@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using ServiceStack.Configuration;
@@ -36,14 +37,13 @@ namespace ServiceStack.Auth
         public virtual bool TryAuthenticate(IServiceBase authService, string userName, string password)
         {
             var authRepo = authService.TryResolve<IAuthRepository>();
-            if (authRepo == null) {
-                Log.WarnFormat("Tried to authenticate without a registered IUserAuthRepository");
-                return false;
-            }
+            if (authRepo == null)
+                throw new Exception("Authenticating with CredentialsAuthProvider requires a registered IUserAuthRepository");
 
             var session = authService.GetSession();
             IUserAuth userAuth;
-            if (authRepo.TryAuthenticate(userName, password, out userAuth)) {
+            if (authRepo.TryAuthenticate(userName, password, out userAuth)) 
+            {
                 session.PopulateWith(userAuth);
                 session.IsAuthenticated = true;
                 session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
@@ -52,6 +52,7 @@ namespace ServiceStack.Auth
 
                 return true;
             }
+
             return false;
         }
 
@@ -79,13 +80,16 @@ namespace ServiceStack.Auth
 
         protected object Authenticate(IServiceBase authService, IAuthSession session, string userName, string password, string referrerUrl)
         {
-            if (!LoginMatchesSession(session, userName)) {
+            if (!LoginMatchesSession(session, userName)) 
+            {
                 authService.RemoveSession();
                 session = authService.GetSession();
             }
 
-            if (TryAuthenticate(authService, userName, password)) {
-                if (session.UserAuthName == null) {
+            if (TryAuthenticate(authService, userName, password)) 
+            {
+                if (session.UserAuthName == null) 
+                {
                     session.UserAuthName = userName;
                 }
 

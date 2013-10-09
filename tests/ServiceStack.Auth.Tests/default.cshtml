@@ -29,7 +29,7 @@
     {
         var userAuthId = session.UserAuthId.ToInt();
         var userAuth = Db.QueryById<UserAuth>(userAuthId);
-        var authProviders = Db.Select<UserAuthProvider>(x => x.UserAuthId == userAuthId);
+        var authProviders = Db.Select<UserAuthDetails>(x => x.UserAuthId == userAuthId);
 
         <h2 style="color:green">Authenticated!</h2>
         
@@ -95,7 +95,7 @@
 
 @{
     var allUserAuths = Db.Select<UserAuth>();
-    var allAuthProviders = Db.Select<UserAuthProvider>();
+    var allAuthProviders = Db.Select<UserAuthDetails>();
         
     <script>
         $id("allUserAuths").innerHTML = jsonviewer(@allUserAuths.AsRawJson());

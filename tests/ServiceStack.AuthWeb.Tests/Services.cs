@@ -22,7 +22,7 @@ namespace ServiceStack.AuthWeb.Tests
 
         public UserAuth UserAuth { get; set; }
         public AuthUserSession Session { get; set; }
-        public List<UserAuthProvider> UserAuthProviders { get; set; }
+        public List<UserAuthDetails> UserAuthProviders { get; set; }
     }
 
     public class UserProfileResponse
@@ -44,7 +44,7 @@ namespace ServiceStack.AuthWeb.Tests
                 Id = userAuthId,
                 Session = session,
                 UserAuth = Db.SingleById<UserAuth>(userAuthId),
-                UserAuthProviders = Db.Select<UserAuthProvider>(x => x.UserAuthId == userAuthId),
+                UserAuthProviders = Db.Select<UserAuthDetails>(x => x.UserAuthId == userAuthId),
             };
 
             return userProfile;
@@ -60,7 +60,7 @@ namespace ServiceStack.AuthWeb.Tests
             this.Cache.Remove(SessionFeature.GetSessionKey(Request));
 
             Db.DeleteAll<UserAuth>();
-            Db.DeleteAll<UserAuthProvider>();
+            Db.DeleteAll<UserAuthDetails>();
 
             var referrer = Request.UrlReferrer != null
                 ? Request.UrlReferrer.AbsoluteUri

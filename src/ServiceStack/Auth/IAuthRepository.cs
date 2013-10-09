@@ -6,7 +6,7 @@ namespace ServiceStack.Auth
     {
         void LoadUserAuth(IAuthSession session, IAuthTokens tokens);
         void SaveUserAuth(IAuthSession authSession);
-        List<IUserAuthProvider> GetUserOAuthProviders(string userAuthId);
+        List<IUserAuthDetails> GetUserOAuthProviders(string userAuthId);
         string CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens);
 
         IUserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens);
@@ -16,10 +16,7 @@ namespace ServiceStack.Auth
         bool TryAuthenticate(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, out IUserAuth userAuth);
     }
 
-
-    public interface IUserAuthRepository : IUserAuthRepository<UserAuth>
-    {}
-
+    public interface IUserAuthRepository : IUserAuthRepository<UserAuth> {}
 
     public interface IUserAuthRepository<TUserAuth> : IAuthRepository
         where TUserAuth : class, IUserAuth

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ServiceStack.Auth
 {
-    public interface IAuthTokens : IUserAuthDetails
+    public interface IAuthTokens : IUserAuthDetailsExtended
     {
         string Provider { get; set; }
         string UserId { get; set; }

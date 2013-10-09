@@ -10,7 +10,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Auth
 {
-    public class OrmLiteAuthRepository : OrmLiteAuthRepository<UserAuth, UserAuthProvider>, IUserAuthRepository
+    public class OrmLiteAuthRepository : OrmLiteAuthRepository<UserAuth, UserAuthDetails>, IUserAuthRepository
     {
         public OrmLiteAuthRepository(IDbConnectionFactory dbFactory) : base(dbFactory) { }
 
@@ -19,7 +19,7 @@ namespace ServiceStack.Auth
 
     public class OrmLiteAuthRepository<TUserAuth, TUserAuthProvider> : IUserAuthRepository<TUserAuth>, IClearable
         where TUserAuth : class, IUserAuth
-        where TUserAuthProvider : class, IUserAuthProvider
+        where TUserAuthProvider : class, IUserAuthDetails
     {
         //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
         public Regex ValidUserNameRegEx = new Regex(@"^(?=.{3,15}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
@@ -28,7 +28,7 @@ namespace ServiceStack.Auth
         private readonly IHashProvider passwordHasher;
 
         public OrmLiteAuthRepository(IDbConnectionFactory dbFactory)
-            : this(dbFactory, new SaltedHash()) {}
+            : this(dbFactory, new SaltedHash()) { }
 
         public OrmLiteAuthRepository(IDbConnectionFactory dbFactory, IHashProvider passwordHasher)
         {
@@ -279,12 +279,12 @@ namespace ServiceStack.Auth
             }
         }
 
-        public List<IUserAuthProvider> GetUserOAuthProviders(string userAuthId)
+        public List<IUserAuthDetails> GetUserOAuthProviders(string userAuthId)
         {
             var id = int.Parse(userAuthId);
             using (var db = dbFactory.Open())
             {
-                return db.Select<TUserAuthProvider>(q => q.UserAuthId == id).OrderBy(x => x.ModifiedDate).Cast<IUserAuthProvider>().ToList();
+                return db.Select<TUserAuthProvider>(q => q.UserAuthId == id).OrderBy(x => x.ModifiedDate).Cast<IUserAuthDetails>().ToList();
             }
         }
 
@@ -343,8 +343,8 @@ namespace ServiceStack.Auth
                     oAuthProvider.UserId = tokens.UserId;
                 }
 
-                oAuthProvider.PopulateMissing(tokens);
-                userAuth.PopulateMissing(oAuthProvider);
+                oAuthProvider.PopulateMissing(tokens, overwriteReserved:true);
+                userAuth.PopulateMissingExtended(oAuthProvider);
 
                 userAuth.ModifiedDate = DateTime.UtcNow;
                 if (userAuth.CreatedDate == default(DateTime))

@@ -114,7 +114,7 @@ namespace ServiceStack.Common.Tests.OAuth
 		};
 		protected Register RegisterDto;
 
-		protected void InitTest(IAuthRepository userAuthRepository)
+        protected void InitTest(IUserAuthRepository userAuthRepository)
 		{
 			((IClearable)userAuthRepository).Clear();
 
@@ -126,10 +126,11 @@ namespace ServiceStack.Common.Tests.OAuth
 				new BasicAuthProvider(),
 				new FacebookAuthProvider(appSettings),
 				new TwitterAuthProvider(appSettings)
-			}).Register(null);
+			})
+            .Register(null);
 
 			mockService = new Mock<IServiceBase>();
-			mockService.Expect(x => x.TryResolve<IAuthRepository>()).Returns(userAuthRepository);
+            mockService.Expect(x => x.TryResolve<IAuthRepository>()).Returns(userAuthRepository);
 			requestContext = new MockRequestContext();
 			mockService.Expect(x => x.RequestContext).Returns(requestContext);
 			service = mockService.Object;
@@ -145,7 +146,7 @@ namespace ServiceStack.Common.Tests.OAuth
 		}
 
 		public static RegisterService GetRegistrationService(
-            IUserAuthRepository<UserAuth> userAuthRepository,
+            IUserAuthRepository userAuthRepository,
 			AuthUserSession oAuthUserSession = null,
 			MockRequestContext requestContext = null)
 		{
@@ -162,7 +163,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			var mockAppHost = new BasicAppHost();
 
 		    requestContext.Container = mockAppHost.Container;
-			requestContext.Container.Register(userAuthRepository);
+            requestContext.Container.Register<IAuthRepository>(userAuthRepository);
 
 		    var authService = new AuthenticateService {
                 RequestContext = requestContext,
@@ -171,7 +172,7 @@ namespace ServiceStack.Common.Tests.OAuth
             mockAppHost.Register(authService);
 
 			var registrationService = new RegisterService {
-				UserAuthRepo = userAuthRepository,
+				AuthRepo = userAuthRepository,
 				RequestContext = requestContext,
 				RegistrationValidator =
 					new RegistrationValidator { UserAuthRepo = RegistrationServiceTests.GetStubRepo() },
