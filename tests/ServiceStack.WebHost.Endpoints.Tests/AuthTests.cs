@@ -7,6 +7,7 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
+using ServiceStack.Common;
 using ServiceStack.Common.Tests.ServiceClient.Web;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
@@ -262,7 +263,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class AuthTests
     {
-        private const string ListeningOn = "http://localhost:82/";
+        protected virtual string VirtualDirectory { get { return ""; } }
+        protected virtual string ListeningOn { get { return "http://localhost:82/"; } }
+        protected virtual string WebHostUrl { get { return "http://mydomain.com"; } }
 
         private const string UserName = "user";
         private const string Password = "p@55word";
@@ -270,21 +273,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public const string PasswordForSessionRedirect = "p@55word2";
         public const string SessionRedirectUrl = "specialLandingPage.html";
         public const string LoginUrl = "specialLoginPage.html";
-        public const string WebHostUrl = "http://mydomain.com";
         private const string EmailBasedUsername = "user@email.com";
         private const string PasswordForEmailBasedAccount = "p@55word3";
+
 
         public class AuthAppHostHttpListener
             : AppHostHttpListenerBase
         {
-            public AuthAppHostHttpListener()
-                : base("Validation Tests", typeof(CustomerService).Assembly) { }
+            private readonly string webHostUrl;
+
+            public AuthAppHostHttpListener(string webHostUrl)
+                : base("Validation Tests", typeof (CustomerService).Assembly)
+            {
+                this.webHostUrl = webHostUrl;
+            }
 
             private InMemoryAuthRepository userRep;
 
             public override void Configure(Container container)
             {
-                SetConfig(new EndpointHostConfig { WebHostUrl = WebHostUrl });
+                SetConfig(new EndpointHostConfig { WebHostUrl = webHostUrl });
 
                 Plugins.Add(new AuthFeature(() => new CustomUserSession(),
                     new IAuthProvider[] { //Www-Authenticate should contain basic auth, therefore register this provider first
@@ -329,7 +337,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [TestFixtureSetUp]
         public void OnTestFixtureSetUp()
         {
-            appHost = new AuthAppHostHttpListener();
+            appHost = new AuthAppHostHttpListener(WebHostUrl);
             appHost.Init();
             appHost.Start(ListeningOn);
         }
@@ -1009,5 +1017,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Is.EqualTo(1)
             );
         }
+    }
+
+    public class AuthTestsWithinVirtualDirectory : AuthTests
+    {
+        protected override string VirtualDirectory { get { return "somevirtualdirectory"; } }
+        protected override string ListeningOn { get { return "http://localhost:82/" + VirtualDirectory + "/"; } }
+        protected override string WebHostUrl { get { return "http://mydomain.com/" + VirtualDirectory; } }
     }
 }
