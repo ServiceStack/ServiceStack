@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using ServiceStack.Text;
-using ServiceStack.Common.Extensions;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
 
@@ -295,12 +294,25 @@ namespace ServiceStack.Api.Swagger
                 }
                 else if (propertyType.IsEnum)
                 {
-                    modelProp.Type = SwaggerType.String;
-                    modelProp.AllowableValues = new ParameterAllowableValues
+                    if (propertyType.IsNumericType())
                     {
-                        Values = Enum.GetNames(propertyType),
-                        ValueType = "LIST"
-                    };
+                        var underlyingType = Enum.GetUnderlyingType(propertyType);
+                        modelProp.Type = GetSwaggerTypeName(underlyingType);
+                        modelProp.AllowableValues = new ParameterAllowableValues
+                        {
+                            Values = GetNumericValues(propertyType, underlyingType).ToArray(),
+                            ValueType = "LIST"
+                        };  
+                    }
+                    else
+                    {
+                        modelProp.Type = SwaggerType.String;
+                        modelProp.AllowableValues = new ParameterAllowableValues
+                        {
+                            Values = Enum.GetNames(propertyType),
+                            ValueType = "LIST"
+                        };    
+                    }                    
                 }
                 else
                 {
@@ -320,6 +332,15 @@ namespace ServiceStack.Api.Swagger
 
                 model.Properties[GetModelPropertyName(prop, dataMemberAttribute)] = modelProp;
             }
+        }
+
+        private static IEnumerable<string> GetNumericValues(Type propertyType, Type underlyingType)
+        {
+            var values = Enum.GetValues(propertyType);
+            foreach (var value in values)
+            {
+                yield return string.Format("{0} ({1})", Convert.ChangeType(value, underlyingType), value);                
+            }            
         }
 
         private static string GetModelPropertyName(PropertyInfo prop, DataMemberAttribute dataMemberAttribute)
