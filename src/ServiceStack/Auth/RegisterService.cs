@@ -21,7 +21,8 @@ namespace ServiceStack.Auth
         {
             RuleSet(
                 ApplyTo.Post,
-                () => {
+                () =>
+                {
                     RuleFor(x => x.Password).NotEmpty();
                     RuleFor(x => x.UserName).NotEmpty().When(x => x.Email.IsNullOrEmpty());
                     RuleFor(x => x.Email).NotEmpty().EmailAddress().When(x => x.UserName.IsNullOrEmpty());
@@ -38,31 +39,41 @@ namespace ServiceStack.Auth
                 });
             RuleSet(
                 ApplyTo.Put,
-                () => {
+                () =>
+                {
                     RuleFor(x => x.UserName).NotEmpty();
                     RuleFor(x => x.Email).NotEmpty();
                 });
         }
     }
 
-    [DefaultRequest(typeof (Register))]
-    public class RegisterService : RegisterService<UserAuth> {}
+    [DefaultRequest(typeof(Register))]
+    public class RegisterService : RegisterService<UserAuth> { }
 
-    [DefaultRequest(typeof (Register))]
+    [DefaultRequest(typeof(Register))]
     public class RegisterService<TUserAuth> : Service
-        where TUserAuth : class, IUserAuth, new()
+        where TUserAuth : class, IUserAuth
     {
-        public IUserAuthRepository<TUserAuth> UserAuthRepo { get; set; }
+        public IAuthRepository AuthRepo { get; set; }
+        
+        public IUserAuthRepository<TUserAuth> GetUserAuthRepo()
+        {
+            var userAuthRepo = TryResolve<IUserAuthRepository<TUserAuth>>()
+                ?? (AuthRepo as IUserAuthRepository<TUserAuth>);
+
+            if (userAuthRepo == null)
+            {
+                throw new ConfigurationErrorsException(
+                    "Required dependency IAuthRepository or IUserAuthRepository<{0}> could not be found."
+                    .Fmt(typeof(TUserAuth).Name));
+            }
+
+            return userAuthRepo;
+        }
+
         public static ValidateFn ValidateFn { get; set; }
 
         public IValidator<Register> RegistrationValidator { get; set; }
-
-        private void AssertUserAuthRepo()
-        {
-            if (UserAuthRepo == null) {
-                throw new ConfigurationErrorsException("No IUserAuthRepository has been registered in your AppHost.");
-            }
-        }
 
         /// <summary>
         ///     Create new Registration
@@ -75,31 +86,34 @@ namespace ServiceStack.Auth
                 RegistrationValidator.ValidateAndThrow(request, ApplyTo.Post);
             }
 
-            AssertUserAuthRepo();
+            var userAuthRepo = GetUserAuthRepo();
 
-            if (ValidateFn != null) {
+            if (ValidateFn != null)
+            {
                 var validateResponse = ValidateFn(this, HttpMethods.Post, request);
-                if (validateResponse != null) {
+                if (validateResponse != null)
                     return validateResponse;
-                }
             }
 
             RegisterResponse response = null;
             var session = this.GetSession();
             var newUserAuth = ToUserAuth(request);
-            var existingUser = UserAuthRepo.GetUserAuth(session, null);
+            var existingUser = userAuthRepo.GetUserAuth(session, null);
 
             var registerNewUser = existingUser == null;
             var user = registerNewUser
-                ? UserAuthRepo.CreateUserAuth(newUserAuth, request.Password)
-                : UserAuthRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);
+                ? userAuthRepo.CreateUserAuth(newUserAuth, request.Password)
+                : userAuthRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);
 
-            if (registerNewUser) {
+            if (registerNewUser)
+            {
                 session.OnRegistered(this);
             }
 
-            if (request.AutoLogin.GetValueOrDefault()) {
-                using (var authService = base.ResolveService<AuthenticateService>()) {
+            if (request.AutoLogin.GetValueOrDefault())
+            {
+                using (var authService = base.ResolveService<AuthenticateService>())
+                {
                     var authResponse = authService.Post(
                         new Authenticate {
                             UserName = request.UserName ?? request.Email,
@@ -107,13 +121,14 @@ namespace ServiceStack.Auth
                             Continue = request.Continue
                         });
 
-                    if (authResponse is IHttpError) {
-                        throw (Exception) authResponse;
-                    }
+                    if (authResponse is IHttpError)
+                        throw (Exception)authResponse;
 
                     var typedResponse = authResponse as AuthenticateResponse;
-                    if (typedResponse != null) {
-                        response = new RegisterResponse {
+                    if (typedResponse != null)
+                    {
+                        response = new RegisterResponse
+                        {
                             SessionId = typedResponse.SessionId,
                             UserName = typedResponse.UserName,
                             ReferrerUrl = typedResponse.ReferrerUrl,
@@ -123,20 +138,23 @@ namespace ServiceStack.Auth
                 }
             }
 
-            if (response == null) {
-                response = new RegisterResponse {
+            if (response == null)
+            {
+                response = new RegisterResponse
+                {
                     UserId = user.Id.ToString(CultureInfo.InvariantCulture),
                     ReferrerUrl = request.Continue
                 };
             }
 
             var isHtml = RequestContext.ResponseContentType.MatchesContentType(MimeTypes.Html);
-            if (isHtml) {
-                if (string.IsNullOrEmpty(request.Continue)) {
+            if (isHtml)
+            {
+                if (string.IsNullOrEmpty(request.Continue))
                     return response;
-                }
 
-                return new HttpResult(response) {
+                return new HttpResult(response)
+                {
                     Location = request.Continue
                 };
             }
@@ -157,27 +175,30 @@ namespace ServiceStack.Auth
         public object UpdateUserAuth(Register request)
         {
             if (HostContext.GlobalRequestFilters == null
-                || !HostContext.GlobalRequestFilters.Contains(ValidationFilters.RequestFilter)) {
+                || !HostContext.GlobalRequestFilters.Contains(ValidationFilters.RequestFilter))
+            {
                 RegistrationValidator.ValidateAndThrow(request, ApplyTo.Put);
             }
 
-            if (ValidateFn != null) {
+            if (ValidateFn != null)
+            {
                 var response = ValidateFn(this, HttpMethods.Put, request);
-                if (response != null) {
+                if (response != null)
                     return response;
-                }
             }
 
+            var userAuthRepo = GetUserAuthRepo();
             var session = this.GetSession();
-            var existingUser = UserAuthRepo.GetUserAuth(session, null);
-            if (existingUser == null) {
+
+            var existingUser = userAuthRepo.GetUserAuth(session, null);
+            if (existingUser == null)
                 throw HttpError.NotFound("User does not exist");
-            }
 
             var newUserAuth = ToUserAuth(request);
-            UserAuthRepo.UpdateUserAuth(newUserAuth, existingUser, request.Password);
+            userAuthRepo.UpdateUserAuth(newUserAuth, existingUser, request.Password);
 
-            return new RegisterResponse {
+            return new RegisterResponse
+            {
                 UserId = existingUser.Id.ToString(CultureInfo.InvariantCulture),
             };
         }
