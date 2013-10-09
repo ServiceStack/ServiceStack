@@ -330,6 +330,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     Permissions = permissions
                 }, password);
             }
+
+            protected override void Dispose(bool disposing)
+            {
+                // Needed so that when the derived class tests run the same users can be added again.
+                userRep.Clear();
+                base.Dispose(disposing);
+            }
         }
 
         AuthAppHostHttpListener appHost;
