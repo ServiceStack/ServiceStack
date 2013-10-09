@@ -745,7 +745,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             client.Send<SecureResponse>(request);
 
             var locationUri = new Uri(lastResponseLocationHeader);
-            Assert.That(locationUri.AbsolutePath, Contains.Substring(LoginUrl));
+            var loginPath = "/".CombineWith(VirtualDirectory).CombineWith(LoginUrl);
+            Assert.That(locationUri.AbsolutePath, Is.EqualTo(loginPath).IgnoreCase);
         }
 
         [Test]
@@ -768,10 +769,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var redirectUri = new Uri(redirectQueryString);
 
             // Should contain the url attempted to access before the redirect to the login page.
-            Assert.That(redirectUri.AbsolutePath, Contains.Substring("/secured").IgnoreCase);
-            // Should also obey the WebHostUrl setting.
-            var schemeAndHost = redirectUri.Scheme + "://" + redirectUri.Authority;
-            Assert.That(schemeAndHost, Contains.Substring(WebHostUrl).IgnoreCase);
+            var securedPath = "/".CombineWith(VirtualDirectory).CombineWith("secured");
+            Assert.That(redirectUri.AbsolutePath, Is.EqualTo(securedPath).IgnoreCase);
+            // The url should also obey the WebHostUrl setting for the domain.
+            var redirectSchemeAndHost = redirectUri.Scheme + "://" + redirectUri.Authority;
+            var webHostUri = new Uri(WebHostUrl);
+            var webHostSchemeAndHost = webHostUri.Scheme + "://" + webHostUri.Authority;
+            Assert.That(redirectSchemeAndHost, Is.EqualTo(webHostSchemeAndHost).IgnoreCase);
         }
 
         [Test]
