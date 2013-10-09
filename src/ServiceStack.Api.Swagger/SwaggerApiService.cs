@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
-using ServiceStack.Common;
+using ServiceStack.Text;
 using ServiceStack.Common.Extensions;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
@@ -155,7 +154,7 @@ namespace ServiceStack.Api.Swagger
             if (basePath == null)
             {
                 basePath = EndpointHost.Config.UseHttpsLinks
-                    ? httpReq.GetParentPathUrl().ToHttps()
+                    ? Common.StringExtensions.ToHttps(httpReq.GetParentPathUrl())
                     : httpReq.GetParentPathUrl();
             }
 
@@ -250,8 +249,24 @@ namespace ServiceStack.Api.Swagger
             };
             models[model.Id] = model;
 
+            var hasDataContract = modelType.HasAttr<DataContractAttribute>();
+            
             foreach (var prop in modelType.GetProperties())
             {
+                DataMemberAttribute dataMemberAttribute = null;
+                if (hasDataContract)
+                {
+                    dataMemberAttribute = prop.GetDataMember();
+                    if (dataMemberAttribute == null)
+                    {
+                        continue;
+                    }
+                } 
+                else if (prop.IsDefined(typeof(IgnoreDataMemberAttribute), true))
+                {
+                    continue;
+                }
+
                 var allApiDocAttributes = prop
                     .GetCustomAttributes(typeof(ApiMemberAttribute), true)
                     .OfType<ApiMemberAttribute>()
@@ -262,7 +277,12 @@ namespace ServiceStack.Api.Swagger
                 if (allApiDocAttributes.Any() && apiDoc == null) continue;
 
                 var propertyType = prop.PropertyType;
-                var modelProp = new ModelProperty { Type = GetSwaggerTypeName(propertyType), Required = !IsNullable(propertyType) };
+                
+                var isRequired = dataMemberAttribute == null
+                    ? !IsNullable(propertyType)
+                    : dataMemberAttribute.IsRequired;
+
+                var modelProp = new ModelProperty { Type = GetSwaggerTypeName(propertyType), Required = isRequired };
 
                 if (IsListType(propertyType))
                 {
@@ -298,15 +318,17 @@ namespace ServiceStack.Api.Swagger
                 if (allowableValues != null)
                     modelProp.AllowableValues = GetAllowableValue(allowableValues);
 
-                model.Properties[GetModelPropertyName(prop)] = modelProp;
+                model.Properties[GetModelPropertyName(prop, dataMemberAttribute)] = modelProp;
             }
         }
 
-        private static string GetModelPropertyName(PropertyInfo prop)
+        private static string GetModelPropertyName(PropertyInfo prop, DataMemberAttribute dataMemberAttribute)
         {
+            var name = dataMemberAttribute == null ? prop.Name : (dataMemberAttribute.Name ?? prop.Name);
+
             return UseCamelCaseModelPropertyNames
-                ? (UseLowercaseUnderscoreModelPropertyNames ? prop.Name.ToLowercaseUnderscore() : prop.Name.ToCamelCase())
-                : prop.Name;
+                ? (UseLowercaseUnderscoreModelPropertyNames ? name.ToLowercaseUnderscore() : name.ToCamelCase())
+                : name;
         }
 
         private static string GetResponseClass(IRestPath restPath, IDictionary<string, SwaggerModel> models)
