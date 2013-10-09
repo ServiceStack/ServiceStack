@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.Linq;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
@@ -93,7 +94,7 @@ namespace ServiceStack.ServiceInterface
                 var url = req.ResolveAbsoluteUrl(htmlRedirect);
                 if (includeRedirectParam)
                 {
-                    var absoluteRequestPath = req.ResolveAbsoluteUrl("~" + req.RawUrl);
+                    var absoluteRequestPath = req.ResolveAbsoluteUrl("~" + req.PathInfo + ToQueryString(req.QueryString));
                     url = url.AddQueryParam("redirect", absoluteRequestPath);
                 }
 
@@ -143,6 +144,15 @@ namespace ServiceStack.ServiceInterface
                     UserName = digestAuth["username"]
                 });
             }
+        }
+
+        // Not sure if this should be made re-useable within SS.Text with the other NVC extension methods?
+        private static string ToQueryString(NameValueCollection queryStringCollection)
+        {
+            if (queryStringCollection == null || queryStringCollection.Count == 0)
+                return String.Empty;
+
+            return "?" + queryStringCollection.ToFormUrlEncoded();
         }
     }
 }
