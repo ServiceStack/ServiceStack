@@ -24,7 +24,7 @@ namespace ServiceStack
             }
 #endif
 
-            if (typeof(T).IsClass())
+            if (typeof(T).IsClass() || typeof(T).IsInterface)
             {
                 if (typeof(T).GetPropertyInfo(IdUtils.IdField) != null
                     && typeof(T).GetPropertyInfo(IdUtils.IdField).GetMethodInfo() != null)
