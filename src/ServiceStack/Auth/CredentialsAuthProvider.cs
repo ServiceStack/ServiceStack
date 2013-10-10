@@ -45,7 +45,7 @@ namespace ServiceStack.Auth
                 session.PopulateWith(userAuth);
                 session.IsAuthenticated = true;
                 session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
-                session.ProviderOAuthAccess = authRepo.GetUserOAuthProviders(session.UserAuthId)
+                session.ProviderOAuthAccess = authRepo.GetUserAuthDetails(session.UserAuthId)
                     .ConvertAll(x => (IAuthTokens) x);
 
                 return true;

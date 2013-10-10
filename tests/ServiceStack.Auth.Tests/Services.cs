@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
-using ServiceStack.Host;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
-using ServiceStack.Web;
 
 #if HTTP_LISTENER
 namespace ServiceStack.Auth.Tests
@@ -23,7 +21,7 @@ namespace ServiceStack.AuthWeb.Tests
 
         public UserAuth UserAuth { get; set; }
         public AuthUserSession Session { get; set; }
-        public List<UserAuthDetails> UserAuthProviders { get; set; }
+        public List<UserAuthDetails> UserAuthDetails { get; set; }
     }
 
     public class UserProfileResponse
@@ -45,7 +43,7 @@ namespace ServiceStack.AuthWeb.Tests
                 Id = userAuthId,
                 Session = session,
                 UserAuth = Db.SingleById<UserAuth>(userAuthId),
-                UserAuthProviders = Db.Select<UserAuthDetails>(x => x.UserAuthId == userAuthId),
+                UserAuthDetails = Db.Select<UserAuthDetails>(x => x.UserAuthId == userAuthId),
             };
 
             return userProfile;

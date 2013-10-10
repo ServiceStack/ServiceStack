@@ -199,7 +199,7 @@ namespace ServiceStack.Authentication.RavenDb
 			session.Id = idSesije;  //we return Id of original session here
 
 			session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
-			session.ProviderOAuthAccess = GetUserOAuthProviders(session.UserAuthId)
+			session.ProviderOAuthAccess = GetUserAuthDetails(session.UserAuthId)
 				.ConvertAll(x => (IAuthTokens)x);
 
 		}
@@ -250,7 +250,7 @@ namespace ServiceStack.Authentication.RavenDb
 			}
 		}
 
-		public List<IUserAuthDetails> GetUserOAuthProviders(string userAuthId)
+		public List<IUserAuthDetails> GetUserAuthDetails(string userAuthId)
 		{
 			using (var session = _documentStore.OpenSession())
 			{

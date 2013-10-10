@@ -284,7 +284,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
 			session.PopulateWith(userAuth);
 			session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
-			session.ProviderOAuthAccess = GetUserOAuthProviders(session.UserAuthId)
+			session.ProviderOAuthAccess = GetUserAuthDetails(session.UserAuthId)
                 .ConvertAll(x => (IAuthTokens)x);
 		}
 
@@ -321,7 +321,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			SaveUser(userAuth);
 		}
 
-		public List<IUserAuthDetails> GetUserOAuthProviders(string userAuthId)
+		public List<IUserAuthDetails> GetUserAuthDetails(string userAuthId)
 		{
 			var id = int.Parse(userAuthId);
 

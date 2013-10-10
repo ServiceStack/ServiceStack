@@ -51,7 +51,7 @@ namespace ServiceStack.Common.Tests.OAuth
             Assert.That(userAuth.Id.ToString(CultureInfo.InvariantCulture), Is.EqualTo(oAuthUserSession.UserAuthId));
             Assert.That(userAuth.DisplayName, Is.EqualTo("Demis Bellot TW"));
 
-            var authProviders = userAuthRepository.GetUserOAuthProviders(oAuthUserSession.UserAuthId);
+            var authProviders = userAuthRepository.GetUserAuthDetails(oAuthUserSession.UserAuthId);
             Assert.That(authProviders.Count, Is.EqualTo(1));
             var authProvider = authProviders[0];
             Assert.That(authProvider.UserAuthId, Is.EqualTo(userAuth.Id));
@@ -89,7 +89,7 @@ namespace ServiceStack.Common.Tests.OAuth
             Assert.That(userAuth.LastName, Is.EqualTo(serviceTokens.LastName));
             Assert.That(userAuth.PrimaryEmail, Is.EqualTo(serviceTokens.Email));
 
-            var authProviders = userAuthRepository.GetUserOAuthProviders(oAuthUserSession.UserAuthId);
+            var authProviders = userAuthRepository.GetUserAuthDetails(oAuthUserSession.UserAuthId);
             Assert.That(authProviders.Count, Is.EqualTo(1));
             var authProvider = authProviders[0];
             Assert.That(authProvider.UserAuthId, Is.EqualTo(userAuth.Id));
@@ -138,7 +138,7 @@ namespace ServiceStack.Common.Tests.OAuth
             Assert.That(userAuth.FirstName, Is.EqualTo(serviceTokensFb.FirstName));
             Assert.That(userAuth.LastName, Is.EqualTo(serviceTokensFb.LastName));
 
-            var authProviders = userAuthRepository.GetUserOAuthProviders(oAuthUserSession.UserAuthId);
+            var authProviders = userAuthRepository.GetUserAuthDetails(oAuthUserSession.UserAuthId);
             Assert.That(authProviders.Count, Is.EqualTo(2));
 
             Console.WriteLine(userAuth.Dump());
@@ -240,7 +240,7 @@ namespace ServiceStack.Common.Tests.OAuth
             Assert.That(oAuthUserSession.ProviderOAuthAccess.Count, Is.EqualTo(2));
             Assert.That(oAuthUserSession.IsAuthenticated, Is.True);
 
-            var authProviders = userAuthRepository.GetUserOAuthProviders(oAuthUserSession.UserAuthId);
+            var authProviders = userAuthRepository.GetUserAuthDetails(oAuthUserSession.UserAuthId);
             Assert.That(authProviders.Count, Is.EqualTo(2));
 
             Console.WriteLine(userAuth.Dump());
@@ -312,7 +312,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
             Assert.That(userAuth.UserName, Is.EqualTo(RegisterDto.UserName));
 
-            var userAuthProviders = userAuthRepository.GetUserOAuthProviders(userAuth.Id.ToString(CultureInfo.InvariantCulture));
+            var userAuthProviders = userAuthRepository.GetUserAuthDetails(userAuth.Id.ToString(CultureInfo.InvariantCulture));
             Assert.That(userAuthProviders.Count, Is.EqualTo(1));
         }
 

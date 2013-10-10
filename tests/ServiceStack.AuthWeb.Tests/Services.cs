@@ -22,7 +22,7 @@ namespace ServiceStack.AuthWeb.Tests
 
         public UserAuth UserAuth { get; set; }
         public AuthUserSession Session { get; set; }
-        public List<UserAuthDetails> UserAuthProviders { get; set; }
+        public List<UserAuthDetails> UserAuthDetails { get; set; }
     }
 
     public class UserProfileResponse
@@ -44,7 +44,7 @@ namespace ServiceStack.AuthWeb.Tests
                 Id = userAuthId,
                 Session = session,
                 UserAuth = Db.SingleById<UserAuth>(userAuthId),
-                UserAuthProviders = Db.Select<UserAuthDetails>(x => x.UserAuthId == userAuthId),
+                UserAuthDetails = Db.Select<UserAuthDetails>(x => x.UserAuthId == userAuthId),
             };
 
             return userProfile;

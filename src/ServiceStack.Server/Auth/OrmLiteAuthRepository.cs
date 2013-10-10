@@ -230,7 +230,7 @@ namespace ServiceStack.Auth
             session.Id = idSesije; //we return Id of original session here
 
             session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
-            session.ProviderOAuthAccess = GetUserOAuthProviders(session.UserAuthId)
+            session.ProviderOAuthAccess = GetUserAuthDetails(session.UserAuthId)
                 .ConvertAll(x => (IAuthTokens)x);
         }
 
@@ -279,7 +279,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public List<IUserAuthDetails> GetUserOAuthProviders(string userAuthId)
+        public List<IUserAuthDetails> GetUserAuthDetails(string userAuthId)
         {
             var id = int.Parse(userAuthId);
             using (var db = dbFactory.Open())

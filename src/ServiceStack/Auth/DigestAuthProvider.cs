@@ -55,7 +55,7 @@ namespace ServiceStack.Auth
                 session.IsAuthenticated = true;
                 session.Sequence = digestInfo["nc"];
                 session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
-                session.ProviderOAuthAccess = authRepo.GetUserOAuthProviders(session.UserAuthId)
+                session.ProviderOAuthAccess = authRepo.GetUserAuthDetails(session.UserAuthId)
                     .ConvertAll(x => (IAuthTokens) x);
 
                 return true;
