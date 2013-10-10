@@ -275,7 +275,7 @@ namespace ServiceStack.Auth
 
             using (var db = dbFactory.Open())
             {
-                db.Save(userAuth);
+                db.Save((TUserAuth)userAuth);
             }
         }
 
