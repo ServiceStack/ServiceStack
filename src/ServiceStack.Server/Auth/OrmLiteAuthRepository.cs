@@ -85,7 +85,7 @@ namespace ServiceStack.Auth
                 string hash;
                 passwordHasher.GetHashAndSaltString(password, out hash, out salt);
                 var digestHelper = new DigestAuthFunctions();
-                newUser.DigestHA1Hash = digestHelper.CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
+                newUser.DigestHa1Hash = digestHelper.CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
                 newUser.PasswordHash = hash;
                 newUser.Salt = salt;
                 newUser.CreatedDate = DateTime.UtcNow;
@@ -135,7 +135,7 @@ namespace ServiceStack.Auth
                     passwordHasher.GetHashAndSaltString(password, out hash, out salt);
                 }
                 // If either one changes the digest hash has to be recalculated
-                var digestHash = existingUser.DigestHA1Hash;
+                var digestHash = existingUser.DigestHa1Hash;
                 if (password != null || existingUser.UserName != newUser.UserName)
                 {
                     var digestHelper = new DigestAuthFunctions();
@@ -144,7 +144,7 @@ namespace ServiceStack.Auth
                 newUser.Id = existingUser.Id;
                 newUser.PasswordHash = hash;
                 newUser.Salt = salt;
-                newUser.DigestHA1Hash = digestHash;
+                newUser.DigestHa1Hash = digestHash;
                 newUser.CreatedDate = existingUser.CreatedDate;
                 newUser.ModifiedDate = DateTime.UtcNow;
 
@@ -201,7 +201,7 @@ namespace ServiceStack.Auth
             }
 
             var digestHelper = new DigestAuthFunctions();
-            if (digestHelper.ValidateResponse(digestHeaders, privateKey, nonceTimeOut, userAuth.DigestHA1Hash, sequence))
+            if (digestHelper.ValidateResponse(digestHeaders, privateKey, nonceTimeOut, userAuth.DigestHa1Hash, sequence))
             {
                 //userId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
                 return true;
