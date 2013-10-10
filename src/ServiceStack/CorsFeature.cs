@@ -9,7 +9,7 @@ namespace ServiceStack
     {
         internal const string DefaultMethods = "GET, POST, PUT, DELETE, OPTIONS";
         internal const string DefaultHeaders = "Content-Type";
-        
+
         private readonly string allowedOrigins;
         private readonly string allowedMethods;
         private readonly string allowedHeaders;
@@ -18,6 +18,8 @@ namespace ServiceStack
 
         private static bool isInstalled = false;
         private readonly ICollection<string> allowOriginWhitelist;
+
+        public bool AutoHandleOptionRequests { get; set; }
 
         /// <summary>
         /// Represents a default constructor with Allow Origin equals to "*", Allowed GET, POST, PUT, DELETE, OPTIONS request and allowed "Content-Type" header.
@@ -28,14 +30,16 @@ namespace ServiceStack
             this.allowedMethods = allowedMethods;
             this.allowedHeaders = allowedHeaders;
             this.allowCredentials = allowCredentials;
+            this.AutoHandleOptionRequests = true;
         }
-        
+
         public CorsFeature(ICollection<string> allowOriginWhitelist, string allowedMethods = DefaultMethods, string allowedHeaders = DefaultHeaders, bool allowCredentials = false)
         {
             this.allowedMethods = allowedMethods;
             this.allowedHeaders = allowedHeaders;
             this.allowCredentials = allowCredentials;
             this.allowOriginWhitelist = allowOriginWhitelist;
+            this.AutoHandleOptionRequests = true;
         }
 
         public void Register(IAppHost appHost)
@@ -55,13 +59,23 @@ namespace ServiceStack
             if (allowOriginWhitelist != null)
             {
                 appHost.GlobalRequestFilters.Add((httpReq, httpRes, requestDto) =>
+                {
+                    var origin = httpReq.Headers.Get("Origin");
+                    if (allowOriginWhitelist.Contains(origin))
                     {
-                        var origin = httpReq.Headers.Get("Origin");
-                        if (allowOriginWhitelist.Contains(origin))
-                        {
-                            httpRes.AddHeader(HttpHeaders.AllowOrigin, origin);
-                        }
-                    });
+                        httpRes.AddHeader(HttpHeaders.AllowOrigin, origin);
+                    }
+                });
+            }
+
+            if (AutoHandleOptionRequests)
+            {
+                appHost.PreRequestFilters.Add((httpReq, httpRes) =>
+                {
+                    //Handles Request and closes Responses after emitting global HTTP Headers
+                    if (httpReq.HttpMethod == HttpMethods.Options)
+                        httpRes.EndRequest();
+                });                
             }
         }
     }
