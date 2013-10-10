@@ -36,9 +36,7 @@ namespace ServiceStack.Auth
 
         public virtual bool TryAuthenticate(IServiceBase authService, string userName, string password)
         {
-            var authRepo = authService.TryResolve<IAuthRepository>();
-            if (authRepo == null)
-                throw new Exception("Authenticating with CredentialsAuthProvider requires a registered IUserAuthRepository");
+            var authRepo = authService.TryResolve<IAuthRepository>().AsUserAuthRepository(authService.GetResolver());
 
             var session = authService.GetSession();
             IUserAuth userAuth;

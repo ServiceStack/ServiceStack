@@ -182,7 +182,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			return registrationService;
 		}
 
-		public static void AssertEqual(UserAuth userAuth, Register request)
+        public static void AssertEqual(IUserAuth userAuth, Register request)
 		{
 			Assert.That(userAuth, Is.Not.Null);
 			Assert.That(userAuth.UserName, Is.EqualTo(request.UserName));

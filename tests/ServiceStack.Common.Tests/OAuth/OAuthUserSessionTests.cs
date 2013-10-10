@@ -172,7 +172,7 @@ namespace ServiceStack.Common.Tests.OAuth
             userAuth = userAuthRepository.GetUserAuthByUserName(RegisterDto.Email);
             AssertEqual(userAuth, RegisterDto);
 
-            UserAuth userId;
+            IUserAuth userId;
             var success = userAuthRepository.TryAuthenticate(RegisterDto.UserName, RegisterDto.Password, out userId);
             Assert.That(success, Is.True);
             Assert.That(userId, Is.Not.Null);

@@ -17,7 +17,7 @@ namespace ServiceStack.Auth
         public OrmLiteAuthRepository(IDbConnectionFactory dbFactory, IHashProvider passwordHasher) : base(dbFactory, passwordHasher) { }
     }
 
-    public class OrmLiteAuthRepository<TUserAuth, TUserAuthProvider> : IUserAuthRepository<TUserAuth>, IClearable
+    public class OrmLiteAuthRepository<TUserAuth, TUserAuthProvider> : IUserAuthRepository, IClearable
         where TUserAuth : class, IUserAuth
         where TUserAuthProvider : class, IUserAuthDetails
     {
@@ -54,7 +54,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        private void ValidateNewUser(TUserAuth newUser, string password)
+        private void ValidateNewUser(IUserAuth newUser, string password)
         {
             newUser.ThrowIfNull("newUser");
             password.ThrowIfNullOrEmpty("password");
@@ -73,7 +73,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public TUserAuth CreateUserAuth(TUserAuth newUser, string password)
+        public IUserAuth CreateUserAuth(IUserAuth newUser, string password)
         {
             ValidateNewUser(newUser, password);
 
@@ -91,14 +91,14 @@ namespace ServiceStack.Auth
                 newUser.CreatedDate = DateTime.UtcNow;
                 newUser.ModifiedDate = newUser.CreatedDate;
 
-                db.Save(newUser);
+                db.Save((TUserAuth)newUser);
 
                 newUser = db.SingleById<TUserAuth>(newUser.Id);
                 return newUser;
             }
         }
 
-        private static void AssertNoExistingUser(IDbConnection db, TUserAuth newUser, TUserAuth exceptForExistingUser = null)
+        private static void AssertNoExistingUser(IDbConnection db, IUserAuth newUser, IUserAuth exceptForExistingUser = null)
         {
             if (newUser.UserName != null)
             {
@@ -120,7 +120,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public TUserAuth UpdateUserAuth(TUserAuth existingUser, TUserAuth newUser, string password)
+        public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password)
         {
             ValidateNewUser(newUser, password);
 
@@ -148,13 +148,13 @@ namespace ServiceStack.Auth
                 newUser.CreatedDate = existingUser.CreatedDate;
                 newUser.ModifiedDate = DateTime.UtcNow;
 
-                db.Save(newUser);
+                db.Save((TUserAuth)newUser);
 
                 return newUser;
             }
         }
 
-        public TUserAuth GetUserAuthByUserName(string userNameOrEmail)
+        public IUserAuth GetUserAuthByUserName(string userNameOrEmail)
         {
             using (var db = dbFactory.Open())
             {
@@ -172,7 +172,7 @@ namespace ServiceStack.Auth
             return userAuth;
         }
 
-        public bool TryAuthenticate(string userName, string password, out TUserAuth userAuth)
+        public bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)
         {
             //userId = null;
             userAuth = GetUserAuthByUserName(userName);
@@ -191,7 +191,7 @@ namespace ServiceStack.Auth
             return false;
         }
 
-        public bool TryAuthenticate(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, out TUserAuth userAuth)
+        public bool TryAuthenticate(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, out IUserAuth userAuth)
         {
             //userId = null;
             userAuth = GetUserAuthByUserName(digestHeaders["username"]);
@@ -218,7 +218,7 @@ namespace ServiceStack.Auth
             LoadUserAuth(session, userAuth);
         }
 
-        private void LoadUserAuth(IAuthSession session, TUserAuth userAuth)
+        private void LoadUserAuth(IAuthSession session, IUserAuth userAuth)
         {
             if (userAuth == null)
             {
@@ -234,7 +234,7 @@ namespace ServiceStack.Auth
                 .ConvertAll(x => (IAuthTokens)x);
         }
 
-        public TUserAuth GetUserAuth(string userAuthId)
+        public IUserAuth GetUserAuth(string userAuthId)
         {
             using (var db = dbFactory.Open())
             {
@@ -265,7 +265,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public void SaveUserAuth(TUserAuth userAuth)
+        public void SaveUserAuth(IUserAuth userAuth)
         {
             userAuth.ModifiedDate = DateTime.UtcNow;
             if (userAuth.CreatedDate == default(DateTime))
@@ -288,7 +288,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public TUserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens)
+        public IUserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens)
         {
             if (!authSession.UserAuthId.IsNullOrEmpty())
             {
@@ -329,7 +329,8 @@ namespace ServiceStack.Auth
 
         public string CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
         {
-            var userAuth = GetUserAuth(authSession, tokens) ?? typeof(TUserAuth).CreateInstance<TUserAuth>();
+            TUserAuth userAuth = (TUserAuth)GetUserAuth(authSession, tokens) 
+                ?? typeof(TUserAuth).CreateInstance<TUserAuth>();
 
             using (var db = dbFactory.Open())
             {
@@ -377,34 +378,5 @@ namespace ServiceStack.Auth
             }
         }
 
-        IUserAuth IAuthRepository.GetUserAuth(IAuthSession authSession, IAuthTokens tokens) { return GetUserAuth(authSession, tokens); }
-
-        IUserAuth IAuthRepository.GetUserAuthByUserName(string userNameOrEmail) { return GetUserAuthByUserName(userNameOrEmail); }
-
-        void IAuthRepository.SaveUserAuth(IUserAuth userAuth) { SaveUserAuth((TUserAuth)userAuth); }
-
-        bool IAuthRepository.TryAuthenticate(string userName, string password, out IUserAuth userAuth)
-        {
-            TUserAuth auth;
-            if (TryAuthenticate(userName, password, out auth))
-            {
-                userAuth = auth;
-                return true;
-            }
-            userAuth = null;
-            return false;
-        }
-
-        bool IAuthRepository.TryAuthenticate(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, out IUserAuth userAuth)
-        {
-            TUserAuth auth;
-            if (TryAuthenticate(digestHeaders, privateKey, nonceTimeOut, sequence, out auth))
-            {
-                userAuth = auth;
-                return true;
-            }
-            userAuth = null;
-            return false;
-        }
     }
 }

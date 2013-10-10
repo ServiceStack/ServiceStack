@@ -55,21 +55,6 @@ namespace ServiceStack.Auth
         where TUserAuth : class, IUserAuth
     {
         public IAuthRepository AuthRepo { get; set; }
-        
-        public IUserAuthRepository<TUserAuth> GetUserAuthRepo()
-        {
-            var userAuthRepo = TryResolve<IUserAuthRepository<TUserAuth>>()
-                ?? (AuthRepo as IUserAuthRepository<TUserAuth>);
-
-            if (userAuthRepo == null)
-            {
-                throw new ConfigurationErrorsException(
-                    "Required dependency IAuthRepository or IUserAuthRepository<{0}> could not be found."
-                    .Fmt(typeof(TUserAuth).Name));
-            }
-
-            return userAuthRepo;
-        }
 
         public static ValidateFn ValidateFn { get; set; }
 
@@ -86,7 +71,7 @@ namespace ServiceStack.Auth
                 RegistrationValidator.ValidateAndThrow(request, ApplyTo.Post);
             }
 
-            var userAuthRepo = GetUserAuthRepo();
+            var userAuthRepo = AuthRepo.AsUserAuthRepository(GetResolver());
 
             if (ValidateFn != null)
             {
@@ -187,7 +172,7 @@ namespace ServiceStack.Auth
                     return response;
             }
 
-            var userAuthRepo = GetUserAuthRepo();
+            var userAuthRepo = AuthRepo.AsUserAuthRepository(GetResolver());
             var session = this.GetSession();
 
             var existingUser = userAuthRepo.GetUserAuth(session, null);

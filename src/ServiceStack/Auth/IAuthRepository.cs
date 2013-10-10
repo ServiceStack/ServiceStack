@@ -16,18 +16,10 @@ namespace ServiceStack.Auth
         bool TryAuthenticate(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, out IUserAuth userAuth);
     }
 
-    public interface IUserAuthRepository : IUserAuthRepository<UserAuth> {}
-
-    public interface IUserAuthRepository<TUserAuth> : IAuthRepository
-        where TUserAuth : class, IUserAuth
+    public interface IUserAuthRepository : IAuthRepository
     {
-        TUserAuth CreateUserAuth(TUserAuth newUser, string password);
-        TUserAuth UpdateUserAuth(TUserAuth existingUser, TUserAuth newUser, string password);
-        bool TryAuthenticate(string userName, string password, out TUserAuth userAuth);
-        bool TryAuthenticate(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, out TUserAuth userAuth);
-        TUserAuth GetUserAuth(string userAuthId);
-        new TUserAuth GetUserAuthByUserName(string userNameOrEmail);
-        new TUserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens);
-        void SaveUserAuth(TUserAuth userAuth);
+        IUserAuth CreateUserAuth(IUserAuth newUser, string password);
+        IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password);
+        IUserAuth GetUserAuth(string userAuthId);
     }
 }

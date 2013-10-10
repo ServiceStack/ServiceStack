@@ -15,7 +15,7 @@ namespace ServiceStack.Auth
         public RedisAuthRepository(IRedisClientManagerFacade factory) : base(factory) { }
     }
 
-    public class RedisAuthRepository<TUserAuth, TUserAuthProvider> : IUserAuthRepository<TUserAuth>, IClearable
+    public class RedisAuthRepository<TUserAuth, TUserAuthProvider> : IUserAuthRepository, IClearable
         where TUserAuth : class, IUserAuth
         where TUserAuthProvider : class, IUserAuthDetails
     {
@@ -41,7 +41,7 @@ namespace ServiceStack.Auth
 
         private string IndexEmailToUserId { get { return UsePrefix + "hash:UserAuth:Email>UserId"; } }
 
-        private void ValidateNewUser(TUserAuth newUser, string password)
+        private void ValidateNewUser(IUserAuth newUser, string password)
         {
             newUser.ThrowIfNull("newUser");
             password.ThrowIfNullOrEmpty("password");
@@ -60,7 +60,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        private void AssertNoExistingUser(IRedisClientFacade redis, TUserAuth newUser, TUserAuth exceptForExistingUser = null)
+        private void AssertNoExistingUser(IRedisClientFacade redis, IUserAuth newUser, IUserAuth exceptForExistingUser = null)
         {
             if (newUser.UserName != null)
             {
@@ -82,7 +82,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public virtual TUserAuth CreateUserAuth(TUserAuth newUser, string password)
+        public virtual IUserAuth CreateUserAuth(IUserAuth newUser, string password)
         {
             ValidateNewUser(newUser, password);
 
@@ -95,7 +95,7 @@ namespace ServiceStack.Auth
                 string hash;
                 saltedHash.GetHashAndSaltString(password, out hash, out salt);
 
-                newUser.Id = redis.As<TUserAuth>().GetNextSequence();
+                newUser.Id = redis.As<IUserAuth>().GetNextSequence();
                 newUser.PasswordHash = hash;
                 newUser.Salt = salt;
                 var digestHelper = new DigestAuthFunctions();
@@ -119,7 +119,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public TUserAuth UpdateUserAuth(TUserAuth existingUser, TUserAuth newUser, string password)
+        public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password)
         {
             ValidateNewUser(newUser, password);
 
@@ -173,7 +173,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public virtual TUserAuth GetUserAuthByUserName(string userNameOrEmail)
+        public virtual IUserAuth GetUserAuthByUserName(string userNameOrEmail)
         {
             using (var redis = factory.GetClient())
             {
@@ -181,17 +181,17 @@ namespace ServiceStack.Auth
             }
         }
 
-        private TUserAuth GetUserAuthByUserName(IRedisClientFacade redis, string userNameOrEmail)
+        private IUserAuth GetUserAuthByUserName(IRedisClientFacade redis, string userNameOrEmail)
         {
             var isEmail = userNameOrEmail.Contains("@");
             var userId = isEmail
                 ? redis.GetValueFromHash(IndexEmailToUserId, userNameOrEmail)
                 : redis.GetValueFromHash(IndexUserNameToUserId, userNameOrEmail);
 
-            return userId == null ? null : redis.As<TUserAuth>().GetById(userId);
+            return userId == null ? null : redis.As<IUserAuth>().GetById(userId);
         }
 
-        public virtual bool TryAuthenticate(string userName, string password, out TUserAuth userAuth)
+        public virtual bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)
         {
             //userId = null;
             userAuth = GetUserAuthByUserName(userName);
@@ -210,7 +210,7 @@ namespace ServiceStack.Auth
             return false;
         }
 
-        public bool TryAuthenticate(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, out TUserAuth userAuth)
+        public bool TryAuthenticate(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, out IUserAuth userAuth)
         {
             userAuth = GetUserAuthByUserName(digestHeaders["username"]);
             if (userAuth == null)
@@ -235,7 +235,7 @@ namespace ServiceStack.Auth
             LoadUserAuth(session, userAuth);
         }
 
-        private void LoadUserAuth(IAuthSession session, TUserAuth userAuth)
+        private void LoadUserAuth(IAuthSession session, IUserAuth userAuth)
         {
             if (userAuth == null)
             {
@@ -248,7 +248,7 @@ namespace ServiceStack.Auth
                 .ConvertAll(x => (IAuthTokens)x);
         }
 
-        private TUserAuth GetUserAuth(IRedisClientFacade redis, string userAuthId)
+        private IUserAuth GetUserAuth(IRedisClientFacade redis, string userAuthId)
         {
             long longId;
             if (userAuthId == null || !long.TryParse(userAuthId, out longId))
@@ -256,10 +256,10 @@ namespace ServiceStack.Auth
                 return null;
             }
 
-            return redis.As<TUserAuth>().GetById(longId);
+            return redis.As<IUserAuth>().GetById(longId);
         }
-
-        public TUserAuth GetUserAuth(string userAuthId)
+         
+        public IUserAuth GetUserAuth(string userAuthId)
         {
             using (var redis = factory.GetClient())
             {
@@ -290,7 +290,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public void SaveUserAuth(TUserAuth userAuth)
+        public void SaveUserAuth(IUserAuth userAuth)
         {
             userAuth.ModifiedDate = DateTime.UtcNow;
             if (userAuth.CreatedDate == default(DateTime))
@@ -326,7 +326,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public virtual TUserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens)
+        public virtual IUserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens)
         {
             using (var redis = factory.GetClient())
             {
@@ -334,7 +334,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        private TUserAuth GetUserAuth(IRedisClientFacade redis, IAuthSession authSession, IAuthTokens tokens)
+        private IUserAuth GetUserAuth(IRedisClientFacade redis, IAuthSession authSession, IAuthTokens tokens)
         {
             if (!authSession.UserAuthId.IsNullOrEmpty())
             {
@@ -364,7 +364,7 @@ namespace ServiceStack.Auth
                 var oauthProvider = redis.As<TUserAuthProvider>().GetById(oAuthProviderId);
                 if (oauthProvider != null)
                 {
-                    return redis.As<TUserAuth>().GetById(oauthProvider.UserAuthId);
+                    return redis.As<IUserAuth>().GetById(oauthProvider.UserAuthId);
                 }
             }
             return null;
@@ -386,7 +386,7 @@ namespace ServiceStack.Auth
                 if (userAuth == null)
                 {
                     userAuth = typeof(TUserAuth).CreateInstance<TUserAuth>();
-                    userAuth.Id = redis.As<TUserAuth>().GetNextSequence();
+                    userAuth.Id = redis.As<IUserAuth>().GetNextSequence();
                 }
 
                 if (authProvider == null)
@@ -426,35 +426,5 @@ namespace ServiceStack.Auth
         }
 
         public void Clear() { factory.Clear(); }
-
-        IUserAuth IAuthRepository.GetUserAuth(IAuthSession authSession, IAuthTokens tokens) { return GetUserAuth(authSession, tokens); }
-
-        IUserAuth IAuthRepository.GetUserAuthByUserName(string userNameOrEmail) { return GetUserAuthByUserName(userNameOrEmail); }
-
-        void IAuthRepository.SaveUserAuth(IUserAuth userAuth) { SaveUserAuth((TUserAuth)userAuth); }
-
-        bool IAuthRepository.TryAuthenticate(string userName, string password, out IUserAuth userAuth)
-        {
-            TUserAuth auth;
-            if (TryAuthenticate(userName, password, out auth))
-            {
-                userAuth = auth;
-                return true;
-            }
-            userAuth = null;
-            return false;
-        }
-
-        bool IAuthRepository.TryAuthenticate(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, out IUserAuth userAuth)
-        {
-            TUserAuth auth;
-            if (TryAuthenticate(digestHeaders, privateKey, nonceTimeOut, sequence, out auth))
-            {
-                userAuth = auth;
-                return true;
-            }
-            userAuth = null;
-            return false;
-        }
-    }
+   }
 }

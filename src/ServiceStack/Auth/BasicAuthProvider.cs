@@ -16,9 +16,7 @@ namespace ServiceStack.Auth
         }
 
         public BasicAuthProvider(IAppSettings appSettings)
-            : base(appSettings, Realm, Name)
-        {
-        }
+            : base(appSettings, Realm, Name) {}
 
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {

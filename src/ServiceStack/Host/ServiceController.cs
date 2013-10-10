@@ -380,7 +380,7 @@ namespace ServiceStack.Host
             }
         }
 
-        private static void InjectRequestContext(object service, IRequestContext requestContext)
+        internal static void InjectRequestContext(object service, IRequestContext requestContext)
         {
             if (requestContext == null) return;
 

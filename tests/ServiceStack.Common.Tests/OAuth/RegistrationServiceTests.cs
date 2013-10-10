@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using System.Collections.Generic;
+using Moq;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.FluentValidation;
@@ -47,7 +48,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
         public static RegisterService GetRegistrationService(
             AbstractValidator<Register> validator = null,
-            IUserAuthRepository<UserAuth> authRepo = null,
+            IUserAuthRepository authRepo = null,
             string contentType = null)
         {
             var requestContext = new MockRequestContext();
@@ -140,15 +141,17 @@ namespace ServiceStack.Common.Tests.OAuth
         [Test]
         public void Requires_unique_UserName_and_Email()
         {
-            var mock = new Mock<IUserAuthRepository>();
             var mockExistingUser = new UserAuth();
+
+            var mock = new Mock<IUserAuthRepository>();
             mock.Expect(x => x.GetUserAuthByUserName(It.IsAny<string>()))
-                .Returns(mockExistingUser);
+                .Returns(() => mockExistingUser);
+            var mockUserAuth = mock.Object;
 
             var service = new RegisterService
             {
-                RegistrationValidator = new RegistrationValidator { UserAuthRepo = mock.Object },
-                AuthRepo = mock.Object,
+                RegistrationValidator = new RegistrationValidator { UserAuthRepo = mockUserAuth },
+                AuthRepo = mockUserAuth,
             };
 
             var request = new Register

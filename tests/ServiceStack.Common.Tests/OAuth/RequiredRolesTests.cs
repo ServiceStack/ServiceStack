@@ -33,22 +33,22 @@ namespace ServiceStack.Common.Tests.OAuth
                 this.userAuth = userAuth;
             }
 
-            public override UserAuth GetUserAuthByUserName(string userNameOrEmail)
+            public override IUserAuth GetUserAuthByUserName(string userNameOrEmail)
             {
                 return null;
             }
 
-            public override UserAuth CreateUserAuth(UserAuth newUser, string password)
+            public override IUserAuth CreateUserAuth(IUserAuth newUser, string password)
             {
                 return userAuth;
             }
 
-            public override UserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens)
+            public override IUserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens)
             {
                 return userAuth;
             }
 
-            public override bool TryAuthenticate(string userName, string password, out UserAuth userAuth)
+            public override bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)
             {
                 userAuth = this.userAuth;
                 return true;

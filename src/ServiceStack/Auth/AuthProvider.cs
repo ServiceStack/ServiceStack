@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Net;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
@@ -205,11 +206,26 @@ namespace ServiceStack.Auth
         }
     }
 
-    public static class AuthConfigExtensions
+    public static class AuthExtensions
     {
         public static bool IsAuthorizedSafe(this IAuthProvider authProvider, IAuthSession session, IAuthTokens tokens)
         {
             return authProvider != null && authProvider.IsAuthorized(session, tokens);
+        }
+
+        public static IUserAuthRepository AsUserAuthRepository(this IAuthRepository authRepo, IResolver resolver=null)
+        {
+            if (resolver == null)
+                resolver = HostContext.AppHost;
+
+            var userAuthRepo = resolver.TryResolve<IUserAuthRepository>()
+                ?? (authRepo as IUserAuthRepository);
+
+            if (userAuthRepo == null)
+                throw new ConfigurationErrorsException(
+                    "Required dependency IAuthRepository or IUserAuthRepository could not be found.");
+
+            return userAuthRepo;
         }
     }
 
