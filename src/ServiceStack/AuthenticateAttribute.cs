@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.Linq;
 using ServiceStack.Auth;
 using ServiceStack.Host;
@@ -31,11 +32,11 @@ namespace ServiceStack
         public AuthenticateAttribute(ApplyTo applyTo)
             : base(applyTo)
         {
-            this.Priority = (int) RequestFilterPriority.Authenticate;
+            this.Priority = (int)RequestFilterPriority.Authenticate;
         }
 
         public AuthenticateAttribute()
-            : this(ApplyTo.All) {}
+            : this(ApplyTo.All) { }
 
         public AuthenticateAttribute(string provider)
             : this(ApplyTo.All)
@@ -51,7 +52,7 @@ namespace ServiceStack
 
         public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
         {
-            if (AuthenticateService.AuthProviders == null) 
+            if (AuthenticateService.AuthProviders == null)
                 throw new InvalidOperationException(
                     "The AuthService must be initialized by calling AuthService.Init to use an authenticate attribute");
 
@@ -90,7 +91,7 @@ namespace ServiceStack
                 var url = req.ResolveAbsoluteUrl(htmlRedirect);
                 if (includeRedirectParam)
                 {
-                    var absoluteRequestPath = req.ResolveAbsoluteUrl("~" + req.RawUrl);
+                    var absoluteRequestPath = req.ResolveAbsoluteUrl("~" + req.PathInfo + ToQueryString(req.QueryString));
                     url = url.AddQueryParam("redirect", absoluteRequestPath);
                 }
 
@@ -111,13 +112,15 @@ namespace ServiceStack
             {
                 var authService = req.TryResolve<AuthenticateService>();
                 authService.RequestContext = new HttpRequestContext(req, res, null);
-                var response = authService.Post(new Authenticate {
+                var response = authService.Post(new Authenticate
+                {
                     provider = BasicAuthProvider.Name,
                     UserName = userPass.Value.Key,
                     Password = userPass.Value.Value
                 });
             }
         }
+
         public static void AuthenticateIfDigestAuth(IHttpRequest req, IHttpResponse res)
         {
             //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
@@ -141,5 +144,14 @@ namespace ServiceStack
                 });
             }
         }
+
+        private static string ToQueryString(NameValueCollection queryStringCollection)
+        {
+            if (queryStringCollection == null || queryStringCollection.Count == 0)
+                return String.Empty;
+
+            return "?" + queryStringCollection.ToFormUrlEncoded();
+        }
+
     }
 }
