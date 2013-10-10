@@ -35,7 +35,7 @@ namespace ServiceStack.ServiceInterface.Auth
         public virtual string TimeZone { get; set; }
         public virtual string Salt { get; set; }
         public virtual string PasswordHash { get; set; }
-        public virtual string DigestHA1Hash { get; set; }
+        public virtual string DigestHa1Hash { get; set; }
         public virtual List<string> Roles { get; set; }
         public virtual List<string> Permissions { get; set; }
         public virtual DateTime CreatedDate { get; set; }
