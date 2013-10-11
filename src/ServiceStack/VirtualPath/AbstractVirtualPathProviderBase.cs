@@ -61,6 +61,16 @@ namespace ServiceStack.VirtualPath
             return RootDirectory.GetAllMatchingFiles(globPattern, maxDepth);
         }
 
+        public virtual IEnumerable<IVirtualFile> GetRootFiles()
+        {
+            return RootDirectory.Files;
+        }
+
+        public virtual IEnumerable<IVirtualDirectory> GetRootDirectories()
+        {
+            return RootDirectory.Directories;
+        }
+
         public virtual bool IsSharedFile(IVirtualFile virtualFile)
         {
             return virtualFile.RealPath != null

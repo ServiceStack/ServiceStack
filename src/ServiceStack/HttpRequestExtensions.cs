@@ -9,6 +9,7 @@ using System.Web;
 using ServiceStack.Host.AspNet;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Host.HttpListener;
+using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -116,15 +117,25 @@ namespace ServiceStack
 			return hostName;
 		}
 
-		public static string GetPhysicalPath(this IHttpRequest httpReq)
-		{
-		    var aspNetReq = httpReq as AspNetRequest;
-			var res = aspNetReq != null 
-                ? aspNetReq.Request.PhysicalPath 
-                : HostContext.Config.WebHostPhysicalPath.CombineWith(httpReq.PathInfo);
+        public static string GetPhysicalPath(this IHttpRequest httpReq)
+        {
+            return HostContext.ResolvePhysicalPath(httpReq.PathInfo, httpReq);
+        }
 
-			return res;
-		}
+        public static IVirtualFile GetVirtualFile(this IHttpRequest httpReq)
+        {
+            return HostContext.ResolveVirtualFile(httpReq.PathInfo, httpReq);
+        }
+
+        public static IVirtualDirectory GetVirtualDirectory(this IHttpRequest httpReq)
+        {
+            return HostContext.ResolveVirtualDirectory(httpReq.PathInfo, httpReq);
+        }
+
+        public static IVirtualNode GetVirtualNode(this IHttpRequest httpReq)
+        {
+            return HostContext.ResolveVirtualNode(httpReq.PathInfo, httpReq);
+        }
 
         public static string GetApplicationUrl(this HttpRequest httpReq)
         {

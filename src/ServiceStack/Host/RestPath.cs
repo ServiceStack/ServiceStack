@@ -175,7 +175,8 @@ namespace ServiceStack.Host
                 if (!this.isWildcard[i]) continue;
                 if (this.literalsToMatch[i + 1] == null)
                 {
-                    throw new ArgumentException("A wildcard path component must be at the end of the path or followed by a literal path component.");
+                    throw new ArgumentException(
+                        "A wildcard path component must be at the end of the path or followed by a literal path component.");
                 }
             }
 

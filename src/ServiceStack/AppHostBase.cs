@@ -1,7 +1,7 @@
 using System.Reflection;
 using System.Web;
 using System.Web.Hosting;
-using ServiceStack.Logging;
+using ServiceStack.Host.AspNet;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -12,8 +12,6 @@ namespace ServiceStack
     /// </summary>
     public abstract class AppHostBase : ServiceStackHost
     {
-        private readonly ILog log = LogManager.GetLogger(typeof(AppHostBase));
-
         protected AppHostBase(string serviceName, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices) { }
 
@@ -28,6 +26,12 @@ namespace ServiceStack
             return Config.WebHostUrl == null
                 ? VirtualPathUtility.ToAbsolute(virtualPath)
                 : httpReq.GetAbsoluteUrl(virtualPath);
+        }
+
+        public override string ResolvePhysicalPath(string virtualPath, IHttpRequest httpReq)
+        {
+            var path = ((AspNetRequest)httpReq).Request.PhysicalPath;
+            return path;
         }
     }
 }

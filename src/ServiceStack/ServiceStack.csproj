@@ -386,6 +386,7 @@
     <Compile Include="Validation\ValidationFeature.cs" />
     <Compile Include="Validation\ValidationFilters.cs" />
     <Compile Include="Validation\ValidatorCache.cs" />
+    <Compile Include="VirtualPathExtensions.cs" />
     <Compile Include="VirtualPath\AbstractVirtualDirectoryBase.cs" />
     <Compile Include="VirtualPath\AbstractVirtualFileBase.cs" />
     <Compile Include="VirtualPath\AbstractVirtualPathProviderBase.cs" />
@@ -393,7 +394,10 @@
     <Compile Include="VirtualPath\FileSystemVirtualFile.cs" />
     <Compile Include="VirtualPath\FileSystemVirtualPathProvider.cs" />
     <Compile Include="VirtualPath\InMemoryVirtualPathProvider.cs" />
-    <Compile Include="VirtualPath\VirtualPathExtension.cs" />
+    <Compile Include="VirtualPath\MultiVirtualPathProvider.cs" />
+    <Compile Include="VirtualPath\ResourceVirtualDirectory.cs" />
+    <Compile Include="VirtualPath\ResourceVirtualFile.cs" />
+    <Compile Include="VirtualPath\ResourceVirtualPathProvider.cs" />
     <Compile Include="Host\ActionContext.cs" />
     <Compile Include="AppHostExtensions.cs" />
     <Compile Include="Html\CachedExpressionCompiler.cs" />

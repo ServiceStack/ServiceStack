@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Reflection;
 using ServiceStack.IO;
-using ServiceStack.VirtualPath;
-using ServiceStack.WebHost.Endpoints;
 
-namespace ServiceStack.Plugins.Embedded.VirtualPath
+namespace ServiceStack.VirtualPath
 {
     public class ResourceVirtualPathProvider : AbstractVirtualPathProviderBase
     {

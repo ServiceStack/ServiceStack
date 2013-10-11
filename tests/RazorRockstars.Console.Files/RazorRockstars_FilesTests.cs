@@ -16,7 +16,7 @@ namespace RazorRockstars.Console.Files
     [TestFixture]
     public class RazorRockstars_FilesTests
     {
-        private const string ListeningOn = "http://*:1337/";
+        public const string ListeningOn = "http://*:1337/";
         public const string Host = "http://localhost:1337";
 
         //private const string ListeningOn = "http://*:1337/subdir/subdir2/";

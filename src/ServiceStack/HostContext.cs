@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -32,7 +33,11 @@ namespace ServiceStack
         private static ServiceStackHost AssertAppHost()
         {
             if (ServiceStackHost.Instance == null)
-                throw new InvalidOperationException("ServiceStackHost is not initialized.");
+                throw new ConfigurationErrorsException(
+                    "ServiceStack: AppHost does not exist or has not been initialized. " +
+                    "Make sure you have created an AppHost and started it with 'new AppHost().Init();' " +
+                    " in your Global.asax Application_Start() or alternative Application StartUp");
+
             return ServiceStackHost.Instance;
         }
 
@@ -321,6 +326,26 @@ namespace ServiceStack
         public static string ResolveAbsoluteUrl(string virtualPath, IHttpRequest httpReq)
         {
             return AssertAppHost().ResolveAbsoluteUrl(virtualPath, httpReq);
+        }
+
+        public static string ResolvePhysicalPath(string virtualPath, IHttpRequest httpReq)
+        {
+            return AssertAppHost().ResolvePhysicalPath(virtualPath, httpReq);
+        }
+
+        public static IVirtualFile ResolveVirtualFile(string virtualPath, IHttpRequest httpReq)
+        {
+            return AssertAppHost().ResolveVirtualFile(virtualPath, httpReq);
+        }
+
+        public static IVirtualDirectory ResolveVirtualDirectory(string virtualPath, IHttpRequest httpReq)
+        {
+            return AssertAppHost().ResolveVirtualDirectory(virtualPath, httpReq);
+        }
+
+        public static IVirtualNode ResolveVirtualNode(string virtualPath, IHttpRequest httpReq)
+        {
+            return AssertAppHost().ResolveVirtualNode(virtualPath, httpReq);
         }
 
         private static string defaultOperationNamespace;

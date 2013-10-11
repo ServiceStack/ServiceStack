@@ -13,5 +13,7 @@ namespace ServiceStack.IO
         Stream OpenRead();
         StreamReader OpenText();
         string ReadAllText();
+
+        long Length { get; }
     }
 }

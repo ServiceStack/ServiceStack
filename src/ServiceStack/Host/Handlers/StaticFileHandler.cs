@@ -33,6 +33,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Web;
 using ServiceStack.Host.AspNet;
+using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -59,13 +60,13 @@ namespace ServiceStack.Host.Handlers
 		/// Keep default file contents in-memory
 		/// </summary>
 		/// <param name="defaultFilePath"></param>
-		public void SetDefaultFile(string defaultFilePath)
+		public void SetDefaultFile(string defaultFilePath, byte[] defaultFileContents, DateTime defaultFileModified)
 		{
 			try
 			{
-				this.DefaultFileContents = File.ReadAllBytes(defaultFilePath);
 				this.DefaultFilePath = defaultFilePath;
-				this.DefaultFileModified = File.GetLastWriteTime(defaultFilePath);
+                this.DefaultFileContents = defaultFileContents;
+                this.DefaultFileModified = defaultFileModified;
 			}
 			catch (Exception ex)
 			{
@@ -75,46 +76,47 @@ namespace ServiceStack.Host.Handlers
 
         public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
 		{
-            response.EndHttpHandlerRequest(skipClose: true, afterBody: r => {
-                var fileName = request.GetPhysicalPath();
-
-                var fi = new FileInfo(fileName);
-                if (!fi.Exists)
+            response.EndHttpHandlerRequest(skipClose: true, afterBody: r => 
+            {
+                var node = request.GetVirtualNode();
+                var file = node as IVirtualFile;
+                if (file == null)
                 {
-                    if ((fi.Attributes & FileAttributes.Directory) != 0)
+                    var dir = node as IVirtualDirectory;
+                    if (dir != null)
                     {
-                        foreach (var defaultDoc in HostContext.Config.DefaultDocuments)
+                        file = dir.GetDefaultDocument();
+                        if (file != null && HostContext.Config.RedirectToDefaultDocuments)
                         {
-                            var defaultFileName = Path.Combine(fi.FullName, defaultDoc);
-                            if (!File.Exists(defaultFileName)) continue;
-                            r.Redirect(request.GetPathUrl() + '/' + defaultDoc);
+                            r.Redirect(request.GetPathUrl() + '/' + file.Name);
                             return;
                         }
                     }
 
-                    if (!fi.Exists)
+                    if (file == null)
                     {
+                        var fileName = request.PathInfo;
                         var originalFileName = fileName;
 
                         if (Env.IsMono)
                         {
                             //Create a case-insensitive file index of all host files
                             if (allFiles == null)
-                                allFiles = CreateFileIndex(request.ApplicationFilePath);
+                                allFiles = CreateFileIndex(HostContext.VirtualPathProvider.RootDirectory.RealPath);
                             if (allDirs == null)
-                                allDirs = CreateDirIndex(request.ApplicationFilePath);
+                                allDirs = CreateDirIndex(HostContext.VirtualPathProvider.RootDirectory.RealPath);
 
                             if (allFiles.TryGetValue(fileName.ToLower(), out fileName))
                             {
-                                fi = new FileInfo(fileName);
+                                file = HostContext.VirtualPathProvider.GetFile(fileName);
                             }
                         }
 
-                        if (!fi.Exists)
+                        if (file == null)
                         {
                             var msg = "Static File '" + request.PathInfo + "' not found.";
                             log.WarnFormat("{0} in path: {1}", msg, originalFileName);
-                            throw new HttpException(404, msg);
+                            throw HttpError.NotFound(msg);
                         }
                     }
                 }
@@ -125,22 +127,22 @@ namespace ServiceStack.Host.Handlers
                     r.AddHeader(HttpHeaders.CacheControl, "max-age=" + maxAge.TotalSeconds);
                 }
 
-                if (request.HasNotModifiedSince(fi.LastWriteTime))
+                if (request.HasNotModifiedSince(file.LastModified))
                 {
-                    r.ContentType = MimeTypes.GetMimeType(fileName);
+                    r.ContentType = MimeTypes.GetMimeType(file.Name);
                     r.StatusCode = 304;
                     return;
                 }
 
                 try
                 {
-                    r.AddHeaderLastModified(fi.LastWriteTime);
-                    r.ContentType = MimeTypes.GetMimeType(fileName);
+                    r.AddHeaderLastModified(file.LastModified);
+                    r.ContentType = MimeTypes.GetMimeType(file.Name);
 
-                    if (fileName.EqualsIgnoreCase(this.DefaultFilePath))
+                    if (file.Name.EqualsIgnoreCase(this.DefaultFilePath))
                     {
-                        if (fi.LastWriteTime > this.DefaultFileModified)
-                            SetDefaultFile(this.DefaultFilePath); //reload
+                        if (file.LastModified > this.DefaultFileModified)
+                            SetDefaultFile(this.DefaultFilePath, file.ReadAllBytes(), file.LastModified); //reload
 
                         r.OutputStream.Write(this.DefaultFileContents, 0, this.DefaultFileContents.Length);
                         r.Close();
@@ -149,7 +151,7 @@ namespace ServiceStack.Host.Handlers
 
                     if (HostContext.Config.AllowPartialResponses)
                         r.AddHeader(HttpHeaders.AcceptRanges, "bytes");
-                    long contentLength = fi.Length;
+                    long contentLength = file.Length;
                     long rangeStart, rangeEnd;
                     var rangeHeader = request.Headers[HttpHeaders.Range];
                     if (HostContext.Config.AllowPartialResponses && rangeHeader != null)
@@ -164,9 +166,9 @@ namespace ServiceStack.Host.Handlers
                         r.SetContentLength(contentLength); //throws with ASP.NET webdev server non-IIS pipelined mode
                     }
                     var outputStream = r.OutputStream;
-                    using (var fs = fi.OpenRead())
+                    using (var fs = file.OpenRead())
                     {
-                        if (rangeStart != 0 || rangeEnd != fi.Length - 1)
+                        if (rangeStart != 0 || rangeEnd != file.Length - 1)
                         {
                             fs.WritePartialTo(outputStream, rangeStart, rangeEnd);
                         }

@@ -85,6 +85,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="App.config" />
+    <Content Include="Content\default.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <EmbeddedResource Include="Content\static-sub-embedded.txt" />
+    <Content Include="Content\static-sub.txt" />
     <Content Include="default.cshtml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -109,6 +114,8 @@
     <Content Include="Pages\Hrefs.cshtml" />
     <None Include="Pages\_Layout.shtml" />
     <None Include="Pages\Dir\_Layout.shtml" />
+    <EmbeddedResource Include="static-root-embedded.txt" />
+    <Content Include="static-root.txt" />
     <Content Include="Views\Shared\HtmlReport.cshtml" />
     <Content Include="Views\Shared\Empty.cshtml" />
     <Content Include="Views\Json.cshtml" />
@@ -149,6 +156,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RazorRockstars_WebTests.cs" />
     <Compile Include="ReqStarsService.cs" />
+    <Compile Include="VirtualPathTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj">

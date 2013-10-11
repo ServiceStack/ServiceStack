@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.IO;
 using System.Net;
 using System.Web;
 using ServiceStack.Host;
 using ServiceStack.Host.AspNet;
 using ServiceStack.Host.Handlers;
-using ServiceStack.Host.HttpListener;
 using ServiceStack.MiniProfiler.UI;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -26,8 +23,7 @@ namespace ServiceStack
         static private readonly IHttpHandler NotFoundHttpHandler = null;
         static private readonly IHttpHandler StaticFileHandler = new StaticFileHandler();
         private static readonly bool IsIntegratedPipeline = false;
-        private static readonly bool ServeDefaultHandler = false;
-        private static readonly bool AutoRedirectsDirs = false;
+        private static readonly bool HostAutoRedirectsDirs = false;
         private static readonly Func<IHttpRequest, IHttpHandler>[] RawHttpHandlers;
 
         [ThreadStatic]
@@ -43,17 +39,10 @@ namespace ServiceStack
             }
 
             var config = HostContext.Config;
-            if (config == null)
-            {
-                throw new ConfigurationErrorsException(
-                    "ServiceStack: AppHost does not exist or has not been initialized. "
-                    + "Make sure you have created an AppHost and started it with 'new AppHost().Init();' in your Global.asax Application_Start()",
-                    new ArgumentNullException("EndpointHost.Config"));
-            }
 
-            var isAspNetHost = HttpListenerBase.Instance == null || HttpContext.Current != null;
-            WebHostPhysicalPath = config.WebHostPhysicalPath;
-            AutoRedirectsDirs = isAspNetHost && !Env.IsMono;
+            var isAspNetHost = HostContext.IsAspNetHost;
+            WebHostPhysicalPath = HostContext.VirtualPathProvider.RootDirectory.RealPath;
+            HostAutoRedirectsDirs = isAspNetHost && !Env.IsMono;
 
             //Apache+mod_mono treats path="servicestack*" as path="*" so takes over root path, so we need to serve matching resources
             var hostedAtRootPath = config.ServiceStackHandlerFactoryPath == null;
@@ -62,31 +51,26 @@ namespace ServiceStack
             if (!IsIntegratedPipeline && isAspNetHost && !hostedAtRootPath && !Env.IsMono)
                 DefaultHttpHandler = new DefaultHttpHandler();
 
-            ServeDefaultHandler = hostedAtRootPath || Env.IsMono;
-            if (ServeDefaultHandler)
+            foreach (var file in HostContext.VirtualPathProvider.GetRootFiles())
             {
-                foreach (var filePath in Directory.GetFiles(WebHostPhysicalPath))
+                var fileNameLower = file.Name.ToLower();
+                if (DefaultRootFileName == null && config.DefaultDocuments.Contains(fileNameLower))
                 {
-                    var fileNameLower = Path.GetFileName(filePath).ToLower();
-                    if (DefaultRootFileName == null && config.DefaultDocuments.Contains(fileNameLower))
+                    //Can't serve Default.aspx pages so ignore and allow for next default document
+                    if (!fileNameLower.EndsWith(".aspx"))
                     {
-                        //Can't serve Default.aspx pages when hostedAtRootPath so ignore and allow for next default document
-                        if (!(hostedAtRootPath && fileNameLower.EndsWith(".aspx")))
-                        {
-                            DefaultRootFileName = fileNameLower;
-                            ((StaticFileHandler)StaticFileHandler).SetDefaultFile(filePath);
+                        DefaultRootFileName = fileNameLower;
+                        ((StaticFileHandler)StaticFileHandler).SetDefaultFile(file.Name, file.ReadAllBytes(), file.LastModified);
 
-                            if (DefaultHttpHandler == null)
-                                DefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = DefaultRootFileName };
-                        }
+                        if (DefaultHttpHandler == null)
+                            DefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = DefaultRootFileName };
                     }
-                    WebHostRootFileNames.Add(Path.GetFileName(fileNameLower));
                 }
-                foreach (var dirName in Directory.GetDirectories(WebHostPhysicalPath))
-                {
-                    var dirNameLower = Path.GetFileName(dirName).ToLower();
-                    WebHostRootFileNames.Add(Path.GetFileName(dirNameLower));
-                }
+                WebHostRootFileNames.Add(file.Name.ToLower());
+            }
+            foreach (var dir in HostContext.VirtualPathProvider.GetRootDirectories())
+            {
+                WebHostRootFileNames.Add(dir.Name.ToLower());
             }
 
             if (!string.IsNullOrEmpty(config.DefaultRedirectPath))
@@ -174,18 +158,27 @@ namespace ServiceStack
                 var catchAllHandler = GetCatchAllHandlerIfAny(httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
                 if (catchAllHandler != null) return catchAllHandler;
 
-                return ServeDefaultHandler ? DefaultHttpHandler : NonRootModeDefaultHttpHandler;
+                if (mode == null)
+                    return DefaultHttpHandler;
+
+                if (DefaultRootFileName != null)
+                    return StaticFileHandler;
+
+                return NonRootModeDefaultHttpHandler;
             }
 
             if (mode != null && pathInfo.EndsWith(mode))
-            {
+            { 
                 var requestPath = context.Request.Path.ToLower();
                 if (requestPath == "/" + mode
                     || requestPath == mode
                     || requestPath == mode + "/")
                 {
+                    var pathProvider = HostContext.VirtualPathProvider;
+
+                    var defaultDoc = pathProvider.CombineVirtualPath(context.Request.PhysicalPath, DefaultRootFileName ?? "");
                     if (context.Request.PhysicalPath != WebHostPhysicalPath
-                        || !File.Exists(Path.Combine(context.Request.PhysicalPath, DefaultRootFileName ?? "")))
+                        || !pathProvider.FileExists(defaultDoc))
                     {
                         return new IndexPageHttpHandler();
                     }
@@ -243,7 +236,13 @@ namespace ServiceStack
                 var catchAllHandler = GetCatchAllHandlerIfAny(httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
                 if (catchAllHandler != null) return catchAllHandler;
 
-                return ServeDefaultHandler ? DefaultHttpHandler : NonRootModeDefaultHttpHandler;
+                if (mode == null)
+                    return DefaultHttpHandler;
+
+                if (DefaultRootFileName != null)
+                    return StaticFileHandler;
+
+                return NonRootModeDefaultHttpHandler;
             }
 
             if (mode != null && pathInfo.EndsWith(mode))
@@ -253,9 +252,11 @@ namespace ServiceStack
                     || requestPath == mode
                     || requestPath == mode + "/")
                 {
-                    //TODO: write test for this
+                    var pathProvider = HostContext.VirtualPathProvider;
+
+                    var defaultDoc = pathProvider.CombineVirtualPath(httpReq.ApplicationFilePath, DefaultRootFileName ?? "");
                     if (httpReq.GetPhysicalPath() != WebHostPhysicalPath
-                        || !File.Exists(Path.Combine(httpReq.ApplicationFilePath, DefaultRootFileName ?? "")))
+                        || !pathProvider.FileExists(defaultDoc))
                     {
                         return new IndexPageHttpHandler();
                     }
@@ -317,7 +318,7 @@ namespace ServiceStack
         // serve the file from the filesystem, restricting to a safelist of extensions
         private static bool ShouldAllow(string filePath)
         {
-            var fileExt = Path.GetExtension(filePath);
+            var fileExt = System.IO.Path.GetExtension(filePath);
             if (string.IsNullOrEmpty(fileExt)) return false;
             return HostContext.Config.AllowFileExtensions.Contains(fileExt.Substring(1));
         }
@@ -329,16 +330,16 @@ namespace ServiceStack
 
             string contentType;
             var restPath = RestHandler.FindMatchingRestPath(httpMethod, pathInfo, out contentType);
-            if (restPath != null)
+            if (restPath != null) 
                 return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.Name, ResponseContentType = contentType };
 
             var existingFile = pathParts[0].ToLower();
             if (WebHostRootFileNames.Contains(existingFile))
             {
-                var fileExt = Path.GetExtension(filePath);
+                var fileExt = System.IO.Path.GetExtension(filePath);
                 var isFileRequest = !string.IsNullOrEmpty(fileExt);
 
-                if (!isFileRequest && !AutoRedirectsDirs)
+                if (!isFileRequest && !HostAutoRedirectsDirs)
                 {
                     //If pathInfo is for Directory try again with redirect including '/' suffix
                     if (!pathInfo.EndsWith("/"))
@@ -354,14 +355,21 @@ namespace ServiceStack
                         }
                     }
                 }
-
+                
                 //e.g. CatchAllHandler to Process Markdown files
                 var catchAllHandler = GetCatchAllHandlerIfAny(httpMethod, pathInfo, filePath);
                 if (catchAllHandler != null) return catchAllHandler;
 
-                if (!isFileRequest) return NotFoundHttpHandler;
+                if (!isFileRequest)
+                {
+                    return HostContext.VirtualPathProvider.DirectoryExists(pathInfo) 
+                        ? StaticFileHandler 
+                        : NotFoundHttpHandler;
+                }
 
-                return ShouldAllow(requestPath) ? StaticFileHandler : ForbiddenHttpHandler;
+                return ShouldAllow(requestPath) 
+                    ? StaticFileHandler 
+                    : ForbiddenHttpHandler;
             }
 
             var handler = GetCatchAllHandlerIfAny(httpMethod, pathInfo, filePath);

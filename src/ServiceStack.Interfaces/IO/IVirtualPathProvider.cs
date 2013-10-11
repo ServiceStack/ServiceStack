@@ -22,6 +22,9 @@ namespace ServiceStack.IO
 
         IEnumerable<IVirtualFile> GetAllMatchingFiles(string globPattern, int maxDepth = Int32.MaxValue);
 
+        IEnumerable<IVirtualFile> GetRootFiles();
+        IEnumerable<IVirtualDirectory> GetRootDirectories();
+
         bool IsSharedFile(IVirtualFile virtualFile);
         bool IsViewFile(IVirtualFile virtualFile);
     }

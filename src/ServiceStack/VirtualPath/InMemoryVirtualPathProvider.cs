@@ -162,6 +162,18 @@ namespace ServiceStack.VirtualPath
             get { return FileLastModified; }
         }
 
+        public override long Length
+        {
+            get
+            {
+                return TextContents != null ? 
+                    TextContents.Length 
+                      : ByteContents != null ? 
+                    ByteContents.Length : 
+                    0;
+            }
+        }
+
         public string TextContents { get; set; }
 
         public byte[] ByteContents { get; set; }
@@ -171,6 +183,4 @@ namespace ServiceStack.VirtualPath
             return new MemoryStream(ByteContents ?? (TextContents ?? "").ToUtf8Bytes());
         }
     }
-
-
 }

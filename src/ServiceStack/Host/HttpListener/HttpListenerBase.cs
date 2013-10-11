@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading;
 using ServiceStack.Logging;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Host.HttpListener
 {
@@ -222,7 +223,17 @@ namespace ServiceStack.Host.HttpListener
                     serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
                 }
 
-                httpRes.StatusCode = 500;
+                var httpError = ex as IHttpError;
+                if (httpError != null)
+                {
+                    httpRes.StatusCode = httpError.Status;
+                    httpRes.StatusDescription = httpError.StatusDescription;
+                }
+                else
+                {
+                    httpRes.StatusCode = 500;
+                }
+
                 httpRes.ContentType = contentType;
 
                 serializer(requestCtx, errorResponse, httpRes);

@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using ServiceStack.IO;
-using ServiceStack.VirtualPath;
-using ServiceStack.WebHost.Endpoints;
 
-namespace ServiceStack.Plugins.Embedded.VirtualPath
+namespace ServiceStack.VirtualPath
 {
     public class MultiVirtualPathProvider : AbstractVirtualPathProviderBase
     {
@@ -14,7 +12,7 @@ namespace ServiceStack.Plugins.Embedded.VirtualPath
 
         public override IVirtualDirectory RootDirectory
         {
-            get { throw new NotImplementedException("Makes no sense here"); }
+            get { return ChildProviders.FirstOrDefault().RootDirectory; }
         }
 
         public override String VirtualPathSeparator { get { return "/"; } }
@@ -39,8 +37,13 @@ namespace ServiceStack.Plugins.Embedded.VirtualPath
 
         public override IVirtualFile GetFile(string virtualPath)
         {
-            return ChildProviders.Select(p => p.GetFile(virtualPath))
-                .FirstOrDefault();
+            foreach (var childProvider in ChildProviders)
+            {
+                var file = childProvider.GetFile(virtualPath);
+                if (file != null)
+                    return file;
+            }
+            return null;
         }
 
         public override IVirtualDirectory GetDirectory(string virtualPath)
@@ -53,6 +56,16 @@ namespace ServiceStack.Plugins.Embedded.VirtualPath
         {
             return ChildProviders.SelectMany(p => p.GetAllMatchingFiles(globPattern, maxDepth))
                 .Distinct();
+        }
+
+        public override IEnumerable<IVirtualFile> GetRootFiles()
+        {
+            return ChildProviders.SelectMany(x => x.RootDirectory.Files);
+        }
+
+        public override IEnumerable<IVirtualDirectory> GetRootDirectories()
+        {
+            return ChildProviders.SelectMany(x => x.RootDirectory.Directories);
         }
 
         public override bool IsSharedFile(IVirtualFile virtualFile)

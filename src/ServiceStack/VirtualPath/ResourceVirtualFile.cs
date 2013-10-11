@@ -2,9 +2,8 @@
 using System.IO;
 using System.Reflection;
 using ServiceStack.IO;
-using ServiceStack.VirtualPath;
 
-namespace ServiceStack.Plugins.Embedded.VirtualPath
+namespace ServiceStack.VirtualPath
 {
     public class ResourceVirtualFile : AbstractVirtualFileBase
     {
@@ -31,6 +30,21 @@ namespace ServiceStack.Plugins.Embedded.VirtualPath
             get { return GetLastWriteTimeOfBackingAsm(); }
         }
 
+
+        private long? length;
+        public override long Length
+        {
+            get
+            {
+                if (length == null)
+                {
+                    using (var s = OpenRead())
+                        length = s.Length;                    
+                }
+                return length.Value;
+            }
+        }
+
         public ResourceVirtualFile(IVirtualPathProvider owningProvider, ResourceVirtualDirectory directory,  string fileName)
             : base(owningProvider, directory)
         {
@@ -54,6 +68,12 @@ namespace ServiceStack.Plugins.Embedded.VirtualPath
         {
             var fInfo = new FileInfo(BackingAssembly.Location);
             return fInfo.LastWriteTime;
+        }
+
+        private long GetLengthOfBackingAsm()
+        {
+            var fInfo = new FileInfo(BackingAssembly.Location);
+            return fInfo.Length;
         }
     }
 }

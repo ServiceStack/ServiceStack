@@ -81,6 +81,7 @@
     <Compile Include="MsgPackServiceTests.cs" />
     <Compile Include="RazorRockstars_FilesTests.cs" />
     <Compile Include="ReqStarsService.cs" />
+    <Compile Include="VirtualPathTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
@@ -101,6 +102,19 @@
     </None>
     <Content Include="..\..\lib\sqlite3.dll">
       <Link>sqlite3.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <EmbeddedResource Include="Content\static-sub-embedded.txt" />
+    <Content Include="Content\default.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\static-sub.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <EmbeddedResource Include="static-root-embedded.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <Content Include="static-root.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Views\PartialModel.cshtml">

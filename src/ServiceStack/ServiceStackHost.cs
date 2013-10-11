@@ -89,7 +89,6 @@ namespace ServiceStack
             Config = HostConfig.ResetInstance();
             OnConfigLoad();
 
-            VirtualPathProvider = new FileSystemVirtualPathProvider(this, Config.WebHostPhysicalPath);
             Config.DebugMode = GetType().Assembly.IsDebugBuild();
             if (Config.DebugMode)
             {
@@ -98,6 +97,15 @@ namespace ServiceStack
 
             ServiceController.Init();
             Configure(Container);
+
+            if (VirtualPathProvider == null)
+            {
+                VirtualPathProvider = Config.AllowEmbdeddedResources
+                    ? (IVirtualPathProvider)new MultiVirtualPathProvider(this,
+                        new FileSystemVirtualPathProvider(this, Config.WebHostPhysicalPath),
+                        new ResourceVirtualPathProvider(this))
+                    : new FileSystemVirtualPathProvider(this, Config.WebHostPhysicalPath);
+            }
 
             OnAfterInit();
 
@@ -413,6 +421,29 @@ namespace ServiceStack
         public virtual string ResolveAbsoluteUrl(string virtualPath, IHttpRequest httpReq)
         {
             return httpReq.GetAbsoluteUrl(virtualPath); //Http Listener, TODO: ASP.NET overrides
+        }
+
+        public virtual string ResolvePhysicalPath(string virtualPath, IHttpRequest httpReq)
+        {
+            return VirtualPathProvider.CombineVirtualPath(VirtualPathProvider.RootDirectory.RealPath, virtualPath);
+        }
+
+        public virtual IVirtualFile ResolveVirtualFile(string virtualPath, IHttpRequest httpReq)
+        {
+            return VirtualPathProvider.GetFile(virtualPath);
+        }
+
+        public virtual IVirtualDirectory ResolveVirtualDirectory(string virtualPath, IHttpRequest httpReq)
+        {
+            return virtualPath == VirtualPathProvider.VirtualPathSeparator
+                ? VirtualPathProvider.RootDirectory
+                : VirtualPathProvider.GetDirectory(virtualPath);
+        }
+
+        public virtual IVirtualNode ResolveVirtualNode(string virtualPath, IHttpRequest httpReq)
+        {
+            return (IVirtualNode) ResolveVirtualFile(virtualPath, httpReq) 
+                ?? ResolveVirtualDirectory(virtualPath, httpReq);
         }
 
         public virtual void LoadPlugin(params IPlugin[] plugins)

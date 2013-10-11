@@ -110,6 +110,8 @@ namespace ServiceStack
                 Return204NoContentForEmptyResponse = true,
                 AllowPartialResponses = true,
                 AllowAclUrlReservation = true,
+                AllowEmbdeddedResources = true,
+                RedirectToDefaultDocuments = false,
                 IgnoreWarningsOnPropertyNames = new List<string> {
                     "format", "callback", "debug", "_", "authsecret"
                 }
@@ -175,6 +177,8 @@ namespace ServiceStack
             this.IgnoreWarningsOnPropertyNames = instance.IgnoreWarningsOnPropertyNames;
             this.FallbackRestPath = instance.FallbackRestPath;
             this.AllowAclUrlReservation = instance.AllowAclUrlReservation;
+            this.AllowEmbdeddedResources = instance.AllowEmbdeddedResources;
+            this.RedirectToDefaultDocuments = instance.RedirectToDefaultDocuments;
             this.AdminAuthSecret = instance.AdminAuthSecret;
         }
 
@@ -249,6 +253,8 @@ namespace ServiceStack
         public bool AllowPartialResponses { get; set; }
         public bool AllowNonHttpOnlyCookies { get; set; }
         public bool AllowAclUrlReservation { get; set; }
+        public bool AllowEmbdeddedResources { get; set; }
+        public bool RedirectToDefaultDocuments { get; set; }
 
         public bool UseHttpsLinks { get; set; }
 

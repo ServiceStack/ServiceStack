@@ -23,6 +23,11 @@ namespace ServiceStack.VirtualPath
             get { return BackingFile.LastWriteTime; }
         }
 
+        public override long Length
+        {
+            get { return BackingFile.Length; }
+        }
+
         public FileSystemVirtualFile(IVirtualPathProvider owningProvider, IVirtualDirectory directory, FileInfo fInfo) 
             : base(owningProvider, directory)
         {

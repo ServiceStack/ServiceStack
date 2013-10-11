@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using ServiceStack.Common.Extensions;
 using ServiceStack.IO;
-using ServiceStack.VirtualPath;
 using ServiceStack.Text;
 
-namespace ServiceStack.Plugins.Embedded.VirtualPath
+namespace ServiceStack.VirtualPath
 {
     public class ResourceVirtualDirectory : AbstractVirtualDirectoryBase
     {
@@ -61,7 +59,7 @@ namespace ServiceStack.Plugins.Embedded.VirtualPath
             SubFiles = new List<ResourceVirtualFile>();
 
             var rootNamespace = backingAssembly.GetName().Name;
-            var resourceNames = manifestResourceNames
+            var resourceNames = manifestResourceNames.ToList()
                 .ConvertAll(n => n.Replace(rootNamespace, "").TrimStart('.'));
 
             SubFiles.AddRange(resourceNames
@@ -93,10 +91,6 @@ namespace ServiceStack.Plugins.Embedded.VirtualPath
 
         protected virtual ResourceVirtualFile CreateVirtualFile(String resourceName)
         {
-#if NET_40
-            Contract.Requires(!String.IsNullOrEmpty(resourceName));
-#endif
-
             try
             {
                 var fullResourceName = String.Concat(RealPath, VirtualPathProvider.RealPathSeparator, resourceName);
@@ -115,9 +109,6 @@ namespace ServiceStack.Plugins.Embedded.VirtualPath
 
         protected virtual ResourceVirtualDirectory ConsumeTokensForVirtualDir(Stack<string> resourceTokens)
         {
-#if NET_40
-            Contract.Requires(resourceTokens.Count > 1);
-#endif
             var subDirName = resourceTokens.Pop();
             throw new NotImplementedException();
         }
