@@ -23,7 +23,7 @@ namespace ServiceStack
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(AsyncServiceClient));
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(60);
-        private HttpWebRequest _webRequest = null;
+        private HttpWebRequest webRequest = null;
 
         /// <summary>
         /// The request filter is called before any request.
@@ -71,7 +71,7 @@ namespace ServiceStack
 
         internal class RequestState<TResponse> : IDisposable
         {
-            private bool _timedOut; // Pass the correct error back even on Async Calls
+            private bool timedOut; // Pass the correct error back even on Async Calls
 
             public RequestState()
             {
@@ -143,7 +143,7 @@ namespace ServiceStack
                     return;
 
                 Exception toReturn = ex;
-                if (_timedOut)
+                if (timedOut)
                 {
 #if SILVERLIGHT
                     WebException we = new WebException("The request timed out", ex, WebExceptionStatus.RequestCanceled, null);
@@ -209,7 +209,7 @@ namespace ServiceStack
                 {
                     if (this.WebRequest != null)
                     {
-                        _timedOut = true;
+                        timedOut = true;
                         this.WebRequest.Abort();
                     }
                 }
@@ -271,11 +271,11 @@ namespace ServiceStack
 
         public void CancelAsync()
         {
-            if (_webRequest != null)
+            if (webRequest != null)
             {
                 // Request will be nulled after it throws an exception on its async methods
                 // See - http://msdn.microsoft.com/en-us/library/system.net.httpwebrequest.abort
-                _webRequest.Abort();
+                webRequest.Abort();
             }
         }
 
@@ -325,19 +325,19 @@ namespace ServiceStack
             }
 
 #else
-            _webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
+            webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
 
             if (StoreCookies)
             {
-                _webRequest.CookieContainer = CookieContainer;
+                webRequest.CookieContainer = CookieContainer;
             }
 #endif
 
 #if !SILVERLIGHT
             if (!DisableAutoCompression)
             {
-                _webRequest.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip,deflate");
-                _webRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+                webRequest.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip,deflate");
+                webRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
             }
 #endif
 
@@ -348,7 +348,7 @@ namespace ServiceStack
 #if SILVERLIGHT && !WINDOWS_PHONE && !NETFX_CORE
                 WebRequest = webRequest,
 #else
-                WebRequest = _webRequest,
+                WebRequest = webRequest,
 #endif
                 Request = request,
                 OnSuccess = onSuccess,
@@ -362,7 +362,7 @@ namespace ServiceStack
 #if SILVERLIGHT && !WINDOWS_PHONE && !NETFX_CORE
             SendWebRequestAsync(httpMethod, request, requestState, webRequest);
 #else
-            SendWebRequestAsync(httpMethod, request, requestState, _webRequest);
+            SendWebRequestAsync(httpMethod, request, requestState, webRequest);
 #endif
 
             return requestState;
@@ -598,7 +598,7 @@ namespace ServiceStack
 #else
                     responseStream.Close();
 #endif
-                    _webRequest = null;
+                    webRequest = null;
                 }
             }
             catch (Exception ex)
@@ -670,7 +670,7 @@ namespace ServiceStack
             Log.Debug(string.Format("Exception Reading Response Error: {0}", exception.Message), exception);
             requestState.HandleError(default(TResponse), exception);
 
-            _webRequest = null;
+            webRequest = null;
         }
 
         private void ApplyWebResponseFilters(WebResponse webResponse)
