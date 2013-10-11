@@ -32,7 +32,7 @@ namespace ServiceStack.VirtualPath
 
         public override string CombineVirtualPath(string basePath, string relativePath)
         {
-            return Path.Combine(basePath, relativePath);
+            return basePath.CombineWith(relativePath);
         }
 
         public override IVirtualFile GetFile(string virtualPath)

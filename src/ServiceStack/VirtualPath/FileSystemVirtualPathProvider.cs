@@ -39,7 +39,7 @@ namespace ServiceStack.VirtualPath
             if (RootDirInfo == null)
                 RootDirInfo = new DirectoryInfo(AppHost.Config.WebHostPhysicalPath);
 
-            if (RootDirInfo == null || ! RootDirInfo.Exists)
+            if (RootDirInfo == null || !RootDirInfo.Exists)
                 throw new ApplicationException(
                     "RootDir '{0}' for virtual path does not exist".Fmt(RootDirInfo.FullName));
 

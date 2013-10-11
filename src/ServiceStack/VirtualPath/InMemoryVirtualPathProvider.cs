@@ -79,14 +79,14 @@ namespace ServiceStack.VirtualPath
 
         public override IEnumerable<IVirtualFile> Files
         {
-            get { return files.Cast<IVirtualFile>(); }
+            get { return files; }
         }
 
         public List<InMemoryVirtualDirectory> dirs;
 
         public override IEnumerable<IVirtualDirectory> Directories
         {
-            get { return dirs.Cast<IVirtualDirectory>(); }
+            get { return dirs; }
         }
 
         public string DirName { get; set; }

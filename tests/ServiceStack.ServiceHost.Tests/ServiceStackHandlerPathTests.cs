@@ -4,40 +4,41 @@ using System.Linq;
 using NUnit.Framework;
 using ServiceStack.Testing;
 using ServiceStack.Text;
+using ServiceStack.VirtualPath;
 
 namespace ServiceStack.ServiceHost.Tests
 {
-	public class RequestPath
-	{
-		public RequestPath(string path, string host, string pathInfo, string rawUrl)
-		{
-			Path = path;
-			Host = host;
-			PathInfo = pathInfo;
-			RawUrl = rawUrl;
-			AbsoluteUri = "http://localhost" + rawUrl;
-		}
+    public class RequestPath
+    {
+        public RequestPath(string path, string host, string pathInfo, string rawUrl)
+        {
+            Path = path;
+            Host = host;
+            PathInfo = pathInfo;
+            RawUrl = rawUrl;
+            AbsoluteUri = "http://localhost" + rawUrl;
+        }
 
-		public string Path { get; set; }
-		public string Host { get; set; }
-		public string PathInfo { get; set; }
-		public string RawUrl { get; set; }
-		public string AbsoluteUri { get; set; }
-	}
+        public string Path { get; set; }
+        public string Host { get; set; }
+        public string PathInfo { get; set; }
+        public string RawUrl { get; set; }
+        public string AbsoluteUri { get; set; }
+    }
 
-	[TestFixture]
-	public class ServiceStackHandlerPathTests
-	{
-		public string ResolvePath(string mode, string path)
-		{
-			return HttpRequestExtensions.
-				GetPathInfo(path, mode, path.Split('/').First(x => x != ""));
-		}
+    [TestFixture]
+    public class ServiceStackHandlerPathTests
+    {
+        public string ResolvePath(string mode, string path)
+        {
+            return HttpRequestExtensions.
+                GetPathInfo(path, mode, path.Split('/').First(x => x != ""));
+        }
 
-		[Test]
-		public void Can_resolve_root_path()
-		{
-			var results = new List<string> {
+        [Test]
+        public void Can_resolve_root_path()
+        {
+            var results = new List<string> {
 				ResolvePath(null, "/handler.all35"),
 				ResolvePath(null, "/handler.all35/"),
 				ResolvePath("api", "/location.api.wildcard35/api"),
@@ -46,15 +47,15 @@ namespace ServiceStack.ServiceHost.Tests
 				ResolvePath("servicestack", "/location.servicestack.wildcard35/servicestack/"),
 			};
 
-			Console.WriteLine(results.Dump());
+            Console.WriteLine(results.Dump());
 
-			Assert.That(results.All(x => x == "/"));
-		}
+            Assert.That(results.All(x => x == "/"));
+        }
 
-		[Test]
-		public void Can_resolve_metadata_paths()
-		{
-			var results = new List<string> {
+        [Test]
+        public void Can_resolve_metadata_paths()
+        {
+            var results = new List<string> {
 				ResolvePath(null, "/handler.all35/metadata"),
 				ResolvePath(null, "/handler.all35/metadata/"),
 				ResolvePath("api", "/location.api.wildcard35/api/metadata"),
@@ -63,15 +64,15 @@ namespace ServiceStack.ServiceHost.Tests
 				ResolvePath("servicestack", "/location.servicestack.wildcard35/servicestack/metadata/"),
 			};
 
-			Console.WriteLine(results.Dump());
+            Console.WriteLine(results.Dump());
 
-			Assert.That(results.All(x => x == "/metadata"));
-		}
+            Assert.That(results.All(x => x == "/metadata"));
+        }
 
-		[Test]
-		public void Can_resolve_metadata_json_paths()
-		{
-			var results = new List<string> {
+        [Test]
+        public void Can_resolve_metadata_json_paths()
+        {
+            var results = new List<string> {
 				ResolvePath(null, "/handler.all35/json/metadata"),
 				ResolvePath(null, "/handler.all35/json/metadata/"),
 				ResolvePath("api", "/location.api.wildcard35/api/json/metadata"),
@@ -80,43 +81,42 @@ namespace ServiceStack.ServiceHost.Tests
 				ResolvePath("servicestack", "/location.api.wildcard35/servicestack/json/metadata/"),
 			};
 
-			Console.WriteLine(results.Dump());
+            Console.WriteLine(results.Dump());
 
-			Assert.That(results.All(x => x == "/json/metadata"));
-		}
+            Assert.That(results.All(x => x == "/json/metadata"));
+        }
 
-		[Test]
-		public void Can_resolve_paths_with_multipart_root()
-		{
-			var results = new List<string> {
+        [Test]
+        public void Can_resolve_paths_with_multipart_root()
+        {
+            var results = new List<string> {
 				HttpRequestExtensions.GetPathInfo("/api/foo/metadata", "api/foo", "api"),
 				HttpRequestExtensions.GetPathInfo("/api/foo/1.0/wildcard/metadata", "api/foo/1.0/wildcard", "api"),
 				HttpRequestExtensions.GetPathInfo("/location.api.wildcard35/api/foo/metadata", "api/foo", "api"),
 				HttpRequestExtensions.GetPathInfo("/this/is/very/nested/metadata", "this/is/very/nested", "api"),
 			};
 
-			Console.WriteLine(results.Dump());
+            Console.WriteLine(results.Dump());
 
-			Assert.That(results.All(x => x == "/metadata"));
-		}
+            Assert.That(results.All(x => x == "/metadata"));
+        }
 
-		[Test]
-		public void GetPhysicalPath_Honours_WebHostPhysicalPath()
-		{
-            using (new BasicAppHost().Init())
+        [Test]
+        public void GetPhysicalPath_Honours_WebHostPhysicalPath()
+        {
+            using (var appHost = new BasicAppHost {
+                ConfigFilter = c => {
+                    c.WebHostPhysicalPath = "c:/Windows/Temp";
+                }
+            }.Init())
             {
-                string root = "c:/MyWebRoot";
                 var mock = new HttpRequestMock();
 
-                string originalPath = HostContext.Config.WebHostPhysicalPath;
+                string originalPath = appHost.Config.WebHostPhysicalPath.Replace("/","\\");
                 string path = mock.GetPhysicalPath();
-                Assert.AreEqual(string.Format("{0}/{1}", originalPath, mock.PathInfo), path);
-
-                HostContext.Config.WebHostPhysicalPath = root;
-                path = mock.GetPhysicalPath();
-                Assert.AreEqual(string.Format("{0}/{1}", root, mock.PathInfo), path);
+                Assert.That(path, Is.EqualTo("{0}\\{1}".Fmt(originalPath, mock.PathInfo)));
             }
-		}
-	}
+        }
+    }
 
 }

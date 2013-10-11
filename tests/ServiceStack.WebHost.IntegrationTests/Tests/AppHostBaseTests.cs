@@ -1,22 +1,17 @@
 using System.Net;
 using NUnit.Framework;
-using ServiceStack.Common;
-using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
 {
-	/// <summary>
-	/// Note: These tests don't test ServiceStack when its mounted at /api
-	/// </summary>
 	[TestFixture]
 	public class AppHostBaseTests
 	{
         private const string BasePath = Config.AbsoluteBaseUri;
 
 		[Test]
-		public void Root_path_redirects_to_metadata_page()
+		public void Can_download_metadata_page()
 		{
-            var html = Config.ServiceStackBaseUri.GetStringFromUrl();
+            var html = Config.ServiceStackBaseUri.CombineWith("metadata").GetStringFromUrl();
 			Assert.That(html.Contains("The following operations are supported."));
 		}
 
@@ -35,11 +30,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		}
 
 		[Test]
-		public void Gets_404_3_on_page_with_non_whitelisted_extension()
+		public void Gets_403_on_page_with_non_whitelisted_extension()
 		{
 			var webRes = (BasePath + "api/webpage.forbidden").GetErrorResponse();
-			Assert.That(webRes.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+			Assert.That(webRes.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
 		}
-		 
-	}
+
+    }
 }

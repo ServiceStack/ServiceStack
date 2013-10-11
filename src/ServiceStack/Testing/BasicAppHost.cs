@@ -15,11 +15,16 @@ namespace ServiceStack.Testing
 
         public override void Configure(Container container)
         {
-            if (ConfigureFilter != null)
-                ConfigureFilter(container);
+            if (ConfigureContainer != null)
+                ConfigureContainer(container);
+
+            if (ConfigureAppHost != null)
+                ConfigureAppHost(this);
         }
 
-        public Action<Container> ConfigureFilter { get; set; }
+        public Action<Container> ConfigureContainer { get; set; }
+
+        public Action<BasicAppHost> ConfigureAppHost { get; set; }
 
         public Action<HostConfig> ConfigFilter { get; set; }
 

@@ -26,22 +26,26 @@ namespace ServiceStack.Host.Handlers
                 r.Write("\nRequest.HttpMethod: " + request.HttpMethod);
                 r.Write("\nRequest.PathInfo: " + request.PathInfo);
                 r.Write("\nRequest.QueryString: " + request.QueryString);
-                r.Write("\nRequest.RawUrl: " + request.RawUrl);
 
-                if (IsIntegratedPipeline.HasValue)
-                    r.Write("\nApp.IsIntegratedPipeline: " + IsIntegratedPipeline);
-                if (!WebHostPhysicalPath.IsNullOrEmpty())
-                    r.Write("\nApp.WebHostPhysicalPath: " + WebHostPhysicalPath);
-                if (!WebHostRootFileNames.IsEmpty())
-                    r.Write("\nApp.WebHostRootFileNames: " + TypeSerializer.SerializeToString(WebHostRootFileNames));
-                if (!ApplicationBaseUrl.IsNullOrEmpty())
-                    r.Write("\nApp.ApplicationBaseUrl: " + ApplicationBaseUrl);
-                if (!DefaultRootFileName.IsNullOrEmpty())
-                    r.Write("\nApp.DefaultRootFileName: " + DefaultRootFileName);
-                if (!DefaultHandler.IsNullOrEmpty())
-                    r.Write("\nApp.DefaultHandler: " + DefaultHandler);
-                if (!HttpHandlerFactory.DebugLastHandlerArgs.IsNullOrEmpty())
-                    r.Write("\nApp.DebugLastHandlerArgs: " + HttpHandlerFactory.DebugLastHandlerArgs);
+                if (HostContext.Config.DebugMode)
+                {
+                    r.Write("\nRequest.RawUrl: " + request.RawUrl);
+
+                    if (IsIntegratedPipeline.HasValue)
+                        r.Write("\nApp.IsIntegratedPipeline: " + IsIntegratedPipeline);
+                    if (!WebHostPhysicalPath.IsNullOrEmpty())
+                        r.Write("\nApp.WebHostPhysicalPath: " + WebHostPhysicalPath);
+                    if (!WebHostRootFileNames.IsEmpty())
+                        r.Write("\nApp.WebHostRootFileNames: " + TypeSerializer.SerializeToString(WebHostRootFileNames));
+                    if (!ApplicationBaseUrl.IsNullOrEmpty())
+                        r.Write("\nApp.ApplicationBaseUrl: " + ApplicationBaseUrl);
+                    if (!DefaultRootFileName.IsNullOrEmpty())
+                        r.Write("\nApp.DefaultRootFileName: " + DefaultRootFileName);
+                    if (!DefaultHandler.IsNullOrEmpty())
+                        r.Write("\nApp.DefaultHandler: " + DefaultHandler);
+                    if (!HttpHandlerFactory.DebugLastHandlerArgs.IsNullOrEmpty())
+                        r.Write("\nApp.DebugLastHandlerArgs: " + HttpHandlerFactory.DebugLastHandlerArgs);
+                }
             });
 		}
 
@@ -59,18 +63,22 @@ namespace ServiceStack.Host.Handlers
                 r.Write("\nRequest.HttpMethod: " + request.HttpMethod);
                 r.Write("\nRequest.PathInfo: " + request.PathInfo);
                 r.Write("\nRequest.QueryString: " + request.QueryString);
-                r.Write("\nRequest.RawUrl: " + request.RawUrl);
 
-                if (IsIntegratedPipeline.HasValue)
-                    r.Write("\nApp.IsIntegratedPipeline: " + IsIntegratedPipeline);
-                if (!WebHostPhysicalPath.IsNullOrEmpty())
-                    r.Write("\nApp.WebHostPhysicalPath: " + WebHostPhysicalPath);
-                if (!WebHostRootFileNames.IsEmpty())
-                    r.Write("\nApp.WebHostRootFileNames: " + TypeSerializer.SerializeToString(WebHostRootFileNames));
-                if (!ApplicationBaseUrl.IsNullOrEmpty())
-                    r.Write("\nApp.ApplicationBaseUrl: " + ApplicationBaseUrl);
-                if (!DefaultRootFileName.IsNullOrEmpty())
-                    r.Write("\nApp.DefaultRootFileName: " + DefaultRootFileName);
+                if (HostContext.Config.DebugMode)
+                {
+                    r.Write("\nRequest.RawUrl: " + request.RawUrl);
+
+                    if (IsIntegratedPipeline.HasValue)
+                        r.Write("\nApp.IsIntegratedPipeline: " + IsIntegratedPipeline);
+                    if (!WebHostPhysicalPath.IsNullOrEmpty())
+                        r.Write("\nApp.WebHostPhysicalPath: " + WebHostPhysicalPath);
+                    if (!WebHostRootFileNames.IsEmpty())
+                        r.Write("\nApp.WebHostRootFileNames: " + TypeSerializer.SerializeToString(WebHostRootFileNames));
+                    if (!ApplicationBaseUrl.IsNullOrEmpty())
+                        r.Write("\nApp.ApplicationBaseUrl: " + ApplicationBaseUrl);
+                    if (!DefaultRootFileName.IsNullOrEmpty())
+                        r.Write("\nApp.DefaultRootFileName: " + DefaultRootFileName);
+                }
             });
 		}
 

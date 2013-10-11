@@ -19,7 +19,7 @@ namespace ServiceStack.Common.Tests.OAuth
         {
             appHost = new BasicAppHost
             {
-                ConfigureFilter = c =>
+                ConfigureContainer = c =>
                 {
                     var authService = new AuthenticateService();
                     c.Register(authService);
