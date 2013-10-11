@@ -4,7 +4,6 @@ using System.Linq;
 using NUnit.Framework;
 using ServiceStack.Testing;
 using ServiceStack.Text;
-using ServiceStack.VirtualPath;
 
 namespace ServiceStack.ServiceHost.Tests
 {
@@ -112,9 +111,12 @@ namespace ServiceStack.ServiceHost.Tests
             {
                 var mock = new HttpRequestMock();
 
-                string originalPath = appHost.Config.WebHostPhysicalPath.Replace("/","\\");
+                string originalPath = appHost.Config.WebHostPhysicalPath;
                 string path = mock.GetPhysicalPath();
-                Assert.That(path, Is.EqualTo("{0}\\{1}".Fmt(originalPath, mock.PathInfo)));
+
+                var normalizePaths = (Func<string, string>)(p => p == null ? null : p.Replace('\\', '/'));
+
+                Assert.That(normalizePaths(path), Is.EqualTo(normalizePaths("{0}/{1}".Fmt(originalPath, mock.PathInfo))));
             }
         }
     }
