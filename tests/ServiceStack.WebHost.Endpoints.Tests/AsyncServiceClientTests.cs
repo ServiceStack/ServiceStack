@@ -1,5 +1,3 @@
-using System;
-using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
@@ -27,11 +25,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         protected abstract IServiceClient CreateServiceClient();
-
-        private static void FailOnAsyncError<T>(T response, Exception ex)
-        {
-            Assert.Fail(ex.Message);
-        }
 
         [Test]
         public async Task Can_call_SendAsync_on_ServiceClient()

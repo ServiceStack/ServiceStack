@@ -233,6 +233,11 @@ namespace ServiceStack
 
                 requestState.WebResponse = (HttpWebResponse)webRequest.EndGetResponse(asyncResult);
 
+                if (requestState.ResponseContentLength == default(long))
+                {
+                    requestState.ResponseContentLength = requestState.WebResponse.ContentLength;
+                }
+
                 ApplyWebResponseFilters(requestState.WebResponse);
 
                 if (typeof(T) == typeof(HttpWebResponse))
@@ -298,12 +303,6 @@ namespace ServiceStack
                         requestState.BytesData.Write(requestState.BufferRead, 0, read);
 
                         var responeStreamTask = responseStream.ReadAsync(requestState.BufferRead, 0, BufferSize);
-
-
-                        if (requestState.ResponseContentLength <= default(long))
-                        {
-                            requestState.ResponseContentLength = requestState.WebResponse.ContentLength;
-                        }
 
                         requestState.ResponseBytesRead += read;
                         if (OnDownloadProgress != null)
