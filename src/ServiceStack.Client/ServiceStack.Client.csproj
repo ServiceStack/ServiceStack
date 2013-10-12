@@ -45,7 +45,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AsyncState.cs" />
     <Compile Include="AsyncServiceClient.cs" />
+    <Compile Include="AsyncUtils.cs" />
     <Compile Include="AuthDtos.cs" />
     <Compile Include="ClientFactory.cs" />
     <Compile Include="ContentFormat.cs" />
