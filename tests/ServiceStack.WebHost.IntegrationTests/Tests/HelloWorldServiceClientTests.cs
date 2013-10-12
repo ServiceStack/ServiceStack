@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Threading;
+﻿using System.Collections;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
@@ -44,13 +43,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         }
 
         [Test, TestCaseSource("RestClients")]
-        public void Async_Call_HelloWorld_with_ServiceClients_on_PreDefined_Routes(IServiceClient client)
+        public async Task Async_Call_HelloWorld_with_ServiceClients_on_PreDefined_Routes(IServiceClient client)
         {
-            HelloResponse response = null;
-            client.SendAsync<HelloResponse>(new Hello { Name = "World!" },
-                r => response = r, (r, e) => Assert.Fail("NetworkError"));
-
-            Thread.Sleep(TimeSpan.FromSeconds(1));
+            var response = await client.SendAsync<HelloResponse>(new Hello { Name = "World!" });
 
             Assert.That(response.Result, Is.EqualTo("Hello, World!"));
         }
@@ -64,15 +59,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         }
 
         [Test, TestCaseSource("RestClients")]
-        public void Async_Call_HelloWorld_with_Async_ServiceClients_on_UserDefined_Routes(IServiceClient client)
+        public async Task Async_Call_HelloWorld_with_Async_ServiceClients_on_UserDefined_Routes(IServiceClient client)
         {
-            HelloResponse response = null;
-            client.GetAsync<HelloResponse>("/hello/World!",
-                r => response = r, (r, e) => Assert.Fail("NetworkError"));
-
-            var i = 0;
-            while (response == null && i++ < 5)
-                Thread.Sleep(TimeSpan.FromSeconds(1));
+            var response = await client.GetAsync<HelloResponse>("/hello/World!");
 
             Assert.That(response.Result, Is.EqualTo("Hello, World!"));
         }

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Logging;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
@@ -37,49 +37,40 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 
 		[Test]
-		public void Can_call_GetAsync_on_GetFactorial_using_RestClientAsync()
+		public async Task Can_call_GetAsync_on_GetFactorial_using_RestClientAsync()
 		{
 			var asyncClient = CreateAsyncRestClient();
 
-			GetFactorialResponse response = null;
-			asyncClient.GetAsync<GetFactorialResponse>("factorial/3", r => response = r, FailOnAsyncError);
-
-			Thread.Sleep(1000);
+			var response = await asyncClient.GetAsync<GetFactorialResponse>("factorial/3");
 
 			Assert.That(response, Is.Not.Null, "No response received");
 			Assert.That(response.Result, Is.EqualTo(GetFactorialService.GetFactorial(3)));
 		}
 
 		[Test]
-		public void Can_call_GetAsync_on_Movies_using_RestClientAsync()
+        public async Task Can_call_GetAsync_on_Movies_using_RestClientAsync()
 		{
 			var asyncClient = CreateAsyncRestClient();
 
-			MoviesResponse response = null;
-			asyncClient.GetAsync<MoviesResponse>("movies", r => response = r, FailOnAsyncError);
-
-			Thread.Sleep(1000);
+			var response = await asyncClient.GetAsync<MoviesResponse>("movies");
 
 			Assert.That(response, Is.Not.Null, "No response received");
 			Assert.That(response.Movies.EquivalentTo(ResetMoviesService.Top5Movies));
 		}
 
 		[Test]
-		public void Can_call_GetAsync_on_single_Movie_using_RestClientAsync()
+        public async Task Can_call_GetAsync_on_single_Movie_using_RestClientAsync()
 		{
 			var asyncClient = CreateAsyncRestClient();
 
-			MovieResponse response = null;
-			asyncClient.GetAsync<MovieResponse>("movies/1", r => response = r, FailOnAsyncError);
-
-			Thread.Sleep(1000);
+			var response = await asyncClient.GetAsync<MovieResponse>("movies/1");
 
 			Assert.That(response, Is.Not.Null, "No response received");
 			Assert.That(response.Movie.Id, Is.EqualTo(1));
 		}
 
 		[Test]
-		public void Can_call_PostAsync_to_add_new_Movie_using_RestClientAsync()
+        public async Task Can_call_PostAsync_to_add_new_Movie_using_RestClientAsync()
 		{
 			var asyncClient = CreateAsyncRestClient();
 
@@ -94,11 +85,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				Genres = new List<string> { "Adventure", "Drama", "Thriller" },
 			};
 
-			MovieResponse response = null;
-			asyncClient.PostAsync<MovieResponse>("movies", newMovie,
-				r => response = r, FailOnAsyncError);
-
-			Thread.Sleep(1000);
+			var response = await asyncClient.PostAsync<MovieResponse>("movies", newMovie);
 
 			Assert.That(response, Is.Not.Null, "No response received");
 
@@ -108,7 +95,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 
 		[Test]
-		public void Can_call_DeleteAsync_to_delete_Movie_using_RestClientAsync()
+        public async Task Can_call_DeleteAsync_to_delete_Movie_using_RestClientAsync()
 		{
 			var asyncClient = CreateAsyncRestClient();
 
@@ -123,17 +110,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				Genres = new List<string> { "Adventure", "Drama", "Thriller" },
 			};
 
-			MovieResponse response = null;
-			Movie createdMovie = null;
-			asyncClient.PostAsync<MovieResponse>("movies", newMovie,
-				r =>
-				{
-					createdMovie = r.Movie;
-					asyncClient.DeleteAsync<MovieResponse>("movies/" + createdMovie.Id, 
-						dr => response = dr, FailOnAsyncError);
-				}, FailOnAsyncError);
+			var response = await asyncClient.PostAsync<MovieResponse>("movies", newMovie);
 
-			Thread.Sleep(1000);
+		    var createdMovie = response.Movie;
+
+            response = await asyncClient.DeleteAsync<MovieResponse>("movies/" + createdMovie.Id);
 
 			Assert.That(response, Is.Not.Null, "No response received");
 			Assert.That(createdMovie, Is.Not.Null);

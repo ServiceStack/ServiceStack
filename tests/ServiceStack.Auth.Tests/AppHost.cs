@@ -1,6 +1,5 @@
 ﻿#define HTTP_LISTENER
 using Funq;
-using ServiceStack.Admin;
 using ServiceStack.Authentication.OAuth2;
 using ServiceStack.Authentication.OpenId;
 using ServiceStack.Caching;
@@ -12,7 +11,6 @@ using ServiceStack.MiniProfiler.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.Razor;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints;
 
 #if HTTP_LISTENER
 namespace ServiceStack.Auth.Tests

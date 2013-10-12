@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using System.Xml;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
@@ -341,87 +342,87 @@ namespace ServiceStack
             }
         }
 
-        public void SendAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
-        {
-            throw new NotImplementedException();
-        }
-
         public void SetCredentials(string userName, string password)
         {
             throw new NotImplementedException();
         }
 
-        public void GetAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto)
         {
             throw new NotImplementedException();
         }
 
-        public void GetAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public Task<TResponse> GetAsync<TResponse>(object requestDto)
         {
             throw new NotImplementedException();
         }
 
-        public void GetAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public Task<TResponse> GetAsync<TResponse>(string relativeOrAbsoluteUrl)
         {
             throw new NotImplementedException();
         }
 
-        public void DeleteAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public Task<TResponse> DeleteAsync<TResponse>(IReturn<TResponse> requestDto)
         {
             throw new NotImplementedException();
         }
 
-        public void DeleteAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public Task<TResponse> DeleteAsync<TResponse>(object requestDto)
         {
             throw new NotImplementedException();
         }
 
-        public void DeleteAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public Task<TResponse> DeleteAsync<TResponse>(string relativeOrAbsoluteUrl)
         {
             throw new NotImplementedException();
         }
 
-        public void PostAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public Task<TResponse> PostAsync<TResponse>(IReturn<TResponse> requestDto)
         {
             throw new NotImplementedException();
         }
 
-        public void PostAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public Task<TResponse> PostAsync<TResponse>(object requestDto)
         {
             throw new NotImplementedException();
         }
 
-        public void PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public Task<TResponse> PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request)
         {
             throw new NotImplementedException();
         }
 
-        public void PutAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto)
         {
             throw new NotImplementedException();
         }
 
-        public void PutAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public Task<TResponse> PutAsync<TResponse>(object requestDto)
         {
             throw new NotImplementedException();
         }
 
-        public void PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public Task<TResponse> PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request)
         {
             throw new NotImplementedException();
         }
 
-        public void CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
         {
             throw new NotImplementedException();
         }
 
-        public void CustomMethodAsync<TResponse>(string httpVerb, object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto)
         {
             throw new NotImplementedException();
         }
 
         public void CancelAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> SendAsync<TResponse>(object requestDto)
         {
             throw new NotImplementedException();
         }

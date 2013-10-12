@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
@@ -324,18 +325,19 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
-            public void SendAsync<TResponse>(object requestDto,
-                Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+            public Task<TResponse> SendAsync<TResponse>(object requestDto)
             {
+                var tcs = new TaskCompletionSource<TResponse>();
                 try
                 {
                     var response = (TResponse)ServiceManager.Execute(requestDto);
-                    onSuccess(response);
+                    tcs.SetResult(response);
                 }
                 catch (Exception ex)
                 {
-                    HandleException(ex, onError);
+                    HandleException(ex, (TResponse r, Exception rex) => tcs.SetException(rex));
                 }
+                return tcs.Task;
             }
 
             private static void HandleException<TResponse>(Exception exception, Action<TResponse, Exception> onError)
@@ -359,109 +361,122 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
-            public void GetAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+            public Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto)
             {
                 throw new NotImplementedException();
             }
 
-            public void GetAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+            public Task<TResponse> GetAsync<TResponse>(object requestDto)
             {
                 throw new NotImplementedException();
             }
 
-            public void GetAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+            public Task<TResponse> GetAsync<TResponse>(string relativeOrAbsoluteUrl)
             {
+                var tcs = new TaskCompletionSource<TResponse>();
                 try
                 {
                     var response = parent.ExecutePath<TResponse>(HttpMethods.Get, new UrlParts(relativeOrAbsoluteUrl), default(TResponse));
-                    onSuccess(response);
+                    tcs.SetResult(response);
                 }
                 catch (Exception ex)
                 {
-                    HandleException(ex, onError);
+                    HandleException(ex, (TResponse r, Exception rex) => tcs.SetException(rex));
                 }
+                return tcs.Task;
             }
 
-            public void DeleteAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+            public Task<TResponse> DeleteAsync<TResponse>(IReturn<TResponse> requestDto)
             {
                 throw new NotImplementedException();
             }
 
-            public void DeleteAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+            public Task<TResponse> DeleteAsync<TResponse>(object requestDto)
             {
+                throw new NotImplementedException();
+            }
+
+            public Task<TResponse> DeleteAsync<TResponse>(string relativeOrAbsoluteUrl)
+            {
+                var tcs = new TaskCompletionSource<TResponse>();
                 try
                 {
                     var response = parent.ExecutePath<TResponse>(HttpMethods.Delete, new UrlParts(relativeOrAbsoluteUrl), default(TResponse));
-                    onSuccess(response);
+                    tcs.SetResult(response);
                 }
                 catch (Exception ex)
                 {
-                    HandleException(ex, onError);
+                    HandleException(ex, (TResponse r, Exception rex) => tcs.SetException(rex));
                 }
+                return tcs.Task;
             }
 
-            public void DeleteAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+            public Task<TResponse> PostAsync<TResponse>(IReturn<TResponse> requestDto)
             {
                 throw new NotImplementedException();
             }
 
-            public void PostAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+            public Task<TResponse> PostAsync<TResponse>(object requestDto)
             {
                 throw new NotImplementedException();
             }
 
-            public void PostAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+            public Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto)
             {
                 throw new NotImplementedException();
             }
 
-            public void PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+            public Task<TResponse> PutAsync<TResponse>(object requestDto)
             {
+                throw new NotImplementedException();
+            }
+
+            public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<TResponse> PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request)
+            {
+                var tcs = new TaskCompletionSource<TResponse>();
                 try
                 {
                     var response = parent.ExecutePath<TResponse>(HttpMethods.Post, new UrlParts(relativeOrAbsoluteUrl), request);
-                    onSuccess(response);
+                    tcs.SetResult(response);
                 }
                 catch (Exception ex)
                 {
-                    HandleException(ex, onError);
+                    HandleException(ex, (TResponse r, Exception rex) => tcs.SetException(rex));
                 }
+                return tcs.Task;
             }
 
-            public void PutAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+            public Task<TResponse> PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request)
             {
-                throw new NotImplementedException();
-            }
-
-            public void PutAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
-            {
+                var tcs = new TaskCompletionSource<TResponse>();
                 try
                 {
                     var response = parent.ExecutePath<TResponse>(HttpMethods.Put, new UrlParts(relativeOrAbsoluteUrl), request);
-                    onSuccess(response);
+                    tcs.SetResult(response);
                 }
                 catch (Exception ex)
                 {
-                    HandleException(ex, onError);
+                    HandleException(ex, (TResponse r, Exception rex) => tcs.SetException(rex));
                 }
-            }
-
-            public void CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void CustomMethodAsync<TResponse>(string httpVerb, object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
-            {
-                throw new NotImplementedException();
+                return tcs.Task;
             }
 
             public void CancelAsync()
+            {
+                throw new NotImplementedException();
+            }
+
+            public void SendAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
             {
                 throw new NotImplementedException();
             }

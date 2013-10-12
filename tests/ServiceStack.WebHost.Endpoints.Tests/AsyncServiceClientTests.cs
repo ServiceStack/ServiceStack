@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
@@ -33,15 +34,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 
 		[Test]
-		public void Can_call_SendAsync_on_ServiceClient()
+		public async Task Can_call_SendAsync_on_ServiceClient()
 		{
 			var jsonClient = new JsonServiceClient(ListeningOn);
 
 			var request = new GetFactorial { ForNumber = 3 };
-			GetFactorialResponse response = null;
-			jsonClient.SendAsync<GetFactorialResponse>(request, r => response = r, FailOnAsyncError);
-
-			Thread.Sleep(1000);
+			var response = await jsonClient.SendAsync<GetFactorialResponse>(request);
 
 			Assert.That(response, Is.Not.Null, "No response received");
 			Assert.That(response.Result, Is.EqualTo(GetFactorialService.GetFactorial(request.ForNumber)));

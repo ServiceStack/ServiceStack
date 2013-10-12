@@ -1,9 +1,9 @@
-using System;
+using System.Threading.Tasks;
 
 namespace ServiceStack
 {
 	public interface IServiceClientAsync : IRestClientAsync
 	{
-		void SendAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError);
+		Task<TResponse> SendAsync<TResponse>(object requestDto);
 	}
 }

@@ -2,7 +2,7 @@
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 /*
- * Keep platform specific stuff here
+ * Keep as much platform specific stuff here
  */
 
 using System;
@@ -42,7 +42,16 @@ namespace ServiceStack
 #endif
         }
 
-        internal static void EndAsyncStream(this Stream stream)
+        internal static void EndReadStream(this Stream stream)
+        {
+#if NETFX_CORE || WINDOWS_PHONE
+                stream.Dispose();
+#else
+            stream.Close();
+#endif
+        }
+
+        internal static void EndWriteStream(this Stream stream)
         {
 #if NETFX_CORE || WINDOWS_PHONE
                 stream.Flush();
@@ -93,6 +102,39 @@ namespace ServiceStack
 #endif
             return webRequest;
         }
+
+        public static void SynchronizeCookies(this AsyncServiceClient client)
+        {
+#if SILVERLIGHT && !WINDOWS_PHONE && !NETFX_CORE
+            if (client.StoreCookies && client.ShareCookiesWithBrowser && !client.EmulateHttpViaPost)
+            {
+                // browser cookies must be set on the ui thread
+                System.Windows.Deployment.Current.Dispatcher.BeginInvoke(() => {
+                    var cookieHeader = client.CookieContainer.GetCookieHeader(new Uri(client.BaseUri));
+                    System.Windows.Browser.HtmlPage.Document.Cookies = cookieHeader;
+                });
+            }
+#endif
+        }
+
+        public static bool IsWebException(this WebException webEx)
+        {
+            return webEx != null
+#if !SILVERLIGHT
+                && webEx.Status == WebExceptionStatus.ProtocolError
+#endif
+            ;
+        }
+
+        public static void ResetStream(this Stream stream)
+        {
+#if !IOS
+            // MonoTouch throws NotSupportedException when setting System.Net.WebConnectionStream.Position
+            // Not sure if the stream is used later though, so may have to copy to MemoryStream and
+            // pass that around instead after this point?
+            stream.Position = 0;
+#endif
+        }
     }
 
 #if NETFX_CORE
@@ -142,6 +184,79 @@ namespace ServiceStack
         }
     }
 
+#endif
+
+#if !NET45
+    internal class TaskConstants<T>
+    {
+        internal static readonly Task<T> Canceled;
+
+        static TaskConstants()
+        {
+            var tcs = new TaskCompletionSource<T>();
+            tcs.SetCanceled();
+            Canceled = tcs.Task;
+        }
+    }
+
+    internal class TaskConstants
+    {
+        public static readonly Task Finished;
+        public static readonly Task Canceled;
+
+        static TaskConstants()
+        {
+            var tcs = new TaskCompletionSource<object>();
+            tcs.SetResult(null);
+            Finished = tcs.Task;
+
+            tcs = new TaskCompletionSource<object>();
+            tcs.SetCanceled();
+            Canceled = tcs.Task;
+        }
+    }
+
+    internal static class AsyncNet45StreamExtensions
+    {
+        public static Task FlushAsync(this Stream stream)
+        {
+            return stream.FlushAsync(CancellationToken.None);
+        }
+
+        public static Task FlushAsync(this Stream stream, CancellationToken token)
+        {
+            return token.IsCancellationRequested
+                ? TaskConstants.Canceled
+                : Task.Factory.StartNew(l => ((Stream)l).Flush(), stream, token);
+        }
+
+        public static Task<int> ReadAsync(this Stream stream, byte[] buffer, int offset, int count)
+        {
+            return stream.ReadAsync(buffer, offset, count, CancellationToken.None);
+        }
+
+        public static Task<int> ReadAsync(this Stream stream, byte[] buffer, int offset, int count, CancellationToken token)
+        {
+            return token.IsCancellationRequested
+                ? TaskConstants<int>.Canceled
+                : Task<int>.Factory.FromAsync(stream.BeginRead, stream.EndRead, buffer, offset, count, null);
+        }
+
+        public static Task WriteAsync(this Stream stream, byte[] buffer)
+        {
+            return stream.WriteAsync(buffer, 0, buffer.Length, CancellationToken.None);
+        }
+
+        public static Task WriteAsync(this Stream stream, byte[] buffer, int offset, int count)
+        {
+            return stream.WriteAsync(buffer, offset, count, CancellationToken.None);
+        }
+
+        public static Task WriteAsync(this Stream stream, byte[] buffer, int offset, int count, CancellationToken token)
+        {
+            return Task.Factory.FromAsync(stream.BeginWrite, stream.EndWrite, buffer, offset, count, null);
+        }
+    }
 #endif
 
 }

@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Configuration;
@@ -196,15 +197,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test, TestCaseSource("RestClients")]
-        public void Can_download_Headers_response_Async(IServiceClient client)
+        public async Task Can_download_Headers_response_Async(IServiceClient client)
         {
             //Note: HttpWebResponse is returned before any response is read, so it's ideal point for streaming in app code
 
-            HttpWebResponse response = null;
-            client.GetAsync(new Headers { Text = "Test" }, r => response = r,
-                (r, ex) => Assert.Fail(ex.Message));
-
-            Thread.Sleep(2000);
+            var response = await client.GetAsync(new Headers { Text = "Test" });
 
             Assert.That(response.Headers["X-Response"], Is.EqualTo("Test"));
         }
@@ -217,13 +214,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test, TestCaseSource("RestClients")]
-        public void Can_download_Strings_response_Async(IServiceClient client)
+        public async Task Can_download_Strings_response_Async(IServiceClient client)
         {
-            string response = null;
-            client.GetAsync(new Strings { Text = "Test" }, r => response = r,
-                (r, ex) => Assert.Fail(ex.Message));
-
-            Thread.Sleep(2000);
+            var response = await client.GetAsync(new Strings { Text = "Test" });
 
             Assert.That(response, Is.EqualTo("Hello, Test"));
         }
@@ -237,14 +230,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test, TestCaseSource("RestClients")]
-        public void Can_download_Bytes_response_Async(IServiceClient client)
+        public async Task Can_download_Bytes_response_Async(IServiceClient client)
         {
-            byte[] bytes = null;
             var guid = Guid.NewGuid();
-            client.GetAsync(new Bytes { Text = guid.ToString() }, r => bytes = r,
-                (r, ex) => Assert.Fail(ex.Message));
 
-            Thread.Sleep(2000);
+            byte[] bytes = await client.GetAsync(new Bytes { Text = guid.ToString() });
 
             Assert.That(new Guid(bytes), Is.EqualTo(guid));
         }
@@ -262,20 +252,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test, TestCaseSource("RestClients")]
-        public void Can_download_Streams_response_Async(IServiceClient client)
+        public async Task Can_download_Streams_response_Async(IServiceClient client)
         {
             //Note: The populated MemoryStream which bufferred the response is returned (i.e. after the response is read async-ly)
 
             byte[] bytes = null;
             var guid = Guid.NewGuid();
-            client.GetAsync(new Streams { Text = guid.ToString() }, stream => {
-                using (stream)
-                {
-                    bytes = stream.ReadFully();
-                }
-            }, (stream, ex) => Assert.Fail(ex.Message));
 
-            Thread.Sleep(2000);
+            var stream = await client.GetAsync(new Streams { Text = guid.ToString() });
+
+            bytes = stream.ReadFully();
 
             Assert.That(new Guid(bytes), Is.EqualTo(guid));
         }

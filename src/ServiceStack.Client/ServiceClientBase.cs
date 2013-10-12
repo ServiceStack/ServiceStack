@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web;
 using System.Reflection;
 using ServiceStack.Logging;
@@ -47,7 +48,7 @@ namespace ServiceStack
             set
             {
                 globalRequestFilter = value;
-                AsyncServiceClient.RequestFilter = value;
+                AsyncServiceClient.GlobalRequestFilter = value;
             }
         }
 
@@ -67,7 +68,7 @@ namespace ServiceStack
             set
             {
                 globalResponseFilter = value;
-                AsyncServiceClient.ResponseFilter = value;
+                AsyncServiceClient.GlobalResponseFilter = value;
             }
         }
 
@@ -94,8 +95,8 @@ namespace ServiceStack
                 StreamDeserializer = StreamDeserializer,
                 UserName = this.UserName,
                 Password = this.Password,
-                LocalHttpWebRequestFilter = this.RequestFilter,
-                LocalHttpWebResponseFilter = this.ResponseFilter
+                RequestFilter = this.RequestFilter,
+                ResponseFilter = this.ResponseFilter
             };
             this.CookieContainer = new CookieContainer();
             this.StoreCookies = true; //leave
@@ -225,8 +226,7 @@ namespace ServiceStack
 #if !SILVERLIGHT
         public IWebProxy Proxy { get; set; }
 #endif
-
-#if SILVERLIGHT
+        
         private bool handleCallbackOnUiThread;
         public bool HandleCallbackOnUIThread
         {
@@ -234,20 +234,20 @@ namespace ServiceStack
             set { asyncClient.HandleCallbackOnUIThread = this.handleCallbackOnUiThread = value; }
         }
 
-        private bool useBrowserHttpHandling;
-        public bool UseBrowserHttpHandling
+        private bool emulateHttpViaPost;
+        public bool EmulateHttpViaPost
         {
-            get { return this.useBrowserHttpHandling; }
-            set { asyncClient.UseBrowserHttpHandling = this.useBrowserHttpHandling = value; }
+            get { return this.emulateHttpViaPost; }
+            set { asyncClient.EmulateHttpViaPost = this.emulateHttpViaPost = value; }
         }
 
+#if SILVERLIGHT
         private bool shareCookiesWithBrowser;
         public bool ShareCookiesWithBrowser
         {
             get { return this.shareCookiesWithBrowser; }
             set { asyncClient.ShareCookiesWithBrowser = this.shareCookiesWithBrowser = value; }
         }
-
 #endif
 
         private ICredentials credentials;
@@ -337,7 +337,7 @@ namespace ServiceStack
             set
             {
                 requestFilter = value;
-                asyncClient.LocalHttpWebRequestFilter = value;
+                asyncClient.RequestFilter = value;
             }
         }
 
@@ -356,7 +356,7 @@ namespace ServiceStack
             set
             {
                 responseFilter = value;
-                asyncClient.LocalHttpWebResponseFilter = value;
+                asyncClient.ResponseFilter = value;
             }
         }
 
@@ -645,10 +645,11 @@ namespace ServiceStack
         {
             if (!(webResponse is HttpWebResponse)) return;
 
-            if (GlobalResponseFilter != null)
-                GlobalResponseFilter((HttpWebResponse)webResponse);
             if (ResponseFilter != null)
                 ResponseFilter((HttpWebResponse)webResponse);
+
+            if (GlobalResponseFilter != null)
+                GlobalResponseFilter((HttpWebResponse)webResponse);
         }
 
         private void ApplyWebRequestFilters(HttpWebRequest client)
@@ -777,112 +778,111 @@ namespace ServiceStack
             DownloadBytes(httpMethod, requestUri, requestDto);
         }
 
-        public virtual void SendAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public virtual Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> requestDto)
         {
-            SendAsync((object)requestDto, onSuccess, onError);
+            return SendAsync<TResponse>((object)requestDto);
         }
 
-        public virtual void SendAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public virtual Task<TResponse> SendAsync<TResponse>(object requestDto)
         {
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + requestDto.GetType().Name;
-            asyncClient.SendAsync(HttpMethods.Post, requestUri, requestDto, onSuccess, onError);
+            return asyncClient.SendAsync<TResponse>(HttpMethods.Post, requestUri, requestDto);
         }
 
 
-        public virtual void GetAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public virtual Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto)
         {
-            GetAsync(requestDto.ToUrl(HttpMethods.Get, Format), onSuccess, onError);
+            return GetAsync<TResponse>(requestDto.ToUrl(HttpMethods.Get, Format));
         }
 
-        public virtual void GetAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public virtual Task<TResponse> GetAsync<TResponse>(object requestDto)
         {
-            GetAsync(requestDto.ToUrl(HttpMethods.Get, Format), onSuccess, onError);
+            return GetAsync<TResponse>(requestDto.ToUrl(HttpMethods.Get, Format));
         }
 
-        public virtual void GetAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public virtual Task<TResponse> GetAsync<TResponse>(string relativeOrAbsoluteUrl)
         {
-            asyncClient.SendAsync(HttpMethods.Get, GetUrl(relativeOrAbsoluteUrl), null, onSuccess, onError);
+            return asyncClient.SendAsync<TResponse>(HttpMethods.Get, GetUrl(relativeOrAbsoluteUrl), null);
         }
 
-
-        public virtual void DeleteAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public virtual Task<TResponse> DeleteAsync<TResponse>(IReturn<TResponse> requestDto)
         {
-            DeleteAsync(requestDto.ToUrl(HttpMethods.Delete, Format), onSuccess, onError);
+            return DeleteAsync<TResponse>(requestDto.ToUrl(HttpMethods.Delete, Format));
         }
 
-        public virtual void DeleteAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public virtual Task<TResponse> DeleteAsync<TResponse>(object requestDto)
         {
-            DeleteAsync(requestDto.ToUrl(HttpMethods.Delete, Format), onSuccess, onError);
+            return DeleteAsync<TResponse>(requestDto.ToUrl(HttpMethods.Delete, Format));
         }
 
-        public virtual void DeleteAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public virtual Task<TResponse> DeleteAsync<TResponse>(string relativeOrAbsoluteUrl)
         {
-            asyncClient.SendAsync(HttpMethods.Delete, GetUrl(relativeOrAbsoluteUrl), null, onSuccess, onError);
+            return asyncClient.SendAsync<TResponse>(HttpMethods.Delete, GetUrl(relativeOrAbsoluteUrl), null);
         }
 
 
-        public virtual void PostAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public virtual Task<TResponse> PostAsync<TResponse>(IReturn<TResponse> requestDto)
         {
-            PostAsync(requestDto.ToUrl(HttpMethods.Post, Format), requestDto, onSuccess, onError);
+            return PostAsync<TResponse>(requestDto.ToUrl(HttpMethods.Post, Format), requestDto);
         }
 
-        public virtual void PostAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public virtual Task<TResponse> PostAsync<TResponse>(object requestDto)
         {
-            PostAsync(requestDto.ToUrl(HttpMethods.Post, Format), requestDto, onSuccess, onError);
+            return PostAsync<TResponse>(requestDto.ToUrl(HttpMethods.Post, Format), requestDto);
         }
 
-        public virtual void PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public virtual Task<TResponse> PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request)
         {
-            asyncClient.SendAsync(HttpMethods.Post, GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
+            return asyncClient.SendAsync<TResponse>(HttpMethods.Post, GetUrl(relativeOrAbsoluteUrl), request);
         }
 
 
-        public virtual void PutAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public virtual Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto)
         {
-            PutAsync(requestDto.ToUrl(HttpMethods.Put, Format), requestDto, onSuccess, onError);
+            return PutAsync<TResponse>(requestDto.ToUrl(HttpMethods.Put, Format), requestDto);
         }
 
-        public virtual void PutAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public virtual Task<TResponse> PutAsync<TResponse>(object requestDto)
         {
-            PutAsync(requestDto.ToUrl(HttpMethods.Put, Format), requestDto, onSuccess, onError);
+            return PutAsync<TResponse>(requestDto.ToUrl(HttpMethods.Put, Format), requestDto);
         }
 
-        public virtual void PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public virtual Task<TResponse> PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request)
         {
-            asyncClient.SendAsync(HttpMethods.Put, GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
+            return asyncClient.SendAsync<TResponse>(HttpMethods.Put, GetUrl(relativeOrAbsoluteUrl), request);
         }
 
 
-        public virtual void PatchAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public virtual Task<TResponse> PatchAsync<TResponse>(IReturn<TResponse> requestDto)
         {
-            PatchAsync(requestDto.ToUrl(HttpMethods.Patch, Format), requestDto, onSuccess, onError);
+            return PatchAsync<TResponse>(requestDto.ToUrl(HttpMethods.Patch, Format), requestDto);
         }
 
-        public virtual void PatchAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public virtual Task<TResponse> PatchAsync<TResponse>(object requestDto)
         {
-            PatchAsync(requestDto.ToUrl(HttpMethods.Patch, Format), requestDto, onSuccess, onError);
+            return PatchAsync<TResponse>(requestDto.ToUrl(HttpMethods.Patch, Format), requestDto);
         }
 
-        public virtual void PatchAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public virtual Task<TResponse> PatchAsync<TResponse>(string relativeOrAbsoluteUrl, object request)
         {
-            asyncClient.SendAsync(HttpMethods.Patch, GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
+            return asyncClient.SendAsync<TResponse>(HttpMethods.Patch, GetUrl(relativeOrAbsoluteUrl), request);
         }
 
 
-        public virtual void CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
-        {
-            if (!HttpMethods.HasVerb(httpVerb))
-                throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
-
-            asyncClient.SendAsync(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestDto, onSuccess, onError);
-        }
-
-        public virtual void CustomMethodAsync<TResponse>(string httpVerb, object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public virtual Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
         {
             if (!HttpMethods.HasVerb(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
-            asyncClient.SendAsync(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestDto, onSuccess, onError);
+            return asyncClient.SendAsync<TResponse>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestDto);
+        }
+
+        public virtual Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto)
+        {
+            if (!HttpMethods.HasVerb(httpVerb))
+                throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
+
+            return asyncClient.SendAsync<TResponse>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestDto);
         }
 
 

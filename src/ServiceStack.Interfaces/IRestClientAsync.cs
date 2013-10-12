@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 namespace ServiceStack
 {
@@ -6,25 +7,26 @@ namespace ServiceStack
 	{
 		void SetCredentials(string userName, string password);
 
-        void GetAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError);
-        void GetAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError);
-        void GetAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError);
+        Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto);
+        Task<TResponse> GetAsync<TResponse>(object requestDto);
+        Task<TResponse> GetAsync<TResponse>(string relativeOrAbsoluteUrl);
 
-        void DeleteAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError);
-        void DeleteAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError);
-        void DeleteAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError);
+        Task<TResponse> DeleteAsync<TResponse>(IReturn<TResponse> requestDto);
+        Task<TResponse> DeleteAsync<TResponse>(object requestDto);
+        Task<TResponse> DeleteAsync<TResponse>(string relativeOrAbsoluteUrl);
 
-        void PostAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError);
-        void PostAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError);
-        void PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError);
+        Task<TResponse> PostAsync<TResponse>(IReturn<TResponse> requestDto);
+        Task<TResponse> PostAsync<TResponse>(object requestDto);
+        Task<TResponse> PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request);
 
-        void PutAsync<TResponse>(IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError);
-        void PutAsync<TResponse>(object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError);
-        void PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError);
+        Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto);
+        Task<TResponse> PutAsync<TResponse>(object requestDto);
+        Task<TResponse> PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request);
 
-        void CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError);
-        void CustomMethodAsync<TResponse>(string httpVerb, object requestDto, Action<TResponse> onSuccess, Action<TResponse, Exception> onError);
-	    void CancelAsync();
+        Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto);
+        Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto);
+
+        void CancelAsync();
 	}
 
 }

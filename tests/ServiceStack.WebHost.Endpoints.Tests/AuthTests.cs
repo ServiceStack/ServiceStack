@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using Funq;
 using NUnit.Framework;
@@ -534,27 +535,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Does_work_with_CredentailsAuth_Async()
+        public async Task Does_work_with_CredentailsAuth_Async()
         {
             var client = GetClient();
 
             var request = new Secured { Name = "test" };
-            SecureResponse response = null;
+            var authResponse = await client.SendAsync<AuthenticateResponse>(
+                new Authenticate {
+                    provider = CredentialsAuthProvider.Name,
+                    UserName = "user",
+                    Password = "p@55word",
+                    RememberMe = true,
+                });
 
-            client.SendAsync<AuthenticateResponse>(new Authenticate
-            {
-                provider = CredentialsAuthProvider.Name,
-                UserName = "user",
-                Password = "p@55word",
-                RememberMe = true,
-            }, authResponse =>
-            {
-                authResponse.PrintDump();
-                client.SendAsync<SecureResponse>(request, r => response = r, FailOnAsyncError);
+            authResponse.PrintDump();
 
-            }, FailOnAsyncError);
+            var response = await client.SendAsync<SecureResponse>(request);
 
-            Thread.Sleep(TimeSpan.FromSeconds(1));
             Assert.That(response.Result, Is.EqualTo(request.Name));
         }
 

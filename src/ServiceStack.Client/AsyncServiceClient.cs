@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -27,7 +28,7 @@ namespace ServiceStack
         /// The request filter is called before any request.
         /// This request filter is executed globally.
         /// </summary>
-        public static Action<HttpWebRequest> RequestFilter { get; set; }
+        public static Action<HttpWebRequest> GlobalRequestFilter { get; set; }
 
         /// <summary>
         /// The response action is called once the server response is available.
@@ -35,7 +36,7 @@ namespace ServiceStack
         /// This response action is executed globally.
         /// Note that you should NOT consume the response stream as this is handled by ServiceStack
         /// </summary>
-        public static Action<HttpWebResponse> ResponseFilter { get; set; }
+        public static Action<HttpWebResponse> GlobalResponseFilter { get; set; }
 
         /// <summary>
         /// Called before request resend, when the initial request required authentication
@@ -56,14 +57,14 @@ namespace ServiceStack
         /// The request filter is called before any request.
         /// This request filter only works with the instance where it was set (not global).
         /// </summary>
-        public Action<HttpWebRequest> LocalHttpWebRequestFilter { get; set; }
+        public Action<HttpWebRequest> RequestFilter { get; set; }
 
         /// <summary>
         /// The response action is called once the server response is available.
         /// It will allow you to access raw response information. 
         /// Note that you should NOT consume the response stream as this is handled by ServiceStack
         /// </summary>
-        public Action<HttpWebResponse> LocalHttpWebResponseFilter { get; set; }
+        public Action<HttpWebResponse> ResponseFilter { get; set; }
 
         public string BaseUri { get; set; }
         public bool DisableAutoCompression { get; set; }
@@ -96,12 +97,6 @@ namespace ServiceStack
 
         internal Action CancelAsyncFn;
 
-        public void SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request,
-            Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
-        {
-            SendWebRequest(httpMethod, absoluteUrl, request, onSuccess, onError);
-        }
-
         public void CancelAsync()
         {
             if (CancelAsyncFn != null)
@@ -113,7 +108,25 @@ namespace ServiceStack
             }
         }
 
-        private AsyncState<TResponse> SendWebRequest<TResponse>(string httpMethod, string absoluteUrl, object request,
+        public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request)
+        {
+            var tcs = new TaskCompletionSource<TResponse>();
+
+            SendWebRequest<TResponse>(httpMethod, absoluteUrl, request,
+                tcs.SetResult,
+                (response, exc) => tcs.SetException(exc)
+            );
+
+            return tcs.Task;
+        }
+
+        public void SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request,
+            Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            SendWebRequest(httpMethod, absoluteUrl, request, onSuccess, onError);
+        }
+
+        private void SendWebRequest<TResponse>(string httpMethod, string absoluteUrl, object request, 
             Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             if (httpMethod == null) throw new ArgumentNullException("httpMethod");
@@ -145,8 +158,6 @@ namespace ServiceStack
             requestState.StartTimer(this.Timeout.GetValueOrDefault(DefaultTimeout));
 
             SendWebRequestAsync(httpMethod, request, requestState, webRequest);
-
-            return requestState;
         }
 
         private void SendWebRequestAsync<TResponse>(string httpMethod, object request,
@@ -157,10 +168,9 @@ namespace ServiceStack
 
             //Methods others than GET and POST are only supported by Client request creator, see
             //http://msdn.microsoft.com/en-us/library/cc838250(v=vs.95).aspx
-            
-            if (this.EmulateHttpViaPost && httpMethod != "GET" && httpMethod != "POST") 
+            if (this.EmulateHttpViaPost && httpMethod != "GET" && httpMethod != "POST")
             {
-                webRequest.Method = "POST"; 
+                webRequest.Method = "POST";
                 webRequest.Headers[HttpHeaders.XHttpMethodOverride] = httpMethod;
             }
             else
@@ -202,7 +212,7 @@ namespace ServiceStack
                 var stream = req.EndGetRequestStream(asyncResult);
                 StreamSerializer(null, requestState.Request, stream);
 
-                stream.EndAsyncStream();
+                stream.EndWriteStream();
 
                 requestState.WebRequest.BeginGetResponse(ResponseCallback<T>, requestState);
             }
@@ -212,11 +222,7 @@ namespace ServiceStack
             }
         }
 
-#if NETFX_CORE
-        private async void ResponseCallback<T>(IAsyncResult asyncResult)
-#else
         private void ResponseCallback<T>(IAsyncResult asyncResult)
-#endif
         {
             var requestState = (AsyncState<T>)asyncResult.AsyncState;
             try
@@ -237,13 +243,8 @@ namespace ServiceStack
                 var responseStream = requestState.WebResponse.GetResponseStream();
                 requestState.ResponseStream = responseStream;
 
-#if NETFX_CORE
                 var task = responseStream.ReadAsync(requestState.BufferRead, 0, BufferSize);
-                ReadCallBack<T>(task, requestState);
-#else
-                responseStream.BeginRead(requestState.BufferRead, 0, BufferSize, ReadCallBack<T>, requestState);
-#endif
-                return;
+                ReadCallBack(task, requestState);
             }
             catch (Exception ex)
             {
@@ -281,114 +282,85 @@ namespace ServiceStack
             }
         }
 
-#if NETFX_CORE
-        private async void ReadCallBack<T>(Task<int> task, RequestState<T> requestState)
+        private void ReadCallBack<T>(Task<int> task, AsyncState<T> requestState)
         {
-#else
-        private void ReadCallBack<T>(IAsyncResult asyncResult)
-        {
-            var requestState = (AsyncState<T>)asyncResult.AsyncState;
-#endif
-            try
+            task.ContinueWith(t =>
             {
-                var responseStream = requestState.ResponseStream;
-#if NETFX_CORE
-                int read = await task;
-#else
-                int read = responseStream.EndRead(asyncResult);
-#endif
-
-                if (read > 0)
-                {
-                    requestState.BytesData.Write(requestState.BufferRead, 0, read);
-#if NETFX_CORE
-                    var responeStreamTask = responseStream.ReadAsync(
-                        requestState.BufferRead, 0, BufferSize);
-                    ReadCallBack<T>(responeStreamTask, requestState);
-#else
-                    responseStream.BeginRead(
-                        requestState.BufferRead, 0, BufferSize, ReadCallBack<T>, requestState);
-#endif
-
-                    return;
-                }
-
-                Interlocked.Increment(ref requestState.Completed);
-
-                var response = default(T);
                 try
                 {
-                    requestState.BytesData.Position = 0;
-                    if (typeof(T) == typeof(Stream))
+                    var responseStream = requestState.ResponseStream;
+
+                    int read = t.Result;
+                    if (read > 0)
                     {
-                        response = (T)(object)requestState.BytesData;
+                        requestState.BytesData.Write(requestState.BufferRead, 0, read);
+
+                        var responeStreamTask = responseStream.ReadAsync(
+                            requestState.BufferRead, 0, BufferSize);
+
+                        ReadCallBack(responeStreamTask, requestState);
+                        return;
                     }
-                    else
+
+                    Interlocked.Increment(ref requestState.Completed);
+
+                    var response = default(T);
+                    try
                     {
-                        using (var reader = requestState.BytesData)
+                        requestState.BytesData.Position = 0;
+                        if (typeof(T) == typeof(Stream))
                         {
-                            if (typeof(T) == typeof(string))
+                            response = (T)(object)requestState.BytesData;
+                        }
+                        else
+                        {
+                            using (var reader = requestState.BytesData)
                             {
-                                using (var sr = new StreamReader(reader))
+                                if (typeof(T) == typeof(string))
                                 {
-                                    response = (T)(object)sr.ReadToEnd();
+                                    using (var sr = new StreamReader(reader))
+                                    {
+                                        response = (T)(object)sr.ReadToEnd();
+                                    }
+                                }
+                                else if (typeof(T) == typeof(byte[]))
+                                {
+                                    response = (T)(object)reader.ToArray();
+                                }
+                                else
+                                {
+                                    response = (T)this.StreamDeserializer(typeof(T), reader);
                                 }
                             }
-                            else if (typeof(T) == typeof(byte[]))
-                            {
-                                response = (T)(object)reader.ToArray();
-                            }
-                            else
-                            {
-                                response = (T)this.StreamDeserializer(typeof(T), reader);
-                            }
                         }
-                    }
 
-#if SILVERLIGHT && !WINDOWS_PHONE && !NETFX_CORE
-                    if (this.StoreCookies && this.ShareCookiesWithBrowser && !this.EmulateHttpViaPost)
+                        this.SynchronizeCookies();
+
+                        requestState.HandleSuccess(response);
+                    }
+                    catch (Exception ex)
                     {
-                        // browser cookies must be set on the ui thread
-                        System.Windows.Deployment.Current.Dispatcher.BeginInvoke(
-                            () =>
-                                {
-                                    var cookieHeader = this.CookieContainer.GetCookieHeader(new Uri(BaseUri));
-                                    System.Windows.Browser.HtmlPage.Document.Cookies = cookieHeader;
-                                });
+                        Log.Debug(string.Format("Error Reading Response Error: {0}", ex.Message), ex);
+                        requestState.HandleError(default(T), ex);
                     }
-#endif
+                    finally
+                    {
+                        responseStream.EndReadStream();
 
-                    requestState.HandleSuccess(response);
+                        CancelAsyncFn = null;
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Log.Debug(string.Format("Error Reading Response Error: {0}", ex.Message), ex);
-                    requestState.HandleError(default(T), ex);
+                    HandleResponseError(ex, requestState);
                 }
-                finally
-                {
-#if NETFX_CORE
-                    responseStream.Dispose();
-#else
-                    responseStream.Close();
-#endif
-                    CancelAsyncFn = null;
-                }
-            }
-            catch (Exception ex)
-            {
-                HandleResponseError(ex, requestState);
-            }
+            });
         }
 
         private void HandleResponseError<TResponse>(Exception exception, AsyncState<TResponse> state)
         {
             var webEx = exception as WebException;
-            if (webEx != null
-#if !SILVERLIGHT
- && webEx.Status == WebExceptionStatus.ProtocolError
-#endif
-)
+            if (webEx.IsWebException())
             {
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 Log.Error(webEx);
@@ -408,13 +380,9 @@ namespace ServiceStack
                         //var strResponse = new StreamReader(stream).ReadToEnd();
                         //Console.WriteLine("Response: " + strResponse);
                         //stream.Position = 0;
-                        serviceEx.ResponseBody = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
-#if !MONOTOUCH
-                        // MonoTouch throws NotSupportedException when setting System.Net.WebConnectionStream.Position
-                        // Not sure if the stream is used later though, so may have to copy to MemoryStream and
-                        // pass that around instead after this point?
-                        stream.Position = 0;
-#endif
+                        serviceEx.ResponseBody = stream.ReadFully().FromUtf8Bytes();
+
+                        stream.ResetStream();
 
                         serviceEx.ResponseDto = this.StreamDeserializer(typeof(TResponse), stream);
                         state.HandleError((TResponse)serviceEx.ResponseDto, serviceEx);
@@ -424,8 +392,7 @@ namespace ServiceStack
                 {
                     // Oh, well, we tried
                     Log.Debug(string.Format("WebException Reading Response Error: {0}", innerEx.Message), innerEx);
-                    state.HandleError(default(TResponse), new WebServiceException(errorResponse.StatusDescription, innerEx)
-                    {
+                    state.HandleError(default(TResponse), new WebServiceException(errorResponse.StatusDescription, innerEx) {
                         StatusCode = (int)errorResponse.StatusCode,
                     });
                 }
@@ -453,17 +420,18 @@ namespace ServiceStack
 
             if (ResponseFilter != null)
                 ResponseFilter((HttpWebResponse)webResponse);
-            if (LocalHttpWebResponseFilter != null)
-                LocalHttpWebResponseFilter((HttpWebResponse)webResponse);
+
+            if (GlobalResponseFilter != null)
+                GlobalResponseFilter((HttpWebResponse)webResponse);
         }
 
         private void ApplyWebRequestFilters(HttpWebRequest client)
         {
-            if (LocalHttpWebRequestFilter != null)
-                LocalHttpWebRequestFilter(client);
-
             if (RequestFilter != null)
                 RequestFilter(client);
+
+            if (GlobalRequestFilter != null)
+                GlobalRequestFilter(client);
         }
 
         public void Dispose() { }
