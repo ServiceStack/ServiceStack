@@ -80,6 +80,10 @@
     <Reference Include="Moq">
       <HintPath>..\..\lib\tests\Moq.dll</HintPath>
     </Reference>
+    <Reference Include="nunit.framework, Version=2.6.3.13283, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\src\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.OrmLite">
       <HintPath>..\..\lib\ServiceStack.OrmLite.dll</HintPath>
     </Reference>
@@ -105,9 +109,6 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="nunit.framework">
-      <HintPath>..\..\lib\tests\nunit.framework.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -115,6 +116,7 @@
     <None Include="AppData\NoTemplate\Static.md" />
     <None Include="AppData\Pages.json" />
     <None Include="AppData\Template\StaticTpl.cshtml" />
+    <None Include="packages.config" />
     <None Include="Views\NoTemplate\Dynamic.cshtml" />
     <None Include="Views\NoTemplate\Dynamic.md" />
     <Compile Include="AppData\NorthwindCustomers.cs" />
