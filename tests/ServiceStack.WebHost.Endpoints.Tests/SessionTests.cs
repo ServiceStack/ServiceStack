@@ -6,7 +6,6 @@ using System;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Auth;
-using ServiceStack.Configuration;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

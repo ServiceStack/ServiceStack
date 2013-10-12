@@ -1,7 +1,5 @@
 using NUnit.Framework;
-using ServiceStack.Configuration;
 using ServiceStack.ProtoBuf;
-using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests

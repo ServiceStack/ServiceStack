@@ -2,11 +2,9 @@
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
-using ServiceStack.Configuration;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
