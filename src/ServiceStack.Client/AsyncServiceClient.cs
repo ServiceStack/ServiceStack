@@ -87,9 +87,11 @@ namespace ServiceStack
 
         public StreamDeserializerDelegate StreamDeserializer { get; set; }
 
-        public bool HandleCallbackOnUIThread { get; set; }
+        public bool HandleCallbackOnUiThread { get; set; }
 
         public bool EmulateHttpViaPost { get; set; }
+
+        public ProgressDelegate OnDownloadProgress { get; set; } 
 
 #if SILVERLIGHT
         public bool ShareCookiesWithBrowser { get; set; }
@@ -153,7 +155,7 @@ namespace ServiceStack
                 Request = request,
                 OnSuccess = onSuccess,
                 OnError = onError,
-                HandleCallbackOnUIThread = HandleCallbackOnUIThread,
+                HandleCallbackOnUIThread = HandleCallbackOnUiThread,
             };
             requestState.StartTimer(this.Timeout.GetValueOrDefault(DefaultTimeout));
 
@@ -295,8 +297,19 @@ namespace ServiceStack
                     {
                         requestState.BytesData.Write(requestState.BufferRead, 0, read);
 
-                        var responeStreamTask = responseStream.ReadAsync(
-                            requestState.BufferRead, 0, BufferSize);
+                        var responeStreamTask = responseStream.ReadAsync(requestState.BufferRead, 0, BufferSize);
+
+
+                        if (requestState.ResponseContentLength <= default(long))
+                        {
+                            requestState.ResponseContentLength = requestState.WebResponse.ContentLength;
+                        }
+
+                        requestState.ResponseBytesRead += read;
+                        if (OnDownloadProgress != null)
+                        {
+                            OnDownloadProgress(requestState.ResponseBytesRead, requestState.ResponseContentLength);
+                        }
 
                         ReadCallBack(responeStreamTask, requestState);
                         return;

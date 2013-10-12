@@ -222,23 +222,23 @@ namespace ServiceStack
         public abstract string ContentType { get; }
 
         public string HttpMethod { get; set; }
-
-#if !SILVERLIGHT
-        public IWebProxy Proxy { get; set; }
-#endif
-        
-        private bool handleCallbackOnUiThread;
-        public bool HandleCallbackOnUIThread
+      
+        public bool HandleCallbackOnUiThread
         {
-            get { return this.handleCallbackOnUiThread; }
-            set { asyncClient.HandleCallbackOnUIThread = this.handleCallbackOnUiThread = value; }
+            get { return asyncClient.HandleCallbackOnUiThread; }
+            set { asyncClient.HandleCallbackOnUiThread = value; }
         }
 
-        private bool emulateHttpViaPost;
         public bool EmulateHttpViaPost
         {
-            get { return this.emulateHttpViaPost; }
-            set { asyncClient.EmulateHttpViaPost = this.emulateHttpViaPost = value; }
+            get { return asyncClient.EmulateHttpViaPost; }
+            set { asyncClient.EmulateHttpViaPost = value; }
+        }
+
+        public ProgressDelegate OnDownloadProgress
+        {
+            get { return asyncClient.OnDownloadProgress; }
+            set { asyncClient.OnDownloadProgress = value; }
         }
 
 #if SILVERLIGHT
@@ -248,6 +248,8 @@ namespace ServiceStack
             get { return this.shareCookiesWithBrowser; }
             set { asyncClient.ShareCookiesWithBrowser = this.shareCookiesWithBrowser = value; }
         }
+#else
+        public IWebProxy Proxy { get; set; }
 #endif
 
         private ICredentials credentials;
@@ -287,11 +289,11 @@ namespace ServiceStack
             set { asyncClient.StoreCookies = storeCookies = value; }
         }
 
-        private CookieContainer _cookieContainer;
+        private CookieContainer cookieContainer;
         public CookieContainer CookieContainer
         {
-            get { return _cookieContainer; }
-            set { asyncClient.CookieContainer = _cookieContainer = value; }
+            get { return cookieContainer; }
+            set { asyncClient.CookieContainer = cookieContainer = value; }
         }
 
         private bool allowAutoRedirect = true;

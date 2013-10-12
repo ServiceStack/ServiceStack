@@ -191,6 +191,7 @@
     <Content Include="webpage.html" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Tests\AsyncProgressTests.cs" />
     <Compile Include="PageBase.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -209,6 +210,7 @@
     <Compile Include="Services\IocServiceTests.cs" />
     <Compile Include="Services\RequestItemsService.cs" />
     <Compile Include="Services\SwaggerTestService.cs" />
+    <Compile Include="Services\TestProgressService.cs" />
     <Compile Include="Subpages\Test.aspx.cs">
       <DependentUpon>Test.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

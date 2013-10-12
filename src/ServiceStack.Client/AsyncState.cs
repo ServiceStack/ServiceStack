@@ -47,7 +47,11 @@ namespace ServiceStack
 
         public Action<TResponse, Exception> OnError;
 
-        public bool HandleCallbackOnUIThread { get; set; }
+        public bool HandleCallbackOnUIThread;
+
+        public long ResponseBytesRead;
+
+        public long ResponseContentLength;
 
         public void HandleSuccess(TResponse response)
         {

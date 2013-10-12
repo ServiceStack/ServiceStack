@@ -22,6 +22,8 @@ namespace ServiceStack
         void Cancel();
     }
 
+    public delegate void ProgressDelegate(long done, long total);
+
     internal static class AsyncUtils
     {
         public static Exception CreateTimeoutException(this Exception ex, string errorMsg)

@@ -65,6 +65,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		}
 	}
 
+    public class TestProgress : IReturn<string> {}
+
+    public class DownloadProgressService : Service
+    {
+        public string Any(TestProgress request)
+        {
+            return ResetMoviesService.Top5Movies.ToJson();
+        }
+    }
+
 
 	[Route("/movies", "POST,PUT")]
 	[Route("/movies/{Id}")]
