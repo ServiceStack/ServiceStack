@@ -193,7 +193,7 @@ namespace ServiceStack
         private const char VariablePostfixChar = '}';
 
         private readonly IDictionary<string, RouteMember> queryProperties;
-        private readonly IDictionary<string, RouteMember> variablesMap = new Dictionary<string, RouteMember>(Text.StringExtensions.InvariantComparerIgnoreCase());
+        private readonly IDictionary<string, RouteMember> variablesMap = new Dictionary<string, RouteMember>(StringExtensions.InvariantComparerIgnoreCase());
 
 	    public RestRoute(Type type, string path, string verbs)
         {
@@ -305,7 +305,7 @@ namespace ServiceStack
 
         internal static IDictionary<string, RouteMember> GetQueryProperties(Type requestType)
         {
-            var result = new Dictionary<string, RouteMember>(Text.StringExtensions.InvariantComparerIgnoreCase()); 
+            var result = new Dictionary<string, RouteMember>(StringExtensions.InvariantComparerIgnoreCase()); 
             var hasDataContract = requestType.HasAttribute<DataContractAttribute>();
 
             foreach (var propertyInfo in requestType.GetPublicProperties())

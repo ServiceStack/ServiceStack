@@ -456,60 +456,60 @@
             <returns>the absolute path</returns>
             <remarks>Assumes static content is in the parent folder of the /bin/ directory</remarks>
         </member>
-        <member name="T:ServiceStack.Text.QueryStringWriter`1">
+        <member name="T:ServiceStack.QueryStringWriter`1">
             <summary>
             Implement the serializer using a more static approach
             </summary>
             <typeparam name="T"></typeparam>
         </member>
-        <member name="M:ServiceStack.Text.ReflectionExtensions.New``1(System.Type)">
+        <member name="M:ServiceStack.ReflectionExtensions.New``1(System.Type)">
             <summary>
             Creates a new instance of type. 
             First looks at JsConfig.ModelFactory before falling back to CreateInstance
             </summary>
         </member>
-        <member name="M:ServiceStack.Text.ReflectionExtensions.New(System.Type)">
+        <member name="M:ServiceStack.ReflectionExtensions.New(System.Type)">
             <summary>
             Creates a new instance of type. 
             First looks at JsConfig.ModelFactory before falling back to CreateInstance
             </summary>
         </member>
-        <member name="M:ServiceStack.Text.ReflectionExtensions.CreateInstance(System.Type)">
+        <member name="M:ServiceStack.ReflectionExtensions.CreateInstance(System.Type)">
             <summary>
             Creates a new instance from the default constructor of type
             </summary>
         </member>
-        <member name="M:ServiceStack.Text.PlatformExtensions.AddAttributes(System.Reflection.PropertyInfo,System.Attribute[])">
+        <member name="M:ServiceStack.PlatformExtensions.AddAttributes(System.Reflection.PropertyInfo,System.Attribute[])">
             <summary>
             Add a Property attribute at runtime. 
             <para>Not threadsafe, should only add attributes on Startup.</para>
             </summary>
         </member>
-        <member name="M:ServiceStack.Text.PlatformExtensions.ReplaceAttribute(System.Reflection.PropertyInfo,System.Attribute)">
+        <member name="M:ServiceStack.PlatformExtensions.ReplaceAttribute(System.Reflection.PropertyInfo,System.Attribute)">
             <summary>
             Add a Property attribute at runtime. 
             <para>Not threadsafe, should only add attributes on Startup.</para>
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.StreamExtensions.DefaultBufferSize">
+        <member name="F:ServiceStack.StreamExtensions.DefaultBufferSize">
             <summary>
             @jonskeet: Collection of utility methods which operate on streams.
             r285, February 26th 2009: http://www.yoda.arachsys.com/csharp/miscutil/
             </summary>
         </member>
-        <member name="M:ServiceStack.Text.StreamExtensions.ReadFully(System.IO.Stream)">
+        <member name="M:ServiceStack.StreamExtensions.ReadFully(System.IO.Stream)">
             <summary>
             Reads the given stream up to the end, returning the data as a byte
             array.
             </summary>
         </member>
-        <member name="M:ServiceStack.Text.StreamExtensions.ReadFully(System.IO.Stream,System.Int32)">
+        <member name="M:ServiceStack.StreamExtensions.ReadFully(System.IO.Stream,System.Int32)">
             <summary>
             Reads the given stream up to the end, returning the data as a byte
             array, using the given buffer size.
             </summary>
         </member>
-        <member name="M:ServiceStack.Text.StreamExtensions.ReadFully(System.IO.Stream,System.Byte[])">
+        <member name="M:ServiceStack.StreamExtensions.ReadFully(System.IO.Stream,System.Byte[])">
             <summary>
             Reads the given stream up to the end, returning the data as a byte
             array, using the given buffer for transferring data. Note that the
@@ -517,54 +517,54 @@
             be cleared beforehand.
             </summary>
         </member>
-        <member name="M:ServiceStack.Text.StreamExtensions.CopyTo(System.IO.Stream,System.IO.Stream)">
+        <member name="M:ServiceStack.StreamExtensions.CopyTo(System.IO.Stream,System.IO.Stream)">
             <summary>
             Copies all the data from one stream into another.
             </summary>
         </member>
-        <member name="M:ServiceStack.Text.StreamExtensions.CopyTo(System.IO.Stream,System.IO.Stream,System.Int32)">
+        <member name="M:ServiceStack.StreamExtensions.CopyTo(System.IO.Stream,System.IO.Stream,System.Int32)">
             <summary>
             Copies all the data from one stream into another, using a buffer
             of the given size.
             </summary>
         </member>
-        <member name="M:ServiceStack.Text.StreamExtensions.CopyTo(System.IO.Stream,System.IO.Stream,System.Byte[])">
+        <member name="M:ServiceStack.StreamExtensions.CopyTo(System.IO.Stream,System.IO.Stream,System.Byte[])">
             <summary>
             Copies all the data from one stream into another, using the given 
             buffer for transferring data. Note that the current contents of 
             the buffer is ignored, so the buffer needn't be cleared beforehand.
             </summary>
         </member>
-        <member name="M:ServiceStack.Text.StreamExtensions.ReadExactly(System.IO.Stream,System.Int32)">
+        <member name="M:ServiceStack.StreamExtensions.ReadExactly(System.IO.Stream,System.Int32)">
             <summary>
             Reads exactly the given number of bytes from the specified stream.
             If the end of the stream is reached before the specified amount
             of data is read, an exception is thrown.
             </summary>
         </member>
-        <member name="M:ServiceStack.Text.StreamExtensions.ReadExactly(System.IO.Stream,System.Byte[])">
+        <member name="M:ServiceStack.StreamExtensions.ReadExactly(System.IO.Stream,System.Byte[])">
             <summary>
             Reads into a buffer, filling it completely.
             </summary>
         </member>
-        <member name="M:ServiceStack.Text.StreamExtensions.ReadExactly(System.IO.Stream,System.Byte[],System.Int32)">
+        <member name="M:ServiceStack.StreamExtensions.ReadExactly(System.IO.Stream,System.Byte[],System.Int32)">
             <summary>
             Reads exactly the given number of bytes from the specified stream,
             into the given buffer, starting at position 0 of the array.
             </summary>
         </member>
-        <member name="M:ServiceStack.Text.StreamExtensions.ReadExactly(System.IO.Stream,System.Byte[],System.Int32,System.Int32)">
+        <member name="M:ServiceStack.StreamExtensions.ReadExactly(System.IO.Stream,System.Byte[],System.Int32,System.Int32)">
             <summary>
             Reads exactly the given number of bytes from the specified stream,
             into the given buffer, starting at position 0 of the array.
             </summary>
         </member>
-        <member name="M:ServiceStack.Text.StreamExtensions.ReadExactlyFast(System.IO.Stream,System.Byte[],System.Int32,System.Int32)">
+        <member name="M:ServiceStack.StreamExtensions.ReadExactlyFast(System.IO.Stream,System.Byte[],System.Int32,System.Int32)">
             <summary>
             Same as ReadExactly, but without the argument checks.
             </summary>
         </member>
-        <member name="M:ServiceStack.Text.StringExtensions.BaseConvert(System.String,System.Int32,System.Int32)">
+        <member name="M:ServiceStack.StringExtensions.BaseConvert(System.String,System.Int32,System.Int32)">
             <summary>
             Converts from base: 0 - 62
             </summary>
@@ -573,7 +573,7 @@
             <param name="to">To.</param>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.Text.StringExtensions.FastToUtf8Bytes(System.String)">
+        <member name="M:ServiceStack.StringExtensions.FastToUtf8Bytes(System.String)">
             <summary>
             Skip the encoding process for 'safe strings' 
             </summary>

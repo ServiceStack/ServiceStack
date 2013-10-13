@@ -176,7 +176,7 @@ namespace ServiceStack
             var dir1 = idValue.Substring(0, 2);
             var dir2 = idValue.Substring(2, 2);
 
-            var path = string.Format("{1}{0}{2}{0}{3}{0}{4}", Text.StringExtensions.DirSeparatorChar,
+            var path = string.Format("{1}{0}{2}{0}{3}{0}{4}", StringExtensions.DirSeparatorChar,
                 rootDir, dir1, dir2, idValue);
 
             return path;

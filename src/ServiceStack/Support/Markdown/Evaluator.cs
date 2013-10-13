@@ -317,7 +317,7 @@ namespace CSharpEval
 			compiledAssembly = compilerResults.CompiledAssembly;
 			compiled = compiledAssembly.CreateInstance("CSharpEval._Expr");
 			compiledType = compiled.GetType();
-			compiledTypeCtorFn = Text.ReflectionExtensions.GetConstructorMethodToCache(compiledType);
+			compiledTypeCtorFn = ReflectionExtensions.GetConstructorMethodToCache(compiledType);
 		}
 
 		private static void ReferenceTypesIfNotExist(CompilerParameters cp, List<Assembly> assemblies, params Type[] paramTypes)

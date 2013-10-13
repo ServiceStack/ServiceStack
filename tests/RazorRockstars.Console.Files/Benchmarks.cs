@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using NUnit.Framework;
+using ServiceStack;
 using ServiceStack.Formats;
 using ServiceStack.Logging;
 using ServiceStack.Razor;
