@@ -111,7 +111,7 @@ namespace ServiceStack.ServiceClient.Web
 
             httpReq.ContentType = "multipart/form-data; boundary=" + boundary;
 
-            var boundarybytes = System.Text.Encoding.ASCII.GetBytes("\r\n--" + boundary + "\r\n");
+            var boundarybytes = System.Text.Encoding.ASCII.GetBytes("\r\n--" + boundary + "--\r\n");
 
             var headerTemplate = "\r\n--" + boundary +
                                  "\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{0}\"\r\nContent-Type: {1}\r\n\r\n";
