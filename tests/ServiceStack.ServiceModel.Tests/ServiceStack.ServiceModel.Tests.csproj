@@ -100,15 +100,11 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="Northwind.Common">
-      <HintPath>..\..\lib\tests\Northwind.Common.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.Text">
       <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ServiceModelSerializerTests.cs" />
     <Compile Include="DataContracts\ArrayOfGuidId.cs" />
     <Compile Include="DataContracts\ArrayOfIntId.cs" />
     <Compile Include="DataContracts\ArrayOfStringId.cs" />
