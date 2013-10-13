@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Web.UI;
-using ServiceStack.Support.Html;
+using ServiceStack.Templates;
 using ServiceStack.Web;
 
 namespace ServiceStack.Metadata
@@ -11,7 +11,6 @@ namespace ServiceStack.Metadata
         public IHttpRequest HttpRequest { get; set; }
         public string Title { get; set; }
         public List<string> OperationNames { get; set; }
-        public string MetadataPageBodyHtml { get; set; }
         public IDictionary<int, string> Xsds { get; set; }
         public int XsdServiceTypesIndex { get; set; }
         public MetadataPagesConfig MetadataConfig { get; set; }
@@ -93,9 +92,8 @@ namespace ServiceStack.Metadata
             }
 
             var renderedTemplate = HtmlTemplates.Format(
-                HtmlTemplates.IndexOperationsTemplate,
+                HtmlTemplates.GetIndexOperationsTemplate(),
                 this.Title,
-                this.MetadataPageBodyHtml,
                 this.XsdServiceTypesIndex,
                 operationsPart,
                 xsdsPart,

@@ -1,6 +1,6 @@
 using System.Web;
 using System.Web.UI;
-using ServiceStack.Support.Html;
+using ServiceStack.Templates;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -53,7 +53,7 @@ namespace ServiceStack.Metadata
                 baseUrl = HostContext.Config.WebHostUrl.CombineWith(baseUrl);
             }
 
-            var renderedTemplate = HtmlTemplates.Format(HtmlTemplates.OperationControlTemplate,
+            var renderedTemplate = HtmlTemplates.Format(HtmlTemplates.GetOperationControlTemplate(),
                 Title,
                 baseUrl.CombineWith(MetadataConfig.DefaultMetadataUri),
                 ContentFormat.ToUpper(),

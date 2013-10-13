@@ -43,12 +43,7 @@ namespace ServiceStack
             {
                 MetadataTypesConfig = new MetadataTypesConfig(addDefaultXmlNamespace: "http://schemas.servicestack.net/types"),
                 WsdlServiceNamespace = "http://schemas.servicestack.net/types",
-                MetadataPageBodyHtml = @"<br />
-                    <h3><a href=""https://github.com/ServiceStack/ServiceStack/wiki/Clients-overview"">Clients Overview</a></h3>",
-                MetadataOperationPageBodyHtml = @"<br />
-                    <h3><a href=""https://github.com/ServiceStack/ServiceStack/wiki/Clients-overview"">Clients Overview</a></h3>",
-                MetadataCustomPath = "Views/Templates/Metadata/",
-                UseCustomMetadataTemplates = false,
+                EmbeddedResourceSources = new[] { HostContext.AppHost.GetType().Assembly, typeof(Service).Assembly }.ToList(),
                 LogFactory = new NullLogFactory(),
                 EnableAccessRestrictions = true,
                 WebHostPhysicalPath = "~".MapServerPath(),
@@ -110,7 +105,6 @@ namespace ServiceStack
                 Return204NoContentForEmptyResponse = true,
                 AllowPartialResponses = true,
                 AllowAclUrlReservation = true,
-                AllowEmbdeddedResources = true,
                 RedirectToDefaultDocuments = false,
                 IgnoreWarningsOnPropertyNames = new List<string> {
                     "format", "callback", "debug", "_", "authsecret"
@@ -132,10 +126,7 @@ namespace ServiceStack
             //Get a copy of the singleton already partially configured
             this.MetadataTypesConfig = instance.MetadataTypesConfig;
             this.WsdlServiceNamespace = instance.WsdlServiceNamespace;
-            this.MetadataPageBodyHtml = instance.MetadataPageBodyHtml;
-            this.MetadataOperationPageBodyHtml = instance.MetadataOperationPageBodyHtml;
-            this.MetadataCustomPath = instance.MetadataCustomPath;
-            this.UseCustomMetadataTemplates = instance.UseCustomMetadataTemplates;
+            this.EmbeddedResourceSources = instance.EmbeddedResourceSources;
             this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
             this.ServiceEndpointsMetadataConfig = instance.ServiceEndpointsMetadataConfig;
             this.LogFactory = instance.LogFactory;
@@ -177,7 +168,6 @@ namespace ServiceStack
             this.IgnoreWarningsOnPropertyNames = instance.IgnoreWarningsOnPropertyNames;
             this.FallbackRestPath = instance.FallbackRestPath;
             this.AllowAclUrlReservation = instance.AllowAclUrlReservation;
-            this.AllowEmbdeddedResources = instance.AllowEmbdeddedResources;
             this.RedirectToDefaultDocuments = instance.RedirectToDefaultDocuments;
             this.AdminAuthSecret = instance.AdminAuthSecret;
         }
@@ -192,10 +182,7 @@ namespace ServiceStack
             set { metadataVisibility = value.ToAllowedFlagsSet(); }
         }
 
-        public string MetadataPageBodyHtml { get; set; }
-        public string MetadataOperationPageBodyHtml { get; set; }
-        public string MetadataCustomPath { get; set; }
-        public bool UseCustomMetadataTemplates { get; set; }
+        public List<Assembly> EmbeddedResourceSources { get; set; } 
 
         public string SoapServiceName { get; set; }
         public string DefaultContentType { get; set; }
@@ -253,7 +240,6 @@ namespace ServiceStack
         public bool AllowPartialResponses { get; set; }
         public bool AllowNonHttpOnlyCookies { get; set; }
         public bool AllowAclUrlReservation { get; set; }
-        public bool AllowEmbdeddedResources { get; set; }
         public bool RedirectToDefaultDocuments { get; set; }
 
         public bool UseHttpsLinks { get; set; }

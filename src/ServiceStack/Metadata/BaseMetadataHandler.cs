@@ -8,7 +8,6 @@ using ServiceStack.Host;
 using ServiceStack.Host.AspNet;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Support.WebHost;
-using ServiceStack.Text;
 using ServiceStack.Web;
 using System.Text;
 
@@ -173,7 +172,6 @@ namespace ServiceStack.Metadata
                 Xsds = XsdTypes.Xsds,
                 XsdServiceTypesIndex = 1,
                 OperationNames = metadata.GetOperationNamesForMetadata(httpReq),
-                MetadataPageBodyHtml = HostContext.Config.MetadataPageBodyHtml,
             };
 
             defaultPage.RenderControl(writer);
