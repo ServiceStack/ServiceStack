@@ -100,11 +100,15 @@ namespace ServiceStack
 
             if (VirtualPathProvider == null)
             {
-                VirtualPathProvider = Config.AllowEmbdeddedResources
-                    ? (IVirtualPathProvider)new MultiVirtualPathProvider(this,
-                        new FileSystemVirtualPathProvider(this, Config.WebHostPhysicalPath),
-                        new ResourceVirtualPathProvider(this))
-                    : new FileSystemVirtualPathProvider(this, Config.WebHostPhysicalPath);
+                var pathProviders = new List<IVirtualPathProvider> {
+                    new FileSystemVirtualPathProvider(this, Config.WebHostPhysicalPath)
+                };
+                pathProviders.AddRange(Config.EmbeddedResourceSources.Map(x => 
+                    new ResourceVirtualPathProvider(this, x)));
+
+                VirtualPathProvider = pathProviders.Count > 1
+                    ? new MultiVirtualPathProvider(this, pathProviders.ToArray())
+                    : pathProviders.First();
             }
 
             OnAfterInit();

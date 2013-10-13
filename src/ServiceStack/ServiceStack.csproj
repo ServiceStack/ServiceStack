@@ -440,7 +440,7 @@
     <Compile Include="Host\HttpListener\ListenerRequest.cs" />
     <Compile Include="Host\AppDelegates.cs" />
     <Compile Include="Host\ActionHandler.cs" />
-    <Compile Include="Support\Html\HtmlTemplates.cs" />
+    <Compile Include="Templates\HtmlTemplates.cs" />
     <Compile Include="Host\RequestBindingException.cs" />
     <Compile Include="Support\Markdown\Evaluator.cs" />
     <Compile Include="Support\Markdown\ITemplateWriter.cs" />
@@ -543,9 +543,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Funq\License.txt" />
-    <EmbeddedResource Include="Support\Html\OperationControl.html" />
-    <EmbeddedResource Include="Support\Html\IndexOperations.html" />
-    <EmbeddedResource Include="Formats\HtmlFormat.html" />
+    <EmbeddedResource Include="Templates\OperationControl.html" />
+    <EmbeddedResource Include="Templates\IndexOperations.html" />
+    <EmbeddedResource Include="Templates\HtmlFormat.html" />
     <None Include="MiniProfiler\UI\jquery.tmpl.beta1.js.orig" />
     <None Include="MiniProfiler\UI\jquery.1.6.2.js.orig" />
     <EmbeddedResource Include="MiniProfiler\UI\includes.css" />
