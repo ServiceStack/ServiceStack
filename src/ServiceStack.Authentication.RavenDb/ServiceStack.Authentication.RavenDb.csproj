@@ -60,7 +60,7 @@
   <ItemGroup>
     <Compile Include="ServiceStack_UserAuth_ByOAuthProvider.cs" />
     <Compile Include="ServiceStack_UserAuth_ByUserNameOrEmail.cs" />
-    <Compile Include="RavenUserAuthRepository.cs" />
+    <Compile Include="RavenDbUserAuthRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

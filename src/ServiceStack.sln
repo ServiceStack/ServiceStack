@@ -83,7 +83,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Server.Tests",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Caching", "Caching", "{515043B6-1FFD-4CBF-8916-23B82C67CF8C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Authentication.MongoDB", "ServiceStack.Authentication.MongoDB\ServiceStack.Authentication.MongoDB.csproj", "{16E42781-8872-4468-9B7A-9140778A4D5E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Authentication.MongoDb", "ServiceStack.Authentication.MongoDB\ServiceStack.Authentication.MongoDb.csproj", "{16E42781-8872-4468-9B7A-9140778A4D5E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Authentication.NHibernate", "ServiceStack.Authentication.NHibernate\ServiceStack.Authentication.NHibernate.csproj", "{E5C9B657-D8AF-4DF2-9BB8-C09AA8F5CBE2}"
 EndProject
@@ -1089,9 +1089,9 @@ Global
 		{29C23E7D-F41E-42DD-8426-9B5254840450} = {515043B6-1FFD-4CBF-8916-23B82C67CF8C}
 		{08840867-041E-46A2-97C3-EA223161D942} = {515043B6-1FFD-4CBF-8916-23B82C67CF8C}
 		{600612F3-15B4-45B5-9D39-06FA016B81C9} = {515043B6-1FFD-4CBF-8916-23B82C67CF8C}
-		{16E42781-8872-4468-9B7A-9140778A4D5E} = {2E143186-E565-48B8-A8AE-6FE03B70FE68}
 		{E5C9B657-D8AF-4DF2-9BB8-C09AA8F5CBE2} = {2E143186-E565-48B8-A8AE-6FE03B70FE68}
 		{A30BD5B5-00C9-4B9D-9C9D-514B4A676FF3} = {2E143186-E565-48B8-A8AE-6FE03B70FE68}
+		{16E42781-8872-4468-9B7A-9140778A4D5E} = {2E143186-E565-48B8-A8AE-6FE03B70FE68}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = ..\tests\RazorRockstars.Console\RazorRockstars.Console.csproj

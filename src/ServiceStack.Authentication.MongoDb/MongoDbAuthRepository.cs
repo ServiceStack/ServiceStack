@@ -4,13 +4,12 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using ServiceStack.Auth;
-using ServiceStack.Text;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 
-namespace ServiceStack.ServiceInterface.Auth
+namespace ServiceStack.Authentication.MongoDb
 {
-	public class MongoDBAuthRepository : IUserAuthRepository, IClearable
+	public class MongoDbAuthRepository : IUserAuthRepository, IClearable
 	{
 		// http://www.mongodb.org/display/DOCS/How+to+Make+an+Auto+Incrementing+Field
 		class Counters
@@ -50,7 +49,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			}
 		}
 
-		public MongoDBAuthRepository(MongoDatabase mongoDatabase, bool createMissingCollections)
+		public MongoDbAuthRepository(MongoDatabase mongoDatabase, bool createMissingCollections)
 		{
 			this.mongoDatabase = mongoDatabase;
 
