@@ -43,6 +43,7 @@
     <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.Common.Tests/bin/$(Configuration)/ServiceStack.Common.Tests.dll $(NUnitConsoleArgs)" />
     <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.Auth.Tests/bin/$(Configuration)/ServiceStack.Auth.Tests.dll $(NUnitConsoleArgs)" />
     <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.WebHostApp/bin/ServiceStack.WebHost.Endpoints.Tests.dll $(NUnitConsoleArgs)" />
+    <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.Logging.Tests/bin/ServiceStack.Logging.Tests.dll $(NUnitConsoleArgs)" />
   </Target>
 
   <Target Name="Build">
@@ -53,6 +54,9 @@
 
   <Target Name="BuildSolutions">
     <MSBuild Projects="$(SrcDir)/ServiceStack.sln" Targets="Build"
+      Properties="Configuration=$(Configuration)" />
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.sln" Targets="Build"
       Properties="Configuration=$(Configuration)" />
     
     <!-- TODO re-add SL5 after re-factor -->
@@ -105,6 +109,12 @@
       <CachingAwsDynamoDbFiles Include="$(SrcDir)/ServiceStack.Caching.AwsDynamoDb/bin/$(Configuration)/ServiceStack.Caching.AwsDynamoDb.*"></CachingAwsDynamoDbFiles>
       <CachingAzureFiles Include="$(SrcDir)/ServiceStack.Caching.Azure/bin/$(Configuration)/ServiceStack.Caching.Azure.*"></CachingAzureFiles>
       <CachingMemcachedFiles Include="$(SrcDir)/ServiceStack.Caching.Memcached/bin/$(Configuration)/ServiceStack.Caching.Memcached.*"></CachingMemcachedFiles>
+
+      <ElmahFiles Include="$(SrcDir)/ServiceStack.Logging.Elmah/bin/$(Configuration)/ServiceStack.Logging.Elmah.*"></ElmahFiles>
+      <EntLib5Files Include="$(SrcDir)/ServiceStack.Logging.EntLib5/bin/$(Configuration)/ServiceStack.Logging.EntLib5.*"></EntLib5Files>
+      <EventLogFiles Include="$(SrcDir)/ServiceStack.Logging.EventLog/bin/$(Configuration)/ServiceStack.Logging.EventLog.*"></EventLogFiles>
+      <Log4NetFiles Include="$(SrcDir)/ServiceStack.Logging.Log4Net/bin/$(Configuration)/ServiceStack.Logging.Log4Net.*"></Log4NetFiles>
+      <NLogFiles Include="$(SrcDir)/ServiceStack.Logging.NLog/bin/$(Configuration)/ServiceStack.Logging.NLog.*"></NLogFiles>
 
       <ProtoBufFiles Include="$(SrcDir)/ServiceStack.ProtoBuf/bin/$(Configuration)/ServiceStack.ProtoBuf.*"></ProtoBufFiles>
 
@@ -227,6 +237,67 @@
     <Copy SourceFiles="%(CachingMemcachedFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Caching.Memcached/lib/net40" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Caching.Memcached/servicestack.caching.memcached.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
+
+
+    <!-- ServiceStack.Logging.Elmah -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.Elmah/ServiceStack.Logging.Elmah.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Logging.Elmah/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Logging.Elmah/lib/net40')" />
+    <Copy SourceFiles="%(ElmahFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Logging.Elmah/lib/net40" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Logging.Elmah/servicestack.logging.elmah.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
+
+    <!-- ServiceStack.Logging.EntLib5 -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.EntLib5/ServiceStack.Logging.EntLib5.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Logging.EntLib5/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Logging.EntLib5/lib/net40')" />
+    <Copy SourceFiles="%(EntLib5Files.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Logging.EntLib5/lib/net40" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Logging.EntLib5/servicestack.logging.entlib5.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
+
+    <!-- ServiceStack.Logging.EventLog -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.EventLog/ServiceStack.Logging.EventLog.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Logging.EventLog/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Logging.EventLog/lib/net40')" />
+    <Copy SourceFiles="%(EventLogFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Logging.EventLog/lib/net40" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Logging.EventLog/servicestack.logging.eventlog.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
+
+    <!-- ServiceStack.Logging.Log4Net -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.Log4Net/ServiceStack.Logging.Log4Net.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Logging.Log4Net/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Logging.Log4Net/lib/net40')" />
+    <Copy SourceFiles="%(Log4NetFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Logging.Log4Net/lib/net40" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Logging.Log4Net/servicestack.logging.log4net.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
+
+    <!-- ServiceStack.Logging.NLog -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.NLog/ServiceStack.Logging.NLog.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Logging.NLog/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Logging.NLog/lib/net40')" />
+    <Copy SourceFiles="%(NLogFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Logging.NLog/lib/net40" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Logging.NLog/servicestack.logging.nlog.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Host.AspNet - Content Templates -->
