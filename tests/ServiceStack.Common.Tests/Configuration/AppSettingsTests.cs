@@ -19,6 +19,8 @@ namespace ServiceStack.Common.Tests
                     {"BadIntegerKey", "This is not an integer"},
                     {"DictionaryKey", "A:1,B:2,C:3,D:4,E:5"},
                     {"BadDictionaryKey", "A1,B:"},
+                    {"ObjectNoLineFeed", "{SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}"},
+                    {"ObjectWithLineFeed", "{SomeSetting:Test,\r\nSomeOtherSetting:12,\r\nFinalSetting:Final}"},
                 });
         }
 
@@ -157,5 +159,35 @@ namespace ServiceStack.Common.Tests
                 Assert.That(ex.Message.Contains("BadDictionaryKey"));
             }
         }
+
+        [Test]
+        public void Get_Returns_ObjectNoLineFeed()
+        {
+            var appSettings = GetAppSettings();
+            var value = appSettings.Get("ObjectNoLineFeed", new SimpleAppSettings());
+            Assert.That(value, Is.Not.Null);
+            Assert.That(value.FinalSetting, Is.EqualTo("Final"));
+            Assert.That(value.SomeOtherSetting, Is.EqualTo(12));
+            Assert.That(value.SomeSetting, Is.EqualTo("Test"));
+        }
+
+        [Test]
+        public void Get_Returns_ObjectWithLineFeed()
+        {
+            var appSettings = GetAppSettings();
+            var value = appSettings.Get("ObjectWithLineFeed", new SimpleAppSettings());
+            Assert.That(value, Is.Not.Null);
+            Assert.That(value.FinalSetting, Is.EqualTo("Final"));
+            Assert.That(value.SomeOtherSetting, Is.EqualTo(12));
+            Assert.That(value.SomeSetting, Is.EqualTo("Test"));
+        }
+
+        public class SimpleAppSettings
+        {
+            public string SomeSetting { get; set; }
+            public int SomeOtherSetting { get; set; }
+            public string FinalSetting { get; set; }
+        }
+
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 using ServiceStack.Text;
 
 namespace ServiceStack.Configuration
@@ -57,6 +58,12 @@ namespace ServiceStack.Configuration
         public virtual T Get<T>(string name, T defaultValue)
         {
             var stringValue = GetNullableString(name);
+            if (!string.IsNullOrEmpty(stringValue))
+            {
+                var lines = stringValue.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                if (lines.Length > 1)
+                    stringValue = string.Join("", lines.Select(x => x.Trim()));
+            }
 
             T deserializedValue;
             try
