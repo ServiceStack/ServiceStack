@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>ServiceStack.Logging.EventLog</id>
+    <version>4.0.0</version>
+    <title>ServiceStack.Logging.EventLog</title>
+    <authors>Demis Bellot</authors>
+    <owners>Demis Bellot</owners>
+    <summary>Windows Event Log integration for ServiceStack, the Opensource .NET and Mono REST Web Services Framework</summary>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>
+      Provides EventLog logging integration for other ServiceStack projects
+    </description>
+    <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
+    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/license.txt</licenseUrl>
+    <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
+    <tags>servicestack log logging eventlog</tags>
+    <language>en-US</language>
+    <copyright>Copyright 2013 Service Stack</copyright>
+    <dependencies>
+      <dependency id="ServiceStack.Common" version="4.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="lib\**\*.*" target="lib" />
+    <file src="..\..\src\ServiceStack.Logging.EventLog\**\*.cs" target="src" />
+  </files>
+</package>
