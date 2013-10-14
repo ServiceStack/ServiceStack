@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>ServiceStack.Caching.Azure</id> 
+    <version>4.0.0</version>
+    <authors>Manuel Nelson, ServiceStack contributors</authors> 
+    <owners>Manuel Nelson, ServiceStack contributors</owners>
+    <description>
+        An Azure In-Memory DataCache implementing ServiceStack's ICacheClient:
+        https://github.com/ServiceStack/ServiceStack/wiki/Caching
+    </description> 
+    <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
+    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/license.txt</licenseUrl>
+    <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
+    <tags>ServiceStack Caching Windows Azure Cache CacheClient POCO Code-First</tags>
+    <language>en-US</language> 
+    <copyright>ServiceStack 2013 and contributors</copyright>
+    <dependencies>
+      <dependency id="ServiceStack.Common" version="4.0" />
+      <dependency id="WindowsAzure.Caching" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="lib\**\*.*" target="lib" />
+    <file src="..\..\src\ServiceStack.Caching.Azure\**\*.cs" target="src" />
+  </files>
+</package>

@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>ServiceStack.Authentication.NHibernate</id> 
+    <version>4.0.0</version>
+    <authors>Joshua Lewis, ServiceStack contributors</authors> 
+    <owners>Joshua Lewis, ServiceStack contributors</owners>
+    <description>
+        An NHibernate IUserAuthRepository to persist User registration and authentication info in any RDBMS NHibernate supports.
+        Implements ServiceStack's built-in AuthProvider Model:
+        https://github.com/ServiceStack/ServiceStack/wiki/Authentication-and-authorization
+        inc. Twitter, Facebook, Basic, Digest, Credentials Auth modes out-of-the-box.
+    </description> 
+    <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
+    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/license.txt</licenseUrl>
+    <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
+    <tags>ServiceStack Authentication Authorization NHibernate SQLServer Sqlite Oracle MySql PostgreSQL POCO Code-First</tags>
+    <language>en-US</language> 
+    <copyright>ServiceStack 2013 and contributors</copyright>
+    <dependencies>
+      <dependency id="ServiceStack" version="4.0" />
+      <dependency id="Iesi.Collections" />
+      <dependency id="NHibernate" />
+      <dependency id="FluentNHibernate" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="lib\**\*.*" target="lib" />
+    <file src="..\..\src\ServiceStack.Authentication.NHibernate\**\*.cs" target="src" />
+  </files>
+</package>
