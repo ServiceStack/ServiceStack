@@ -1,14 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 using ServiceStack.Text;
 
 namespace ServiceStack.Configuration
 {
+    public delegate string ParsingStrategyDelegate(string originalSetting);
+
     public class AppSettingsBase : IAppSettings
     {
         protected ISettings settings;
         const string ErrorAppsettingNotFound = "Unable to find App Setting: {0}";
+
+        public ParsingStrategyDelegate ParsingStrategy { get; set; }
 
         public AppSettingsBase(ISettings settings=null)
         {
@@ -17,7 +22,10 @@ namespace ServiceStack.Configuration
 
         public virtual string GetNullableString(string name)
         {
-            return settings.Get(name);
+            var value = settings.Get(name);
+            return ParsingStrategy != null
+                ? ParsingStrategy(value)
+                : value;
         }
 
         public virtual string GetString(string name)
@@ -75,6 +83,19 @@ namespace ServiceStack.Configuration
             return stringValue != null
                        ? deserializedValue
                        : defaultValue;
+        }
+    }
+
+    public static class AppSettingsStrategy
+    {
+        public static string CollapseNewLines(string originalSetting)
+        {
+            if (originalSetting == null) return null;
+
+            var lines = originalSetting.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            return lines.Length > 1 
+                ? string.Join("", lines.Select(x => x.Trim())) 
+                : originalSetting;
         }
     }
 }
