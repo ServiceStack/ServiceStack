@@ -9,7 +9,7 @@
 
   <PropertyGroup>
     <BuildSolutionDir>$(MSBuildProjectDirectory)/..</BuildSolutionDir>
-    <SrcDir>$(SrcDir)</SrcDir>
+    <SrcDir>$(BuildSolutionDir)/src</SrcDir>
     <Configuration Condition="$(Configuration) == ''">Release</Configuration>
     <NUnitConsoleArgs>/noshadow</NUnitConsoleArgs>
     <NuGetPath>$(SrcDir)/.nuget/nuget.exe</NuGetPath>
