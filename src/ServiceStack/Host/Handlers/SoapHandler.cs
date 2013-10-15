@@ -62,7 +62,7 @@ namespace ServiceStack.Host.Handlers
         protected Message ExecuteMessage(Message message, RequestAttributes requestAttributes, IHttpRequest httpRequest, IHttpResponse httpResponse)
         {
             var soapFeature = requestAttributes.ToSoapFeature();
-            HostContext.AssertFeatures(soapFeature);
+            HostContext.AppHost.AssertFeatures(soapFeature);
 
             var httpReq = HttpContext.Current != null && httpRequest == null
                     ? new AspNetRequest(HttpContext.Current.Request)

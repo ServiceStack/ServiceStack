@@ -237,7 +237,7 @@ namespace ServiceStack.Host.Handlers
             {
                 if (!HostContext.HasFeature(feature))
                 {
-                    HostContext.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Feature Not Available");
+                    HostContext.AppHost.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Feature Not Available");
                     return false;
                 }
             }
@@ -245,7 +245,7 @@ namespace ServiceStack.Host.Handlers
             var format = feature.ToFormat();
             if (!HostContext.Metadata.CanAccess(httpReq, format, operationName))
             {
-                HostContext.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Service Not Available");
+                HostContext.AppHost.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Service Not Available");
                 return false;
             }
             return true;

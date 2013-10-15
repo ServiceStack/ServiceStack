@@ -20,8 +20,8 @@ using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Metadata;
+using ServiceStack.MiniProfiler.UI;
 using ServiceStack.Serialization;
-using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 
@@ -56,7 +56,10 @@ namespace ServiceStack
             ViewEngines = new List<IViewEngine>();
             ServiceExceptionHandlers = new List<HandleServiceExceptionDelegate>();
             UncaughtExceptionHandlers = new List<HandleUncaughtExceptionDelegate>();
-            RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>>();
+            RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>> {
+                 HttpHandlerFactory.ReturnRequestInfo,
+                 MiniProfilerHandler.MatchesRequest,
+            };
             CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
             CustomErrorHttpHandlers = new Dictionary<HttpStatusCode, IServiceStackHttpHandler>();
             Plugins = new List<IPlugin> {
@@ -358,11 +361,6 @@ namespace ServiceStack
                 config.DefaultContentType = MimeTypes.Json;
 
             ServiceController.AfterInit();
-        }
-
-        public T GetPlugin<T>() where T : class, IPlugin
-        {
-            return Plugins.FirstOrDefault(x => x is T) as T;
         }
 
         private bool pluginsLoaded;

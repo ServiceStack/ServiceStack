@@ -105,6 +105,11 @@ namespace ServiceStack
             get { return AssertAppHost().CatchAllHandlers; }
         }
 
+        public static List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers
+        {
+            get { return AssertAppHost().RawHttpHandlers; }
+        }
+
         public static List<Action<IHttpRequest, IHttpResponse, object>> GlobalRequestFilters
         {
             get { return AssertAppHost().GlobalRequestFilters; }
@@ -164,12 +169,12 @@ namespace ServiceStack
 
         public static T GetPlugin<T>() where T : class, IPlugin
         {
-            return AssertAppHost().Plugins.FirstOrDefault(x => x is T) as T;
+            return AssertAppHost().GetPlugin<T>();
         }
 
         public static bool HasPlugin<T>() where T : class, IPlugin
         {
-            return AssertAppHost().Plugins.FirstOrDefault(x => x is T) != null;
+            return AssertAppHost().HasPlugin<T>();
         }
 
         public static string GetAppConfigPath()
@@ -201,125 +206,10 @@ namespace ServiceStack
             }
         }
 
-        public static bool HasFeature(Feature feature)
-        {
-            return (feature & Config.EnableFeatures) == feature;
-        }
-
-        public static void AssertFeatures(Feature usesFeatures)
-        {
-            if (Config.EnableFeatures == Feature.All) return;
-
-            if (!HasFeature(usesFeatures))
-            {
-                throw new UnauthorizedAccessException(
-                    String.Format("'{0}' Features have been disabled by your administrator", usesFeatures));
-            }
-        }
-
         public static UnauthorizedAccessException UnauthorizedAccess(RequestAttributes requestAttrs)
         {
             return new UnauthorizedAccessException(
                 "Request with '{0}' is not allowed".Fmt(requestAttrs));
-        }
-
-        public static void AssertContentType(string contentType)
-        {
-            if (Config.EnableFeatures == Feature.All) return;
-
-            AssertFeatures(contentType.ToFeature());
-        }
-
-        public static bool HasAccessToMetadata(IHttpRequest httpReq, IHttpResponse httpRes)
-        {
-            if (!HasFeature(Feature.Metadata))
-            {
-                HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Metadata Not Available");
-                return false;
-            }
-
-            if (Config.MetadataVisibility != RequestAttributes.Any)
-            {
-                var actualAttributes = httpReq.GetAttributes();
-                if ((actualAttributes & Config.MetadataVisibility) != Config.MetadataVisibility)
-                {
-                    HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Metadata Not Visible");
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        public static void HandleErrorResponse(IHttpRequest httpReq, IHttpResponse httpRes, HttpStatusCode errorStatus, string errorStatusDescription = null)
-        {
-            if (httpRes.IsClosed) return;
-
-            httpRes.StatusDescription = errorStatusDescription;
-
-            var handler = GetHandlerForErrorStatus(errorStatus);
-
-            handler.ProcessRequest(httpReq, httpRes, httpReq.OperationName);
-        }
-
-        public static IServiceStackHttpHandler GetHandlerForErrorStatus(HttpStatusCode errorStatus)
-        {
-            var httpHandler = GetCustomErrorHandler(errorStatus);
-
-            switch (errorStatus)
-            {
-                case HttpStatusCode.Forbidden:
-                    return httpHandler ?? new ForbiddenHttpHandler();
-                case HttpStatusCode.NotFound:
-                    return httpHandler ?? new NotFoundHttpHandler();
-            }
-
-            if (AppHost.CustomErrorHttpHandlers != null)
-            {
-                AppHost.CustomErrorHttpHandlers.TryGetValue(HttpStatusCode.NotFound, out httpHandler);
-            }
-
-            return httpHandler ?? new NotFoundHttpHandler();
-        }
-
-        public static IServiceStackHttpHandler GetCustomErrorHandler(int errorStatusCode)
-        {
-            try
-            {
-                return GetCustomErrorHandler((HttpStatusCode)errorStatusCode);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        public static IServiceStackHttpHandler GetCustomErrorHandler(HttpStatusCode errorStatus)
-        {
-            IServiceStackHttpHandler httpHandler = null;
-            if (AppHost.CustomErrorHttpHandlers != null)
-            {
-                AppHost.CustomErrorHttpHandlers.TryGetValue(errorStatus, out httpHandler);
-            }
-            return httpHandler ?? Config.GlobalHtmlErrorHttpHandler;
-        }
-
-        public static IHttpHandler GetCustomErrorHttpHandler(HttpStatusCode errorStatus)
-        {
-            var ssHandler = GetCustomErrorHandler(errorStatus);
-            if (ssHandler == null) return null;
-            var httpHandler = ssHandler as IHttpHandler;
-            return httpHandler ?? new ServiceStackHttpHandler(ssHandler);
-        }
-
-        public static bool HasValidAuthSecret(IHttpRequest req)
-        {
-            if (Config.AdminAuthSecret != null)
-            {
-                var authSecret = req.GetParam("authsecret");
-                return authSecret == Config.AdminAuthSecret;
-            }
-
-            return false;
         }
 
         public static string ResolveAbsoluteUrl(string virtualPath, IHttpRequest httpReq)
@@ -440,6 +330,16 @@ namespace ServiceStack
             if (service == null) return null;
             service.RequestContext = new HttpRequestContext(httpReq, httpRes, null);
             return service;
+        }
+
+        public static bool HasValidAuthSecret(IHttpRequest httpReq)
+        {
+            return AssertAppHost().HasValidAuthSecret(httpReq);
+        }
+
+        public static bool HasFeature(Feature feature)
+        {
+            return AssertAppHost().HasFeature(feature);
         }
     }
 }

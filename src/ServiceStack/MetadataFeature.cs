@@ -72,7 +72,7 @@ namespace ServiceStack
                 case "operations":
                     
                     return new CustomResponseHandler((httpReq, httpRes) => 
-                        HostContext.HasAccessToMetadata(httpReq, httpRes) 
+                        HostContext.AppHost.HasAccessToMetadata(httpReq, httpRes) 
                             ? HostContext.Metadata.GetOperationDtos()
                             : null, "Operations");
 

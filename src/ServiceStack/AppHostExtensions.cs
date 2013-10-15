@@ -50,6 +50,21 @@ namespace ServiceStack
 			}
 		}
 
+        public static T GetPlugin<T>(this IAppHost appHost) where T : class, IPlugin
+        {
+            return appHost.Plugins.FirstOrDefault(x => x is T) as T;
+        }
+
+        public static bool HasPlugin<T>(this IAppHost appHost) where T : class, IPlugin
+        {
+            return appHost.Plugins.FirstOrDefault(x => x is T) != null;
+        }
+
+        public static bool HasMultiplePlugins<T>(this IAppHost appHost) where T : class, IPlugin
+        {
+            return appHost.Plugins.Count(x => x is T) > 1;
+        }
+
         /// <summary>
         /// Get an IAppHost container. 
         /// Note: Registering dependencies should only be done during setup/configuration 

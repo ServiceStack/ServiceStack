@@ -1,6 +1,5 @@
 using System;
 using ServiceStack.MiniProfiler;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
@@ -50,9 +49,10 @@ namespace ServiceStack.Host.Handlers
 		{
 			try
 			{
-                HostContext.AssertFeatures(format);
+			    var appHost = HostContext.AppHost;
+                appHost.AssertFeatures(format);
 
-                if (HostContext.ApplyPreRequestFilters(httpReq, httpRes)) return;
+                if (appHost.ApplyPreRequestFilters(httpReq, httpRes)) return;
 
 				httpReq.ResponseContentType = httpReq.GetQueryStringContentType() ?? this.HandlerContentType;
 				var callback = httpReq.QueryString["callback"];
@@ -60,10 +60,10 @@ namespace ServiceStack.Host.Handlers
 							  && !string.IsNullOrEmpty(callback);
 
 				var request = CreateRequest(httpReq, operationName);
-				if (HostContext.ApplyRequestFilters(httpReq, httpRes, request)) return;
+                if (appHost.ApplyRequestFilters(httpReq, httpRes, request)) return;
 
 				var response = GetResponse(httpReq, httpRes, request);
-				if (HostContext.ApplyResponseFilters(httpReq, httpRes, response)) return;
+                if (appHost.ApplyResponseFilters(httpReq, httpRes, response)) return;
 
 				if (doJsonp && !(response is CompressedResult))
 					httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());

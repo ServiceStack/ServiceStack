@@ -16,7 +16,7 @@ namespace ServiceStack.Metadata
 
         public override void Execute(HttpContext context)
         {
-            HostContext.AssertFeatures(Feature.Metadata);
+            HostContext.AppHost.AssertFeatures(Feature.Metadata);
 
             context.Response.ContentType = "text/xml";
 
@@ -41,8 +41,7 @@ namespace ServiceStack.Metadata
 
         public void Execute(IHttpRequest httpReq, IHttpResponse httpRes)
         {
-
-            HostContext.AssertFeatures(Feature.Metadata);
+            HostContext.AppHost.AssertFeatures(Feature.Metadata);
 
             httpRes.ContentType = "text/xml";
 

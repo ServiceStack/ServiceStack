@@ -4,6 +4,9 @@
 
 using System;
 using System.Linq;
+using System.Net;
+using System.Web;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Support.WebHost;
@@ -143,14 +146,131 @@ namespace ServiceStack
 
         public virtual TimeSpan GetDefaultSessionExpiry()
         {
-            var authFeature = GetPlugin<AuthFeature>();
+            var authFeature = this.GetPlugin<AuthFeature>();
             if (authFeature != null)
                 return authFeature.GetDefaultSessionExpiry();
 
-            var sessionFeature = GetPlugin<SessionFeature>();
+            var sessionFeature = this.GetPlugin<SessionFeature>();
             return sessionFeature != null 
                 ? sessionFeature.SessionExpiry 
                 : SessionFeature.DefaultSessionExpiry;
         }
+
+        public bool HasFeature(Feature feature)
+        {
+            return (feature & Config.EnableFeatures) == feature;
+        }
+
+        public void AssertFeatures(Feature usesFeatures)
+        {
+            if (Config.EnableFeatures == Feature.All) return;
+
+            if (!HasFeature(usesFeatures))
+            {
+                throw new UnauthorizedAccessException(
+                    String.Format("'{0}' Features have been disabled by your administrator", usesFeatures));
+            }
+        }
+
+        public void AssertContentType(string contentType)
+        {
+            if (Config.EnableFeatures == Feature.All) return;
+
+            AssertFeatures(contentType.ToFeature());
+        }
+
+        public bool HasAccessToMetadata(IHttpRequest httpReq, IHttpResponse httpRes)
+        {
+            if (!HasFeature(Feature.Metadata))
+            {
+                HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Metadata Not Available");
+                return false;
+            }
+
+            if (Config.MetadataVisibility != RequestAttributes.Any)
+            {
+                var actualAttributes = httpReq.GetAttributes();
+                if ((actualAttributes & Config.MetadataVisibility) != Config.MetadataVisibility)
+                {
+                    HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Metadata Not Visible");
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public void HandleErrorResponse(IHttpRequest httpReq, IHttpResponse httpRes, HttpStatusCode errorStatus, string errorStatusDescription = null)
+        {
+            if (httpRes.IsClosed) return;
+
+            httpRes.StatusDescription = errorStatusDescription;
+
+            var handler = GetHandlerForErrorStatus(errorStatus);
+
+            handler.ProcessRequest(httpReq, httpRes, httpReq.OperationName);
+        }
+
+        public IServiceStackHttpHandler GetHandlerForErrorStatus(HttpStatusCode errorStatus)
+        {
+            var httpHandler = GetCustomErrorHandler(errorStatus);
+
+            switch (errorStatus)
+            {
+                case HttpStatusCode.Forbidden:
+                    return httpHandler ?? new ForbiddenHttpHandler();
+                case HttpStatusCode.NotFound:
+                    return httpHandler ?? new NotFoundHttpHandler();
+            }
+
+            if (CustomErrorHttpHandlers != null)
+            {
+                CustomErrorHttpHandlers.TryGetValue(HttpStatusCode.NotFound, out httpHandler);
+            }
+
+            return httpHandler ?? new NotFoundHttpHandler();
+        }
+
+        public IServiceStackHttpHandler GetCustomErrorHandler(int errorStatusCode)
+        {
+            try
+            {
+                return GetCustomErrorHandler((HttpStatusCode)errorStatusCode);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public IServiceStackHttpHandler GetCustomErrorHandler(HttpStatusCode errorStatus)
+        {
+            IServiceStackHttpHandler httpHandler = null;
+            if (CustomErrorHttpHandlers != null)
+            {
+                CustomErrorHttpHandlers.TryGetValue(errorStatus, out httpHandler);
+            }
+            return httpHandler ?? Config.GlobalHtmlErrorHttpHandler;
+        }
+
+        public IHttpHandler GetCustomErrorHttpHandler(HttpStatusCode errorStatus)
+        {
+            var ssHandler = GetCustomErrorHandler(errorStatus);
+            if (ssHandler == null) return null;
+            var httpHandler = ssHandler as IHttpHandler;
+            return httpHandler ?? new ServiceStackHttpHandler(ssHandler);
+        }
+
+        public bool HasValidAuthSecret(IHttpRequest httpReq)
+        {
+            if (Config.AdminAuthSecret != null)
+            {
+                var authSecret = httpReq.GetParam("authsecret");
+                return authSecret == Config.AdminAuthSecret;
+            }
+
+            return false;
+        }
+
     }
+
 }

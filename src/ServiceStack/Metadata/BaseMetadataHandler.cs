@@ -186,13 +186,14 @@ namespace ServiceStack.Metadata
 
         protected bool AssertAccess(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
         {
-            if (!HostContext.HasAccessToMetadata(httpReq, httpRes)) return false;
+            var appHost = HostContext.AppHost;
+            if (!appHost.HasAccessToMetadata(httpReq, httpRes)) return false;
 
             if (operationName == null) return true; //For non-operation pages we don't need to check further permissions
-            if (!HostContext.Config.EnableAccessRestrictions) return true;
-            if (!HostContext.MetadataPagesConfig.IsVisible(httpReq, Format, operationName))
+            if (!appHost.Config.EnableAccessRestrictions) return true;
+            if (!appHost.MetadataPagesConfig.IsVisible(httpReq, Format, operationName))
             {
-                HostContext.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Service Not Available");
+                appHost.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Service Not Available");
                 return false;
             }
 
