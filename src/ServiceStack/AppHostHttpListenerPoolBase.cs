@@ -99,9 +99,10 @@ namespace ServiceStack
             }
         }
 
-        public override void Start(string urlBase)
+        public override ServiceStackHost Start(string listeningAtUrlBase)
         {
-            Start(urlBase, Listen);
+            Start(listeningAtUrlBase, Listen);
+            return this;
         }
 
         private bool IsListening

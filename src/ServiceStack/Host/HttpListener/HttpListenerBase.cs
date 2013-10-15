@@ -55,21 +55,22 @@ namespace ServiceStack.Host.HttpListener
             }
         }
 
-        public virtual void Start(string urlBase)
+        public override ServiceStackHost Start(string listeningAtUrlBase)
         {
-            Start(urlBase, Listen);
+            Start(listeningAtUrlBase, Listen);
+            return this;
         }
 
         /// <summary>
         /// Starts the Web Service
         /// </summary>
-        /// <param name="urlBase">
+        /// <param name="listeningAtUrlBase">
         /// A Uri that acts as the base that the server is listening on.
         /// Format should be: http://127.0.0.1:8080/ or http://127.0.0.1:8080/somevirtual/
         /// Note: the trailing slash is required! For more info see the
         /// HttpListener.Prefixes property on MSDN.
         /// </param>
-        protected void Start(string urlBase, WaitCallback listenCallback)
+        protected void Start(string listeningAtUrlBase, WaitCallback listenCallback)
         {
             // *** Already running - just leave it in place
             if (this.IsStarted)
@@ -78,9 +79,9 @@ namespace ServiceStack.Host.HttpListener
             if (this.Listener == null)
                 Listener = new System.Net.HttpListener();
 
-            HostContext.Config.ServiceStackHandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(urlBase);
+            HostContext.Config.ServiceStackHandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(listeningAtUrlBase);
 
-            Listener.Prefixes.Add(urlBase);
+            Listener.Prefixes.Add(listeningAtUrlBase);
 
             IsStarted = true;
 
@@ -92,10 +93,10 @@ namespace ServiceStack.Host.HttpListener
             {
                 if (Config.AllowAclUrlReservation && ex.ErrorCode == 5 && registeredReservedUrl == null)
                 {
-                    registeredReservedUrl = AddUrlReservationToAcl(urlBase);
+                    registeredReservedUrl = AddUrlReservationToAcl(listeningAtUrlBase);
                     if (registeredReservedUrl != null)
                     {
-                        Start(urlBase, listenCallback);
+                        Start(listeningAtUrlBase, listenCallback);
                         return;
                     }
                 }
