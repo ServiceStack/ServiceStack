@@ -1,27 +1,26 @@
 ﻿using System;
 using System.Web;
-using ServiceStack.Host.Handlers;
 using ServiceStack.Web;
 
-namespace ServiceStack.Host
+namespace ServiceStack.Host.Handlers
 {
-    public class ActionHandler : IServiceStackHttpHandler, IHttpHandler 
+    public class CustomResponseHandler : IServiceStackHttpHandler, IHttpHandler
     {
         public string OperationName { get; set; }
 
         public Func<IHttpRequest, IHttpResponse, object> Action { get; set; }
 
-        public ActionHandler(Func<IHttpRequest, IHttpResponse, object> action, string operationName=null)
+        public CustomResponseHandler(Func<IHttpRequest, IHttpResponse, object> action, string operationName = null)
         {
             Action = action;
-            OperationName = operationName;
+            OperationName = operationName ?? "CustomResponse";
         }
 
         public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
         {
             if (Action == null)
                 throw new Exception("Action was not supplied to ActionHandler");
-            
+
             if (httpReq.OperationName == null)
                 httpReq.SetOperationName(OperationName);
 
@@ -31,7 +30,7 @@ namespace ServiceStack.Host
 
         public void ProcessRequest(HttpContext context)
         {
-            ProcessRequest(context.Request.ToRequest(OperationName), 
+            ProcessRequest(context.Request.ToRequest(OperationName),
                 context.Response.ToResponse(),
                 OperationName);
         }
