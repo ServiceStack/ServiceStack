@@ -7,7 +7,6 @@ using ServiceStack.Host.AspNet;
 using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
 using ServiceStack.Serialization;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers

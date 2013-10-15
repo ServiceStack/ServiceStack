@@ -1,5 +1,6 @@
 ﻿using System.Web;
 using ServiceStack.Host;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Metadata;
 
 namespace ServiceStack
@@ -70,7 +71,7 @@ namespace ServiceStack
 
                 case "operations":
                     
-                    return new ActionHandler((httpReq, httpRes) => 
+                    return new CustomResponseHandler((httpReq, httpRes) => 
                         HostContext.HasAccessToMetadata(httpReq, httpRes) 
                             ? HostContext.Metadata.GetOperationDtos()
                             : null, "Operations");

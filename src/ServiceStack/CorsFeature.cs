@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using ServiceStack.Host;
+using ServiceStack.Host.Handlers;
 
 namespace ServiceStack
 {
@@ -70,12 +72,17 @@ namespace ServiceStack
 
             if (AutoHandleOptionRequests)
             {
-                appHost.PreRequestFilters.Add((httpReq, httpRes) =>
+                var emitGlobalHeadersHandler = new CustomActionHandler((httpReq, httpRes) => 
                 {
                     //Handles Request and closes Responses after emitting global HTTP Headers
                     if (httpReq.HttpMethod == HttpMethods.Options)
-                        httpRes.EndRequest();
-                });                
+                        httpRes.EndRequest();                            
+                });
+
+                appHost.RawHttpHandlers.Add(httpReq =>
+                    httpReq.HttpMethod == HttpMethods.Options
+                        ? emitGlobalHeadersHandler
+                        : null);                
             }
         }
     }

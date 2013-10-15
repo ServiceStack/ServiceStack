@@ -120,7 +120,7 @@ namespace ServiceStack
                 };
             }
 
-            var rawHandlers = config.RawHttpHandlers;
+            var rawHandlers = HostContext.AppHost.RawHttpHandlers;
             rawHandlers.Add(ReturnRequestInfo);
             rawHandlers.Add(MiniProfilerHandler.MatchesRequest);
             RawHttpHandlers = rawHandlers.ToArray();

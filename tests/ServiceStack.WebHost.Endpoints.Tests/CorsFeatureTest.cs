@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using NUnit.Framework;
-using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -51,23 +50,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public class CorsFeatureAppHostHttpListener
             : AppHostHttpListenerBase
         {
-
             public CorsFeatureAppHostHttpListener()
                 : base("Cors Feature Tests", typeof(CorsFeatureService).Assembly) { }
 
-            public override void Configure(Funq.Container container)
-            {
-            }
+            public override void Configure(Funq.Container container) {}
         }
 
-        CorsFeatureAppHostHttpListener appHost;
+        ServiceStackHost appHost;
 
         [TestFixtureSetUp]
         public void OnTestFixtureSetUp()
         {
-            appHost = new CorsFeatureAppHostHttpListener();
-            appHost.Init();
-            appHost.Start(ListeningOn);
+            appHost = new CorsFeatureAppHostHttpListener()
+                .Init()
+                .Start(ListeningOn);
         }
 
         [TestFixtureTearDown]
@@ -112,6 +108,73 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.False(response.ContainsKey(HttpHeaders.AllowCredentials));
             Assert.That(response[HttpHeaders.AllowHeaders], Is.EqualTo("Content-Type"));
         }
+    }
 
+    [Route("/corsplugin", "GET")]
+    public class CorsFeaturePlugin {}
+
+    public class CorsFeaturePluginResponse
+    {
+        public bool IsSuccess { get; set; }
+    }
+
+    public class CorsFeaturePluginService : IService
+    {
+        public object Any(CorsFeaturePlugin request)
+        {
+            return new CorsFeaturePluginResponse { IsSuccess = true };
+        }
+    }
+
+    public class CorsFeaturePluginTests
+    {
+        private const string ListeningOn = "http://localhost:8022/";
+
+        public class CorsFeaturePluginAppHostHttpListener
+            : AppHostHttpListenerBase
+        {
+
+            public CorsFeaturePluginAppHostHttpListener()
+                : base("Cors Feature Tests", typeof(CorsFeatureService).Assembly) { }
+
+            public override void Configure(Funq.Container container)
+            {
+                Plugins.Add(new CorsFeature { AutoHandleOptionRequests = true });
+            }
+        }
+
+        ServiceStackHost appHost;
+
+        [TestFixtureSetUp]
+        public void OnTestFixtureSetUp()
+        {
+            appHost = new CorsFeaturePluginAppHostHttpListener()
+                .Init()
+                .Start(ListeningOn);
+        }
+
+        [TestFixtureTearDown]
+        public void OnTestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
+
+        [Test]
+        public void Can_Get_CORS_Headers_with_OPTIONS_Request()
+        {
+            "{0}corsplugin".Fmt(ListeningOn).OptionsFromUrl(responseFilter: r =>
+            {
+                Assert.That(r.Headers[HttpHeaders.AllowOrigin], Is.EqualTo("*"));
+                Assert.That(r.Headers[HttpHeaders.AllowMethods], Is.EqualTo("GET, POST, PUT, DELETE, OPTIONS"));
+                Assert.That(r.Headers[HttpHeaders.AllowHeaders], Is.EqualTo("Content-Type"));
+            });
+
+            "{0}notfound".Fmt(ListeningOn).OptionsFromUrl(responseFilter: r =>
+            {
+                Assert.That(r.Headers[HttpHeaders.AllowOrigin], Is.EqualTo("*"));
+                Assert.That(r.Headers[HttpHeaders.AllowMethods], Is.EqualTo("GET, POST, PUT, DELETE, OPTIONS"));
+                Assert.That(r.Headers[HttpHeaders.AllowHeaders], Is.EqualTo("Content-Type"));
+            });
+        }
     }
 }
