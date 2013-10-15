@@ -89,13 +89,11 @@ namespace ServiceStack
 					{ "image/jpeg", TimeSpan.FromHours(1) },
 				},
                 AppendUtf8CharsetOnContentTypes = new HashSet<string> { MimeTypes.Json, },
-                RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>>(),
                 RouteNamingConventions = new List<RouteNamingConventionDelegate> {
 					RouteNamingConvention.WithRequestDtoName,
 					RouteNamingConvention.WithMatchingAttributes,
 					RouteNamingConvention.WithMatchingPropertyNames
                 },
-                CustomHttpHandlers = new Dictionary<HttpStatusCode, IServiceStackHttpHandler>(),
                 GlobalHtmlErrorHttpHandler = null,
                 MapExceptionToStatusCode = new Dictionary<Type, int>(),
                 OnlySendSessionCookiesSecurely = false,
@@ -153,9 +151,7 @@ namespace ServiceStack
             this.HtmlReplaceTokens = instance.HtmlReplaceTokens;
             this.AddMaxAgeForStaticMimeTypes = instance.AddMaxAgeForStaticMimeTypes;
             this.AppendUtf8CharsetOnContentTypes = instance.AppendUtf8CharsetOnContentTypes;
-            this.RawHttpHandlers = instance.RawHttpHandlers;
             this.RouteNamingConventions = instance.RouteNamingConventions;
-            this.CustomHttpHandlers = instance.CustomHttpHandlers;
             this.GlobalHtmlErrorHttpHandler = instance.GlobalHtmlErrorHttpHandler;
             this.MapExceptionToStatusCode = instance.MapExceptionToStatusCode;
             this.OnlySendSessionCookiesSecurely = instance.OnlySendSessionCookiesSecurely;
@@ -224,11 +220,8 @@ namespace ServiceStack
 
         public Dictionary<string, TimeSpan> AddMaxAgeForStaticMimeTypes { get; set; }
 
-        public List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers { get; set; }
-
         public List<RouteNamingConventionDelegate> RouteNamingConventions { get; set; }
 
-        public Dictionary<HttpStatusCode, IServiceStackHttpHandler> CustomHttpHandlers { get; set; }
         public IServiceStackHttpHandler GlobalHtmlErrorHttpHandler { get; set; }
         public Dictionary<Type, int> MapExceptionToStatusCode { get; set; }
 

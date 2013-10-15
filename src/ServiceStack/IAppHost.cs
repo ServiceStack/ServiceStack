@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
+using System.Web;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Web;
@@ -72,17 +75,27 @@ namespace ServiceStack
         /// <summary>
         /// Provide an exception handler for unhandled exceptions
         /// </summary>
-        List<HandleServiceExceptionDelegate> ServiceExceptionHandlers { get; set; }
+        List<HandleServiceExceptionDelegate> ServiceExceptionHandlers { get; }
 
         /// <summary>
         /// Provide an exception handler for un-caught exceptions
         /// </summary>
-        List<HandleUncaughtExceptionDelegate> UncaughtExceptionHandlers { get; set; }
+        List<HandleUncaughtExceptionDelegate> UncaughtExceptionHandlers { get; }
+
+        /// <summary>
+        /// Skip the ServiceStack Request Pipeline and process the returned IHttpHandler instead
+        /// </summary>
+        List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers { get; }
 
         /// <summary>
         /// Provide a catch-all handler that doesn't match any routes
         /// </summary>
         List<HttpHandlerResolverDelegate> CatchAllHandlers { get; }
+
+        /// <summary>
+        /// Use a Custom Error Handler for handling specific error HttpStatusCodes
+        /// </summary>
+        Dictionary<HttpStatusCode, IServiceStackHttpHandler> CustomErrorHttpHandlers { get; }
 
         /// <summary>
         /// Provide a custom model minder for a specific Request DTO

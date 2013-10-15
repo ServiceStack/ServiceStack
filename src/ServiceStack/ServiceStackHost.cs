@@ -6,12 +6,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
+using System.Web;
 using Funq;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Formats;
 using ServiceStack.Host;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
@@ -53,7 +56,9 @@ namespace ServiceStack
             ViewEngines = new List<IViewEngine>();
             ServiceExceptionHandlers = new List<HandleServiceExceptionDelegate>();
             UncaughtExceptionHandlers = new List<HandleUncaughtExceptionDelegate>();
+            RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>>();
             CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
+            CustomErrorHttpHandlers = new Dictionary<HttpStatusCode, IServiceStackHttpHandler>();
             Plugins = new List<IPlugin> {
                 new HtmlFormat(),
                 new CsvFormat(),
@@ -119,6 +124,11 @@ namespace ServiceStack
             return this;
         }
 
+        public virtual ServiceStackHost Start(string listeningAtUrlBase)
+        {
+            throw new NotImplementedException("Start(listeningAtUrlBase) is not supported by this AppHost");
+        }
+
         public string ServiceName { get; set; }
 
         public ServiceMetadata Metadata { get; set; }
@@ -153,7 +163,11 @@ namespace ServiceStack
 
         public List<HandleUncaughtExceptionDelegate> UncaughtExceptionHandlers { get; set; }
 
+        public List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers { get; set; }
+        
         public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
+
+        public Dictionary<HttpStatusCode, IServiceStackHttpHandler> CustomErrorHttpHandlers { get; set; }
 
         public List<IPlugin> Plugins { get; set; }
 

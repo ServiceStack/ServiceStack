@@ -13,7 +13,6 @@ using ServiceStack.Host.HttpListener;
 using ServiceStack.IO;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -274,9 +273,9 @@ namespace ServiceStack
                     return httpHandler ?? new NotFoundHttpHandler();
             }
 
-            if (Config.CustomHttpHandlers != null)
+            if (AppHost.CustomErrorHttpHandlers != null)
             {
-                Config.CustomHttpHandlers.TryGetValue(HttpStatusCode.NotFound, out httpHandler);
+                AppHost.CustomErrorHttpHandlers.TryGetValue(HttpStatusCode.NotFound, out httpHandler);
             }
 
             return httpHandler ?? new NotFoundHttpHandler();
@@ -297,9 +296,9 @@ namespace ServiceStack
         public static IServiceStackHttpHandler GetCustomErrorHandler(HttpStatusCode errorStatus)
         {
             IServiceStackHttpHandler httpHandler = null;
-            if (Config.CustomHttpHandlers != null)
+            if (AppHost.CustomErrorHttpHandlers != null)
             {
-                Config.CustomHttpHandlers.TryGetValue(errorStatus, out httpHandler);
+                AppHost.CustomErrorHttpHandlers.TryGetValue(errorStatus, out httpHandler);
             }
             return httpHandler ?? Config.GlobalHtmlErrorHttpHandler;
         }
