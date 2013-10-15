@@ -9,16 +9,12 @@ using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Logging;
 using ServiceStack.OrmLite;
-using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.ProtoBuf;
-using ServiceStack.Text;
-using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Tests.IntegrationTests;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 {
-
 	[Route("/factorial/{ForNumber}")]
 	[DataContract]
 	public class GetFactorial

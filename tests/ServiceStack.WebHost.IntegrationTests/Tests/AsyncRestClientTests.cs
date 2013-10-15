@@ -2,29 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
+using ServiceStack.WebHost.IntegrationTests.Services;
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace ServiceStack.WebHost.IntegrationTests.Tests
 {
     public abstract class AsyncRestClientTests
     {
-        private const string ListeningOn = "http://localhost:82/";
-
-        ServiceStackHost appHost;
-
-        [TestFixtureSetUp]
-        public void OnTestFixtureSetUp()
-        {
-            appHost = new ExampleAppHostHttpListener()
-                .Init()
-                .Start(ListeningOn);
-        }
-
-        [TestFixtureTearDown]
-        public void OnTestFixtureTearDown()
-        {
-            appHost.Dispose();
-        }
+        private const string ListeningOn = Config.ServiceStackBaseUri;
 
         protected abstract IRestClientAsync CreateAsyncRestClient();
 
@@ -43,6 +27,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public async Task Can_call_GetAsync_on_Movies_using_RestClientAsync()
         {
             var asyncClient = CreateAsyncRestClient();
+            await asyncClient.PostAsync(new ResetMovies());
 
             var response = await asyncClient.GetAsync<MoviesResponse>("movies");
 
@@ -54,6 +39,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public async Task Can_call_GetAsync_on_single_Movie_using_RestClientAsync()
         {
             var asyncClient = CreateAsyncRestClient();
+            await asyncClient.PostAsync(new ResetMovies());
 
             var response = await asyncClient.GetAsync<MovieResponse>("movies/1");
 
@@ -65,6 +51,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public async Task Can_call_PostAsync_to_add_new_Movie_using_RestClientAsync()
         {
             var asyncClient = CreateAsyncRestClient();
+            await asyncClient.PostAsync(new ResetMovies());
 
             var newMovie = new Movie
             {
@@ -90,6 +77,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public async Task Can_call_DeleteAsync_to_delete_Movie_using_RestClientAsync()
         {
             var asyncClient = CreateAsyncRestClient();
+            await asyncClient.PostAsync(new ResetMovies());
 
             var newMovie = new Movie
             {

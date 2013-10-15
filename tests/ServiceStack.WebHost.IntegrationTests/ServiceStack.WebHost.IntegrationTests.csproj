@@ -220,6 +220,7 @@
     <Compile Include="Subpages\Test.aspx.designer.cs">
       <DependentUpon>Test.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Tests\AsyncRestClientTests.cs" />
     <Compile Include="Tests\BinarySerializedTests.cs" />
     <Compile Include="Tests\CustomHeadersTests.cs" />
     <Compile Include="Tests\ExceptionHandlingTests.cs" />
