@@ -71,12 +71,9 @@ namespace ServiceStack
 
             if (AutoHandleOptionRequests)
             {
-                var emitGlobalHeadersHandler = new CustomActionHandler((httpReq, httpRes) => 
-                {
-                    //Handles Request and closes Responses after emitting global HTTP Headers
-                    if (httpReq.HttpMethod == HttpMethods.Options)
-                        httpRes.EndRequest();                            
-                });
+                //Handles Request and closes Response after emitting global HTTP Headers
+                var emitGlobalHeadersHandler = new CustomActionHandler(
+                    (httpReq, httpRes) => httpRes.EndRequest());
 
                 appHost.RawHttpHandlers.Add(httpReq =>
                     httpReq.HttpMethod == HttpMethods.Options
