@@ -8,8 +8,6 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.MsgPack;
 using ServiceStack.OrmLite;
 using ServiceStack.Razor;
-using ServiceStack.Text;
-using ServiceStack.Web;
 
 //The entire C# code for the stand-alone RazorRockstars demo.
 namespace RazorRockstars.Web
@@ -30,10 +28,9 @@ namespace RazorRockstars.Web
 
             SetConfig(new HostConfig {
                 DebugMode = true,
-                CustomHttpHandlers = {
-                  { HttpStatusCode.ExpectationFailed, new RazorHandler("/expectationfailed") }
-                }
             });
+
+            this.CustomErrorHttpHandlers[HttpStatusCode.ExpectationFailed] = new RazorHandler("/expectationfailed");
         }
 
         public static void InitData(Container container)
