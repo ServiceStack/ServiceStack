@@ -1,5 +1,5 @@
+using System;
 using System.Collections.Generic;
-using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 
 namespace ServiceStack
@@ -18,7 +18,6 @@ namespace ServiceStack
 
         private readonly bool allowCredentials;
 
-        private static bool isInstalled = false;
         private readonly ICollection<string> allowOriginWhitelist;
 
         public bool AutoHandleOptionRequests { get; set; }
@@ -46,8 +45,8 @@ namespace ServiceStack
 
         public void Register(IAppHost appHost)
         {
-            if (isInstalled) return;
-            isInstalled = true;
+            if (appHost.HasMultiplePlugins<CorsFeature>())
+                throw new NotSupportedException("CorsFeature has already been registered");
 
             if (!string.IsNullOrEmpty(allowedOrigins) && allowOriginWhitelist == null)
                 appHost.Config.GlobalResponseHeaders.Add(HttpHeaders.AllowOrigin, allowedOrigins);
