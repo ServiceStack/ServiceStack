@@ -179,6 +179,7 @@
     <Content Include="swagger-ui\swagger-ui.js" />
     <Content Include="swagger-ui\swagger-ui.min.js" />
     <EmbeddedResource Include="Templates\OperationControl.html" />
+    <EmbeddedResource Include="Templates\HtmlFormat.html" />
     <Content Include="user-notfound.htm" />
     <Content Include="user-default.htm" />
     <Content Include="Global.asax" />

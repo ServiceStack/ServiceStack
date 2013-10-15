@@ -3,7 +3,6 @@
 
 
 using NUnit.Framework;
-using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
 {
@@ -52,6 +51,27 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         {
             var contents = "{0}/".Fmt(ServiceStackBaseUri).GetStringFromUrl();
             Assert.That(contents, Is.Not.Null);
+        }
+
+        [Test]
+        public void Can_download_ServiceStack_Template_IndexOperations()
+        {
+            var contents = "{0}/metadata".Fmt(ServiceStackBaseUri).GetStringFromUrl();
+            Assert.That(contents, Is.StringContaining("The following operations are supported."));
+        }
+
+        [Test]
+        public void Can_download_File_Template_OperationControl()
+        {
+            var contents = "{0}/json/metadata?op=Hello".Fmt(ServiceStackBaseUri).GetStringFromUrl();
+            Assert.That(contents, Is.StringContaining("(File Resource)"));
+        }
+
+        [Test]
+        public void Can_download_EmbeddedResource_Template_HtmlFormat()
+        {
+            var contents = "{0}/hello".Fmt(ServiceStackBaseUri).GetStringFromUrl();
+            Assert.That(contents, Is.StringContaining("(Embedded Resource)"));
         }
     }
 }
