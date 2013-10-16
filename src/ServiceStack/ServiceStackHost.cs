@@ -434,6 +434,11 @@ namespace ServiceStack
             return new ServiceRunner<TRequest>(this, actionContext);
         }
 
+        public string ResolveLocalizedString(string text)
+        {
+            return text;
+        }
+
         public virtual string ResolveAbsoluteUrl(string virtualPath, IHttpRequest httpReq)
         {
             return httpReq.GetAbsoluteUrl(virtualPath); //Http Listener, TODO: ASP.NET overrides

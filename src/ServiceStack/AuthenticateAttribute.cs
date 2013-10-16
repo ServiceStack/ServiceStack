@@ -3,7 +3,6 @@ using System.Collections.Specialized;
 using System.Linq;
 using ServiceStack.Auth;
 using ServiceStack.Host;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -92,7 +91,7 @@ namespace ServiceStack
                 if (includeRedirectParam)
                 {
                     var absoluteRequestPath = req.ResolveAbsoluteUrl("~" + req.PathInfo + ToQueryString(req.QueryString));
-                    url = url.AddQueryParam("redirect", absoluteRequestPath);
+                    url = url.AddQueryParam(HostContext.ResolveLocalizedString(LocalizedStrings.Redirect), absoluteRequestPath);
                 }
 
                 res.RedirectToUrl(url);

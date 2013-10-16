@@ -19,22 +19,17 @@ namespace ServiceStack
         /// <summary>
         /// Register dependency in AppHost IOC on Startup
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="instance"></param>
         void Register<T>(T instance);
 
         /// <summary>
         /// AutoWired Registration of an interface with a concrete type in AppHost IOC on Startup.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <typeparam name="TAs"></typeparam>
         void RegisterAs<T, TAs>() where T : TAs;
 
         /// <summary>
         /// Allows the clean up for executed autowired services and filters.
         /// Calls directly after services and filters are executed.
         /// </summary>
-        /// <param name="instance"></param>
         void Release(object instance);
 
         /// <summary>
@@ -110,8 +105,6 @@ namespace ServiceStack
         /// <summary>
         /// Register an Adhoc web service on Startup
         /// </summary>
-        /// <param name="serviceType"></param>
-        /// <param name="atRestPaths"></param>
         void RegisterService(Type serviceType, params string[] atRestPaths);
 
         /// <summary>
@@ -122,7 +115,6 @@ namespace ServiceStack
         /// <summary>
         /// Apply plugins to this AppHost
         /// </summary>
-        /// <param name="plugins"></param>
         void LoadPlugin(params IPlugin[] plugins);
 
         /// <summary>
@@ -139,6 +131,11 @@ namespace ServiceStack
         /// Resolve the absolute url for this request
         /// </summary>
         string ResolveAbsoluteUrl(string virtualPath, IHttpRequest httpReq);
+
+        /// <summary>
+        /// Resolve localized text, returns itself by default.
+        /// </summary>
+        string ResolveLocalizedString(string text);
     }
 
     public interface IHasAppHost

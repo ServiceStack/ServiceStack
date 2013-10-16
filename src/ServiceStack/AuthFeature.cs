@@ -35,22 +35,30 @@ namespace ServiceStack
             }
         }
 
-        public AuthFeature(Func<IAuthSession> sessionFactory, IAuthProvider[] authProviders, string htmlRedirect = "~/login")
+        public AuthFeature(Func<IAuthSession> sessionFactory, IAuthProvider[] authProviders, string htmlRedirect = null)
         {
             this.sessionFactory = sessionFactory;
             this.authProviders = authProviders;
 
+            Func<string,string> localize = HostContext.ResolveLocalizedString;
+
             ServiceRoutes = new Dictionary<Type, string[]> {
-                { typeof(AuthenticateService), new[]{ "/auth", "/auth/{provider}", "/authenticate", "/authenticate/{provider}", } },
-                { typeof(AssignRolesService), new[]{ "/assignroles" } },
-                { typeof(UnAssignRolesService), new[]{ "/unassignroles" } },
+                { typeof(AuthenticateService), new[]
+                    {
+                        "/" + localize(LocalizedStrings.Auth), 
+                        "/" + localize(LocalizedStrings.Auth) + "/{provider}", 
+                        "/" + localize(LocalizedStrings.Authenticate), 
+                        "/" + localize(LocalizedStrings.Authenticate) + "/{provider}",
+                    } },
+                { typeof(AssignRolesService), new[]{ "/" + localize(LocalizedStrings.AssignRoles) } },
+                { typeof(UnAssignRolesService), new[]{ "/" + localize(LocalizedStrings.UnassignRoles) } },
             };
 
             RegisterPlugins = new List<IPlugin> {
                 new SessionFeature()                          
             };
 
-            this.HtmlRedirect = htmlRedirect;
+            this.HtmlRedirect = htmlRedirect ?? "~/" + localize(LocalizedStrings.Login);
         }
 
         public void Register(IAppHost appHost)
