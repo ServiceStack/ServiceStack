@@ -32,6 +32,7 @@ namespace ServiceStack.Auth
         public static string DefaultOAuthProvider { get; private set; }
         public static string DefaultOAuthRealm { get; private set; }
         public static string HtmlRedirect { get; internal set; }
+        public static string HtmlRedirectParam { get; internal set; }
         public static IAuthProvider[] AuthProviders { get; private set; }
         
         static AuthenticateService()
