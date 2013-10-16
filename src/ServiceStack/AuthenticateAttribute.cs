@@ -92,7 +92,7 @@ namespace ServiceStack
                 if (includeRedirectParam)
                 {
                     var absoluteRequestPath = req.ResolveAbsoluteUrl("~" + req.PathInfo + ToQueryString(req.QueryString));
-                    url = url.AddQueryParam("redirect", absoluteRequestPath);
+                    url = url.AddQueryParam(AuthenticateService.HtmlRedirectParam, absoluteRequestPath);
                 }
 
                 res.RedirectToUrl(url);
