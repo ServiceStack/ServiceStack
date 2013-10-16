@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Auth;
@@ -20,6 +20,8 @@ namespace ServiceStack
 
         public string HtmlRedirect { get; set; }
 
+        public string HtmlRedirectParam { get; set; }
+
         public bool IncludeAssignRoleServices
         {
             set
@@ -35,7 +37,7 @@ namespace ServiceStack
             }
         }
 
-        public AuthFeature(Func<IAuthSession> sessionFactory, IAuthProvider[] authProviders, string htmlRedirect = "~/login")
+        public AuthFeature(Func<IAuthSession> sessionFactory, IAuthProvider[] authProviders, string htmlRedirect = "~/login", string htmlRedirectParam = "redirect")
         {
             this.sessionFactory = sessionFactory;
             this.authProviders = authProviders;
@@ -51,12 +53,15 @@ namespace ServiceStack
             };
 
             this.HtmlRedirect = htmlRedirect;
+
+            this.HtmlRedirectParam = htmlRedirectParam;
         }
 
         public void Register(IAppHost appHost)
         {
             AuthenticateService.Init(sessionFactory, authProviders);
             AuthenticateService.HtmlRedirect = HtmlRedirect;
+            AuthenticateService.HtmlRedirectParam = HtmlRedirectParam;
 
             var unitTest = appHost == null;
             if (unitTest) return;
