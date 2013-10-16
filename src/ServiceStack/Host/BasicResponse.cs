@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.IO;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
@@ -14,6 +13,7 @@ namespace ServiceStack.Host
         {
             this.requestContext = requestContext;
             this.Headers = new Dictionary<string, string>();
+            this.Cookies = new Cookies(this);
         }
 
         public object OriginalResponse { get; set; }
@@ -28,10 +28,7 @@ namespace ServiceStack.Host
             set { requestContext.ResponseContentType = value; }
         }
 
-        public ICookies Cookies
-        {
-            get { return null; }
-        }
+        public ICookies Cookies { get; set; }
 
         public void AddHeader(string name, string value)
         {

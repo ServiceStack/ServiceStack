@@ -484,7 +484,7 @@ namespace ServiceStack
 
         public virtual object ExecuteService(object requestDto, RequestAttributes requestAttributes)
         {
-            return ServiceController.Execute(requestDto, new HttpRequestContext(requestDto, requestAttributes));
+            return ServiceController.Execute(requestDto, new BasicRequestContext(requestDto, requestAttributes));
         }
 
         public virtual void RegisterService(Type serviceType, params string[] atRestPaths)

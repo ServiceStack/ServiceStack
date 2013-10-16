@@ -10,6 +10,7 @@ namespace ServiceStack.Host
 {
     public class BasicRequestContext : IRequestContext
     {
+        public object Dto { get; set; }
         public IMessage Message { get; set; }
         public BasicRequest Request { get; set; }
         public BasicResponse Response { get; set; }
@@ -21,7 +22,12 @@ namespace ServiceStack.Host
             set { resolver = value; }
         }
 
-        public BasicRequestContext(IMessage message=null)
+        public BasicRequestContext(object requestDto, 
+            RequestAttributes requestAttributes = RequestAttributes.LocalSubnet | RequestAttributes.MessageQueue)
+            : this(MessageFactory.Create(requestDto), requestAttributes) {}
+
+        public BasicRequestContext(IMessage message = null, 
+            RequestAttributes requestAttributes = RequestAttributes.LocalSubnet | RequestAttributes.MessageQueue)
         {
             Message = message ?? new Message();
             ContentType = this.ResponseContentType = MimeTypes.Json;
@@ -30,6 +36,7 @@ namespace ServiceStack.Host
             
             Request = new BasicRequest(this);
             Response = new BasicResponse(this);
+            this.RequestAttributes = requestAttributes;
         }
 
         private string operationName;
@@ -77,12 +84,9 @@ namespace ServiceStack.Host
             get { return new Dictionary<string, Cookie>(); }
         }
 
-        public RequestAttributes RequestAttributes
-        {
-            get { return RequestAttributes.LocalSubnet | RequestAttributes.MessageQueue; }
-        }
+        public RequestAttributes RequestAttributes { get; set; }
 
-        public Web.IRequestPreferences RequestPreferences { get; set; }
+        public IRequestPreferences RequestPreferences { get; set; }
 
         public string ContentType { get; set; }
 

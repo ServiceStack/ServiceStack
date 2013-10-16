@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Web;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
@@ -12,20 +11,8 @@ namespace ServiceStack.Host
 		private readonly IHttpRequest httpReq;
 		private readonly IHttpResponse httpRes;
 
-		public HttpRequestContext(object dto)
-            : this(null, null, dto, RequestAttributes.None)
-		{
-		}
-
-		public HttpRequestContext(object dto, RequestAttributes requestAttributes)
-            : this(null, null, dto, requestAttributes)
-		{
-		}
-
 		public HttpRequestContext(IHttpRequest httpReq, IHttpResponse httpRes, object dto)
-			: this(httpReq, httpRes, dto, RequestAttributes.None)
-		{
-		}
+			: this(httpReq, httpRes, dto, RequestAttributes.None) {}
 
 		public HttpRequestContext(IHttpRequest httpReq, IHttpResponse httpRes, object dto, RequestAttributes requestAttributes)
 		{
