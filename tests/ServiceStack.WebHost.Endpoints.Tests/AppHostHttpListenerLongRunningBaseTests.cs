@@ -4,8 +4,6 @@ using System.Diagnostics;
 using System.Net;
 using System.Threading;
 using NUnit.Framework;
-using ServiceStack.Logging;
-using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -14,22 +12,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     class AppHostHttpListenerLongRunningBaseTests
     {
         private const string ListeningOn = "http://localhost:82/";
-        ExampleAppHostHttpListenerPool appHost;
-
-        static AppHostHttpListenerLongRunningBaseTests()
-        {
-            LogManager.LogFactory = new ConsoleLogFactory();
-        }
+        ServiceStackHost appHost;
 
         [TestFixtureSetUp]
         public void OnTestFixtureStartUp()
         {
-            appHost = new ExampleAppHostHttpListenerPool();
-            appHost.Init();
-            appHost.Start(ListeningOn);
+            appHost = new ExampleAppHostHttpListenerPool()
+                .Init()
+                .Start(ListeningOn);
 
-            System.Console.WriteLine("ExampleAppHost Created at {0}, listening on {1}",
-                                     DateTime.Now, ListeningOn);
+            Console.WriteLine("ExampleAppHost Created at {0}, listening on {1}", DateTime.Now, ListeningOn);
         }
 
         [TestFixtureTearDown]

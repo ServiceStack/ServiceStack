@@ -17,8 +17,6 @@ namespace ServiceStack.Host
         protected readonly IHasRequestFilter[] RequestFilters;
         protected readonly IHasResponseFilter[] ResponseFilters;
 
-        public ServiceRunner() { }
-
         public ServiceRunner(IAppHost appHost, ActionContext actionContext)
         {
             this.AppHost = appHost;
@@ -142,7 +140,7 @@ namespace ServiceStack.Host
 
         public object ExecuteOneWay(IRequestContext requestContext, object instance, TRequest request)
         {
-            var msgFactory = HostContext.TryResolve<IMessageFactory>();
+            var msgFactory = AppHost.TryResolve<IMessageFactory>();
             if (msgFactory == null)
             {
                 return Execute(requestContext, instance, request);

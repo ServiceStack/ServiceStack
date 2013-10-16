@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
@@ -10,16 +9,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	{
 		protected const string ListeningOn = "http://localhost:85/";
 
-		TestConfigAppHostHttpListener appHost;
+		ServiceStackHost appHost;
 
 		[TestFixtureSetUp]
-		public void OnTestFixtureSetUp()
+        public void TestFixtureSetUp()
 		{
-			LogManager.LogFactory = new ConsoleLogFactory();
-
-			appHost = new TestConfigAppHostHttpListener();
-			appHost.Init();
-			appHost.Start(ListeningOn);
+			appHost = new TestConfigAppHostHttpListener()
+			    .Init()
+			    .Start(ListeningOn);
 		}
 
 		[TestFixtureTearDown]

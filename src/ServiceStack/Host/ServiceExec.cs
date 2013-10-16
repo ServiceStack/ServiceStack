@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
@@ -17,19 +16,6 @@ namespace ServiceStack.Host
 
     public class ServiceRequestExec<TService, TRequest> : IServiceExec
     {
-        static ServiceRequestExec()
-        {
-            try
-            {
-                ServiceExec<TService>.CreateServiceRunnersFor<TRequest>();
-            }
-            catch (Exception ex)
-            {
-                ex.Message.Print();
-                throw;
-            }
-        }
-
         public object Execute(IRequestContext requestContext, object instance, object request)
         {
             return ServiceExec<TService>.Execute(requestContext, instance, request,
@@ -55,23 +41,25 @@ namespace ServiceStack.Host
         }
     }
 
-    public class ServiceExec<TService>
+    internal class ServiceExec<TService>
     {
-        private static Dictionary<Type, List<ActionContext>> actionMap
-            = new Dictionary<Type, List<ActionContext>>();
+        private static Dictionary<Type, List<ActionContext>> actionMap;
 
-        private static Dictionary<string, InstanceExecFn> execMap 
-            = new Dictionary<string, InstanceExecFn>();
+        private static Dictionary<string, InstanceExecFn> execMap;
 
-        static ServiceExec()
+        public static void Reset()
         {
+            actionMap = new Dictionary<Type, List<ActionContext>>();
+            execMap = new Dictionary<string, InstanceExecFn>();
+
             foreach (var mi in typeof(TService).GetActions())
             {
                 var actionName = mi.Name.ToUpper();
                 var args = mi.GetParameters();
 
                 var requestType = args[0].ParameterType;
-                var actionCtx = new ActionContext {
+                var actionCtx = new ActionContext
+                {
                     Id = ActionContext.Key(actionName, requestType.Name),
                     ServiceType = typeof(TService),
                     RequestType = requestType,
@@ -85,7 +73,7 @@ namespace ServiceStack.Host
                 {
                     //Potential problems with MONO, using reflection for fallback
                     actionCtx.ServiceAction = (service, request) =>
-                        mi.Invoke(service, new[] { request });
+                                              mi.Invoke(service, new[] { request });
                 }
 
                 var reqFilters = new List<IHasRequestFilter>();
@@ -116,7 +104,7 @@ namespace ServiceStack.Host
             }
         }
 
-        public static ActionInvokerFn CreateExecFn(Type requestType, MethodInfo mi)
+        private static ActionInvokerFn CreateExecFn(Type requestType, MethodInfo mi)
         {
             var serviceType = typeof(TService);
 
@@ -141,15 +129,15 @@ namespace ServiceStack.Host
                 var executeFunc = Expression.Lambda<VoidActionInvokerFn>
                 (callExecute, serviceParam, requestDtoParam).Compile();
 
-                return (service, request) => {
-                  
+                return (service, request) =>
+                {
                     executeFunc(service, request);
                     return null;
                 };
             }
         }
 
-        public static List<ActionContext> GetActionsFor<TRequest>()
+        private static IEnumerable<ActionContext> GetActionsFor<TRequest>()
         {
             List<ActionContext> requestActions;
             return actionMap.TryGetValue(typeof(TRequest), out requestActions)

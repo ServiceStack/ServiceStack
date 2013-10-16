@@ -18,8 +18,7 @@ namespace ServiceStack.Host
     public delegate object ActionInvokerFn(object intance, object request);
     public delegate void VoidActionInvokerFn(object intance, object request);
 
-    public class ServiceController
-        : IServiceController
+    public class ServiceController : IServiceController
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceController));
         private const string ResponseDtoSuffix = "Response";
@@ -148,7 +147,7 @@ namespace ServiceStack.Host
                     if (processedReqs.Contains(requestType)) continue;
                     processedReqs.Add(requestType);
 
-                    RegisterNServiceExecutor(requestType, serviceType, serviceFactoryFn);
+                    RegisterServiceExecutor(requestType, serviceType, serviceFactoryFn);
 
                     var returnMarker = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
                     var responseType = returnMarker != null ?
@@ -310,8 +309,38 @@ namespace ServiceStack.Host
             }
         }
 
-        public void RegisterNServiceExecutor(Type requestType, Type serviceType, ITypeFactory serviceFactoryFn)
+        private readonly Dictionary<Type, List<Type>> serviceExecCache = new Dictionary<Type, List<Type>>();
+        public void ResetServiceExecCachesIfNeeded(Type serviceType, Type requestType)
         {
+            List<Type> requestTypes;
+            if (!serviceExecCache.TryGetValue(serviceType, out requestTypes))
+            {
+                var mi = typeof(ServiceExec<>)
+                    .MakeGenericType(serviceType)
+                    .GetMethod("Reset", BindingFlags.Public | BindingFlags.Static);
+
+                mi.Invoke(null, new object[]{});
+
+                serviceExecCache[serviceType] = requestTypes = new List<Type>();
+            }
+
+            if (!requestTypes.Contains(requestType))
+            {
+                var mi = typeof (ServiceExec<>)
+                    .MakeGenericType(serviceType)
+                    .GetMethod("CreateServiceRunnersFor", BindingFlags.Public | BindingFlags.Static)
+                    .MakeGenericMethod(requestType);
+
+                mi.Invoke(null, new object[]{});
+
+                requestTypes.Add(requestType);
+            }
+        }
+
+        public void RegisterServiceExecutor(Type requestType, Type serviceType, ITypeFactory serviceFactoryFn)
+        {
+            ResetServiceExecCachesIfNeeded(serviceType, requestType);
+
             var serviceExecDef = typeof(ServiceRequestExec<,>).MakeGenericType(serviceType, requestType);
             var iserviceExec = (IServiceExec)serviceExecDef.CreateInstance();
 
@@ -340,10 +369,10 @@ namespace ServiceStack.Host
 
             requestExecMap.Add(requestType, handlerFn);
 
-            var serviceAttrs = requestType.AllAttributes<RestrictAttribute>();
-            if (serviceAttrs.Length > 0)
+            var requestAttrs = requestType.AllAttributes<RestrictAttribute>();
+            if (requestAttrs.Length > 0)
             {
-                requestServiceAttrs.Add(requestType, serviceAttrs[0]);
+                requestServiceAttrs.Add(requestType, requestAttrs[0]);
             }
         }
 

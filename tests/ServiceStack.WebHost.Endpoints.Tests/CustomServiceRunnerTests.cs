@@ -7,6 +7,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class CustomServiceRunnerTests
     {
+        private const string ListeningOn = Config.AbsoluteBaseUri;
         private ServiceStackHost appHost;
 
         [TestFixtureSetUp]
@@ -14,7 +15,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             appHost = new CustomServiceRunnerAppHost()
                 .Init()
-                .Start(Config.AbsoluteBaseUri);
+                .Start(ListeningOn);
         }
 
         [TestFixtureTearDown]
@@ -77,7 +78,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void ServiceRunner_has_Request_and_ServiceType()
         {
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var client = new JsonServiceClient(ListeningOn);
 
             var response = client.Get(new CustomRunner { Id = 1 });
 
