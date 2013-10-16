@@ -17,11 +17,12 @@ namespace ServiceStack
 
         public override string ResolveAbsoluteUrl(string virtualPath, IHttpRequest httpReq)
         {
-            if (HostingEnvironment.ApplicationVirtualPath != null
+            //if my path is "~/a/Home/Index", this code below translates it to "~a/Home/Index" and I have exception in method VirtualPathUtility.ToAbsolute
+            /*if (HostingEnvironment.ApplicationVirtualPath != null
                 && virtualPath.StartsWith("~" + HostingEnvironment.ApplicationVirtualPath))
             {
                 virtualPath = virtualPath.Remove(1, HostingEnvironment.ApplicationVirtualPath.Length);
-            }
+            }*/
 
             return Config.WebHostUrl == null
                 ? VirtualPathUtility.ToAbsolute(virtualPath)
