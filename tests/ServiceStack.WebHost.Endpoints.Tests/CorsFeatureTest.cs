@@ -5,9 +5,9 @@ using NUnit.Framework;
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
     [Route("/corsmethod")]
-    public class CorsFeatureRequest {}
-
     [EnableCors("http://localhost http://localhost2", "POST, GET", "Type1, Type2", true)]
+    public class CorsFeatureRequest { }
+
     public class CorsFeatureResponse
     {
         public bool IsSuccess { get; set; }
