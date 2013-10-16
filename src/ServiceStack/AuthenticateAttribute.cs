@@ -91,7 +91,11 @@ namespace ServiceStack
                 var url = req.ResolveAbsoluteUrl(htmlRedirect);
                 if (includeRedirectParam)
                 {
-                    var absoluteRequestPath = req.ResolveAbsoluteUrl("~" + req.PathInfo + ToQueryString(req.QueryString));
+                    var factoryPath =
+                        String.IsNullOrEmpty(ServiceStackHost.Instance.Config.ServiceStackHandlerFactoryPath)
+                            ? ""
+                            : "/" + ServiceStackHost.Instance.Config.ServiceStackHandlerFactoryPath;
+                    var absoluteRequestPath = req.ResolveAbsoluteUrl("~" + factoryPath + req.PathInfo + ToQueryString(req.QueryString));
                     url = url.AddQueryParam("redirect", absoluteRequestPath);
                 }
 
