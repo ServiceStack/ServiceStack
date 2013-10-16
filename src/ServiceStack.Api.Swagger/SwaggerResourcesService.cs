@@ -100,7 +100,7 @@ namespace ServiceStack.Api.Swagger
 
             foreach (var bp in basePaths)
             {
-                if (string.IsNullOrEmpty(bp)) return;
+                if (string.IsNullOrEmpty(bp)) continue;
                 if (apis.All(a => a.Path != string.Concat(RESOURCE_PATH, "/" + bp)))
                 {
                     apis.Add(new RestService
