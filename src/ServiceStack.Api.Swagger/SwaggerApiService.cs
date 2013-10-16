@@ -201,7 +201,7 @@ namespace ServiceStack.Api.Swagger
 
         private static bool IsSwaggerScalarType(Type type)
         {
-            return ClrTypesToSwaggerScalarTypes.ContainsKey(type) || type.IsEnum;
+            return ClrTypesToSwaggerScalarTypes.ContainsKey(type) || (Nullable.GetUnderlyingType(type) ?? type).IsEnum;
         }
 
         private static string GetSwaggerTypeName(Type type)
@@ -292,27 +292,28 @@ namespace ServiceStack.Api.Swagger
                     };
                     ParseModel(models, listItemType);
                 }
-                else if (propertyType.IsEnum)
+                else if ((Nullable.GetUnderlyingType(propertyType) ?? propertyType).IsEnum)
                 {
-                    if (propertyType.IsNumericType())
+                    var enumType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
+                    if (enumType.IsNumericType())
                     {
-                        var underlyingType = Enum.GetUnderlyingType(propertyType);
+                        var underlyingType = Enum.GetUnderlyingType(enumType);
                         modelProp.Type = GetSwaggerTypeName(underlyingType);
                         modelProp.AllowableValues = new ParameterAllowableValues
                         {
-                            Values = GetNumericValues(propertyType, underlyingType).ToArray(),
+                            Values = GetNumericValues(enumType, underlyingType).ToArray(),
                             ValueType = "LIST"
-                        };  
+                        };
                     }
                     else
                     {
                         modelProp.Type = SwaggerType.String;
                         modelProp.AllowableValues = new ParameterAllowableValues
                         {
-                            Values = Enum.GetNames(propertyType),
+                            Values = Enum.GetNames(enumType),
                             ValueType = "LIST"
-                        };    
-                    }                    
+                        };
+                    }                 
                 }
                 else
                 {
