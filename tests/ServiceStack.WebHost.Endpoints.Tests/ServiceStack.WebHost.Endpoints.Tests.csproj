@@ -143,6 +143,7 @@
     <Compile Include="CompressionTests.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="CorsFeaturePluginTests.cs" />
+    <Compile Include="CustomServiceRunnerTests.cs" />
     <Compile Include="RouteTests.cs" />
     <Compile Include="CustomValidationErrorTests.cs" />
     <Compile Include="EncodingTests.cs" />

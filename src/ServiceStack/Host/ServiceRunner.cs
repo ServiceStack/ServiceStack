@@ -12,6 +12,7 @@ namespace ServiceStack.Host
         protected static readonly ILog Log = LogManager.GetLogger(typeof(ServiceRunner<>));
 
         protected readonly IAppHost AppHost;
+        protected readonly ActionContext ActionContext;
         protected readonly ActionInvokerFn ServiceAction;
         protected readonly IHasRequestFilter[] RequestFilters;
         protected readonly IHasResponseFilter[] ResponseFilters;
@@ -21,6 +22,7 @@ namespace ServiceStack.Host
         public ServiceRunner(IAppHost appHost, ActionContext actionContext)
         {
             this.AppHost = appHost;
+            this.ActionContext = actionContext;
             this.ServiceAction = actionContext.ServiceAction;
             this.RequestFilters = actionContext.RequestFilters;
             this.ResponseFilters = actionContext.ResponseFilters;
@@ -28,7 +30,7 @@ namespace ServiceStack.Host
 
         public T ResolveService<T>(IRequestContext requestContext)
         {
-            var service = HostContext.TryResolve<T>();
+            var service = AppHost.TryResolve<T>();
             var requiresContext = service as IRequiresRequestContext;
             if (requiresContext != null)
             {
@@ -41,7 +43,7 @@ namespace ServiceStack.Host
         {
             OnBeforeExecute(requestContext, request);
 
-            var requestLogger = HostContext.TryResolve<IRequestLogger>();
+            var requestLogger = AppHost.TryResolve<IRequestLogger>();
             if (requestLogger != null)
             {
                 requestContext.SetItem("_requestDurationStopwatch", Stopwatch.StartNew());
@@ -50,7 +52,7 @@ namespace ServiceStack.Host
 
         public virtual object AfterEachRequest(IRequestContext requestContext, TRequest request, object response)
         {
-            var requestLogger = HostContext.TryResolve<IRequestLogger>();
+            var requestLogger = AppHost.TryResolve<IRequestLogger>();
             if (requestLogger != null)
             {
                 try
@@ -92,7 +94,7 @@ namespace ServiceStack.Host
                         var attrInstance = requestFilter.Copy();
                         container.AutoWire(attrInstance);
                         attrInstance.RequestFilter(httpReq, httpRes, request);
-                        HostContext.Release(attrInstance);
+                        AppHost.Release(attrInstance);
                         if (httpRes != null && httpRes.IsClosed) return null;
                     }
                 }
@@ -106,7 +108,7 @@ namespace ServiceStack.Host
                         var attrInstance = responseFilter.Copy();
                         container.AutoWire(attrInstance);
                         attrInstance.ResponseFilter(httpReq, httpRes, response);
-                        HostContext.Release(attrInstance);
+                        AppHost.Release(attrInstance);
                         if (httpRes != null && httpRes.IsClosed) return null;
                     }
                 }
