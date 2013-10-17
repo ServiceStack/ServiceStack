@@ -35,6 +35,14 @@ namespace ServiceStack.ServiceInterface.Auth
         {
             var tokens = Init(authService, ref session, request);
 
+            var error = authService.RequestContext.Get<IHttpRequest>().QueryString["error"];
+            var hasError = !error.IsNullOrEmpty();
+            if (hasError)
+            {
+                Log.Error("Facebook error callback. {0}".Fmt(authService.RequestContext.Get<IHttpRequest>().QueryString));
+                return authService.Redirect(session.ReferrerUrl);
+            }
+
             var code = authService.RequestContext.Get<IHttpRequest>().QueryString["code"];
             var isPreAuthCallback = !code.IsNullOrEmpty();
             if (!isPreAuthCallback)
