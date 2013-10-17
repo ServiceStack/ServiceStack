@@ -4,7 +4,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using ServiceStack.Host;
-using ServiceStack.Text;
 
 namespace ServiceStack.Api.Swagger
 {
@@ -98,7 +97,7 @@ namespace ServiceStack.Api.Swagger
 
             foreach (var bp in basePaths)
             {
-                if (string.IsNullOrEmpty(bp)) return;
+                if (string.IsNullOrEmpty(bp)) continue;
                 if (apis.All(a => a.Path != string.Concat(RESOURCE_PATH, "/" + bp)))
                 {
                     apis.Add(new RestService

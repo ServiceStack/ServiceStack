@@ -201,7 +201,7 @@ namespace ServiceStack.Api.Swagger
 
         private static bool IsSwaggerScalarType(Type type)
         {
-            return ClrTypesToSwaggerScalarTypes.ContainsKey(type) || type.IsEnum;
+            return ClrTypesToSwaggerScalarTypes.ContainsKey(type) || (Nullable.GetUnderlyingType(type) ?? type).IsEnum;
         }
 
         private static string GetSwaggerTypeName(Type type)
@@ -270,14 +270,28 @@ namespace ServiceStack.Api.Swagger
                     };
                     ParseModel(models, listItemType);
                 }
-                else if (propertyType.IsEnum)
+                else if ((Nullable.GetUnderlyingType(propertyType) ?? propertyType).IsEnum)
                 {
-                    modelProp.Type = SwaggerType.String;
-                    modelProp.AllowableValues = new ParameterAllowableValues
+                    var enumType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
+                    if (enumType.IsNumericType())
                     {
-                        Values = Enum.GetNames(propertyType),
-                        ValueType = "LIST"
-                    };
+                        var underlyingType = Enum.GetUnderlyingType(enumType);
+                        modelProp.Type = GetSwaggerTypeName(underlyingType);
+                        modelProp.AllowableValues = new ParameterAllowableValues
+                        {
+                            Values = GetNumericValues(enumType, underlyingType).ToArray(),
+                            ValueType = "LIST"
+                        };
+                    }
+                    else
+                    {
+                        modelProp.Type = SwaggerType.String;
+                        modelProp.AllowableValues = new ParameterAllowableValues
+                        {
+                            Values = Enum.GetNames(enumType),
+                            ValueType = "LIST"
+                        };
+                    }
                 }
                 else
                 {
@@ -304,6 +318,14 @@ namespace ServiceStack.Api.Swagger
             return UseCamelCaseModelPropertyNames
                 ? (UseLowercaseUnderscoreModelPropertyNames ? prop.Name.ToLowercaseUnderscore() : prop.Name.ToCamelCase())
                 : prop.Name;
+        }
+
+        private static IEnumerable<string> GetNumericValues(Type propertyType, Type underlyingType)
+        {
+            var values = Enum.GetValues(propertyType)
+                .Map(x => "{0} ({1})".Fmt(Convert.ChangeType(x, underlyingType), x));
+
+            return values;
         }
 
         private static string GetResponseClass(IRestPath restPath, IDictionary<string, SwaggerModel> models)
