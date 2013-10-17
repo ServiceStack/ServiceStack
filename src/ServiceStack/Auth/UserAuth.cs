@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Model;
 using ServiceStack.Text;
 
 namespace ServiceStack.Auth
@@ -50,11 +51,6 @@ namespace ServiceStack.Auth
         string Nickname { get; set; }
         string PostalCode { get; set; }
         string TimeZone { get; set; }
-    }
-
-    public interface IMeta
-    {
-        Dictionary<string, string> Meta { get; set; }
     }
 
     public class UserAuth : IUserAuth

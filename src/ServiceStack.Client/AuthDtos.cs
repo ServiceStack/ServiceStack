@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace ServiceStack
 {
@@ -23,7 +24,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class AuthenticateResponse
+    public class AuthenticateResponse : IMeta
     {
         public AuthenticateResponse()
         {
@@ -33,7 +34,9 @@ namespace ServiceStack
         [DataMember(Order = 1)] public string SessionId { get; set; }
         [DataMember(Order = 2)] public string UserName { get; set; }
         [DataMember(Order = 3)] public string ReferrerUrl { get; set; }
+
         [DataMember(Order = 4)] public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order = 5)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
@@ -50,7 +53,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class RegisterResponse
+    public class RegisterResponse : IMeta
     {
         public RegisterResponse()
         {
@@ -61,6 +64,8 @@ namespace ServiceStack
         [DataMember(Order = 2)] public string SessionId { get; set; }
         [DataMember(Order = 3)] public string UserName { get; set; }
         [DataMember(Order = 4)] public string ReferrerUrl { get; set; }
+
         [DataMember(Order = 5)] public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order = 6)] public Dictionary<string, string> Meta { get; set; }
     }
 }
