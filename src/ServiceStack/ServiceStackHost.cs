@@ -434,7 +434,7 @@ namespace ServiceStack
             return new ServiceRunner<TRequest>(this, actionContext);
         }
 
-        public string ResolveLocalizedString(string text)
+        public virtual string ResolveLocalizedString(string text)
         {
             return text;
         }
