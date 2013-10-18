@@ -32,8 +32,17 @@ namespace ServiceStack.Auth
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
             var tokens = Init(authService, ref session, request);
+            var httpRequest = authService.RequestContext.Get<IHttpRequest>();
 
-            var code = authService.RequestContext.Get<IHttpRequest>().QueryString["code"];
+            var error = httpRequest.QueryString["error"];
+            var hasError = !error.IsNullOrEmpty();
+            if (hasError)
+            {
+                Log.Error("Facebook error callback. {0}".Fmt(httpRequest.QueryString));
+                return authService.Redirect(session.ReferrerUrl);
+            } 
+            
+            var code = httpRequest.QueryString["code"];
             var isPreAuthCallback = !code.IsNullOrEmpty();
             if (!isPreAuthCallback)
             {
