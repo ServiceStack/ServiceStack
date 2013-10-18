@@ -1,6 +1,4 @@
 using System;
-using System.Text;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
@@ -15,12 +13,6 @@ namespace ServiceStack.Host.Handlers
     {
         public JsvReplyHandler()
             : base(MimeTypes.JsvText, RequestAttributes.Reply | RequestAttributes.Jsv, Feature.Jsv) { }
-
-        private static void WriteDebugRequest(IRequestContext requestContext, object dto, IHttpResponse httpRes)
-        {
-            var bytes = Encoding.UTF8.GetBytes(dto.SerializeAndFormat());
-            httpRes.OutputStream.Write(bytes, 0, bytes.Length);
-        }
 
         public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
         {
@@ -45,14 +37,6 @@ namespace ServiceStack.Host.Handlers
                 if (!HostContext.Config.WriteErrorsToResponse) throw;
                 HandleException(httpReq, httpRes, operationName, ex);
             }
-        }
-
-        public static void WriteDebugResponse(IHttpResponse httpRes, object response)
-        {
-            httpRes.WriteToResponse(response, WriteDebugRequest,
-                new SerializationContext(MimeTypes.PlainText));
-
-            httpRes.EndRequest();
         }
     }
 }

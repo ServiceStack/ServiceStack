@@ -16,8 +16,15 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
+            Tracer.Instance = new Tracer.ConsoleTracer();
 			register = CreateAdminUser();
 		}
+
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            Tracer.Instance = new Tracer.NullTracer();
+        }
 
 		public string RoleName1 = "Role1";
 		public string RoleName2 = "Role2";

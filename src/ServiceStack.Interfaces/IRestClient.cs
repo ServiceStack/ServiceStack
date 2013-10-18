@@ -35,10 +35,6 @@ namespace ServiceStack
         TResponse Patch<TResponse>(object requestDto);
         TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object requestDto);
 
-#if !NETFX_CORE
-		TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType);
-#endif
-
         void CustomMethod(string httpVerb, IReturnVoid requestDto);
         void CustomMethod(string httpVerb, object requestDto);
         TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> requestDto);
@@ -47,5 +43,15 @@ namespace ServiceStack
         HttpWebResponse Head(IReturn requestDto);
         HttpWebResponse Head(object requestDto);
         HttpWebResponse Head(string relativeOrAbsoluteUrl);
-	}
+
+#if !NETFX_CORE
+        TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType);
+#endif
+        TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType);
+
+#if !NETFX_CORE
+        TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request);
+#endif
+        TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request);
+    }
 }

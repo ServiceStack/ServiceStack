@@ -144,7 +144,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        TResponse IReplyClient.PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
+        TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
         {
             throw new NotImplementedException();
         }

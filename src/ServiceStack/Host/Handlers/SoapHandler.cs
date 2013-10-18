@@ -4,12 +4,14 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
+using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
 using ServiceStack.Host.AspNet;
 using ServiceStack.Serialization;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
+using ServiceStack.Text.FastMember;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
@@ -110,6 +112,13 @@ namespace ServiceStack.Host.Handlers
                     return EmptyResponse(requestMsg, requestType);
 
                 var response = ExecuteService(request, requestAttributes, httpReq, httpRes);
+
+                var taskResponse = response as Task;
+                if (taskResponse != null)
+                {
+                    taskResponse.Wait();
+                    response = TypeAccessor.Create(taskResponse.GetType())[taskResponse, "Result"];
+                }
 
                 var hasResponseFilters = HostContext.GlobalResponseFilters.Count > 0
                    || FilterAttributeCache.GetResponseFilterAttributes(response.GetType()).Any();

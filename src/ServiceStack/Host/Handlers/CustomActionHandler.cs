@@ -4,7 +4,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
 {
-    public class CustomActionHandler : IServiceStackHttpHandler, IHttpHandler
+    public class CustomActionHandler : HttpAsyncTaskHandler
     {
         public Action<IHttpRequest, IHttpResponse> Action { get; set; }
 
@@ -16,21 +16,14 @@ namespace ServiceStack.Host.Handlers
             Action = action;
         }
 
-        public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
         {
             Action(httpReq, httpRes);
         }
 
-        public void ProcessRequest(HttpContext context)
+        public override void ProcessRequest(HttpContext context)
         {
-            ProcessRequest(context.Request.ToRequest("CustomAction"),
-                           context.Response.ToResponse(),
-                           "CustomAction");
-        }
-
-        public bool IsReusable
-        {
-            get { return false; }
+            ProcessRequest(context.Request.ToRequest("CustomAction"), context.Response.ToResponse(), "CustomAction");
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using ServiceStack.Host.Handlers;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
@@ -58,16 +59,25 @@ namespace ServiceStack.Host
         // Set from SSHHF.GetHandlerForPathInfo()
         public string ResponseContentType { get; set; }
 
-        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override bool RunAsAsync()
+        {
+            return true;
+        }
+
+        public override Task ProcessRequestAsync(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
         {
             try
             {
                 var appHost = HostContext.AppHost;
-                if (appHost.ApplyPreRequestFilters(httpReq, httpRes)) return;
-
+                if (appHost.ApplyPreRequestFilters(httpReq, httpRes)) 
+                    return EmptyTask;
+                
                 var restPath = GetRestPath(httpReq.HttpMethod, httpReq.PathInfo);
                 if (restPath == null)
-                    throw new NotSupportedException("No RestPath found for: " + httpReq.HttpMethod + " " + httpReq.PathInfo);
+                {
+                    return new NotSupportedException("No RestPath found for: " + httpReq.HttpMethod + " " + httpReq.PathInfo)
+                        .AsTaskException();
+                }
 
                 operationName = restPath.RequestType.Name;
 
@@ -82,26 +92,32 @@ namespace ServiceStack.Host
                 appHost.AssertContentType(responseContentType);
 
                 var request = GetRequest(httpReq, restPath);
-                if (appHost.ApplyRequestFilters(httpReq, httpRes, request)) return;
+                if (appHost.ApplyRequestFilters(httpReq, httpRes, request)) 
+                    return EmptyTask;
 
-                var response = GetResponse(httpReq, httpRes, request);
-                if (appHost.ApplyResponseFilters(httpReq, httpRes, response)) return;
-
-                if (responseContentType.Contains("jsv") && !string.IsNullOrEmpty(httpReq.QueryString["debug"]))
+                var rawResponse = GetResponse(httpReq, httpRes, request);
+                return HandleResponse(rawResponse, response => 
                 {
-                    JsvReplyHandler.WriteDebugResponse(httpRes, response);
-                    return;
-                }
+                    if (appHost.ApplyResponseFilters(httpReq, httpRes, response)) 
+                        return EmptyTask;
 
-                if (doJsonp && !(response is CompressedResult))
-                    httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
-                else
-                    httpRes.WriteToResponse(httpReq, response);
+                    if (responseContentType.Contains("jsv") && !string.IsNullOrEmpty(httpReq.QueryString["debug"]))
+                        return WriteDebugResponse(httpRes, response);
+
+                    if (doJsonp && !(response is CompressedResult))
+                        return httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
+                    
+                    return httpRes.WriteToResponse(httpReq, response);
+                },  
+                ex => !HostContext.Config.WriteErrorsToResponse 
+                    ? ex.AsTaskException() 
+                    : HandleException(httpReq, httpRes, operationName, ex));
             }
             catch (Exception ex)
             {
-                if (!HostContext.Config.WriteErrorsToResponse) throw;
-                HandleException(httpReq, httpRes, operationName, ex);
+                return !HostContext.Config.WriteErrorsToResponse 
+                    ? ex.AsTaskException() 
+                    : HandleException(httpReq, httpRes, operationName, ex);
             }
         }
 

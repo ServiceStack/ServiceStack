@@ -4,16 +4,16 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class ServiceStackHttpHandler : IHttpHandler, IServiceStackHttpHandler
+    public class ServiceStackHttpHandler : HttpAsyncTaskHandler
     {
-        IServiceStackHttpHandler servicestackHandler;
+        readonly IServiceStackHttpHandler servicestackHandler;
 
         public ServiceStackHttpHandler(IServiceStackHttpHandler servicestackHandler)
         {
             this.servicestackHandler = servicestackHandler;
         }
 
-        public virtual void ProcessRequest(HttpContext context)
+        public override void ProcessRequest(HttpContext context)
         {
             ProcessRequest(
                 context.Request.ToRequest(),
@@ -21,12 +21,7 @@ namespace ServiceStack
                 null);
         }
 
-        public bool IsReusable
-        {
-            get { return false; }
-        }
-
-        public virtual void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
         {
             servicestackHandler.ProcessRequest(httpReq, httpRes, operationName ?? httpReq.OperationName);
         }

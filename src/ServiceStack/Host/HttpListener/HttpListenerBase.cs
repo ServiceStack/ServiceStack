@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -184,13 +185,15 @@ namespace ServiceStack.Host.HttpListener
 
             try
             {
-                this.ProcessRequest(context);
+                var task = this.ProcessRequestAsync(context);
+                task.ContinueWith(x => 
+                {
+                    if (x.IsFaulted)
+                        HandleError(x.Exception, context);
+                });
             }
             catch (Exception ex)
             {
-                var error = string.Format("Error this.ProcessRequest(context): [{0}]: {1}", ex.GetType().Name, ex.Message);
-                Log.ErrorFormat(error);
-
                 HandleError(ex, context);
             }
 
@@ -201,6 +204,8 @@ namespace ServiceStack.Host.HttpListener
         {
             try
             {
+                Log.ErrorFormat("Error this.ProcessRequest(context): [{0}]: {1}", ex.GetType().Name, ex.Message);
+
                 var errorResponse = new ErrorResponse
                 {
                     ResponseStatus = new ResponseStatus
@@ -288,7 +293,7 @@ namespace ServiceStack.Host.HttpListener
         /// Overridable method that can be used to implement a custom hnandler
         /// </summary>
         /// <param name="context"></param>
-        protected abstract void ProcessRequest(HttpListenerContext context);
+        protected abstract Task ProcessRequestAsync(HttpListenerContext context);
 
         /// <summary>
         /// Reserves the specified URL for non-administrator users and accounts. 

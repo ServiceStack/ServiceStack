@@ -10,12 +10,12 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
     {
         private const string ListeningOn = Config.ServiceStackBaseUri;
 
-        protected abstract IRestClientAsync CreateAsyncRestClient();
+        protected abstract IRestClientAsync CreateServiceClient();
 
         [Test]
         public async Task Can_call_GetAsync_on_GetFactorial_using_RestClientAsync()
         {
-            var asyncClient = CreateAsyncRestClient();
+            var asyncClient = CreateServiceClient();
 
             var response = await asyncClient.GetAsync<GetFactorialResponse>("factorial/3");
 
@@ -26,7 +26,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         [Test]
         public async Task Can_call_GetAsync_on_Movies_using_RestClientAsync()
         {
-            var asyncClient = CreateAsyncRestClient();
+            var asyncClient = CreateServiceClient();
             await asyncClient.PostAsync(new ResetMovies());
 
             var response = await asyncClient.GetAsync<MoviesResponse>("movies");
@@ -38,7 +38,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         [Test]
         public async Task Can_call_GetAsync_on_single_Movie_using_RestClientAsync()
         {
-            var asyncClient = CreateAsyncRestClient();
+            var asyncClient = CreateServiceClient();
             await asyncClient.PostAsync(new ResetMovies());
 
             var response = await asyncClient.GetAsync<MovieResponse>("movies/1");
@@ -50,7 +50,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         [Test]
         public async Task Can_call_PostAsync_to_add_new_Movie_using_RestClientAsync()
         {
-            var asyncClient = CreateAsyncRestClient();
+            var asyncClient = CreateServiceClient();
             await asyncClient.PostAsync(new ResetMovies());
 
             var newMovie = new Movie
@@ -76,7 +76,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         [Test]
         public async Task Can_call_DeleteAsync_to_delete_Movie_using_RestClientAsync()
         {
-            var asyncClient = CreateAsyncRestClient();
+            var asyncClient = CreateServiceClient();
             await asyncClient.PostAsync(new ResetMovies());
 
             var newMovie = new Movie
@@ -104,7 +104,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         [TestFixture]
         public class JsonAsyncRestServiceClientTests : AsyncRestClientTests
         {
-            protected override IRestClientAsync CreateAsyncRestClient()
+            protected override IRestClientAsync CreateServiceClient()
             {
                 return new JsonServiceClient(ListeningOn);
             }
@@ -113,7 +113,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         [TestFixture]
         public class JsvAsyncRestServiceClientTests : AsyncRestClientTests
         {
-            protected override IRestClientAsync CreateAsyncRestClient()
+            protected override IRestClientAsync CreateServiceClient()
             {
                 return new JsvServiceClient(ListeningOn);
             }
@@ -122,7 +122,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         [TestFixture]
         public class XmlAsyncRestServiceClientTests : AsyncRestClientTests
         {
-            protected override IRestClientAsync CreateAsyncRestClient()
+            protected override IRestClientAsync CreateServiceClient()
             {
                 return new XmlServiceClient(ListeningOn);
             }

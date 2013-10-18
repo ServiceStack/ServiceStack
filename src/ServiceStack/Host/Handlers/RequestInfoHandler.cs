@@ -103,14 +103,13 @@ namespace ServiceStack.Host.Handlers
         public Dictionary<string, string> RequestResponseMap { get; set; }
     }
 
-	public class RequestInfoHandler
-		: IServiceStackHttpHandler, IHttpHandler
+    public class RequestInfoHandler : HttpAsyncTaskHandler
 	{
 		public const string RestPath = "_requestinfo";
 
 		public RequestInfoResponse RequestInfo { get; set; }
 
-		public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{
 			var response = this.RequestInfo ?? GetRequestInfo(httpReq);
 			response.HandlerFactoryArgs = HttpHandlerFactory.DebugLastHandlerArgs;
@@ -121,14 +120,14 @@ namespace ServiceStack.Host.Handlers
 					+ "|" + HttpContext.Current.Response.GetType().FullName;
 			}
 
-			var json = JsonSerializer.SerializeToString(response);
+            var json = JsonSerializer.SerializeToString(response);
             httpRes.ContentType = MimeTypes.Json;
 			httpRes.Write(json);
 		}
 
-		public void ProcessRequest(HttpContext context)
+		public override void ProcessRequest(HttpContext context)
 		{
-			ProcessRequest(
+			ProcessRequestAsync(
 				new AspNetRequest(typeof(RequestInfo).Name, context.Request),
 				new AspNetResponse(context.Response),
 				typeof(RequestInfo).Name);
@@ -172,11 +171,6 @@ namespace ServiceStack.Host.Handlers
 				ResponseContentType = httpReq.ResponseContentType,
 			};
 			return response;
-		}
-
-		public bool IsReusable
-		{
-			get { return false; }
 		}
 	}
 }

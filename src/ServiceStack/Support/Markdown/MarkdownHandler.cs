@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using ServiceStack.Formats;
 using ServiceStack.Host.Handlers;
-using ServiceStack.Support.WebHost;
 using ServiceStack.Web;
 
 namespace ServiceStack.Support.Markdown

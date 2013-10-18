@@ -87,7 +87,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var reponseWasAutoHandled = mockResponse.WriteToResponse(
                     compressedResult, CompressionTypes.Deflate);
 
-                Assert.That(reponseWasAutoHandled, Is.True);
+                Assert.That(reponseWasAutoHandled.Result, Is.True);
 
                 //var bytesToWriteToResponseStream = new byte[simpleDtoZip.Length - 4];
                 //Array.Copy(simpleDtoZip, CompressedResult.Adler32ChecksumLength, bytesToWriteToResponseStream, 0, bytesToWriteToResponseStream.Length);

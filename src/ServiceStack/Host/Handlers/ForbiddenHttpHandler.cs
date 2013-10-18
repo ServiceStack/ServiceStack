@@ -5,8 +5,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
 {
-    public class ForbiddenHttpHandler
-        : IServiceStackHttpHandler, IHttpHandler
+    public class ForbiddenHttpHandler : HttpAsyncTaskHandler
     {
 		public bool? IsIntegratedPipeline { get; set; }
 		public string WebHostPhysicalPath { get; set; }
@@ -15,7 +14,7 @@ namespace ServiceStack.Host.Handlers
 		public string DefaultRootFileName { get; set; }
 		public string DefaultHandler { get; set; }
 
-        public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
+        public override void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
         {
             response.ContentType = "text/plain";
             response.StatusCode = 403;
@@ -49,7 +48,7 @@ namespace ServiceStack.Host.Handlers
             });
 		}
 
-        public void ProcessRequest(HttpContext context)
+        public override void ProcessRequest(HttpContext context)
         {
             var request = context.Request;
             var response = context.Response;
@@ -82,7 +81,7 @@ namespace ServiceStack.Host.Handlers
             });
 		}
 
-        public bool IsReusable
+        public override bool IsReusable
         {
             get { return true; }
         }

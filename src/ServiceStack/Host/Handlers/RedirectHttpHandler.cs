@@ -5,8 +5,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
 {
-	public class RedirectHttpHandler
-		: IServiceStackHttpHandler, IHttpHandler
+    public class RedirectHttpHandler : HttpAsyncTaskHandler
 	{
 		public string RelativeUrl { get; set; }
 
@@ -18,7 +17,7 @@ namespace ServiceStack.Host.Handlers
 		/// <param name="request"></param>
 		/// <param name="response"></param>
 		/// <param name="operationName"></param>
-		public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
+		public override void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
 		{
 			if (string.IsNullOrEmpty(RelativeUrl) && string.IsNullOrEmpty(AbsoluteUrl))
 				throw new ArgumentNullException("RelativeUrl or AbsoluteUrl");
@@ -51,7 +50,7 @@ namespace ServiceStack.Host.Handlers
         /// ASP.NET requests
         /// </summary>
         /// <param name="context"></param>
-		public void ProcessRequest(HttpContext context)
+		public override void ProcessRequest(HttpContext context)
 		{
         	var request = context.Request;
 			var response = context.Response;
@@ -81,11 +80,6 @@ namespace ServiceStack.Host.Handlers
 			}
 
             response.EndHttpHandlerRequest(closeOutputStream:true);
-		}
-
-		public bool IsReusable
-		{
-			get { return false; }
 		}
 	}
 }

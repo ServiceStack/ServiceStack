@@ -304,7 +304,167 @@ namespace ServiceStack
             return propertyInfo.GetProperty(response) as ResponseStatus;
         }
 
+        public void Get(IReturnVoid request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Get(object request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Get<TResponse>(IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Get<TResponse>(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Get<TResponse>(string relativeOrAbsoluteUrl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Delete(IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Delete(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Delete<TResponse>(IReturn<TResponse> request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Delete<TResponse>(object request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Delete<TResponse>(string relativeOrAbsoluteUrl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Post(IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Post(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Post<TResponse>(IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Post<TResponse>(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Post<TResponse>(string relativeOrAbsoluteUrl, object request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Put(IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Put(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Put<TResponse>(IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Put<TResponse>(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Put<TResponse>(string relativeOrAbsoluteUrl, object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Patch(IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Patch(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Patch<TResponse>(IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Patch<TResponse>(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
         public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CustomMethod(string httpVerb, IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CustomMethod(string httpVerb, object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse CustomMethod<TResponse>(string httpVerb, object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HttpWebResponse Head(IReturn requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HttpWebResponse Head(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HttpWebResponse Head(string relativeOrAbsoluteUrl)
         {
             throw new NotImplementedException();
         }

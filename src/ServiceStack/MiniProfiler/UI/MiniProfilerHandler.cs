@@ -6,7 +6,6 @@ using System.Text;
 using System.Web;
 using ServiceStack.Host.AspNet;
 using ServiceStack.Host.Handlers;
-using ServiceStack.Text;
 using ServiceStack.MiniProfiler.Helpers;
 using ServiceStack.Web;
 
@@ -15,7 +14,7 @@ namespace ServiceStack.MiniProfiler.UI
 	/// <summary>
 	/// Understands how to route and respond to MiniProfiler UI urls.
 	/// </summary>
-	public class MiniProfilerHandler : /*IRouteHandler, */ IHttpHandler, IServiceStackHttpHandler
+    public class MiniProfilerHandler : /*IRouteHandler, */ HttpAsyncTaskHandler
 	{
 		public static IHttpHandler MatchesRequest(IHttpRequest request)
 		{
@@ -133,16 +132,16 @@ namespace ServiceStack.MiniProfiler.UI
 		/// <summary>
 		/// Returns either includes' css/javascript or results' html.
 		/// </summary>
-		public void ProcessRequest(HttpContext context)
+		public override void ProcessRequest(HttpContext context)
 		{
 			string path = context.Request.AppRelativeCurrentExecutionFilePath;
-			ProcessRequest(
+			ProcessRequestAsync(
 				new AspNetRequest(null, context.Request),
 				new AspNetResponse(context.Response),
 				null);
 		}
 
-		public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{
 			var path = httpReq.PathInfo;
 

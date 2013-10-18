@@ -9,7 +9,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Metadata
 {
-    public abstract class BaseSoapMetadataHandler : BaseMetadataHandler, IServiceStackHttpHandler
+    public abstract class BaseSoapMetadataHandler : BaseMetadataHandler
     {
 		protected BaseSoapMetadataHandler()
 		{
@@ -20,13 +20,13 @@ namespace ServiceStack.Metadata
     	
     	public override void Execute(System.Web.HttpContext context)
     	{
-			ProcessRequest(
+			ProcessRequestAsync(
 				new AspNetRequest(OperationName, context.Request),
 				new AspNetResponse(context.Response), 
 				OperationName);
     	}
 
-		public new void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
     	{
             if (!AssertAccess(httpReq, httpRes, httpReq.QueryString["op"])) return;
 
@@ -37,7 +37,7 @@ namespace ServiceStack.Metadata
 				var xsdNo = Convert.ToInt32(httpReq.QueryString["xsd"]);
                 var schemaSet = XsdUtils.GetXmlSchemaSet(operationTypes);
     			var schemas = schemaSet.Schemas();
-    			var i = 0;
+    			var i = 0; 
     			if (xsdNo >= schemas.Count)
     			{
     				throw new ArgumentOutOfRangeException("xsd");

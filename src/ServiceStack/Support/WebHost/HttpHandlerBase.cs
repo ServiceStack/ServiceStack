@@ -1,10 +1,11 @@
 using System;
 using System.Web;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Logging;
 
 namespace ServiceStack.Support.WebHost
 {
-	public abstract class HttpHandlerBase : IHttpHandler
+	public abstract class HttpHandlerBase : HttpAsyncTaskHandler, IHttpHandler
 	{
 		private readonly ILog log;
 
@@ -23,7 +24,7 @@ namespace ServiceStack.Support.WebHost
 
 		public abstract void Execute(HttpContext context);
 
-		public bool IsReusable
+		public override bool IsReusable
 		{
 			get { return false; }
 		}

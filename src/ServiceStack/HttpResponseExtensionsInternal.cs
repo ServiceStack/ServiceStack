@@ -4,12 +4,12 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web;
 using System.Collections.Generic;
 using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -17,6 +17,17 @@ namespace ServiceStack
     public static class HttpResponseExtensionsInternal
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(HttpResponseExtensionsInternal));
+
+        private static readonly Task<bool> TrueTask;
+        private static readonly Task<bool> FalseTask;
+        private static readonly Task<object> EmptyTask;
+
+        static HttpResponseExtensionsInternal()
+        {
+            EmptyTask = ((object)null).AsTaskResult();
+            TrueTask = true.AsTaskResult();
+            FalseTask = false.AsTaskResult();
+        }
 
         public static bool WriteToOutputStream(IHttpResponse response, object result, byte[] bodyPrefix, byte[] bodySuffix)
         {
@@ -58,23 +69,23 @@ namespace ServiceStack
             return false;
         }
 
-        public static bool WriteToResponse(this IHttpResponse httpRes, object result, string contentType)
+        public static Task<bool> WriteToResponse(this IHttpResponse httpRes, object result, string contentType)
         {
             var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
             return httpRes.WriteToResponse(result, serializer, new SerializationContext(contentType));
         }
 
-        public static bool WriteToResponse(this IHttpResponse httpRes, IHttpRequest httpReq, object result)
+        public static Task<bool> WriteToResponse(this IHttpResponse httpRes, IHttpRequest httpReq, object result)
         {
             return WriteToResponse(httpRes, httpReq, result, null, null);
         }
 
-        public static bool WriteToResponse(this IHttpResponse httpRes, IHttpRequest httpReq, object result, byte[] bodyPrefix, byte[] bodySuffix)
+        public static Task<bool> WriteToResponse(this IHttpResponse httpRes, IHttpRequest httpReq, object result, byte[] bodyPrefix, byte[] bodySuffix)
         {
             if (result == null)
             {
                 httpRes.EndRequestWithNoContent();
-                return true;
+                return TrueTask;
             }
 
             var serializationContext = new HttpRequestContext(httpReq, httpRes, result);
@@ -95,7 +106,7 @@ namespace ServiceStack
             return httpRes.WriteToResponse(result, serializer, serializationContext, bodyPrefix, bodySuffix);
         }
 
-        public static bool WriteToResponse(this IHttpResponse httpRes, object result, ResponseSerializerDelegate serializer, IRequestContext serializationContext)
+        public static Task<bool> WriteToResponse(this IHttpResponse httpRes, object result, ResponseSerializerDelegate serializer, IRequestContext serializationContext)
         {
             return httpRes.WriteToResponse(result, serializer, serializationContext, null, null);
         }
@@ -111,7 +122,7 @@ namespace ServiceStack
         /// <param name="bodyPrefix">Add prefix to response body if any</param>
         /// <param name="bodySuffix">Add suffix to response body if any</param>
         /// <returns></returns>
-        public static bool WriteToResponse(this IHttpResponse response, object result, ResponseSerializerDelegate defaultAction, IRequestContext serializerCtx, byte[] bodyPrefix, byte[] bodySuffix)
+        public static Task<bool> WriteToResponse(this IHttpResponse response, object result, ResponseSerializerDelegate defaultAction, IRequestContext serializerCtx, byte[] bodyPrefix, byte[] bodySuffix)
         {
             using (Profiler.Current.Step("Writing to Response"))
             {
@@ -121,7 +132,7 @@ namespace ServiceStack
                     if (result == null)
                     {
                         response.EndRequestWithNoContent();
-                        return true;
+                        return TrueTask;
                     }
 
                     ApplyGlobalResponseHeaders(response);
@@ -140,7 +151,7 @@ namespace ServiceStack
                             if (response.HandleCustomErrorHandler(serializerCtx.Get<IHttpRequest>(),
                                 defaultContentType, httpError.Status, httpError.CreateErrorResponse()))
                             {
-                                return true;
+                                return TrueTask;
                             }
                         }
 
@@ -174,7 +185,7 @@ namespace ServiceStack
                     {
                         response.Flush(); //required for Compression
                         if (disposableResult != null) disposableResult.Dispose();
-                        return true;
+                        return TrueTask;
                     }
 
                     if (httpResult != null)
@@ -200,11 +211,11 @@ namespace ServiceStack
 
                     var responseText = result as string;
                     if (responseText != null)
-                    {
+                    {                        
                         if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
                         WriteTextToResponse(response, responseText, defaultContentType);
                         if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
-                        return true;
+                        return TrueTask;
                     }
 
                     if (defaultAction == null)
@@ -220,14 +231,11 @@ namespace ServiceStack
 
                     if (disposableResult != null) disposableResult.Dispose();
 
-                    return false;
+                    return FalseTask;
                 }
                 catch (Exception originalEx)
                 {
-                    //TM: It would be good to handle 'remote end dropped connection' problems here. Arguably they should at least be suppressible via configuration
-
-                    //DB: Using standard ServiceStack configuration method
-                    if (!HostContext.Config.WriteErrorsToResponse) throw;
+                    if (!HostContext.Config.WriteErrorsToResponse) return originalEx.AsTaskException<bool>();
 
                     var errorMessage = String.Format(
                     "Error occured while Processing Request: [{0}] {1}", originalEx.GetType().Name, originalEx.Message);
@@ -255,9 +263,9 @@ namespace ServiceStack
                     {
                         //Exception in writing to response should not hide the original exception
                         Log.Info("Failed to write error to response: {0}", writeErrorEx);
-                        throw originalEx;
+                        return originalEx.AsTaskException<bool>();
                     }
-                    return true;
+                    return TrueTask;
                 }
                 finally
                 {
@@ -292,11 +300,12 @@ namespace ServiceStack
                 (int)HttpStatusCode.InternalServerError);
         }
 
-        public static void WriteErrorToResponse(this IHttpResponse httpRes, IHttpRequest httpReq,
+        public static Task WriteErrorToResponse(this IHttpResponse httpRes, IHttpRequest httpReq,
             string contentType, string operationName, string errorMessage, Exception ex, int statusCode)
         {
             var errorDto = ex.ToErrorResponse();
-            if (HandleCustomErrorHandler(httpRes, httpReq, contentType, statusCode, errorDto)) return;
+            if (HandleCustomErrorHandler(httpRes, httpReq, contentType, statusCode, errorDto)) 
+                return EmptyTask;
 
             if (httpRes.ContentType == null || httpRes.ContentType == MimeTypes.Html)
             {
@@ -317,6 +326,8 @@ namespace ServiceStack
             }
             
             httpRes.EndHttpHandlerRequest(skipHeaders: true);
+
+            return EmptyTask;
         }
 
         private static bool HandleCustomErrorHandler(this IHttpResponse httpRes, IHttpRequest httpReq,

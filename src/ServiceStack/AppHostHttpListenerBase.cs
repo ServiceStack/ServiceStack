@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Reflection;
+using System.Threading.Tasks;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Host.HttpListener;
@@ -28,9 +29,10 @@ namespace ServiceStack
             HandlerPath = handlerPath;
         }
 
-        protected override void ProcessRequest(HttpListenerContext context)
+        protected override Task ProcessRequestAsync(HttpListenerContext context)
         {
-            if (string.IsNullOrEmpty(context.Request.RawUrl)) return;
+            if (string.IsNullOrEmpty(context.Request.RawUrl)) 
+                return ((object)null).AsTaskResult();
 
             var operationName = context.Request.GetOperationName();
 
@@ -46,12 +48,15 @@ namespace ServiceStack
                 {
                     httpReq.OperationName = operationName = restHandler.RestPath.RequestType.Name;
                 }
-                serviceStackHandler.ProcessRequest(httpReq, httpRes, operationName);
-                httpRes.Close();
-                return;
+
+                var task = serviceStackHandler.ProcessRequestAsync(httpReq, httpRes, operationName);                
+                task.ContinueWith(x => httpRes.Close());
+
+                return task;
             }
 
-            throw new NotImplementedException("Cannot execute handler: " + handler + " at PathInfo: " + httpReq.PathInfo);
+            return new NotImplementedException("Cannot execute handler: " + handler + " at PathInfo: " + httpReq.PathInfo)
+                .AsTaskException();
         }
 
         public override void OnConfigLoad()

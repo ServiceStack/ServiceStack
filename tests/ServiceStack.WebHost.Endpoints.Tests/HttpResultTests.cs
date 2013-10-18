@@ -3,8 +3,6 @@ using NUnit.Framework;
 using ServiceStack.Common.Tests;
 using ServiceStack.Host;
 using ServiceStack.Testing;
-using ServiceStack.Text;
-using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -30,7 +28,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var reponseWasAutoHandled = mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
 
-            Assert.That(reponseWasAutoHandled, Is.True);
+            Assert.That(reponseWasAutoHandled.Result, Is.True);
 
             var writtenString = mockResponse.ReadAsString();
             Assert.That(writtenString, Is.EqualTo(customText));
@@ -58,7 +56,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var reponseWasAutoHandled = mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
 
-            Assert.That(reponseWasAutoHandled, Is.True);
+            Assert.That(reponseWasAutoHandled.Result, Is.True);
 
             var writtenString = mockResponse.ReadAsString();
             Assert.That(writtenString, Is.EqualTo(customText));
@@ -81,7 +79,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var reponseWasAutoHandled = mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
 
-            Assert.That(reponseWasAutoHandled, Is.True);
+            Assert.That(reponseWasAutoHandled.Result, Is.True);
 
             var statusDesc = mockResponse.StatusDescription;
             Assert.That(mockResponse.StatusCode, Is.EqualTo((int)System.Net.HttpStatusCode.Accepted));
@@ -95,7 +93,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var httpResult = new HttpResult { StatusDescription = null };
 
-            mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
+            var reponseWasAutoHandled = mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
+            Assert.That(reponseWasAutoHandled.Result, Is.True);
 
             Assert.IsNotNull(mockResponse.StatusDescription);
         }

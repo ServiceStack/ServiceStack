@@ -40,16 +40,16 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
 {
-    public class StaticFileHandler : IHttpHandler, IServiceStackHttpHandler
+    public class StaticFileHandler : HttpAsyncTaskHandler
 	{
 		private static readonly ILog log = LogManager.GetLogger(typeof(StaticFileHandler));
 
-		public void ProcessRequest(HttpContext context)
+		public override void ProcessRequest(HttpContext context)
 		{
 			ProcessRequest(
-			new AspNetRequest(null, context.Request),
-			new AspNetResponse(context.Response), 
-			null);
+			    new AspNetRequest(null, context.Request),
+			    new AspNetResponse(context.Response), 
+			    null);
 		}
 
 		private DateTime DefaultFileModified { get; set; }
@@ -74,7 +74,7 @@ namespace ServiceStack.Host.Handlers
 			}
 		}
 
-        public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
+        public override void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
 		{
             response.EndHttpHandlerRequest(skipClose: true, afterBody: r => 
             {
@@ -223,7 +223,7 @@ namespace ServiceStack.Host.Handlers
             return indexDirs;
         }
 
-	    public bool IsReusable
+	    public override bool IsReusable
 		{
 			get { return true; }
 		}

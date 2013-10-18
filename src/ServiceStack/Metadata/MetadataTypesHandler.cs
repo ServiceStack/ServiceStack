@@ -19,13 +19,13 @@ namespace ServiceStack.Metadata
 
         public override void Execute(HttpContext context)
         {
-            ProcessRequest(
+            ProcessRequestAsync(
                 new AspNetRequest(GetType().Name, context.Request),
                 new AspNetResponse(context.Response),
                 GetType().Name);
         }
 
-        public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public void ProcessRequestAsync(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
         {
             var metadata = new MetadataTypes
             {

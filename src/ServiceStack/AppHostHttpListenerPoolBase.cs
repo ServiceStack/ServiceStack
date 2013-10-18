@@ -179,13 +179,16 @@ namespace ServiceStack
             {
                 try
                 {
-                    ProcessRequest(context);
+                    var task = this.ProcessRequestAsync(context);
+                    task.ContinueWith(x =>
+                    {
+                        if (x.IsFaulted)
+                            HandleError(x.Exception, context);
+                    });
+                    task.Wait();
                 }
                 catch (Exception ex)
                 {
-                    string error = string.Format("Error this.ProcessRequest(context): [{0}]: {1}", ex.GetType().Name, ex.Message);
-                    log.ErrorFormat(error);
-
                     HandleError(ex, context);
                 }
 

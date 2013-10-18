@@ -110,6 +110,8 @@
     <Compile Include="CompressedResult.cs" />
     <Compile Include="Host\ContentTypes.cs" />
     <Compile Include="Host\Handlers\CustomActionHandler.cs" />
+    <Compile Include="Host\Handlers\HttpAsyncTaskHandler.cs" />
+    <Compile Include="TaskExtensions.cs" />
     <Compile Include="Host\HttpResponseStreamWrapper.cs" />
     <Compile Include="Host\SerializationContext.cs" />
     <Compile Include="HttpError.cs" />

@@ -9,8 +9,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
 {
-	public class NotFoundHttpHandler
-		: IServiceStackHttpHandler, IHttpHandler
+    public class NotFoundHttpHandler : HttpAsyncTaskHandler
 	{
         private static readonly ILog Log = LogManager.GetLogger(typeof(NotFoundHttpHandler));
 
@@ -21,7 +20,7 @@ namespace ServiceStack.Host.Handlers
 		public string DefaultRootFileName { get; set; }
 		public string DefaultHandler { get; set; }
 
-		public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
+		public override void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
 		{
             Log.ErrorFormat("{0} Request not found: {1}", request.UserHostAddress, request.RawUrl);
 
@@ -46,7 +45,7 @@ namespace ServiceStack.Host.Handlers
             response.EndHttpHandlerRequest(skipClose: true, afterBody: r => r.Write(text.ToString()));
 		}
 
-		public void ProcessRequest(HttpContext context)
+		public override void ProcessRequest(HttpContext context)
 		{
 			var request = context.Request;
 			var response = context.Response;
@@ -54,7 +53,7 @@ namespace ServiceStack.Host.Handlers
 			var httpReq = new AspNetRequest("NotFoundHttpHandler", request);
 			if (!request.IsLocal)
 			{
-				ProcessRequest(httpReq, new AspNetResponse(response), null);
+				ProcessRequestAsync(httpReq, new AspNetResponse(response), null);
 				return;
 			}
 
@@ -111,7 +110,7 @@ namespace ServiceStack.Host.Handlers
             response.EndHttpHandlerRequest(skipClose:true, afterBody: r => r.Write(sb.ToString()));
 		}
 
-		public bool IsReusable
+		public override bool IsReusable
 		{
 			get { return true; }
 		}

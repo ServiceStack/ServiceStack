@@ -49,6 +49,7 @@ namespace RazorRockstars.Console.Files
         [Test]
         public void RunFor10Mins()
         {
+            Process.Start(BaseUri);
             Thread.Sleep(TimeSpan.FromMinutes(10));
         }
 

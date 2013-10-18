@@ -36,7 +36,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			var reponseWasAutoHandled = mockResponse.WriteToResponse(htmlResult, "text/xml");
 
-			Assert.That(reponseWasAutoHandled, Is.True);
+			Assert.That(reponseWasAutoHandled.Result, Is.True);
 
 			var expectedOutput = string.Format(
 				"<html><head><meta http-equiv=\"refresh\" content=\"0;url={0}\"></head></html>", url);

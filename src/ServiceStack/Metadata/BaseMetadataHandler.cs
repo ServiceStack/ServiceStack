@@ -6,14 +6,13 @@ using System.Web;
 using System.Web.UI;
 using ServiceStack.Host;
 using ServiceStack.Host.AspNet;
-using ServiceStack.Host.Handlers;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Web;
 using System.Text;
 
 namespace ServiceStack.Metadata
 {
-    public abstract class BaseMetadataHandler : HttpHandlerBase, IServiceStackHttpHandler
+    public abstract class BaseMetadataHandler : HttpHandlerBase
     {
         public abstract Format Format { get; }
 
@@ -28,7 +27,7 @@ namespace ServiceStack.Metadata
             ProcessOperations(writer, new AspNetRequest(GetType().Name, context.Request), new AspNetResponse(context.Response));
         }
 
-        public virtual void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
         {
             using (var sw = new StreamWriter(httpRes.OutputStream))
             {

@@ -42,7 +42,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         [Test]
         public void Can_download_default_static_file_at_sub_directory()
         {
-            var contents = "{0}/Content/".Fmt(ServiceStackBaseUri).GetStringFromUrl();
+            var contents = "{0}/Content".Fmt(ServiceStackBaseUri).GetStringFromUrl();
             Assert.That(contents, Is.EqualTo("static"));
         }
 

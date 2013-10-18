@@ -1,4 +1,5 @@
-﻿using System.Collections.Specialized;
+﻿using System;
+using System.Collections.Specialized;
 using Moq;
 using NUnit.Framework;
 using ServiceStack.Host;
@@ -36,7 +37,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				RestPath = new RestPath(typeof(RequestType), path)
 			};
 
-			Assert.Throws<RequestBindingException>(() => handler.ProcessRequest(request, response, string.Empty));
+		    try
+		    {
+    		    handler.ProcessRequestAsync(request, response, string.Empty).Wait();
+                Assert.Fail("Should throw RequestBindingException");
+		    }
+		    catch (AggregateException aex)
+		    {
+                Assert.That(aex.InnerExceptions.Count, Is.EqualTo(1));
+                Assert.That(aex.InnerException is RequestBindingException);
+		    }
 		}
 
 		[Test]
@@ -51,7 +61,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				RestPath = new RestPath(typeof(RequestType), path)
 			};
 
-			Assert.Throws<RequestBindingException>(() => handler.ProcessRequest(request, response, string.Empty));
+            try
+            {
+                handler.ProcessRequestAsync(request, response, string.Empty).Wait();
+                Assert.Fail("Should throw RequestBindingException");
+            }
+            catch (AggregateException aex)
+            {
+                Assert.That(aex.InnerExceptions.Count, Is.EqualTo(1));
+                Assert.That(aex.InnerException is RequestBindingException);
+            }
 		}
 
 		private IHttpRequest ConfigureRequest(string path)

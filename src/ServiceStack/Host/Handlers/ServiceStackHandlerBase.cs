@@ -2,23 +2,23 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Runtime.Serialization;
+using System.Text;
+using System.Threading.Tasks;
 using System.Web;
-using ServiceStack.Host.AspNet;
-using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
 using ServiceStack.Serialization;
+using ServiceStack.Text;
+using ServiceStack.Text.FastMember;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
 {
     public abstract class ServiceStackHandlerBase
-        : IServiceStackHttpHandler, IHttpHandler
+        : HttpAsyncTaskHandler, IServiceStackHttpHandler, IHttpAsyncHandler
     {
         internal static readonly ILog Log = LogManager.GetLogger(typeof(ServiceStackHandlerBase));
         internal static readonly Dictionary<byte[], byte[]> NetworkInterfaceIpv4Addresses = new Dictionary<byte[], byte[]>();
         internal static readonly byte[][] NetworkInterfaceIpv6Addresses = new byte[0][];
-
-        public string RequestName { get; set; }
 
         static ServiceStackHandlerBase()
         {
@@ -36,7 +36,7 @@ namespace ServiceStack.Host.Handlers
 
         public RequestAttributes HandlerAttributes { get; set; }
 
-        public bool IsReusable
+        public override bool IsReusable
         {
             get { return false; }
         }
@@ -44,9 +44,43 @@ namespace ServiceStack.Host.Handlers
         public abstract object CreateRequest(IHttpRequest request, string operationName);
         public abstract object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request);
 
-        public virtual void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public Task HandleResponse(object response, Func<object, Task> callback, Func<Exception, Task> errorCallback)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var taskResponse = response as Task;
+                if (taskResponse != null)
+                {
+                    if (taskResponse.Status == TaskStatus.Created)
+                    {
+                        taskResponse.Start();
+                    }
+
+                    return taskResponse
+                        .ContinueWith(task =>
+                        {
+                            if (task.IsCompleted)
+                            {
+                                var taskResult = TypeAccessor.Create(task.GetType())[task, "Result"];
+                                return callback(taskResult);
+                            }
+
+                            if (task.IsFaulted)
+                                return errorCallback(task.Exception);
+
+                            return task.IsCanceled
+                                ? errorCallback(new OperationCanceledException("The async Task operation was cancelled"))
+                                : errorCallback(new InvalidOperationException("Unknown Task state"));
+                        });
+                }
+
+                callback(response);
+                return EmptyTask;
+            }
+            catch (Exception ex)
+            {
+                return errorCallback(ex);
+            }
         }
 
         public static object DeserializeHttpRequest(Type operationType, IHttpRequest httpReq, string contentType)
@@ -116,44 +150,6 @@ namespace ServiceStack.Host.Handlers
             return requestFactoryFn != null ? requestFactoryFn(httpReq) : null;
         }
 
-        protected static bool DefaultHandledRequest(HttpListenerContext context)
-        {
-            return false;
-        }
-
-        protected static bool DefaultHandledRequest(HttpContext context)
-        {
-            return false;
-        }
-
-        public virtual void ProcessRequest(HttpContext context)
-        {
-            var operationName = this.RequestName ?? context.Request.GetOperationName();
-
-            if (string.IsNullOrEmpty(operationName)) return;
-
-            if (DefaultHandledRequest(context)) return;
-
-            ProcessRequest(
-                new AspNetRequest(operationName, context.Request),
-                new AspNetResponse(context.Response),
-                operationName);
-        }
-
-        public virtual void ProcessRequest(HttpListenerContext context)
-        {
-            var operationName = this.RequestName ?? context.Request.GetOperationName();
-
-            if (string.IsNullOrEmpty(operationName)) return;
-
-            if (DefaultHandledRequest(context)) return;
-
-            ProcessRequest(
-                new ListenerRequest(operationName, context.Request),
-                new ListenerResponse(context.Response),
-                operationName);
-        }
-
         public static Type GetOperationType(string operationName)
         {
             return HostContext.Metadata.GetOperationType(operationName);
@@ -206,7 +202,7 @@ namespace ServiceStack.Host.Handlers
             }
         }
 
-        protected void HandleException(IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Exception ex)
+        protected Task HandleException(IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Exception ex)
         {
             var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
             Log.Error(errorMessage, ex);
@@ -214,13 +210,14 @@ namespace ServiceStack.Host.Handlers
             try
             {
                 HostContext.RaiseUncaughtException(httpReq, httpRes, operationName, ex);
+                return EmptyTask;
             }
             catch (Exception writeErrorEx)
             {
                 //Exception in writing to response should not hide the original exception
                 Log.Info("Failed to write error to response: {0}", writeErrorEx);
                 //rethrow the original exception
-                throw ex;
+                return ex.AsTaskException();
             }
             finally
             {
@@ -251,5 +248,16 @@ namespace ServiceStack.Host.Handlers
             return true;
         }
 
+        private static void WriteDebugRequest(IRequestContext requestContext, object dto, IHttpResponse httpRes)
+        {
+            var bytes = Encoding.UTF8.GetBytes(dto.SerializeAndFormat());
+            httpRes.OutputStream.Write(bytes, 0, bytes.Length);
+        }
+
+        public Task WriteDebugResponse(IHttpResponse httpRes, object response)
+        {
+            return httpRes.WriteToResponse(response, WriteDebugRequest,
+                new SerializationContext(MimeTypes.PlainText));
+        }
     }
 }
