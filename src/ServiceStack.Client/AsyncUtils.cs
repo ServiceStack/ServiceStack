@@ -87,6 +87,7 @@ namespace ServiceStack
 
 #else
             var webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
+            webRequest.MaximumResponseHeadersLength = int.MaxValue; //throws "The message length limit was exceeded" exception
             client.CancelAsyncFn = webRequest.Abort;
 
             if (client.StoreCookies)

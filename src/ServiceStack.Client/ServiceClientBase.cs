@@ -594,6 +594,7 @@ namespace ServiceStack
 
             try
             {
+                client.MaximumResponseHeadersLength = int.MaxValue; //throws "The message length limit was exceeded" exception
                 client.Accept = Accept;
                 client.Method = httpMethod;
                 client.Headers.Add(Headers);
