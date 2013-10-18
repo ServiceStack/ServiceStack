@@ -1,3 +1,6 @@
+//Copyright (c) Service Stack LLC. All Rights Reserved.
+//License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -14,7 +17,7 @@ using ServiceStack.Web;
 namespace ServiceStack.Host.Handlers
 {
     public abstract class ServiceStackHandlerBase
-        : HttpAsyncTaskHandler, IServiceStackHttpHandler, IHttpAsyncHandler
+        : HttpAsyncTaskHandler, IHttpAsyncHandler
     {
         internal static readonly ILog Log = LogManager.GetLogger(typeof(ServiceStackHandlerBase));
         internal static readonly Dictionary<byte[], byte[]> NetworkInterfaceIpv4Addresses = new Dictionary<byte[], byte[]>();
@@ -74,8 +77,7 @@ namespace ServiceStack.Host.Handlers
                         });
                 }
 
-                callback(response);
-                return EmptyTask;
+                return callback(response);
             }
             catch (Exception ex)
             {

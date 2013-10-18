@@ -1,11 +1,13 @@
-﻿using System;
+﻿//Copyright (c) Service Stack LLC. All Rights Reserved.
+//License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
+using System;
 using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Logging;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.HttpListener
@@ -191,6 +193,16 @@ namespace ServiceStack.Host.HttpListener
                     if (x.IsFaulted)
                         HandleError(x.Exception, context);
                 });
+
+                if (task.Status == TaskStatus.Created)
+                {
+                    task.RunSynchronously();
+                }
+                //TODO: benchmark which is better
+                //else
+                //{
+                //    task.Wait();
+                //}
             }
             catch (Exception ex)
             {

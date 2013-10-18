@@ -1,7 +1,11 @@
-﻿using System;
+﻿//Copyright (c) Service Stack LLC. All Rights Reserved.
+//License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
+using System;
 using System.Net;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
 
@@ -185,7 +189,15 @@ namespace ServiceStack
                         if (x.IsFaulted)
                             HandleError(x.Exception, context);
                     });
-                    task.Wait();
+
+                    if (task.Status == TaskStatus.Created)
+                    {
+                        task.RunSynchronously();
+                    }
+                    else
+                    {
+                        task.Wait();
+                    }
                 }
                 catch (Exception ex)
                 {
