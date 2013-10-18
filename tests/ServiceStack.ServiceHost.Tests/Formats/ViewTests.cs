@@ -209,7 +209,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
             };
             var httpReq = new MockHttpRequest { QueryString = new NameValueCollection() };
             var httpRes = new MockHttpResponse();
-            markdownHandler.ProcessRequestAsync(httpReq, httpRes, "Static");
+            markdownHandler.ProcessRequestAsync(httpReq, httpRes, "Static").Wait();
 
             var expectedHtml = markdownFormat.Transform(
                 File.ReadAllText("~/AppData/NoTemplate/Static.md".MapProjectPath()));

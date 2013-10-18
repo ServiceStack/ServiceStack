@@ -67,7 +67,8 @@ namespace ServiceStack.Host.Handlers
 
         public virtual Task ProcessRequestAsync(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
         {
-            var task = new Task(() => ProcessRequest(httpReq, httpRes, operationName));            
+            var task = new Task(() => ProcessRequest(httpReq, httpRes, operationName));
+            task.Start();
             return task;
         }
 
