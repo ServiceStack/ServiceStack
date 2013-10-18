@@ -59,6 +59,14 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public long ForNumber { get; set; }
     }
 
+    [Route("/factorial/unmarked/{ForNumber}")]
+    [DataContract]
+    public class GetFactorialUnmarkedAsync
+    {
+        [DataMember]
+        public long ForNumber { get; set; }
+    }
+
     public class GetFactorialAsyncService : IService
     {
         public object Any(GetFactorialSync request)
@@ -109,6 +117,14 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public Task<GetFactorialResponse> Any(GetFactorialNewTcsAsync request)
         {
             return new GetFactorialResponse { Result = GetFactorial(request.ForNumber) }.AsTaskResult();
+        }
+
+        public async Task<GetFactorialResponse> Any(GetFactorialUnmarkedAsync request)
+        {
+            return await Task.Factory.StartNew(() =>
+            {
+                return new GetFactorialResponse { Result = GetFactorial(request.ForNumber) };
+            });
         }
 
         public static long GetFactorial(long n)

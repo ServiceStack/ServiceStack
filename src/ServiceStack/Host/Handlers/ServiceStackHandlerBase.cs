@@ -64,7 +64,7 @@ namespace ServiceStack.Host.Handlers
                         {
                             if (task.IsCompleted)
                             {
-                                var taskResult = TypeAccessor.Create(task.GetType())[task, "Result"];
+                                var taskResult = task.GetResult();
                                 return callback(taskResult);
                             }
 

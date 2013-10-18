@@ -1,6 +1,5 @@
 using System;
 using System.Web;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
@@ -33,7 +32,7 @@ namespace ServiceStack.Host
 		}
 
 		private HttpWorkerRequest httpWorkerRequest;
-		public HttpWorkerRequest HttpWorkerRequest
+	    private HttpWorkerRequest HttpWorkerRequest
 		{
 			get
 			{

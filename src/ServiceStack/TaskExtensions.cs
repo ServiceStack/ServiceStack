@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using ServiceStack.Text.FastMember;
 
 namespace ServiceStack
 {
@@ -24,6 +25,11 @@ namespace ServiceStack
             var tcs = new TaskCompletionSource<T>();
             tcs.SetResult(result);
             return tcs.Task;
+        }
+
+        public static object GetResult(this Task task)
+        {
+            return TypeAccessor.Create(task.GetType())[task, "Result"];
         }
     }
 
