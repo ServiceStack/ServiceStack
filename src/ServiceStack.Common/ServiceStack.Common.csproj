@@ -361,6 +361,7 @@
     <Compile Include="StringExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="StringExtensions.HtmlHelpers.cs" />
     <Compile Include="Support\ActionExecHandler.cs">
       <SubType>Code</SubType>
     </Compile>
