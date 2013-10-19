@@ -95,7 +95,7 @@ namespace ServiceStack.MsgPack
             return msgPackType;
         }
 
-        public static void Serialize(IRequestContext requestContext, object dto, Stream outputStream)
+        public static void Serialize(IRequest requestContext, object dto, Stream outputStream)
         {
             if (dto == null) return;
             var dtoType = dto.GetType();

@@ -6,12 +6,11 @@ using System.Text;
 using System.Web;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Html;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Razor.Managers
 {
-    public delegate string RenderPartialDelegate(string pageName, object model, bool renderHtml, StreamWriter writer = null, HtmlHelper htmlHelper = null, IHttpRequest httpReq = null);
+    public delegate string RenderPartialDelegate(string pageName, object model, bool renderHtml, StreamWriter writer = null, HtmlHelper htmlHelper = null, IRequest httpReq = null);
 
     /// <summary>
     /// A common hook into ServiceStack and the hosting infrastructure used to resolve requests.
@@ -78,7 +77,7 @@ namespace ServiceStack.Razor.Managers
         /// <summary>
         /// This is called by the hosting environment via CatchAll usually for content pages.
         /// </summary>
-        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {
             httpRes.ContentType = MimeTypes.Html;
 
@@ -92,7 +91,7 @@ namespace ServiceStack.Razor.Managers
         /// allow another view engine to attempt to process it. If no view engines can process the DTO,
         /// HtmlFormat will simply handle it itself.
         /// </summary>
-        public virtual bool ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, object dto)
+        public virtual bool ProcessRequest(IRequest httpReq, IResponse httpRes, object dto)
         {
             //for compatibility
             var httpResult = dto as IHttpResult;
@@ -111,7 +110,7 @@ namespace ServiceStack.Razor.Managers
             return true;
         }
 
-        private RazorPage FindRazorPage(IHttpRequest httpReq, object model)
+        private RazorPage FindRazorPage(IRequest httpReq, object model)
         {
             var viewName = httpReq.GetItem(ViewKey) as string;
             if (viewName != null)
@@ -123,7 +122,7 @@ namespace ServiceStack.Razor.Managers
             return razorPage;
         }
 
-        public IRazorView ResolveAndExecuteRazorPage(IHttpRequest httpReq, IHttpResponse httpRes, object model, RazorPage razorPage=null)
+        public IRazorView ResolveAndExecuteRazorPage(IRequest httpReq, IResponse httpRes, object model, RazorPage razorPage=null)
         {
             razorPage = razorPage ?? FindRazorPage(httpReq, model);
 
@@ -157,7 +156,7 @@ namespace ServiceStack.Razor.Managers
             return page;
         }
 
-        private Tuple<IRazorView, string> ExecuteRazorPageWithLayout(IHttpRequest httpReq, IHttpResponse httpRes, object model, IRazorView page, Func<string> layout)
+        private Tuple<IRazorView, string> ExecuteRazorPageWithLayout(IRequest httpReq, IResponse httpRes, object model, IRazorView page, Func<string> layout)
         {
             using (var ms = new MemoryStream())
             {
@@ -184,7 +183,7 @@ namespace ServiceStack.Razor.Managers
             }
         }
 
-        public void EnsureCompiled(RazorPage page, IHttpResponse response)
+        public void EnsureCompiled(RazorPage page, IResponse response)
         {
             if (page == null) return;
             if (page.IsValid) return;
@@ -196,7 +195,7 @@ namespace ServiceStack.Razor.Managers
             page.IsValid = true;
         }
 
-        private IRazorView CreateRazorPageInstance(IHttpRequest httpReq, IHttpResponse httpRes, object dto, RazorPage razorPage)
+        private IRazorView CreateRazorPageInstance(IRequest httpReq, IResponse httpRes, object dto, RazorPage razorPage)
         {
             EnsureCompiled(razorPage, httpRes);
 
@@ -217,7 +216,7 @@ namespace ServiceStack.Razor.Managers
             return page;
         }
 
-        private void PrepareAndSetModel(IRazorView page, IHttpRequest httpReq, object dto)
+        private void PrepareAndSetModel(IRazorView page, IRequest httpReq, object dto)
         {
             var hasModel = page as IHasModel;
             if (hasModel == null) return;
@@ -235,17 +234,17 @@ namespace ServiceStack.Razor.Managers
             hasModel.SetModel(model);
         }
 
-        public override object CreateRequest(IHttpRequest request, string operationName)
+        public override object CreateRequest(IRequest request, string operationName)
         {
             return null;
         }
 
-        public override object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request)
+        public override object GetResponse(IRequest httpReq, object request)
         {
             return null;
         }
 
-        public bool HasView(string viewName, IHttpRequest httpReq = null)
+        public bool HasView(string viewName, IRequest httpReq = null)
         {
             throw new NotImplementedException();
         }

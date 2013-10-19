@@ -1,8 +1,6 @@
 using System.Web;
-using ServiceStack.Host.AspNet;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Support.WebHost;
-using ServiceStack.Text;
 using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
@@ -13,16 +11,14 @@ using System.Runtime.Serialization;
 
 namespace ServiceStack.Metadata
 {
-    public class MetadataTypesHandler : HttpHandlerBase, IServiceStackHttpHandler
+    public class MetadataTypesHandler : HttpHandlerBase
     {
         public MetadataTypesConfig Config { get; set; }
 
-        public override void Execute(HttpContext context)
+        public override void Execute(HttpContextBase context)
         {
-            ProcessRequestAsync(
-                new AspNetRequest(GetType().Name, context.Request),
-                new AspNetResponse(context.Response),
-                GetType().Name);
+            var request = context.ToRequest(GetType().Name);
+            ProcessRequestAsync(request, request.Response, request.OperationName);
         }
 
         public void ProcessRequestAsync(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)

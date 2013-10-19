@@ -5,7 +5,6 @@ using System.Net;
 using System.Web;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
-using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
@@ -92,7 +91,7 @@ namespace ServiceStack.Auth
 
             // Check if this is a callback from Yammer OAuth,
             // if not, get the code.
-            var code = authService.RequestContext.Get<IHttpRequest>().QueryString["code"];
+            var code = authService.Request.QueryString["code"];
             var isPreAuthCallback = !code.IsNullOrEmpty();
             if (!isPreAuthCallback)
             {

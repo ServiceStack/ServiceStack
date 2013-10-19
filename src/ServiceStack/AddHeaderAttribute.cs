@@ -33,7 +33,7 @@ namespace ServiceStack
             StatusDescription = statusDescription;
         }
 
-        public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+        public override void Execute(IRequest req, IResponse res, object requestDto)
         {
             if (StatusCode != null)
             {

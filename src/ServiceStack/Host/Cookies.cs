@@ -9,7 +9,6 @@ namespace ServiceStack.Host
     public class Cookies : ICookies
     {
         readonly IHttpResponse httpRes;
-        private static readonly DateTime Session = DateTime.MinValue;
         private const string RootPath = "/";
 
         public Cookies(IHttpResponse httpRes)
@@ -29,7 +28,7 @@ namespace ServiceStack.Host
             {
                 cookie.Secure = secureOnly.Value;
             }
-            AddCookie(cookie);
+            httpRes.SetCookie(cookie);
         }
 
         /// <summary>
@@ -42,7 +41,7 @@ namespace ServiceStack.Host
             {
                 cookie.Secure = secureOnly.Value;
             }
-            this.AddCookie(cookie);
+            httpRes.SetCookie(cookie);
         }
 
         /// <summary>
@@ -53,18 +52,24 @@ namespace ServiceStack.Host
             var cookie = new Cookie(cookieName, string.Empty, "/") {
                 Expires = DateTime.UtcNow.AddDays(-1)
             };
-            AddCookie(cookie);
+            httpRes.SetCookie(cookie);
         }
+    }
 
-        public HttpCookie ToHttpCookie(Cookie cookie)
+    public static class CookiesExtensions
+    {
+        private static readonly DateTime Session = DateTime.MinValue;
+
+        public static HttpCookie ToHttpCookie(this Cookie cookie)
         {
-            var httpCookie = new HttpCookie(cookie.Name, cookie.Value) {
-                Path = cookie.Path,
-                Expires = cookie.Expires,
-                HttpOnly = !HostContext.Config.AllowNonHttpOnlyCookies || cookie.HttpOnly,
-                Secure = cookie.Secure
-            };
-            if (!string.IsNullOrEmpty(cookie.Domain))
+            var httpCookie = new HttpCookie(cookie.Name, cookie.Value)
+                {
+                    Path = cookie.Path,
+                    Expires = cookie.Expires,
+                    HttpOnly = !HostContext.Config.AllowNonHttpOnlyCookies || cookie.HttpOnly,
+                    Secure = cookie.Secure
+                };
+            if (!String.IsNullOrEmpty(cookie.Domain))
             {
                 httpCookie.Domain = cookie.Domain;
             }
@@ -75,7 +80,7 @@ namespace ServiceStack.Host
             return httpCookie;
         }
 
-        public string GetHeaderValue(Cookie cookie)
+        public static string AsHeaderValue(this Cookie cookie)
         {
             var path = cookie.Expires == Session
                 ? "/"
@@ -90,7 +95,7 @@ namespace ServiceStack.Host
                 sb.AppendFormat(";expires={0}", cookie.Expires.ToString("R"));
             }
 
-            if (!string.IsNullOrEmpty(cookie.Domain))
+            if (!String.IsNullOrEmpty(cookie.Domain))
             {
                 sb.AppendFormat(";domain={0}", cookie.Domain);
             }
@@ -107,28 +112,8 @@ namespace ServiceStack.Host
             {
                 sb.Append(";HttpOnly");
             }
-            
-            return sb.ToString();
-        }
 
-        /// <summary>
-        /// Sets a persistent cookie which expires after the given time
-        /// </summary>
-        public void AddCookie(Cookie cookie)
-        {
-            var aspNet = this.httpRes.OriginalResponse as HttpResponse;
-            if (aspNet != null)
-            {
-                var httpCookie = ToHttpCookie(cookie);
-                aspNet.SetCookie(httpCookie);
-                return;
-            }
-            var httpListener = this.httpRes.OriginalResponse as HttpListenerResponse;
-            if (httpListener != null)
-            {
-                var cookieStr = GetHeaderValue(cookie);
-                httpListener.Headers.Add(HttpHeaders.SetCookie, cookieStr);
-            }
+            return sb.ToString();
         }
     }
 }

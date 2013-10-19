@@ -14,7 +14,7 @@ namespace ServiceStack.Host.Handlers
         public JsvReplyHandler()
             : base(MimeTypes.JsvText, RequestAttributes.Reply | RequestAttributes.Jsv, Feature.Jsv) { }
 
-        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {
             var isDebugRequest = httpReq.RawUrl.ToLower().Contains("debug");
             if (!isDebugRequest)
@@ -27,8 +27,8 @@ namespace ServiceStack.Host.Handlers
             {
                 var request = CreateRequest(httpReq, operationName);
 
-                var response = ExecuteService(request,
-                    HandlerAttributes | httpReq.GetAttributes(), httpReq, httpRes);
+                httpReq.RequestAttributes |= HandlerAttributes;
+                var response = ExecuteService(request, httpReq);
 
                 WriteDebugResponse(httpRes, response);
             }

@@ -362,7 +362,7 @@ namespace ServiceStack
             }
         }
 
-        public abstract void SerializeToStream(IRequestContext requestContext, object request, Stream stream);
+        public abstract void SerializeToStream(IRequest requestContext, object request, Stream stream);
 
         public abstract T DeserializeFromStream<T>(Stream stream);
 

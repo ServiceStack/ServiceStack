@@ -14,7 +14,7 @@ namespace ServiceStack.Metadata
 
         protected abstract WsdlTemplateBase GetWsdlTemplate();
 
-        public override void Execute(HttpContext context)
+        public override void Execute(HttpContextBase context)
         {
             HostContext.AppHost.AssertFeatures(Feature.Metadata);
 
@@ -39,7 +39,7 @@ namespace ServiceStack.Metadata
             }
         }
 
-        public void Execute(IHttpRequest httpReq, IHttpResponse httpRes)
+        public void Execute(IRequest httpReq, IResponse httpRes)
         {
             HostContext.AppHost.AssertFeatures(Feature.Metadata);
 

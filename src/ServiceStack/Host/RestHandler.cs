@@ -64,7 +64,7 @@ namespace ServiceStack.Host
             return true;
         }
 
-        public override Task ProcessRequestAsync(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             try
             {
@@ -72,10 +72,10 @@ namespace ServiceStack.Host
                 if (appHost.ApplyPreRequestFilters(httpReq, httpRes)) 
                     return EmptyTask;
                 
-                var restPath = GetRestPath(httpReq.HttpMethod, httpReq.PathInfo);
+                var restPath = GetRestPath(httpReq.Verb, httpReq.PathInfo);
                 if (restPath == null)
                 {
-                    return new NotSupportedException("No RestPath found for: " + httpReq.HttpMethod + " " + httpReq.PathInfo)
+                    return new NotSupportedException("No RestPath found for: " + httpReq.Verb + " " + httpReq.PathInfo)
                         .AsTaskException();
                 }
 
@@ -95,7 +95,7 @@ namespace ServiceStack.Host
                 if (appHost.ApplyRequestFilters(httpReq, httpRes, request)) 
                     return EmptyTask;
 
-                var rawResponse = GetResponse(httpReq, httpRes, request);
+                var rawResponse = GetResponse(httpReq, request);
                 return HandleResponse(rawResponse, response => 
                 {
                     if (appHost.ApplyResponseFilters(httpReq, httpRes, response)) 
@@ -121,15 +121,16 @@ namespace ServiceStack.Host
             }
         }
 
-        public override object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request)
+        public override object GetResponse(IRequest request, object requestDto)
         {
-            var requestContentType = ContentFormat.GetEndpointAttributes(httpReq.ResponseContentType);
+            var requestContentType = ContentFormat.GetEndpointAttributes(request.ResponseContentType);
 
-            return ExecuteService(request,
-                HandlerAttributes | requestContentType | httpReq.GetAttributes(), httpReq, httpRes);
+            request.RequestAttributes |= HandlerAttributes | requestContentType;
+
+            return ExecuteService(requestDto, request);
         }
 
-        private static object GetRequest(IHttpRequest httpReq, IRestPath restPath)
+        private static object GetRequest(IRequest httpReq, IRestPath restPath)
         {
             var requestType = restPath.RequestType;
             using (Profiler.Current.Step("Deserialize Request"))
@@ -164,7 +165,7 @@ namespace ServiceStack.Host
         /// Used in Unit tests
         /// </summary>
         /// <returns></returns>
-        public override object CreateRequest(IHttpRequest httpReq, string operationName)
+        public override object CreateRequest(IRequest httpReq, string operationName)
         {
             if (this.RestPath == null)
                 throw new ArgumentNullException("No RestPath found");

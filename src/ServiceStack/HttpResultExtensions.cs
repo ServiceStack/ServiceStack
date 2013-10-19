@@ -106,7 +106,7 @@ namespace ServiceStack
         /// <summary>
         /// Adds 206 PartialContent Status, Content-Range and Content-Length headers
         /// </summary>
-        public static void AddHttpRangeResponseHeaders(this IHttpResponse response, long rangeStart, long rangeEnd, long contentLength)
+        public static void AddHttpRangeResponseHeaders(this IResponse response, long rangeStart, long rangeEnd, long contentLength)
         {
             response.AddHeader(HttpHeaders.ContentRange, "bytes {0}-{1}/{2}".Fmt(rangeStart, rangeEnd, contentLength));
             response.StatusCode = (int)HttpStatusCode.PartialContent;

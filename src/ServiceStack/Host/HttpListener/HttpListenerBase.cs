@@ -229,10 +229,9 @@ namespace ServiceStack.Host.HttpListener
                 };
 
                 var operationName = context.Request.GetOperationName();
-                var httpReq = new ListenerRequest(operationName, context.Request);
-                var httpRes = new ListenerResponse(context.Response);
-                var requestCtx = new HttpRequestContext(httpReq, httpRes, errorResponse);
-                var contentType = requestCtx.ResponseContentType;
+                var httpReq = context.ToRequest(operationName);
+                var httpRes = httpReq.Response;
+                var contentType = httpReq.ResponseContentType;
 
                 var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
                 if (serializer == null)
@@ -254,7 +253,7 @@ namespace ServiceStack.Host.HttpListener
 
                 httpRes.ContentType = contentType;
 
-                serializer(requestCtx, errorResponse, httpRes);
+                serializer(httpReq, errorResponse, httpRes);
 
                 httpRes.Close();
             }

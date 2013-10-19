@@ -132,16 +132,13 @@ namespace ServiceStack.MiniProfiler.UI
 		/// <summary>
 		/// Returns either includes' css/javascript or results' html.
 		/// </summary>
-		public override void ProcessRequest(HttpContext context)
+		public override void ProcessRequest(HttpContextBase context)
 		{
-			string path = context.Request.AppRelativeCurrentExecutionFilePath;
-			ProcessRequestAsync(
-				new AspNetRequest(null, context.Request),
-				new AspNetResponse(context.Response),
-				null);
+		    var request = context.ToRequest();
+			ProcessRequestAsync(request, request.Response, null);
 		}
 
-		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+		public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
 		{
 			var path = httpReq.PathInfo;
 
@@ -170,7 +167,7 @@ namespace ServiceStack.MiniProfiler.UI
 		/// <summary>
 		/// Handles rendering static content files.
 		/// </summary>
-		private static string Includes(IHttpRequest httpReq, IHttpResponse httpRes, string path)
+		private static string Includes(IRequest httpReq, IResponse httpRes, string path)
 		{
 			var response = httpRes;
 
@@ -201,7 +198,7 @@ namespace ServiceStack.MiniProfiler.UI
 		/// <summary>
 		/// Handles rendering a previous MiniProfiler session, identified by its "?id=GUID" on the query.
 		/// </summary>
-		private static string Results(IHttpRequest httpReq, IHttpResponse httpRes)
+		private static string Results(IRequest httpReq, IResponse httpRes)
 		{
 			// when we're rendering as a button/popup in the corner, we'll pass ?popup=1
 			// if it's absent, we're rendering results as a full page for sharing
@@ -239,13 +236,13 @@ namespace ServiceStack.MiniProfiler.UI
 			return isPopup ? ResultsJson(httpRes, profiler) : ResultsFullPage(httpRes, profiler);
 		}
 
-		private static string ResultsJson(IHttpResponse httpRes, Profiler profiler)
+		private static string ResultsJson(IResponse httpRes, Profiler profiler)
 		{
 			httpRes.ContentType = "application/json";
 			return Profiler.ToJson(profiler);
 		}
 
-		private static string ResultsFullPage(IHttpResponse httpRes, Profiler profiler)
+		private static string ResultsFullPage(IResponse httpRes, Profiler profiler)
 		{
 			httpRes.ContentType = "text/html";
 			return new StringBuilder()
@@ -288,7 +285,7 @@ namespace ServiceStack.MiniProfiler.UI
 		/// <summary>
 		/// Helper method that sets a proper 404 response code.
 		/// </summary>
-		private static string NotFound(IHttpResponse httpRes, string contentType = "text/plain", string message = null)
+		private static string NotFound(IResponse httpRes, string contentType = "text/plain", string message = null)
 		{
 			httpRes.StatusCode = 404;
 			httpRes.ContentType = contentType;

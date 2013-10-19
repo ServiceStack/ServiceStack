@@ -6,6 +6,7 @@ using Moq;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
+using ServiceStack.Host;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.SqlServer;
 using ServiceStack.Redis;
@@ -89,7 +90,7 @@ namespace ServiceStack.Common.Tests.OAuth
 		}
 
 		protected Mock<IServiceBase> mockService;
-		protected MockRequestContext requestContext;
+        protected BasicRequest requestContext;
 		protected IServiceBase service;
 
 		protected AuthTokens facebookGatewayTokens = new AuthTokens {
@@ -131,8 +132,8 @@ namespace ServiceStack.Common.Tests.OAuth
 
 			mockService = new Mock<IServiceBase>();
             mockService.Expect(x => x.TryResolve<IAuthRepository>()).Returns(userAuthRepository);
-			requestContext = new MockRequestContext();
-			mockService.Expect(x => x.RequestContext).Returns(requestContext);
+			requestContext = new BasicRequest();
+			mockService.Expect(x => x.Request).Returns(requestContext);
 			service = mockService.Object;
 
 			RegisterDto = new Register {
@@ -148,32 +149,29 @@ namespace ServiceStack.Common.Tests.OAuth
 		public static RegisterService GetRegistrationService(
             IUserAuthRepository userAuthRepository,
 			AuthUserSession oAuthUserSession = null,
-			MockRequestContext requestContext = null)
+            BasicRequest request = null)
 		{
-			if (requestContext == null)
-				requestContext = new MockRequestContext();
+			if (request == null)
+                request = new BasicRequest();
 			if (oAuthUserSession == null)
-				oAuthUserSession = requestContext.ReloadSession();
+				oAuthUserSession = request.ReloadSession();
 
-			var httpReq = requestContext.Get<IHttpRequest>();
-			var httpRes = requestContext.Get<IHttpResponse>();
-			oAuthUserSession.Id = httpRes.CreateSessionId(httpReq);
-			httpReq.Items[ServiceExtensions.RequestItemsSessionKey] = oAuthUserSession;
+            oAuthUserSession.Id = request.Response.CreateSessionId(request);
+            request.Items[ServiceExtensions.RequestItemsSessionKey] = oAuthUserSession;
 
 			var mockAppHost = new BasicAppHost();
 
-		    requestContext.Container = mockAppHost.Container;
-            requestContext.Container.Register<IAuthRepository>(userAuthRepository);
+            mockAppHost.Container.Register<IAuthRepository>(userAuthRepository);
 
 		    var authService = new AuthenticateService {
-                RequestContext = requestContext,
+                Request = request,
             };
             authService.SetResolver(mockAppHost);
             mockAppHost.Register(authService);
 
 			var registrationService = new RegisterService {
 				AuthRepo = userAuthRepository,
-				RequestContext = requestContext,
+				Request = request,
 				RegistrationValidator =
 					new RegistrationValidator { UserAuthRepo = RegistrationServiceTests.GetStubRepo() },
 			};

@@ -50,17 +50,17 @@ namespace ServiceStack
         /// <summary>
         /// Add Request Filters, to be applied before the dto is deserialized
         /// </summary>
-        List<Action<IHttpRequest, IHttpResponse>> PreRequestFilters { get; }
+        List<Action<IRequest, IResponse>> PreRequestFilters { get; }
 
         /// <summary>
         /// Add Request Filters
         /// </summary>
-        List<Action<IHttpRequest, IHttpResponse, object>> GlobalRequestFilters { get; }
+        List<Action<IRequest, IResponse, object>> GlobalRequestFilters { get; }
 
         /// <summary>
         /// Add Response Filters
         /// </summary>
-        List<Action<IHttpRequest, IHttpResponse, object>> GlobalResponseFilters { get; }
+        List<Action<IRequest, IResponse, object>> GlobalResponseFilters { get; }
 
         /// <summary>
         /// Add alternative HTML View Engines
@@ -90,12 +90,12 @@ namespace ServiceStack
         /// <summary>
         /// Use a Custom Error Handler for handling specific error HttpStatusCodes
         /// </summary>
-        Dictionary<HttpStatusCode, IServiceStackHttpHandler> CustomErrorHttpHandlers { get; }
+        Dictionary<HttpStatusCode, IServiceStackHandler> CustomErrorHttpHandlers { get; }
 
         /// <summary>
         /// Provide a custom model minder for a specific Request DTO
         /// </summary>
-        Dictionary<Type, Func<IHttpRequest, object>> RequestBinders { get; }
+        Dictionary<Type, Func<IRequest, object>> RequestBinders { get; }
 
         /// <summary>
         /// The AppHost config
@@ -130,7 +130,7 @@ namespace ServiceStack
         /// <summary>
         /// Resolve the absolute url for this request
         /// </summary>
-        string ResolveAbsoluteUrl(string virtualPath, IHttpRequest httpReq);
+        string ResolveAbsoluteUrl(string virtualPath, IRequest httpReq);
 
         /// <summary>
         /// Resolve localized text, returns itself by default.

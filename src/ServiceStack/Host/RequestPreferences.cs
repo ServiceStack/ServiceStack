@@ -6,9 +6,9 @@ namespace ServiceStack.Host
 {
 	public class RequestPreferences : IRequestPreferences
 	{
-		private readonly HttpContext httpContext;
+        private readonly HttpContextBase httpContext;
 
-		public RequestPreferences(IHttpRequest httpRequest)
+	    public RequestPreferences(IRequest httpRequest)
 		{
 			this.acceptEncoding = httpRequest.Headers[HttpHeaders.AcceptEncoding];
 			if (this.acceptEncoding.IsNullOrEmpty())
@@ -19,12 +19,12 @@ namespace ServiceStack.Host
 			this.acceptEncoding = this.acceptEncoding.ToLower();
 		}
 
-		public RequestPreferences(HttpContext httpContext)
-		{
-			this.httpContext = httpContext;
-		}
+        public RequestPreferences(HttpContextBase httpContext)
+        {
+            this.httpContext = httpContext;
+        }
 
-		public static HttpWorkerRequest GetWorker(HttpContext context)
+        public static HttpWorkerRequest GetWorker(HttpContextBase context)
 		{
 			var provider = (IServiceProvider)context;
 			var worker = (HttpWorkerRequest)provider.GetService(typeof(HttpWorkerRequest));

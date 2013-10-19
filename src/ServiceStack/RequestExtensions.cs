@@ -1,26 +1,49 @@
 using System;
+using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Web;
 
 namespace ServiceStack
 {
-	public static class RequestContextExtensions
+	public static class RequestExtensions
 	{
+        public static AuthUserSession ReloadSession(this IRequest request)
+        {
+            return request.GetSession() as AuthUserSession;
+        }
+
+        public static string GetCompressionType(this IRequest request)
+        {
+            if (request.RequestPreferences.AcceptsDeflate)
+                return CompressionTypes.Deflate;
+
+            if (request.RequestPreferences.AcceptsGzip)
+                return CompressionTypes.GZip;
+
+            return null;
+        }
+
+        public static string GetHeader(this IRequest request, string headerName)
+        {
+            return request.Headers.Get(headerName);
+        }
+
 		/// <summary>
 		/// Returns the optimized result for the IRequestContext. 
 		/// Does not use or store results in any cache.
 		/// </summary>
-		/// <param name="requestContext"></param>
+		/// <param name="request"></param>
 		/// <param name="dto"></param>
 		/// <returns></returns>
-		public static object ToOptimizedResult<T>(this IRequestContext requestContext, T dto) 
+		public static object ToOptimizedResult<T>(this IRequest request, T dto) 
 		{
-			string serializedDto = HostContext.ContentTypes.SerializeToString(requestContext, dto);
-			if (requestContext.CompressionType == null)
+			string serializedDto = HostContext.ContentTypes.SerializeToString(request, dto);
+		    var compressionType = request.GetCompressionType();
+		    if (compressionType == null)
 				return (object)serializedDto;
 
-			byte[] compressedBytes = serializedDto.Compress(requestContext.CompressionType);
-            return new CompressedResult(compressedBytes, requestContext.CompressionType, requestContext.ResponseContentType);
+            byte[] compressedBytes = serializedDto.Compress(compressionType);
+            return new CompressedResult(compressedBytes, compressionType, request.ResponseContentType);
 		}
 
 		/// <summary>
@@ -28,7 +51,7 @@ namespace ServiceStack
 		/// optimized result based on the MimeType and CompressionType from the IRequestContext.
 		/// </summary>
 		public static object ToOptimizedResultUsingCache<T>(
-			this IRequestContext requestContext, ICacheClient cacheClient, string cacheKey,
+			this IRequest requestContext, ICacheClient cacheClient, string cacheKey,
 			Func<T> factoryFn)
 		{
 			return requestContext.ToOptimizedResultUsingCache(cacheClient, cacheKey, null, factoryFn);
@@ -40,7 +63,7 @@ namespace ServiceStack
 		/// <param name="expireCacheIn">How long to cache for, null is no expiration</param>
 		/// </summary>
 		public static object ToOptimizedResultUsingCache<T>(
-			this IRequestContext requestContext, ICacheClient cacheClient, string cacheKey,
+			this IRequest requestContext, ICacheClient cacheClient, string cacheKey,
 			TimeSpan? expireCacheIn, Func<T> factoryFn)
 		{
 			var cacheResult = cacheClient.ResolveFromCache(cacheKey, requestContext);
@@ -59,7 +82,7 @@ namespace ServiceStack
 		/// <param name="cacheClient"></param>
 		/// <param name="cacheKeys"></param>
 		public static void RemoveFromCache(
-			this IRequestContext requestContext, ICacheClient cacheClient, params string[] cacheKeys)
+			this IRequest requestContext, ICacheClient cacheClient, params string[] cacheKeys)
 		{
 			cacheClient.ClearCaches(cacheKeys);
 		}
@@ -67,16 +90,7 @@ namespace ServiceStack
 	    /// <summary>
 	    /// Store an entry in the IHttpRequest.Items Dictionary
 	    /// </summary>
-	    public static void SetItem(this IRequestContext requestContext, string key, object value)
-	    {
-	        if (requestContext == null) return;
-	        requestContext.Get<IHttpRequest>().SetItem(key, value);
-	    }
-
-	    /// <summary>
-	    /// Store an entry in the IHttpRequest.Items Dictionary
-	    /// </summary>
-	    public static void SetItem(this IHttpRequest httpReq, string key, object value)
+	    public static void SetItem(this IRequest httpReq, string key, object value)
 	    {
 	        if (httpReq == null) return;
 
@@ -86,15 +100,7 @@ namespace ServiceStack
 	    /// <summary>
 	    /// Get an entry from the IHttpRequest.Items Dictionary
 	    /// </summary>
-	    public static object GetItem(this IRequestContext requestContext, string key)
-	    {
-	        return requestContext == null ? null : requestContext.Get<IHttpRequest>().GetItem(key);
-	    }
-
-	    /// <summary>
-	    /// Get an entry from the IHttpRequest.Items Dictionary
-	    /// </summary>
-	    public static object GetItem(this IHttpRequest httpReq, string key)
+	    public static object GetItem(this IRequest httpReq, string key)
 	    {
 	        if (httpReq == null) return null;
 

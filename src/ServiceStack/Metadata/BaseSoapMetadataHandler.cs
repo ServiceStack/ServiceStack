@@ -1,10 +1,8 @@
 using System;
 using System.IO;
+using System.Web;
 using System.Web.UI;
 using System.Xml.Schema;
-using ServiceStack.Host;
-using ServiceStack.Host.AspNet;
-using ServiceStack.Host.Handlers;
 using ServiceStack.Web;
 
 namespace ServiceStack.Metadata
@@ -18,15 +16,13 @@ namespace ServiceStack.Metadata
 		
 		public string OperationName { get; set; }
     	
-    	public override void Execute(System.Web.HttpContext context)
+    	public override void Execute(HttpContextBase context)
     	{
-			ProcessRequestAsync(
-				new AspNetRequest(OperationName, context.Request),
-				new AspNetResponse(context.Response), 
-				OperationName);
+    	    var httpReq = context.ToRequest(OperationName);
+			ProcessRequestAsync(httpReq, httpReq.Response, OperationName);
     	}
 
-		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+		public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
     	{
             if (!AssertAccess(httpReq, httpRes, httpReq.QueryString["op"])) return;
 

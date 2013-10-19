@@ -48,7 +48,7 @@ namespace ServiceStack.Auth
             }
 
             var session = authService.GetSession();
-            var digestInfo = authService.RequestContext.Get<IHttpRequest>().GetDigestAuth();
+            var digestInfo = authService.Request.GetDigestAuth();
             IUserAuth userAuth;
             if (authRepo.TryAuthenticate(digestInfo, PrivateKey, NonceTimeOut, session.Sequence, out userAuth)) {
                 session.PopulateWith(userAuth);
@@ -139,7 +139,7 @@ namespace ServiceStack.Auth
             session.OnAuthenticated(authService, session, tokens, authInfo);
         }
 
-        public override void OnFailedAuthentication(IAuthSession session, IHttpRequest httpReq, IHttpResponse httpRes)
+        public override void OnFailedAuthentication(IAuthSession session, IRequest httpReq, IResponse httpRes)
         {
             var digestHelper = new DigestAuthFunctions();
             httpRes.StatusCode = (int) HttpStatusCode.Unauthorized;

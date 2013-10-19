@@ -13,7 +13,6 @@ using ServiceStack.Html;
 using ServiceStack.Messaging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Redis;
-using ServiceStack.Text;
 using ServiceStack.Web;
 using IHtmlString = System.Web.IHtmlString;
 
@@ -53,9 +52,9 @@ namespace ServiceStack.Razor
     //Should handle all razor rendering functionality
     public abstract class RenderingPage
     {
-        public IHttpRequest Request { get; set; }
+        public IRequest Request { get; set; }
 
-        public IHttpResponse Response { get; set; }
+        public IResponse Response { get; set; }
 
         public StreamWriter Output { get; set; }
 

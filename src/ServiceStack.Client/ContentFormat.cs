@@ -187,7 +187,7 @@ namespace ServiceStack
             }
         }
         
-        public static RequestAttributes GetEndpointAttribute(string httpMethod)
+        public static RequestAttributes GetRequestAttribute(string httpMethod)
         {
             switch (httpMethod.ToUpper())
             {

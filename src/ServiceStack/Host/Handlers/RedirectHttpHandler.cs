@@ -17,7 +17,7 @@ namespace ServiceStack.Host.Handlers
 		/// <param name="request"></param>
 		/// <param name="response"></param>
 		/// <param name="operationName"></param>
-		public override void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
+		public override void ProcessRequest(IRequest request, IResponse response, string operationName)
 		{
 			if (string.IsNullOrEmpty(RelativeUrl) && string.IsNullOrEmpty(AbsoluteUrl))
 				throw new ArgumentNullException("RelativeUrl or AbsoluteUrl");
@@ -50,7 +50,7 @@ namespace ServiceStack.Host.Handlers
         /// ASP.NET requests
         /// </summary>
         /// <param name="context"></param>
-		public override void ProcessRequest(HttpContext context)
+		public override void ProcessRequest(HttpContextBase context)
 		{
         	var request = context.Request;
 			var response = context.Response;

@@ -179,7 +179,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
                 {
                     StatusCode = HttpStatusCode.Created,
                     Headers = {
-					    { HttpHeaders.Location, this.RequestContext.AbsoluteUri.WithTrailingSlash() + movie.Id }
+					    { HttpHeaders.Location, this.Request.AbsoluteUri.WithTrailingSlash() + movie.Id }
 				    }
                 };
             }
@@ -289,7 +289,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
                         : db.Select<Movie>("Genres LIKE {0}", "%" + request.Genre + "%")
                 };
 
-                return RequestContext.ToOptimizedResult(response);
+                return Request.ToOptimizedResult(response);
             }
 		}
 	}

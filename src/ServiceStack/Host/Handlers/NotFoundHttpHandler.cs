@@ -20,7 +20,7 @@ namespace ServiceStack.Host.Handlers
 		public string DefaultRootFileName { get; set; }
 		public string DefaultHandler { get; set; }
 
-		public override void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
+		public override void ProcessRequest(IRequest request, IResponse response, string operationName)
 		{
             Log.ErrorFormat("{0} Request not found: {1}", request.UserHostAddress, request.RawUrl);
 
@@ -29,8 +29,7 @@ namespace ServiceStack.Host.Handlers
             if (HostContext.DebugMode)
             {
                 text.AppendLine("Handler for Request not found: \n\n")
-                    .AppendLine("Request.HttpMethod: " + request.HttpMethod)
-                    .AppendLine("Request.HttpMethod: " + request.HttpMethod)
+                    .AppendLine("Request.HttpMethod: " + request.Verb)
                     .AppendLine("Request.PathInfo: " + request.PathInfo)
                     .AppendLine("Request.QueryString: " + request.QueryString)
                     .AppendLine("Request.RawUrl: " + request.RawUrl);
@@ -45,15 +44,15 @@ namespace ServiceStack.Host.Handlers
             response.EndHttpHandlerRequest(skipClose: true, afterBody: r => r.Write(text.ToString()));
 		}
 
-		public override void ProcessRequest(HttpContext context)
+		public override void ProcessRequest(HttpContextBase context)
 		{
 			var request = context.Request;
 			var response = context.Response;
 
-			var httpReq = new AspNetRequest("NotFoundHttpHandler", request);
+            var httpReq = context.ToRequest(GetType().Name);
 			if (!request.IsLocal)
 			{
-				ProcessRequestAsync(httpReq, new AspNetResponse(response), null);
+                ProcessRequestAsync(httpReq, httpReq.Response, null);
 				return;
 			}
 

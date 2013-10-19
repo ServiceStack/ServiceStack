@@ -50,10 +50,10 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 
 		public object Post(FileUpload request)
 		{
-			if (this.RequestContext.Files.Length == 0)
+			if (this.Request.Files.Length == 0)
                 throw new ValidationError("UploadError", "No such file exists");
 
-			var file = this.RequestContext.Files[0];
+			var file = this.Request.Files[0];
 			return new FileUploadResponse
 			{
 				FileName = file.FileName,

@@ -14,7 +14,7 @@ namespace ServiceStack.Razor
 			get { return typeof(DynamicRequestObject); }
 		}
 
-        public void Init(IViewEngine viewEngine, IHttpRequest httpReq, IHttpResponse httpRes)
+        public void Init(IViewEngine viewEngine, IRequest httpReq, IResponse httpRes)
         {
             base.Request = httpReq;
             base.Response = httpRes;
@@ -47,7 +47,7 @@ namespace ServiceStack.Razor
             get { return Html; }
         }
 
-        public void Init(IViewEngine viewEngine, IHttpRequest httpReq, IHttpResponse httpRes)
+        public void Init(IViewEngine viewEngine, IRequest httpReq, IResponse httpRes)
         {
             base.Request = httpReq;
             base.Response = httpRes;

@@ -174,17 +174,17 @@ namespace ServiceStack.Host
             return Operations.Select(x => x.RequestType.Name).OrderBy(operation => operation).ToList();
         }
 
-        public List<string> GetOperationNamesForMetadata(IHttpRequest httpReq)
+        public List<string> GetOperationNamesForMetadata(IRequest httpReq)
         {
             return GetAllOperationNames();
         }
 
-        public List<string> GetOperationNamesForMetadata(IHttpRequest httpReq, Format format)
+        public List<string> GetOperationNamesForMetadata(IRequest httpReq, Format format)
         {
             return GetAllOperationNames();
         }
 
-        public bool IsVisible(IHttpRequest httpReq, Operation operation)
+        public bool IsVisible(IRequest httpReq, Operation operation)
         {
             if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
                 return true;
@@ -197,7 +197,7 @@ namespace ServiceStack.Host
             return showToNetwork;
         }
 
-        public bool IsVisible(IHttpRequest httpReq, Format format, string operationName)
+        public bool IsVisible(IRequest httpReq, Format format, string operationName)
         {
             if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
                 return true;
@@ -217,7 +217,7 @@ namespace ServiceStack.Host
             return allowsFormat;
         }
 
-        public bool CanAccess(IHttpRequest httpReq, Format format, string operationName)
+        public bool CanAccess(IRequest httpReq, Format format, string operationName)
         {
             var reqAttrs = httpReq.GetAttributes();
             return CanAccess(reqAttrs, format, operationName);

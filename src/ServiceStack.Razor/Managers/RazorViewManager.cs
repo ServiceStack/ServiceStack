@@ -122,7 +122,7 @@ namespace ServiceStack.Razor.Managers
             return null;
         }
 
-        public virtual RazorPage GetPage(IHttpRequest request, object dto)
+        public virtual RazorPage GetPage(IRequest request, object dto)
         {
             var normalizePath = NormalizePath(request, dto);
             return GetPage(normalizePath);
@@ -141,7 +141,7 @@ namespace ServiceStack.Razor.Managers
             return combinedPath;
         }
 
-        public virtual RazorPage GetPageByName(string pageName, IHttpRequest request, object dto)
+        public virtual RazorPage GetPageByName(string pageName, IRequest request, object dto)
         {
             RazorPage page = null;
             var htmlPageName = Path.ChangeExtension(pageName, Config.RazorFileExtension);
@@ -174,7 +174,7 @@ namespace ServiceStack.Razor.Managers
         }
 
         static char[] InvalidFileChars = new[]{'<','>','`'}; //Anonymous or Generic type names
-        private string NormalizePath(IHttpRequest request, object dto)
+        private string NormalizePath(IRequest request, object dto)
         {
             if (dto != null && !(dto is DynamicRequestObject)) // this is for a view inside /views
             {

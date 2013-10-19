@@ -28,7 +28,7 @@ namespace ServiceStack.Host.Handlers
             SendOneWay(requestMsg, null, null);
         }
 
-        protected void SendOneWay(Message requestMsg, IHttpRequest httpRequest, IHttpResponse httpResponse)
+        protected void SendOneWay(Message requestMsg, IRequest httpRequest, IResponse httpResponse)
         {
             var endpointAttributes = RequestAttributes.OneWay | this.HandlerAttributes;
 
@@ -44,7 +44,7 @@ namespace ServiceStack.Host.Handlers
             return ExecuteMessage(requestMsg, endpointAttributes, null, null);
         }
         
-        protected Message Send(Message requestMsg, IHttpRequest httpRequest, IHttpResponse httpResponse)
+        protected Message Send(Message requestMsg, IRequest httpRequest, IResponse httpResponse)
         {
             var endpointAttributes = RequestAttributes.Reply | this.HandlerAttributes;
 
@@ -61,16 +61,17 @@ namespace ServiceStack.Host.Handlers
                 : Message.CreateMessage(requestMsg.Version, requestType.Name + "Response", response);
         }
 
-        protected Message ExecuteMessage(Message message, RequestAttributes requestAttributes, IHttpRequest httpRequest, IHttpResponse httpResponse)
+        protected Message ExecuteMessage(Message message, RequestAttributes requestAttributes, IRequest httpRequest, IResponse httpResponse)
         {
             var soapFeature = requestAttributes.ToSoapFeature();
             HostContext.AppHost.AssertFeatures(soapFeature);
 
             var httpReq = HttpContext.Current != null && httpRequest == null
-                    ? new AspNetRequest(HttpContext.Current.Request)
+                    ? HttpContext.Current.ToRequest()
                     : httpRequest;
+
             var httpRes = HttpContext.Current != null && httpResponse == null
-                ? new AspNetResponse(HttpContext.Current.Response)
+                ? httpReq.Response
                 : httpResponse;
 
             if (httpReq == null)
@@ -111,7 +112,8 @@ namespace ServiceStack.Host.Handlers
                 if (hasRequestFilters && HostContext.ApplyRequestFilters(httpReq, httpRes, request))
                     return EmptyResponse(requestMsg, requestType);
 
-                var response = ExecuteService(request, requestAttributes, httpReq, httpRes);
+                httpReq.RequestAttributes |= requestAttributes;
+                var response = ExecuteService(request, httpReq);
 
                 var taskResponse = response as Task;
                 if (taskResponse != null)
@@ -149,7 +151,7 @@ namespace ServiceStack.Host.Handlers
             }
         }
 
-        private Message PrepareEmptyResponse(Message message, IHttpRequest httpRequest)
+        private Message PrepareEmptyResponse(Message message, IRequest httpRequest)
         {
             var requestMessage = message ?? GetRequestMessageFromStream(httpRequest.InputStream);
             string requestXml = GetRequestXml(requestMessage);
@@ -260,12 +262,12 @@ namespace ServiceStack.Host.Handlers
                     : (this.HandlerAttributes == RequestAttributes.Soap11 ? MimeTypes.Soap11 : MimeTypes.Soap12);
         }
 
-        public override object CreateRequest(IHttpRequest request, string operationName)
+        public override object CreateRequest(IRequest request, string operationName)
         {
             throw new NotImplementedException();
         }
 
-        public override object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request)
+        public override object GetResponse(IRequest httpReq, object request)
         {
             throw new NotImplementedException();
         }

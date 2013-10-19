@@ -350,7 +350,6 @@
     <Compile Include="ApiResponse.cs" />
     <Compile Include="IService.cs" />
     <Compile Include="SwaggerType.cs" />
-    <Compile Include="Web\IRequiresHttpRequest.cs" />
     <Compile Include="Web\IRequiresRequestStream.cs" />
     <Compile Include="RequestAttributes.cs">
       <SubType>Code</SubType>
@@ -403,15 +402,16 @@
     <Compile Include="Web\IRequestPreferences.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Web\IRequestContext.cs">
+    <Compile Include="Web\IRequest.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Web\IRequestLogger.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Web\IRequiresRequestContext.cs">
+    <Compile Include="Web\IRequiresRequest.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Web\IResponse.cs" />
     <Compile Include="Web\IRestPath.cs">
       <SubType>Code</SubType>
     </Compile>

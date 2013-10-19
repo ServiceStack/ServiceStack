@@ -76,9 +76,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 
         public int Priority { get; set; }
 
-        public void RequestFilter(IHttpRequest req, IHttpResponse res, object requestDto)
-        {
-        }
+        public void RequestFilter(IRequest req, IResponse res, object requestDto) {}
 
         public IHasRequestFilter Copy()
         {

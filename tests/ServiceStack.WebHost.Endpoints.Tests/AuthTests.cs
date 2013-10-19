@@ -52,7 +52,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public object Post(SecuredFileUpload request)
         {
-            var file = this.RequestContext.Files[0];
+            var file = this.Request.Files[0];
             return new FileUploadResponse
             {
                 FileName = file.FileName,
@@ -219,7 +219,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class CustomAuthenticateAttribute : AuthenticateAttribute
     {
-        public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+        public override void Execute(IRequest req, IResponse res, object requestDto)
         {
             //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)
             SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()

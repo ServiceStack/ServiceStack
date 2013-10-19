@@ -1,5 +1,4 @@
 using System;
-using ServiceStack.Text;
 using ServiceStack.Serialization;
 using ServiceStack.Web;
 
@@ -24,7 +23,7 @@ namespace ServiceStack.Metadata
 			return soapEnvelope;
 		}
 
-        protected override void RenderOperation(System.Web.UI.HtmlTextWriter writer, IHttpRequest httpReq, string operationName, string requestMessage, string responseMessage, string metadataHtml)
+        protected override void RenderOperation(System.Web.UI.HtmlTextWriter writer, IRequest httpReq, string operationName, string requestMessage, string responseMessage, string metadataHtml)
         {
             var operationControl = new Soap11OperationControl
             {

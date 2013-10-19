@@ -195,7 +195,7 @@ namespace ServiceStack
 
         public IContentTypeWriter ResponseFilter { get; set; }
 
-        public IRequestContext RequestContext { get; set; }
+        public IRequest RequestContext { get; set; }
 
         public string View { get; set; }
 
@@ -257,7 +257,7 @@ namespace ServiceStack
             get { return AllowsPartialResponse && RequestContext.GetHeader(HttpHeaders.Range) != null && GetContentLength() != null; }
         }
 
-        public void WritePartialTo(IHttpResponse response)
+        public void WritePartialTo(IResponse response)
         {
             var contentLength = GetContentLength().GetValueOrDefault(int.MaxValue); //Safe as guarded by IsPartialRequest
             var rangeHeader = RequestContext.GetHeader(HttpHeaders.Range);

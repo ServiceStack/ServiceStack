@@ -132,7 +132,7 @@ namespace ServiceStack.Auth
                 };
             }
 
-            var isHtml = RequestContext.ResponseContentType.MatchesContentType(MimeTypes.Html);
+            var isHtml = Request.ResponseContentType.MatchesContentType(MimeTypes.Html);
             if (isHtml)
             {
                 if (string.IsNullOrEmpty(request.Continue))

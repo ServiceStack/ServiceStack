@@ -577,7 +577,7 @@ namespace ServiceStack.Common.Tests
             object response;
             try
             {
-                response = httpHandler.GetResponse(httpReq, null, request);
+                response = httpHandler.GetResponse(httpReq, request);
             }
             catch (Exception ex)
             {

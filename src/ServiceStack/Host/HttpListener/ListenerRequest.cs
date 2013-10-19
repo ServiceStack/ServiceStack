@@ -9,23 +9,33 @@ using System.Net;
 using System.Text;
 using System.Web;
 using Funq;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.HttpListener
 {
     public partial class ListenerRequest : IHttpRequest
     {
-        private static readonly string physicalFilePath;
-        private readonly HttpListenerRequest request;
         public Container Container { get; set; }
+        private readonly HttpListenerRequest request;
+        private readonly IHttpResponse response;
 
-        static ListenerRequest()
+        public ListenerRequest(HttpListenerContext httpContext, string operationName = null)
+            : this(httpContext, operationName, RequestAttributes.None)
         {
-            physicalFilePath = "~".MapAbsolutePath();
+            this.RequestAttributes = this.GetAttributes();
         }
 
-        public HttpListenerRequest Request
+        public ListenerRequest(HttpListenerContext httpContext, string operationName, RequestAttributes requestAttributes)
+        {
+            this.OperationName = operationName;
+            this.RequestAttributes = requestAttributes;
+            this.request = httpContext.Request;
+            this.response = new ListenerResponse(httpContext.Response);
+
+            this.RequestPreferences = new RequestPreferences(this);
+        }
+
+        public HttpListenerRequest HttpRequest
         {
             get { return request; }
         }
@@ -35,24 +45,36 @@ namespace ServiceStack.Host.HttpListener
             get { return request; }
         }
 
-        public ListenerRequest(HttpListenerRequest request)
-            : this(null, request) { }
-
-        public ListenerRequest(
-            string operationName, HttpListenerRequest request)
+        public IResponse Response
         {
-            this.OperationName = operationName;
-            this.request = request;
+            get { return response; }
         }
+
+        public IHttpResponse HttpResponse
+        {
+            get { return response; }
+        }
+
+        public RequestAttributes RequestAttributes { get; set; }
+
+        public IRequestPreferences RequestPreferences { get; private set; }
 
         public T TryResolve<T>()
         {
+            if (typeof(T) == typeof(IHttpRequest))
+                throw new Exception("You don't need to use IHttpRequest.TryResolve<IHttpRequest> to resolve itself");
+
+            if (typeof(T) == typeof(IHttpResponse))
+                throw new Exception("Resolve IHttpResponse with 'Response' property instead of IHttpRequest.TryResolve<IHttpResponse>");
+
             return Container == null
                 ? HostContext.TryResolve<T>()
                 : Container.TryResolve<T>();
         }
 
         public string OperationName { get; set; }
+
+        public object Dto { get; set; }
 
         public string GetRawBody()
         {
@@ -219,6 +241,11 @@ namespace ServiceStack.Host.HttpListener
             }
         }
 
+        public string Verb
+        {
+            get { return HttpMethod; }
+        }
+
         public string Param(string name)
         {
             return Headers[name]
@@ -275,11 +302,6 @@ namespace ServiceStack.Host.HttpListener
         public long ContentLength
         {
             get { return request.ContentLength64; }
-        }
-
-        public string ApplicationFilePath
-        {
-            get { return physicalFilePath; }
         }
 
         private IHttpFile[] httpFiles;

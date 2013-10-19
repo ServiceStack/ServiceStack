@@ -77,7 +77,7 @@ namespace ServiceStack.Admin
             if (RequestLogger == null)
                 throw new Exception("No IRequestLogger is registered");
 
-            RequiredRoleAttribute.AssertRequiredRoles(RequestContext, RequestLogger.RequiredRoles);
+            RequiredRoleAttribute.AssertRequiredRoles(Request, RequestLogger.RequiredRoles);
 
             if (request.EnableSessionTracking.HasValue)
                 RequestLogger.EnableSessionTracking = request.EnableSessionTracking.Value;

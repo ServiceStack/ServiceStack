@@ -22,7 +22,7 @@ namespace ServiceStack
         public SetStatusAttribute(HttpStatusCode statusCode, string description)
         : this((int)statusCode, description) {}
 
-        public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+        public override void Execute(IRequest req, IResponse res, object requestDto)
         {
             if (Status.HasValue)
                 res.StatusCode = Status.Value;

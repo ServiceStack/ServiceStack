@@ -8,7 +8,6 @@ using System.IO;
 using System.Net;
 using System.Web;
 using Funq;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.AspNet
@@ -16,16 +15,27 @@ namespace ServiceStack.Host.AspNet
     public class AspNetRequest
         : IHttpRequest
     {
-        private static readonly string physicalFilePath;
         public Container Container { get; set; }
-        private readonly HttpRequest request;
-
-        static AspNetRequest()
+        private readonly HttpRequestBase request;
+        private readonly IHttpResponse response;
+        
+        public AspNetRequest(HttpContextBase httpContext, string operationName = null)
+            : this(httpContext, operationName, RequestAttributes.None)
         {
-            physicalFilePath = "~".MapHostAbsolutePath();
+            this.RequestAttributes = this.GetAttributes();
         }
 
-        public HttpRequest Request
+        public AspNetRequest(HttpContextBase httpContext, string operationName, RequestAttributes requestAttributes)
+        {
+            this.OperationName = operationName;
+            this.RequestAttributes = requestAttributes;
+            this.request = httpContext.Request;
+            this.response = new AspNetResponse(httpContext.Response);
+
+            this.RequestPreferences = new RequestPreferences(httpContext);
+        }
+
+        public HttpRequestBase HttpRequest
         {
             get { return request; }
         }
@@ -35,26 +45,36 @@ namespace ServiceStack.Host.AspNet
             get { return request; }
         }
 
-        public AspNetRequest(HttpRequest request)
-            : this(null, request)
+        public IResponse Response
         {
+            get { return response; }
         }
 
-        public AspNetRequest(string operationName, HttpRequest request)
+        public IHttpResponse HttpResponse
         {
-            this.OperationName = operationName;
-            this.request = request;
-            this.Container = Container;
+            get { return response; }
         }
+
+        public RequestAttributes RequestAttributes { get; set; }
+
+        public IRequestPreferences RequestPreferences { get; private set; }
 
         public T TryResolve<T>()
         {
+            if (typeof(T) == typeof(IHttpRequest))
+                throw new Exception("You don't need to use IHttpRequest.TryResolve<IHttpRequest> to resolve itself");
+
+            if (typeof(T) == typeof(IHttpResponse))
+                throw new Exception("Resolve IHttpResponse with 'Response' property instead of IHttpRequest.TryResolve<IHttpResponse>");
+
             return Container != null
                 ? Container.TryResolve<T>()
                 : HostContext.TryResolve<T>();
         }
 
         public string OperationName { get; set; }
+
+        public object Dto { get; set; }
 
         public string ContentType
         {
@@ -70,6 +90,11 @@ namespace ServiceStack.Host.AspNet
                     ?? (httpMethod = Param(HttpHeaders.XHttpMethodOverride)
                     ?? request.HttpMethod);
             }
+        }
+
+        public string Verb
+        {
+            get { return HttpMethod; }
         }
 
         public string Param(string name)
@@ -288,11 +313,6 @@ namespace ServiceStack.Host.AspNet
                 }
                 return httpFiles;
             }
-        }
-
-        public string ApplicationFilePath
-        {
-            get { return physicalFilePath; }
         }
 
         public Uri UrlReferrer

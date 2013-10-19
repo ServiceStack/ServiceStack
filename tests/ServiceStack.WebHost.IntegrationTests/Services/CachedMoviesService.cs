@@ -17,9 +17,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		{
 			var service = base.ResolveService<MoviesService>();
 
-			return base.RequestContext.ToOptimizedResultUsingCache(
-				this.Cache, UrnId.Create<Movies>(request.Genre ?? "all"), () =>
-				{
+			return base.Request.ToOptimizedResultUsingCache(
+				this.Cache, UrnId.Create<Movies>(request.Genre ?? "all"), () => {
 					return (MoviesResponse)service.Get(new Movies { Genre = request.Genre });
 				});
 		}

@@ -111,9 +111,9 @@
     <Compile Include="Host\ContentTypes.cs" />
     <Compile Include="Host\Handlers\CustomActionHandler.cs" />
     <Compile Include="Host\Handlers\HttpAsyncTaskHandler.cs" />
+    <Compile Include="MqExtensions.cs" />
     <Compile Include="TaskExtensions.cs" />
     <Compile Include="Host\HttpResponseStreamWrapper.cs" />
-    <Compile Include="Host\SerializationContext.cs" />
     <Compile Include="HttpError.cs" />
     <Compile Include="HttpResult.cs" />
     <Compile Include="HttpResultExtensions.cs" />
@@ -365,9 +365,8 @@
     <Compile Include="DtoUtils.cs" />
     <Compile Include="IRequiresSoapMessage.cs" />
     <Compile Include="Metadata\MetadataPagesConfig.cs" />
-    <Compile Include="Host\BasicRequest.cs" />
     <Compile Include="Host\BasicResponse.cs" />
-    <Compile Include="Host\BasicRequestContext.cs" />
+    <Compile Include="Host\BasicRequest.cs" />
     <Compile Include="Host\ServiceExec.cs" />
     <Compile Include="Host\RouteNamingConvention.cs" />
     <Compile Include="Host\ServiceRunner.cs" />
@@ -383,7 +382,6 @@
     <Compile Include="Testing\BasicResolver.cs" />
     <Compile Include="Testing\MockHttpRequest.cs" />
     <Compile Include="Testing\MockHttpResponse.cs" />
-    <Compile Include="Testing\MockRequestContext.cs" />
     <Compile Include="ValidationResultExtensions.cs" />
     <Compile Include="Validation\ExecOnlyOnce.cs" />
     <Compile Include="Validation\MultiRuleSetValidatorSelector.cs" />
@@ -428,11 +426,10 @@
     <Compile Include="FileExtensions.cs" />
     <Compile Include="Host\HttpFile.cs" />
     <Compile Include="Host\HttpRequestAuthentication.cs" />
-    <Compile Include="Host\HttpRequestContext.cs" />
     <Compile Include="HttpRequestExtensions.cs" />
     <Compile Include="HttpResponseExtensions.cs" />
     <Compile Include="Host\RequestPreferences.cs" />
-    <Compile Include="RequestContextExtensions.cs" />
+    <Compile Include="RequestExtensions.cs" />
     <Compile Include="Host\RestPath.cs" />
     <Compile Include="Host\ServiceController.cs" />
     <Compile Include="Host\ServiceMetadata.cs" />
@@ -465,7 +462,7 @@
     <Compile Include="Metadata\JsvMetadataHandler.cs" />
     <Compile Include="Host\Handlers\ForbiddenHttpHandler.cs" />
     <Compile Include="Host\Handlers\RedirectHttpHandler.cs" />
-    <Compile Include="Host\Handlers\IServiceStackHttpHandler.cs" />
+    <Compile Include="Host\Handlers\IServiceStackHandler.cs" />
     <Compile Include="Host\Handlers\NotFoundHttpHandler.cs" />
     <Compile Include="Host\Handlers\JsvReplyHandler.cs" />
     <Compile Include="HttpResponseExtensionsInternal.cs" />

@@ -222,7 +222,7 @@ namespace ServiceStack
 
         public List<RouteNamingConventionDelegate> RouteNamingConventions { get; set; }
 
-        public IServiceStackHttpHandler GlobalHtmlErrorHttpHandler { get; set; }
+        public IServiceStackHandler GlobalHtmlErrorHttpHandler { get; set; }
         public Dictionary<Type, int> MapExceptionToStatusCode { get; set; }
 
         public bool OnlySendSessionCookiesSecurely { get; set; }

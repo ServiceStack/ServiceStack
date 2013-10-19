@@ -171,7 +171,7 @@ namespace ServiceStack.Authentication.OAuth2
 
         protected IAuthTokens Init(IServiceBase authService, ref IAuthSession session, Authenticate request)
         {
-            var requestUri = authService.RequestContext.AbsoluteUri;
+            var requestUri = authService.Request.AbsoluteUri;
             if (this.CallbackUrl.IsNullOrEmpty())
             {
                 this.CallbackUrl = requestUri;
@@ -179,7 +179,7 @@ namespace ServiceStack.Authentication.OAuth2
 
             if (session.ReferrerUrl.IsNullOrEmpty())
             {
-                session.ReferrerUrl = (request != null ? request.Continue : null) ?? authService.RequestContext.GetHeader("Referer");
+                session.ReferrerUrl = (request != null ? request.Continue : null) ?? authService.Request.GetHeader("Referer");
             }
 
             if (session.ReferrerUrl.IsNullOrEmpty() || session.ReferrerUrl.IndexOf("/auth", StringComparison.OrdinalIgnoreCase) >= 0)

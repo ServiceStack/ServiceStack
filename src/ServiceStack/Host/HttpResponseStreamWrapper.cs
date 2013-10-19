@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Text;
 using ServiceStack.Web;
 
@@ -74,5 +75,9 @@ namespace ServiceStack.Host
         public bool IsClosed { get; private set; }
 
         public void SetContentLength(long contentLength) {}
+        
+        public void SetCookie(Cookie cookie)
+        {
+        }
     }
 }

@@ -3,13 +3,13 @@
 
 using System;
 using System.IO;
+using System.Net;
 using ServiceStack.Logging;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.HttpListener
 {
-    public class ListenerResponse
-        : IHttpResponse
+    public class ListenerResponse : IHttpResponse
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ListenerResponse));
 
@@ -118,6 +118,12 @@ namespace ServiceStack.Host.HttpListener
             //but HttpListener will complain if you do - you have to set ContentLength64 on the response.
             //workaround: HttpListener throws "The parameter is incorrect" exceptions when we try to set the Content-Length header
             response.ContentLength64 = contentLength;
+        }
+
+        public void SetCookie(Cookie cookie)
+        {
+            var cookieStr = cookie.AsHeaderValue();
+            response.Headers.Add(HttpHeaders.SetCookie, cookieStr);            
         }
     }
 

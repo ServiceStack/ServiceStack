@@ -24,7 +24,7 @@ namespace ServiceStack.Host.Handlers
     {
         public Soap11OneWayHandler() : base(RequestAttributes.Soap11) { }
 
-        public override void ProcessRequest(HttpContext context)
+        public override void ProcessRequest(HttpContextBase context)
         {
             if (context.Request.HttpMethod == HttpMethods.Get)
             {
@@ -37,11 +37,11 @@ namespace ServiceStack.Host.Handlers
         }
     }
 
-    public class Soap11MessageReplyHttpHandler : Soap11Handler, IHttpHandler
+    public class Soap11MessageReplyHttpHandler : Soap11Handler
     {
         public Soap11MessageReplyHttpHandler() : base(RequestAttributes.Soap11) { }
 
-        public new void ProcessRequest(HttpContext context)
+        public override void ProcessRequest(HttpContextBase context)
         {
             if (context.Request.HttpMethod == HttpMethods.Get)
             {
@@ -59,9 +59,9 @@ namespace ServiceStack.Host.Handlers
             }
         }
 
-        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {
-            if (httpReq.HttpMethod == HttpMethods.Get)
+            if (httpReq.Verb == HttpMethods.Get)
             {
                 var wsdl = new Soap11WsdlMetadataHandler();
                 wsdl.Execute(httpReq, httpRes);

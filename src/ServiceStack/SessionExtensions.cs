@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
+using ServiceStack.Configuration;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -19,7 +20,7 @@ namespace ServiceStack
     /// </summary>
     public static class SessionExtensions 
     {
-        public static string GetSessionId(this IHttpRequest httpReq)
+        public static string GetSessionId(this IRequest httpReq)
         {
             var sessionOptions = GetSessionOptions(httpReq);
 
@@ -28,12 +29,12 @@ namespace ServiceStack
                 : httpReq.GetItemOrCookie(SessionFeature.SessionId);
         }
 
-        public static string GetPermanentSessionId(this IHttpRequest httpReq)
+        public static string GetPermanentSessionId(this IRequest httpReq)
         {
             return httpReq.GetItemOrCookie(SessionFeature.PermanentSessionId);
         }
 
-        public static string GetTemporarySessionId(this IHttpRequest httpReq)
+        public static string GetTemporarySessionId(this IRequest httpReq)
         {
             return httpReq.GetItemOrCookie(SessionFeature.SessionId);
         }
@@ -42,7 +43,7 @@ namespace ServiceStack
         /// Create the active Session or Permanent Session Id cookie.
         /// </summary>
         /// <returns></returns>
-        public static string CreateSessionId(this IHttpResponse res, IHttpRequest req)
+        public static string CreateSessionId(this IResponse res, IRequest req)
         {
             var sessionOptions = GetSessionOptions(req);
             return sessionOptions.Contains(SessionOptions.Permanent)
@@ -54,7 +55,7 @@ namespace ServiceStack
         /// Create both Permanent and Session Id cookies and return the active sessionId
         /// </summary>
         /// <returns></returns>
-        public static string CreateSessionIds(this IHttpResponse res, IHttpRequest req)
+        public static string CreateSessionIds(this IResponse res, IRequest req)
         {
             var sessionOptions = GetSessionOptions(req);
             var permId = res.CreatePermanentSessionId(req);
@@ -72,7 +73,7 @@ namespace ServiceStack
             return Convert.ToBase64String(data);
         }
 
-        public static string CreatePermanentSessionId(this IHttpResponse res, IHttpRequest req)
+        public static string CreatePermanentSessionId(this IResponse res, IRequest req)
         {
             var sessionId = CreateRandomSessionId();
             res.Cookies.AddPermanentCookie(SessionFeature.PermanentSessionId, sessionId);
@@ -80,7 +81,7 @@ namespace ServiceStack
             return sessionId;
         }
 
-        public static string CreateTemporarySessionId(this IHttpResponse res, IHttpRequest req)
+        public static string CreateTemporarySessionId(this IResponse res, IRequest req)
         {
             var sessionId = CreateRandomSessionId();
             res.Cookies.AddSessionCookie(SessionFeature.SessionId, sessionId,
@@ -89,7 +90,7 @@ namespace ServiceStack
             return sessionId;
         }
 
-        public static HashSet<string> GetSessionOptions(this IHttpRequest httpReq)
+        public static HashSet<string> GetSessionOptions(this IRequest httpReq)
         {
             var sessionOptions = httpReq.GetItemOrCookie(SessionFeature.SessionOptionsKey);
             return sessionOptions.IsNullOrEmpty()
@@ -104,10 +105,10 @@ namespace ServiceStack
             session.Permissions = userAuth.Permissions;
         }
 
-        public static void UpdateFromUserAuthRepo(this IAuthSession session, IHttpRequest req, IAuthRepository userAuthRepo = null)
+        public static void UpdateFromUserAuthRepo(this IAuthSession session, IRequest req, IAuthRepository userAuthRepo = null)
         {
             if (userAuthRepo == null)
-                userAuthRepo = req.TryResolve<IAuthRepository>();
+                userAuthRepo = ((IResolver) req).TryResolve<IAuthRepository>();
 
             if (userAuthRepo == null) return;
 
@@ -115,9 +116,9 @@ namespace ServiceStack
             session.UpdateSession(userAuth);
         }
 
-        public static HashSet<string> AddSessionOptions(this IHttpResponse res, IHttpRequest req, params string[] options)
+        public static HashSet<string> AddSessionOptions(this IRequest req, params string[] options)
         {
-            if (res == null || req == null || options.Length == 0) return new HashSet<string>();
+            if (req == null || options.Length == 0) return new HashSet<string>();
 
             var existingOptions = req.GetSessionOptions();
             foreach (var option in options)
@@ -133,20 +134,20 @@ namespace ServiceStack
             }
 
             var strOptions = String.Join(",", existingOptions.ToArray());
-            res.Cookies.AddPermanentCookie(SessionFeature.SessionOptionsKey, strOptions);
+            req.Response.Cookies.AddPermanentCookie(SessionFeature.SessionOptionsKey, strOptions);
             req.Items[SessionFeature.SessionOptionsKey] = strOptions;
             
             return existingOptions;
         }
 
-        public static string GetSessionKey(IHttpRequest httpReq = null)
+        public static string GetSessionKey(IRequest httpReq = null)
         {
             var sessionId = SessionFeature.GetSessionId(httpReq);
             return sessionId == null ? null : SessionFeature.GetSessionKey(sessionId);
         }
 
         public static TUserSession SessionAs<TUserSession>(this ICacheClient cache,
-            IHttpRequest httpReq = null, IHttpResponse httpRes = null)
+            IRequest httpReq = null, IResponse httpRes = null)
         {
             var sessionKey = GetSessionKey(httpReq);
 
@@ -164,7 +165,7 @@ namespace ServiceStack
             return unAuthorizedSession;
         }
 
-        public static void ClearSession(this ICacheClient cache, IHttpRequest httpReq = null)
+        public static void ClearSession(this ICacheClient cache, IRequest httpReq = null)
         {
             cache.Remove(GetSessionKey(httpReq));
         }

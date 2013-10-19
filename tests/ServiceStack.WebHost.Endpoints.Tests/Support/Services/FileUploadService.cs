@@ -63,13 +63,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 
 		public object Post(FileUpload request)
 		{
-			if (this.RequestContext.Files.Length == 0)
+			if (this.Request.Files.Length == 0)
 				throw new FileNotFoundException("UploadError", "No such file exists");
 
 			if (request.RelativePath == "ThrowError")
 				throw new NotSupportedException("ThrowError");
 
-			var file = this.RequestContext.Files[0];
+			var file = this.Request.Files[0];
 			return new FileUploadResponse
 			{
 				FileName = file.FileName,

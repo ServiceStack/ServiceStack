@@ -48,7 +48,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 	{
 		public T TryResolve<T>()
 		{
-			if (typeof(T) == typeof(IRequestContext))
+			if (typeof(T) == typeof(IRequest))
 				throw new ArgumentException("should not ask for IRequestContext");
 
 			if (typeof(T) == typeof(AltDepProperty))
@@ -88,7 +88,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 
         public int Priority { get; set; }
 
-        public void RequestFilter(IHttpRequest req, IHttpResponse res, object requestDto)
+        public void RequestFilter(IRequest req, IResponse res, object requestDto)
         {
         }
 

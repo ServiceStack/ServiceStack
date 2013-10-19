@@ -6,9 +6,9 @@ namespace ServiceStack.Host.Handlers
 {
     public class CustomActionHandler : HttpAsyncTaskHandler
     {
-        public Action<IHttpRequest, IHttpResponse> Action { get; set; }
+        public Action<IRequest, IResponse> Action { get; set; }
 
-        public CustomActionHandler(Action<IHttpRequest, IHttpResponse> action)
+        public CustomActionHandler(Action<IRequest, IResponse> action)
         {
             if (action == null)
                 throw new NullReferenceException("action");
@@ -16,14 +16,15 @@ namespace ServiceStack.Host.Handlers
             Action = action;
         }
 
-        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {
             Action(httpReq, httpRes);
         }
 
-        public override void ProcessRequest(HttpContext context)
+        public override void ProcessRequest(HttpContextBase context)
         {
-            ProcessRequest(context.Request.ToRequest("CustomAction"), context.Response.ToResponse(), "CustomAction");
+            var httpReq = context.ToRequest("CustomAction");
+            ProcessRequest(httpReq, httpReq.Response, "CustomAction");
         }
     }
 }

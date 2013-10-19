@@ -5,15 +5,15 @@ namespace ServiceStack.Host.Handlers
 {
     public class CustomResponseHandler : HttpAsyncTaskHandler
     {
-        public Func<IHttpRequest, IHttpResponse, object> Action { get; set; }
+        public Func<IRequest, IResponse, object> Action { get; set; }
 
-        public CustomResponseHandler(Func<IHttpRequest, IHttpResponse, object> action, string operationName = null)
+        public CustomResponseHandler(Func<IRequest, IResponse, object> action, string operationName = null)
         {
             Action = action;
             RequestName = operationName ?? "CustomResponse";
         }
 
-        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {
             if (Action == null)
                 throw new Exception("Action was not supplied to ActionHandler");

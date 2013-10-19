@@ -15,7 +15,7 @@ namespace ServiceStack.Html
         void SetChildPage(IRazorView childPage, string childBody);
         IRazorView ChildPage { get; }
         IRazorView ParentPage { get; set; }
-        void Init(IViewEngine viewEngine, IHttpRequest httpReq, IHttpResponse httpRes);
+        void Init(IViewEngine viewEngine, IRequest httpReq, IResponse httpRes);
         void WriteTo(StreamWriter writer);
         bool IsSectionDefined(string sectionName);
         void RenderSection(string sectionName, StreamWriter writer);

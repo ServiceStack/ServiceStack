@@ -17,7 +17,7 @@ namespace ServiceStack
             Template = template;
         }
 
-        public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+        public override void Execute(IRequest req, IResponse res, object requestDto)
         {
             if (!string.IsNullOrEmpty(View))
             {

@@ -50,7 +50,7 @@ namespace ServiceStack
             }
         }
 
-        public ISession GetOrCreateSession(IHttpRequest httpReq, IHttpResponse httpRes)
+        public ISession GetOrCreateSession(IRequest httpReq, IResponse httpRes)
         {
             var sessionId = httpReq.GetSessionId()
                 ?? httpRes.CreateSessionIds(httpReq);
@@ -61,9 +61,10 @@ namespace ServiceStack
         public ISession GetOrCreateSession()
         {
             if (HttpContext.Current != null)
-                return GetOrCreateSession(
-                    HttpContext.Current.Request.ToRequest(),
-                    HttpContext.Current.Response.ToResponse());
+            {
+                var request = HttpContext.Current.ToRequest();
+                return GetOrCreateSession(request, request.Response);
+            }
             
             throw new NotImplementedException("Only ASP.NET Requests can be accessed via Singletons");
         }

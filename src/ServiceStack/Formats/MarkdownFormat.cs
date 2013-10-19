@@ -7,7 +7,6 @@ using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Markdown;
 using ServiceStack.Support.Markdown;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Formats
@@ -178,7 +177,7 @@ namespace ServiceStack.Formats
             return markdownPage;
         }
 
-        public bool ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, object dto)
+        public bool ProcessRequest(IRequest httpReq, IResponse httpRes, object dto)
         {
             MarkdownPage markdownPage;
             if ((markdownPage = GetViewPageByResponse(dto, httpReq)) == null)
@@ -190,7 +189,7 @@ namespace ServiceStack.Formats
             return ProcessMarkdownPage(httpReq, markdownPage, dto, httpRes);
         }
 
-        public bool HasView(string viewName, IHttpRequest httpReq = null)
+        public bool HasView(string viewName, IRequest httpReq = null)
         {
             return GetViewPage(viewName, httpReq) != null;
         }
@@ -209,7 +208,7 @@ namespace ServiceStack.Formats
             return output;
         }
 
-        public MarkdownPage GetViewPage(string viewName, IHttpRequest httpReq)
+        public MarkdownPage GetViewPage(string viewName, IRequest httpReq)
         {
             var view = GetViewPage(viewName);
             if (view != null) return view;
@@ -228,7 +227,7 @@ namespace ServiceStack.Formats
             return view;
         }
 
-        public bool ProcessMarkdownPage(IHttpRequest httpReq, MarkdownPage markdownPage, object dto, IHttpResponse httpRes)
+        public bool ProcessMarkdownPage(IRequest httpReq, MarkdownPage markdownPage, object dto, IResponse httpRes)
         {
             httpRes.AddHeaderLastModified(markdownPage.GetLastModified());
 
@@ -316,7 +315,7 @@ namespace ServiceStack.Formats
         /// <summary>
         /// Render Markdown for text/markdown and text/plain ContentTypes
         /// </summary>
-        public void SerializeToStream(IRequestContext requestContext, object response, Stream stream)
+        public void SerializeToStream(IRequest request, object response, Stream stream)
         {
             var dto = response.GetDto();
             var text = dto as string;
@@ -328,8 +327,8 @@ namespace ServiceStack.Formats
             }
 
             MarkdownPage markdownPage;
-            if ((markdownPage = GetViewPageByResponse(dto, requestContext.Get<IHttpRequest>())) == null)
-                throw new InvalidDataException(ErrorPageNotFound.FormatWith(GetPageName(dto, requestContext)));
+            if ((markdownPage = GetViewPageByResponse(dto, request)) == null)
+                throw new InvalidDataException(ErrorPageNotFound.FormatWith(GetPageName(dto, request)));
 
             ReloadModifiedPageAndTemplates(markdownPage);
 
@@ -339,9 +338,9 @@ namespace ServiceStack.Formats
             stream.Write(markupBytes, 0, markupBytes.Length);
         }
 
-        public string GetPageName(object dto, IRequestContext requestContext)
+        public string GetPageName(object dto, IRequest requestContext)
         {
-            var httpRequest = requestContext != null ? requestContext.Get<IHttpRequest>() : null;
+            var httpRequest = requestContext != null ? requestContext.TryResolve<IHttpRequest>() : null;
             var httpResult = dto as IHttpResult;
             if (httpResult != null)
             {
@@ -351,7 +350,7 @@ namespace ServiceStack.Formats
             return httpRequest != null ? httpRequest.OperationName : null;
         }
 
-        public MarkdownPage GetViewPageByResponse(object dto, IHttpRequest httpReq)
+        public MarkdownPage GetViewPageByResponse(object dto, IRequest httpReq)
         {
             var httpResult = dto as IHttpResult;
             if (httpResult != null)

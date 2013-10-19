@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Web;
 using ServiceStack.Web;
 
@@ -13,16 +14,16 @@ namespace ServiceStack.Host.AspNet
     {
         //private static readonly ILog Log = LogManager.GetLogger(typeof(HttpResponseWrapper));
 
-        private readonly HttpResponse response;
+        private readonly HttpResponseBase response;
 
-        public AspNetResponse(HttpResponse response)
+        public AspNetResponse(HttpResponseBase response)
         {
             this.response = response;
             this.response.TrySkipIisCustomErrors = true;
             this.Cookies = new Cookies(this);
         }
 
-        public HttpResponse Response
+        public HttpResponseBase Response
         {
             get { return response; }
         }
@@ -107,6 +108,12 @@ namespace ServiceStack.Host.AspNet
                 response.Headers.Add("Content-Length", contentLength.ToString(CultureInfo.InvariantCulture));
             }
             catch (PlatformNotSupportedException /*ignore*/) { } //This operation requires IIS integrated pipeline mode.
+        }
+
+        public void SetCookie(Cookie cookie)
+        {
+            var httpCookie = cookie.ToHttpCookie();
+            response.SetCookie(httpCookie);            
         }
     }
 }

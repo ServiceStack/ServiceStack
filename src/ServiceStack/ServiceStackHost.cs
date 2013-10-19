@@ -50,9 +50,9 @@ namespace ServiceStack
             RestPaths = new List<RestPath>();
             Routes = new ServiceRoutes(this);
             Metadata = new ServiceMetadata(RestPaths);
-            PreRequestFilters = new List<Action<IHttpRequest, IHttpResponse>>();
-            GlobalRequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
-            GlobalResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
+            PreRequestFilters = new List<Action<IRequest, IResponse>>();
+            GlobalRequestFilters = new List<Action<IRequest, IResponse, object>>();
+            GlobalResponseFilters = new List<Action<IRequest, IResponse, object>>();
             ViewEngines = new List<IViewEngine>();
             ServiceExceptionHandlers = new List<HandleServiceExceptionDelegate>();
             UncaughtExceptionHandlers = new List<HandleUncaughtExceptionDelegate>();
@@ -61,7 +61,7 @@ namespace ServiceStack
                  MiniProfilerHandler.MatchesRequest,
             };
             CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
-            CustomErrorHttpHandlers = new Dictionary<HttpStatusCode, IServiceStackHttpHandler>();
+            CustomErrorHttpHandlers = new Dictionary<HttpStatusCode, IServiceStackHandler>();
             Plugins = new List<IPlugin> {
                 new HtmlFormat(),
                 new CsvFormat(),
@@ -147,18 +147,18 @@ namespace ServiceStack
 
         public List<RestPath> RestPaths = new List<RestPath>();
 
-        public Dictionary<Type, Func<IHttpRequest, object>> RequestBinders
+        public Dictionary<Type, Func<IRequest, object>> RequestBinders
         {
             get { return ServiceController.RequestTypeFactoryMap; }
         }
 
         public IContentTypes ContentTypes { get; set; }
 
-        public List<Action<IHttpRequest, IHttpResponse>> PreRequestFilters { get; set; }
+        public List<Action<IRequest, IResponse>> PreRequestFilters { get; set; }
 
-        public List<Action<IHttpRequest, IHttpResponse, object>> GlobalRequestFilters { get; set; }
+        public List<Action<IRequest, IResponse, object>> GlobalRequestFilters { get; set; }
 
-        public List<Action<IHttpRequest, IHttpResponse, object>> GlobalResponseFilters { get; set; }
+        public List<Action<IRequest, IResponse, object>> GlobalResponseFilters { get; set; }
 
         public List<IViewEngine> ViewEngines { get; set; }
 
@@ -170,7 +170,7 @@ namespace ServiceStack
         
         public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
 
-        public Dictionary<HttpStatusCode, IServiceStackHttpHandler> CustomErrorHttpHandlers { get; set; }
+        public Dictionary<HttpStatusCode, IServiceStackHandler> CustomErrorHttpHandlers { get; set; }
 
         public List<IPlugin> Plugins { get; set; }
 
@@ -179,7 +179,7 @@ namespace ServiceStack
         /// <summary>
         /// Executed immediately before a Service is executed. Use return to change the request DTO used, must be of the same type.
         /// </summary>
-        public virtual object OnPreExecuteServiceFilter(IService service, object request, IHttpRequest httpReq, IHttpResponse httpRes)
+        public virtual object OnPreExecuteServiceFilter(IService service, object request, IRequest httpReq, IResponse httpRes)
         {
             return request;
         }
@@ -187,7 +187,7 @@ namespace ServiceStack
         /// <summary>
         /// Executed immediately after a service is executed. Use return to change response used.
         /// </summary>
-        public virtual object OnPostExecuteServiceFilter(IService service, object response, IHttpRequest httpReq, IHttpResponse httpRes)
+        public virtual object OnPostExecuteServiceFilter(IService service, object response, IRequest httpReq, IResponse httpRes)
         {
             return response;
         }
@@ -195,7 +195,7 @@ namespace ServiceStack
         /// <summary>
         /// Occurs when the Service throws an Exception.
         /// </summary>
-        public virtual object OnServiceException(IHttpRequest httpReq, object request, Exception ex)
+        public virtual object OnServiceException(IRequest httpReq, object request, Exception ex)
         {
             object lastError = null;
             foreach (var errorHandler in ServiceExceptionHandlers)
@@ -208,7 +208,7 @@ namespace ServiceStack
         /// <summary>
         /// Occurs when an exception is thrown whilst processing a request.
         /// </summary>
-        public virtual void OnUncaughtException(IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Exception ex)
+        public virtual void OnUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
         {
             if (UncaughtExceptionHandlers.Count > 0)
             {
@@ -439,29 +439,29 @@ namespace ServiceStack
             return text;
         }
 
-        public virtual string ResolveAbsoluteUrl(string virtualPath, IHttpRequest httpReq)
+        public virtual string ResolveAbsoluteUrl(string virtualPath, IRequest httpReq)
         {
             return httpReq.GetAbsoluteUrl(virtualPath); //Http Listener, TODO: ASP.NET overrides
         }
 
-        public virtual string ResolvePhysicalPath(string virtualPath, IHttpRequest httpReq)
+        public virtual string ResolvePhysicalPath(string virtualPath, IRequest httpReq)
         {
             return VirtualPathProvider.CombineVirtualPath(VirtualPathProvider.RootDirectory.RealPath, virtualPath);
         }
 
-        public virtual IVirtualFile ResolveVirtualFile(string virtualPath, IHttpRequest httpReq)
+        public virtual IVirtualFile ResolveVirtualFile(string virtualPath, IRequest httpReq)
         {
             return VirtualPathProvider.GetFile(virtualPath);
         }
 
-        public virtual IVirtualDirectory ResolveVirtualDirectory(string virtualPath, IHttpRequest httpReq)
+        public virtual IVirtualDirectory ResolveVirtualDirectory(string virtualPath, IRequest httpReq)
         {
             return virtualPath == VirtualPathProvider.VirtualPathSeparator
                 ? VirtualPathProvider.RootDirectory
                 : VirtualPathProvider.GetDirectory(virtualPath);
         }
 
-        public virtual IVirtualNode ResolveVirtualNode(string virtualPath, IHttpRequest httpReq)
+        public virtual IVirtualNode ResolveVirtualNode(string virtualPath, IRequest httpReq)
         {
             return (IVirtualNode) ResolveVirtualFile(virtualPath, httpReq) 
                 ?? ResolveVirtualDirectory(virtualPath, httpReq);
@@ -489,7 +489,7 @@ namespace ServiceStack
 
         public virtual object ExecuteService(object requestDto, RequestAttributes requestAttributes)
         {
-            return ServiceController.Execute(requestDto, new BasicRequestContext(requestDto, requestAttributes));
+            return ServiceController.Execute(requestDto, new BasicRequest(requestDto, requestAttributes));
         }
 
         public virtual void RegisterService(Type serviceType, params string[] atRestPaths)

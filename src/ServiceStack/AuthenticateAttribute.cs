@@ -2,6 +2,7 @@
 using System.Collections.Specialized;
 using System.Linq;
 using ServiceStack.Auth;
+using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Web;
 
@@ -49,7 +50,7 @@ namespace ServiceStack
             this.Provider = provider;
         }
 
-        public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+        public override void Execute(IRequest req, IResponse res, object requestDto)
         {
             if (AuthenticateService.AuthProviders == null)
                 throw new InvalidOperationException(
@@ -82,7 +83,7 @@ namespace ServiceStack
             }
         }
 
-        protected bool DoHtmlRedirectIfConfigured(IHttpRequest req, IHttpResponse res, bool includeRedirectParam = false)
+        protected bool DoHtmlRedirectIfConfigured(IRequest req, IResponse res, bool includeRedirectParam = false)
         {
             var htmlRedirect = this.HtmlRedirect ?? AuthenticateService.HtmlRedirect;
             if (htmlRedirect != null && req.ResponseContentType.MatchesContentType(MimeTypes.Html))
@@ -101,7 +102,7 @@ namespace ServiceStack
             return false;
         }
 
-        public static void AuthenticateIfBasicAuth(IHttpRequest req, IHttpResponse res)
+        public static void AuthenticateIfBasicAuth(IRequest req, IResponse res)
         {
             //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
             SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
@@ -109,8 +110,8 @@ namespace ServiceStack
             var userPass = req.GetBasicAuthUserAndPassword();
             if (userPass != null)
             {
-                var authService = req.TryResolve<AuthenticateService>();
-                authService.RequestContext = new HttpRequestContext(req, res, null);
+                var authService = ((IResolver) req).TryResolve<AuthenticateService>();
+                authService.Request = req;
                 var response = authService.Post(new Authenticate
                 {
                     provider = BasicAuthProvider.Name,
@@ -120,7 +121,7 @@ namespace ServiceStack
             }
         }
 
-        public static void AuthenticateIfDigestAuth(IHttpRequest req, IHttpResponse res)
+        public static void AuthenticateIfDigestAuth(IRequest req, IResponse res)
         {
             //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
             SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
@@ -128,8 +129,8 @@ namespace ServiceStack
             var digestAuth = req.GetDigestAuth();
             if (digestAuth != null)
             {
-                var authService = req.TryResolve<AuthenticateService>();
-                authService.RequestContext = new HttpRequestContext(req, res, null);
+                var authService = ((IResolver) req).TryResolve<AuthenticateService>();
+                authService.Request = req;
                 var response = authService.Post(new Authenticate
                 {
                     provider = DigestAuthProvider.Name,

@@ -37,7 +37,7 @@ namespace ServiceStack
 
         public IContentTypeWriter ResponseFilter { get; set; }
 
-        public IRequestContext RequestContext { get; set; }
+        public IRequest RequestContext { get; set; }
 
         public IDictionary<string, string> Options
         {

@@ -3,7 +3,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public interface IServiceBase : IResolver
+    public interface IServiceBase : IRequiresRequest, IResolver
     {
         IResolver GetResolver();
 
@@ -13,7 +13,5 @@ namespace ServiceStack
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         T ResolveService<T>();
-
-        IRequestContext RequestContext { get; }
     }
 }

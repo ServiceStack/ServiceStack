@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
+using System.Net;
 using System.Text;
 using NUnit.Framework;
 using ServiceStack.Formats;
@@ -197,6 +198,10 @@ namespace ServiceStack.ServiceHost.Tests.Formats
             public void SetContentLength(long contentLength)
             {
                 Headers[HttpHeaders.ContentLength] = contentLength.ToString();
+            }
+
+            public void SetCookie(Cookie cookie)
+            {                
             }
         }
 

@@ -12,11 +12,9 @@ namespace ServiceStack
     /// <summary>
     /// Generic + Useful IService base class
     /// </summary>
-    public class Service : IService, IRequiresRequestContext, IServiceBase, IDisposable
+    public class Service : IService, IServiceBase, IDisposable
     {
         public static IResolver GlobalResolver { get; set; }
-
-        public IRequestContext RequestContext { get; set; }
 
         private IResolver resolver;
         public virtual IResolver GetResolver()
@@ -40,24 +38,19 @@ namespace ServiceStack
         public virtual T ResolveService<T>()
         {
             var service = TryResolve<T>();
-            var requiresContext = service as IRequiresRequestContext;
+            var requiresContext = service as IRequiresRequest;
             if (requiresContext != null)
             {
-                requiresContext.RequestContext = this.RequestContext;
+                requiresContext.Request = this.Request;
             }
             return service;
         }
 
-        private IHttpRequest request;
-        protected virtual IHttpRequest Request
-        {
-            get { return request ?? (request = RequestContext != null ? RequestContext.Get<IHttpRequest>() : TryResolve<IHttpRequest>()); }
-        }
+        public IRequest Request { get; set; }
 
-        private IHttpResponse response;
-        protected virtual IHttpResponse Response
+        protected virtual IResponse Response
         {
-            get { return response ?? (response = RequestContext != null ? RequestContext.Get<IHttpResponse>() : TryResolve<IHttpResponse>()); }
+            get { return Request != null ? Request.Response : null; }
         }
 
         private ICacheClient cache;

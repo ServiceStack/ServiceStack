@@ -24,7 +24,7 @@ namespace ServiceStack
 		/// To access the value for this initial request you need to set it in Items[].
 		/// </summary>
 		/// <returns>string value or null if it doesn't exist</returns>
-		public static string GetItemOrCookie(this IHttpRequest httpReq, string name)
+        public static string GetItemOrCookie(this IRequest httpReq, string name)
 		{
 			object value;
 			if (httpReq.Items.TryGetValue(name, out value)) return value.ToString();
@@ -43,7 +43,7 @@ namespace ServiceStack
 		/// - Items[name]
 		/// </summary>
 		/// <returns>string value or null if it doesn't exist</returns>
-		public static string GetParam(this IHttpRequest httpReq, string name)
+        public static string GetParam(this IRequest httpReq, string name)
 		{
 			string value;
 			if ((value = httpReq.Headers[HttpHeaders.XParamOverridePrefix + name]) != null) return value;
@@ -63,12 +63,12 @@ namespace ServiceStack
 			return null;
 		}
 
-		public static string GetParentAbsolutePath(this IHttpRequest httpReq)
+        public static string GetParentAbsolutePath(this IRequest httpReq)
 		{
 			return httpReq.GetAbsolutePath().ToParentPath();
 		}
 
-		public static string GetAbsolutePath(this IHttpRequest httpReq)
+        public static string GetAbsolutePath(this IRequest httpReq)
 		{
 			var resolvedPathInfo = httpReq.PathInfo;
 
@@ -80,12 +80,12 @@ namespace ServiceStack
 			return httpReq.RawUrl.Substring(0, pos + resolvedPathInfo.Length);
 		}
 
-		public static string GetParentPathUrl(this IHttpRequest httpReq)
+        public static string GetParentPathUrl(this IRequest httpReq)
 		{
 			return httpReq.GetPathUrl().ToParentPath();
 		}
-		
-		public static string GetPathUrl(this IHttpRequest httpReq)
+
+        public static string GetPathUrl(this IRequest httpReq)
 		{
 			var resolvedPathInfo = httpReq.PathInfo;
 
@@ -100,7 +100,7 @@ namespace ServiceStack
 			return httpReq.AbsoluteUri.Substring(0, pos + resolvedPathInfo.Length);
 		}
 
-		public static string GetUrlHostName(this IHttpRequest httpReq)
+        public static string GetUrlHostName(this IRequest httpReq)
 		{
 			var aspNetReq = httpReq as AspNetRequest;
 			if (aspNetReq != null)
@@ -117,27 +117,27 @@ namespace ServiceStack
 			return hostName;
 		}
 
-        public static string GetPhysicalPath(this IHttpRequest httpReq)
+        public static string GetPhysicalPath(this IRequest httpReq)
         {
             return HostContext.ResolvePhysicalPath(httpReq.PathInfo, httpReq);
         }
 
-        public static IVirtualFile GetVirtualFile(this IHttpRequest httpReq)
+        public static IVirtualFile GetVirtualFile(this IRequest httpReq)
         {
             return HostContext.ResolveVirtualFile(httpReq.PathInfo, httpReq);
         }
 
-        public static IVirtualDirectory GetVirtualDirectory(this IHttpRequest httpReq)
+        public static IVirtualDirectory GetVirtualDirectory(this IRequest httpReq)
         {
             return HostContext.ResolveVirtualDirectory(httpReq.PathInfo, httpReq);
         }
 
-        public static IVirtualNode GetVirtualNode(this IHttpRequest httpReq)
+        public static IVirtualNode GetVirtualNode(this IRequest httpReq)
         {
             return HostContext.ResolveVirtualNode(httpReq.PathInfo, httpReq);
         }
 
-        public static string GetApplicationUrl(this HttpRequest httpReq)
+        public static string GetApplicationUrl(this HttpRequestBase httpReq)
         {
             var appPath = httpReq.ApplicationPath;
             var baseUrl = httpReq.Url.Scheme + "://" + httpReq.Url.Host;
@@ -146,7 +146,7 @@ namespace ServiceStack
             return appUrl;
         }
 
-        public static string GetApplicationUrl(this IHttpRequest httpReq)
+        public static string GetApplicationUrl(this IRequest httpReq)
         {
             var url = new Uri(httpReq.AbsoluteUri);
             var baseUrl = url.Scheme + "://" + url.Host;
@@ -155,9 +155,9 @@ namespace ServiceStack
             return appUrl;
         }
 
-		public static string GetHttpMethodOverride(this IHttpRequest httpReq)
+        public static string GetHttpMethodOverride(this IRequest httpReq)
 		{
-			var httpMethod = httpReq.HttpMethod;
+			var httpMethod = httpReq.Verb;
 
 			if (httpMethod != HttpMethods.Post)
 				return httpMethod;			
@@ -176,7 +176,7 @@ namespace ServiceStack
 			return httpMethod;
 		}
 
-		public static string GetFormatModifier(this IHttpRequest httpReq)
+        public static string GetFormatModifier(this IRequest httpReq)
 		{
 			var format = httpReq.QueryString["format"];
 			if (format == null) return null;
@@ -184,7 +184,7 @@ namespace ServiceStack
 			return parts.Length > 1 ? parts[1] : null;
 		}
 
-		public static bool HasNotModifiedSince(this IHttpRequest httpReq, DateTime? dateTime)
+        public static bool HasNotModifiedSince(this IRequest httpReq, DateTime? dateTime)
 		{
 			if (!dateTime.HasValue) return false;
 			var strHeader = httpReq.Headers[HttpHeaders.IfModifiedSince];
@@ -210,7 +210,7 @@ namespace ServiceStack
 			}
 		}
 
-		public static bool DidReturn304NotModified(this IHttpRequest httpReq, DateTime? dateTime, IHttpResponse httpRes)
+        public static bool DidReturn304NotModified(this IRequest httpReq, DateTime? dateTime, IResponse httpRes)
 		{
 			if (httpReq.HasNotModifiedSince(dateTime))
 			{
@@ -220,13 +220,13 @@ namespace ServiceStack
 			return false;
 		}
 
-		public static string GetJsonpCallback(this IHttpRequest httpReq)
+        public static string GetJsonpCallback(this IRequest httpReq)
 		{
 			return httpReq == null ? null : httpReq.QueryString["callback"];
 		}
 
 
-		public static Dictionary<string, string> CookiesAsDictionary(this IHttpRequest httpReq)
+        public static Dictionary<string, string> CookiesAsDictionary(this IRequest httpReq)
 		{
 			var map = new Dictionary<string, string>();
 			var aspNet = httpReq.OriginalRequest as HttpRequest;
@@ -316,7 +316,7 @@ namespace ServiceStack
             WebHostDirectoryName = Path.GetFileName("~".MapHostAbsolutePath());
         }
 
-        public static string GetOperationName(this HttpRequest request)
+        public static string GetOperationName(this HttpRequestBase request)
         {
             var pathInfo = request.GetLastPathInfo();
             return GetOperationNameFromLastPathInfo(pathInfo);
@@ -342,7 +342,7 @@ namespace ServiceStack
             return pathInfo;
         }
 
-        public static string GetLastPathInfo(this HttpRequest request)
+        public static string GetLastPathInfo(this HttpRequestBase request)
         {
             var pathInfo = request.PathInfo;
             if (String.IsNullOrEmpty(pathInfo))
@@ -356,7 +356,7 @@ namespace ServiceStack
             return pathInfo;
         }
 
-        public static string GetUrlHostName(this HttpRequest request)
+        public static string GetUrlHostName(this HttpRequestBase request)
         {
             //TODO: Fix bug in mono fastcgi, when trying to get 'Request.Url.Host'
             try
@@ -373,27 +373,27 @@ namespace ServiceStack
 
         // http://localhost/ServiceStack.Examples.Host.Web/Public/Public/Soap12/Wsdl => 
         // http://localhost/ServiceStack.Examples.Host.Web/Public/Soap12/
-        public static string GetParentBaseUrl(this HttpRequest request)
+        public static string GetParentBaseUrl(this HttpRequestBase request)
         {
             var rawUrl = request.RawUrl; // /Cambia3/Temp/Test.aspx/path/info
             var endpointsPath = rawUrl.Substring(0, rawUrl.LastIndexOf('/') + 1);  // /Cambia3/Temp/Test.aspx/path
             return GetAuthority(request) + endpointsPath;
         }
 
-        public static string GetParentBaseUrl(this IHttpRequest request)
+        public static string GetParentBaseUrl(this IRequest request)
         {
             var rawUrl = request.RawUrl;
             var endpointsPath = rawUrl.Substring(0, rawUrl.LastIndexOf('/') + 1);
             return new Uri(request.AbsoluteUri).GetLeftPart(UriPartial.Authority) + endpointsPath;
         }
 
-        public static string GetBaseUrl(this HttpRequest request)
+        public static string GetBaseUrl(this HttpRequestBase request)
         {
             return GetAuthority(request) + request.RawUrl;
         }
 
         //=> http://localhost:96 ?? ex=> http://localhost
-        private static string GetAuthority(HttpRequest request)
+        private static string GetAuthority(HttpRequestBase request)
         {
             try
             {
@@ -416,7 +416,7 @@ namespace ServiceStack
             return GetLastPathInfoFromRawUrl(request.RawUrl);
         }
 
-        public static string GetPathInfo(this HttpRequest request)
+        public static string GetPathInfo(this HttpRequestBase request)
         {
             if (!String.IsNullOrEmpty(request.PathInfo)) return request.PathInfo.TrimEnd('/');
 
@@ -477,12 +477,12 @@ namespace ServiceStack
             return path.Length > 1 ? path.TrimEnd('/') : "/";
         }
 
-        public static bool IsContentType(this IHttpRequest request, string contentType)
+        public static bool IsContentType(this IRequest request, string contentType)
         {
             return request.ContentType.StartsWith(contentType, StringComparison.InvariantCultureIgnoreCase);
         }
 
-        public static bool HasAnyOfContentTypes(this IHttpRequest request, params string[] contentTypes)
+        public static bool HasAnyOfContentTypes(this IRequest request, params string[] contentTypes)
         {
             if (contentTypes == null || request.ContentType == null) return false;
             foreach (var contentType in contentTypes)
@@ -492,17 +492,7 @@ namespace ServiceStack
             return false;
         }
 
-        public static IHttpRequest GetHttpRequest(this HttpRequest request)
-        {
-            return new AspNetRequest(null, request);
-        }
-
-        public static IHttpRequest GetHttpRequest(this HttpListenerRequest request)
-        {
-            return new ListenerRequest(null, request);
-        }
-
-        public static Dictionary<string, string> GetRequestParams(this IHttpRequest request)
+        public static Dictionary<string, string> GetRequestParams(this IRequest request)
         {
             var map = new Dictionary<string, string>();
 
@@ -512,7 +502,7 @@ namespace ServiceStack
                 map[name] = request.QueryString[name];
             }
 
-            if ((request.HttpMethod == HttpMethods.Post || request.HttpMethod == HttpMethods.Put)
+            if ((request.Verb == HttpMethods.Post || request.Verb == HttpMethods.Put)
                 && request.FormData != null)
             {
                 foreach (var name in request.FormData.AllKeys)
@@ -525,7 +515,7 @@ namespace ServiceStack
             return map;
         }
 
-        public static string GetQueryStringContentType(this IHttpRequest httpReq)
+        public static string GetQueryStringContentType(this IRequest httpReq)
         {
             var callback = httpReq.QueryString["callback"];
             if (!String.IsNullOrEmpty(callback)) return MimeTypes.Json;
@@ -573,7 +563,7 @@ namespace ServiceStack
             return item;
         }
 
-        public static string GetResponseContentType(this IHttpRequest httpReq)
+        public static string GetResponseContentType(this IRequest httpReq)
         {
             var specifiedContentType = GetQueryStringContentType(httpReq);
             if (!String.IsNullOrEmpty(specifiedContentType)) return specifiedContentType;
@@ -626,37 +616,37 @@ namespace ServiceStack
             return HostContext.Config.DefaultContentType;
         }
 
-        public static void SetView(this IHttpRequest httpReq, string viewName)
+        public static void SetView(this IRequest httpReq, string viewName)
         {
             httpReq.SetItem("View", viewName);
         }
 
-        public static string GetView(this IHttpRequest httpReq)
+        public static string GetView(this IRequest httpReq)
         {
             return httpReq.GetItem("View") as string;
         }
 
-        public static void SetTemplate(this IHttpRequest httpReq, string templateName)
+        public static void SetTemplate(this IRequest httpReq, string templateName)
         {
             httpReq.SetItem("Template", templateName);
         }
 
-        public static string GetTemplate(this IHttpRequest httpReq)
+        public static string GetTemplate(this IRequest httpReq)
         {
             return httpReq.GetItem("Template") as string;
         }
 
-        public static string ResolveAbsoluteUrl(this IHttpRequest httpReq, string url)
+        public static string ResolveAbsoluteUrl(this IRequest httpReq, string url)
         {
             return HostContext.ResolveAbsoluteUrl(url, httpReq);
         }
 
-        public static string ResolveBaseUrl(this IHttpRequest httpReq)
+        public static string ResolveBaseUrl(this IRequest httpReq)
         {
             return HostContext.ResolveAbsoluteUrl("~/", httpReq);
         }
 
-        public static string GetAbsoluteUrl(this IHttpRequest httpReq, string url)
+        public static string GetAbsoluteUrl(this IRequest httpReq, string url)
         {
             if (url.SafeSubstring(0, 2) == "~/")
             {
@@ -665,7 +655,7 @@ namespace ServiceStack
             return url;
         }
 
-        public static string GetBaseUrl(this IHttpRequest httpReq)
+        public static string GetBaseUrl(this IRequest httpReq)
         {
             var baseUrl = HttpHandlerFactory.GetBaseUrl();
             if (baseUrl != null) return baseUrl;
@@ -685,7 +675,7 @@ namespace ServiceStack
             return "/"; //Can't infer Absolute Uri, fallback to root relative path
         }
 
-        public static RequestAttributes ToEndpointAttributes(string[] attrNames)
+        public static RequestAttributes ToRequestAttributes(string[] attrNames)
         {
             var attrs = RequestAttributes.None;
             foreach (var simulatedAttr in attrNames)
@@ -696,7 +686,7 @@ namespace ServiceStack
             return attrs;
         }
 
-        public static RequestAttributes GetAttributes(this IHttpRequest request)
+        public static RequestAttributes GetAttributes(this IRequest request)
         {
             if (HostContext.DebugMode
                 && request.QueryString != null) //Mock<IHttpRequest>
@@ -704,13 +694,13 @@ namespace ServiceStack
                 var simulate = request.QueryString["simulate"];
                 if (simulate != null)
                 {
-                    return ToEndpointAttributes(simulate.Split(','));
+                    return ToRequestAttributes(simulate.Split(','));
                 }
             }
 
             var portRestrictions = RequestAttributes.None;
 
-            portRestrictions |= ContentFormat.GetEndpointAttribute(request.HttpMethod);
+            portRestrictions |= ContentFormat.GetRequestAttribute(request.Verb);
             portRestrictions |= request.IsSecureConnection ? RequestAttributes.Secure : RequestAttributes.InSecure;
 
             if (request.UserHostAddress != null)
@@ -794,35 +784,46 @@ namespace ServiceStack
             return false;
         }
 
-        public static IHttpRequest ToRequest(this HttpRequest aspnetHttpReq, string operationName = null)
+        public static HttpContextBase ToHttpContextBase(this HttpRequestBase aspnetHttpReq)
         {
-            return new AspNetRequest(aspnetHttpReq)
-            {
-                OperationName = operationName,
-                Container = HostContext.Container
-            };
+            return aspnetHttpReq.RequestContext.HttpContext;
         }
 
-        public static IHttpRequest ToRequest(this HttpListenerRequest listenerHttpReq, string operationName = null)
+        public static HttpContextBase ToHttpContextBase(this HttpContext httpContext)
         {
-            return new ListenerRequest(listenerHttpReq)
-            {
-                OperationName = operationName,
-                Container = HostContext.Container
-            };
+            return httpContext.Request.RequestContext.HttpContext;
         }
 
-        public static IHttpResponse ToResponse(this HttpResponse aspnetHttpRes)
+        public static IHttpRequest ToRequest(this HttpContext httpCtx, string operationName = null)
         {
-            return new AspNetResponse(aspnetHttpRes);
+            return new AspNetRequest(httpCtx.ToHttpContextBase(), operationName);
+        }
+        public static IHttpRequest ToRequest(this HttpContextBase httpCtx, string operationName = null)
+        {
+            return new AspNetRequest(httpCtx, operationName);
         }
 
-        public static IHttpResponse ToResponse(this System.Net.HttpListenerResponse listenerHttpRes)
+        public static IHttpRequest ToRequest(this HttpRequestBase httpCtx, string operationName = null)
         {
-            return new ListenerResponse(listenerHttpRes);
+            return new AspNetRequest(httpCtx.ToHttpContextBase(), operationName);
         }
 
-        public static void SetOperationName(this IHttpRequest httpReq, string operationName)
+        public static IHttpRequest ToRequest(this HttpListenerContext httpCtxReq, string operationName = null)
+        {
+            return new ListenerRequest(httpCtxReq, operationName);
+        }
+
+        public static IHttpResponse ToResponse(this HttpRequestBase httpCtx)
+        {
+            return httpCtx.ToRequest().HttpResponse;
+        }
+
+        public static IHttpResponse ToResponse(this HttpListenerContext httpCtx)
+        {
+            return httpCtx.ToRequest().HttpResponse;
+        }
+
+        public static void SetOperationName(this IRequest httpReq, string operationName)
         {
             if (httpReq.OperationName == null)
             {
@@ -841,7 +842,7 @@ namespace ServiceStack
             }
         }
 
-        public static System.ServiceModel.Channels.Message GetSoapMessage(this IHttpRequest httpReq)
+        public static System.ServiceModel.Channels.Message GetSoapMessage(this IRequest httpReq)
         {
             return httpReq.Items["SoapMessage"] as System.ServiceModel.Channels.Message;
         }

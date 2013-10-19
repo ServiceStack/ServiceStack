@@ -26,7 +26,7 @@ namespace ServiceStack
         public RequiredRoleAttribute(params string[] roles)
             : this(ApplyTo.All, roles) {}
 
-        public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+        public override void Execute(IRequest req, IResponse res, object requestDto)
         {
             if (HostContext.AppHost.HasValidAuthSecret(req))
                 return;
@@ -44,7 +44,7 @@ namespace ServiceStack
             res.EndRequest();
         }
 
-        public bool HasAllRoles(IHttpRequest req, IAuthSession session, IAuthRepository userAuthRepo=null)
+        public bool HasAllRoles(IRequest req, IAuthSession session, IAuthRepository userAuthRepo=null)
         {
             if (HasAllRoles(session)) return true;
 
@@ -68,22 +68,21 @@ namespace ServiceStack
         /// <summary>
         /// Check all session is in all supplied roles otherwise a 401 HttpError is thrown
         /// </summary>
-        /// <param name="requestContext"></param>
+        /// <param name="request"></param>
         /// <param name="requiredRoles"></param>
-        public static void AssertRequiredRoles(IRequestContext requestContext, params string[] requiredRoles)
+        public static void AssertRequiredRoles(IRequest request, params string[] requiredRoles)
         {
             if (requiredRoles.IsEmpty()) return;
 
-            var req = requestContext.Get<IHttpRequest>();
-            if (HostContext.HasValidAuthSecret(req))
+            if (HostContext.HasValidAuthSecret(request))
                 return;
 
-            var session = req.GetSession();
+            var session = request.GetSession();
 
             if (session != null && requiredRoles.All(session.HasRole))
                 return;
 
-            session.UpdateFromUserAuthRepo(req);
+            session.UpdateFromUserAuthRepo(request);
 
             if (session != null && requiredRoles.All(session.HasRole))
                 return;

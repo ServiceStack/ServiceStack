@@ -50,13 +50,10 @@ namespace ServiceStack.ServiceHost.Tests
                 var httpReq = new MockHttpRequest();
                 httpReq.Headers.Add(HttpHeaders.AcceptEncoding, "gzip,deflate,sdch");
                 httpReq.ResponseContentType = contentType;
-                var httpRes = new ViewTests.MockHttpResponse();
-
-                var httpRequestContext = new HttpRequestContext(httpReq, httpRes, dto);
 
                 if (pluginFormat != null) pluginFormat.Register(appHost);
 
-                object result = httpRequestContext.ToOptimizedResult(dto);
+                object result = httpReq.ToOptimizedResult(dto);
                 Assert.IsNotNull(result);
                 Assert.IsTrue(result is CompressedResult);
             }

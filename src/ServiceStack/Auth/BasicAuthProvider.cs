@@ -1,6 +1,5 @@
 using ServiceStack.Configuration;
 using ServiceStack.Host;
-using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
@@ -20,7 +19,7 @@ namespace ServiceStack.Auth
 
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
-            var httpReq = authService.RequestContext.Get<IHttpRequest>();
+            var httpReq = authService.Request;
             var basicAuth = httpReq.GetBasicAuthUserAndPassword();
             if (basicAuth == null)
                 throw HttpError.Unauthorized("Invalid BasicAuth credentials");

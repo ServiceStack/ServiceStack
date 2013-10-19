@@ -19,16 +19,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 	}
 
 	public class HeadersService
-		: TestServiceBase<Headers>, IRequiresRequestContext, IRequiresHttpRequest
+		: TestServiceBase<Headers>, IRequiresRequest
 	{
-		public IRequestContext RequestContext { get; set; }
-		public IHttpRequest HttpRequest { get; set; }
+		public IRequest Request { get; set; }
 
 		protected override object Run(Headers request)
 		{
-			var header = RequestContext.GetHeader(request.Name);
-			if (header != HttpRequest.Headers[request.Name])
-				throw new NullReferenceException();
+			var header = Request.GetHeader(request.Name);
 
 			return new HeadersResponse
 			{

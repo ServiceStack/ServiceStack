@@ -90,7 +90,7 @@ namespace ServiceStack.Host
             this.ContentTypeDeserializers[contentType] = streamDeserializer;
         }
         
-        public byte[] SerializeToBytes(IRequestContext requestContext, object response)
+        public byte[] SerializeToBytes(IRequest requestContext, object response)
         {
             var contentType = requestContext.ResponseContentType;
 
@@ -135,7 +135,7 @@ namespace ServiceStack.Host
             throw new NotSupportedException("ContentType not supported: " + contentType);
         }
 
-        public string SerializeToString(IRequestContext requestContext, object response)
+        public string SerializeToString(IRequest requestContext, object response)
         {
             var contentType = requestContext.ResponseContentType;
 
@@ -190,7 +190,7 @@ namespace ServiceStack.Host
             throw new NotSupportedException("ContentType not supported: " + contentType);
         }
 
-        public void SerializeToStream(IRequestContext requestContext, object response, Stream responseStream)
+        public void SerializeToStream(IRequest requestContext, object response, Stream responseStream)
         {
             var contentType = requestContext.ResponseContentType;
             var serializer = GetResponseSerializer(contentType);
@@ -201,7 +201,7 @@ namespace ServiceStack.Host
             serializer(requestContext, response, httpRes);
         }
 
-        public void SerializeToResponse(IRequestContext requestContext, object response, IHttpResponse httpResponse)
+        public void SerializeToResponse(IRequest requestContext, object response, IResponse httpResponse)
         {
             var contentType = requestContext.ResponseContentType;
             var serializer = GetResponseSerializer(contentType);

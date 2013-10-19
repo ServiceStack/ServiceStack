@@ -25,7 +25,7 @@ namespace ServiceStack
 		public string Referer { get; set; }
 		public Dictionary<string, string> Headers { get; set; }
 		public Dictionary<string, string> FormData { get; set; }
-		public Dictionary<string, object> Items { get; set; }
+		public Dictionary<string, string> Items { get; set; }
 		public object Session { get; set; }
 		public object ResponseDto { get; set; }
 		public object ErrorResponse { get; set; }

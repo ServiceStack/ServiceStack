@@ -8,9 +8,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
     /// An example of a very basic web service
     /// </summary>
     public class RestMovieService
-        : IService, IRequiresRequestContext
+        : IService, IRequiresRequest
     {
-        public IRequestContext RequestContext { get; set; }
+        public IRequest Request { get; set; }
 
         public IDbConnectionFactory DbFactory { get; set; }
 

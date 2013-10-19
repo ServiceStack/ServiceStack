@@ -10,14 +10,14 @@ namespace ServiceStack.ServiceHost.Tests.Support
 	[DataContract]
 	public class RequiresContextResponse { }
 
-	public class RequiresContextService 
-		: IService, IRequiresRequestContext
+	public class RequiresService 
+		: IService, IRequiresRequest
 	{
-		public IRequestContext RequestContext { get;  set; }
+		public IRequest Request { get;  set; }
 
 		public object Any(RequiresContext requires)
 		{
-			if (RequestContext == null)
+			if (Request == null)
 				throw new ArgumentNullException("RequestContext");
 	
 			return new RequiresContextResponse();

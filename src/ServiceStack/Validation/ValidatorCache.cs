@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
+using ServiceStack.Configuration;
 using ServiceStack.FluentValidation;
 using ServiceStack.Web;
 
@@ -12,9 +13,9 @@ namespace ServiceStack.Validation
         private static Dictionary<Type, ResolveValidatorDelegate> delegateCache 
         = new Dictionary<Type, ResolveValidatorDelegate>();
         
-        private delegate IValidator ResolveValidatorDelegate(IHttpRequest httpReq);
+        private delegate IValidator ResolveValidatorDelegate(IRequest httpReq);
 
-        public static IValidator GetValidator(IHttpRequest httpReq, Type type)
+        public static IValidator GetValidator(IRequest httpReq, Type type)
         {
             ResolveValidatorDelegate parseFn;
             if (delegateCache.TryGetValue(type, out parseFn)) return parseFn.Invoke(httpReq);			
@@ -39,9 +40,9 @@ namespace ServiceStack.Validation
 
     public class ValidatorCache<T>
     {
-        public static IValidator GetValidator(IHttpRequest httpReq)
+        public static IValidator GetValidator(IRequest httpReq)
         {
-            return httpReq.TryResolve<IValidator<T>>();
+            return ((IResolver) httpReq).TryResolve<IValidator<T>>();
         }
     }
 

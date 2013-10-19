@@ -1,3 +1,6 @@
+//Copyright (c) Service Stack LLC. All Rights Reserved.
+//License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
 using System.Collections.Generic;
 using System.Net;
 
@@ -43,6 +46,6 @@ namespace ServiceStack.Web
 		/// <summary>
 		/// Holds the request call context
 		/// </summary>
-		IRequestContext RequestContext { get; set; }
+		IRequest RequestContext { get; set; }
 	}
 }

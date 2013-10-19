@@ -32,7 +32,7 @@ namespace ServiceStack.Auth
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
             var tokens = Init(authService, ref session, request);
-            var httpRequest = authService.RequestContext.Get<IHttpRequest>();
+            var httpRequest = authService.Request;
 
             var error = httpRequest.QueryString["error"];
             var hasError = !error.IsNullOrEmpty();

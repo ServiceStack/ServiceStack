@@ -31,6 +31,6 @@ namespace ServiceStack.Auth
         void OnRegistered(IServiceBase registrationService);
         void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo);
         void OnLogout(IServiceBase authService);
-        void OnCreated(IHttpRequest httpReq);
+        void OnCreated(IRequest httpReq);
     }
 }

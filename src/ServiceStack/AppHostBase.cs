@@ -15,7 +15,7 @@ namespace ServiceStack
         protected AppHostBase(string serviceName, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices) { }
 
-        public override string ResolveAbsoluteUrl(string virtualPath, IHttpRequest httpReq)
+        public override string ResolveAbsoluteUrl(string virtualPath, IRequest httpReq)
         {
             if (HostingEnvironment.ApplicationVirtualPath != null
                 && virtualPath.StartsWith("~" + HostingEnvironment.ApplicationVirtualPath))
@@ -28,9 +28,9 @@ namespace ServiceStack
                 : httpReq.GetAbsoluteUrl(virtualPath);
         }
 
-        public override string ResolvePhysicalPath(string virtualPath, IHttpRequest httpReq)
+        public override string ResolvePhysicalPath(string virtualPath, IRequest httpReq)
         {
-            var path = ((AspNetRequest)httpReq).Request.PhysicalPath;
+            var path = ((AspNetRequest)httpReq).HttpRequest.PhysicalPath;
             return path;
         }
     }

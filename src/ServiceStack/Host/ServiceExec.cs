@@ -11,12 +11,12 @@ namespace ServiceStack.Host
 {
     public interface IServiceExec
     {
-        object Execute(IRequestContext requestContext, object instance, object request);
+        object Execute(IRequest requestContext, object instance, object request);
     }
 
     public class ServiceRequestExec<TService, TRequest> : IServiceExec
     {
-        public object Execute(IRequestContext requestContext, object instance, object request)
+        public object Execute(IRequest requestContext, object instance, object request)
         {
             return ServiceExec<TService>.Execute(requestContext, instance, request,
                 typeof(TRequest).Name);
@@ -156,24 +156,22 @@ namespace ServiceStack.Host
             }
         }
 
-        public static object Execute(IRequestContext requestContext, object instance, object request, string requestName)
+        public static object Execute(IRequest request, object instance, object requestDto, string requestName)
         {
-            IHttpRequest httpReq;
-            var actionName = requestContext != null && (httpReq = requestContext.Get<IHttpRequest>()) != null
-                ? httpReq.HttpMethod
-                : HttpMethods.Post; //MQ Services
+            var actionName = request.Verb 
+                ?? HttpMethods.Post; //MQ Services
 
             InstanceExecFn action;
             if (execMap.TryGetValue(ActionContext.Key(actionName, requestName), out action)
                 || execMap.TryGetValue(ActionContext.AnyKey(requestName), out action))
             {
-                return action(requestContext, instance, request);
+                return action(request, instance, requestDto);
             }
 
             var expectedMethodName = actionName.Substring(0, 1) + actionName.Substring(1).ToLower();
             throw new NotImplementedException(
                 "Could not find method named {1}({0}) or Any({0}) on Service {2}"
-                .Fmt(request.GetType().Name, expectedMethodName, typeof(TService).Name));
+                .Fmt(requestDto.GetType().Name, expectedMethodName, typeof(TService).Name));
         }
     }
 }

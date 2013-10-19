@@ -32,7 +32,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Web;
-using ServiceStack.Host.AspNet;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Text;
@@ -44,12 +43,10 @@ namespace ServiceStack.Host.Handlers
 	{
 		private static readonly ILog log = LogManager.GetLogger(typeof(StaticFileHandler));
 
-		public override void ProcessRequest(HttpContext context)
+		public override void ProcessRequest(HttpContextBase context)
 		{
-			ProcessRequest(
-			    new AspNetRequest(null, context.Request),
-			    new AspNetResponse(context.Response), 
-			    null);
+		    var httpReq = context.ToRequest(GetType().Name);
+			ProcessRequest(httpReq, httpReq.Response, httpReq.OperationName);
 		}
 
 		private DateTime DefaultFileModified { get; set; }
@@ -74,7 +71,7 @@ namespace ServiceStack.Host.Handlers
 			}
 		}
 
-        public override void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
+        public override void ProcessRequest(IRequest request, IResponse response, string operationName)
 		{
             response.EndHttpHandlerRequest(skipClose: true, afterBody: r => 
             {

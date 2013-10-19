@@ -9,7 +9,7 @@ namespace ServiceStack.Host.Handlers
         /// <summary>
 		/// Non ASP.NET requests
 		/// </summary>
-		public override void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
+		public override void ProcessRequest(IRequest request, IResponse response, string operationName)
 		{
 			var defaultUrl = HostContext.Config.ServiceEndpointsMetadataConfig.DefaultMetadataUri;
 
@@ -30,7 +30,7 @@ namespace ServiceStack.Host.Handlers
         /// <summary>
         /// ASP.NET requests
         /// </summary>
-		public override void ProcessRequest(HttpContext context)
+		public override void ProcessRequest(HttpContextBase context)
 		{
 			var defaultUrl = HostContext.Config.ServiceEndpointsMetadataConfig.DefaultMetadataUri;
 

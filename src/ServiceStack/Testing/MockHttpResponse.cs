@@ -1,10 +1,9 @@
-using System;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Text;
 using ServiceStack.Host;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Testing
@@ -80,6 +79,10 @@ namespace ServiceStack.Testing
         public void SetContentLength(long contentLength)
         {
             Headers[HttpHeaders.ContentLength] = contentLength.ToString(CultureInfo.InvariantCulture);
+        }
+
+        public void SetCookie(Cookie cookie)
+        {            
         }
     }
 }

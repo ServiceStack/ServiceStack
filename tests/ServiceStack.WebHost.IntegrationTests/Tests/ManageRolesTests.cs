@@ -53,6 +53,12 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			return newUserRegistration;
 		}
 
+	    [Test]
+	    public void Authenticationg_does_return_session_cookies()
+	    {
+            var client = AuthenticateWithAdminUser();
+	        Assert.That(client.CookieContainer.Count, Is.GreaterThan(0));
+	    }
 
 		[Test]
 		public void Cannot_assign_roles_with_normal_user()

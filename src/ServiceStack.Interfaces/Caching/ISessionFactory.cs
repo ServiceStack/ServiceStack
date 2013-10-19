@@ -14,7 +14,7 @@ namespace ServiceStack.Caching
 		/// <param name="httpReq"></param>
 		/// <param name="httpRes"></param>
 		/// <returns></returns>
-		ISession GetOrCreateSession(IHttpRequest httpReq, IHttpResponse httpRes);
+		ISession GetOrCreateSession(IRequest httpReq, IResponse httpRes);
 
 		/// <summary>
 		/// Gets the session for this request, creates one if it doesn't exist.

@@ -6,22 +6,20 @@ namespace ServiceStack
 {
     public class ServiceStackHttpHandler : HttpAsyncTaskHandler
     {
-        readonly IServiceStackHttpHandler servicestackHandler;
+        readonly IServiceStackHandler servicestackHandler;
 
-        public ServiceStackHttpHandler(IServiceStackHttpHandler servicestackHandler)
+        public ServiceStackHttpHandler(IServiceStackHandler servicestackHandler)
         {
             this.servicestackHandler = servicestackHandler;
         }
 
-        public override void ProcessRequest(HttpContext context)
+        public override void ProcessRequest(HttpContextBase context)
         {
-            ProcessRequest(
-                context.Request.ToRequest(),
-                context.Response.ToResponse(),
-                null);
+            var httpReq = context.ToRequest(GetType().Name);
+            ProcessRequest(httpReq, httpReq.Response, httpReq.OperationName);
         }
 
-        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {
             servicestackHandler.ProcessRequest(httpReq, httpRes, operationName ?? httpReq.OperationName);
         }

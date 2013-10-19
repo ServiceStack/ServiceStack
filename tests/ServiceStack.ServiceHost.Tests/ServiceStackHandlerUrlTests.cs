@@ -35,14 +35,21 @@ namespace ServiceStack.ServiceHost.Tests
 				get { throw new NotImplementedException(); }
 			}
 
-			public T TryResolve<T>()
+		    public IResponse Response { get; private set; }
+
+		    public T TryResolve<T>()
 			{
 				throw new NotImplementedException();
 			}
 
 			public string OperationName { get; set; }
-			public string ContentType { get; private set; }
-			public string HttpMethod { get; private set; }
+		    public string Verb { get; private set; }
+		    public RequestAttributes RequestAttributes { get; set; }
+		    public IRequestPreferences RequestPreferences { get; private set; }
+		    public object Dto { get; set; }
+		    public string ContentType { get; private set; }
+		    public IHttpResponse HttpResponse { get; private set; }
+		    public string HttpMethod { get; private set; }
 			public string UserAgent { get; set; }
             public bool IsLocal { get; set; }
 

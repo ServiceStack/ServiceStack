@@ -109,7 +109,7 @@ namespace ServiceStack.Host.Handlers
 
 		public RequestInfoResponse RequestInfo { get; set; }
 
-		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+		public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
 		{
 			var response = this.RequestInfo ?? GetRequestInfo(httpReq);
 			response.HandlerFactoryArgs = HttpHandlerFactory.DebugLastHandlerArgs;
@@ -125,12 +125,10 @@ namespace ServiceStack.Host.Handlers
 			httpRes.Write(json);
 		}
 
-		public override void ProcessRequest(HttpContext context)
+		public override void ProcessRequest(HttpContextBase context)
 		{
-			ProcessRequestAsync(
-				new AspNetRequest(typeof(RequestInfo).Name, context.Request),
-				new AspNetResponse(context.Response),
-				typeof(RequestInfo).Name);
+		    var request = context.ToRequest(GetType().Name);
+			ProcessRequestAsync(request, request.Response, request.OperationName);
 		}
 
 		public static Dictionary<string, string> ToDictionary(NameValueCollection nvc)
@@ -149,7 +147,7 @@ namespace ServiceStack.Host.Handlers
 			return TypeSerializer.SerializeToString(map);
 		}
 
-		public static RequestInfoResponse GetRequestInfo(IHttpRequest httpReq)
+		public static RequestInfoResponse GetRequestInfo(IRequest httpReq)
 		{
 			var response = new RequestInfoResponse
 			{
@@ -157,7 +155,7 @@ namespace ServiceStack.Host.Handlers
 				Date = DateTime.UtcNow,
 				ServiceName = HostContext.ServiceName,
 				UserHostAddress = httpReq.UserHostAddress,
-				HttpMethod = httpReq.HttpMethod,
+				HttpMethod = httpReq.Verb,
 				AbsoluteUri = httpReq.AbsoluteUri,
 				RawUrl = httpReq.RawUrl,
 				ResolvedPathInfo = httpReq.PathInfo,

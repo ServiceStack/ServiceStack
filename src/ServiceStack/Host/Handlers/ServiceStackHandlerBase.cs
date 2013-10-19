@@ -7,17 +7,14 @@ using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 using ServiceStack.Logging;
 using ServiceStack.Serialization;
 using ServiceStack.Text;
-using ServiceStack.Text.FastMember;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
 {
-    public abstract class ServiceStackHandlerBase
-        : HttpAsyncTaskHandler, IHttpAsyncHandler
+    public abstract class ServiceStackHandlerBase : HttpAsyncTaskHandler
     {
         internal static readonly ILog Log = LogManager.GetLogger(typeof(ServiceStackHandlerBase));
         internal static readonly Dictionary<byte[], byte[]> NetworkInterfaceIpv4Addresses = new Dictionary<byte[], byte[]>();
@@ -44,8 +41,8 @@ namespace ServiceStack.Host.Handlers
             get { return false; }
         }
 
-        public abstract object CreateRequest(IHttpRequest request, string operationName);
-        public abstract object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request);
+        public abstract object CreateRequest(IRequest request, string operationName);
+        public abstract object GetResponse(IRequest request, object requestDto);
 
         public Task HandleResponse(object response, Func<object, Task> callback, Func<Exception, Task> errorCallback)
         {
@@ -85,9 +82,9 @@ namespace ServiceStack.Host.Handlers
             }
         }
 
-        public static object DeserializeHttpRequest(Type operationType, IHttpRequest httpReq, string contentType)
+        public static object DeserializeHttpRequest(Type operationType, IRequest httpReq, string contentType)
         {
-            var httpMethod = httpReq.HttpMethod;
+            var httpMethod = httpReq.Verb;
             var queryString = httpReq.QueryString;
 
             if (httpMethod == HttpMethods.Get || httpMethod == HttpMethods.Delete || httpMethod == HttpMethods.Options)
@@ -121,7 +118,7 @@ namespace ServiceStack.Host.Handlers
             return request;
         }
 
-        protected static object CreateContentTypeRequest(IHttpRequest httpReq, Type requestType, string contentType)
+        protected static object CreateContentTypeRequest(IRequest httpReq, Type requestType, string contentType)
         {
             try
             {
@@ -143,9 +140,9 @@ namespace ServiceStack.Host.Handlers
             return requestType.CreateInstance(); //Return an empty DTO, even for empty request bodies
         }
 
-        protected static object GetCustomRequestFromBinder(IHttpRequest httpReq, Type requestType)
+        protected static object GetCustomRequestFromBinder(IRequest httpReq, Type requestType)
         {
-            Func<IHttpRequest, object> requestFactoryFn;
+            Func<IRequest, object> requestFactoryFn;
             HostContext.ServiceController.RequestTypeFactoryMap.TryGetValue(
                 requestType, out requestFactoryFn);
 
@@ -157,13 +154,12 @@ namespace ServiceStack.Host.Handlers
             return HostContext.Metadata.GetOperationType(operationName);
         }
 
-        protected static object ExecuteService(object request, RequestAttributes requestAttributes,
-            IHttpRequest httpReq, IHttpResponse httpRes)
+        protected static object ExecuteService(object request, IRequest httpReq)
         {
-            return HostContext.ExecuteService(request, requestAttributes, httpReq, httpRes);
+            return HostContext.ExecuteService(request, httpReq);
         }
 
-        public RequestAttributes GetEndpointAttributes(System.ServiceModel.OperationContext operationContext)
+        public RequestAttributes GetRequestAttributes(System.ServiceModel.OperationContext operationContext)
         {
             if (!HostContext.Config.EnableAccessRestrictions) return default(RequestAttributes);
 
@@ -204,29 +200,6 @@ namespace ServiceStack.Host.Handlers
             }
         }
 
-        protected Task HandleException(IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Exception ex)
-        {
-            var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
-            Log.Error(errorMessage, ex);
-
-            try
-            {
-                HostContext.RaiseUncaughtException(httpReq, httpRes, operationName, ex);
-                return EmptyTask;
-            }
-            catch (Exception writeErrorEx)
-            {
-                //Exception in writing to response should not hide the original exception
-                Log.Info("Failed to write error to response: {0}", writeErrorEx);
-                //rethrow the original exception
-                return ex.AsTaskException();
-            }
-            finally
-            {
-                httpRes.EndRequest(skipHeaders: true);
-            }
-        }
-
         protected bool AssertAccess(IHttpRequest httpReq, IHttpResponse httpRes, Feature feature, string operationName)
         {
             if (operationName == null)
@@ -250,16 +223,16 @@ namespace ServiceStack.Host.Handlers
             return true;
         }
 
-        private static void WriteDebugRequest(IRequestContext requestContext, object dto, IHttpResponse httpRes)
+        private static void WriteDebugRequest(IRequest requestContext, object dto, IResponse httpRes)
         {
             var bytes = Encoding.UTF8.GetBytes(dto.SerializeAndFormat());
             httpRes.OutputStream.Write(bytes, 0, bytes.Length);
         }
 
-        public Task WriteDebugResponse(IHttpResponse httpRes, object response)
+        public Task WriteDebugResponse(IResponse httpRes, object response)
         {
             return httpRes.WriteToResponse(response, WriteDebugRequest,
-                new SerializationContext(MimeTypes.PlainText));
+                new BasicRequest { ContentType = MimeTypes.PlainText });
         }
     }
 }

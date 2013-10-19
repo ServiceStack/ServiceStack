@@ -60,13 +60,13 @@ namespace ServiceStack.Metadata
             return conf;
         }
 
-        public bool IsVisible(IHttpRequest httpRequest, Format format, string operation)
+        public bool IsVisible(IRequest httpRequest, Format format, string operation)
         {
             if (ignoredFormats.Contains(format.FromFormat())) return false;
             return metadata.IsVisible(httpRequest, format, operation);
         }
 
-        public bool CanAccess(IHttpRequest httpRequest, Format format, string operation)
+        public bool CanAccess(IRequest httpRequest, Format format, string operation)
         {
             if (ignoredFormats.Contains(format.FromFormat())) return false;
             return metadata.CanAccess(httpRequest, format, operation);

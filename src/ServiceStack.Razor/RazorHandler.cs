@@ -18,7 +18,7 @@ namespace ServiceStack.Razor
             PathInfo = pathInfo;
         }
 
-        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {
             httpRes.ContentType = MimeTypes.Html;
             if (RazorFormat == null)
@@ -46,12 +46,12 @@ namespace ServiceStack.Razor
             RazorFormat.ProcessRazorPage(httpReq, contentPage, model, httpRes);
         }
 
-        public override object CreateRequest(IHttpRequest request, string operationName)
+        public override object CreateRequest(IRequest request, string operationName)
         {
             return null;
         }
 
-        public override object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request)
+        public override object GetResponse(IRequest httpReq, object request)
         {
             return null;
         }

@@ -21,7 +21,7 @@ namespace ServiceStack.Web
         /// </summary>
         /// <param name="req">The http request wrapper</param>
         /// <param name="res">The http response wrapper</param>
-        void ResponseFilter(IHttpRequest req, IHttpResponse res, object response);
+        void ResponseFilter(IRequest req, IResponse res, object response);
 
         /// <summary>
         /// A new shallow copy of this filter is used on every request.

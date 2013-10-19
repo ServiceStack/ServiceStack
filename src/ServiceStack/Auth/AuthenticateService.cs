@@ -96,8 +96,7 @@ namespace ServiceStack.Auth
                     ? SessionOptions.Permanent
                     : SessionOptions.Temporary;
 
-                base.RequestContext.Get<IHttpResponse>()
-                    .AddSessionOptions(base.RequestContext.Get<IHttpRequest>(), opt);
+                base.Request.AddSessionOptions(opt);
             }
 
             var provider = request.provider ?? AuthProviders[0].Provider;
@@ -110,7 +109,7 @@ namespace ServiceStack.Auth
 
             var session = this.GetSession();
 
-            var isHtml = base.RequestContext.ResponseContentType.MatchesContentType(MimeTypes.Html);
+            var isHtml = base.Request.ResponseContentType.MatchesContentType(MimeTypes.Html);
             try
             {
                 var response = Authenticate(request, provider, session, oAuthConfig);
@@ -121,7 +120,7 @@ namespace ServiceStack.Auth
 
                 var referrerUrl = request.Continue
                     ?? session.ReferrerUrl
-                    ?? this.RequestContext.GetHeader("Referer")
+                    ?? this.Request.GetHeader("Referer")
                     ?? oAuthConfig.CallbackUrl;
 
                 var alreadyAuthenticated = response == null;
@@ -148,7 +147,7 @@ namespace ServiceStack.Auth
             }
             catch (HttpError ex)
             {
-                var errorReferrerUrl = this.RequestContext.GetHeader("Referer");
+                var errorReferrerUrl = this.Request.GetHeader("Referer");
                 if (isHtml && errorReferrerUrl != null)
                 {
                     errorReferrerUrl = errorReferrerUrl.SetQueryParam("error", ex.Message);
@@ -167,7 +166,7 @@ namespace ServiceStack.Auth
         public AuthenticateResponse Authenticate(Authenticate request)
         {
             //Remove HTML Content-Type to avoid auth providers issuing browser re-directs
-            ((HttpRequestContext)this.RequestContext).ResponseContentType = MimeTypes.PlainText;
+            this.Request.ResponseContentType = MimeTypes.PlainText;
 
             var provider = request.provider ?? AuthProviders[0].Provider;
             var oAuthConfig = GetAuthProvider(provider);

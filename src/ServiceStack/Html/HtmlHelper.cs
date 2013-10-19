@@ -51,8 +51,8 @@ namespace ServiceStack.Html
 
 		public bool RenderHtml { get; protected set; }
 
-        public IHttpRequest HttpRequest { get; set; }
-        public IHttpResponse HttpResponse { get; set; }
+        public IRequest HttpRequest { get; set; }
+        public IResponse HttpResponse { get; set; }
         public StreamWriter Writer { get; set; }
         public IViewEngine ViewEngine { get; set; }
 
@@ -61,7 +61,7 @@ namespace ServiceStack.Html
 		public Dictionary<string, object> ScopeArgs { get; protected set; }
 	    private ViewDataDictionary viewData;
 
-        public void Init(IViewEngine viewEngine, IHttpRequest httpReq, IHttpResponse httpRes, IRazorView razorPage, 
+        public void Init(IViewEngine viewEngine, IRequest httpReq, IResponse httpRes, IRazorView razorPage, 
             Dictionary<string, object> scopeArgs = null, ViewDataDictionary viewData = null)
         {
             ViewEngine = viewEngine;
@@ -435,7 +435,7 @@ namespace ServiceStack.Html
 
 	public static class HtmlHelperExtensions
 	{
-	    public static IHttpRequest GetHttpRequest(this HtmlHelper html)
+	    public static IRequest GetHttpRequest(this HtmlHelper html)
 	    {
 	        return html != null ? html.HttpRequest : null;
 	    }

@@ -30,12 +30,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public static string LastResult { get; set; }
         public void Delete(DeleteOneWayRequest oneWayRequest)
         {
-            LastResult = oneWayRequest.Prefix + " " + Request.HttpMethod;
+            LastResult = oneWayRequest.Prefix + " " + Request.Verb;
         }
 
         public void Post(PostOneWayRequest oneWayRequest)
         {
-            LastResult = oneWayRequest.Prefix + " " + Request.HttpMethod + oneWayRequest.Title;
+            LastResult = oneWayRequest.Prefix + " " + Request.Verb + oneWayRequest.Title;
         }
 
         public void Put(PostOneWayRequest oneWayRequest)

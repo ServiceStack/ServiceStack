@@ -8,7 +8,7 @@ namespace ServiceStack.Razor
 {
     public class DynamicRequestObject : DynamicDictionary
     {
-        private readonly IHttpRequest httpReq;
+        private readonly IRequest httpReq;
         private readonly IDictionary<string, object> model;
         private readonly object originalModel;
 
@@ -19,7 +19,7 @@ namespace ServiceStack.Razor
             };
 
         public DynamicRequestObject() { }
-        public DynamicRequestObject(IHttpRequest httpReq, object model = null)
+        public DynamicRequestObject(IRequest httpReq, object model = null)
         {
             this.httpReq = httpReq;
             this.originalModel = model;

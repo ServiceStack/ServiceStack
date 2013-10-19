@@ -3,8 +3,8 @@ namespace ServiceStack.Web
 	/// <summary>
 	/// Implement on services that need access to the RequestContext
 	/// </summary>
-	public interface IRequiresRequestContext
+	public interface IRequiresRequest
 	{
-		IRequestContext RequestContext { get; set; }
+		IRequest Request { get; set; }
 	}
 }

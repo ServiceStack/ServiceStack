@@ -3,16 +3,20 @@
 
 using System;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.Host.AspNet;
 using ServiceStack.Host.HttpListener;
+using ServiceStack.Logging;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
 {
-    public abstract class HttpAsyncTaskHandler : IHttpAsyncHandler, IServiceStackHttpHandler
+    public abstract class HttpAsyncTaskHandler : IHttpAsyncHandler, IServiceStackHandler
     {
+        internal static readonly ILog Log = LogManager.GetLogger(typeof(HttpAsyncTaskHandler));
+
         internal static readonly Task<object> EmptyTask;
 
         static HttpAsyncTaskHandler()
@@ -27,7 +31,7 @@ namespace ServiceStack.Host.Handlers
             return false;
         }
 
-        protected static bool DefaultHandledRequest(HttpContext context)
+        protected static bool DefaultHandledRequest(HttpContextBase context)
         {
             return false;
         }
@@ -37,7 +41,7 @@ namespace ServiceStack.Host.Handlers
             return false;
         }
 
-        public virtual Task ProcessRequestAsync(HttpContext context)
+        public virtual Task ProcessRequestAsync(HttpContextBase context)
         {
             var operationName = this.RequestName ?? context.Request.GetOperationName();
 
@@ -45,34 +49,28 @@ namespace ServiceStack.Host.Handlers
 
             if (DefaultHandledRequest(context)) return EmptyTask;
 
+            var httpReq = new AspNetRequest(context, operationName);
+
             if (RunAsAsync())
-            {
-                return ProcessRequestAsync(
-                    new AspNetRequest(operationName, context.Request),
-                    new AspNetResponse(context.Response),
-                    operationName);
-            }
+                return ProcessRequestAsync(httpReq, httpReq.Response, operationName);
 
             return new Task(() => 
-                ProcessRequest(
-                    new AspNetRequest(operationName, context.Request),
-                    new AspNetResponse(context.Response),
-                    operationName));
+                ProcessRequest(httpReq, httpReq.Response, operationName));
         }
 
-        public virtual void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public virtual void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {
             throw new NotImplementedException();
         }
 
-        public virtual Task ProcessRequestAsync(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public virtual Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             var task = new Task(() => ProcessRequest(httpReq, httpRes, operationName));
             task.Start();
             return task;
         }
 
-        public virtual void ProcessRequest(HttpContext context)
+        public virtual void ProcessRequest(HttpContextBase context)
         {
             var operationName = this.RequestName ?? context.Request.GetOperationName();
 
@@ -80,10 +78,9 @@ namespace ServiceStack.Host.Handlers
 
             if (DefaultHandledRequest(context)) return;
 
-            ProcessRequest(
-                new AspNetRequest(operationName, context.Request),
-                new AspNetResponse(context.Response),
-                operationName);
+            var httpReq = new AspNetRequest(context, operationName);
+
+            ProcessRequest(httpReq, httpReq.Response, operationName);
         }
 
         public virtual void ProcessRequest(HttpListenerContext context)
@@ -94,10 +91,9 @@ namespace ServiceStack.Host.Handlers
 
             if (DefaultHandledRequest(context)) return;
 
-            ProcessRequest(
-                new ListenerRequest(operationName, context.Request),
-                new ListenerResponse(context.Response),
-                operationName);
+            var httpReq = new ListenerRequest(context, operationName);
+
+            ProcessRequest(httpReq, httpReq.Response, operationName);
         }
 
         public virtual bool IsReusable
@@ -110,7 +106,7 @@ namespace ServiceStack.Host.Handlers
             if (cb == null)
                 throw new ArgumentNullException("cb");
 
-            var task = ProcessRequestAsync(context);
+            var task = ProcessRequestAsync(context.Request.RequestContext.HttpContext);
 
             task.ContinueWith(ar =>
                               cb(ar));
@@ -132,9 +128,32 @@ namespace ServiceStack.Host.Handlers
             task.Dispose();
         }
 
+        protected Task HandleException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
+        {
+            var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
+            Log.Error(errorMessage, ex);
+
+            try
+            {
+                HostContext.RaiseUncaughtException(httpReq, httpRes, operationName, ex);
+                return EmptyTask;
+            }
+            catch (Exception writeErrorEx)
+            {
+                //Exception in writing to response should not hide the original exception
+                Log.Info("Failed to write error to response: {0}", writeErrorEx);
+                //rethrow the original exception
+                return ex.AsTaskException();
+            }
+            finally
+            {
+                httpRes.EndRequest(skipHeaders: true);
+            }
+        }
+
         void IHttpHandler.ProcessRequest(HttpContext context)
         {
-            var task = ProcessRequestAsync(context);
+            var task = ProcessRequestAsync(context.Request.RequestContext.HttpContext);
 
             if (task.Status == TaskStatus.Created)
             {

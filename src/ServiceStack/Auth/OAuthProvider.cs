@@ -118,13 +118,13 @@ namespace ServiceStack.Auth
                 //session = authService.GetSession();
             }
 
-            var requestUri = authService.RequestContext.AbsoluteUri;
+            var requestUri = authService.Request.AbsoluteUri;
             if (this.CallbackUrl.IsNullOrEmpty())
                 this.CallbackUrl = requestUri;
 
             if (session.ReferrerUrl.IsNullOrEmpty())
                 session.ReferrerUrl = (request != null ? request.Continue : null)
-                    ?? authService.RequestContext.GetHeader("Referer");
+                    ?? authService.Request.GetHeader("Referer");
 
             if (session.ReferrerUrl.IsNullOrEmpty() 
                 || session.ReferrerUrl.IndexOf("/auth", StringComparison.OrdinalIgnoreCase) >= 0)

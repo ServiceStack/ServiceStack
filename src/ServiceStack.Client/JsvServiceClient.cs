@@ -32,7 +32,7 @@ namespace ServiceStack
             get { return String.Format("application/{0}", Format); }
         }
 
-        public override void SerializeToStream(IRequestContext requestContext, object request, Stream stream)
+        public override void SerializeToStream(IRequest requestContext, object request, Stream stream)
         {
             using (var writer = new StreamWriter(stream))
             {

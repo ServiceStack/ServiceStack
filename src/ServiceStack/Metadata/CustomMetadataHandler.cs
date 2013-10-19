@@ -31,7 +31,7 @@ namespace ServiceStack.Metadata
 				using (var ms = new MemoryStream())
 				{
 					HostContext.ContentTypes.SerializeToStream(
-						new SerializationContext(this.ContentType), requestObj, ms);
+                        new BasicRequest { ContentType = this.ContentType }, requestObj, ms);
 
 					return Encoding.UTF8.GetString(ms.ToArray());
 				}

@@ -121,12 +121,13 @@ namespace ServiceStack
         }
 
         // Entry point for ASP.NET
-        public IHttpHandler GetHandler(HttpContext context, string requestType, string url, string pathTranslated)
+        public IHttpHandler GetHandler(HttpContext ctx, string requestType, string url, string pathTranslated)
         {
+            var context = ctx.Request.RequestContext.HttpContext;
             var appHost = HostContext.AppHost;
 
             DebugLastHandlerArgs = requestType + "|" + url + "|" + pathTranslated;
-            var httpReq = new AspNetRequest(pathTranslated, context.Request);
+            var httpReq = new AspNetRequest(context, pathTranslated);
             foreach (var rawHttpHandler in appHost.RawHttpHandlers)
             {
                 var reqInfo = rawHttpHandler(httpReq);
@@ -252,9 +253,9 @@ namespace ServiceStack
                 {
                     var pathProvider = HostContext.VirtualPathProvider;
 
-                    var defaultDoc = pathProvider.CombineVirtualPath(httpReq.ApplicationFilePath, DefaultRootFileName ?? "");
+                    var defaultDoc = pathProvider.GetFile(DefaultRootFileName ?? "");
                     if (httpReq.GetPhysicalPath() != WebHostPhysicalPath
-                        || !pathProvider.FileExists(defaultDoc))
+                        || defaultDoc == null)
                     {
                         return new IndexPageHttpHandler();
                     }

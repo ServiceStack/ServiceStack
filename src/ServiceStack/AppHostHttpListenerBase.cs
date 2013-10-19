@@ -36,11 +36,11 @@ namespace ServiceStack
 
             var operationName = context.Request.GetOperationName();
 
-            var httpReq = new ListenerRequest(operationName, context.Request);
-            var httpRes = new ListenerResponse(context.Response);
+            var httpReq = context.ToRequest(operationName);
+            var httpRes = httpReq.Response;
             var handler = HttpHandlerFactory.GetHandler(httpReq);
 
-            var serviceStackHandler = handler as IServiceStackHttpHandler;
+            var serviceStackHandler = handler as IServiceStackHandler;
             if (serviceStackHandler != null)
             {
                 var restHandler = serviceStackHandler as RestHandler;

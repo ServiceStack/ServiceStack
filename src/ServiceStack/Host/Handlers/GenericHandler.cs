@@ -20,20 +20,20 @@ namespace ServiceStack.Host.Handlers
 
 		public RequestAttributes ContentTypeAttribute { get; set; }
 
-		public override object CreateRequest(IHttpRequest request, string operationName)
+		public override object CreateRequest(IRequest request, string operationName)
 		{
 			return GetRequest(request, operationName);
 		}
 
-		public override object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request)
+		public override object GetResponse(IRequest httpReq, object request)
 		{
-			var response = ExecuteService(request,
-                HandlerAttributes | httpReq.GetAttributes(), httpReq, httpRes);
+		    httpReq.RequestAttributes |= HandlerAttributes;
+			var response = ExecuteService(request, httpReq);
 			
 			return response;
 		}
 
-		public object GetRequest(IHttpRequest httpReq, string operationName)
+		public object GetRequest(IRequest httpReq, string operationName)
 		{
 			var requestType = GetOperationType(operationName);
 			AssertOperationExists(operationName, requestType);
@@ -51,7 +51,7 @@ namespace ServiceStack.Host.Handlers
             return true;
         }
 
-        public override Task ProcessRequestAsync(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
 			try
             {
@@ -70,7 +70,7 @@ namespace ServiceStack.Host.Handlers
                 if (appHost.ApplyRequestFilters(httpReq, httpRes, request))
                     return EmptyTask;
 
-                var rawResponse = GetResponse(httpReq, httpRes, request);
+                var rawResponse = GetResponse(httpReq, request);
                 return HandleResponse(rawResponse, response => 
                 {
                     if (appHost.ApplyResponseFilters(httpReq, httpRes, response))

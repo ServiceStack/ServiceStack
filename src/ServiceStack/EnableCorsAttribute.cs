@@ -31,7 +31,7 @@ namespace ServiceStack
             this.AutoHandleOptionRequests = true;
         }
 
-        public void RequestFilter(IHttpRequest req, IHttpResponse res, object requestDto)
+        public void RequestFilter(IRequest req, IResponse res, object requestDto)
         {
             if (!string.IsNullOrEmpty(allowedOrigins))
                 res.AddHeader(HttpHeaders.AllowOrigin, allowedOrigins);
@@ -42,7 +42,7 @@ namespace ServiceStack
             if (allowCredentials)
                 res.AddHeader(HttpHeaders.AllowCredentials, "true");
 
-            if (AutoHandleOptionRequests && req.HttpMethod == HttpMethods.Options)
+            if (AutoHandleOptionRequests && req.Verb == HttpMethods.Options)
                 res.EndRequest();
         }
 

@@ -14,7 +14,7 @@ namespace ServiceStack.Support.WebHost
 			this.log = LogManager.GetLogger(this.GetType());
 		}
 
-		public void ProcessRequest(HttpContext context)
+		public override void ProcessRequest(HttpContextBase context)
 		{
 			var before = DateTime.UtcNow;
 			Execute(context);
@@ -22,7 +22,7 @@ namespace ServiceStack.Support.WebHost
 			log.DebugFormat("'{0}' was completed in {1}ms", this.GetType().Name, elapsed.TotalMilliseconds);
 		}
 
-		public abstract void Execute(HttpContext context);
+		public abstract void Execute(HttpContextBase context);
 
 		public override bool IsReusable
 		{

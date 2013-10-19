@@ -113,13 +113,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 
     public class ActionLevelAttribute : RequestFilterAttribute
     {
-        public IRequestContext RequestContext { get; set; }
+        public IRequest RequestContext { get; set; }
         public FunqDepProperty FunqDepProperty { get; set; }
         public FunqDepDisposableProperty FunqDepDisposableProperty { get; set; }
         public AltDepProperty AltDepProperty { get; set; }
         public AltDepDisposableProperty AltDepDisposableProperty { get; set; }
 
-        public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+        public override void Execute(IRequest req, IResponse res, object requestDto)
         {
             var response = new IocResponse();
 
@@ -139,7 +139,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
     }
 
 
-    public class IocService : IService, IDisposable, IRequiresRequestContext
+    public class IocService : IService, IDisposable, IRequiresRequest
     {
         private readonly FunqDepCtor funqDepCtor;
         private readonly AltDepCtor altDepCtor;
@@ -150,7 +150,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
             this.altDepCtor = altDepCtor;
         }
 
-        public IRequestContext RequestContext { get; set; }
+        public IRequest Request { get; set; }
         public FunqDepProperty FunqDepProperty { get; set; }
         public FunqDepDisposableProperty FunqDepDisposableProperty { get; set; }
         public AltDepProperty AltDepProperty { get; set; }
@@ -180,7 +180,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         [ActionLevel]
         public IocResponse Any(ActionAttr request)
         {
-            return RequestContext.Get<IHttpRequest>().Items["action-attr"] as IocResponse;
+            return Request.Items["action-attr"] as IocResponse;
         }
         
         public static int DisposedCount = 0;

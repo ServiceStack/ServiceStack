@@ -26,18 +26,18 @@ namespace ServiceStack.Host
             this.ResponseFilters = actionContext.ResponseFilters;
         }
 
-        public T ResolveService<T>(IRequestContext requestContext)
+        public T ResolveService<T>(IRequest requestContext)
         {
             var service = AppHost.TryResolve<T>();
-            var requiresContext = service as IRequiresRequestContext;
+            var requiresContext = service as IRequiresRequest;
             if (requiresContext != null)
             {
-                requiresContext.RequestContext = requestContext;
+                requiresContext.Request = requestContext;
             }
             return service;
         }
 
-        public virtual void BeforeEachRequest(IRequestContext requestContext, TRequest request)
+        public virtual void BeforeEachRequest(IRequest requestContext, TRequest request)
         {
             OnBeforeExecute(requestContext, request);
 
@@ -48,7 +48,7 @@ namespace ServiceStack.Host
             }
         }
 
-        public virtual object AfterEachRequest(IRequestContext requestContext, TRequest request, object response)
+        public virtual object AfterEachRequest(IRequest requestContext, TRequest request, object response)
         {
             var requestLogger = AppHost.TryResolve<IRequestLogger>();
             if (requestLogger != null)
@@ -68,22 +68,20 @@ namespace ServiceStack.Host
             return response.IsErrorResponse() ? response : OnAfterExecute(requestContext, response);
         }
 
-        public virtual void OnBeforeExecute(IRequestContext requestContext, TRequest request) { }
+        public virtual void OnBeforeExecute(IRequest requestContext, TRequest request) { }
 
-        public virtual object OnAfterExecute(IRequestContext requestContext, object response)
+        public virtual object OnAfterExecute(IRequest requestContext, object response)
         {
             return response;
         }
 
-        public virtual object Execute(IRequestContext requestContext, object instance, TRequest request)
+        public virtual object Execute(IRequest request, object instance, TRequest requestDto)
         {
             try
             {
-                BeforeEachRequest(requestContext, request);
+                BeforeEachRequest(request, requestDto);
 
                 var container = HostContext.Container;
-                var httpReq = requestContext != null ? requestContext.Get<IHttpRequest>() : null;
-                var httpRes = requestContext != null ? requestContext.Get<IHttpResponse>() : null;
 
                 if (RequestFilters != null)
                 {
@@ -91,13 +89,13 @@ namespace ServiceStack.Host
                     {
                         var attrInstance = requestFilter.Copy();
                         container.AutoWire(attrInstance);
-                        attrInstance.RequestFilter(httpReq, httpRes, request);
+                        attrInstance.RequestFilter(request, request.Response, requestDto);
                         AppHost.Release(attrInstance);
-                        if (httpRes != null && httpRes.IsClosed) return null;
+                        if (request.Response.IsClosed) return null;
                     }
                 }
 
-                var response = AfterEachRequest(requestContext, request, ServiceAction(instance, request));
+                var response = AfterEachRequest(request, requestDto, ServiceAction(instance, requestDto));
 
                 if (ResponseFilters != null)
                 {
@@ -105,9 +103,9 @@ namespace ServiceStack.Host
                     {
                         var attrInstance = responseFilter.Copy();
                         container.AutoWire(attrInstance);
-                        attrInstance.ResponseFilter(httpReq, httpRes, response);
+                        attrInstance.ResponseFilter(request, request.Response, response);
                         AppHost.Release(attrInstance);
-                        if (httpRes != null && httpRes.IsClosed) return null;
+                        if (request.Response.IsClosed) return null;
                     }
                 }
 
@@ -115,7 +113,7 @@ namespace ServiceStack.Host
             }
             catch (Exception ex)
             {
-                var result = HandleException(requestContext, request, ex);
+                var result = HandleException(request, requestDto, ex);
 
                 if (result == null) throw;
 
@@ -123,22 +121,22 @@ namespace ServiceStack.Host
             }
         }
 
-        public virtual object Execute(IRequestContext requestContext, object instance, IMessage<TRequest> request)
+        public virtual object Execute(IRequest requestContext, object instance, IMessage<TRequest> request)
         {
             return Execute(requestContext, instance, request.GetBody());
         }
 
-        public virtual object HandleException(IRequestContext requestContext, TRequest request, Exception ex)
+        public virtual object HandleException(IRequest request, TRequest requestDto, Exception ex)
         {
-            var errorResponse = HostContext.RaiseServiceException(requestContext.Get<IHttpRequest>(), request, ex) 
-                                ?? DtoUtils.CreateErrorResponse(request, ex);
+            var errorResponse = HostContext.RaiseServiceException(request, requestDto, ex) 
+                                ?? DtoUtils.CreateErrorResponse(requestDto, ex);
 
-            AfterEachRequest(requestContext, request, errorResponse ?? ex);
+            AfterEachRequest(request, requestDto, errorResponse ?? ex);
             
             return errorResponse;
         }
 
-        public object ExecuteOneWay(IRequestContext requestContext, object instance, TRequest request)
+        public object ExecuteOneWay(IRequest requestContext, object instance, TRequest request)
         {
             var msgFactory = AppHost.TryResolve<IMessageFactory>();
             if (msgFactory == null)
@@ -157,7 +155,7 @@ namespace ServiceStack.Host
         }
 
         //signature matches ServiceExecFn
-        public object Process(IRequestContext requestContext, object instance, object request)
+        public object Process(IRequest requestContext, object instance, object request)
         {
             return requestContext != null && requestContext.RequestAttributes.Has(RequestAttributes.OneWay) 
                 ? ExecuteOneWay(requestContext, instance, (TRequest)request) 

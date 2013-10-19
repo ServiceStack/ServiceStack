@@ -19,7 +19,7 @@ namespace ServiceStack.Metadata
             }
         }
 
-        public IHttpRequest HttpRequest { get; set; }
+        public IRequest HttpRequest { get; set; }
         public string ContentType { get; set; }
         public string ContentFormat { get; set; }
 

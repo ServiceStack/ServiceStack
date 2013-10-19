@@ -14,7 +14,7 @@ namespace ServiceStack.Host.Handlers
 		public string DefaultRootFileName { get; set; }
 		public string DefaultHandler { get; set; }
 
-        public override void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
+        public override void ProcessRequest(IRequest request, IResponse response, string operationName)
         {
             response.ContentType = "text/plain";
             response.StatusCode = 403;
@@ -22,7 +22,7 @@ namespace ServiceStack.Host.Handlers
 		    response.EndHttpHandlerRequest(skipClose: true, afterBody: r => {
                 r.Write("Forbidden\n\n");
 
-                r.Write("\nRequest.HttpMethod: " + request.HttpMethod);
+                r.Write("\nRequest.HttpMethod: " + request.Verb);
                 r.Write("\nRequest.PathInfo: " + request.PathInfo);
                 r.Write("\nRequest.QueryString: " + request.QueryString);
 
@@ -48,7 +48,7 @@ namespace ServiceStack.Host.Handlers
             });
 		}
 
-        public override void ProcessRequest(HttpContext context)
+        public override void ProcessRequest(HttpContextBase context)
         {
             var request = context.Request;
             var response = context.Response;

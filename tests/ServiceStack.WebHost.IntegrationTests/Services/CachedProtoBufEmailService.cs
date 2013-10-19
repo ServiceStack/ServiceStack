@@ -33,7 +33,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
     {
         public object Any(CachedProtoBufEmail request)
         {
-            return base.RequestContext.ToOptimizedResultUsingCache(this.Cache,
+            return base.Request.ToOptimizedResultUsingCache(this.Cache,
                 UrnId.Create<ProtoBufEmail>(request.FromAddress ?? "none"),
                 () => new ProtoBufEmail { FromAddress = request.FromAddress ?? "none" });
         }

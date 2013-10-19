@@ -5,7 +5,6 @@ using System.Net;
 using System.Web;
 using System.Web.UI;
 using ServiceStack.Host;
-using ServiceStack.Host.AspNet;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Web;
 using System.Text;
@@ -19,15 +18,16 @@ namespace ServiceStack.Metadata
         public string ContentType { get; set; }
         public string ContentFormat { get; set; }
 
-        public override void Execute(HttpContext context)
+        public override void Execute(HttpContextBase context)
         {
             var writer = new HtmlTextWriter(context.Response.Output);
             context.Response.ContentType = "text/html";
 
-            ProcessOperations(writer, new AspNetRequest(GetType().Name, context.Request), new AspNetResponse(context.Response));
+            var request = context.ToRequest();
+            ProcessOperations(writer, request, request.Response);
         }
 
-        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {
             using (var sw = new StreamWriter(httpRes.OutputStream))
             {
@@ -53,7 +53,7 @@ namespace ServiceStack.Metadata
             return CreateMessage(type);
         }
 
-        protected virtual void ProcessOperations(HtmlTextWriter writer, IHttpRequest httpReq, IHttpResponse httpRes)
+        protected virtual void ProcessOperations(HtmlTextWriter writer, IRequest httpReq, IResponse httpRes)
         {
             var operationName = httpReq.QueryString["op"];
 
@@ -163,7 +163,7 @@ namespace ServiceStack.Metadata
             RenderOperations(writer, httpReq, metadata);
         }
 
-        protected void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, ServiceMetadata metadata)
+        protected void RenderOperations(HtmlTextWriter writer, IRequest httpReq, ServiceMetadata metadata)
         {
             var defaultPage = new IndexOperationsControl
             {
@@ -185,7 +185,7 @@ namespace ServiceStack.Metadata
                 .Replace("\n", "<br />\n");
         }
 
-        protected bool AssertAccess(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        protected bool AssertAccess(IRequest httpReq, IResponse httpRes, string operationName)
         {
             var appHost = HostContext.AppHost;
             if (!appHost.HasAccessToMetadata(httpReq, httpRes)) return false;
@@ -203,7 +203,7 @@ namespace ServiceStack.Metadata
 
         protected abstract string CreateMessage(Type dtoType);
 
-        protected virtual void RenderOperation(HtmlTextWriter writer, IHttpRequest httpReq, string operationName,
+        protected virtual void RenderOperation(HtmlTextWriter writer, IRequest httpReq, string operationName,
             string requestMessage, string responseMessage, string metadataHtml)
         {
             var operationControl = new OperationControl

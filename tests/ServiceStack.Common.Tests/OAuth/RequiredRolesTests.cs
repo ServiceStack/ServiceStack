@@ -80,14 +80,11 @@ namespace ServiceStack.Common.Tests.OAuth
 
             var requiredRole = new RequiredRoleAttribute(RoleNames.Admin);
 
-            var requestContext = (MockRequestContext)registrationService.RequestContext;
-            requestContext.Container.Register(userAuth);
-            var httpRes = requestContext.Get<IHttpResponse>();
+            var request = registrationService.Request;
+            HostContext.Container.Register(userAuth);
+            var httpRes = request.Response;
 
-            requiredRole.Execute(
-                requestContext.Get<IHttpRequest>(),
-                httpRes,
-                null);
+            requiredRole.Execute(request, request.Response, request.OperationName);
 
             Assert.That(!httpRes.IsClosed);
         }
@@ -97,13 +94,12 @@ namespace ServiceStack.Common.Tests.OAuth
         {
             var registrationService = GetRegistrationService();
 
-            var requestContext = (MockRequestContext)registrationService.RequestContext;
-            requestContext.Container.Register(userAuth);
-            var httpRes = requestContext.Get<IHttpResponse>();
+            var request = registrationService.Request;
+            HostContext.Container.Register(userAuth);
 
-            RequiredRoleAttribute.AssertRequiredRoles(requestContext, RoleNames.Admin);
+            RequiredRoleAttribute.AssertRequiredRoles(request, RoleNames.Admin);
 
-            Assert.That(!httpRes.IsClosed);
+            Assert.That(!request.Response.IsClosed);
         }
     }
 }

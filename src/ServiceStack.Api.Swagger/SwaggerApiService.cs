@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using ServiceStack.Host;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Api.Swagger
@@ -144,7 +143,7 @@ namespace ServiceStack.Api.Swagger
 
         public object Get(ResourceRequest request)
         {
-            var httpReq = RequestContext.Get<IHttpRequest>();
+            var httpReq = Request;
             var path = "/" + request.Name;
             var map = HostContext.ServiceController.RestPathMap;
             var paths = new List<RestPath>();

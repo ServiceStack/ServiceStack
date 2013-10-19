@@ -13,8 +13,8 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host
 {
-    public delegate object ServiceExecFn(IRequestContext requestContext, object request);
-    public delegate object InstanceExecFn(IRequestContext requestContext, object intance, object request);
+    public delegate object ServiceExecFn(IRequest requestContext, object request);
+    public delegate object InstanceExecFn(IRequest requestContext, object intance, object request);
     public delegate object ActionInvokerFn(object intance, object request);
     public delegate void VoidActionInvokerFn(object intance, object request);
 
@@ -28,7 +28,7 @@ namespace ServiceStack.Host
         {
             this.appHost = appHost;
             appHost.Container.DefaultOwner = Owner.External;
-            this.RequestTypeFactoryMap = new Dictionary<Type, Func<IHttpRequest, object>>();
+            this.RequestTypeFactoryMap = new Dictionary<Type, Func<IRequest, object>>();
         }
 
         public ServiceController(ServiceStackHost appHost, Func<IEnumerable<Type>> resolveServicesFn)
@@ -54,7 +54,7 @@ namespace ServiceStack.Host
         readonly Dictionary<Type, RestrictAttribute> requestServiceAttrs
 			= new Dictionary<Type, RestrictAttribute>();
 
-        public Dictionary<Type, Func<IHttpRequest, object>> RequestTypeFactoryMap { get; set; }
+        public Dictionary<Type, Func<IRequest, object>> RequestTypeFactoryMap { get; set; }
 
         public string DefaultOperationsNamespace { get; set; }
 
@@ -376,23 +376,23 @@ namespace ServiceStack.Host
             }
         }
 
-        private object ManagedServiceExec(ServiceExecFn serviceExec, IService service, IRequestContext requestContext, object request)
+        private object ManagedServiceExec(ServiceExecFn serviceExec, IService service, IRequest request, object requestDto)
         {
             try
             {
-                InjectRequestContext(service, requestContext);
+                InjectRequestContext(service, request);
 
                 try
                 {
-                    var httpReq = requestContext.Get<IHttpRequest>();
-                    var httpRes = requestContext.Get<IHttpResponse>();
+                    request.Dto = requestDto;
 
-                    request = appHost.OnPreExecuteServiceFilter(service, request, httpReq, httpRes);
+                    requestDto = appHost.OnPreExecuteServiceFilter(service, requestDto, request, request.Response);
+                    request.Dto = requestDto;
 
                     //Executes the service and returns the result
-                    var response = serviceExec(requestContext, request);
+                    var response = serviceExec(request, requestDto);
 
-                    response = appHost.OnPostExecuteServiceFilter(service, response, httpReq, httpRes);
+                    response = appHost.OnPostExecuteServiceFilter(service, response, request, request.Response);
                     
                     return response;
                 }
@@ -409,19 +409,15 @@ namespace ServiceStack.Host
             }
         }
 
-        internal static void InjectRequestContext(object service, IRequestContext requestContext)
+        internal static void InjectRequestContext(object service, IRequest requestContext)
         {
             if (requestContext == null) return;
 
-            var serviceRequiresContext = service as IRequiresRequestContext;
+            var serviceRequiresContext = service as IRequiresRequest;
             if (serviceRequiresContext != null)
             {
-                serviceRequiresContext.RequestContext = requestContext;
+                serviceRequiresContext.Request = requestContext;
             }
-
-            var servicesRequiresHttpRequest = service as IRequiresHttpRequest;
-            if (servicesRequiresHttpRequest != null)
-                servicesRequiresHttpRequest.HttpRequest = requestContext.Get<IHttpRequest>();
         }
         
         /// <summary>
@@ -429,13 +425,13 @@ namespace ServiceStack.Host
         /// </summary>
         public object ExecuteMessage<T>(IMessage<T> mqMessage)
         {
-            return Execute(mqMessage.Body, new BasicRequestContext(mqMessage));
+            return Execute(mqMessage.Body, new BasicRequest(mqMessage));
         }
 
         /// <summary>
         /// Execute MQ with requestContext
         /// </summary>
-        public object ExecuteMessage<T>(IMessage<T> dto, IRequestContext requestContext)
+        public object ExecuteMessage<T>(IMessage<T> dto, IRequest requestContext)
         {
             return Execute(dto.Body, requestContext);
         }
@@ -443,26 +439,26 @@ namespace ServiceStack.Host
         /// <summary>
         /// Execute using empty RequestContext
         /// </summary>
-        public object Execute(object request)
+        public object Execute(object requestDto)
         {
-            return Execute(request, new BasicRequestContext());
+            return Execute(requestDto, new BasicRequest());
         }
 
         /// <summary>
         /// Execute HTTP
         /// </summary>
-        public object Execute(object request, IRequestContext requestContext)
+        public object Execute(object requestDto, IRequest request)
         {
-            var requestType = request.GetType();
+            var requestType = requestDto.GetType();
 
             if (appHost.Config.EnableAccessRestrictions)
             {
                 AssertServiceRestrictions(requestType,
-                    requestContext != null ? requestContext.RequestAttributes : RequestAttributes.None);
+                    request != null ? request.RequestAttributes : RequestAttributes.None);
             }
 
             var handlerFn = GetService(requestType);
-            return handlerFn(requestContext, request);
+            return handlerFn(request, requestDto);
         }
 
         public ServiceExecFn GetService(Type requestType)

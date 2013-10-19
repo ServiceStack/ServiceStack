@@ -21,7 +21,7 @@ namespace ServiceStack
         /// and no more processing should be done.
         /// </summary>
         /// <returns></returns>
-        public bool ApplyPreRequestFilters(IHttpRequest httpReq, IHttpResponse httpRes)
+        public bool ApplyPreRequestFilters(IRequest httpReq, IResponse httpRes)
         {
             foreach (var requestFilter in PreRequestFilters)
             {
@@ -37,7 +37,7 @@ namespace ServiceStack
         /// and no more processing should be done.
         /// </summary>
         /// <returns></returns>
-        public bool ApplyRequestFilters(IHttpRequest httpReq, IHttpResponse httpRes, object requestDto)
+        public bool ApplyRequestFilters(IRequest httpReq, IResponse httpRes, object requestDto)
         {
             httpReq.ThrowIfNull("httpReq");
             httpRes.ThrowIfNull("httpRes");
@@ -82,7 +82,7 @@ namespace ServiceStack
         /// and no more processing should be done.
         /// </summary>
         /// <returns></returns>
-        public bool ApplyResponseFilters(IHttpRequest httpReq, IHttpResponse httpRes, object response)
+        public bool ApplyResponseFilters(IRequest httpReq, IResponse httpRes, object response)
         {
             httpReq.ThrowIfNull("httpReq");
             httpRes.ThrowIfNull("httpRes");
@@ -179,7 +179,7 @@ namespace ServiceStack
             AssertFeatures(contentType.ToFeature());
         }
 
-        public bool HasAccessToMetadata(IHttpRequest httpReq, IHttpResponse httpRes)
+        public bool HasAccessToMetadata(IRequest httpReq, IResponse httpRes)
         {
             if (!HasFeature(Feature.Metadata))
             {
@@ -199,7 +199,7 @@ namespace ServiceStack
             return true;
         }
 
-        public void HandleErrorResponse(IHttpRequest httpReq, IHttpResponse httpRes, HttpStatusCode errorStatus, string errorStatusDescription = null)
+        public void HandleErrorResponse(IRequest httpReq, IResponse httpRes, HttpStatusCode errorStatus, string errorStatusDescription = null)
         {
             if (httpRes.IsClosed) return;
 
@@ -210,7 +210,7 @@ namespace ServiceStack
             handler.ProcessRequest(httpReq, httpRes, httpReq.OperationName);
         }
 
-        public IServiceStackHttpHandler GetHandlerForErrorStatus(HttpStatusCode errorStatus)
+        public IServiceStackHandler GetHandlerForErrorStatus(HttpStatusCode errorStatus)
         {
             var httpHandler = GetCustomErrorHandler(errorStatus);
 
@@ -230,7 +230,7 @@ namespace ServiceStack
             return httpHandler ?? new NotFoundHttpHandler();
         }
 
-        public IServiceStackHttpHandler GetCustomErrorHandler(int errorStatusCode)
+        public IServiceStackHandler GetCustomErrorHandler(int errorStatusCode)
         {
             try
             {
@@ -242,9 +242,9 @@ namespace ServiceStack
             }
         }
 
-        public IServiceStackHttpHandler GetCustomErrorHandler(HttpStatusCode errorStatus)
+        public IServiceStackHandler GetCustomErrorHandler(HttpStatusCode errorStatus)
         {
-            IServiceStackHttpHandler httpHandler = null;
+            IServiceStackHandler httpHandler = null;
             if (CustomErrorHttpHandlers != null)
             {
                 CustomErrorHttpHandlers.TryGetValue(errorStatus, out httpHandler);
@@ -260,7 +260,7 @@ namespace ServiceStack
             return httpHandler ?? new ServiceStackHttpHandler(ssHandler);
         }
 
-        public bool HasValidAuthSecret(IHttpRequest httpReq)
+        public bool HasValidAuthSecret(IRequest httpReq)
         {
             if (Config.AdminAuthSecret != null)
             {

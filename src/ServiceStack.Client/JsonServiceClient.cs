@@ -33,7 +33,7 @@ namespace ServiceStack
             get { return String.Format("application/{0}", Format); }
         }
 
-        public override void SerializeToStream(IRequestContext requestContext, object request, Stream stream)
+        public override void SerializeToStream(IRequest requestContext, object request, Stream stream)
         {
             JsonDataContractSerializer.Instance.SerializeToStream(request, stream);
         }

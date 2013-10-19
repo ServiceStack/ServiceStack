@@ -64,14 +64,14 @@ namespace ServiceStack.Auth
             var session = service.GetSession();
             var referrerUrl = (request != null ? request.Continue : null)
                 ?? session.ReferrerUrl
-                ?? service.RequestContext.GetHeader("Referer")
+                ?? service.Request.GetHeader("Referer")
                 ?? this.CallbackUrl;
 
             session.OnLogout(service);
 
             service.RemoveSession();
 
-            if (service.RequestContext.ResponseContentType == MimeTypes.Html && !String.IsNullOrEmpty(referrerUrl))
+            if (service.Request.ResponseContentType == MimeTypes.Html && !String.IsNullOrEmpty(referrerUrl))
                 return service.Redirect(referrerUrl.AddHashParam("s", "-1"));
 
             return new AuthenticateResponse();
@@ -104,7 +104,7 @@ namespace ServiceStack.Auth
 
             authRepo.SaveUserAuth(session);
 
-            var httpRes = authService.RequestContext.Get<IHttpResponse>();
+            var httpRes = authService.Request.Response;
             if (httpRes != null)
             {
                 httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
@@ -145,7 +145,7 @@ namespace ServiceStack.Auth
                     }
                 }
         
-                var httpRes = authService.RequestContext.Get<IHttpResponse>();
+                var httpRes = authService.Request.Response;
                 if (httpRes != null)
                 {
                     httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
@@ -181,7 +181,7 @@ namespace ServiceStack.Auth
 
         public abstract object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request);
 
-        public virtual void OnFailedAuthentication(IAuthSession session, IHttpRequest httpReq, IHttpResponse httpRes)
+        public virtual void OnFailedAuthentication(IAuthSession session, IRequest httpReq, IResponse httpRes)
         {
             httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
             httpRes.AddHeader(HttpHeaders.WwwAuthenticate, "{0} realm=\"{1}\"".Fmt(this.Provider, this.AuthRealm));
@@ -189,7 +189,7 @@ namespace ServiceStack.Auth
         }
 
         public static void HandleFailedAuth(IAuthProvider authProvider,
-            IAuthSession session, IHttpRequest httpReq, IHttpResponse httpRes)
+            IAuthSession session, IRequest httpReq, IResponse httpRes)
         {
             var baseAuthProvider = authProvider as AuthProvider;
             if (baseAuthProvider != null)

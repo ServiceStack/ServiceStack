@@ -178,7 +178,7 @@ namespace RazorRockstars.Console.Files
                 throw new ArgumentException("Invalid Age");
 
             var cacheKey = typeof(CachedAllReqstars).Name;
-            return base.RequestContext.ToOptimizedResultUsingCache(base.Cache, cacheKey, () => 
+            return base.Request.ToOptimizedResultUsingCache(base.Cache, cacheKey, () => 
                 new ReqstarsResponse {
                     Aged = request.Aged,
                     Total = Db.Scalar<int>("select count(*) from Reqstar"),
@@ -360,7 +360,7 @@ namespace RazorRockstars.Console.Files
     public class MyResponseFilterAttribute : ResponseFilterAttribute
     {
         public static int Called = 0;
-        public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+        public override void Execute(IRequest req, IResponse res, object requestDto)
         {
             Called++;
             var x = requestDto;
@@ -370,7 +370,7 @@ namespace RazorRockstars.Console.Files
     public class MyRequestFilterAttribute : RequestFilterAttribute
     {
         public static int Called = 0;
-        public override void Execute(IHttpRequest req, IHttpResponse res, object responseDto)
+        public override void Execute(IRequest req, IResponse res, object responseDto)
         {
             Called++;
             var x = responseDto;

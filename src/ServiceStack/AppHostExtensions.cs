@@ -17,7 +17,7 @@ namespace ServiceStack
 			appHost.RegisterService(typeof(TService), atRestPaths);
 		}
 
-		public static void RegisterRequestBinder<TRequest>(this IAppHost appHost, Func<IHttpRequest, object> binder)
+		public static void RegisterRequestBinder<TRequest>(this IAppHost appHost, Func<IRequest, object> binder)
 		{
 			appHost.RequestBinders[typeof(TRequest)] = binder;
 		}

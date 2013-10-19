@@ -8,7 +8,7 @@ namespace ServiceStack.Metadata
 {
     internal class IndexOperationsControl : System.Web.UI.Control
     {
-        public IHttpRequest HttpRequest { get; set; }
+        public IRequest HttpRequest { get; set; }
         public string Title { get; set; }
         public List<string> OperationNames { get; set; }
         public IDictionary<int, string> Xsds { get; set; }

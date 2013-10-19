@@ -68,7 +68,7 @@ namespace ServiceStack.Auth
         public virtual void OnRegistered(IServiceBase registrationService) {}
         public virtual void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo) {}
         public virtual void OnLogout(IServiceBase authService) {}
-        public virtual void OnCreated(IHttpRequest httpReq) {}
+        public virtual void OnCreated(IRequest httpReq) {}
     }
 
     public static class AuthSessionExtensions

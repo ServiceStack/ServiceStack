@@ -28,17 +28,16 @@ namespace ServiceStack.Formats
             appHost.Config.IgnoreFormatsInMetadata.Add(MimeTypes.JsonReport.ToContentFormat());
 		}
 
-		public void SerializeToStream(IRequestContext requestContext, object response, IHttpResponse httpRes)
+		public void SerializeToStream(IRequest request, object response, IResponse httpRes)
 		{
-            var httpReq = requestContext.Get<IHttpRequest>();
-            var httpResult = httpReq.GetItem("HttpResult") as IHttpResult;
+            var httpResult = request.GetItem("HttpResult") as IHttpResult;
             if (httpResult != null && httpResult.Headers.ContainsKey(HttpHeaders.Location))
                 return;
 
-            if (httpReq != null && AppHost.ViewEngines.Any(x => x.ProcessRequest(httpReq, httpRes, response))) return;
+            if (AppHost.ViewEngines.Any(x => x.ProcessRequest(request, httpRes, response))) return;
 
-            if (requestContext.ResponseContentType != MimeTypes.Html && httpReq != null
-                && httpReq.ResponseContentType != MimeTypes.JsonReport) return;
+            if (request.ResponseContentType != MimeTypes.Html
+                && request.ResponseContentType != MimeTypes.JsonReport) return;
 
 		    var dto = response.GetDto();
 		    var html = dto as string;
@@ -48,20 +47,15 @@ namespace ServiceStack.Formats
                 var json = JsonDataContractSerializer.Instance.SerializeToString(dto) ?? "null";
                 json = json.Replace("<", "&lt;").Replace(">", "&gt;");
 
-                string url = string.Empty;
-                if (httpReq != null)
-                {
-                    url = httpReq.AbsoluteUri
-                        .Replace("format=html", "")
-                        .Replace("format=shtm", "")
-                        .TrimEnd('?', '&');
+                var url = request.AbsoluteUri
+                    .Replace("format=html", "")
+                    .Replace("format=shtm", "")
+                    .TrimEnd('?', '&');
 
-                    url += url.Contains("?") ? "&" : "?";
-                }
+                url += url.Contains("?") ? "&" : "?";
 
                 var now = DateTime.UtcNow;
-                string requestName = string.Empty;
-                if (httpReq != null) requestName = httpReq.OperationName ?? dto.GetType().Name;
+                var requestName = request.OperationName ?? dto.GetType().Name;
 
                 html = HtmlTemplates.GetHtmlFormatTemplate()
                     .Replace("${Dto}", json)

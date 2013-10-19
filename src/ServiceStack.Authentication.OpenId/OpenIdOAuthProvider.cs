@@ -22,7 +22,7 @@ namespace ServiceStack.Authentication.OpenId
         public OpenIdOAuthProvider(IAppSettings appSettings, string name = DefaultName, string realm = null)
             : base(appSettings, realm, name) { }
 
-        public virtual ClaimsRequest CreateClaimsRequest(IHttpRequest httpReq)
+        public virtual ClaimsRequest CreateClaimsRequest(IRequest httpReq)
         {
             return new ClaimsRequest {
                 Country = DemandLevel.Request,
@@ -45,7 +45,7 @@ namespace ServiceStack.Authentication.OpenId
         {
             var tokens = Init(authService, ref session, request);
 
-            var httpReq = authService.RequestContext.Get<IHttpRequest>();
+            var httpReq = authService.Request;
             var isOpenIdRequest = !httpReq.GetParam("openid.mode").IsNullOrEmpty();
 
             if (!isOpenIdRequest)
