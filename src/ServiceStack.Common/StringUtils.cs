@@ -51,15 +51,14 @@ namespace ServiceStack
                     return match.Value; // ambiguous ampersand
                 }
             }
-            return decimalValue.ToString(CultureInfo.InvariantCulture);
+            return ((char)decimalValue).ToString(CultureInfo.InvariantCulture);
         }
 
         public static string ToChar(this int codePoint)
         {
-            return codePoint.ToString(CultureInfo.InvariantCulture);
+            return ((char)codePoint).ToString(CultureInfo.InvariantCulture);
         }
-
- 
+        
         // http://www.w3.org/TR/html5/entities.json
         // TODO: conditional compilation for NET45 that uses ReadOnlyDictionary
         public static readonly IDictionary<string, string> HtmlCharacterCodes = new Dictionary<string, string>()
