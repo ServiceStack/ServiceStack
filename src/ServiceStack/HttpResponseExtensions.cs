@@ -130,32 +130,36 @@ namespace ServiceStack
 		/// <summary>
 		/// Sets a persistent cookie which never expires
 		/// </summary>
-        public static void SetPermanentCookie(this IResponse httpRes, string cookieName, string cookieValue)
+        public static void SetPermanentCookie(this IResponse response, string cookieName, string cookieValue)
 		{
-			httpRes.Cookies.AddPermanentCookie(cookieName, cookieValue);
-		}
+		    var httpRes = response as IHttpResponse;
+            if (httpRes != null)
+                httpRes.Cookies.AddPermanentCookie(cookieName, cookieValue);
+        }
 
 		/// <summary>
 		/// Sets a session cookie which expires after the browser session closes
 		/// </summary>
-        public static void SetSessionCookie(this IResponse httpRes, string cookieName, string cookieValue)
+        public static void SetSessionCookie(this IResponse response, string cookieName, string cookieValue)
 		{
-			httpRes.Cookies.AddSessionCookie(cookieName, cookieValue);
+            var httpRes = response as IHttpResponse;
+            if (httpRes != null)
+                httpRes.Cookies.AddSessionCookie(cookieName, cookieValue);
 		}
 
 		/// <summary>
 		/// Sets a persistent cookie which expires after the given time
 		/// </summary>
-        public static void SetCookie(this IResponse res, string cookieName, string cookieValue, TimeSpan expiresIn)
+        public static void SetCookie(this IResponse response, string cookieName, string cookieValue, TimeSpan expiresIn)
 		{
-			res.SetCookie(new Cookie(cookieName, cookieValue) {
+			response.SetCookie(new Cookie(cookieName, cookieValue) {
 				Expires = DateTime.UtcNow + expiresIn
 			});
 		}
 
-        public static void SetCookie(this IResponse res, Cookie cookie)
+        public static void SetCookie(this IResponse response, Cookie cookie)
         {
-            var httpRes = res as IHttpResponse;
+            var httpRes = response as IHttpResponse;
             if (httpRes != null)
             {
                 httpRes.SetCookie(cookie);
@@ -165,10 +169,10 @@ namespace ServiceStack
 		/// <summary>
 		/// Sets a persistent cookie with an expiresAt date
 		/// </summary>
-        public static void SetCookie(this IResponse res, string cookieName,
+        public static void SetCookie(this IResponse response, string cookieName,
 			string cookieValue, DateTime expiresAt, string path = "/")
 		{
-			res.SetCookie(new Cookie(cookieName, cookieValue, path) {
+			response.SetCookie(new Cookie(cookieName, cookieValue, path) {
 				Expires = expiresAt,
 			});
 		}
@@ -176,9 +180,11 @@ namespace ServiceStack
 		/// <summary>
 		/// Deletes a specified cookie by setting its value to empty and expiration to -1 days
 		/// </summary>
-        public static void DeleteCookie(this IResponse httpRes, string cookieName)
+        public static void DeleteCookie(this IResponse response, string cookieName)
 		{
-			httpRes.Cookies.DeleteCookie(cookieName);
+            var httpRes = response as IHttpResponse;
+            if (httpRes != null)
+                httpRes.Cookies.DeleteCookie(cookieName);
 		}
 
         public static Dictionary<string, string> CookiesAsDictionary(this IResponse httpRes)

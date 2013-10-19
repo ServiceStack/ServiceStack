@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
-using ServiceStack.Configuration;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -76,7 +74,11 @@ namespace ServiceStack
         public static string CreatePermanentSessionId(this IResponse res, IRequest req)
         {
             var sessionId = CreateRandomSessionId();
-            res.Cookies.AddPermanentCookie(SessionFeature.PermanentSessionId, sessionId);
+
+            var httpRes = res as IHttpResponse;
+            if (httpRes != null)
+                httpRes.Cookies.AddPermanentCookie(SessionFeature.PermanentSessionId, sessionId);
+
             req.Items[SessionFeature.PermanentSessionId] = sessionId;
             return sessionId;
         }
@@ -84,8 +86,14 @@ namespace ServiceStack
         public static string CreateTemporarySessionId(this IResponse res, IRequest req)
         {
             var sessionId = CreateRandomSessionId();
-            res.Cookies.AddSessionCookie(SessionFeature.SessionId, sessionId,
-                (HostContext.Config.OnlySendSessionCookiesSecurely && req.IsSecureConnection));
+
+            var httpRes = res as IHttpResponse;
+            if (httpRes != null)
+            {
+                httpRes.Cookies.AddSessionCookie(SessionFeature.SessionId, sessionId,
+                    (HostContext.Config.OnlySendSessionCookiesSecurely && req.IsSecureConnection));
+            }
+
             req.Items[SessionFeature.SessionId] = sessionId;
             return sessionId;
         }
@@ -108,7 +116,7 @@ namespace ServiceStack
         public static void UpdateFromUserAuthRepo(this IAuthSession session, IRequest req, IAuthRepository userAuthRepo = null)
         {
             if (userAuthRepo == null)
-                userAuthRepo = ((IResolver) req).TryResolve<IAuthRepository>();
+                userAuthRepo = req.TryResolve<IAuthRepository>();
 
             if (userAuthRepo == null) return;
 
@@ -134,7 +142,11 @@ namespace ServiceStack
             }
 
             var strOptions = String.Join(",", existingOptions.ToArray());
-            req.Response.Cookies.AddPermanentCookie(SessionFeature.SessionOptionsKey, strOptions);
+
+            var httpRes = req.Response as IHttpResponse;
+            if (httpRes != null)
+                httpRes.Cookies.AddPermanentCookie(SessionFeature.SessionOptionsKey, strOptions);
+
             req.Items[SessionFeature.SessionOptionsKey] = strOptions;
             
             return existingOptions;

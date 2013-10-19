@@ -10,6 +10,8 @@ namespace ServiceStack.Web
     /// </summary>
     public interface IHttpResponse : IResponse
     {
+        ICookies Cookies { get; }
+
         void SetCookie(Cookie cookie);
     }
 }

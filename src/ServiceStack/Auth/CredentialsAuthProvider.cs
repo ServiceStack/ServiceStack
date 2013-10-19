@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using ServiceStack.Configuration;
 using ServiceStack.FluentValidation;
+using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
@@ -125,8 +126,9 @@ namespace ServiceStack.Auth
                     }
                 }
 
-                var httpRes = authService.Request.Response;
-                if (httpRes != null) {
+                var httpRes = authService.Request.Response as IHttpResponse;
+                if (httpRes != null) 
+                {
                     httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
                 }
             }

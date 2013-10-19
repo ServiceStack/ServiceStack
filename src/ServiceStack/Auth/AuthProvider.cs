@@ -104,7 +104,7 @@ namespace ServiceStack.Auth
 
             authRepo.SaveUserAuth(session);
 
-            var httpRes = authService.Request.Response;
+            var httpRes = authService.Request.Response as IHttpResponse;
             if (httpRes != null)
             {
                 httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
@@ -145,7 +145,7 @@ namespace ServiceStack.Auth
                     }
                 }
         
-                var httpRes = authService.Request.Response;
+                var httpRes = authService.Request.Response as IHttpResponse;
                 if (httpRes != null)
                 {
                     httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);

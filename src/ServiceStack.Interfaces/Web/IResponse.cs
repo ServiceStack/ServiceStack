@@ -6,7 +6,7 @@ using System.IO;
 namespace ServiceStack.Web
 {
     /// <summary>
-    /// A thin wrapper around ASP.NET or HttpListener's HttpResponse
+    /// A thin wrapper around each host's Response e.g: ASP.NET, HttpListener, MQ, etc
     /// </summary>
     public interface IResponse
     {
@@ -20,8 +20,6 @@ namespace ServiceStack.Web
         string StatusDescription { get; set; }
 
         string ContentType { get; set; }
-
-        ICookies Cookies { get; }
 
         void AddHeader(string name, string value);
 

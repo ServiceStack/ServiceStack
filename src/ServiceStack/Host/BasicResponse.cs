@@ -13,7 +13,6 @@ namespace ServiceStack.Host
         {
             this.requestContext = requestContext;
             this.Headers = new Dictionary<string, string>();
-            this.Cookies = new BasicCookies(this);
         }
 
         public object OriginalResponse { get; set; }
@@ -28,16 +27,17 @@ namespace ServiceStack.Host
             set { requestContext.ResponseContentType = value; }
         }
 
-        public ICookies Cookies { get; set; }
-
         public void AddHeader(string name, string value)
         {
             Headers[name] = value;
         }
 
-        public void Redirect(string url) {}
+        public void Redirect(string url)
+        {
+        }
 
         private MemoryStream ms;
+
         public Stream OutputStream
         {
             get { return ms ?? (ms = new MemoryStream()); }
@@ -59,31 +59,13 @@ namespace ServiceStack.Host
             Close();
         }
 
-        public void Flush() {}
+        public void Flush()
+        {
+        }
 
         public bool IsClosed { get; set; }
 
-        public void SetContentLength(long contentLength) {}
-    }
-
-    public class BasicCookies : ICookies
-    {
-        private IResponse response;
-
-        public BasicCookies(IResponse response)
-        {
-            this.response = response;
-        }
-
-        public void DeleteCookie(string cookieName)
-        {            
-        }
-
-        public void AddPermanentCookie(string cookieName, string cookieValue, bool? secureOnly = null)
-        {
-        }
-
-        public void AddSessionCookie(string cookieName, string cookieValue, bool? secureOnly = null)
+        public void SetContentLength(long contentLength)
         {
         }
     }
