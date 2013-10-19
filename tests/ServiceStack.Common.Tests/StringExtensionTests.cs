@@ -170,17 +170,17 @@ namespace ServiceStack.Common.Tests
                 var expected = ((char)value).ToString(CultureInfo.InvariantCulture);
 
                 var decimalNotation = String.Format("&#{0};", value);
-                var decimalActual = decimalNotation.StripHtml(unescapeHtmlCharacterCodes: true);
+                var decimalActual = decimalNotation.StripHtml().ConvertHtmlCodes();
                 Assert.AreEqual(expected, decimalActual);
 
                 var hexNotation = String.Format("&#x{0:X};", value);
-                var hexActual = hexNotation.StripHtml(unescapeHtmlCharacterCodes: true);
+                var hexActual = hexNotation.StripHtml().ConvertHtmlCodes();
                 Assert.AreEqual(expected, hexActual);
             }
 
-            foreach (var htmlNotation in StringExtensions.HtmlCharacterCodes)
+            foreach (var htmlNotation in StringUtils.HtmlCharacterCodes)
             {
-                var actual = htmlNotation.Key.StripHtml(unescapeHtmlCharacterCodes: true);
+                var actual = htmlNotation.Key.StripHtml().ConvertHtmlCodes();
                 var expected = htmlNotation.Value;
                 Assert.AreEqual(expected, actual);
             }
