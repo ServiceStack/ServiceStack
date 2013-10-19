@@ -138,6 +138,7 @@
     <Compile Include="Reflection\StaticAccessors.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="StringUtils.cs" />
     <Compile Include="XLinqExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
