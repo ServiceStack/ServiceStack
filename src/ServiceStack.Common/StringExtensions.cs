@@ -250,60 +250,6 @@ namespace ServiceStack.Common
             return value.Length == pos;
         }
 
-#if XBOX && !SILVERLIGHT
-        static readonly Regex StripHtmlRegEx = new Regex(@"<(.|\n)*?>", RegexOptions.Compiled);
-        static readonly Regex StripHtmlUnicodeRegEx = new Regex(@"&(#)?([xX])?([^ \f\n\r\t\v;]+);", RegexOptions.Compiled);
-#else
-        static readonly Regex StripHtmlRegEx = new Regex(@"<(.|\n)*?>");
-        static readonly Regex StripHtmlUnicodeRegEx = new Regex(@"&(#)?([xX])?([^ \f\n\r\t\v;]+);");
-#endif
-        public static string StripHtml(this string html, bool unescapeHtmlCharacterCodes = false)
-        {
-            if (String.IsNullOrEmpty(html))
-            {
-                return null;
-            }
-            string stripped = StripHtmlRegEx.Replace(html, "");
-            if (unescapeHtmlCharacterCodes)
-            {
-                stripped = StripHtmlUnicodeRegEx.Replace(stripped, ConvertHtmlCodeToCharacter);
-            }
-            return stripped;
-        }
-
-        static string ConvertHtmlCodeToCharacter(Match match)
-        {
-            // http://www.w3.org/TR/html5/syntax.html#character-references
-            // match.Groups[0] is the entire match, the sub groups start at index one
-            if (!match.Groups[1].Success)
-            {
-                string convertedValue;
-                if (HtmlCharacterCodes.TryGetValue(match.Value, out convertedValue))
-                {
-                    return convertedValue;
-                }
-                return match.Value; // ambiguous ampersand
-            }
-            string decimalString = match.Groups[3].Value;
-            ushort decimalValue;
-            if (match.Groups[2].Success)
-            {
-                bool parseWasSuccessful = ushort.TryParse(decimalString, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out decimalValue);
-                if (!parseWasSuccessful)
-                {
-                    return match.Value; // ambiguous ampersand
-                }
-            }
-            else
-            {
-                bool parseWasSuccessful = ushort.TryParse(decimalString, out decimalValue);
-                if (!parseWasSuccessful)
-                {
-                    return match.Value; // ambiguous ampersand
-                }
-            }
-            return ((char)decimalValue).ToString(CultureInfo.InvariantCulture);
-        }
     }
 
 }
