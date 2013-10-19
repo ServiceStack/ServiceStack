@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Web;
 using NUnit.Framework;
@@ -159,6 +160,30 @@ namespace ServiceStack.Common.Tests
         public void ToHttps_is_not_case_sensitive()
         {
             Assert.That("HTTP://HOST.EXAMPLE.COM".ToHttps(), Is.EqualTo("https://HOST.EXAMPLE.COM"));
+        }
+
+        [Test]
+        public void HtmlStrip_unescapes_all_html_character_codes_correctly()
+        {
+            foreach (var value in Enumerable.Range(ushort.MinValue, ushort.MaxValue).Select(i => (ushort)i))
+            {
+                var expected = ((char)value).ToString(CultureInfo.InvariantCulture);
+
+                var decimalNotation = String.Format("&#{0};", value);
+                var decimalActual = decimalNotation.StripHtml(unescapeHtmlCharacterCodes: true);
+                Assert.AreEqual(expected, decimalActual);
+
+                var hexNotation = String.Format("&#x{0:X};", value);
+                var hexActual = hexNotation.StripHtml(unescapeHtmlCharacterCodes: true);
+                Assert.AreEqual(expected, hexActual);
+            }
+
+            foreach (var htmlNotation in StringExtensions.HtmlCharacterCodes)
+            {
+                var actual = htmlNotation.Key.StripHtml(unescapeHtmlCharacterCodes: true);
+                var expected = htmlNotation.Value;
+                Assert.AreEqual(expected, actual);
+            }
         }
 	}
 }
