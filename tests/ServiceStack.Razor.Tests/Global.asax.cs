@@ -1,5 +1,4 @@
 ﻿using System;
-using ServiceStack.Logging.NLogger;
 
 namespace ServiceStack.Razor.Tests
 {
@@ -8,7 +7,6 @@ namespace ServiceStack.Razor.Tests
 
         protected void Application_Start( object sender, EventArgs e )
         {
-            Logging.LogManager.LogFactory = new NLogFactory();
             new HelloAppHost().Init();
         }
 
