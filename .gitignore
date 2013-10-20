@@ -58,3 +58,5 @@ src/ServiceStack/Properties/Resources.resources
 src/ServiceStack.userprefs
 
 src/ServiceStack.userprefs
+
+*.pfx
