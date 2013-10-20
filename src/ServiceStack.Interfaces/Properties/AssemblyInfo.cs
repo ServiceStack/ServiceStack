@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 
@@ -20,7 +19,11 @@ using System.Runtime.Serialization;
 // COM, set the ComVisible attribute to true on that type.
 [assembly: ComVisible(false)]
 
-[assembly: AssemblyVersion("1.0.0.0")]
+//Keep constant to prevent breaking signed-builds (build.proj on replaces 4 digits, e.g x.x.x.x)
+[assembly: AssemblyVersion("4.0")] 
+
+//Overwrite version number here:
+[assembly: AssemblyFileVersion("1.0.0.0")]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("d13ebd2a-6589-453d-bf31-4c744a59e993")]

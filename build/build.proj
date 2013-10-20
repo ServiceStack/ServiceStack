@@ -68,8 +68,7 @@
 
     <ItemGroup>
       <!-- Exclude versioning future strong-named libs -->
-      <RegexTransform Include="$(SrcDir)/**/AssemblyInfo.cs"
-                      Exclude="$(SrcDir)/ServiceStack.Interfaces*/Properties/AssemblyInfo.cs">
+      <RegexTransform Include="$(SrcDir)/**/AssemblyInfo.cs">
         <Find>\d+\.\d+\.\d+\.\d+</Find>
         <ReplaceWith>$(Version)</ReplaceWith>
       </RegexTransform>
