@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
@@ -87,14 +86,14 @@ namespace ServiceStack.Host
             return null;
         }
 
-        public static string GetCookieValue(this IHttpRequest httpReq, string cookieName)
+        public static string GetCookieValue(this IRequest httpReq, string cookieName)
         {
             Cookie cookie;
             httpReq.Cookies.TryGetValue(cookieName, out cookie);
             return cookie != null ? cookie.Value : null;
         }
 
-        public static string GetItemStringValue(this IHttpRequest httpReq, string itemName)
+        public static string GetItemStringValue(this IRequest httpReq, string itemName)
         {
             object val;
             if (!httpReq.Items.TryGetValue(itemName, out val)) return null;

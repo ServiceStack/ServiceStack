@@ -550,8 +550,8 @@ namespace ServiceStack
         /// Use this to treat Request.Items[] as a cache by returning pre-computed items to save 
         /// calculating them multiple times.
         /// </summary>
-        public static object ResolveItem(this IHttpRequest httpReq,
-            string itemKey, Func<IHttpRequest, object> resolveFn)
+        public static object ResolveItem(this IRequest httpReq,
+            string itemKey, Func<IRequest, object> resolveFn)
         {
             object cachedItem;
             if (httpReq.Items.TryGetValue(itemKey, out cachedItem))
