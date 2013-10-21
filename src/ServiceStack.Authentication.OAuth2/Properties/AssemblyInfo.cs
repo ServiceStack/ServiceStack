@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("ServiceStack.Authentication.OAuth2")]
 [assembly: AssemblyCopyright("Copyright (c)  2013")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyTrademark("Service Stack")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 

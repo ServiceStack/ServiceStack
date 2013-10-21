@@ -5,13 +5,13 @@ using System.Runtime.Serialization;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ServiceStack.Interfaces")]
+[assembly: AssemblyTitle("ServiceStack")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("ServiceStack")]
-[assembly: AssemblyProduct("ServiceStack.Interfaces")]
-[assembly: AssemblyCopyright("Copyright (c) ServiceStack 2013")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCompany("Service Stack LLC")]
+[assembly: AssemblyProduct("ServiceStack")]
+[assembly: AssemblyCopyright("Copyright (c) Service Stack LLC 2013")]
+[assembly: AssemblyTrademark("Service Stack")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 

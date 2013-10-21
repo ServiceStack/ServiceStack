@@ -6,10 +6,10 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyTitle("ServiceStack")]
 [assembly: AssemblyDescription("")]
-[assembly: AssemblyCompany("ServiceStack")]
+[assembly: AssemblyCompany("Service Stack LLC")]
 [assembly: AssemblyProduct("ServiceStack")]
 [assembly: AssemblyCopyright("Copyright (c) ServiceStack 2013")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyTrademark("Service Stack")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 

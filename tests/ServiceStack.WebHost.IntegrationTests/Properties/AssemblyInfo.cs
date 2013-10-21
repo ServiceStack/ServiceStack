@@ -12,7 +12,7 @@ using System.Runtime.Serialization;
 [assembly: AssemblyCompany("Microsoft")]
 [assembly: AssemblyProduct("ServiceStack.WebHost.IntegrationTests")]
 [assembly: AssemblyCopyright("Copyright (c) Microsoft 2010")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyTrademark("Service Stack")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 

@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCompany("Genco")]
 [assembly: AssemblyProduct("ServiceStack.Authentication.MongoDB")]
 [assembly: AssemblyCopyright("Copyright © Genco 2012")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyTrademark("Service Stack")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
