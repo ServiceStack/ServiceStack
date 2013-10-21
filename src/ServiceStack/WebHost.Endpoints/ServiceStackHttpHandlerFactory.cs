@@ -164,13 +164,6 @@ namespace ServiceStack.WebHost.Endpoints
             //Default Request /
             if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
             {
-                //Exception calling context.Request.Url on Apache+mod_mono
-                if (ApplicationBaseUrl == null)
-                {
-                    var absoluteUrl = Env.IsMono ? url.ToParentPath() : context.Request.GetApplicationUrl();
-                    SetApplicationBaseUrl(absoluteUrl);
-                }
-
                 //e.g. CatchAllHandler to Process Markdown files
                 var catchAllHandler = GetCatchAllHandlerIfAny(httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
                 if (catchAllHandler != null) return catchAllHandler;
@@ -203,7 +196,7 @@ namespace ServiceStack.WebHost.Endpoints
 
         private static void SetApplicationBaseUrl(string absoluteUrl)
         {
-            if (absoluteUrl == null) return;
+            if (string.IsNullOrEmpty(absoluteUrl)) return;
 
             ApplicationBaseUrl = absoluteUrl;
 
@@ -237,9 +230,6 @@ namespace ServiceStack.WebHost.Endpoints
             //Default Request /
             if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
             {
-                if (ApplicationBaseUrl == null)
-                    SetApplicationBaseUrl(httpReq.GetPathUrl());
-
                 //e.g. CatchAllHandler to Process Markdown files
                 var catchAllHandler = GetCatchAllHandlerIfAny(httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
                 if (catchAllHandler != null) return catchAllHandler;
