@@ -124,23 +124,23 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             }
         }
 
-        //[TestFixture]
-        //public class JsvAsyncRestServiceClientTests : AsyncTaskTests
-        //{
-        //    protected override IServiceClient CreateServiceClient()
-        //    {
-        //        return new JsvServiceClient(ListeningOn);
-        //    }
-        //}
+        [TestFixture]
+        public class JsvAsyncRestServiceClientTests : AsyncTaskTests
+        {
+            protected override IServiceClient CreateServiceClient()
+            {
+                return new JsvServiceClient(ListeningOn);
+            }
+        }
 
-        //[TestFixture]
-        //public class XmlAsyncRestServiceClientTests : AsyncTaskTests
-        //{
-        //    protected override IServiceClient CreateServiceClient()
-        //    {
-        //        return new XmlServiceClient(ListeningOn);
-        //    }
-        //}
+        [TestFixture]
+        public class XmlAsyncRestServiceClientTests : AsyncTaskTests
+        {
+            protected override IServiceClient CreateServiceClient()
+            {
+                return new XmlServiceClient(ListeningOn);
+            }
+        }
     }
 
     [Explicit, TestFixture]

@@ -131,23 +131,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
-        //[TestFixture]
-        //public class JsvAsyncRestServiceClientTests : AsyncTaskTests
-        //{
-        //    protected override IServiceClient CreateServiceClient()
-        //    {
-        //        return new JsvServiceClient(ListeningOn);
-        //    }
-        //}
+        [TestFixture]
+        public class JsvAsyncRestServiceClientTests : AsyncTaskTests
+        {
+            protected override IServiceClient CreateServiceClient()
+            {
+                return new JsvServiceClient(Config.ListeningOn);
+            }
+        }
 
-        //[TestFixture]
-        //public class XmlAsyncRestServiceClientTests : AsyncTaskTests
-        //{
-        //    protected override IServiceClient CreateServiceClient()
-        //    {
-        //        return new XmlServiceClient(ListeningOn);
-        //    }
-        //}
+        [TestFixture]
+        public class XmlAsyncRestServiceClientTests : AsyncTaskTests
+        {
+            protected override IServiceClient CreateServiceClient()
+            {
+                return new XmlServiceClient(Config.ListeningOn);
+            }
+        }
     }
 
     [Route("/factorial/sync/{ForNumber}")]
@@ -271,22 +271,96 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    [TestFixture]
-    public class TaskTests
+    [Explicit, TestFixture]
+    public class AsyncLoadTests
     {
-        [Test]
-        public void test()
+        const int NoOfTimes = 1000;
+     
+        private ServiceStackHost appHost;
+
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
         {
-            var result = "exec";
-            var task = new Task(() => result.Print());
-            task.Status.ToString().Print();
+            appHost = new AsyncTaskTests.AsyncTaskAppHost()
+                .Init()
+                .Start(Config.ListeningOn);
+        }
 
-            var tcs = new TaskCompletionSource<string>();
-            tcs.Task.Status.ToString().Print();
-            tcs.SetResult(result);            
-            tcs.Task.Status.ToString().Print();            
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
 
-            task.RunSynchronously();
+
+        [Test]
+        public void Load_test_GetFactorialSync_sync()
+        {
+            var client = new JsonServiceClient(Config.ListeningOn);
+
+            for (var i = 0; i < NoOfTimes; i++)
+            {
+                var response = client.Get(new GetFactorialSync { ForNumber = 3 });
+                if (i % 100 == 0)
+                {
+                    "{0}: {1}".Print(i, response.Result);
+                }
+            }
+        }
+
+        [Test]
+        public async Task Load_test_GetFactorialSync_async()
+        {
+            var client = new JsonServiceClient(Config.ListeningOn);
+
+            int i = 0;
+
+            var fetchTasks = NoOfTimes.Times(() =>
+                client.GetAsync(new GetFactorialSync { ForNumber = 3 })
+                .ContinueWith(t =>
+                {
+                    if (++i % 100 == 0)
+                    {
+                        "{0}: {1}".Print(i, t.Result.Result);
+                    }
+                }));
+
+            await Task.WhenAll(fetchTasks);
+        }
+
+        [Test]
+        public void Load_test_GetFactorialGenericAsync_sync()
+        {
+            var client = new JsonServiceClient(Config.ListeningOn);
+
+            for (var i = 0; i < NoOfTimes; i++)
+            {
+                var response = client.Get(new GetFactorialGenericAsync { ForNumber = 3 });
+                if (i % 100 == 0)
+                {
+                    "{0}: {1}".Print(i, response.Result);
+                }
+            }
+        }
+
+        [Test]
+        public async Task Load_test_GetFactorialGenericAsync_async()
+        {
+            var client = new JsonServiceClient(Config.ListeningOn);
+
+            int i = 0;
+
+            var fetchTasks = NoOfTimes.Times(() =>
+                client.GetAsync(new GetFactorialGenericAsync { ForNumber = 3 })
+                .ContinueWith(t =>
+                {
+                    if (++i % 100 == 0)
+                    {
+                        "{0}: {1}".Print(i, t.Result.Result);
+                    }
+                }));
+
+            await Task.WhenAll(fetchTasks);
         }
     }
 }
