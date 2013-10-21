@@ -278,7 +278,7 @@ namespace RazorRockstars.Web
     [TestFixture]
     public class ReqStarsServiceTests
     {
-        public const string Host = "http://localhost:1338";
+        public const string Host = "http://localhost:1339";
         private const string BaseUri = Host + "/";
 
         private AppHost appHost;

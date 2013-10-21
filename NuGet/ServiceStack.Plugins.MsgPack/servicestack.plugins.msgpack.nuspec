@@ -11,7 +11,7 @@
       Add the MsgPack binary format and endpoint to a ServiceStack web service host.
     </description>
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
-    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/LICENSE</licenseUrl>
+    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/v3/LICENSE</licenseUrl>
     <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
     <tags>MsgPack MessagePack Message Pack Fast Binary Serializer Format ContentType REST Web Services ServiceStack</tags>
     <language>en-US</language>

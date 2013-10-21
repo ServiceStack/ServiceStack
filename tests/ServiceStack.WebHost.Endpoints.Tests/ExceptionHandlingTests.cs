@@ -116,7 +116,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     res.EndRequest(skipHeaders: true);
                 };
 
-                this.ServiceExceptionHandler = (request, exception) =>
+                this.ServiceExceptionHandler = (httpReq, request, exception) =>
                 {
                     if (request is UncatchedException)
                         throw exception;

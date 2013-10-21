@@ -15,7 +15,7 @@
         https://github.com/ServiceStack/ServiceStack/wiki/Authentication-and-authorization
     </description> 
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
-    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/LICENSE</licenseUrl>
+    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/v3/LICENSE</licenseUrl>
     <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
     <tags>OAuth OAuth2 Google LinkedIn Authentication Auth Provider ServiceStack Web Services</tags>
     <language>en-US</language>

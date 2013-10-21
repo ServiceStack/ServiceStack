@@ -270,7 +270,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test, Explicit]
         public void RunFor5Mins()
         {
-            appHost.LoadPlugin(new CorsFeature("http://localhost:50000"));
+            appHost.LoadPlugin(new CorsFeature("http://localhost:50001"));
 
             Debug.WriteLine(ListeningOn + "resources");
             Thread.Sleep(TimeSpan.FromMinutes(5));

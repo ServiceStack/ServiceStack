@@ -78,6 +78,11 @@ namespace ServiceStack.Common
             return Create(typeof(T), idFieldValue);
         }
 
+        public static string Create<T>(object idFieldValue)
+        {
+            return Create(typeof(T), idFieldValue.ToString());
+        }
+
         public static string Create(Type objectType, string idFieldValue)
         {
             if (idFieldValue.Contains(FieldSeperator.ToString()))

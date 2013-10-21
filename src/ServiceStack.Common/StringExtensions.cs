@@ -9,7 +9,7 @@ using ServiceStack.Text.Common;
 
 namespace ServiceStack.Common
 {
-    public static class StringExtensions
+    public static partial class StringExtensions
     {
 
 #if !SILVERLIGHT && !MONOTOUCH && !XBOX
@@ -249,6 +249,7 @@ namespace ServiceStack.Common
 
             return value.Length == pos;
         }
+
     }
 
 }

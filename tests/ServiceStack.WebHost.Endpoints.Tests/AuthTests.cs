@@ -7,6 +7,7 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
+using ServiceStack.Common;
 using ServiceStack.Common.Tests.ServiceClient.Web;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
@@ -262,7 +263,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class AuthTests
     {
-        private const string ListeningOn = "http://localhost:82/";
+        protected virtual string VirtualDirectory { get { return ""; } }
+        protected virtual string ListeningOn { get { return "http://localhost:82/"; } }
+        protected virtual string WebHostUrl { get { return "http://mydomain.com"; } }
 
         private const string UserName = "user";
         private const string Password = "p@55word";
@@ -270,21 +273,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public const string PasswordForSessionRedirect = "p@55word2";
         public const string SessionRedirectUrl = "specialLandingPage.html";
         public const string LoginUrl = "specialLoginPage.html";
-        public const string WebHostUrl = "http://mydomain.com";
         private const string EmailBasedUsername = "user@email.com";
         private const string PasswordForEmailBasedAccount = "p@55word3";
+
 
         public class AuthAppHostHttpListener
             : AppHostHttpListenerBase
         {
-            public AuthAppHostHttpListener()
-                : base("Validation Tests", typeof(CustomerService).Assembly) { }
+            private readonly string webHostUrl;
+
+            public AuthAppHostHttpListener(string webHostUrl)
+                : base("Validation Tests", typeof (CustomerService).Assembly)
+            {
+                this.webHostUrl = webHostUrl;
+            }
 
             private InMemoryAuthRepository userRep;
 
             public override void Configure(Container container)
             {
-                SetConfig(new EndpointHostConfig { WebHostUrl = WebHostUrl });
+                SetConfig(new EndpointHostConfig { WebHostUrl = webHostUrl });
 
                 Plugins.Add(new AuthFeature(() => new CustomUserSession(),
                     new IAuthProvider[] { //Www-Authenticate should contain basic auth, therefore register this provider first
@@ -322,6 +330,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     Permissions = permissions
                 }, password);
             }
+
+            protected override void Dispose(bool disposing)
+            {
+                // Needed so that when the derived class tests run the same users can be added again.
+                userRep.Clear();
+                base.Dispose(disposing);
+            }
         }
 
         AuthAppHostHttpListener appHost;
@@ -329,7 +344,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [TestFixtureSetUp]
         public void OnTestFixtureSetUp()
         {
-            appHost = new AuthAppHostHttpListener();
+            appHost = new AuthAppHostHttpListener(WebHostUrl);
             appHost.Init();
             appHost.Start(ListeningOn);
         }
@@ -737,7 +752,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             client.Send<SecureResponse>(request);
 
             var locationUri = new Uri(lastResponseLocationHeader);
-            Assert.That(locationUri.AbsolutePath, Contains.Substring(LoginUrl));
+            var loginPath = "/".CombineWith(VirtualDirectory).CombineWith(LoginUrl);
+            Assert.That(locationUri.AbsolutePath, Is.EqualTo(loginPath).IgnoreCase);
         }
 
         [Test]
@@ -760,10 +776,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var redirectUri = new Uri(redirectQueryString);
 
             // Should contain the url attempted to access before the redirect to the login page.
-            Assert.That(redirectUri.AbsolutePath, Contains.Substring("/secured").IgnoreCase);
-            // Should also obey the WebHostUrl setting.
-            var schemeAndHost = redirectUri.Scheme + "://" + redirectUri.Authority;
-            Assert.That(schemeAndHost, Contains.Substring(WebHostUrl).IgnoreCase);
+            var securedPath = "/".CombineWith(VirtualDirectory).CombineWith("secured");
+            Assert.That(redirectUri.AbsolutePath, Is.EqualTo(securedPath).IgnoreCase);
+            // The url should also obey the WebHostUrl setting for the domain.
+            var redirectSchemeAndHost = redirectUri.Scheme + "://" + redirectUri.Authority;
+            var webHostUri = new Uri(WebHostUrl);
+            var webHostSchemeAndHost = webHostUri.Scheme + "://" + webHostUri.Authority;
+            Assert.That(redirectSchemeAndHost, Is.EqualTo(webHostSchemeAndHost).IgnoreCase);
         }
 
         [Test]
@@ -1009,5 +1028,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Is.EqualTo(1)
             );
         }
+    }
+
+    public class AuthTestsWithinVirtualDirectory : AuthTests
+    {
+        protected override string VirtualDirectory { get { return "somevirtualdirectory"; } }
+        protected override string ListeningOn { get { return "http://localhost:82/" + VirtualDirectory + "/"; } }
+        protected override string WebHostUrl { get { return "http://mydomain.com/" + VirtualDirectory; } }
     }
 }

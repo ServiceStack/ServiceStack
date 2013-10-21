@@ -100,6 +100,7 @@
       <ServiceStackClientSilverlightFiles Include="$(SrcDir)/ServiceStack.Client.Silverlight/bin/$(Configuration)/ServiceStack.Client.Silverlight.*"></ServiceStackClientSilverlightFiles>
 
       <StackOverflowSwaggerFiles Include="$(SrcDir)/ServiceStack.Api.Swagger/bin/$(Configuration)/ServiceStack.Api.Swagger.*"></StackOverflowSwaggerFiles>
+      <StackOverflowSwaggerContentFiles Include="$(SrcDir)/ServiceStack.Api.Swagger/swagger-ui/**/*"></StackOverflowSwaggerContentFiles>
     </ItemGroup>
 
 
@@ -112,6 +113,9 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/net35" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/net35')" />
     <Copy SourceFiles="%(StackOverflowSwaggerFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/net35" />
 
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.Swagger/content/swagger-ui" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.Swagger/content/swagger-ui')" />
+    <Copy SourceFiles="%(StackOverflowSwaggerContentFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.Swagger/content/swagger-ui/%(StackOverflowSwaggerContentFiles.RecursiveDir)" />   
+    
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.Swagger/servicestack.api.swagger.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
