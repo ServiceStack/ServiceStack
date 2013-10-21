@@ -6,7 +6,6 @@ using System.Runtime.Serialization;
 using System.Threading;
 using MsgPack;
 using MsgPack.Serialization;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.MsgPack
@@ -96,6 +95,11 @@ namespace ServiceStack.MsgPack
         }
 
         public static void Serialize(IRequest requestContext, object dto, Stream outputStream)
+        {
+            Serialize(dto, outputStream);
+        }
+
+        public static void Serialize(object dto, Stream outputStream)
         {
             if (dto == null) return;
             var dtoType = dto.GetType();

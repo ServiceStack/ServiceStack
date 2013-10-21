@@ -21,6 +21,11 @@ namespace ServiceStack.ProtoBuf
 
         public static void Serialize(IRequest requestContext, object dto, Stream outputStream)
         {
+            Serialize(dto, outputStream);
+        }
+
+        public static void Serialize(object dto, Stream outputStream)
+        {
             Model.Serialize(outputStream, dto);
         }
 
