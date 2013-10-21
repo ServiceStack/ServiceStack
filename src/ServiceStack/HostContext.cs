@@ -294,11 +294,11 @@ namespace ServiceStack
         /// <summary>
         /// Resolves and auto-wires a ServiceStack Service from a ASP.NET HttpContext.
         /// </summary>
-        public static T ResolveService<T>(HttpContext httpCtx=null) where T : class, IRequiresRequest
+        public static T ResolveService<T>(HttpContextBase httpCtx=null) where T : class, IRequiresRequest
         {
             var service = AssertAppHost().Container.Resolve<T>();
             if (service == null) return null;
-            service.Request = (httpCtx ?? HttpContext.Current).ToRequest();
+            service.Request = httpCtx != null ? httpCtx.ToRequest() : HttpContext.Current.ToRequest();
             return service;
         }
 
