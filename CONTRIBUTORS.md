@@ -289,6 +289,15 @@
  - [mhanney](https://github.com/mhanney) (Michael Hanney)
  - [bcms](https://github.com/bcms)
  - [mgravell](https://github.com/mgravell) (Marc Gravell)
+ - [lafama](https://github.com/lafama) (Denis Ndwiga)
+ - [jamesgroat](https://github.com/jamesgroat) (James Groat)
+ - [jamesearl](https://github.com/jamesearl) (James Cunningham)
+ - [remkoboschker](https://github.com/remkoboschker) (Remko Boschker)
+ - [shelakel](https://github.com/shelakel)
+ - [schmidt4brains](https://github.com/schmidt4brains) (Doug Schmidt)
+ - [joplaal](https://github.com/joplaal)
+ - [aifdsc](https://github.com/aifdsc) (Stephan Desmoulin)
+ - [nicklarsen](https://github.com/nicklarsen) (NickLarsen)
 
 
 
