@@ -133,6 +133,7 @@
     <Compile Include="CryptUtilTest.cs" />
     <Compile Include="EndpointHandlerBaseTests.cs" />
     <Compile Include="FluentValidation\ErrorCodeTests.cs" />
+    <Compile Include="FormatTests.cs" />
     <Compile Include="FunqTests.cs" />
     <Compile Include="MappingTests.cs" />
     <Compile Include="MessagingTests.cs" />
@@ -217,6 +218,10 @@
     <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
       <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
       <Name>ServiceStack.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.MsgPack\ServiceStack.MsgPack.csproj">
+      <Project>{6b751a07-75d4-4a9d-b3a0-eea27808e64c}</Project>
+      <Name>ServiceStack.MsgPack</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.csproj">
       <Project>{ef36a253-c53f-4bf3-b0ec-4d29211fa67d}</Project>

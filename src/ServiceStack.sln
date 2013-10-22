@@ -19,6 +19,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Auth.Tests", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771-6C97-4D64-8E11-FD88AE48A41A}"
 	ProjectSection(SolutionItems) = preProject
+		..\build\build-sn.proj = ..\build\build-sn.proj
 		..\build\build.bat = ..\build\build.bat
 		..\build\build.proj = ..\build\build.proj
 		..\build\build.tasks = ..\build\build.tasks
@@ -96,6 +97,16 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Caching.Memcached", "ServiceStack.Caching.Memcached\ServiceStack.Caching.Memcached.csproj", "{600612F3-15B4-45B5-9D39-06FA016B81C9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AuthRepos", "AuthRepos", "{2E143186-E565-48B8-A8AE-6FE03B70FE68}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Signed", "Signed", "{C57AF946-06A7-4CFC-BC4D-F9E7AE4FC5C8}"
+	ProjectSection(SolutionItems) = preProject
+		..\NuGet.Signed\ServiceStack.Client.Signed\servicestack.client.signed.nuspec = ..\NuGet.Signed\ServiceStack.Client.Signed\servicestack.client.signed.nuspec
+		..\NuGet.Signed\ServiceStack.Common.Signed\servicestack.common.signed.nuspec = ..\NuGet.Signed\ServiceStack.Common.Signed\servicestack.common.signed.nuspec
+		..\NuGet.Signed\ServiceStack.Mvc.Signed\servicestack.mvc.signed.nuspec = ..\NuGet.Signed\ServiceStack.Mvc.Signed\servicestack.mvc.signed.nuspec
+		..\NuGet.Signed\ServiceStack.Razor.Signed\servicestack.razor.signed.nuspec = ..\NuGet.Signed\ServiceStack.Razor.Signed\servicestack.razor.signed.nuspec
+		..\NuGet.Signed\ServiceStack.Server.Signed\servicestack.server.signed.nuspec = ..\NuGet.Signed\ServiceStack.Server.Signed\servicestack.server.signed.nuspec
+		..\NuGet.Signed\ServiceStack.Signed\servicestack.signed.nuspec = ..\NuGet.Signed\ServiceStack.Signed\servicestack.signed.nuspec
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1082,6 +1093,7 @@ Global
 		{7F42298E-7DEA-458B-B7BC-057A7229A7CF} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{7A7A1415-D116-43B2-B992-0DD41B09F4B0} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{BB47EC88-D61D-4B67-9491-78C7155A7798} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
+		{C57AF946-06A7-4CFC-BC4D-F9E7AE4FC5C8} = {EB65E771-6C97-4D64-8E11-FD88AE48A41A}
 		{C53331DF-3690-4AEA-AB57-70672BCFA086} = {7EA56692-5E60-4469-A166-ECF19DE2B607}
 		{6E240294-9D93-4C09-9BB0-38D82A22DEEE} = {7EA56692-5E60-4469-A166-ECF19DE2B607}
 		{6B751A07-75D4-4A9D-B3A0-EEA27808E64C} = {CBDE0575-D09B-4B4D-8C62-5E03E54F6BE8}
