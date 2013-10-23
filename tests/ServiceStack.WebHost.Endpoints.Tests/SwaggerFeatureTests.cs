@@ -53,8 +53,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public SwaggerNestedModel3[] ArrayProperty { get; set; }
 
+        [System.ComponentModel.Description("Byte description")]
         public byte ByteProperty { get; set; }
 
+        [ServiceStack.DataAnnotations.Description("Long description")]
         public long LongProperty { get; set; }
 
         public float FloatProperty { get; set; }
@@ -489,14 +491,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(requestClassModel.Properties.ContainsKey("Name"), Is.True);
             Assert.That(requestClassModel.Properties["Name"].Type, Is.EqualTo(SwaggerType.String));
-            Assert.That(requestClassModel.Properties["Name"].Description, Is.EqualTo("Name description"));
+            Assert.That(requestClassModel.Properties["Name"].Description, Is.EqualTo("The request body"));
 
             Assert.That(requestClassModel.Properties.ContainsKey("ByteProperty"));
             Assert.That(requestClassModel.Properties["ByteProperty"].Type, Is.EqualTo(SwaggerType.Byte));
+            Assert.That(requestClassModel.Properties["ByteProperty"].Description, Is.EqualTo("Byte description"));
             Assert.That(resource.Models.ContainsKey(typeof(byte).Name), Is.False);
 
             Assert.That(requestClassModel.Properties.ContainsKey("LongProperty"));
             Assert.That(requestClassModel.Properties["LongProperty"].Type, Is.EqualTo(SwaggerType.Long));
+            Assert.That(requestClassModel.Properties["LongProperty"].Description, Is.EqualTo("Long description"));
             Assert.That(resource.Models.ContainsKey(typeof(long).Name), Is.False);
 
             Assert.That(requestClassModel.Properties.ContainsKey("FloatProperty"));

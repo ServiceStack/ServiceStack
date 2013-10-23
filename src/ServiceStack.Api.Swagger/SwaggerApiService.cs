@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
-using Microsoft.SqlServer.Server;
 using ServiceStack.Host;
 using ServiceStack.Web;
 
@@ -295,7 +293,7 @@ namespace ServiceStack.Api.Swagger
                             Values = Enum.GetNames(enumType),
                             ValueType = "LIST"
                         };
-                    }
+                    } 
                 }
                 else
                 {
@@ -304,7 +302,7 @@ namespace ServiceStack.Api.Swagger
 
                 modelProp.Description = prop.GetDescription();
 
-                if (apiDoc != null)
+                if (apiDoc != null && modelProp.Description == null)
                     modelProp.Description = apiDoc.Description;
 
                 var allowableValues = prop.FirstAttribute<ApiAllowableValuesAttribute>();
