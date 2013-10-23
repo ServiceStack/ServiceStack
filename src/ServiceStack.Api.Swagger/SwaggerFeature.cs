@@ -35,14 +35,6 @@ namespace ServiceStack.Api.Swagger
             appHost.RegisterService(typeof(SwaggerResourcesService), new[] { "/resources" });
             appHost.RegisterService(typeof(SwaggerApiService), new[] { SwaggerResourcesService.RESOURCE_PATH + "/{Name*}" });
 
-            appHost.RawHttpHandlers.Add(httpReq => {
-                if (httpReq.PathInfo == "/swagger-ui/")
-                {
-                    return null;
-                }
-                return null;
-            });
-
             appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) =>
             {
                 if (pathInfo == "/swagger-ui" || pathInfo == "/swagger-ui/" || pathInfo == "/swagger-ui/default.html")
