@@ -45,6 +45,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NHibernate.3.3.3.4001\lib\Net35\NHibernate.dll</HintPath>
     </Reference>
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Text, Version=3.9.60.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
@@ -69,10 +72,6 @@
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416db-c143-4028-a0c3-cf41892d18d3}</Project>
       <Name>ServiceStack.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-      <Project>{42e1c8c0-a163-44cc-92b1-8f416f2c0b01}</Project>
-      <Name>ServiceStack.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj">
       <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>

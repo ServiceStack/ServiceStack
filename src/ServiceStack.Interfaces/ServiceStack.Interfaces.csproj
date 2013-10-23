@@ -108,6 +108,7 @@
     </Compile>
     <Compile Include="DataAnnotations\BelongToAttribute.cs" />
     <Compile Include="DataAnnotations\ComputeAttribute.cs" />
+    <Compile Include="DataAnnotations\DescriptionAttribute.cs" />
     <Compile Include="DataAnnotations\RangeAttribute.cs" />
     <Compile Include="DataAnnotations\ReferenceAttribute.cs" />
     <Compile Include="DataAnnotations\DecimalLengthAttribute.cs" />

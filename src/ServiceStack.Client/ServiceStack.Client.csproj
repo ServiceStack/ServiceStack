@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Text">
       <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
     </Reference>
@@ -97,12 +100,6 @@
     <Compile Include="WebRequestUtils.cs" />
     <Compile Include="WebServiceException.cs" />
     <Compile Include="XmlServiceClient.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-      <Project>{42e1c8c0-a163-44cc-92b1-8f416f2c0b01}</Project>
-      <Name>ServiceStack.Interfaces</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

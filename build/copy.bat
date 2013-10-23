@@ -5,39 +5,26 @@ SET BUILD=Release
 
 REM %MSBUILD% build.msbuild
 
-MD ..\NuGet\ServiceStack\lib\net35
-MD ..\NuGet\ServiceStack.Api.Swagger\lib\net35
-MD ..\NuGet\ServiceStack.Common\lib\net35
+MD ..\NuGet\ServiceStack\lib\net40
+MD ..\NuGet\ServiceStack.Api.Swagger\lib\net40
+MD ..\NuGet\ServiceStack.Common\lib\net40
 MD ..\NuGet\ServiceStack.Mvc\lib\net40
 MD ..\NuGet\ServiceStack.Razor\lib\net40
-MD ..\NuGet\ServiceStack.Authentication.OpenId\lib\net35
-MD ..\NuGet\ServiceStack.Authentication.OAuth2\lib\net35
-MD ..\NuGet\ServiceStack.ProtoBuf\lib\net35
+MD ..\NuGet\ServiceStack.Authentication.OpenId\lib\net40
+MD ..\NuGet\ServiceStack.Authentication.OAuth2\lib\net40
+MD ..\NuGet\ServiceStack.ProtoBuf\lib\net40
 MD ..\NuGet\ServiceStack.MsgPack\lib\net40
-
-COPY ..\src\ServiceStack.Server\bin\%BUILD%\ServiceStack.dll ..\NuGet\ServiceStack\lib\net35
-COPY ..\src\ServiceStack.Server\bin\%BUILD%\ServiceStack.pdb ..\NuGet\ServiceStack\lib\net35
-COPY ..\src\ServiceStack.Server\bin\%BUILD%\ServiceStack.xml ..\NuGet\ServiceStack\lib\net35
-COPY ..\src\ServiceStack.Server\bin\%BUILD%\ServiceStack.Server.* ..\NuGet\ServiceStack\lib\net35
-
-REM COPY ..\src\ServiceStack.Server\bin\%BUILD%\ServiceStack.dll ..\NuGet\ServiceStack\lib\net40
-REM COPY ..\src\ServiceStack.Server\bin\%BUILD%\ServiceStack.pdb ..\NuGet\ServiceStack\lib\net40
-REM COPY ..\src\ServiceStack.Server\bin\%BUILD%\ServiceStack.xml ..\NuGet\ServiceStack\lib\net40
-REM COPY ..\src\ServiceStack.Server\bin\%BUILD%\ServiceStack.Server.* ..\NuGet\ServiceStack\lib\net40
 
 COPY ..\src\ServiceStack.Razor\bin\%BUILD%\ServiceStack.Razor.* ..\NuGet\ServiceStack.Razor\lib\net40
 
-COPY ..\src\ServiceStack.Server\bin\%BUILD%\ServiceStack.Common.* ..\NuGet\ServiceStack.Common\lib\net35
-COPY ..\src\ServiceStack.Server\bin\%BUILD%\ServiceStack.Interfaces.* ..\NuGet\ServiceStack.Common\lib\net35
+COPY ..\src\ServiceStack.Mvc\bin\%BUILD%\ServiceStack.Mvc.* ..\NuGet\ServiceStack.Mvc\lib\net40
+COPY ..\src\ServiceStack.Mvc\bin\%BUILD%\ServiceStack.Mvc.* ..\NuGet\ServiceStack.Mvc\lib\net40
 
-COPY ..\src\ServiceStack.FluentValidation.Mvc3\bin\%BUILD%\ServiceStack.FluentValidation.Mvc3.* ..\NuGet\ServiceStack.Mvc\lib\net40
-COPY ..\src\ServiceStack.FluentValidation.Mvc3\bin\%BUILD%\ServiceStack.FluentValidation.Mvc3.* ..\NuGet\ServiceStack.Mvc\lib\net40
+COPY ..\src\ServiceStack.Authentication.OpenId\bin\%BUILD%\ServiceStack.Authentication.OpenId.* ..\NuGet\ServiceStack.Authentication.OpenId\lib\net40
 
-COPY ..\src\ServiceStack.Authentication.OpenId\bin\%BUILD%\ServiceStack.Authentication.OpenId.* ..\NuGet\ServiceStack.Authentication.OpenId\lib\net35
+COPY ..\src\ServiceStack.Authentication.OAuth2\bin\%BUILD%\ServiceStack.Authentication.OAuth2.* ..\NuGet\ServiceStack.Authentication.OAuth2\lib\net40
 
-COPY ..\src\ServiceStack.Authentication.OAuth2\bin\%BUILD%\ServiceStack.Authentication.OAuth2.* ..\NuGet\ServiceStack.Authentication.OAuth2\lib\net35
-
-COPY ..\src\ServiceStack.ProtoBuf\bin\%BUILD%\ServiceStack.ProtoBuf.* ..\NuGet\ServiceStack.ProtoBuf\lib\net35
+COPY ..\src\ServiceStack.ProtoBuf\bin\%BUILD%\ServiceStack.ProtoBuf.* ..\NuGet\ServiceStack.ProtoBuf\lib\net40
 
 COPY ..\lib\MsgPack.dll ..\NuGet\ServiceStack.MsgPack\lib\net40
 COPY ..\src\ServiceStack.MsgPack\bin\%BUILD%\ServiceStack.MsgPack.* ..\NuGet\ServiceStack.MsgPack\lib\net40
@@ -63,7 +50,6 @@ COPY ..\src\ServiceStack\bin\%BUILD%\*.* ..\..\ServiceStack.Contrib\lib
 COPY ..\src\ServiceStack\bin\%BUILD%\*.* ..\..\ServiceStack.RedisWebServices\lib
 COPY ..\src\ServiceStack.Server\bin\%BUILD%\ServiceStack.Server.* ..\..\ServiceStack.RedisWebServices\lib
 
-COPY ..\src\ServiceStack\bin\%BUILD%\ServiceStack.Interfaces.dll ..\..\ServiceStack.Redis\lib
 COPY ..\src\ServiceStack\bin\%BUILD%\ServiceStack.Text.* ..\..\ServiceStack.Redis\lib
 COPY ..\src\ServiceStack\bin\%BUILD%\ServiceStack.Common.* ..\..\ServiceStack.Redis\lib
 COPY ..\src\ServiceStack.Server\bin\%BUILD%\ServiceStack.* ..\..\ServiceStack.Redis\lib\tests

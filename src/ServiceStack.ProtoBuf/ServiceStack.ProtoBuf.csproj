@@ -38,6 +38,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\protobuf-net.2.0.0.666\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Text">
       <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
     </Reference>
@@ -54,10 +57,6 @@
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj">
       <Project>{c43f583f-abde-4dd4-bbe3-66322817a6ad}</Project>
       <Name>ServiceStack.Client</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-      <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
-      <Name>ServiceStack.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj">
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>

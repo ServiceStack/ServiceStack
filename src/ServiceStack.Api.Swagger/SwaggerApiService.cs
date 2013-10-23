@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
+using Microsoft.SqlServer.Server;
 using ServiceStack.Host;
 using ServiceStack.Web;
 
@@ -301,9 +302,7 @@ namespace ServiceStack.Api.Swagger
                     ParseModel(models, propertyType);
                 }
 
-                var descriptionAttr = prop.FirstAttribute<DescriptionAttribute>();
-                if (descriptionAttr != null)
-                    modelProp.Description = descriptionAttr.Description;
+                modelProp.Description = prop.GetDescription();
 
                 if (apiDoc != null)
                     modelProp.Description = apiDoc.Description;

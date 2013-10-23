@@ -1,3 +1,6 @@
+// Copyright (c) Service Stack LLC. All Rights Reserved.
+// License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Specialized;
@@ -8,7 +11,6 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Reflection;
 using ServiceStack.Logging;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 #if !(MONOTOUCH || SILVERLIGHT)

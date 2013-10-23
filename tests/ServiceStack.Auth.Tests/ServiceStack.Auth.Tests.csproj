@@ -40,6 +40,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\src\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="ServiceStack.Text">
       <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
@@ -80,10 +83,6 @@
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-      <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
-      <Name>ServiceStack.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj">
       <Project>{d73274ae-006b-4cee-ba60-0ecf5873048d}</Project>

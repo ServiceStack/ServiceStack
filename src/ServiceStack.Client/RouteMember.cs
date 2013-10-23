@@ -1,5 +1,7 @@
-﻿using System.Reflection;
-using ServiceStack.Text;
+﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
+// License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
+using System.Reflection;
 
 namespace ServiceStack
 {

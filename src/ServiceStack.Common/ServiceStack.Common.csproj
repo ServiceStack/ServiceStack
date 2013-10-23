@@ -76,6 +76,9 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -100,6 +103,7 @@
     <Compile Include="AssertExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="AttributeExtensions.cs" />
     <Compile Include="ByteArrayExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -176,12 +180,6 @@
     <Compile Include="PerfUtils.cs">
       <SubType>Code</SubType>
     </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-      <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
-      <Name>ServiceStack.Interfaces</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

@@ -33,9 +33,15 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AWSSDK">
+      <HintPath>..\packages\AWSSDK.1.5.31.0\lib\AWSSDK.dll</HintPath>
+    </Reference>
     <Reference Include="MsgPack, Version=0.3.0.0, Culture=neutral, PublicKeyToken=a2625990d5dc0167, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\MsgPack.Cli.0.3.2.1\lib\net40-client\MsgPack.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Text, Version=3.9.14.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -59,10 +65,6 @@
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj">
       <Project>{c43f583f-abde-4dd4-bbe3-66322817a6ad}</Project>
       <Name>ServiceStack.Client</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-      <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
-      <Name>ServiceStack.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj">
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>

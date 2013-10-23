@@ -1,16 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using NUnit.Framework;
-using ServiceStack.Common;
 using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -19,7 +16,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class AppHostListenerBaseTests
     {
         private const string ListeningOn = "http://localhost:82/";
-        ExampleAppHostHttpListener appHost;
+        ServiceStackHost appHost;
 
         static AppHostListenerBaseTests()
         {
@@ -29,12 +26,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [TestFixtureSetUp]
         public void OnTestFixtureStartUp()
         {
-            appHost = new ExampleAppHostHttpListener();
-            appHost.Init();
-            appHost.Start(ListeningOn);
+            appHost = new ExampleAppHostHttpListener()
+                .Init()
+                .Start(ListeningOn);
 
-            System.Console.WriteLine("ExampleAppHost Created at {0}, listening on {1}",
-                                     DateTime.Now, ListeningOn);
+            "ExampleAppHost Created at {0}, listening on {1}".Print(DateTime.Now, ListeningOn);
         }
 
         [TestFixtureTearDown]

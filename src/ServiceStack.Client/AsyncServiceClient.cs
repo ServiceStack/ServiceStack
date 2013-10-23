@@ -1,10 +1,12 @@
+// Copyright (c) Service Stack LLC. All Rights Reserved.
+// License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
 using System;
 using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Logging;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 #if NETFX_CORE

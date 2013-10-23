@@ -1,10 +1,12 @@
+// Copyright (c) Service Stack LLC. All Rights Reserved.
+// License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
 using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using ServiceStack.Caching;
 using ServiceStack.Support;
-using ServiceStack.Text;
 
 namespace ServiceStack
 {
