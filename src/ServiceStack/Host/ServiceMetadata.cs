@@ -393,12 +393,6 @@ namespace ServiceStack.Host
             return to;
         }
 
-        public static string GetDescription(this Type operationType)
-        {
-            var apiAttr = operationType.FirstAttribute<ApiAttribute>();
-            return apiAttr != null ? apiAttr.Description : "";
-        }
-
         public static List<ApiMemberAttribute> GetApiMembers(this Type operationType)
         {
             var members = operationType.GetMembers(BindingFlags.Instance | BindingFlags.Public);

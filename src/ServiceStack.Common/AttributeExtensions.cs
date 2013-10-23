@@ -11,6 +11,12 @@ namespace ServiceStack
     {
         public static string GetDescription(this Type type)
         {
+            var apiAttr = type.FirstAttribute<ApiAttribute>();
+            if (apiAttr != null)
+            {
+                return apiAttr.Description;
+            }
+
             var componentDescAttr = type.FirstAttribute<System.ComponentModel.DescriptionAttribute>();
             if (componentDescAttr != null)
             {
@@ -26,15 +32,21 @@ namespace ServiceStack
             return null;
         }
 
-        public static string GetDescription(this MemberInfo pi)
+        public static string GetDescription(this MemberInfo mi)
         {
-            var componentDescAttr = pi.FirstAttribute<System.ComponentModel.DescriptionAttribute>();
+            var apiAttr = mi.FirstAttribute<ApiMemberAttribute>();
+            if (apiAttr != null)
+            {
+                return apiAttr.Description;
+            }
+
+            var componentDescAttr = mi.FirstAttribute<System.ComponentModel.DescriptionAttribute>();
             if (componentDescAttr != null)
             {
                 return componentDescAttr.Description;
             }
 
-            var ssDescAttr = pi.FirstAttribute<ServiceStack.DataAnnotations.DescriptionAttribute>();
+            var ssDescAttr = mi.FirstAttribute<ServiceStack.DataAnnotations.DescriptionAttribute>();
             if (ssDescAttr != null)
             {
                 return ssDescAttr.Description;
