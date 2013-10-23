@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack.ServiceHost;
@@ -185,6 +186,57 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public object Get(ApiModelAttributeTestRequest request)
         {
             return new ApiModelAttributeTestResponse();
+        }
+    }
+
+    [DataContract]
+    public class DataContractBaseType
+    {
+        [DataMember]
+        public string Zebra { get; set; }
+    }
+
+    [ServiceHost.Api]
+    [DataContract]
+    [Route("/swgdatamemberorder", "GET")]
+    public class DataContractDerivedTypeRequest : DataContractBaseType, IReturn<DataContractDerivedTypeResponse>
+    {
+        [DataMember(Order = 0)]
+        public string Bird { get; set; }
+        [DataMember(Order = 1)]
+        public string Parrot { get; set; }
+        [DataMember]
+        public string Dog { get; set; }
+        [DataMember(Order = 3)]
+        public string Antelope { get; set; }
+        [DataMember]
+        public string Cat { get; set; }
+        [DataMember(Order = 1)]
+        public string Albatross { get; set; }
+    }
+
+    [DataContract]
+    public class DataContractDerivedTypeResponse : DataContractBaseType
+    {
+        [DataMember(Order = 0)]
+        public string Bird { get; set; }
+        [DataMember(Order = 1)]
+        public string Parrot { get; set; }
+        [DataMember]
+        public string Dog { get; set; }
+        [DataMember(Order = 3)]
+        public string Antelope { get; set; }
+        [DataMember]
+        public string Cat { get; set; }
+        [DataMember(Order = 1)]
+        public string Albatross { get; set; }
+    }
+
+    public class DataMemberAttributeOrderService : ServiceInterface.Service
+    {
+        public object Get(DataContractDerivedTypeRequest request)
+        {
+            return new DataContractDerivedTypeResponse();
         }
     }
 
@@ -644,6 +696,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(responseClassModel.Properties.ContainsKey("Description"), Is.True);
             Assert.That(responseClassModel.Properties["Description"].Description, Is.EqualTo("Another Test Response Description"));
+        }
+
+        // Ordering defined by: http://msdn.microsoft.com/en-us/library/ms729813.aspx
+        [Test, TestCaseSource("RestClients")]
+        public void Should_order_fields_with_DataMemberAttribute(IRestClient client)
+        {
+            var resource = client.Get<ResourceResponse>("/resource/swgdatamemberorder");
+
+            Assert.That(resource.Models.ContainsKey(typeof(DataContractDerivedTypeRequest).Name), Is.True);
+            var requestClassModel = resource.Models[typeof(DataContractDerivedTypeRequest).Name];
+
+            Assert.That(requestClassModel.Properties.ElementAt(0).Key, Is.EqualTo("Zebra"));
+            Assert.That(requestClassModel.Properties.ElementAt(1).Key, Is.EqualTo("Cat"));
+            Assert.That(requestClassModel.Properties.ElementAt(2).Key, Is.EqualTo("Dog"));
+            Assert.That(requestClassModel.Properties.ElementAt(3).Key, Is.EqualTo("Bird"));
+            Assert.That(requestClassModel.Properties.ElementAt(4).Key, Is.EqualTo("Albatross"));
+            Assert.That(requestClassModel.Properties.ElementAt(5).Key, Is.EqualTo("Parrot"));
+            Assert.That(requestClassModel.Properties.ElementAt(6).Key, Is.EqualTo("Antelope"));
         }
     }
 }

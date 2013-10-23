@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -10,6 +11,8 @@ using ServiceStack.Common;
 using ServiceStack.Common.Extensions;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
+
+using ServiceStack.Api.Swagger.Support;
 
 namespace ServiceStack.Api.Swagger
 {
@@ -43,7 +46,7 @@ namespace ServiceStack.Api.Swagger
         [DataMember(Name = "id")]
         public string Id { get; set; }
         [DataMember(Name = "properties")]
-        public Dictionary<string, ModelProperty> Properties { get; set; }
+        public OrderedDictionary<string, ModelProperty> Properties { get; set; }
     }
 
     [DataContract]
@@ -246,11 +249,38 @@ namespace ServiceStack.Api.Swagger
             var model = new SwaggerModel
             {
                 Id = modelId,
-                Properties = new Dictionary<string, ModelProperty>()
+                Properties = new OrderedDictionary<string, ModelProperty>()
             };
             models[model.Id] = model;
 
-            foreach (var prop in modelType.GetProperties())
+            var properties = modelType.GetProperties();
+
+            // Order model properties by DataMember.Order if [DataContract] and [DataMember](s) defined
+            var dataContractAttr = modelType.GetCustomAttributes(typeof(DataContractAttribute), true).OfType<DataContractAttribute>().FirstOrDefault();
+            if (dataContractAttr != null && properties.Any(prop => prop.IsDefined(typeof(DataMemberAttribute), true)))
+            {
+                var typeOrder = new List<Type>();
+                var baseType = modelType.BaseType;
+
+                while (baseType != null)
+                {
+                    typeOrder.Add(baseType);
+                    baseType = baseType.BaseType;
+                }
+                typeOrder.Add(modelType);
+
+                properties =
+                    properties.Where(prop => prop.IsDefined(typeof(DataMemberAttribute), true))
+                              .OrderBy(prop => prop.GetCustomAttributes(typeof(DataMemberAttribute), true)
+                                                   .OfType<DataMemberAttribute>()
+                                                   .First()
+                                                   .Order)
+                              .ThenBy(prop => typeOrder.IndexOf(prop.DeclaringType))
+                              .ThenBy(prop => prop.Name)
+                              .ToArray();
+            }
+
+            foreach (var prop in properties)
             {
                 var allApiDocAttributes = prop
                     .GetCustomAttributes(typeof(ApiMemberAttribute), true)
