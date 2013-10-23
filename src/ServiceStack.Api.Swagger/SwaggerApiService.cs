@@ -262,7 +262,7 @@ namespace ServiceStack.Api.Swagger
                 if (allApiDocAttributes.Any() && apiDoc == null) continue;
 
                 var propertyType = prop.PropertyType;
-                var modelProp = new ModelProperty { Type = GetSwaggerTypeName(propertyType), Required = !IsNullable(propertyType) };
+                var modelProp = new ModelProperty { Type = GetSwaggerTypeName(propertyType) };
 
                 if (IsListType(propertyType))
                 {
@@ -287,12 +287,23 @@ namespace ServiceStack.Api.Swagger
                     ParseModel(models, propertyType);
                 }
 
-                var descriptionAttr = prop.GetCustomAttributes(typeof(DescriptionAttribute), true).OfType<DescriptionAttribute>().FirstOrDefault();
-                if (descriptionAttr != null)
-                    modelProp.Description = descriptionAttr.Description;
+                var apiModelAttr = prop.GetCustomAttributes(typeof(ApiModelAttribute), true).OfType<ApiModelAttribute>().FirstOrDefault();
+                if (apiModelAttr != null)
+                {
+                    modelProp.Required = apiModelAttr.OverrideRequired() ? apiModelAttr.IsRequired : !IsNullable(propertyType);
+                    modelProp.Description = apiModelAttr.Description;
+                }
+                else
+                {
+                    modelProp.Required = !IsNullable(propertyType);
 
-                if (apiDoc != null)
-                    modelProp.Description = apiDoc.Description;
+                    var descriptionAttr = prop.GetCustomAttributes(typeof(DescriptionAttribute), true).OfType<DescriptionAttribute>().FirstOrDefault();
+                    if (descriptionAttr != null)
+                        modelProp.Description = descriptionAttr.Description;
+
+                    if (apiDoc != null)
+                        modelProp.Description = apiDoc.Description;
+                }
 
                 var allowableValues = prop.GetCustomAttributes(typeof(ApiAllowableValuesAttribute), true).OfType<ApiAllowableValuesAttribute>().FirstOrDefault();
                 if (allowableValues != null)
