@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack.ServiceHost;
@@ -154,6 +155,90 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 	}
 
+    public class ApiModelAttributeTestResponse
+    {
+        [ApiModel("Test Response Description", IsRequired = false)]
+        public string RequiredOverrideFalseWithDescription { get; set; }
+
+        [ApiModel(IsRequired = true)]
+        public DateTime? RequiredOverrideTrue { get; set; }
+
+        [ApiModel("Another Test Response Description")]
+        public string Description { get; set; }
+    }
+
+    [ServiceHost.Api]
+    [Route("/swgapimodelattribute", "GET")]
+    public class ApiModelAttributeTestRequest : IReturn<ApiModelAttributeTestResponse>
+    {
+        [ApiModel("Test Request Description", IsRequired = false)]
+        public string RequiredOverrideFalseWithDescription { get; set; }
+
+        [ApiModel(IsRequired = true)]
+        public DateTime? RequiredOverrideTrue { get; set; }
+
+        [ApiModel("Another Test Request Description")]
+        public string Description { get; set; }
+    }
+
+    public class ApiModelAttributeService : ServiceInterface.Service
+    {
+        public object Get(ApiModelAttributeTestRequest request)
+        {
+            return new ApiModelAttributeTestResponse();
+        }
+    }
+
+    [DataContract]
+    public class DataContractBaseType
+    {
+        [DataMember]
+        public string Zebra { get; set; }
+    }
+
+    [ServiceHost.Api]
+    [DataContract]
+    [Route("/swgdatamemberorder", "GET")]
+    public class DataContractDerivedTypeRequest : DataContractBaseType, IReturn<DataContractDerivedTypeResponse>
+    {
+        [DataMember(Order = 0)]
+        public string Bird { get; set; }
+        [DataMember(Order = 1)]
+        public string Parrot { get; set; }
+        [DataMember]
+        public string Dog { get; set; }
+        [DataMember(Order = 3)]
+        public string Antelope { get; set; }
+        [DataMember]
+        public string Cat { get; set; }
+        [DataMember(Order = 1)]
+        public string Albatross { get; set; }
+    }
+
+    [DataContract]
+    public class DataContractDerivedTypeResponse : DataContractBaseType
+    {
+        [DataMember(Order = 0)]
+        public string Bird { get; set; }
+        [DataMember(Order = 1)]
+        public string Parrot { get; set; }
+        [DataMember]
+        public string Dog { get; set; }
+        [DataMember(Order = 3)]
+        public string Antelope { get; set; }
+        [DataMember]
+        public string Cat { get; set; }
+        [DataMember(Order = 1)]
+        public string Albatross { get; set; }
+    }
+
+    public class DataMemberAttributeOrderService : ServiceInterface.Service
+    {
+        public object Get(DataContractDerivedTypeRequest request)
+        {
+            return new DataContractDerivedTypeResponse();
+        }
+    }
 
     public class SwaggerFeatureResponse
     {
@@ -576,5 +661,59 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Assert.That(responseModel.Properties["Optional"].Type, Is.EqualTo(SwaggerType.Int));
 			Assert.That(responseModel.Properties["NestedProperty2"].Required, Is.True);
 		}
+
+        [Test, TestCaseSource("RestClients")]
+        public void Should_override_fields_with_ApiModelAttribute(IRestClient client)
+        {
+            var resource = client.Get<ResourceResponse>("/resource/swgapimodelattribute");
+            
+            Assert.That(resource.Models.ContainsKey(typeof(ApiModelAttributeTestRequest).Name), Is.True);
+            var requestClassModel = resource.Models[typeof(ApiModelAttributeTestRequest).Name];
+
+            Assert.That(requestClassModel.Properties.ContainsKey("RequiredOverrideFalseWithDescription"), Is.True);
+            Assert.That(requestClassModel.Properties["RequiredOverrideFalseWithDescription"].Type, Is.EqualTo(SwaggerType.String));
+            Assert.That(requestClassModel.Properties["RequiredOverrideFalseWithDescription"].Required, Is.False);
+            Assert.That(requestClassModel.Properties["RequiredOverrideFalseWithDescription"].Description, Is.EqualTo("Test Request Description"));
+            
+            Assert.That(requestClassModel.Properties.ContainsKey("RequiredOverrideTrue"), Is.True);
+            Assert.That(requestClassModel.Properties["RequiredOverrideTrue"].Type, Is.EqualTo(SwaggerType.Date));
+            Assert.That(requestClassModel.Properties["RequiredOverrideTrue"].Required, Is.True);
+
+            Assert.That(requestClassModel.Properties.ContainsKey("Description"), Is.True);
+            Assert.That(requestClassModel.Properties["Description"].Description, Is.EqualTo("Another Test Request Description"));
+
+            Assert.That(resource.Models.ContainsKey(typeof(ApiModelAttributeTestResponse).Name), Is.True);
+            var responseClassModel = resource.Models[typeof(ApiModelAttributeTestResponse).Name];
+
+            Assert.That(responseClassModel.Properties.ContainsKey("RequiredOverrideFalseWithDescription"), Is.True);
+            Assert.That(responseClassModel.Properties["RequiredOverrideFalseWithDescription"].Type, Is.EqualTo(SwaggerType.String));
+            Assert.That(responseClassModel.Properties["RequiredOverrideFalseWithDescription"].Required, Is.False);
+            Assert.That(responseClassModel.Properties["RequiredOverrideFalseWithDescription"].Description, Is.EqualTo("Test Response Description"));
+
+            Assert.That(responseClassModel.Properties.ContainsKey("RequiredOverrideTrue"), Is.True);
+            Assert.That(responseClassModel.Properties["RequiredOverrideTrue"].Type, Is.EqualTo(SwaggerType.Date));
+            Assert.That(responseClassModel.Properties["RequiredOverrideTrue"].Required, Is.True);
+
+            Assert.That(responseClassModel.Properties.ContainsKey("Description"), Is.True);
+            Assert.That(responseClassModel.Properties["Description"].Description, Is.EqualTo("Another Test Response Description"));
+        }
+
+        // Ordering defined by: http://msdn.microsoft.com/en-us/library/ms729813.aspx
+        [Test, TestCaseSource("RestClients")]
+        public void Should_order_fields_with_DataMemberAttribute(IRestClient client)
+        {
+            var resource = client.Get<ResourceResponse>("/resource/swgdatamemberorder");
+
+            Assert.That(resource.Models.ContainsKey(typeof(DataContractDerivedTypeRequest).Name), Is.True);
+            var requestClassModel = resource.Models[typeof(DataContractDerivedTypeRequest).Name];
+
+            Assert.That(requestClassModel.Properties.ElementAt(0).Key, Is.EqualTo("Zebra"));
+            Assert.That(requestClassModel.Properties.ElementAt(1).Key, Is.EqualTo("Cat"));
+            Assert.That(requestClassModel.Properties.ElementAt(2).Key, Is.EqualTo("Dog"));
+            Assert.That(requestClassModel.Properties.ElementAt(3).Key, Is.EqualTo("Bird"));
+            Assert.That(requestClassModel.Properties.ElementAt(4).Key, Is.EqualTo("Albatross"));
+            Assert.That(requestClassModel.Properties.ElementAt(5).Key, Is.EqualTo("Parrot"));
+            Assert.That(requestClassModel.Properties.ElementAt(6).Key, Is.EqualTo("Antelope"));
+        }
     }
 }
