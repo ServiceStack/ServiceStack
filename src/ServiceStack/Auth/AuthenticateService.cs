@@ -125,6 +125,7 @@ namespace ServiceStack.Auth
 
                 var alreadyAuthenticated = response == null;
                 response = response ?? new AuthenticateResponse {
+                    UserId = session.UserAuthId,
                     UserName = session.UserAuthName,
                     SessionId = session.Id,
                     ReferrerUrl = referrerUrl,

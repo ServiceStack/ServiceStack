@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using ServiceStack.DataAnnotations;
-using ServiceStack.Model;
 using ServiceStack.Text;
 
 namespace ServiceStack.Auth
