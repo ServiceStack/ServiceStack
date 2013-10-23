@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -56,7 +57,7 @@ namespace ServiceStack
 
         public static string ToChar(this int codePoint)
         {
-            return ((char)codePoint).ToString(CultureInfo.InvariantCulture);
+            return Convert.ToChar(codePoint).ToString(CultureInfo.InvariantCulture);
         }
         
         // http://www.w3.org/TR/html5/entities.json
