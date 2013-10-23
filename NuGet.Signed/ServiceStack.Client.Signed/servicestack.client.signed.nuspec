@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>ServiceStack.Client.Signed</id>
+    <title>ServiceStack.Client.Signed</title>
+    <version>4.0.0</version>
+    <authors>Demis Bellot</authors>
+    <owners>Demis Bellot</owners>
+    <summary>Opensource .NET and Mono REST Web Services framework</summary>
+    <description>
+      JSON, XML, JSV, SOAP and MQ Generic Service Clients.
+    </description>
+    <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
+    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/license.txt</licenseUrl>
+    <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
+    <tags>ServiceStack Common Framework Clients ServiceClients Gateway</tags>
+    <language>en-US</language>
+    <copyright>Copyright 2013 Service Stack</copyright>
+    <dependencies>
+      <dependency id="ServiceStack.Interfaces" version="4.0" />
+      <dependency id="ServiceStack.Text.Signed" version="4.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="lib\**\*.*" target="lib" />
+    <file src="..\..\src\ServiceStack.Client\**\*.cs" target="src\ServiceStack.Client" />
+  </files>
+</package>
