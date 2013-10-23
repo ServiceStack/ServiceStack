@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
@@ -53,7 +54,7 @@ namespace ServiceStack.Common
 
         public static string ToChar(this int codePoint)
         {
-            return codePoint.ToString(CultureInfo.InvariantCulture);
+            return Convert.ToChar(codePoint).ToString(CultureInfo.InvariantCulture);
         }
 
         // http://www.w3.org/TR/html5/entities.json

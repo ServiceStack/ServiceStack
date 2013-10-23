@@ -185,5 +185,16 @@ namespace ServiceStack.Common.Tests
                 Assert.AreEqual(expected, actual);
             }
         }
+
+        [Test]
+        public void HtmlStrip_fixes_actual_production_example()
+        {
+            var encoded = @"Du tr&auml;umst von node.js und willst mithelfen einen Request in unter 50ms auszuliefern? PHP ist Deine Muttersprache und Dein Verstand schreit nach immer neuen Herausforderungen? Dann passt du zu uns. Bringe Deine Kompetenzen in ein Unternehmen ein, das Dir neben hervorragenden Arbeitsbedingungen wirklich etwas zu bieten hat: Perspektiven!
+Werde Teil unseres Teams und gestalte aktiv die technische Zukunft der weltweit gr&ouml;&szlig;ten Online Hotelsuche mit. Arbeite mit neuesten Technologien in einem global aufgestellten Unternehmen. Nutze die Freiheit Bestehendes in Frage zu stellen, Deinen Horizont zu erweitern und Neues zu entwickeln.";
+            var expected = @"Du träumst von node.js und willst mithelfen einen Request in unter 50ms auszuliefern? PHP ist Deine Muttersprache und Dein Verstand schreit nach immer neuen Herausforderungen? Dann passt du zu uns. Bringe Deine Kompetenzen in ein Unternehmen ein, das Dir neben hervorragenden Arbeitsbedingungen wirklich etwas zu bieten hat: Perspektiven!
+Werde Teil unseres Teams und gestalte aktiv die technische Zukunft der weltweit größten Online Hotelsuche mit. Arbeite mit neuesten Technologien in einem global aufgestellten Unternehmen. Nutze die Freiheit Bestehendes in Frage zu stellen, Deinen Horizont zu erweitern und Neues zu entwickeln.";
+            var actual = encoded.StripHtml().ConvertHtmlCodes();
+            Assert.AreEqual(expected, actual);
+        }
 	}
 }
