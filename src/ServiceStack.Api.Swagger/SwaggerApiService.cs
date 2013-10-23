@@ -250,11 +250,6 @@ namespace ServiceStack.Api.Swagger
             };
             models[model.Id] = model;
 
-            if (ModelFilter != null)
-            {
-                ModelFilter(model);
-            }
-
             foreach (var prop in modelType.GetProperties())
             {
                 var allApiDocAttributes = prop
@@ -267,11 +262,6 @@ namespace ServiceStack.Api.Swagger
 
                 var propertyType = prop.PropertyType;
                 var modelProp = new ModelProperty { Type = GetSwaggerTypeName(propertyType), Required = !IsNullable(propertyType) };
-
-                if (ModelPropertyFilter != null)
-                {
-                    ModelPropertyFilter(modelProp);
-                }
 
                 if (IsListType(propertyType))
                 {
@@ -321,10 +311,18 @@ namespace ServiceStack.Api.Swagger
                 if (allowableValues != null)
                     modelProp.AllowableValues = GetAllowableValue(allowableValues);
 
+                if (ModelPropertyFilter != null)
+                {
+                    ModelPropertyFilter(modelProp);
+                }
+
                 model.Properties[GetModelPropertyName(prop)] = modelProp;
             }
 
-
+            if (ModelFilter != null)
+            {
+                ModelFilter(model);
+            }
         }
 
         private static string GetModelPropertyName(PropertyInfo prop)
