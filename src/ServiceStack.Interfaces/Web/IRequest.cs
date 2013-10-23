@@ -60,6 +60,11 @@ namespace ServiceStack.Web
         string ResponseContentType { get; set; }
 
         /// <summary>
+        /// Whether the ResponseContentType has been explicitly overrided or whether it was just the default
+        /// </summary>
+        bool HasExplicitResponseContentType { get; }
+
+        /// <summary>
         /// Attach any data to this request that all filters and services can access.
         /// </summary>
         Dictionary<string, object> Items { get; }

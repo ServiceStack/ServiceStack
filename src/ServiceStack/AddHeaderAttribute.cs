@@ -47,9 +47,16 @@ namespace ServiceStack
 
             if (!string.IsNullOrEmpty(Name) && !string.IsNullOrEmpty(Value))
             {
-                if (Name.Equals(HttpHeaders.ContentType, StringComparison.InvariantCultureIgnoreCase))
+                if (Name.EqualsIgnoreCase(HttpHeaders.ContentType))
                 {
-                    res.ContentType = Value;
+                    req.ResponseContentType = Value; //Looked at in WriteRespone
+                }
+                else if (Name == "DefaultContentType")
+                {
+                    if (!req.HasExplicitResponseContentType)
+                    {
+                        req.ResponseContentType = Value; //Looked at in WriteRespone
+                    }
                 }
                 else
                 {
@@ -64,6 +71,16 @@ namespace ServiceStack
             set
             {
                 Name = HttpHeaders.ContentType;
+                Value = value;
+            }
+        }
+
+        public string DefaultContentType
+        {
+            get { return Name == "DefaultContentType" ? Value : null; }
+            set
+            {
+                Name = "DefaultContentType";
                 Value = value;
             }
         }

@@ -55,7 +55,8 @@ namespace ServiceStack.ServiceHost.Tests
 
 			public IDictionary<string, Cookie> Cookies { get; private set; }
 			public string ResponseContentType { get; set; }
-			public Dictionary<string, object> Items { get; private set; }
+		    public bool HasExplicitResponseContentType { get; private set; }
+		    public Dictionary<string, object> Items { get; private set; }
 			public NameValueCollection Headers { get; private set; }
 			public NameValueCollection QueryString { get; private set; }
 			public NameValueCollection FormData { get; private set; }

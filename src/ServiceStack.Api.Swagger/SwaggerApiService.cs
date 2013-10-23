@@ -132,6 +132,7 @@ namespace ServiceStack.Api.Swagger
         public int? Max { get; set; }
     }
 
+    [AddHeader(DefaultContentType = MimeTypes.Json)]
     [DefaultRequest(typeof(ResourceRequest))]
     public class SwaggerApiService : Service
     {

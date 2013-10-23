@@ -102,6 +102,8 @@ namespace ServiceStack.Testing
             set { responseContentType = value; }
         }
 
+        public bool HasExplicitResponseContentType { get; private set; }
+
         public NameValueCollection Headers { get; set; }
 
         public NameValueCollection QueryString { get; set; }

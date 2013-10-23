@@ -42,10 +42,22 @@ COPY ..\src\ServiceStack.ProtoBuf\bin\%BUILD%\ServiceStack.ProtoBuf.* ..\NuGet\S
 COPY ..\lib\MsgPack.dll ..\NuGet\ServiceStack.MsgPack\lib\net40
 COPY ..\src\ServiceStack.MsgPack\bin\%BUILD%\ServiceStack.MsgPack.* ..\NuGet\ServiceStack.MsgPack\lib\net40
 
-RMDIR ..\NuGet\ServiceStack.Api.Swagger\content\swagger-ui /s /q
-MD ..\NuGet\ServiceStack.Api.Swagger\content\swagger-ui
+IF EXIST ..\..\swagger-ui\dist (    
+    RMDIR ..\tests\ServiceStack.WebHost.IntegrationTests\swagger-ui /s /q
+    MD ..\tests\ServiceStack.WebHost.IntegrationTests\swagger-ui
+
+    RMDIR ..\NuGet\ServiceStack.Api.Swagger\content\swagger-ui /s /q
+    MD ..\NuGet\ServiceStack.Api.Swagger\content\swagger-ui
+
+    RMDIR ..\src\ServiceStack.Api.Swagger\swagger-ui /s /q
+    MD ..\src\ServiceStack.Api.Swagger\swagger-ui
+
+    XCOPY /E ..\..\swagger-ui\dist ..\tests\ServiceStack.WebHost.IntegrationTests\swagger-ui
+    XCOPY /E ..\..\swagger-ui\dist ..\src\ServiceStack.Api.Swagger\swagger-ui
+    XCOPY /E ..\..\swagger-ui\dist ..\NuGet\ServiceStack.Api.Swagger\content\swagger-ui
+)
+
 COPY ..\src\ServiceStack.Api.Swagger\bin\%BUILD%\ServiceStack.Api.Swagger.* ..\NuGet\ServiceStack.Api.Swagger\lib\net35
-XCOPY /E ..\src\ServiceStack.Api.Swagger\swagger-ui ..\NuGet\ServiceStack.Api.Swagger\content\swagger-ui
 
 COPY ..\src\ServiceStack\bin\%BUILD%\*.* ..\..\ServiceStack.Contrib\lib
 COPY ..\src\ServiceStack\bin\%BUILD%\*.* ..\..\ServiceStack.RedisWebServices\lib

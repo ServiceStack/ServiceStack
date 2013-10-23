@@ -141,8 +141,11 @@ namespace ServiceStack.Host.AspNet
             set
             {
                 this.responseContentType = value;
+                HasExplicitResponseContentType = true;
             }
         }
+
+        public bool HasExplicitResponseContentType { get; private set; }
 
         private Dictionary<string, Cookie> cookies;
         public IDictionary<string, Cookie> Cookies

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.RegularExpressions;
+using ServiceStack.Host.Handlers;
 
 namespace ServiceStack.Api.Swagger
 {
@@ -33,6 +34,37 @@ namespace ServiceStack.Api.Swagger
 
             appHost.RegisterService(typeof(SwaggerResourcesService), new[] { "/resources" });
             appHost.RegisterService(typeof(SwaggerApiService), new[] { SwaggerResourcesService.RESOURCE_PATH + "/{Name*}" });
+
+            appHost.RawHttpHandlers.Add(httpReq => {
+                if (httpReq.PathInfo == "/swagger-ui/")
+                {
+                    return null;
+                }
+                return null;
+            });
+
+            appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) =>
+            {
+                if (pathInfo == "/swagger-ui" || pathInfo == "/swagger-ui/" || pathInfo == "/swagger-ui/default.html")
+                {
+                    var indexFile = appHost.VirtualPathProvider.GetFile("/swagger-ui/index.html");
+                    if (indexFile != null)
+                    {
+                        var html = indexFile.ReadAllText();
+                        var resourcesUrl = (appHost.Config.ServiceStackHandlerFactoryPath ?? "")
+                            .CombineWith("resources");
+
+                        html = html.Replace("http://petstore.swagger.wordnik.com/api/api-docs", resourcesUrl);
+                        
+                        return new CustomResponseHandler((req, res) =>
+                            {
+                                res.ContentType = MimeTypes.Html;
+                                return html;
+                            });
+                    }
+                }
+                return null;
+            });
         }
 
         public static bool IsEnabled

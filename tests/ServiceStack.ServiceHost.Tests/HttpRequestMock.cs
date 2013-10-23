@@ -61,7 +61,9 @@ namespace ServiceStack.ServiceHost.Tests
 			}
 		}
 
-		public Dictionary<string, object> Items
+	    public bool HasExplicitResponseContentType { get; private set; }
+
+	    public Dictionary<string, object> Items
 		{
 			get { throw new NotImplementedException(); }
 		}

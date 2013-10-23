@@ -152,8 +152,14 @@ namespace ServiceStack.Host.HttpListener
         public string ResponseContentType
         {
             get { return responseContentType ?? (responseContentType = this.GetResponseContentType()); }
-            set { this.responseContentType = value; }
+            set
+            {
+                this.responseContentType = value;
+                HasExplicitResponseContentType = true;
+            }
         }
+
+        public bool HasExplicitResponseContentType { get; private set; }
 
         private string pathInfo;
         public string PathInfo

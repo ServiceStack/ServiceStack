@@ -104,6 +104,8 @@ namespace ServiceStack.Host
 
         public string ResponseContentType { get; set; }
 
+        public bool HasExplicitResponseContentType { get; set; }
+        
         public string CompressionType { get; set; }
 
         public string AbsoluteUri { get; set; }

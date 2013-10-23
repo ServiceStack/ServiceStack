@@ -36,6 +36,7 @@ namespace ServiceStack.Api.Swagger
         public string Description { get; set; }
     }
 
+    [AddHeader(DefaultContentType = MimeTypes.Json)]
     [DefaultRequest(typeof(Resources))]
     public class SwaggerResourcesService : Service
     {
