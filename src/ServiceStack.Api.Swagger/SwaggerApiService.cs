@@ -139,6 +139,9 @@ namespace ServiceStack.Api.Swagger
         internal static bool UseLowercaseUnderscoreModelPropertyNames { get; set; }
         internal static bool DisableAutoDtoInBodyParam { get; set; }
 
+        public Action<SwaggerModel> ModelFilter { get; set; }
+        public Action<ModelProperty> ModelPropertyFilter { get; set; }
+
         private readonly Regex nicknameCleanerRegex = new Regex(@"[\{\}\*\-_/]*", RegexOptions.Compiled);
 
         public object Get(ResourceRequest request)
@@ -233,7 +236,7 @@ namespace ServiceStack.Api.Swagger
             return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
 
-        private static void ParseModel(IDictionary<string, SwaggerModel> models, Type modelType)
+        private void ParseModel(IDictionary<string, SwaggerModel> models, Type modelType)
         {
             if (IsSwaggerScalarType(modelType)) return;
 
@@ -247,6 +250,11 @@ namespace ServiceStack.Api.Swagger
             };
             models[model.Id] = model;
 
+            if (ModelFilter != null)
+            {
+                ModelFilter(model);
+            }
+
             foreach (var prop in modelType.GetProperties())
             {
                 var allApiDocAttributes = prop
@@ -259,6 +267,11 @@ namespace ServiceStack.Api.Swagger
 
                 var propertyType = prop.PropertyType;
                 var modelProp = new ModelProperty { Type = GetSwaggerTypeName(propertyType), Required = !IsNullable(propertyType) };
+
+                if (ModelPropertyFilter != null)
+                {
+                    ModelPropertyFilter(modelProp);
+                }
 
                 if (IsListType(propertyType))
                 {
@@ -310,6 +323,8 @@ namespace ServiceStack.Api.Swagger
 
                 model.Properties[GetModelPropertyName(prop)] = modelProp;
             }
+
+
         }
 
         private static string GetModelPropertyName(PropertyInfo prop)
@@ -327,7 +342,7 @@ namespace ServiceStack.Api.Swagger
             return values;
         }
 
-        private static string GetResponseClass(IRestPath restPath, IDictionary<string, SwaggerModel> models)
+        private string GetResponseClass(IRestPath restPath, IDictionary<string, SwaggerModel> models)
         {
             // Given: class MyDto : IReturn<X>. Determine the type X.
             foreach (var i in restPath.RequestType.GetInterfaces())
@@ -410,7 +425,7 @@ namespace ServiceStack.Api.Swagger
             return null;
         }
 
-        private static List<MethodOperationParameter> ParseParameters(string verb, Type operationType, IDictionary<string, SwaggerModel> models)
+        private List<MethodOperationParameter> ParseParameters(string verb, Type operationType, IDictionary<string, SwaggerModel> models)
         {
             var hasDataContract = operationType.HasAttribute<DataContractAttribute>();
 
