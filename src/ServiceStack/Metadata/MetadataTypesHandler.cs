@@ -144,8 +144,7 @@ namespace ServiceStack.Metadata
                 }
             }
 
-            var typeAttrs = TypeDescriptor.GetAttributes(type);
-            var routeAttrs = typeAttrs.OfType<RouteAttribute>().ToList();
+            var routeAttrs = type.AllAttributes<RouteAttribute>().ToList();
             if (routeAttrs.Count > 0)
             {
                 metaType.Routes = routeAttrs.ConvertAll(x =>
@@ -158,11 +157,7 @@ namespace ServiceStack.Metadata
                     });
             }
 
-            var descAttr = typeAttrs.OfType<DescriptionAttribute>().FirstOrDefault();
-            if (descAttr != null)
-            {
-                metaType.Description = descAttr.Description;
-            }
+            metaType.Description = type.GetDescription();
 
             var dcAttr = type.GetDataContract();
             if (dcAttr != null)
@@ -196,7 +191,7 @@ namespace ServiceStack.Metadata
         public static bool ExcludeKnownAttrsFilter(Attribute x)
         {
             return x.GetType() != typeof(RouteAttribute)
-                && x.GetType() != typeof(DescriptionAttribute)
+                && x.GetType().Name != "DescriptionAttribute"
                 && x.GetType().Name != "DataContractAttribute"  //Type equality issues with Mono .NET 3.5/4
                 && x.GetType().Name != "DataMemberAttribute";
         }
@@ -267,19 +262,14 @@ namespace ServiceStack.Metadata
 
         public static MetadataPropertyType ToProperty(this ParameterInfo pi)
         {
-            var propertyAttrs = pi.GetCustomAttributes(false);
+            var propertyAttrs = pi.AllAttributes();
             var property = new MetadataPropertyType
             {
                 Name = pi.Name,
                 Attributes = propertyAttrs.ToAttributes(),
                 Type = pi.ParameterType.Name,
+                Description = pi.GetDescription(),
             };
-
-            var descAttr = propertyAttrs.OfType<DescriptionAttribute>().FirstOrDefault();
-            if (descAttr != null)
-            {
-                property.Description = descAttr.Description;
-            }
 
             return property;
         }

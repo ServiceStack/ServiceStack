@@ -27,12 +27,12 @@ namespace ServiceStack
             var type = @enum.GetType();
 
             var memInfo = type.GetMember(@enum.ToString());
-            if (memInfo != null && memInfo.Length > 0)
+            if (memInfo.Length > 0)
             {
-                var attrs = memInfo[0].AllAttributes<DescriptionAttribute>();
+                var attr = memInfo[0].FirstAttribute<DescriptionAttribute>();
 
-                if (attrs.Length > 0)
-                    return attrs[0].Description;
+                if (attr != null)
+                    return attr.Description;
             }
 
             return @enum.ToString();
