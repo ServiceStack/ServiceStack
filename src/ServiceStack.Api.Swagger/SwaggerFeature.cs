@@ -1,4 +1,4 @@
-﻿using System.Linq;
+﻿using System;
 using System.Text.RegularExpressions;
 
 namespace ServiceStack.Api.Swagger
@@ -16,6 +16,10 @@ namespace ServiceStack.Api.Swagger
 
         public bool DisableAutoDtoInBodyParam { get; set; }
 
+        public Action<SwaggerModel> ModelFilter { get; set; }
+
+        public Action<ModelProperty> ModelPropertyFilter { get; set; }
+
         public void Register(IAppHost appHost)
         {
             if (ResourceFilterPattern != null)
@@ -24,6 +28,8 @@ namespace ServiceStack.Api.Swagger
             SwaggerApiService.UseCamelCaseModelPropertyNames = UseCamelCaseModelPropertyNames;
             SwaggerApiService.UseLowercaseUnderscoreModelPropertyNames = UseLowercaseUnderscoreModelPropertyNames;
             SwaggerApiService.DisableAutoDtoInBodyParam = DisableAutoDtoInBodyParam;
+            SwaggerApiService.ModelFilter = ModelFilter;
+            SwaggerApiService.ModelPropertyFilter = ModelPropertyFilter;
 
             appHost.RegisterService(typeof(SwaggerResourcesService), new[] { "/resources" });
             appHost.RegisterService(typeof(SwaggerApiService), new[] { SwaggerResourcesService.RESOURCE_PATH + "/{Name*}" });

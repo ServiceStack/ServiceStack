@@ -139,8 +139,8 @@ namespace ServiceStack.Api.Swagger
         internal static bool UseLowercaseUnderscoreModelPropertyNames { get; set; }
         internal static bool DisableAutoDtoInBodyParam { get; set; }
 
-        public Action<SwaggerModel> ModelFilter { get; set; }
-        public Action<ModelProperty> ModelPropertyFilter { get; set; }
+        internal static Action<SwaggerModel> ModelFilter { get; set; }
+        internal static Action<ModelProperty> ModelPropertyFilter { get; set; }
 
         private readonly Regex nicknameCleanerRegex = new Regex(@"[\{\}\*\-_/]*", RegexOptions.Compiled);
 
