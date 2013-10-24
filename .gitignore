@@ -43,11 +43,13 @@ release/latest/
 *.nupkg
 release/*
 
-src/ServiceStack.MonoTouch/.DS_Store
+*.DS_Store
+
 NuGet/
 NuGet.Signed/
+*.pfx
+
 build/
-*.DS_Store
 
 *.dotCover
 
@@ -57,7 +59,3 @@ build/
 src/ServiceStack/Properties/Resources.resources
 
 src/ServiceStack.userprefs
-
-src/ServiceStack.userprefs
-
-*.pfx
