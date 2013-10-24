@@ -9,6 +9,8 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Api.Swagger
 {
+    using ServiceStack.Api.Swagger.Support;
+
     [DataContract]
     public class ResourceRequest
     {
@@ -39,7 +41,7 @@ namespace ServiceStack.Api.Swagger
         [DataMember(Name = "id")]
         public string Id { get; set; }
         [DataMember(Name = "properties")]
-        public Dictionary<string, ModelProperty> Properties { get; set; }
+        public OrderedDictionary<string, ModelProperty> Properties { get; set; }
     }
 
     [DataContract]
@@ -246,7 +248,7 @@ namespace ServiceStack.Api.Swagger
             var model = new SwaggerModel
             {
                 Id = modelId,
-                Properties = new Dictionary<string, ModelProperty>()
+                Properties = new OrderedDictionary<string, ModelProperty>()
             };
             models[model.Id] = model;
 
