@@ -129,14 +129,29 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
                     for (var i = 0; i < this.request.Cookies.Count; i++)
                     {
                         var httpCookie = this.request.Cookies[i];
-                        var cookie = new Cookie(
-                            httpCookie.Name, httpCookie.Value, httpCookie.Path, httpCookie.Domain)
+                        Cookie cookie = null;
+
+                        // try-catch needed as malformed cookie names (e.g. '$Version') can be returned
+                        // from Cookie.Name, but the Cookie constructor will throw for these names.
+                        try
+                        {
+                            cookie = new Cookie(httpCookie.Name, httpCookie.Value, httpCookie.Path, httpCookie.Domain)
                             {
                                 HttpOnly = httpCookie.HttpOnly,
                                 Secure = httpCookie.Secure,
                                 Expires = httpCookie.Expires,
                             };
-                        cookies[httpCookie.Name] = cookie;
+                        }
+                        catch
+                        {
+                            // I don't like this, application code now has access to less data than it would when
+                            // using the raw HttpRequest. Atleast logging that here would be nice?
+                            // Not sure, leaving it up to you Demis.
+                        }
+
+                        if ( cookie != null )
+                            cookies[httpCookie.Name] = cookie;
+
                     }
                 }
                 return cookies;
