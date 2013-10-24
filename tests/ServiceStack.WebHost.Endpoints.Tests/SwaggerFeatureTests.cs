@@ -245,7 +245,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [DataContract]
-    public class DataContractDerivedTypeResponse : DataContractBaseType
+    public class DataContractHierarchyType : DataContractBaseType
+    {
+        [DataMember]
+        public string Falcon { get; set; }
+    }
+
+    [DataContract]
+    public class DataContractDerivedTypeResponse : DataContractHierarchyType
     {
         [DataMember(Order = 0)]
         public string Bird { get; set; }
@@ -642,6 +649,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(requestClassModel.Properties.ElementAt(4).Key, Is.EqualTo("Albatross"));
             Assert.That(requestClassModel.Properties.ElementAt(5).Key, Is.EqualTo("Parrot"));
             Assert.That(requestClassModel.Properties.ElementAt(6).Key, Is.EqualTo("Antelope"));
+
+            Assert.That(resource.Models.ContainsKey(typeof(DataContractDerivedTypeResponse).Name), Is.True);
+            var responseClassModel = resource.Models[typeof(DataContractDerivedTypeResponse).Name];
+
+            Assert.That(responseClassModel.Properties.ElementAt(0).Key, Is.EqualTo("Zebra"));
+            Assert.That(responseClassModel.Properties.ElementAt(1).Key, Is.EqualTo("Falcon"));
+            Assert.That(responseClassModel.Properties.ElementAt(2).Key, Is.EqualTo("Cat"));
+            Assert.That(responseClassModel.Properties.ElementAt(3).Key, Is.EqualTo("Dog"));
+            Assert.That(responseClassModel.Properties.ElementAt(4).Key, Is.EqualTo("Bird"));
+            Assert.That(responseClassModel.Properties.ElementAt(5).Key, Is.EqualTo("Albatross"));
+            Assert.That(responseClassModel.Properties.ElementAt(6).Key, Is.EqualTo("Parrot"));
+            Assert.That(responseClassModel.Properties.ElementAt(7).Key, Is.EqualTo("Antelope"));
         }
     }
 }

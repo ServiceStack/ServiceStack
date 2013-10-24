@@ -259,34 +259,25 @@ namespace ServiceStack.Api.Swagger
             var dataContractAttr = modelType.GetCustomAttributes(typeof(DataContractAttribute), true).OfType<DataContractAttribute>().FirstOrDefault();
             if (dataContractAttr != null && properties.Any(prop => prop.IsDefined(typeof(DataMemberAttribute), true)))
             {
-                var propsWithDataMember = properties.Where(prop => prop.IsDefined(typeof(DataMemberAttribute), true));
-                
-                var typeOrder = new List<Type>();
-                var propDataMemberAttrs =
-                    properties.ToDictionary(
-                                  prop => prop,
-                                  prop =>
-                                  prop.GetCustomAttributes(typeof(DataMemberAttribute), true)
-                                      .OfType<DataMemberAttribute>()
-                                      .First());
-
+                var typeOrder = new List<Type> { modelType };
                 var baseType = modelType.BaseType;
                 while (baseType != null)
                 {
                     typeOrder.Add(baseType);
                     baseType = baseType.BaseType;
-                }
-
-                typeOrder.Add(modelType);
+                }              
+                
+                var propsWithDataMember = properties.Where(prop => prop.IsDefined(typeof(DataMemberAttribute), true));
+                var propDataMemberAttrs = properties.ToDictionary(prop => prop, prop => prop.FirstAttribute<DataMemberAttribute>());
 
                 properties =
-                    propsWithDataMember.OrderBy(prop => propDataMemberAttrs[prop].Order)
-                              .ThenBy(prop => typeOrder.IndexOf(prop.DeclaringType))
-                              .ThenBy(prop =>
-                                  {
-                                      var name = propDataMemberAttrs[prop].Name;
-                                      return name.IsNullOrEmpty() ? prop.Name : name;
-                                  }).ToArray();
+                    propsWithDataMember.OrderBy(prop => propDataMemberAttrs[prop].Order)                // Order by DataMember.Order
+                                       .ThenByDescending(prop => typeOrder.IndexOf(prop.DeclaringType)) // Then by BaseTypes First
+                                       .ThenBy(prop =>                                                  // Then by [DataMember].Name / prop.Name
+                                          {
+                                              var name = propDataMemberAttrs[prop].Name;
+                                              return name.IsNullOrEmpty() ? prop.Name : name;
+                                          }).ToArray();
             }
 
             foreach (var prop in properties)
