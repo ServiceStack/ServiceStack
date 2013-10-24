@@ -355,6 +355,10 @@ namespace ServiceStack.Api.Swagger
 
         private static string GetModelPropertyName(PropertyInfo prop)
         {
+            var dataMemberAttr = prop.FirstAttribute<DataMemberAttribute>();
+            if (dataMemberAttr != null && !dataMemberAttr.Name.IsNullOrEmpty()) 
+                return dataMemberAttr.Name;
+            
             return UseCamelCaseModelPropertyNames
                 ? (UseLowercaseUnderscoreModelPropertyNames ? prop.Name.ToLowercaseUnderscore() : prop.Name.ToCamelCase())
                 : prop.Name;
