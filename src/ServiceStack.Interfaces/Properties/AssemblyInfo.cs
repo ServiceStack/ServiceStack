@@ -20,9 +20,7 @@ using System.Runtime.Serialization;
 [assembly: ComVisible(false)]
 
 //Keep constant to prevent breaking signed-builds (build.proj on replaces 4 digits, e.g x.x.x.x)
-[assembly: AssemblyVersion("4.0")] 
-
-//Overwrite version number here:
+[assembly: AssemblyVersion("4.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
