@@ -8,6 +8,7 @@ using System.IO;
 using System.Net;
 using System.Web;
 using Funq;
+using ServiceStack.Logging;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.AspNet
@@ -15,6 +16,8 @@ namespace ServiceStack.Host.AspNet
     public class AspNetRequest
         : IHttpRequest
     {
+        public static ILog log = LogManager.GetLogger(typeof(AspNetRequest));
+
         public Container Container { get; set; }
         private readonly HttpRequestBase request;
         private readonly IHttpResponse response;
@@ -158,14 +161,29 @@ namespace ServiceStack.Host.AspNet
                     for (var i = 0; i < this.request.Cookies.Count; i++)
                     {
                         var httpCookie = this.request.Cookies[i];
-                        var cookie = new Cookie(
-                            httpCookie.Name, httpCookie.Value, httpCookie.Path, httpCookie.Domain)
+                        if (httpCookie == null)
+                            continue;
+
+                        Cookie cookie = null;
+
+                        // try-catch needed as malformed cookie names (e.g. '$Version') can be returned
+                        // from Cookie.Name, but the Cookie constructor will throw for these names.
+                        try
+                        {
+                            cookie = new Cookie(httpCookie.Name, httpCookie.Value, httpCookie.Path, httpCookie.Domain)
                             {
                                 HttpOnly = httpCookie.HttpOnly,
                                 Secure = httpCookie.Secure,
                                 Expires = httpCookie.Expires,
                             };
-                        cookies[httpCookie.Name] = cookie;
+                        }
+                        catch(Exception ex)
+                        {
+                            log.Warn("Error trying to create System.Net.Cookie: " + httpCookie.Name, ex);
+                        }
+
+                        if (cookie != null)
+                            cookies[httpCookie.Name] = cookie;
                     }
                 }
                 return cookies;

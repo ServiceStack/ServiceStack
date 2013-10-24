@@ -199,6 +199,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Services\AsyncTaskServices.cs" />
+    <Compile Include="Services\CookiesService.cs" />
     <Compile Include="Tests\AsyncProgressTests.cs" />
     <Compile Include="PageBase.cs">
       <SubType>ASPXCodeBehind</SubType>
@@ -229,6 +230,7 @@
     <Compile Include="Tests\AsyncRestClientTests.cs" />
     <Compile Include="Tests\BinarySerializedTests.cs" />
     <Compile Include="Tests\AsyncTaskTests.cs" />
+    <Compile Include="Tests\CookieTests.cs" />
     <Compile Include="Tests\CustomHeadersTests.cs" />
     <Compile Include="Tests\ExceptionHandlingTests.cs" />
     <Compile Include="Tests\ProtoBufServiceTests.cs" />
