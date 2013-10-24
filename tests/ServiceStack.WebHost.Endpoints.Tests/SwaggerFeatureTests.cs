@@ -245,20 +245,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [DataContract]
-    public class DataContractDerivedTypeResponse : DataContractBaseType
+    public class DataContractHierarchyType : DataContractBaseType
+    {
+        [DataMember]
+        public string Falcon { get; set; }
+    }
+
+    [DataContract]
+    public class DataContractDerivedTypeResponse : DataContractHierarchyType
     {
         [DataMember(Order = 0)]
         public string Bird { get; set; }
         [DataMember(Order = 1)]
         public string Parrot { get; set; }
         [DataMember]
+        public string Cat { get; set; }
+        [DataMember]
         public string Dog { get; set; }
         [DataMember(Order = 3)]
         public string Antelope { get; set; }
-        [DataMember]
-        public string Cat { get; set; }
         [DataMember(Order = 1)]
         public string Albatross { get; set; }
+        [DataMember(Order = 0, Name = "Baldeagle")]
+        public string Eagle { get; set; }
     }
 
     public class DataMemberAttributeOrderService : Service
@@ -642,6 +651,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(requestClassModel.Properties.ElementAt(4).Key, Is.EqualTo("Albatross"));
             Assert.That(requestClassModel.Properties.ElementAt(5).Key, Is.EqualTo("Parrot"));
             Assert.That(requestClassModel.Properties.ElementAt(6).Key, Is.EqualTo("Antelope"));
+
+            Assert.That(resource.Models.ContainsKey(typeof(DataContractDerivedTypeResponse).Name), Is.True);
+            var responseClassModel = resource.Models[typeof(DataContractDerivedTypeResponse).Name];
+
+            Assert.That(responseClassModel.Properties.ElementAt(0).Key, Is.EqualTo("Zebra"));
+            Assert.That(responseClassModel.Properties.ElementAt(1).Key, Is.EqualTo("Falcon"));
+            Assert.That(responseClassModel.Properties.ElementAt(2).Key, Is.EqualTo("Cat"));
+            Assert.That(responseClassModel.Properties.ElementAt(3).Key, Is.EqualTo("Dog"));
+            Assert.That(responseClassModel.Properties.ElementAt(4).Key, Is.EqualTo("Baldeagle"));
+            Assert.That(responseClassModel.Properties.ElementAt(5).Key, Is.EqualTo("Bird"));
+            Assert.That(responseClassModel.Properties.ElementAt(6).Key, Is.EqualTo("Albatross"));
+            Assert.That(responseClassModel.Properties.ElementAt(7).Key, Is.EqualTo("Parrot"));
+            Assert.That(responseClassModel.Properties.ElementAt(8).Key, Is.EqualTo("Antelope"));
         }
     }
 }
