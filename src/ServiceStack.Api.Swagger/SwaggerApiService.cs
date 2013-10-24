@@ -252,7 +252,44 @@ namespace ServiceStack.Api.Swagger
             };
             models[model.Id] = model;
 
-            foreach (var prop in modelType.GetProperties())
+            var properties = modelType.GetProperties();
+
+            // Order model properties by DataMember.Order if [DataContract] and [DataMember](s) defined
+            // Ordering defined by: http://msdn.microsoft.com/en-us/library/ms729813.aspx
+            var dataContractAttr = modelType.GetCustomAttributes(typeof(DataContractAttribute), true).OfType<DataContractAttribute>().FirstOrDefault();
+            if (dataContractAttr != null && properties.Any(prop => prop.IsDefined(typeof(DataMemberAttribute), true)))
+            {
+                var propsWithDataMember = properties.Where(prop => prop.IsDefined(typeof(DataMemberAttribute), true));
+                
+                var typeOrder = new List<Type>();
+                var propDataMemberAttrs =
+                    properties.ToDictionary(
+                                  prop => prop,
+                                  prop =>
+                                  prop.GetCustomAttributes(typeof(DataMemberAttribute), true)
+                                      .OfType<DataMemberAttribute>()
+                                      .First());
+
+                var baseType = modelType.BaseType;
+                while (baseType != null)
+                {
+                    typeOrder.Add(baseType);
+                    baseType = baseType.BaseType;
+                }
+
+                typeOrder.Add(modelType);
+
+                properties =
+                    propsWithDataMember.OrderBy(prop => propDataMemberAttrs[prop].Order)
+                              .ThenBy(prop => typeOrder.IndexOf(prop.DeclaringType))
+                              .ThenBy(prop =>
+                                  {
+                                      var name = propDataMemberAttrs[prop].Name;
+                                      return name.IsNullOrEmpty() ? prop.Name : name;
+                                  }).ToArray();
+            }
+
+            foreach (var prop in properties)
             {
                 var allApiDocAttributes = prop
                     .AllAttributes<ApiMemberAttribute>()
