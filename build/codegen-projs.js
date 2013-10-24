@@ -21,6 +21,10 @@ String.prototype.lines = function() {
 };
 
 var SIGN_PROJS = [
+    '../../ServiceStack.Text/src/ServiceStack.Text/ServiceStack.Text.csproj',
+    '../../ServiceStack.Redis/src/ServiceStack.Redis/ServiceStack.Redis.csproj',
+    '../../ServiceStack.OrmLite/src/ServiceStack.OrmLite/ServiceStack.OrmLite.csproj',
+    '../../ServiceStack.OrmLite/src/ServiceStack.OrmLite.SqlServer/ServiceStack.OrmLite.SqlServer.csproj',
     '../src/ServiceStack.Common/ServiceStack.Common.csproj',
     '../src/ServiceStack.Client/ServiceStack.Client.csproj',
     '../src/ServiceStack.Server/ServiceStack.Server.csproj',
@@ -28,18 +32,14 @@ var SIGN_PROJS = [
 ];
 var SIGN_REPLACE_TEXTS = {
     '<HintPath>..\\..\\lib\\ServiceStack.Text.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.Text.dll</HintPath>',
+    '<HintPath>..\\..\\lib\\ServiceStack.Common.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.Common.dll</HintPath>',
     '<HintPath>..\\..\\lib\\ServiceStack.Redis.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.Redis.dll</HintPath>',
     '<HintPath>..\\..\\lib\\ServiceStack.OrmLite.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.OrmLite.dll</HintPath>',
     '<HintPath>..\\..\\lib\\ServiceStack.OrmLite.SqlServer.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.OrmLite.SqlServer.dll</HintPath>',
+    '<ProjectReference Include="..\\ServiceStack.Common\\ServiceStack.Common.csproj">': '<ProjectReference Include="..\\ServiceStack.Common\\ServiceStack.Common.Signed.csproj">'
 };
 
 var injectSignedElements = [
-    //{
-    //    PropertyGroup: {
-    //        OutputType: "!Desktop App!",
-    //        MyNewProp: "My New Value!!!"
-    //    }
-    //},
     {
         PropertyGroup: {
             SignAssembly: "true",
