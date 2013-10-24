@@ -26,6 +26,12 @@ var SIGN_PROJS = [
     '../src/ServiceStack.Server/ServiceStack.Server.csproj',
     '../src/ServiceStack/ServiceStack.csproj'
 ];
+var SIGN_REPLACE_TEXTS = {
+    '<HintPath>..\\..\\lib\\ServiceStack.Text.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.Text.dll</HintPath>',
+    '<HintPath>..\\..\\lib\\ServiceStack.Redis.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.Redis.dll</HintPath>',
+    '<HintPath>..\\..\\lib\\ServiceStack.OrmLite.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.OrmLite.dll</HintPath>',
+    '<HintPath>..\\..\\lib\\ServiceStack.OrmLite.SqlServer.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.OrmLite.SqlServer.dll</HintPath>',
+};
 
 var injectSignedElements = [
     //{
@@ -158,6 +164,11 @@ SIGN_PROJS.forEach(function(proj) {
     log(xml);
 
     var transformedXml = mergeElements(xml, injectSignedElements);
+
+    Object.keys(SIGN_REPLACE_TEXTS).forEach(function (find) {
+        log("replacing: " + find + ", with: " + SIGN_REPLACE_TEXTS[find]);
+        transformedXml = transformedXml.replace(find, SIGN_REPLACE_TEXTS[find]);
+    });
 
     var signedProjPath = path.join(path.dirname(proj), path.basename(proj).replace(".csproj", ".Signed.csproj"));
     log("writing transformedXml to: " + signedProjPath);
