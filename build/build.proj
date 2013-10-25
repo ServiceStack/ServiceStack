@@ -64,17 +64,24 @@
       Properties="Configuration=$(Configuration)" />-->
   </Target>
 
-  <Target Name="NuGetPack">
-
+  <Target Name="UpdateVersion">
     <ItemGroup>
-      <!-- Exclude versioning future strong-named libs -->
       <RegexTransform Include="$(SrcDir)/**/AssemblyInfo.cs">
-        <Find>\d+\.\d+\.\d+\.\d+</Find>
-        <ReplaceWith>$(Version)</ReplaceWith>
+        <Find>AssemblyFileVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
+        <ReplaceWith>AssemblyFileVersion("$(Version)")</ReplaceWith>
+      </RegexTransform>
+
+      <RegexTransform Include="$(SrcDir)/**/AssemblyInfo.cs">
+        <Find>AssemblyVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
+        <ReplaceWith>AssemblyVersion("$(Version)")</ReplaceWith>
       </RegexTransform>
     </ItemGroup>
 
     <RegexTransform Items="@(RegexTransform)" />
+  </Target>
+
+  <Target Name="NuGetPack">
+    <CallTarget Targets="UpdateVersion" />
 
     <Delete Files="@(NugetPackageFilesToDelete)" />
 

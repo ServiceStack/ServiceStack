@@ -13,7 +13,7 @@
     <Configuration Condition="$(Configuration) == ''">Signed</Configuration>
     <NUnitConsoleArgs>/noshadow</NUnitConsoleArgs>
     <NuGetPath>$(SrcDir)/.nuget/nuget.exe</NuGetPath>
-    <NuGetPackageDir>$(BuildSolutionDir)/NuGet/</NuGetPackageDir>
+    <NuGetPackageDir>$(BuildSolutionDir)/NuGet.Signed/</NuGetPackageDir>
     <Version>$(MajorVersion).$(MinorVersion).$(PatchVersion).0</Version>
     <UnstableTag Condition="$(RELEASE) == ''">-unstable</UnstableTag>
     <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)$(UnstableTag)</PackageVersion>
@@ -36,26 +36,18 @@
     <!--<Copy SourceFiles="$(BuildSolutionDir)/tests/ServiceStack.Common.Tests/ci.app.config" DestinationFiles="$(BuildSolutionDir)/tests/ServiceStack.Common.Tests/app.config" />-->
     <CallTarget Targets="Default" />
   </Target>
-  
-  <Target Name="Build">
-    <CallTarget Targets="UpdateVersion" />
-
-    <MSBuild Projects="../src/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj" 
-             Properties="Configuration=$(Configuration)"/>
-    <MSBuild Projects="../src/ServiceStack.Common/ServiceStack.Common.csproj" 
-             Properties="Configuration=$(Configuration)"/>
-    <MSBuild Projects="../src/ServiceStack/ServiceStack.csproj" 
-             Properties="Configuration=$(Configuration)"/>
-  </Target>
 
   <Target Name="BuildSolutions">
+    <!--<MSBuild Projects="$(SrcDir)/ServiceStack.Signed.sln" Targets="Build" Properties="Configuration=$(Configuration);" />-->
 
     <!--<MSBuild Projects="$(SrcDir)/ServiceStack.sln" Targets="Build"
-      Properties="Configuration=$(Configuration);SignAssembly=true;AssemblyOriginatorKeyFile=../src/servicestack-sn.pfx" />-->
+          Properties="Configuration=$(Configuration);SignAssembly=true;AssemblyOriginatorKeyFile=../src/servicestack-sn.pfx" />-->
   </Target>
 
   <Target Name="UpdateVersion">
     <ItemGroup>
+
+      <!-- Add Version to AssemblyFileVersion -->
       <RegexTransform Include="$(SrcDir)/**/AssemblyInfo.cs">
         <Find>AssemblyFileVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
         <ReplaceWith>AssemblyFileVersion("$(Version)")</ReplaceWith>
@@ -92,60 +84,67 @@
       <CommonFiles Include="$(SrcDir)/ServiceStack.Common/bin/$(Configuration)/ServiceStack.Common.*"></CommonFiles>
       <CommonFilesSL5 Include="$(SrcDir)/ServiceStack.Common.SL5/bin/$(Configuration)/ServiceStack.Common.*"></CommonFilesSL5>
 
-      <InterfacesFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/$(Configuration)/ServiceStack.Interfaces.*"></InterfacesFiles>
+      <InterfacesFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/Release/ServiceStack.Interfaces.*"></InterfacesFiles>
       <InterfacesFilesSL5 Include="$(SrcDir)/ServiceStack.Interfaces.SL5/bin/$(Configuration)/ServiceStack.Interfaces.*"></InterfacesFilesSL5>
     </ItemGroup>
+
+    <!-- ServiceStack.Interfaces -->
+
+    <MSBuild Projects="../src/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj" Properties="Configuration=$(Configuration)"/>
+    <Copy SourceFiles="%(InterfacesFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
+    <!-- ServiceStack.Interfaces is already signed -->
+
+    <!-- ServiceStack.Client -->
+
+    <MSBuild Projects="../src/ServiceStack.Client/ServiceStack.Client.Signed.csproj" Properties="Configuration=$(Configuration)"/>
+    <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Client.Signed/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Client.Signed/lib/net40')" />
+    <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Signed/lib/net40" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Client.Signed/servicestack.client.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
+
+    <!-- ServiceStack.Common -->
+
+    <MSBuild Projects="../src/ServiceStack.Common/ServiceStack.Common.Signed.csproj" Properties="Configuration=$(Configuration)"/>
+    <Copy SourceFiles="%(CommonFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Common.Signed/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Common.Signed/lib/net40')" />
+    <Copy SourceFiles="%(CommonFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Common.Signed/lib/net40" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Common.Signed/servicestack.common.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
+
+    <!-- ServiceStack -->
+
+    <MSBuild Projects="../src/ServiceStack/ServiceStack.Signed.csproj" Properties="Configuration=$(Configuration)"/>
+    <Copy SourceFiles="%(ServiceStackFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Signed/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Signed/lib/net40')" />
+    <Copy SourceFiles="%(ServiceStackFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Signed/lib/net40" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Signed/servicestack.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
+
+    <!-- ServiceStack.Server -->
+
+    <MSBuild Projects="../src/ServiceStack.Server/ServiceStack.Server.Signed.csproj" Properties="Configuration=$(Configuration)"/>
+    <Copy SourceFiles="%(ServerFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Server.Signed/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Server.Signed/lib/net40')" />
+    <Copy SourceFiles="%(ServerFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Server.Signed/lib/net40" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Server.Signed/servicestack.server.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Razor -->
 
     <!--<MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Razor/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Razor/lib/net40')" />
     <Copy SourceFiles="%(RazorFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Razor/lib/net40" />
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Razor/servicestack.razor.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Razor/servicestack.razor.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />-->
-
-    <!-- ServiceStack.Interfaces -->
-
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj"
-             Targets="Build" Properties="Configuration=$(Configuration)" />
-
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Interfaces/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Interfaces/lib/net40')" />
-    <Copy SourceFiles="%(InterfacesFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Interfaces/lib/net40" />
-
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Interfaces/servicestack.interfaces.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
-            LogStandardErrorAsError="true" />
-
-    <!-- ServiceStack.Client -->
-
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Client/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Client/lib/net40')" />
-    <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client/lib/net40" />
-
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Client/servicestack.client.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
-            LogStandardErrorAsError="true" />
-
-    <!-- ServiceStack.Common -->
-
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Common/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Common/lib/net40')" />
-    <Copy SourceFiles="%(CommonFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Common/lib/net40" />
-
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Common/servicestack.common.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
-            LogStandardErrorAsError="true" />
-
-    <!-- ServiceStack.Server -->
-
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Server/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Server/lib/net40')" />
-    <Copy SourceFiles="%(ServerFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Server/lib/net40" />
-
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Server/servicestack.server.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
-            LogStandardErrorAsError="true" />
-
-    <!-- ServiceStack -->
-
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack/lib/net40')" />
-    <Copy SourceFiles="%(ServiceStackFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack/lib/net40" />
-
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack/servicestack.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
-            LogStandardErrorAsError="true" />
 
   </Target>
 
