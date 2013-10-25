@@ -574,7 +574,7 @@
   </Target>
   -->
   <ItemGroup>
-    <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj">
+    <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.Signed.csproj">
       <Project>{c43f583f-abde-4dd4-bbe3-66322817a6ad}</Project>
       <Name>ServiceStack.Client</Name>
     </ProjectReference>

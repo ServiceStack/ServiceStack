@@ -29,7 +29,6 @@
     <copyright>Copyright 2013 Service Stack</copyright>
     <dependencies>
       <dependency id="ServiceStack.Signed" version="4.0" />
-      <dependency id="System.Web.Razor.Unofficial" />
     </dependencies>
   </metadata>
   <files>

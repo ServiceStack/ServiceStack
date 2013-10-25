@@ -28,6 +28,7 @@ var SIGN_PROJS = [
     '../src/ServiceStack.Common/ServiceStack.Common.csproj',
     '../src/ServiceStack.Client/ServiceStack.Client.csproj',
     '../src/ServiceStack.Server/ServiceStack.Server.csproj',
+    '../src/ServiceStack.Razor/ServiceStack.Razor.csproj',
     '../src/ServiceStack/ServiceStack.csproj'
 ];
 var SIGN_REPLACE_TEXTS = {
@@ -36,7 +37,9 @@ var SIGN_REPLACE_TEXTS = {
     '<HintPath>..\\..\\lib\\ServiceStack.Redis.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.Redis.dll</HintPath>',
     '<HintPath>..\\..\\lib\\ServiceStack.OrmLite.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.OrmLite.dll</HintPath>',
     '<HintPath>..\\..\\lib\\ServiceStack.OrmLite.SqlServer.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.OrmLite.SqlServer.dll</HintPath>',
-    '<ProjectReference Include="..\\ServiceStack.Common\\ServiceStack.Common.csproj">': '<ProjectReference Include="..\\ServiceStack.Common\\ServiceStack.Common.Signed.csproj">'
+    '<ProjectReference Include="..\\ServiceStack.Common\\ServiceStack.Common.csproj">': '<ProjectReference Include="..\\ServiceStack.Common\\ServiceStack.Common.Signed.csproj">',
+    '<ProjectReference Include="..\\ServiceStack.Client\\ServiceStack.Client.csproj">': '<ProjectReference Include="..\\ServiceStack.Client\\ServiceStack.Client.Signed.csproj">',
+    '<ProjectReference Include="..\\ServiceStack\\ServiceStack.csproj">': '<ProjectReference Include="..\\ServiceStack\\ServiceStack.Signed.csproj">'
 };
 
 var injectSignedElements = [

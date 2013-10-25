@@ -140,7 +140,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj">
+    <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.Signed.csproj">
       <Project>{c43f583f-abde-4dd4-bbe3-66322817a6ad}</Project>
       <Name>ServiceStack.Client</Name>
     </ProjectReference>
@@ -148,7 +148,7 @@
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ServiceStack\ServiceStack.csproj">
+    <ProjectReference Include="..\ServiceStack\ServiceStack.Signed.csproj">
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
       <Name>ServiceStack</Name>
     </ProjectReference>
