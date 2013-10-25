@@ -24,7 +24,7 @@ using System.Runtime.Serialization;
 [assembly: Guid("1dfebd7c-72e5-423e-8e0b-6da176ba34b8")]
 
 [assembly: AssemblyVersion("4.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("4.0.0.0")]
 
 [assembly: ContractNamespace("http://schemas.servicestack.net/types",
     ClrNamespace = "ServiceStack.Api.Swagger")]

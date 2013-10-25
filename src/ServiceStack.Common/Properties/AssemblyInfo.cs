@@ -24,7 +24,7 @@ using System.Runtime.Serialization;
 [assembly: Guid("3871f659-64fb-4dfb-a49f-17dc2f8a47e2")]
 
 [assembly: AssemblyVersion("4.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("4.0.0.0")]
 
 // CCB Custom
 [assembly: ContractNamespace("http://schemas.servicestack.net/types",

@@ -24,7 +24,7 @@ using System.Runtime.Serialization;
 [assembly: Guid("b1eeca45-c9f8-457d-a6ee-98ac3b071639")]
 
 [assembly: AssemblyVersion("4.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("4.0.0.0")]
 
 //Default DataContract namespace instead of tempuri.org
 [assembly: ContractNamespace("http://schemas.servicestack.net/types",
