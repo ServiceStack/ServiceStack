@@ -6,12 +6,12 @@ using System.Runtime.Serialization;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ServiceStack.Swagger")]
+[assembly: AssemblyTitle("ServiceStack")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ServiceStack.Swagger")]
-[assembly: AssemblyCopyright("Copyright (c) 2013")]
+[assembly: AssemblyCompany("Service Stack LLC")]
+[assembly: AssemblyProduct("ServiceStack")]
+[assembly: AssemblyCopyright("Copyright (c) ServiceStack 2013")]
 [assembly: AssemblyTrademark("Service Stack")]
 [assembly: AssemblyCulture("")]
 
