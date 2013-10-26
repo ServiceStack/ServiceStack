@@ -30,7 +30,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             public override void Configure(Funq.Container container)
             {
-                Plugins.Add(new CorsFeature { AutoHandleOptionRequests = true });
+                Plugins.Add(new CorsFeature { AutoHandleOptionsRequests = true });
             }
         }
 

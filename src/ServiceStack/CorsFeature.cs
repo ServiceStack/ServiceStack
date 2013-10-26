@@ -5,7 +5,8 @@ using ServiceStack.Host.Handlers;
 namespace ServiceStack
 {
     /// <summary>
-    /// Plugin adds support for Cross-origin resource sharing (CORS, see http://www.w3.org/TR/access-control/). CORS allows to access resources from different domain which usually forbidden by origin policy. 
+    /// Plugin adds support for Cross-origin resource sharing (CORS, see http://www.w3.org/TR/access-control/). 
+    /// CORS allows to access resources from different domain which usually forbidden by origin policy. 
     /// </summary>
     public class CorsFeature : IPlugin
     {
@@ -20,7 +21,7 @@ namespace ServiceStack
 
         private readonly ICollection<string> allowOriginWhitelist;
 
-        public bool AutoHandleOptionRequests { get; set; }
+        public bool AutoHandleOptionsRequests { get; set; }
 
         /// <summary>
         /// Represents a default constructor with Allow Origin equals to "*", Allowed GET, POST, PUT, DELETE, OPTIONS request and allowed "Content-Type" header.
@@ -31,7 +32,7 @@ namespace ServiceStack
             this.allowedMethods = allowedMethods;
             this.allowedHeaders = allowedHeaders;
             this.allowCredentials = allowCredentials;
-            this.AutoHandleOptionRequests = true;
+            this.AutoHandleOptionsRequests = true;
         }
 
         public CorsFeature(ICollection<string> allowOriginWhitelist, string allowedMethods = DefaultMethods, string allowedHeaders = DefaultHeaders, bool allowCredentials = false)
@@ -40,7 +41,7 @@ namespace ServiceStack
             this.allowedHeaders = allowedHeaders;
             this.allowCredentials = allowCredentials;
             this.allowOriginWhitelist = allowOriginWhitelist;
-            this.AutoHandleOptionRequests = true;
+            this.AutoHandleOptionsRequests = true;
         }
 
         public void Register(IAppHost appHost)
@@ -69,7 +70,7 @@ namespace ServiceStack
                 });
             }
 
-            if (AutoHandleOptionRequests)
+            if (AutoHandleOptionsRequests)
             {
                 //Handles Request and closes Response after emitting global HTTP Headers
                 var emitGlobalHeadersHandler = new CustomActionHandler(

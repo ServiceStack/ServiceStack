@@ -95,7 +95,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test, TestCaseSource("RestClients")]
         public void GlobalCorsHasAccessControlHeaders(IRestClient client)
         {
-            appHost.LoadPlugin(new CorsFeature { AutoHandleOptionRequests = false });
+            appHost.LoadPlugin(new CorsFeature { AutoHandleOptionsRequests = false });
 
             var response = RequestContextTests.GetResponseHeaders(Config.ServiceStackBaseUri + "/globalcorsfeature");
             Assert.That(response[HttpHeaders.AllowOrigin], Is.EqualTo("*"));
