@@ -6,7 +6,6 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using ServiceStack.Caching;
-using ServiceStack.Support;
 
 namespace ServiceStack
 {
@@ -30,9 +29,9 @@ namespace ServiceStack
             throw new NotSupportedException(compressionType);
         }
 
-        public static IDeflateProvider DeflateProvider = new NetDeflateProvider();
+        public static IDeflateProvider DeflateProvider = new Support.NetDeflateProvider();
 
-        public static IGZipProvider GZipProvider = new NetGZipProvider();
+        public static IGZipProvider GZipProvider = new Support.NetGZipProvider();
 
         /// <summary>
         /// Decompresses the specified gz buffer using the default compression method: Inflate

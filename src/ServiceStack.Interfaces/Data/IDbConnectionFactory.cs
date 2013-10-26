@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿#if !SILVERLIGHT
+using System.Data;
 
 namespace ServiceStack.Data
 {
@@ -8,3 +9,4 @@ namespace ServiceStack.Data
         IDbConnection CreateDbConnection();
     }
 }
+#endif

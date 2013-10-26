@@ -1,10 +1,10 @@
 namespace ServiceStack
 {
-	public interface IServiceClient : IServiceClientAsync, IOneWayClient, IRestClient
+	public interface IServiceClient : IServiceClientAsync, IOneWayClient
 #if !(SILVERLIGHT || MONOTOUCH || ANDROIDINDIE)
-		, IReplyClient
+		, IRestClient, IReplyClient
 #endif
-	{
+    {
 	}
 
 }

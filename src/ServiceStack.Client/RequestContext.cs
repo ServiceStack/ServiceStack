@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Web;
 
 namespace ServiceStack
 {
@@ -22,9 +21,13 @@ namespace ServiceStack
         {
             get
             {
-                return items ?? (HttpContext.Current != null
-                    ? HttpContext.Current.Items
+#if !SILVERLIGHT
+                return items ?? (System.Web.HttpContext.Current != null
+                    ? System.Web.HttpContext.Current.Items
                     : items = new Dictionary<object, object>());
+#else
+                return items ?? (items = new Dictionary<object, object>());
+#endif
             }
             set { items = value; }
         }

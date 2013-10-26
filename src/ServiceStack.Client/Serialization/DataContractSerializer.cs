@@ -3,11 +3,6 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Xml;
-using System.IO.Compression;
-
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
-
-#endif
 
 namespace ServiceStack.Serialization
 {
@@ -78,7 +73,7 @@ namespace ServiceStack.Serialization
 #if !SILVERLIGHT && !MONOTOUCH && !XBOX
         public void CompressToStream<XmlDto>(XmlDto from, Stream stream)
         {
-            using (var deflateStream = new DeflateStream(stream, CompressionMode.Compress))
+            using (var deflateStream = new System.IO.Compression.DeflateStream(stream, System.IO.Compression.CompressionMode.Compress))
             using (var xw = new XmlTextWriter(deflateStream, Encoding))
             {
                 var serializer = new System.Runtime.Serialization.DataContractSerializer(from.GetType());

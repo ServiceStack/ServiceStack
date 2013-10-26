@@ -77,9 +77,9 @@ namespace ServiceStack
             {
                 if (client.ShareCookiesWithBrowser)
                 {
-                    if (CookieContainer == null)
-                        CookieContainer = new CookieContainer();
-                    client.CookieContainer.SetCookies(new Uri(BaseUri), System.Windows.Browser.HtmlPage.Document.Cookies);
+                    if (client.CookieContainer == null)
+                        client.CookieContainer = new CookieContainer();
+                    client.CookieContainer.SetCookies(new Uri(requestUri), System.Windows.Browser.HtmlPage.Document.Cookies);
                 }
                 
                 webRequest.CookieContainer = client.CookieContainer;	

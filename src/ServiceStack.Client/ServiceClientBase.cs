@@ -3,12 +3,12 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using System.Web;
 using System.Reflection;
 using ServiceStack.Logging;
 using ServiceStack.Web;
@@ -25,12 +25,7 @@ namespace ServiceStack
      * Need to provide async request options
      * http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
      */
-    public abstract class ServiceClientBase
-#if !SILVERLIGHT
- : IServiceClient, IRestClient
-#else
-        : IServiceClient
-#endif
+    public abstract class ServiceClientBase : IServiceClient
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(ServiceClientBase));
 
@@ -77,11 +72,7 @@ namespace ServiceStack
         /// <summary>
         /// Gets the collection of headers to be added to outgoing requests.
         /// </summary>
-#if NETFX_CORE || WINDOWS_PHONE || SILVERLIGHT
-        public Dictionary<string, string> Headers { get; private set; } 
-#else
         public NameValueCollection Headers { get; private set; }
-#endif
 
         public const string DefaultHttpMethod = "POST";
 
@@ -102,15 +93,10 @@ namespace ServiceStack
             };
             this.CookieContainer = new CookieContainer();
             this.StoreCookies = true; //leave
-#if NETFX_CORE || WINDOWS_PHONE || SILVERLIGHT
-            this.Headers = new Dictionary<string, string>();
-#else
             this.Headers = new NameValueCollection();
-#endif
 
 #if SILVERLIGHT
-            asyncClient.HandleCallbackOnUIThread = this.HandleCallbackOnUIThread = true;
-            asyncClient.UseBrowserHttpHandling = this.UseBrowserHttpHandling = false;
+            asyncClient.HandleCallbackOnUiThread = this.HandleCallbackOnUiThread = true;
             asyncClient.ShareCookiesWithBrowser = this.ShareCookiesWithBrowser = true;
 #endif
         }
@@ -700,14 +686,14 @@ namespace ServiceStack
                     client.CookieContainer = CookieContainer;
                 }
 
-                if (this.LocalHttpWebRequestFilter != null)
-                    LocalHttpWebRequestFilter(client);
+                if (this.RequestFilter != null)
+                    RequestFilter(client);
 
-                if (HttpWebRequestFilter != null)
-                    HttpWebRequestFilter(client);
+                if (GlobalRequestFilter != null)
+                    GlobalRequestFilter(client);
 
-                if (httpMethod != Web.HttpMethod.Get
-                    && httpMethod != Web.HttpMethod.Delete)
+                if (httpMethod != HttpMethods.Get
+                    && httpMethod != HttpMethods.Delete)
                 {
                     client.ContentType = ContentType;
 
@@ -1139,7 +1125,7 @@ namespace ServiceStack
 
                 var queryString = QueryStringSerializer.SerializeToString(request);
 #if !MONOTOUCH
-                var nameValueCollection = HttpUtility.ParseQueryString(queryString);
+                var nameValueCollection = System.Web.HttpUtility.ParseQueryString(queryString);
 #endif
                 var boundary = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
                 webRequest.ContentType = "multipart/form-data; boundary=" + boundary;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !SILVERLIGHT
+using System;
 using System.Data;
 
 namespace ServiceStack.Data
@@ -25,3 +26,4 @@ namespace ServiceStack.Data
         }
     }
 }
+#endif

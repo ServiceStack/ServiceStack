@@ -1,6 +1,8 @@
 using System;
+using System.IO;
+using System.Net;
 using System.ServiceModel;
-using System.ServiceModel.Channels;
+using System.Threading.Tasks;
 using ServiceStack.Text;
 
 namespace ServiceStack
@@ -25,18 +27,88 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
+        public Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> GetAsync<TResponse>(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> GetAsync<TResponse>(string relativeOrAbsoluteUrl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> DeleteAsync<TResponse>(IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> DeleteAsync<TResponse>(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> DeleteAsync<TResponse>(string relativeOrAbsoluteUrl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> PostAsync<TResponse>(IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> PostAsync<TResponse>(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> PutAsync<TResponse>(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
         public void GetAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             throw new NotImplementedException();
         }
 
-        public void GetAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, 
+        public void GetAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess,
             Action<TResponse, Exception> onError)
         {
             throw new NotImplementedException();
         }
 
-        public void DeleteAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, 
+        public void DeleteAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess,
             Action<TResponse, Exception> onError)
         {
             throw new NotImplementedException();
@@ -52,8 +124,8 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
-        public void PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request, 
-            Action<TResponse> onSuccess, Action<TResponse,Exception> onError)
+        public void PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request,
+            Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             throw new NotImplementedException();
         }
@@ -63,8 +135,8 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
-        public void PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, 
-            Action<TResponse,Exception> onError)
+        public void PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess,
+            Action<TResponse, Exception> onError)
         {
             throw new NotImplementedException();
         }
@@ -75,6 +147,11 @@ namespace ServiceStack
         }
 
         public void CancelAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> SendAsync<TResponse>(object requestDto)
         {
             throw new NotImplementedException();
         }
@@ -99,26 +176,183 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
-#if !NETFX_CORE
+        public void Get(IReturnVoid request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Get(object request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Get<TResponse>(IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Get<TResponse>(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Get<TResponse>(string relativeOrAbsoluteUrl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Delete(IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Delete(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Delete<TResponse>(IReturn<TResponse> request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Delete<TResponse>(object request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Delete<TResponse>(string relativeOrAbsoluteUrl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Post(IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Post(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Post<TResponse>(IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Post<TResponse>(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Post<TResponse>(string relativeOrAbsoluteUrl, object request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Put(IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Put(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Put<TResponse>(IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Put<TResponse>(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Put<TResponse>(string relativeOrAbsoluteUrl, object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Patch(IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Patch(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Patch<TResponse>(IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Patch<TResponse>(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CustomMethod(string httpVerb, IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CustomMethod(string httpVerb, object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse CustomMethod<TResponse>(string httpVerb, object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HttpWebResponse Head(IReturn requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HttpWebResponse Head(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HttpWebResponse Head(string relativeOrAbsoluteUrl)
+        {
+            throw new NotImplementedException();
+        }
+
         public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
         {
             throw new NotImplementedException();
         }
-#endif
 
         public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
         {
             throw new NotImplementedException();
         }
 
-#if !NETFX_CORE
         public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request)
         {
             throw new NotImplementedException();
         }
-#endif
-        
-        public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request)
+
+        public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName,
+                                                        object request)
         {
             throw new NotImplementedException();
         }
@@ -135,7 +369,7 @@ namespace ServiceStack
             this.Uri = uri.WithTrailingSlash() + "Soap11";
         }
 
-        private Binding BasicHttpBinding
+        private System.ServiceModel.Channels.Binding BasicHttpBinding
         {
             get
             {
@@ -150,12 +384,12 @@ namespace ServiceStack
             }
         }
 
-        protected override Binding Binding
+        protected override System.ServiceModel.Channels.Binding Binding
         {
             get { return this.BasicHttpBinding; }
         }
 
-        protected override MessageVersion MessageVersion
+        protected override System.ServiceModel.Channels.MessageVersion MessageVersion
         {
             get { return this.BasicHttpBinding.MessageVersion; }
         }

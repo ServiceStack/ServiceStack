@@ -13,14 +13,14 @@ namespace ServiceStack.Web
     /// A thin wrapper around each host's Request e.g: ASP.NET, HttpListener, MQ, etc
     /// </summary>
     public interface IRequest : IResolver
-	{
+    {
         /// <summary>
         /// The underlying ASP.NET or HttpListener HttpRequest
         /// </summary>
         object OriginalRequest { get; }
 
         IResponse Response { get; }
-        
+
         /// <summary>
         /// The name of the service being called (e.g. Request DTO Name)
         /// </summary>
@@ -123,3 +123,7 @@ namespace ServiceStack.Web
         Uri UrlReferrer { get; }
     }
 }
+
+#if SILVERLIGHT
+public class NameValueCollection : Dictionary<string, string> {}
+#endif
