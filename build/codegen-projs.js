@@ -230,11 +230,6 @@ var CUSTOM_PROJS = [{
     }
 }];
 
-
-//'../src/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj',
-//'../src/ServiceStack.Client/ServiceStack.Client.csproj',
-//'../../ServiceStack.Text/src/ServiceStack.Text/ServiceStack.Text.csproj'
-
 var CUSTOM_MERGE_FRAGMENTS = [
     ["ItemGroup", "Compile"],
     ["ItemGroup", "Content"],
@@ -297,7 +292,6 @@ CUSTOM_TEMPLATES.forEach(function(tmpl) {
             };
 
             parser.onclosetag = function (name) {
-
                 if (comboFound.length > 0) {
                     var tag = comboFound[0];
                     var tagToMatch = tag.toUpperCase();
@@ -319,8 +313,8 @@ CUSTOM_TEMPLATES.forEach(function(tmpl) {
                             log(match);
                             //log(fragment);
                             var placeholder = "<!--" + seekCombo + "-->";
-                            var replaceWith = "<" + seekCombo[0] + ">\n " + fragment + "</" + seekCombo[0] + ">";
-                            tmplXml = tmplXml.replace(placeholder, replaceWith);
+                            var withFragment = "<" + seekCombo[0] + ">\n " + fragment + "</" + seekCombo[0] + ">";
+                            tmplXml = tmplXml.replace(placeholder, withFragment);
                         }
                     }
                 }
