@@ -21,15 +21,15 @@ String.prototype.lines = function() {
 };
 
 var SIGN_PROJS = [
-    //'../../ServiceStack.Text/src/ServiceStack.Text/ServiceStack.Text.csproj',
-    //'../../ServiceStack.Redis/src/ServiceStack.Redis/ServiceStack.Redis.csproj',
-    //'../../ServiceStack.OrmLite/src/ServiceStack.OrmLite/ServiceStack.OrmLite.csproj',
-    //'../../ServiceStack.OrmLite/src/ServiceStack.OrmLite.SqlServer/ServiceStack.OrmLite.SqlServer.csproj',
-    //'../src/ServiceStack.Common/ServiceStack.Common.csproj',
-    //'../src/ServiceStack.Client/ServiceStack.Client.csproj',
-    //'../src/ServiceStack.Server/ServiceStack.Server.csproj',
-    //'../src/ServiceStack.Razor/ServiceStack.Razor.csproj',
-    //'../src/ServiceStack/ServiceStack.csproj'
+    '../../ServiceStack.Text/src/ServiceStack.Text/ServiceStack.Text.csproj',
+    '../../ServiceStack.Redis/src/ServiceStack.Redis/ServiceStack.Redis.csproj',
+    '../../ServiceStack.OrmLite/src/ServiceStack.OrmLite/ServiceStack.OrmLite.csproj',
+    '../../ServiceStack.OrmLite/src/ServiceStack.OrmLite.SqlServer/ServiceStack.OrmLite.SqlServer.csproj',
+    '../src/ServiceStack.Common/ServiceStack.Common.csproj',
+    '../src/ServiceStack.Client/ServiceStack.Client.csproj',
+    '../src/ServiceStack.Server/ServiceStack.Server.csproj',
+    '../src/ServiceStack.Razor/ServiceStack.Razor.csproj',
+    '../src/ServiceStack/ServiceStack.csproj'
 ];
 var SIGN_REPLACE_TEXTS = {
     '<HintPath>..\\..\\lib\\ServiceStack.Text.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.Text.dll</HintPath>',
