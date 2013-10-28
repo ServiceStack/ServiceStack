@@ -186,9 +186,16 @@ log("Generating Custom build .csprojs...");
 var CUSTOM_TEMPLATES = [{
     Code: 'SL5',
     Path: '../src/Templates/SilverlightTemplate.csproj',
-    ProjectGuid:   '{12B8CB9F-E397-4B5F-89AF-B6998296BFE6}',
+    ProjectGuid: '{12B8CB9F-E397-4B5F-89AF-B6998296BFE6}',
     RootNamespace: 'SilverlightTemplate',
-    AssemblyName:  'SilverlightTemplate',
+    AssemblyName: 'SilverlightTemplate',
+},
+{
+    Code: 'Android',
+    Path: '../src/Templates/AndroidTemplate.csproj',
+    ProjectGuid: '{BEA92E9F-00B1-4923-BD81-7F3A9CA24408}',
+    RootNamespace: 'AndroidTemplate',
+    AssemblyName: 'AndroidTemplate',
 }];
 
 var CUSTOM_PROJS = [{
@@ -217,13 +224,13 @@ var CUSTOM_PROJS = [{
     ReplaceTexts: {
         '<!--ItemGroup,ProjectReference-->': [
             '<ItemGroup>',
-            '  <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.SL5.csproj">',
+            '  <ProjectReference Include="..\\..\\..\\ServiceStack.Text\\src\\ServiceStack.Text\\ServiceStack.Text.$Code.csproj">',
             '    <Project>{579B3FDB-CDAD-44E1-8417-885C38E49A0E}</Project>',
-            '    <Name>ServiceStack.Text.SL5</Name>',
+            '    <Name>ServiceStack.Text.$Code</Name>',
             '  </ProjectReference>',
-            '  <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.SL5.csproj">',
+            '  <ProjectReference Include="..\\ServiceStack.Interfaces\\ServiceStack.Interfaces.$Code.csproj">',
             '    <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>',
-            '    <Name>ServiceStack.Interfaces.SL5</Name>',
+            '    <Name>ServiceStack.Interfaces.$Code</Name>',
             '  </ProjectReference>',
             '</ItemGroup>'
         ].join('\n')
@@ -252,9 +259,9 @@ CUSTOM_TEMPLATES.forEach(function(tmpl) {
         });
 
         Object.keys(proj.ReplaceTexts || {}).forEach(function (from) {
-            var to = proj.ReplaceTexts[from];
+            var to = proj.ReplaceTexts[from].replace(/\$Code/g, tmpl.Code);
             log('\nReplaceTexts(' + from + ',' + to + ')\n');
-            tmplXml = tmplXml.replace(from, to);
+            tmplXml = tmplXml.replace(new RegExp(from,'g'), to);
         });
 
         var xml = readTextFile(proj.Path);

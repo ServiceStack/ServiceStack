@@ -451,20 +451,11 @@
     <Compile Include="..\ServiceStack.Interfaces\Web\IPartialWriter.cs">
       <Link>Web\IPartialWriter.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Web\IRequestContext.cs">
-      <Link>Web\IRequestContext.cs</Link>
-    </Compile>
     <Compile Include="..\ServiceStack.Interfaces\Web\IRequestLogger.cs">
       <Link>Web\IRequestLogger.cs</Link>
     </Compile>
     <Compile Include="..\ServiceStack.Interfaces\Web\IRequestPreferences.cs">
       <Link>Web\IRequestPreferences.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Web\IRequiresHttpRequest.cs">
-      <Link>Web\IRequiresHttpRequest.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\Web\IRequiresRequestContext.cs">
-      <Link>Web\IRequiresRequestContext.cs</Link>
     </Compile>
     <Compile Include="..\ServiceStack.Interfaces\Web\IRequiresRequestStream.cs">
       <Link>Web\IRequiresRequestStream.cs</Link>
