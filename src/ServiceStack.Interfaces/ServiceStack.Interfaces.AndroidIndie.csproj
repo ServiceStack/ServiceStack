@@ -18,20 +18,18 @@
     <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>False</Optimize>
-    <OutputPath>bin\AndroidDebug</OutputPath>
-    <DefineConstants>TRACE;DEBUG;ANDROID</DefineConstants>
+    <OutputPath>bin\AndroidIndieDebug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;ANDROID;ANDROIDINDIE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AndroidLinkMode>None</AndroidLinkMode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
     <Optimize>True</Optimize>
-    <OutputPath>Bin\Android</OutputPath>
-    <DefineConstants>TRACE;ANDROID</DefineConstants>
+    <OutputPath>..\..\release\latest\AndroidIndie\</OutputPath>
+    <DefineConstants>TRACE;ANDROID;ANDROIDINDIE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AndroidLinkMode>SdkOnly</AndroidLinkMode>
     <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
   </PropertyGroup>
   <ItemGroup>
@@ -41,8 +39,6 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.ServiceModel.Web" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />

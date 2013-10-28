@@ -196,6 +196,13 @@ var CUSTOM_TEMPLATES = [{
     ProjectGuid: '{BEA92E9F-00B1-4923-BD81-7F3A9CA24408}',
     RootNamespace: 'AndroidTemplate',
     AssemblyName: 'AndroidTemplate',
+},
+{
+    Code: 'AndroidIndie',
+    Path: '../src/Templates/AndroidIndieTemplate.csproj',
+    ProjectGuid: '{BEA92E9F-00B1-4923-BD81-7F3A9CA24408}',
+    RootNamespace: 'AndroidIndieTemplate',
+    AssemblyName: 'AndroidIndieTemplate',
 }];
 
 var CUSTOM_PROJS = [{

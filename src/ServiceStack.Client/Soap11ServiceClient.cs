@@ -1,14 +1,12 @@
-using System;
-using System.IO;
-using System.Net;
-using System.ServiceModel;
-using System.Threading.Tasks;
-using ServiceStack.Text;
-
 namespace ServiceStack
 {
 
-#if SILVERLIGHT || MONOTOUCH || XBOX || ANDROIDINDIE
+#if SILVERLIGHT || MONOTOUCH || XBOX || ANDROID
+
+    using System;
+    using System.IO;
+    using System.Net;
+    using System.Threading.Tasks;
 
     public class Soap11ServiceClient : IServiceClient
     {
@@ -359,10 +357,11 @@ namespace ServiceStack
     }
 
 #else
+    using System;
     
     public class Soap11ServiceClient : WcfServiceClient
     {
-        private BasicHttpBinding binding;
+        private System.ServiceModel.BasicHttpBinding binding;
 
         public Soap11ServiceClient(string uri)
         {
@@ -375,9 +374,10 @@ namespace ServiceStack
             {
                 if (this.binding == null)
                 {
-                    this.binding = new BasicHttpBinding {
+                    this.binding = new System.ServiceModel.BasicHttpBinding
+                    {
                         MaxReceivedMessageSize = int.MaxValue,
-                        HostNameComparisonMode = HostNameComparisonMode.StrongWildcard
+                        HostNameComparisonMode = System.ServiceModel.HostNameComparisonMode.StrongWildcard
                     };
                 }
                 return this.binding;
@@ -396,7 +396,7 @@ namespace ServiceStack
 
         public override void SetProxy(Uri proxyAddress)
         {
-            var basicBinding = (BasicHttpBinding)Binding;
+            var basicBinding = (System.ServiceModel.BasicHttpBinding)Binding;
 
             basicBinding.ProxyAddress = proxyAddress;
             basicBinding.UseDefaultWebProxy = false;
