@@ -67,6 +67,7 @@ namespace ServiceStack
                 }
                 WebHostRootFileNames.Add(file.Name.ToLower());
             }
+
             foreach (var dir in appHost.VirtualPathProvider.GetRootDirectories())
             {
                 WebHostRootFileNames.Add(dir.Name.ToLower());

@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Common.Tests.ServiceClient.Web
