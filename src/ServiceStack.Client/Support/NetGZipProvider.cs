@@ -3,7 +3,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 using ServiceStack.Caching;
-using ServiceStack.Text;
 
 namespace ServiceStack.Support
 {

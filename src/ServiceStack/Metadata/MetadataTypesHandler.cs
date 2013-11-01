@@ -1,10 +1,8 @@
 using System.Web;
-using ServiceStack.Host.Handlers;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -101,7 +99,7 @@ namespace ServiceStack.Metadata
             //return;
 
             httpRes.ContentType = "application/x-ssz-metatypes";
-            var encJson = CryptUtils.Encrypt(HostConfig.PublicKey, json, RsaKeyLengths.Bit2048);
+            var encJson = CryptUtils.Encrypt(LicenseUtils.RuntimePublicKey, json, RsaKeyLengths.Bit2048);
             httpRes.Write(encJson);
         }
     }
