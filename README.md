@@ -492,6 +492,11 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [schmidt4brains](https://github.com/schmidt4brains) (Doug Schmidt)
  - [joplaal](https://github.com/joplaal)
  - [aifdsc](https://github.com/aifdsc) (Stephan Desmoulin)
+ - [nicklarsen](https://github.com/nicklarsen) (NickLarsen)
+ - [connectassist](https://github.com/connectassist) (Carl Healy)
+ - [et1975](https://github.com/et1975) (Eugene Tolmachev)
+ - [barambani](https://github.com/barambani)
+ - [nhalm](https://github.com/et1975)
 
 
 ***
