@@ -232,6 +232,7 @@
     <Compile Include="Tests\AsyncTaskTests.cs" />
     <Compile Include="Tests\CookieTests.cs" />
     <Compile Include="Tests\CustomHeadersTests.cs" />
+    <Compile Include="Tests\ReqtestsTests.cs" />
     <Compile Include="Tests\ExceptionHandlingTests.cs" />
     <Compile Include="Tests\ProtoBufServiceTests.cs" />
     <Compile Include="Services\ContentManagerOnly.cs" />

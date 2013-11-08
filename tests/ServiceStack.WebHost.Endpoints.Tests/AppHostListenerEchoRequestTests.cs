@@ -91,9 +91,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Does_url_transparently_decode_PathInfo()
         {
             var client = new JsonServiceClient(Config.AbsoluteBaseUri);
-            var request = new Echo { PathInfoParam = "test:?&% encoding" };
+            var request = new Echo { PathInfoParam = "test%2Fpath:?&% encoding" };
             var response = client.Get(request);
-            Assert.That(response.Param, Is.EqualTo(request.Param));
+            Assert.That(response.PathInfoParam, Is.EqualTo(request.PathInfoParam));
         }
 
         [Test]
