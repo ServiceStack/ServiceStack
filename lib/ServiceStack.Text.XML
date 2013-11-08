@@ -378,11 +378,6 @@
             Internal Utilities to verify licensing
             </summary>
         </member>
-        <member name="F:ServiceStack.LicenseUtils.EnforceLicenseRestrictions">
-            <summary>
-            TODO: will be removed during beta
-            </summary>
-        </member>
         <member name="T:ServiceStack.Text.Marc.Link`2">
             <summary>
             Pretty Thread-Safe cache class from:
