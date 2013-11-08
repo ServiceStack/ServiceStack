@@ -26,7 +26,7 @@ namespace ServiceStack.ServiceHost.Tests
     }
 
     [TestFixture]
-    public class ServiceStackHandlerPathTests : TestBase
+    public class ServiceStackHandlerPathTests
     {
         public string ResolvePath(string mode, string path)
         {

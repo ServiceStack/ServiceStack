@@ -8,7 +8,7 @@ using ServiceStack.Testing;
 namespace ServiceStack.ServiceHost.Tests
 {
     [TestFixture]
-    public class ServiceControllerTests : TestBase
+    public class ServiceControllerTests
     {
         [Test]
         public void Can_register_all_services_in_an_assembly()

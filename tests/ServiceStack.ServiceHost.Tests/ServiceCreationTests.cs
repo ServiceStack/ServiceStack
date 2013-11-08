@@ -31,7 +31,7 @@ namespace ServiceStack.ServiceHost.Tests
     }
 
     [TestFixture]
-    public class ServiceCreationTest : TestBase
+    public class ServiceCreationTest
     {
         private const string ListeningOn = "http://localhost:82/";
         private const string ServiceClientBaseUri = "http://localhost:82/";

@@ -180,7 +180,6 @@
     <Compile Include="Support\GenericService.cs" />
     <Compile Include="Support\RestTestService.cs" />
     <Compile Include="Support\RequiresService.cs" />
-    <Compile Include="TestBase.cs" />
     <Compile Include="TypeFactory\ReflectionTypeFunqContainer.cs" />
     <Compile Include="TypeFactory\FuncTypeFactory.cs" />
     <Compile Include="Examples\FunqEasyRegistrationHelper.cs" />

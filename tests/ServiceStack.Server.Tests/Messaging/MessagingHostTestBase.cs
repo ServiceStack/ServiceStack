@@ -5,7 +5,7 @@ using ServiceStack.Messaging;
 namespace ServiceStack.Server.Tests.Messaging
 {
 	[TestFixture]
-	public abstract class MessagingHostTestBase : TestBase
+	public abstract class MessagingHostTestBase
 	{
 		protected abstract IMessageFactory CreateMessageFactory();
 
