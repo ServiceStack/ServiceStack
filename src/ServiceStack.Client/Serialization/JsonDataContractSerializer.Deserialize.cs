@@ -6,14 +6,8 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Serialization
 {
-    public class JsonDataContractDeserializer 
+    public partial class JsonDataContractSerializer 
     {
-        public static JsonDataContractDeserializer Instance = new JsonDataContractDeserializer();
-
-        public ITextSerializer TextSerializer { get; set; }
-
-        public bool UseBcl { get; set; }
-
         public object DeserializeFromString(string json, Type returnType)
         {
             if (TextSerializer != null)
@@ -57,7 +51,13 @@ namespace ServiceStack.Serialization
         public T DeserializeFromStream<T>(Stream stream)
         {
             if (TextSerializer != null)
-                return TextSerializer.DeserializeFromStream<T>(stream);
+            {
+                var streamSerializer = TextSerializer as IStringStreamSerializer;
+                if (streamSerializer != null)
+                {
+                    return streamSerializer.DeserializeFromStream<T>(stream);
+                }
+            }
 
 #if !SILVERLIGHT && !MONOTOUCH && !XBOX && !ANDROIDINDIE
             if (UseBcl)
@@ -72,7 +72,13 @@ namespace ServiceStack.Serialization
         public object DeserializeFromStream(Type type, Stream stream)
         {
             if (TextSerializer != null)
-                return TextSerializer.DeserializeFromStream(type, stream);
+            {
+                var streamSerializer = TextSerializer as IStringStreamSerializer;
+                if (streamSerializer != null)
+                {
+                    return streamSerializer.DeserializeFromStream(type, stream);
+                }
+            }
 
 #if !SILVERLIGHT && !MONOTOUCH && !XBOX && !ANDROIDINDIE
             if (UseBcl)

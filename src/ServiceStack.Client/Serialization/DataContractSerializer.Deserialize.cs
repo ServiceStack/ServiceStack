@@ -7,35 +7,9 @@ using System.Xml;
 namespace ServiceStack.Serialization
 {
 
-    public class DataContractDeserializer : IStringDeserializer
+    public partial class DataContractSerializer
     {
-
-        /// <summary>
-        /// Default MaxStringContentLength is 8k, and throws an exception when reached
-        /// </summary>
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
-        private readonly XmlDictionaryReaderQuotas quotas;
-#endif
-
-        public static DataContractDeserializer Instance 
-            = new DataContractDeserializer(
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
-                new XmlDictionaryReaderQuotas { MaxStringContentLength = 1024 * 1024, }
-#endif
-                );
-
-        public DataContractDeserializer(
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
-            XmlDictionaryReaderQuotas quotas=null
-#endif
-            )
-        {
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
-            this.quotas = quotas;
-#endif
-        }
-
-        public object Parse(string xml, Type type)
+        public object DeserializeFromString(string xml, Type type)
         {
             try
             {
@@ -61,10 +35,10 @@ namespace ServiceStack.Serialization
             }
         }
 
-        public T Parse<T>(string xml)
+        public T DeserializeFromString<T>(string xml)
         {
             var type = typeof(T);
-            return (T)Parse(xml, type);
+            return (T)DeserializeFromString(xml, type);
         }
 
         public T DeserializeFromStream<T>(Stream stream)

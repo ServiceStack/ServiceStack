@@ -260,7 +260,7 @@ namespace ServiceStack.Host
                     return XmlSerializer.DeserializeFromString(request, type);
 
                 case RequestAttributes.Json:
-                    return JsonDataContractDeserializer.Instance.DeserializeFromString(request, type);
+                    return JsonDataContractSerializer.Instance.DeserializeFromString(request, type);
 
                 case RequestAttributes.Jsv:
                     return TypeSerializer.DeserializeFromString(request, type);
@@ -295,7 +295,7 @@ namespace ServiceStack.Host
                     return XmlSerializer.DeserializeFromStream;
 
                 case RequestAttributes.Json:
-                    return JsonDataContractDeserializer.Instance.DeserializeFromStream;
+                    return JsonDataContractSerializer.Instance.DeserializeFromStream;
 
                 case RequestAttributes.Jsv:
                     return TypeSerializer.DeserializeFromStream;

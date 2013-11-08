@@ -6,10 +6,34 @@ using System.Xml;
 
 namespace ServiceStack.Serialization
 {
-    public class DataContractSerializer : IStringSerializer 
+    public partial class DataContractSerializer : IStringSerializer 
     {
         private static readonly Encoding Encoding = Encoding.UTF8;// new UTF8Encoding(true);
-        public static DataContractSerializer Instance = new DataContractSerializer();
+
+        /// <summary>
+        /// Default MaxStringContentLength is 8k, and throws an exception when reached
+        /// </summary>
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+        private readonly XmlDictionaryReaderQuotas quotas;
+#endif
+
+        public static DataContractSerializer Instance
+            = new DataContractSerializer(
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+new XmlDictionaryReaderQuotas { MaxStringContentLength = 1024 * 1024, }
+#endif
+);
+
+        public DataContractSerializer(
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+XmlDictionaryReaderQuotas quotas = null
+#endif
+)
+        {
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+            this.quotas = quotas;
+#endif
+        }
 
         public string Parse<XmlDto>(XmlDto from, bool indentXml)
         {
@@ -50,7 +74,7 @@ namespace ServiceStack.Serialization
             }
         }
 
-        public string Parse<XmlDto>(XmlDto from)
+        public string SerializeToString<XmlDto>(XmlDto from)
         {
             return Parse(from, false);
         }

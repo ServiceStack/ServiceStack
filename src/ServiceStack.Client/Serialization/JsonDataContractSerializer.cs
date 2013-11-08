@@ -5,16 +5,15 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Serialization
 {
-    public class JsonDataContractSerializer 
+    public partial class JsonDataContractSerializer : IStringSerializer
     {
         public static JsonDataContractSerializer Instance = new JsonDataContractSerializer();
 
-        public ITextSerializer TextSerializer { get; set; }
+        public IStringSerializer TextSerializer { get; set; }
 
-        public static void UseSerializer(ITextSerializer textSerializer)
+        public static void UseSerializer(IStringSerializer textSerializer)
         {
             Instance.TextSerializer = textSerializer;
-            JsonDataContractDeserializer.Instance.TextSerializer = textSerializer;
         }
 
         public bool UseBcl { get; set; }
@@ -22,7 +21,9 @@ namespace ServiceStack.Serialization
         public string SerializeToString<T>(T obj)
         {
             if (TextSerializer != null)
+            {
                 return TextSerializer.SerializeToString(obj);
+            }
 
 #if !SILVERLIGHT && !MONOTOUCH && !XBOX && !ANDROIDINDIE
             if (!UseBcl)
@@ -56,7 +57,11 @@ namespace ServiceStack.Serialization
         {
             if (TextSerializer != null)
             {
-                TextSerializer.SerializeToStream(obj, stream);
+                var streamSerializer = TextSerializer as IStringStreamSerializer;
+                if (streamSerializer != null)
+                {
+                    streamSerializer.SerializeToStream(obj, stream);
+                }
             }
 #if !SILVERLIGHT && !MONOTOUCH && !XBOX && !ANDROIDINDIE
             else if (UseBcl)

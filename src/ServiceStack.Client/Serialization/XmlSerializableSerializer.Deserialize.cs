@@ -7,17 +7,15 @@ using System.Runtime.Serialization;
 
 namespace ServiceStack.Serialization
 {
-    public class XmlSerializableDeserializer : IStringDeserializer
+    public partial class XmlSerializableSerializer
     {
-        public static XmlSerializableDeserializer Instance = new XmlSerializableDeserializer();
-
-        public To Parse<To>(string xml)
+        public To DeserializeFromString<To>(string xml)
         {
             var type = typeof(To);
-            return (To)Parse(xml, type);
+            return (To)DeserializeFromString(xml, type);
         }
 
-        public object Parse(string xml, Type type)
+        public object DeserializeFromString(string xml, Type type)
         {
             try
             {

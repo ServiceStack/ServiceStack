@@ -3,14 +3,11 @@ using System.IO;
 
 namespace ServiceStack.Serialization
 {
-	public interface ITextSerializer
+	public interface IStringStreamSerializer
 	{
-		object DeserializeFromString(string json, Type returnType);
-		T DeserializeFromString<T>(string json);
 		T DeserializeFromStream<T>(Stream stream);
 		object DeserializeFromStream(Type type, Stream stream);
 
-		string SerializeToString<T>(T obj);
 		void SerializeToStream<T>(T obj, Stream stream);
 	}
 }

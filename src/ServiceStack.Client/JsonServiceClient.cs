@@ -40,7 +40,7 @@ namespace ServiceStack
 
         public override T DeserializeFromStream<T>(Stream stream)
         {
-            return JsonDataContractDeserializer.Instance.DeserializeFromStream<T>(stream);
+            return JsonDataContractSerializer.Instance.DeserializeFromStream<T>(stream);
         }
 
         public override StreamDeserializerDelegate StreamDeserializer

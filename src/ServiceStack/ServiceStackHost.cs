@@ -255,7 +255,7 @@ namespace ServiceStack
             config.ServiceEndpointsMetadataConfig = ServiceEndpointsMetadataConfig.Create(config.ServiceStackHandlerFactoryPath);
 
             JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
-            JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;
+            JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
         }
 
         //After configure called

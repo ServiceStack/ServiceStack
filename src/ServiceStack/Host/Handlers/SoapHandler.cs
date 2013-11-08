@@ -94,8 +94,8 @@ namespace ServiceStack.Host.Handlers
                 var useXmlSerializerRequest = requestType.HasAttribute<XmlSerializerFormatAttribute>();
 
                 var request = useXmlSerializerRequest
-                                  ? XmlSerializableDeserializer.Instance.Parse(requestXml, requestType)
-                                  : DataContractDeserializer.Instance.Parse(requestXml, requestType);
+                                  ? XmlSerializableSerializer.Instance.DeserializeFromString(requestXml, requestType)
+                                  : Serialization.DataContractSerializer.Instance.DeserializeFromString(requestXml, requestType);
                 
                 var requiresSoapMessage = request as IRequiresSoapMessage;
                 if (requiresSoapMessage != null)

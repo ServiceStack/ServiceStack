@@ -7,11 +7,11 @@ using System.Xml;
 
 namespace ServiceStack.Serialization
 {
-    public class XmlSerializableSerializer : IStringSerializer 
+    public partial class XmlSerializableSerializer : IStringSerializer 
     {
         public static XmlSerializableSerializer Instance = new XmlSerializableSerializer();
 
-        public string Parse<XmlDto>(XmlDto from)
+        public string SerializeToString<XmlDto>(XmlDto from)
         {
             try
             {
