@@ -4,6 +4,8 @@ namespace ServiceStack
 {
     public class MetadataTypesConfig
     {
+        public MetadataTypesConfig() {}
+
         public MetadataTypesConfig(
             string baseUrl = null,
             bool makePartial = true,

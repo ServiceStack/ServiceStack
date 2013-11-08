@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Web;
@@ -19,7 +20,12 @@ namespace ServiceStack.Metadata
             ProcessRequestAsync(request, request.Response, request.OperationName);
         }
 
-        public void ProcessRequestAsync(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override bool RunAsAsync()
+        {
+            return true;
+        }
+
+        public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             var metadata = new MetadataTypes
             {
@@ -92,15 +98,7 @@ namespace ServiceStack.Metadata
                 }
             }
 
-            var json = metadata.ToJson();
-
-            //httpRes.ContentType = "application/json";
-            //httpRes.Write(json);
-            //return;
-
-            httpRes.ContentType = "application/x-ssz-metatypes";
-            var encJson = CryptUtils.Encrypt(LicenseUtils.RuntimePublicKey, json, RsaKeyLengths.Bit2048);
-            httpRes.Write(encJson);
+            return httpRes.WriteToResponse(httpReq, metadata);
         }
     }
 
