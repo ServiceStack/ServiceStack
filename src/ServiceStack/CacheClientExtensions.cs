@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using ServiceStack.Caching;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -172,7 +171,8 @@ namespace ServiceStack
         {
             var canRemoveByPattern = cacheClient as IRemoveByPattern;
             if (canRemoveByPattern == null)
-                throw new NotImplementedException("ICacheRemovableByPattern is not implemented by the cache client: " + cacheClient.GetType().FullName);
+                throw new NotImplementedException(
+                    "IRemoveByPattern is not implemented on: " + cacheClient.GetType().FullName);
 
             canRemoveByPattern.RemoveByPattern(pattern);
         }
@@ -185,7 +185,7 @@ namespace ServiceStack
         {
             var canRemoveByPattern = cacheClient as IRemoveByPattern;
             if (canRemoveByPattern == null)
-                throw new NotImplementedException("ICacheRemovableByPattern is not implemented by the cache client: " + cacheClient.GetType().FullName);
+                throw new NotImplementedException("IRemoveByPattern is not implemented by the cache client: " + cacheClient.GetType().FullName);
 
             canRemoveByPattern.RemoveByRegex(regex);
         }

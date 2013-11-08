@@ -91,7 +91,6 @@ namespace ServiceStack.Messaging
 
         public virtual void Start()
         {
-            if (isRunning) return;
             isRunning = true;
 
             this.messageHandlers = this.handlerMap.Values.ToList().ConvertAll(
