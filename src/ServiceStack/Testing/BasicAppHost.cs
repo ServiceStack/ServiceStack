@@ -15,9 +15,6 @@ namespace ServiceStack.Testing
         {
             if (ConfigureContainer != null)
                 ConfigureContainer(container);
-
-            if (ConfigureAppHost != null)
-                ConfigureAppHost(this);
         }
 
         public Action<Container> ConfigureContainer { get; set; }
@@ -29,7 +26,15 @@ namespace ServiceStack.Testing
         public Func<BasicAppHost, ServiceController> UseServiceController
         {
             set { ServiceController = value(this); }
-        } 
+        }
+
+        public override void OnBeforeInit()
+        {
+            if (ConfigureAppHost != null)
+                ConfigureAppHost(this);
+
+            base.OnBeforeInit();
+        }
 
         public override void OnConfigLoad()
         {

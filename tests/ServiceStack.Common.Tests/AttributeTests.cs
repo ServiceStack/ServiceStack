@@ -96,7 +96,7 @@ namespace ServiceStack.Common.Tests
         [Test]
         public void Can_add_attributes_at_runtime_to_BaseAttribute()
         {
-            TypeDescriptor.AddAttributes(typeof(RuntimeManyBaseAttr), new BaseAttribute("b3"));
+            typeof(RuntimeManyBaseAttr).AddAttributes(new BaseAttribute("b3"));
 
             var o = new RuntimeManyBaseAttr();
 
@@ -107,7 +107,7 @@ namespace ServiceStack.Common.Tests
         [Test]
         public void Cannot_add_attributes_at_runtime_to_NormalAttribute()
         {
-            TypeDescriptor.AddAttributes(typeof(RuntimeManyNormalAttr), new NormalAttribute("a3"));
+            typeof(RuntimeManyNormalAttr).AddAttributes(new NormalAttribute("a3"));
 
             var o = new RuntimeManyNormalAttr();
 

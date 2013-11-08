@@ -103,6 +103,7 @@ namespace ServiceStack
                 Plugins.Add(new RequestInfoFeature());
             }
 
+            OnBeforeInit();
             ServiceController.Init();
             Configure(Container);
 
@@ -257,9 +258,13 @@ namespace ServiceStack
             JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
             JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
         }
+        
+        public virtual void OnBeforeInit()
+        {            
+        }
 
         //After configure called
-        public void OnAfterInit()
+        public virtual void OnAfterInit()
         {
             AfterInitAt = DateTime.UtcNow;
 
