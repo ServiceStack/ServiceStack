@@ -162,6 +162,8 @@ namespace ServiceStack.Messaging.Redis
 
             handlerMap[typeof(T)] = CreateMessageHandlerFactory(processMessageFn, processExceptionEx);
             handlerThreadCountMap[typeof(T)] = noOfThreads;
+
+            LicenseUtils.AssertValidUsage(LicenseFeature.ServiceStack, QuotaType.Operations, handlerMap.Count);
         }
 
         protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessage<T>, Exception> processExceptionEx)

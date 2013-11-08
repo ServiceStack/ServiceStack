@@ -58,6 +58,8 @@ namespace ServiceStack.Host
                 this.ResponseTypes.Add(responseType);
                 this.OperationsResponseMap[responseType] = operation;
             }
+
+            LicenseUtils.AssertValidUsage(LicenseFeature.ServiceStack, QuotaType.Operations, OperationsMap.Count);
         }
 
         public void AfterInit()
@@ -89,46 +91,13 @@ namespace ServiceStack.Host
 
         public List<string> GetImplementedActions(Type serviceType, Type requestType)
         {
-            if (typeof(IService).IsAssignableFrom(serviceType))
-            {
-                return serviceType.GetActions()
-                    .Where(x => x.GetParameters()[0].ParameterType == requestType)
-                    .Select(x => x.Name.ToUpper())
-                    .ToList();
-            }
+            if (!typeof(IService).IsAssignableFrom(serviceType))
+                throw new NotSupportedException("All Services must implement IService");
 
-            var oldApiActions = serviceType
-                .GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-                .Select(x => ToNewApiAction(x.Name))
-                .Where(x => x != null)
+            return serviceType.GetActions()
+                .Where(x => x.GetParameters()[0].ParameterType == requestType)
+                .Select(x => x.Name.ToUpper())
                 .ToList();
-            return oldApiActions;
-        }
-
-        public static string ToNewApiAction(string oldApiAction)
-        {
-            switch (oldApiAction)
-            {
-                case "Get":
-                case "OnGet":
-                    return "GET";
-                case "Put":
-                case "OnPut":
-                    return "PUT";
-                case "Post":
-                case "OnPost":
-                    return "POST";
-                case "Delete":
-                case "OnDelete":
-                    return "DELETE";
-                case "Patch":
-                case "OnPatch":
-                    return "PATCH";
-                case "Execute":
-                case "Run":
-                    return "ANY";
-            }
-            return null;
         }
 
         public Type GetOperationType(string operationTypeName)

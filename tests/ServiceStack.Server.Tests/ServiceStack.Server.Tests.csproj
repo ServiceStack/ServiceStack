@@ -90,6 +90,7 @@
     <Compile Include="Services\AlwaysFailService.cs" />
     <Compile Include="Services\GreetService.cs" />
     <Compile Include="Services\UnRetryableFail.cs" />
+    <Compile Include="TestBase.cs" />
     <Compile Include="TestConfig.cs" />
     <Compile Include="TransientServiceMessagingTests.cs" />
   </ItemGroup>

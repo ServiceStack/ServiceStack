@@ -3,6 +3,8 @@ using System.Linq;
 using Funq;
 using NUnit.Framework;
 using ServiceStack;
+using ServiceStack.Common.Tests;
+using ServiceStack.WebHost.Endpoints.Tests;
 
 namespace NewApi.Todos
 {
@@ -98,7 +100,7 @@ namespace NewApi.Todos
     }
 
     [TestFixture]
-    public class NewApiTodosTests
+    public class NewApiTodosTests : Test
     {
         const string BaseUri = "http://localhost:82/";
 

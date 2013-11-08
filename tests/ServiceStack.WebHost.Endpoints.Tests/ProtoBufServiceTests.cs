@@ -2,6 +2,7 @@
 using System.Runtime.Serialization;
 using System.Text;
 using NUnit.Framework;
+using ServiceStack.Common.Tests;
 using ServiceStack.Logging;
 using ServiceStack.ProtoBuf;
 using ServiceStack.Text;
@@ -73,7 +74,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 
 	[TestFixture]
-	public class ProtoBufServiceTests
+    public class ProtoBufServiceTests : Test
 	{
 		protected const string ListeningOn = "http://localhost:85/";
 

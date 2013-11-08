@@ -14,6 +14,14 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Common.Tests
 {
+    public abstract class Test
+    {
+        protected Test()
+        {
+            Config.RegisterLicense();
+        }
+    }
+
     public abstract class TestBase
     {
         protected ServiceStackHost AppHost { get; set; }
@@ -25,6 +33,8 @@ namespace ServiceStack.Common.Tests
 
         protected TestBase(string serviceClientBaseUri, params Assembly[] serviceAssemblies)
         {
+            Config.RegisterLicense();
+
             if (serviceAssemblies.Length == 0)
                 serviceAssemblies = new[] { GetType().Assembly };
 

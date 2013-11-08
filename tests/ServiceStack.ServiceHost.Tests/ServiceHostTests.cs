@@ -9,7 +9,7 @@ using ServiceStack.Testing;
 namespace ServiceStack.ServiceHost.Tests
 {
 	[TestFixture]
-	public class ServiceHostTests
+    public class ServiceHostTests : TestBase
 	{
 	    private ServiceController serviceController;
 	    private ServiceStackHost appHost;

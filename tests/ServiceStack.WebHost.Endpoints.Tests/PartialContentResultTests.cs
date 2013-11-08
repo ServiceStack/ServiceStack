@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Common.Tests;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 
@@ -64,7 +65,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [TestFixture]
-    public class PartialContentResultTests
+    public class PartialContentResultTests : Test
     {
         public const string BaseUri = Config.ServiceStackBaseUri;
         public const string ListeningOn = Config.AbsoluteBaseUri;
