@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Text;
 
@@ -25,7 +26,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [TearDown]
         public void TearDown()
         {
-            Config.RegisterLicense();
+            Licensing.RegisterLicense(new AppSettings().GetString("servicestack:license"));
         }
 
         [Test]
@@ -83,7 +84,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Allows_registration_of_11_operations()
         {
-            Config.RegisterLicense();
+            Licensing.RegisterLicense(new AppSettings().GetString("servicestack:license"));
 
             using (var appHost = new LicenseTestsAppHost(typeof(Services10), typeof(Service1)))
             {

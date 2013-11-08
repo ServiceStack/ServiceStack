@@ -100,7 +100,7 @@ namespace NewApi.Todos
     }
 
     [TestFixture]
-    public class NewApiTodosTests : Test
+    public class NewApiTodosTests
     {
         const string BaseUri = "http://localhost:82/";
 

@@ -15,7 +15,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Common.Tests.OAuth
 {
-    public abstract class OAuthUserSessionTestsBase : Test
+    public abstract class OAuthUserSessionTestsBase
 	{
 		public static bool LoadUserAuthRepositorys = true;
 

@@ -65,7 +65,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [TestFixture]
-    public class PartialContentResultTests : Test
+    public class PartialContentResultTests
     {
         public const string BaseUri = Config.ServiceStackBaseUri;
         public const string ListeningOn = Config.AbsoluteBaseUri;

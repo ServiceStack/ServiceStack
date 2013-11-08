@@ -74,7 +74,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 
 	[TestFixture]
-    public class ProtoBufServiceTests : Test
+    public class ProtoBufServiceTests
 	{
 		protected const string ListeningOn = "http://localhost:85/";
 

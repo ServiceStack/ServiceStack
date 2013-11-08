@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
 	[TestFixture]
-	public class OperationTests : Test, IService
+	public class OperationTests : IService
 	{
         private OperationTestsAppHost appHost;
 	    private OperationControl operationControl;

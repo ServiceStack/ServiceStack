@@ -332,6 +332,7 @@
   <ItemGroup>
     <Content Include="packages.config" />
     <Content Include="static-root.txt" />
+    <Content Include="App.config" />
     <None Include="Properties\DataSources\ServiceStack.ServiceInterface.ServiceModel.ResponseStatus.datasource" />
     <None Include="README.md" />
     <None Include="webpage.forbidden" />
