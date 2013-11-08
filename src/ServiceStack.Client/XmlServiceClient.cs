@@ -42,7 +42,7 @@ namespace ServiceStack
         {
             try
             {
-                return DataContractDeserializer.Instance.DeserializeFromStream<T>(stream);
+                return DataContractSerializer.Instance.DeserializeFromStream<T>(stream);
             }
             catch (XmlException ex)
             {

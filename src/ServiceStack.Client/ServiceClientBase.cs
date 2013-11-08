@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
@@ -84,8 +83,8 @@ namespace ServiceStack
             asyncClient = new AsyncServiceClient
             {
                 ContentType = ContentType,
-                StreamSerializer = SerializeToStream,
-                StreamDeserializer = StreamDeserializer,
+                StreamSerializer = AsyncSerializeToStream,
+                StreamDeserializer = AsyncDeserializeFromStream,
                 UserName = this.UserName,
                 Password = this.Password,
                 RequestFilter = this.RequestFilter,
@@ -118,6 +117,17 @@ namespace ServiceStack
             this.asyncClient.BaseUri = baseUri;
             this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + Format + "/reply/";
             this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + Format + "/oneway/";
+        }
+
+        private class AccessToken
+        {
+            private string token;
+            internal static readonly AccessToken __accessToken =
+                new AccessToken("lUjBZNG56eE9yd3FQdVFSTy9qeGl5dlI5RmZwamc4U05udl000");
+            private AccessToken(string token)
+            {
+                this.token = token;
+            }
         }
 
         /// <summary>
@@ -350,11 +360,27 @@ namespace ServiceStack
             }
         }
 
+        internal void AsyncSerializeToStream(IRequest requestContext, object request, Stream stream)
+        {
+            using (__requestAccess())
+            {
+                SerializeToStream(requestContext, request, stream);
+            }
+        }
+
         public abstract void SerializeToStream(IRequest requestContext, object request, Stream stream);
 
         public abstract T DeserializeFromStream<T>(Stream stream);
 
         public abstract StreamDeserializerDelegate StreamDeserializer { get; }
+
+        internal object AsyncDeserializeFromStream(Type type, Stream fromStream)
+        {
+            using (__requestAccess())
+            {
+                return StreamDeserializer(type, fromStream);
+            }
+        }
 
 #if !SILVERLIGHT
         public virtual TResponse Send<TResponse>(IReturn<TResponse> request)
@@ -513,6 +539,7 @@ namespace ServiceStack
                     if (errorResponse.ContentType.MatchesContentType(ContentType))
                     {
                         var bytes = errorResponse.GetResponseStream().ReadFully();
+                        using (__requestAccess())
                         using (var stream = new MemoryStream(bytes))
                         {
                             serviceEx.ResponseBody = bytes.FromUtf8Bytes();
@@ -546,6 +573,11 @@ namespace ServiceStack
             }
         }
 
+        private IDisposable __requestAccess()
+        {
+            return LicenseUtils.RequestAccess(AccessToken.__accessToken, LicenseFeature.Client, LicenseFeature.Text);
+        }
+
         private WebRequest SendRequest(string requestUri, object request)
         {
             return SendRequest(HttpMethod ?? DefaultHttpMethod, requestUri, request);
@@ -555,6 +587,7 @@ namespace ServiceStack
         {
             return PrepareWebRequest(httpMethod, requestUri, request, client =>
             {
+                using (__requestAccess())
                 using (var requestStream = client.GetRequestStream())
                 {
                     SerializeToStream(null, request, requestStream);
@@ -1249,8 +1282,11 @@ namespace ServiceStack
                     return (TResponse)(object)responseStream.ReadFully();
                 }
 
-                var response = DeserializeFromStream<TResponse>(responseStream);
-                return response;
+                using (__requestAccess())
+                {
+                    var response = DeserializeFromStream<TResponse>(responseStream);
+                    return response;
+                }
             }
         }
 
