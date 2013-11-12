@@ -58,6 +58,11 @@ namespace ServiceStack.ServiceClient.Web
 
 			// get method from first word
 			int pos = authHeader.IndexOf (" ");
+
+			if (pos < 0) {
+				throw new ApplicationException(string.Format("Authentication header not supported, {0}", authHeader));
+			}
+
 			method = authHeader.Substring (0, pos).ToLower ();
 			string remainder = authHeader.Substring (pos + 1);
 
