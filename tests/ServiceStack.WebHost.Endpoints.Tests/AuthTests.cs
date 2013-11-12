@@ -360,7 +360,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         IServiceClient GetHtmlClient()
         {
-            return new HtmlServiceClient(ListeningOn) {BaseUri = ListeningOn};
+            return new HtmlServiceClient(ListeningOn) { BaseUri = ListeningOn };
         }
 
         IServiceClient GetClientWithUserPassword()
@@ -541,7 +541,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var request = new Secured { Name = "test" };
             var authResponse = await client.SendAsync<AuthenticateResponse>(
-                new Authenticate {
+                new Authenticate
+                {
                     provider = CredentialsAuthProvider.Name,
                     UserName = "user",
                     Password = "p@55word",
@@ -742,7 +743,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var locationUri = new Uri(lastResponseLocationHeader);
             var loginPath = "/".CombineWith(VirtualDirectory).CombineWith(LoginUrl);
-            Assert.That(locationUri.AbsolutePath, Is.EqualTo(loginPath).IgnoreCase);        
+            Assert.That(locationUri.AbsolutePath, Is.EqualTo(loginPath).IgnoreCase);
         }
 
         [Test]
@@ -1019,11 +1020,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
 
-		[TestCase(ExpectedException=typeof(ApplicationException))]
-		public void Meaningful_Exception_for_Unknown_Auth_Header()
-		{
-			AuthenticationInfo authInfo = new AuthenticationInfo("Negotiate,NTLM");
-		}
+        [TestCase(ExpectedException = typeof(ApplicationException))]
+        public void Meaningful_Exception_for_Unknown_Auth_Header()
+        {
+            var authInfo = new AuthenticationInfo("Negotiate,NTLM");
+        }
     }
 
     public class AuthTestsWithinVirtualDirectory : AuthTests
