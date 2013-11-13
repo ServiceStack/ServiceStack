@@ -335,12 +335,6 @@ namespace ServiceStack
             }
 
             var registeredMqService = TryResolve<IMessageService>();
-            if (registeredMqService == null)
-            {
-                Container.Register<IMessageService>(c => new InMemoryTransientMessageService());
-                registeredMqService = TryResolve<IMessageService>();
-            }
-
             var registeredMqFactory = TryResolve<IMessageFactory>();
             if (registeredMqService != null && registeredMqFactory == null)
             {

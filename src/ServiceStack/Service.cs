@@ -125,6 +125,9 @@ namespace ServiceStack
 
         public virtual void PublishMessage<T>(T message)
         {
+            if (MessageProducer == null)
+                throw new NullReferenceException("No IMessageFactory was registered, cannot PublishMessage");
+
             MessageProducer.Publish(message);
         }
 

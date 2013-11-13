@@ -38,9 +38,7 @@ namespace ServiceStack.Messaging
 
         public void Dispose()
         {
-            Log.DebugFormat("Disposing InMemoryTransientMessageFactory...");
         }
-
 
         internal class InMemoryMessageProducer
             : IMessageProducer
@@ -64,7 +62,6 @@ namespace ServiceStack.Messaging
 
             public void Dispose()
             {
-                Log.DebugFormat("Disposing InMemoryMessageProducer...");
             }
         }
 
