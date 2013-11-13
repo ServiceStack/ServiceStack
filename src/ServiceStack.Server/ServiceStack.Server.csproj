@@ -96,13 +96,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Auth\OrmLiteAuthRepository.cs" />
-    <Compile Include="Messaging\IMessageHandler.cs" />
-    <Compile Include="Messaging\IMessageHandlerDisposer.cs" />
-    <Compile Include="Messaging\IMessageHandlerFactory.cs" />
-    <Compile Include="Messaging\InMemoryTransientMessageFactory.cs" />
-    <Compile Include="Messaging\InMemoryTransientMessageService.cs" />
-    <Compile Include="Messaging\MessageHandler.cs" />
-    <Compile Include="Messaging\MessageHandlerFactory.cs" />
     <Compile Include="Messaging\Redis\MessageHandlerWorker.cs" />
     <Compile Include="Messaging\Rcon\Client.cs" />
     <Compile Include="Messaging\Rcon\Packet.cs" />
@@ -112,7 +105,6 @@
     <Compile Include="Messaging\Redis\RedisTransientMessageFactory.cs" />
     <Compile Include="Messaging\Redis\RedisTransientMessageService.cs" />
     <Compile Include="Messaging\Rcon\Server.cs" />
-    <Compile Include="Messaging\TransientMessageServiceBase.cs" />
     <Compile Include="Messaging\Redis\WorkerStatus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -96,7 +96,16 @@
     <Compile Include="Host\ContentTypes.cs" />
     <Compile Include="Host\Handlers\CustomActionHandler.cs" />
     <Compile Include="Host\Handlers\HttpAsyncTaskHandler.cs" />
+    <Compile Include="Messaging\IMessageHandler.cs" />
+    <Compile Include="Messaging\IMessageHandlerDisposer.cs" />
+    <Compile Include="Messaging\IMessageHandlerFactory.cs" />
+    <Compile Include="Messaging\InMemoryTransientMessageFactory.cs" />
+    <Compile Include="Messaging\InMemoryTransientMessageService.cs" />
+    <Compile Include="Messaging\MessageHandler.cs" />
+    <Compile Include="Messaging\MessageHandlerFactory.cs" />
+    <Compile Include="Messaging\TransientMessageServiceBase.cs" />
     <Compile Include="MqExtensions.cs" />
+    <Compile Include="ILogic.cs" />
     <Compile Include="TaskExtensions.cs" />
     <Compile Include="Host\HttpResponseStreamWrapper.cs" />
     <Compile Include="HttpError.cs" />
