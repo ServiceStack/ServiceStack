@@ -391,7 +391,7 @@ namespace ServiceStack.Razor
 
         private ISessionFactory sessionFactory;
         private ISession session;
-        public virtual ISession Session
+        public virtual ISession SessionBag
         {
             get
             {
@@ -402,13 +402,24 @@ namespace ServiceStack.Razor
             }
         }
 
-        private IAuthSession userSession;
         private string layout;
 
-        public virtual T GetSession<T>() where T : class, IAuthSession
+        public virtual IAuthSession GetSession(bool reload = false)
         {
-            if (userSession != null) return (T)userSession;
-            return (T)(userSession = SessionFeature.GetOrCreateSession<T>(Cache, Request, Response));
+            var req = this.Request;
+            if (req.GetSessionId() == null)
+                req.Response.CreateSessionIds(req);
+            return req.GetSession(reload);
+        }
+
+        public virtual T SessionAs<T>() where T : class, IAuthSession
+        {
+            return SessionFeature.GetOrCreateSession<T>(Cache, Request, Response);
+        }
+
+        public bool IsAuthenticated
+        {
+            get { return this.GetSession().IsAuthenticated; }
         }
 
         public string SessionKey
@@ -421,7 +432,6 @@ namespace ServiceStack.Razor
 
         public void ClearSession()
         {
-            userSession = null;
             this.Cache.Remove(SessionKey);
         }
 

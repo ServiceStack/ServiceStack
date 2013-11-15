@@ -128,6 +128,11 @@ namespace ServiceStack
                 : Cache.SessionAs<TUserSession>(Request, Response);
         }
 
+        public virtual bool IsAuthenticated
+        {
+            get { return this.GetSession().IsAuthenticated; }
+        }
+
         public virtual void PublishMessage<T>(T message)
         {
             if (MessageProducer == null)
