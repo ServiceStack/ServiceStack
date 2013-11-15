@@ -109,7 +109,7 @@ namespace ServiceStack
             }
         }
         
-        public IAuthSession GetSession(bool reload = false)
+        public virtual IAuthSession GetSession(bool reload = false)
         {
             var req = this.Request;
             if (req.GetSessionId() == null)

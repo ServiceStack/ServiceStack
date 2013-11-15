@@ -122,14 +122,6 @@ namespace ServiceStack
             return service.Request.GetSession(reload);
         }
 
-        public static IAuthSession GetSession(this Service service, bool reload = false)
-        {
-            var req = service.Request;
-            if (req.GetSessionId() == null)
-                req.Response.CreateSessionIds(req);
-            return req.GetSession(reload);
-        }
-
         public const string RequestItemsSessionKey = "__session";
         public static IAuthSession GetSession(this IRequest httpReq, bool reload = false)
         {
