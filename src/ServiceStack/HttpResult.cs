@@ -326,6 +326,21 @@ namespace ServiceStack
             };
         }
 
+        /// <summary>
+        /// Respond with a 'Soft redirect' so smart clients (e.g. ajax) have access to the response and 
+        /// can decide whether or not they should redirect
+        /// </summary>
+        public static HttpResult SoftRedirect(string newLocationUri, object response=null)
+        {
+            return new HttpResult(response)
+            {
+                Headers =
+                {
+                    { HttpHeaders.XLocation, newLocationUri },
+                }
+            };
+        }
+
         public void DisposeStream()
         {
             try

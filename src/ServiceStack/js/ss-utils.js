@@ -141,10 +141,14 @@
                             orig.error.apply(this, arguments);
                         }
                     },
-                    complete: function () {
+                    complete: function (jq) {
                         f.removeClass("loading");
                         if (orig.complete) {
                             orig.complete.apply(this, arguments);
+                        }
+                        var loc = jq.getResponseHeader("X-Location");
+                        if (loc) {
+                            location.href = loc;
                         }
                     },
                     dataType: "json",
