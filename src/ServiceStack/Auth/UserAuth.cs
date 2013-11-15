@@ -38,9 +38,15 @@ namespace ServiceStack.Auth
         string DisplayName { get; set; }
         string FirstName { get; set; }
         string LastName { get; set; }
+        string Company { get; set; }
         string Email { get; set; }
+        string PhoneNumber { get; set; }
         DateTime? BirthDate { get; set; }
         string BirthDateRaw { get; set; }
+        string Address { get; set; }
+        string Address2 { get; set; }
+        string City { get; set; }
+        string State { get; set; }
         string Country { get; set; }
         string Culture { get; set; }
         string FullName { get; set; }
@@ -66,11 +72,17 @@ namespace ServiceStack.Auth
         public virtual string UserName { get; set; }
         public virtual string Email { get; set; }
         public virtual string PrimaryEmail { get; set; }
+        public virtual string PhoneNumber { get; set; }
         public virtual string FirstName { get; set; }
         public virtual string LastName { get; set; }
         public virtual string DisplayName { get; set; }
+        public virtual string Company { get; set; }
         public virtual DateTime? BirthDate { get; set; }
         public virtual string BirthDateRaw { get; set; }
+        public virtual string Address { get; set; }
+        public virtual string Address2 { get; set; }
+        public virtual string City { get; set; }
+        public virtual string State { get; set; }
         public virtual string Country { get; set; }
         public virtual string Culture { get; set; }
         public virtual string FullName { get; set; }
@@ -109,10 +121,16 @@ namespace ServiceStack.Auth
         public virtual string DisplayName { get; set; }
         public virtual string FirstName { get; set; }
         public virtual string LastName { get; set; }
+        public virtual string Company { get; set; }
         public virtual string Email { get; set; }
+        public virtual string PhoneNumber { get; set; }
 
         public virtual DateTime? BirthDate { get; set; }
         public virtual string BirthDateRaw { get; set; }
+        public virtual string Address { get; set; }
+        public virtual string Address2 { get; set; }
+        public virtual string City { get; set; }
+        public virtual string State { get; set; }
         public virtual string Country { get; set; }
         public virtual string Culture { get; set; }
         public virtual string Gender { get; set; }
@@ -199,6 +217,9 @@ namespace ServiceStack.Auth
             }
 
 
+            if (!other.PhoneNumber.IsNullOrEmpty())
+                instance.PhoneNumber = other.PhoneNumber;
+
             if (!other.FirstName.IsNullOrEmpty())
                 instance.FirstName = other.FirstName;
 
@@ -208,11 +229,26 @@ namespace ServiceStack.Auth
             if (!other.FullName.IsNullOrEmpty())
                 instance.FullName = other.FullName;
 
+            if (!other.Company.IsNullOrEmpty())
+                instance.Company = other.Company;
+
             if (other.BirthDate != null)
                 instance.BirthDate = other.BirthDate;
 
             if (!other.BirthDateRaw.IsNullOrEmpty())
                 instance.BirthDateRaw = other.BirthDateRaw;
+
+            if (!other.Address.IsNullOrEmpty())
+                instance.Address = other.Address;
+
+            if (!other.Address2.IsNullOrEmpty())
+                instance.Address2 = other.Address2;
+
+            if (!other.City.IsNullOrEmpty())
+                instance.City = other.City;
+
+            if (!other.State.IsNullOrEmpty())
+                instance.State = other.State;
 
             if (!other.Country.IsNullOrEmpty())
                 instance.Country = other.Country;
