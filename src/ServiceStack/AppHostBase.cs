@@ -20,7 +20,8 @@ namespace ServiceStack
             if (HostingEnvironment.ApplicationVirtualPath != null
                 && virtualPath.StartsWith("~" + HostingEnvironment.ApplicationVirtualPath))
             {
-                virtualPath = virtualPath.Remove(1, HostingEnvironment.ApplicationVirtualPath.Length);
+                //http://stackoverflow.com/a/757251/85785
+                virtualPath = virtualPath.Remove(0, HostingEnvironment.ApplicationVirtualPath.Length);
             }
 
             return Config.WebHostUrl == null
