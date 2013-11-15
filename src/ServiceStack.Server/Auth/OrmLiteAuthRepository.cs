@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
-using ServiceStack.Text;
 
 namespace ServiceStack.Auth
 {
@@ -26,6 +25,17 @@ namespace ServiceStack.Auth
 
         private readonly IDbConnectionFactory dbFactory;
         private readonly IHashProvider passwordHasher;
+
+        public bool AutoCreateMissingTables
+        {
+            set
+            {
+                if (value)
+                {
+                    CreateMissingTables();
+                }
+            }
+        }
 
         public OrmLiteAuthRepository(IDbConnectionFactory dbFactory)
             : this(dbFactory, new SaltedHash()) { }
