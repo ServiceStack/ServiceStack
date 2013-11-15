@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
@@ -99,7 +100,7 @@ namespace ServiceStack
         /// Dynamic Session Bag
         /// </summary>
         private ISession session;
-        public virtual ISession Session
+        public virtual ISession SessionBag
         {
             get
             {
@@ -107,20 +108,24 @@ namespace ServiceStack
                     ?? SessionFactory.GetOrCreateSession(Request, Response));
             }
         }
+        
+        public IAuthSession GetSession(bool reload = false)
+        {
+            var req = this.Request;
+            if (req.GetSessionId() == null)
+                req.Response.CreateSessionIds(req);
+            return req.GetSession(reload);
+        }
 
         /// <summary>
         /// Typed UserSession
         /// </summary>
-        private object userSession;
         protected virtual TUserSession SessionAs<TUserSession>()
         {
-            if (userSession == null)
-            {
-                userSession = TryResolve<TUserSession>(); //Easier to mock
-                if (userSession == null)
-                    userSession = Cache.SessionAs<TUserSession>(Request, Response);
-            }
-            return (TUserSession)userSession;
+            var ret = TryResolve<TUserSession>();
+            return !Equals(ret, default(TUserSession))
+                ? ret 
+                : Cache.SessionAs<TUserSession>(Request, Response);
         }
 
         public virtual void PublishMessage<T>(T message)
