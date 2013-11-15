@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using ServiceStack.Auth;
 using ServiceStack.Web;
 
-namespace ServiceStack.Auth
+namespace ServiceStack
 {
     [DataContract]
     public class AuthUserSession : IAuthSession
@@ -26,28 +27,34 @@ namespace ServiceStack.Auth
         [DataMember(Order = 10)] public string FirstName { get; set; }
         [DataMember(Order = 11)] public string LastName { get; set; }
         [DataMember(Order = 12)] public string DisplayName { get; set; }
-        [DataMember(Order = 13)] public string Email { get; set; }
-        [DataMember(Order = 14)] public string PrimaryEmail { get; set; }
-        [DataMember(Order = 15)] public DateTime? BirthDate { get; set; }
-        [DataMember(Order = 16)] public string BirthDateRaw { get; set; }
-        [DataMember(Order = 17)] public string Country { get; set; }
-        [DataMember(Order = 18)] public string Culture { get; set; }
-        [DataMember(Order = 19)] public string FullName { get; set; }
-        [DataMember(Order = 20)] public string Gender { get; set; }
-        [DataMember(Order = 21)] public string Language { get; set; }
-        [DataMember(Order = 22)] public string MailAddress { get; set; }
-        [DataMember(Order = 23)] public string Nickname { get; set; }
-        [DataMember(Order = 24)] public string PostalCode { get; set; }
-        [DataMember(Order = 25)] public string TimeZone { get; set; }
-        [DataMember(Order = 26)] public string RequestTokenSecret { get; set; }
-        [DataMember(Order = 27)] public DateTime CreatedAt { get; set; }
-        [DataMember(Order = 28)] public DateTime LastModified { get; set; }
-        [DataMember(Order = 29)] public List<IAuthTokens> ProviderOAuthAccess { get; set; }
-        [DataMember(Order = 30)] public List<string> Roles { get; set; }
-        [DataMember(Order = 31)] public List<string> Permissions { get; set; }
-        [DataMember(Order = 32)] public virtual bool IsAuthenticated { get; set; }
-        [DataMember(Order = 33)] public virtual string Sequence { get; set; }
-        [DataMember(Order = 34)] public long Tag { get; set; }
+        [DataMember(Order = 13)] public string Company { get; set; }
+        [DataMember(Order = 14)] public string Email { get; set; }
+        [DataMember(Order = 15)] public string PrimaryEmail { get; set; }
+        [DataMember(Order = 16)] public string PhoneNumber { get; set; }
+        [DataMember(Order = 17)] public DateTime? BirthDate { get; set; }
+        [DataMember(Order = 18)] public string BirthDateRaw { get; set; }
+        [DataMember(Order = 19)] public string Address { get; set; }
+        [DataMember(Order = 20)] public string Address2 { get; set; }
+        [DataMember(Order = 21)] public string City { get; set; }
+        [DataMember(Order = 22)] public string State { get; set; }
+        [DataMember(Order = 23)] public string Country { get; set; }
+        [DataMember(Order = 24)] public string Culture { get; set; }
+        [DataMember(Order = 25)] public string FullName { get; set; }
+        [DataMember(Order = 26)] public string Gender { get; set; }
+        [DataMember(Order = 27)] public string Language { get; set; }
+        [DataMember(Order = 28)] public string MailAddress { get; set; }
+        [DataMember(Order = 29)] public string Nickname { get; set; }
+        [DataMember(Order = 30)] public string PostalCode { get; set; }
+        [DataMember(Order = 31)] public string TimeZone { get; set; }
+        [DataMember(Order = 32)] public string RequestTokenSecret { get; set; }
+        [DataMember(Order = 33)] public DateTime CreatedAt { get; set; }
+        [DataMember(Order = 34)] public DateTime LastModified { get; set; }
+        [DataMember(Order = 35)] public List<IAuthTokens> ProviderOAuthAccess { get; set; }
+        [DataMember(Order = 36)] public List<string> Roles { get; set; }
+        [DataMember(Order = 37)] public List<string> Permissions { get; set; }
+        [DataMember(Order = 38)] public virtual bool IsAuthenticated { get; set; }
+        [DataMember(Order = 39)] public virtual string Sequence { get; set; }
+        [DataMember(Order = 40)] public long Tag { get; set; }
 
         public virtual bool IsAuthorized(string provider)
         {

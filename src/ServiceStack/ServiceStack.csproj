@@ -121,7 +121,7 @@
     <Compile Include="Auth\AssignRolesService.cs" />
     <Compile Include="Auth\AuthenticateService.cs" />
     <Compile Include="Auth\AuthProvider.cs" />
-    <Compile Include="Auth\AuthUserSession.cs" />
+    <Compile Include="AuthUserSession.cs" />
     <Compile Include="Auth\BasicAuthProvider.cs" />
     <Compile Include="Auth\CredentialsAuthProvider.cs" />
     <Compile Include="Auth\DigestAuthFunctions.cs" />
