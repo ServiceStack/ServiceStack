@@ -35,6 +35,20 @@ namespace ServiceStack
             }
         }
 
+        public bool IncludeRegistrationService
+        {
+            set
+            {
+                if (value)
+                {
+                    if (!RegisterPlugins.Any(x => x is RegistrationFeature))
+                    {
+                        RegisterPlugins.Add(new RegistrationFeature());
+                    }
+                }
+            }
+        }
+
         public AuthFeature(Func<IAuthSession> sessionFactory, IAuthProvider[] authProviders, string htmlRedirect = null)
         {
             this.sessionFactory = sessionFactory;
