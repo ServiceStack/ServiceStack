@@ -62,7 +62,10 @@
             this.find("input").each(function() {
                 var $el = $(this);
                 var $prev = $el.prev(), $next = $el.next();
-                var key = (this.id || $el.attr("name")).toLowerCase();
+                var fieldId = this.id || $el.attr("name");
+                if (!fieldId) return;
+                
+                var key = (fieldId).toLowerCase();
 
                 fieldMap[key] = $el;
                 if ($prev.hasClass("help-inline") || $prev.hasClass("help-block")) {
@@ -86,15 +89,16 @@
                 $lblErr.show();
             });
         } else {
-            this.find(".error-summary").html(
-                filter(status.message || splitCase(status.errorCode), status.errorCode, "summary")
-            ).show();
+            this.find(".error-summary")
+                .html(filter(status.message || splitCase(status.errorCode), status.errorCode, "summary"))
+                .show();
         }
         return this;
     };
 
     $.fn.clearErrors = function() {
         this.removeClass("has-errors");
+        this.find(".error-summary").html("").hide();
         this.find(".help-inline.error, .help-block.error").each(function () {
             $(this).html("");
         });
