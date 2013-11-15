@@ -58,7 +58,10 @@ namespace ServiceStack.Razor
         public override void SetModel(object o)
         {
             base.SetModel(o);
-            Html.SetModel(o);
+            if (o is TModel)
+            {
+                Html.SetModel(o);
+            }
         }
 
         public void WriteTo(StreamWriter writer)
@@ -72,17 +75,5 @@ namespace ServiceStack.Razor
         {
             get { return typeof(TModel); }
         }
-
-        //public override void Init(IRazorViewEngine viewEngine, ViewDataDictionary viewData, IHttpRequest httpReq, IHttpResponse httpRes)
-        //{
-        //    this.Request = httpReq;
-        //    this.Response = httpRes;
-        //    Html = new HtmlHelper<TModel>();
-        //    Html.Init(httpReq, httpRes, viewEngine, viewData, null);
-        //    if (viewData.Model is TModel)
-        //        this.Model = (TModel)viewData.Model;
-        //    else
-        //        this.ModelError = viewData.Model;
-        //}
     }
 }

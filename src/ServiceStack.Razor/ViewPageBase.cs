@@ -301,13 +301,22 @@ namespace ServiceStack.Razor
             }
         }
 
-        public TModel Model { get; set; }
+        private TModel model;
+        public TModel Model
+        {
+            get { return model; }
+            set
+            {
+                SetModel(value);
+            }
+        }
+
         public abstract Type ModelType { get; }
         
         public virtual void SetModel(object o)
         {
             var viewModel = o is TModel ? (TModel)o : default(TModel);
-            this.Model = viewModel;
+            this.model = viewModel;
 
             if (Equals(viewModel, default(TModel)))
             {
