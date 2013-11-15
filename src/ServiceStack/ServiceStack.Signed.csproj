@@ -127,7 +127,7 @@
     <Compile Include="Auth\AssignRolesService.cs" />
     <Compile Include="Auth\AuthenticateService.cs" />
     <Compile Include="Auth\AuthProvider.cs" />
-    <Compile Include="Auth\AuthUserSession.cs" />
+    <Compile Include="AuthUserSession.cs" />
     <Compile Include="Auth\BasicAuthProvider.cs" />
     <Compile Include="Auth\CredentialsAuthProvider.cs" />
     <Compile Include="Auth\DigestAuthFunctions.cs" />
@@ -544,6 +544,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Funq\License.txt" />
+    <EmbeddedResource Include="js\ss-utils.js" />
     <EmbeddedResource Include="Templates\OperationControl.html" />
     <EmbeddedResource Include="Templates\IndexOperations.html" />
     <EmbeddedResource Include="Templates\HtmlFormat.html" />
