@@ -23,6 +23,7 @@ namespace ServiceStack.Auth
     {
         public const string BasicProvider = "basic";
         public const string CredentialsProvider = "credentials";
+        public const string CredentialsAliasProvider = "login";
         public const string LogoutAction = "logout";
         public const string DigestProvider = "digest";
 
@@ -100,6 +101,9 @@ namespace ServiceStack.Auth
             }
 
             var provider = request.provider ?? AuthProviders[0].Provider;
+            if (provider == CredentialsAliasProvider)
+                provider = CredentialsProvider;
+
             var oAuthConfig = GetAuthProvider(provider);
             if (oAuthConfig == null)
                 throw HttpError.NotFound("No configuration was added for OAuth provider '{0}'".Fmt(provider));
