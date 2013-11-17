@@ -446,10 +446,11 @@ namespace ServiceStack.Html
 
         public MvcHtmlString AsRawJson()
         {
-            return MvcHtmlString.Create(Model.ToJson());
+            var json = Model != null ? Model.ToJson() : "null";
+            return MvcHtmlString.Create(json);
         }
 
-        public MvcHtmlString AsRaw()
+	    public MvcHtmlString AsRaw()
         {
             return MvcHtmlString.Create((Model ?? "").ToString());
         }

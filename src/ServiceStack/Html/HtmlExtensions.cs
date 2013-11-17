@@ -6,7 +6,8 @@ namespace ServiceStack.Html
     {
         public static MvcHtmlString AsRawJson<T>(this T model)
         {
-            return MvcHtmlString.Create(model.ToJson());
+            var json = !Equals(model, default(T)) ? model.ToJson() : "null";
+            return MvcHtmlString.Create(json);
         }
 
         public static MvcHtmlString AsRaw<T>(this T model)
