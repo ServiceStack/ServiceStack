@@ -118,7 +118,8 @@
             }
             
             var f = $(this);
-            f.submit(function () {
+            f.submit(function (e) {
+                e.preventDefault();
                 f.clearErrors();
                 f.addClass("loading");
                 var opt = $.extend({}, orig, {
@@ -130,7 +131,7 @@
                         var err, errMsg = "The request failed with " + statusText;
                         try {
                             err = JSON.parse(jq.responseText);
-                        } finally { }
+                        } catch (e) { }
                         if (!err) {
                             f.addClass("has-errors");
                             f.find(".error-summary").html(errMsg);
@@ -159,5 +160,34 @@
         });
     };
 
+    $.fn.applyValues = function (map) {
+        return this.each(function () {
+            var $el = $(this);
+            $.each(map, function (k, v) {
+                $el.find("#" + k + ",[name=" + k + "]").val(v);
+            });
+            $el.find("[data-html]").each(function () {
+                $(this).html(map[$(this).data("html")] || "");
+            });
+            $el.find("[data-val]").each(function () {
+                $(this).val(map[$(this).data("val")] || "");
+            });
+        });
+    };
+
+    $.fn.registerHandlers = function (handlers) {
+        var events = "click change".split(' ');
+        return this.each(function () {
+            var $el = $(this);
+            $.each(events, function (i, e) {
+                $el.find("[data-" + e + "]").each(function () {
+                    var fn = handlers[$(this).data(e)];
+                    if (fn) {
+                        $(this)[e](fn);
+                    }
+                });
+            });
+        });
+    };
 
 })(window.jQuery);
