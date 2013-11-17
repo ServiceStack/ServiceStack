@@ -230,7 +230,19 @@ namespace ServiceStack.Razor
 
         public virtual bool IsSectionDefined(string sectionName)
         {
-            return this.childSections.ContainsKey(sectionName);
+            var parentPage = ParentPage as RenderingPage;
+            return parentPage != null
+                ? parentPage.IsChildSectionDefined(sectionName)
+                : IsChildSectionDefined(sectionName);
+        }
+
+        internal virtual bool IsChildSectionDefined(string sectionName)
+        {
+            var hasChildSection = this.childSections.ContainsKey(sectionName);
+            if (hasChildSection) return true;
+
+            var childPage = ChildPage as RenderingPage;
+            return childPage != null && childPage.IsSectionDefined(sectionName);
         }
 
         public virtual void DefineSection(string sectionName, Action action)
@@ -248,19 +260,30 @@ namespace ServiceStack.Razor
 
         public object RenderSection(string sectionName)
         {
+            var parentPage = ParentPage as RenderingPage;
+            return parentPage != null 
+                ? parentPage.RenderChildSection(sectionName)  
+                : RenderChildSection(sectionName);
+        }
+
+        internal object RenderChildSection(string sectionName)
+        {
             Action section;
             if (childSections.TryGetValue(sectionName, out section))
             {
                 section();
+                return null;
             }
-            else if (this.ChildPage != null)
+
+            var childPage = ChildPage as RenderingPage;
+            if (childPage != null)
             {
-                this.ChildPage.RenderSection(sectionName, Output);
+                childPage.RenderChildSection(sectionName, Output);
             }
             return null;
         }
-        
-        public void RenderSection(string sectionName, StreamWriter writer)
+
+        public void RenderChildSection(string sectionName, StreamWriter writer)
         {
             Action section;
             if (childSections.TryGetValue(sectionName, out section))

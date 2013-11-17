@@ -11,7 +11,7 @@ namespace ServiceStack.Razor
              using (var ms = new MemoryStream())
              using (var writer = new StreamWriter(ms))
              {
-                 razorView.RenderSection(sectionName, writer);
+                 razorView.RenderChildSection(sectionName, writer);
                  writer.Flush();
                  return ms.ToArray().FromUtf8Bytes();
              }

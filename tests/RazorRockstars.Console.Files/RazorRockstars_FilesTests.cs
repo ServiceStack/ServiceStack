@@ -162,6 +162,8 @@ namespace RazorRockstars.Console.Files
         static string ViewRazorPartialModel = "<!--view:RazorPartialModel.cshtml-->";
         static string ViewPartialChildModel = "<!--view:PartialChildModel.cshtml-->";
 
+        static string SectionPartialHeaderSection = "<!--section:PartialHeaderSection-->";
+
         static string View_Default = "<!--view:default.cshtml-->";
         static string View_Pages_Default = "<!--view:Pages/default.cshtml-->";
         static string View_Pages_Dir_Default = "<!--view:Pages/Dir/default.cshtml-->";
@@ -327,6 +329,12 @@ namespace RazorRockstars.Console.Files
         public void Can_get_RequestPathInfo_in_PartialChildModel()
         {
             Assert200(Host + "/partialmodel", Template_PartialModel, ViewPartialChildModel, "PathInfo: <b>/partialmodel</b>");
+        }
+
+        [Test]
+        public void Can_render_PartialHeaderSection_in_PartialChildModel()
+        {
+            Assert200(Host + "/partialmodel", Template_PartialModel, ViewPartialChildModel, SectionPartialHeaderSection);
         }
 
         [Test]

@@ -3,6 +3,11 @@
     Layout = "Empty";
 }
 
+@section PartialHeaderSection {
+    <h1>Partial Header Section in PartialModel</h1>
+    <!--section:PartialHeaderSection-->
+}
+
 <!doctype html>
 <html lang="en-us">
     <head>
@@ -16,6 +21,10 @@
         {
             <div>@Html.Partial("PartialChildModel", item)</div>
         }
+        
+        @Html.Partial("PartialHeader")
+
     </body>
 </html>
+
 <!--template:PartialModel.cshtml-->

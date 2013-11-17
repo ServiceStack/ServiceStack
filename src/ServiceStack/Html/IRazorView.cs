@@ -18,6 +18,6 @@ namespace ServiceStack.Html
         void Init(IViewEngine viewEngine, IRequest httpReq, IResponse httpRes);
         void WriteTo(StreamWriter writer);
         bool IsSectionDefined(string sectionName);
-        void RenderSection(string sectionName, StreamWriter writer);
+        void RenderChildSection(string sectionName, StreamWriter writer);
     }
 }
