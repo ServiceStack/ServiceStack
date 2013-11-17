@@ -336,9 +336,20 @@ namespace ServiceStack.Razor
             set { appHost = value; }
         }
 
-        public T Get<T>()
+        public virtual T Get<T>()
         {
             return this.AppHost.TryResolve<T>();
+        }
+
+        public virtual T ResolveService<T>()
+        {
+            var service = Get<T>();
+            var requiresContext = service as IRequiresRequest;
+            if (requiresContext != null)
+            {
+                requiresContext.Request = this.Request;
+            }
+            return service;
         }
 
         public object ModelError { get; set; }
