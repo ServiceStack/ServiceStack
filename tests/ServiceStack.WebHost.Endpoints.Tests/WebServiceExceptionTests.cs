@@ -53,6 +53,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Assert.That(webEx.ErrorCode, Is.Null);
 			Assert.That(webEx.ErrorMessage, Is.Null);
 			Assert.That(webEx.ServerStackTrace, Is.Null);
+
+            Assert.IsNull(webEx.ResponseStatus);
 		}
 
 	    [Test]
@@ -68,8 +70,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	            };
 	        Assert.That(webEx.ErrorCode, Is.EqualTo("UnauthorizedAccessException"));
             Assert.That(webEx.ErrorMessage, Is.EqualTo("Error Message"));
-            Assert.That(webEx.ServerStackTrace, Is.EqualTo("Some Stack Trace"));
+            Assert.That(webEx.ServerStackTrace, Is.EqualTo("Some Stack Trace"));            
+
+            Assert.IsNotNull(webEx.ResponseStatus);
+            Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo("UnauthorizedAccessException"));
+            Assert.That(webEx.ResponseStatus.Message, Is.EqualTo("Error Message"));
+            Assert.That(webEx.ResponseStatus.StackTrace, Is.EqualTo("Some Stack Trace"));            
 	    }
+
+        [Test]
+        public void Can_Retrieve_Errors_From_ResponseStatus_If_Present()
+        {
+            var webEx = new WebServiceException
+            {
+                ResponseDto = new List<string> { "123" },
+                ResponseBody = "not a response status",
+                ResponseStatus = new ResponseStatus
+                                     {
+                                         ErrorCode = "UnauthorizedAccessException",
+                                         Message = "Error Message",
+                                         StackTrace = "Some Stack Trace"
+                                     }
+
+            };
+
+            Assert.That(webEx.ErrorCode, Is.EqualTo("UnauthorizedAccessException"));
+            Assert.That(webEx.ErrorMessage, Is.EqualTo("Error Message"));
+            Assert.That(webEx.ServerStackTrace, Is.EqualTo("Some Stack Trace"));
+        }   
 	}
 
 }
