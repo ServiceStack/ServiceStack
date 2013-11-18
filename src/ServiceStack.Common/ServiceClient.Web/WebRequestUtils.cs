@@ -253,7 +253,7 @@ namespace ServiceStack.ServiceClient.Web
                 {
 
                     var returnDtoType = genericDef.GenericTypeArguments()[0];
-                    var hasResponseStatus = returnDtoType is IHasResponseStatus
+                    var hasResponseStatus = typeof(IHasResponseStatus).IsAssignableFrom(typeof(returnDtoType))
                         || returnDtoType.GetPropertyInfo("ResponseStatus") != null;
                    
                     //Only use the specified Return type if it has a ResponseStatus property
