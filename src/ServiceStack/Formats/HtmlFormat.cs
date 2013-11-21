@@ -16,6 +16,8 @@ namespace ServiceStack.Formats
 
         private IAppHost AppHost { get; set; }
 
+        public const string ErrorStatusKey = "__errorStatus";
+
         public void Register(IAppHost appHost)
         {
             AppHost = appHost;
@@ -36,6 +38,12 @@ namespace ServiceStack.Formats
 
             try
             {
+                if (httpRes.StatusCode >= 400)
+                {
+                    var responseStatus = response.GetResponseStatus();
+                    request.Items[ErrorStatusKey] = responseStatus;
+                }
+
                 if (AppHost.ViewEngines.Any(x => x.ProcessRequest(request, httpRes, response))) return;
             }
             catch (Exception ex)
