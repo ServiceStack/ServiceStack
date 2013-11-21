@@ -1,21 +1,22 @@
 (function ($) {
 
     if (!$.ss) $.ss = {};
-    if (!$.ss.validation)
-        $.ss.validation = {
-            overrideMessages: false,
-            messages: {
-                NotEmpty: "Required",
-                NotNull: "Required",
-                Email: "Invalid email",
-                AlreadyExists: "Already exists"
-            },
-            errorFilter: function (errorMsg, errorCode, type) {
-                return this.overrideMessages
-                    ? this.messages[errorCode] || errorMsg || splitCase(errorCode)
-                    : errorMsg || splitCase(errorCode);
-            }
-        };
+    $.ss.handlers = {};
+    $.ss.onSubmitDisable = "[type=submit]";
+    $.ss.validation = {
+        overrideMessages: false,
+        messages: {
+            NotEmpty: "Required",
+            NotNull: "Required",
+            Email: "Invalid email",
+            AlreadyExists: "Already exists"
+        },
+        errorFilter: function (errorMsg, errorCode, type) {
+            return this.overrideMessages
+                ? this.messages[errorCode] || errorMsg || splitCase(errorCode)
+                : errorMsg || splitCase(errorCode);
+        }
+    };
 
     function splitCase(t) {
         return typeof t != 'string' ? t : t.replace( /([A-Z]|[0-9]+)/g , ' $1').replace( /_/g , ' ');
@@ -110,7 +111,7 @@
         });
     };
     
-    $.fn.submitForm = function (orig) {
+    $.fn.bindForm = function (orig) {
         return this.each(function () {
             orig = orig || {};
             if (orig.validation) {
@@ -122,6 +123,8 @@
                 e.preventDefault();
                 f.clearErrors();
                 f.addClass("loading");
+                var $disable = orig.onSubmitDisable || $.ss.onSubmitDisable;
+                $($disable).attr("disabled", "disabled");
                 var opt = $.extend({}, orig, {
                     type: f.attr('method') || "POST",
                     url: f.attr('action'),
@@ -144,6 +147,7 @@
                     },
                     complete: function (jq) {
                         f.removeClass("loading");
+                        $($disable).removeAttr("disabled");
                         if (orig.complete) {
                             orig.complete.apply(this, arguments);
                         }
@@ -174,20 +178,27 @@
             });
         });
     };
-
-    $.fn.registerHandlers = function (handlers) {
-        var events = "click change".split(' ');
+    
+    $.ss.__call = $.ss.__call || function (e) {
+        var $el = $(e.target);
+        var attr = $el.data(e.type) || $el.closest("[data-" + e.type + "]").data(e.type);
+        var fn = $.ss.handlers[attr];
+        if (fn) {
+            fn.apply(e.target, [].splice(arguments));
+        }
+        var evt = $el.data('trigger');
+        if (evt) {
+            $el.trigger(evt, [e.target]);
+        }
+    };
+    $.ss.listenOn = 'click change';
+    $.fn.bindHandlers = function (handlers) {
+        $.extend($.ss.handlers, handlers || {});
         return this.each(function () {
             var $el = $(this);
-            $.each(events, function (i, e) {
-                $el.find("[data-" + e + "]").each(function () {
-                    var fn = handlers[$(this).data(e)];
-                    if (fn) {
-                        $(this)[e](fn);
-                    }
-                });
-            });
+            $el.off($.ss.listenOn, $.ss.__call);
+            $el.on($.ss.listenOn, $.ss.__call);
         });
     };
-
+    
 })(window.jQuery);
