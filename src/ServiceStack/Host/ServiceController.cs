@@ -234,6 +234,13 @@ namespace ServiceStack.Host
             foreach (var restPath in appHost.RestPaths)
             {
                 RegisterRestPath(restPath);
+
+                //Auto add Route Attributes so they're available in T.ToUrl() extension methods
+                restPath.RequestType
+                    .AddAttributes(new RouteAttribute(restPath.Path, restPath.AllowedVerbs) {
+                        Summary = restPath.Summary,
+                        Notes = restPath.Notes,
+                    });
             }
 
             //Sync the RestPaths collections
