@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Web;
+using ServiceStack.Formats;
 using ServiceStack.Html.AntiXsrf;
 using ServiceStack.Support.Markdown;
 using ServiceStack.Text;
@@ -17,11 +18,13 @@ namespace ServiceStack.Html
 {
 	public class HtmlHelper
     {
-        public static readonly string ValidationInputCssClassName = "input-validation-error";
+        public static string ValidationMessageCssClassNames = "help-inline error";
+        public static string ValidationSummaryCssClassNames = "error-summary alert alert-danger";
+        public static string ValidationSuccessCssClassNames = "alert alert-success";
+        public static readonly string ValidationInputCssClassName = "error";
+
         public static readonly string ValidationInputValidCssClassName = "input-validation-valid";
-        public static readonly string ValidationMessageCssClassName = "field-validation-error";
         public static readonly string ValidationMessageValidCssClassName = "field-validation-valid";
-        public static readonly string ValidationSummaryCssClassName = "validation-summary-errors";
         public static readonly string ValidationSummaryValidCssClassName = "validation-summary-valid";
         private DynamicViewDataDictionary viewBag;
 
@@ -51,8 +54,8 @@ namespace ServiceStack.Html
 
 		public bool RenderHtml { get; protected set; }
 
-        public IRequest HttpRequest { get; set; }
-        public IResponse HttpResponse { get; set; }
+        public IHttpRequest HttpRequest { get; set; }
+        public IHttpResponse HttpResponse { get; set; }
         public StreamWriter Writer { get; set; }
         public IViewEngine ViewEngine { get; set; }
 
@@ -65,8 +68,8 @@ namespace ServiceStack.Html
             Dictionary<string, object> scopeArgs = null, ViewDataDictionary viewData = null)
         {
             ViewEngine = viewEngine;
-            HttpRequest = httpReq;
-            HttpResponse = httpRes;
+            HttpRequest = httpReq as IHttpRequest;
+            HttpResponse = httpRes as IHttpResponse;
             RazorPage = razorPage;
             //ScopeArgs = scopeArgs;
             this.viewData = viewData;
@@ -333,13 +336,17 @@ namespace ServiceStack.Html
 
         internal object GetModelStateValue(string key, Type destinationType)
         {
-            ModelState modelState;
-            if (ViewData.ModelState.TryGetValue(key, out modelState)) {
-                if (modelState.Value != null) {
-                    return modelState.Value.ConvertTo(destinationType, null /* culture */);
-                }
-            }
-            return null;
+            if (this.HttpRequest.HttpMethod == HttpMethods.Get)
+                return null;
+
+            var postedValue = this.HttpRequest.FormData[key];
+            if (postedValue == null)
+                return null;
+
+            if (destinationType == typeof (string))
+                return postedValue;
+
+            return new ValueProviderResult(postedValue, postedValue, null).ConvertTo(destinationType, null);
         }
 
         public IDictionary<string, object> GetUnobtrusiveValidationAttributes(string name)
@@ -431,6 +438,33 @@ namespace ServiceStack.Html
 			var strContent = content as string;
             return MvcHtmlString.Create(strContent ?? content.ToString()); //MvcHtmlString
 		}
+
+        public bool HasFieldError(string errorName)
+        {
+            return GetFieldError(errorName) != null;
+        }
+
+        public ResponseError GetFieldError(string errorName)
+        {
+            var errorStatus = this.GetErrorStatus();
+            if (errorStatus == null || errorStatus.Errors == null) 
+                return null;
+
+            return errorStatus.Errors.FirstOrDefault(x => x.FieldName.EqualsIgnoreCase(errorName));
+        }
+
+        public ResponseStatus GetErrorStatus()
+        {
+            var errorStatus = this.HttpRequest.GetItem(HtmlFormat.ErrorStatusKey);
+            return errorStatus as ResponseStatus;
+        }
+
+        public MvcHtmlString GetErrorMessage()
+        {
+            var errorStatus = GetErrorStatus();
+            return errorStatus == null ? null : MvcHtmlString.Create(errorStatus.Message);
+        }
+
     }
 
 	public static class HtmlHelperExtensions

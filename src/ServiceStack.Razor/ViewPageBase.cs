@@ -9,6 +9,7 @@ using System.Web;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Data;
+using ServiceStack.Formats;
 using ServiceStack.Html;
 using ServiceStack.Messaging;
 using ServiceStack.MiniProfiler;
@@ -375,29 +376,12 @@ namespace ServiceStack.Razor
             return service;
         }
 
+        public bool IsError
+        {
+            get { return ModelError != null; }
+        }
+
         public object ModelError { get; set; }
-
-        public ResponseStatus ResponseStatus
-        {
-            get
-            {
-                return ToResponseStatus(ModelError) ?? ToResponseStatus(Model);
-            }
-        }
-
-        private ResponseStatus ToResponseStatus<T>(T modelError)
-        {
-            var ret = modelError.GetResponseStatus();
-            if (ret != null) return ret;
-
-            if (modelError is DynamicObject)
-            {
-                var dynError = modelError as dynamic;
-                return (ResponseStatus)dynError.ResponseStatus;
-            }
-
-            return null;
-        }
 
         private ICacheClient cache;
         public ICacheClient Cache
@@ -507,6 +491,23 @@ namespace ServiceStack.Razor
         {
             if (contents == null) return;
             //Builder.Insert(0, contents);
+        }
+        
+        public bool IsPostBack
+        {
+            get { return this.Request.Verb == HttpMethods.Post; }
+        }
+        
+        public ResponseStatus GetErrorStatus()
+        {
+            var errorStatus = this.Request.GetItem(HtmlFormat.ErrorStatusKey);
+            return errorStatus as ResponseStatus;
+        }
+
+        public MvcHtmlString GetErrorMessage()
+        {
+            var errorStatus = GetErrorStatus();
+            return errorStatus == null ? null : MvcHtmlString.Create(errorStatus.Message);
         }
     }
 }
