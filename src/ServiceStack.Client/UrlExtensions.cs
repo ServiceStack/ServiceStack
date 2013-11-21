@@ -38,6 +38,26 @@ namespace ServiceStack
             return ToUrl((object)requestDto, httpMethod, formatFallbackToPredefinedRoute);
         }
 
+        public static string ToGetUrl(this object requestDto)
+        {
+            return requestDto.ToUrl(HttpMethods.Get);
+        }
+
+        public static string ToPostUrl(this object requestDto)
+        {
+            return requestDto.ToUrl(HttpMethods.Post);
+        }
+
+        public static string ToPutUrl(this object requestDto)
+        {
+            return requestDto.ToUrl(HttpMethods.Put);
+        }
+
+        public static string ToDeleteUrl(this object requestDto)
+        {
+            return requestDto.ToUrl(HttpMethods.Delete);
+        }
+
         public static string ToUrl(this object requestDto, string httpMethod="GET", string formatFallbackToPredefinedRoute = null)
         {
             httpMethod = httpMethod.ToUpper();
@@ -48,7 +68,7 @@ namespace ServiceStack
             {
                 if (formatFallbackToPredefinedRoute == null)
                     throw new InvalidOperationException("There are no rest routes mapped for '{0}' type. ".Fmt(requestType)
-                        + "(Note: The automatic route selection only works with [Route] attributes on the request DTO and"
+                        + "(Note: The automatic route selection only works with [Route] attributes on the request DTO and "
                         + "not with routes registered in the IAppHost!)");
 
                 var predefinedRoute = "/{0}/reply/{1}".Fmt(formatFallbackToPredefinedRoute, requestType.Name);
