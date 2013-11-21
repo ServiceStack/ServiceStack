@@ -518,11 +518,9 @@ namespace ServiceStack.Html
             }
 
             // If there are any errors for a named field, we add the css attribute.
-            ModelState modelState;
-            if (htmlHelper.ViewData.ModelState.TryGetValue(fullName, out modelState)) {
-                if (modelState.Errors.Count > 0) {
-                    tagBuilder.AddCssClass(HtmlHelper.ValidationInputCssClassName);
-                }
+            if (htmlHelper.HasFieldError(fullName))
+            {
+                tagBuilder.AddCssClass(HtmlHelper.ValidationInputCssClassName);
             }
 
             tagBuilder.MergeAttributes(htmlHelper.GetUnobtrusiveValidationAttributes(name, metadata));
