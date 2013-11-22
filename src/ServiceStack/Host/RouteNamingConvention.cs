@@ -9,6 +9,8 @@ namespace ServiceStack.Host
 
     public static class RouteNamingConvention
     {
+        private const int AutoGenPriority = -1;
+
         public static readonly List<string> AttributeNamesToMatch = new[] {
 			"PrimaryKeyAttribute",//typeof(PrimaryKeyAttribute),
 		}.ToList();
@@ -20,7 +22,7 @@ namespace ServiceStack.Host
 
         public static void WithRequestDtoName(IServiceRoutes routes, Type requestType, string allowedVerbs)
         {
-            routes.Add(requestType, restPath: "/{0}".Fmt(requestType.Name), verbs: allowedVerbs);
+            routes.Add(requestType, restPath: "/{0}".Fmt(requestType.Name), verbs: allowedVerbs, priority:AutoGenPriority);
         }
 
         public static void WithMatchingAttributes(IServiceRoutes routes, Type requestType, string allowedVerbs)
@@ -35,7 +37,7 @@ namespace ServiceStack.Host
             membersWithAttribute.Insert(0, "/{0}".Fmt(requestType.Name));
 
             var restPath = membersWithAttribute.Join("/");
-            routes.Add(requestType, restPath: restPath, verbs: allowedVerbs);
+            routes.Add(requestType, restPath: restPath, verbs: allowedVerbs, priority: AutoGenPriority);
         }
 
         public static void WithMatchingPropertyNames(IServiceRoutes routes, Type requestType, string allowedVerbs)
@@ -50,7 +52,7 @@ namespace ServiceStack.Host
             membersWithName.Insert(0, "/{0}".Fmt(requestType.Name));
 
             var restPath = membersWithName.Join("/");
-            routes.Add(requestType, restPath: restPath, verbs: allowedVerbs);
+            routes.Add(requestType, restPath: restPath, verbs: allowedVerbs, priority: AutoGenPriority);
         }
     }
 }

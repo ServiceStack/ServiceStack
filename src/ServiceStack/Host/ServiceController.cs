@@ -238,6 +238,7 @@ namespace ServiceStack.Host
                 //Auto add Route Attributes so they're available in T.ToUrl() extension methods
                 restPath.RequestType
                     .AddAttributes(new RouteAttribute(restPath.Path, restPath.AllowedVerbs) {
+                        Priority = restPath.Priority,
                         Summary = restPath.Summary,
                         Notes = restPath.Notes,
                     });

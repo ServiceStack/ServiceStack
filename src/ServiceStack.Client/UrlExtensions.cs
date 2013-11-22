@@ -124,7 +124,7 @@ namespace ServiceStack
         private static List<RestRoute> GetRoutesForType(Type requestType)
         {
             var restRoutes = requestType.AllAttributes<RouteAttribute>()
-                .Select(attr => new RestRoute(requestType, attr.Path, attr.Verbs))
+                .Select(attr => new RestRoute(requestType, attr.Path, attr.Verbs, attr.Priority))
                 .ToList();
 
             return restRoutes;
@@ -140,13 +140,22 @@ namespace ServiceStack
                 if (bestMatch == null)
                 {
                     bestMatch = route;
+                    continue;
                 }
-                else if (route.VariableCount > bestMatch.VariableCount)
+
+                if (route.VariableCount > bestMatch.VariableCount)
                 {
                     otherMatches.Clear();
                     bestMatch = route;
+                    continue;
                 }
-                else if (route.VariableCount == bestMatch.VariableCount)
+                
+                if (route.Priority < bestMatch.Priority)
+                {
+                    continue;
+                }
+                
+                if (route.VariableCount == bestMatch.VariableCount)
                 {
                     // Choose
                     //     /product-lines/{productId}/{lineNumber}
@@ -185,7 +194,6 @@ namespace ServiceStack
             return jsv;
         }
 
-        [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:FieldsMustBePrivate", Justification = "Using field is just easier.")]
         public static Func<object, string> FormatVariable = value =>
         {
             if (value == null) return null;
@@ -195,7 +203,6 @@ namespace ServiceStack
             return Uri.EscapeDataString(valueString);
         };
 
-        [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:FieldsMustBePrivate", Justification = "Using field is just easier.")]
         public static Func<object, string> FormatQueryParameterValue = value =>
         {
             if (value == null) return null;
@@ -215,11 +222,12 @@ namespace ServiceStack
         private readonly IDictionary<string, RouteMember> queryProperties;
         private readonly IDictionary<string, RouteMember> variablesMap = new Dictionary<string, RouteMember>(StringExtensions.InvariantComparerIgnoreCase());
 
-	    public RestRoute(Type type, string path, string verbs)
+	    public RestRoute(Type type, string path, string verbs, int priority)
         {
             this.HttpMethods = (verbs ?? string.Empty).Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
             this.Type = type;
             this.Path = path;
+	        this.Priority = priority;
 
             this.queryProperties = GetQueryProperties(type);
             foreach (var variableName in GetUrlVariables(path))
@@ -248,6 +256,8 @@ namespace ServiceStack
         }
 
         public string Path { get; private set; }
+
+        public int Priority { get; private set; }
 
         public string[] HttpMethods { get; private set; }
 
@@ -426,8 +436,10 @@ namespace ServiceStack
 
         public static RouteResolutionResult Success(RestRoute route, string uri)
         {
-            return new RouteResolutionResult { Route = route, Uri = uri };
+            return new RouteResolutionResult { Route = route, Uri = uri, Priority = route.Priority };
         }
+
+        internal int Priority { get; set; }
 
         internal int VariableCount
         {

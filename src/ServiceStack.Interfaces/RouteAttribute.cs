@@ -110,6 +110,12 @@ namespace ServiceStack
 		///		by the service, <see langword="null"/> or empty if all verbs are supported.
 		/// </value>
 		public string Verbs { get; set; }
+
+        /// <summary>
+        /// Used to rank the precedences of route definitions in reverse routing. 
+        /// i.e. Priorities below 0 are auto-generated have less precedence.
+        /// </summary>
+        public int Priority { get; set; }
     }
 
 

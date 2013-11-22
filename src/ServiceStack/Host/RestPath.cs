@@ -62,6 +62,8 @@ namespace ServiceStack.Host
 
         public string AllowedVerbs { get { return this.allowedVerbs; } }
 
+        public int Priority { get; set; } //passed back to RouteAttribute
+
         public static string[] GetPathPartsForMatching(string pathInfo)
         {
             var parts = pathInfo.ToLower().Split(PathSeperatorChar)
