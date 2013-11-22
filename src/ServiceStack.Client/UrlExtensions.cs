@@ -355,7 +355,8 @@ namespace ServiceStack
                 }
                 else
                 {
-                    if (propertyInfo.IsDefined(typeof(IgnoreDataMemberAttribute), true)) continue;
+                    //No benefit to prohibiting user-defined mappings here, but does allow Ids in QueryString and omitted in Body
+                    //if (propertyInfo.IsDefined(typeof(IgnoreDataMemberAttribute), true)) continue;
                 }
 
                 result[propertyName.ToCamelCase()] = new PropertyRouteMember(propertyInfo);

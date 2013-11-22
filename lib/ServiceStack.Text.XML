@@ -159,7 +159,7 @@
             to support web-friendly serialized formats, ie emitting lowercase_underscore_casing for JSON
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig.propertyConvention">
+        <member name="F:ServiceStack.Text.JsConfig.sPropertyConvention">
             <summary>
             Define how property names are mapped during deserialization
             </summary>
@@ -272,22 +272,22 @@
             Whether there is a fn (raw or otherwise)
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsonPropertyConvention.ExactMatch">
+        <member name="F:ServiceStack.Text.PropertyConvention.Strict">
             <summary>
             The property names on target types must match property names in the JSON source
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsonPropertyConvention.Lenient">
+        <member name="F:ServiceStack.Text.PropertyConvention.Lenient">
             <summary>
             The property names on target types may not match the property names in the JSON source
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsonTimeSpanHandler.DurationFormat">
+        <member name="F:ServiceStack.Text.TimeSpanHandler.DurationFormat">
             <summary>
             Uses the xsd format like PT15H10M20S
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsonTimeSpanHandler.StandardFormat">
+        <member name="F:ServiceStack.Text.TimeSpanHandler.StandardFormat">
             <summary>
             Uses the standard .net ToString method of the TimeSpan class
             </summary>
