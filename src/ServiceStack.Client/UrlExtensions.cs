@@ -319,11 +319,13 @@ namespace ServiceStack
             {
                 var value = queryProperty.Value.GetValue(request, true);
                 if (value == null)
-                {
                     continue;
-                }
 
-                result.Append(queryProperty.Key)
+                var qsName = JsConfig.EmitLowercaseUnderscoreNames
+                    ? queryProperty.Key.ToLowercaseUnderscore()
+                    : queryProperty.Key;
+
+                result.Append(qsName)
                     .Append('=')
                     .Append(FormatQueryParameterValue(value))
                     .Append('&');
