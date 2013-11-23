@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Funq;
 
 namespace ServiceStack
@@ -57,5 +58,19 @@ namespace ServiceStack
 			foreach (var serviceType in serviceTypes)
                 container.RegisterAutoWiredType(serviceType, scope);
 		}
-	}
+
+        /// <summary>
+        /// Register a singleton instance as a runtime type
+        /// </summary>
+        public static Container Register(this Container container, object instance, Type asType)
+        {
+            var mi = container.GetType()
+                .GetMethods()
+                .First(x => x.Name == "Register" && x.GetParameters().Length == 1 && x.ReturnType == typeof(void))
+                .MakeGenericMethod(asType);
+
+            mi.Invoke(container, new[] { instance });
+            return container;
+        }
+    }
 }
