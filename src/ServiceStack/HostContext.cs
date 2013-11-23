@@ -333,5 +333,10 @@ namespace ServiceStack
         {
             return AssertAppHost().HasFeature(feature);
         }
+
+        public static void OnExceptionTypeFilter(Exception exception, ResponseStatus responseStatus)
+        {
+            AssertAppHost().OnExceptionTypeFilter(exception, responseStatus);
+        }
     }
 }

@@ -270,6 +270,24 @@ namespace ServiceStack
 
             return false;
         }
+
+        public virtual void OnExceptionTypeFilter(Exception ex, ResponseStatus responseStatus)
+        { 
+            var argEx = ex as ArgumentException;
+            if (argEx != null)
+            {
+                var paramMsgIndex = argEx.Message.LastIndexOf("Parameter name:");
+                var errorMsg = paramMsgIndex > 0
+                    ? argEx.Message.Substring(0, paramMsgIndex)
+                    : argEx.Message;
+
+                responseStatus.Errors.Add(new ResponseError {
+                    ErrorCode = ex.GetType().Name,
+                    FieldName = argEx.ParamName,
+                    Message = errorMsg,
+                });
+            }
+        }
     }
 
 }

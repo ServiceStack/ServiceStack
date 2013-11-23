@@ -164,6 +164,8 @@ namespace ServiceStack
 
             var errorResponse = CreateErrorResponse(request, ex, responseStatus);
 
+            HostContext.OnExceptionTypeFilter(ex, responseStatus);
+
             return errorResponse;
         }
         
