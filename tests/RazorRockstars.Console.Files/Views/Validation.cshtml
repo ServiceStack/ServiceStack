@@ -1,0 +1,92 @@
+﻿@inherits ViewPage<Validation> 
+@{
+    Layout = "SimpleLayout";
+    ViewBag.Title = "Validator Test";
+}
+
+<link href="/bootstrap.css" rel="stylesheet" />
+<style type="text/css">
+    label {
+        display: inline-block;
+        width: 100px;
+    }
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    h1 {
+        margin: 0;
+        color: #fff;
+    }
+    .help-block.error, .note.error {
+        color: #f00;
+    }
+    input.error {
+        background: #FFD9D9;
+        border: 1px solid #f00;
+    }
+    input {
+        border: 1px solid #cdcdcd;
+    }
+    input:hover {
+        border: 1px solid #b9b9b9;
+    }
+    input:focus {
+        border: 1px solid #4285f4;
+    }
+    .error-summary {
+        display: none;
+    }
+    .has-errors .error-summary, .validation .error-summary {
+        display: block;
+    }
+</style>
+
+<h2>Ajax Form</h2>
+<form id="auto" action="/AutoValidation" method="POST">
+    <div class="error-summary"></div>
+    <div>
+        <label>Id</label>
+        <input type="text" id="Id" name="Id" />        
+        <span class="help-block"></span>
+    </div>
+    <div>
+        <label>Name</label>
+        <input type="text" id="Name" name="Name" />        
+        <span class="help-block"></span>
+    </div>
+    
+    <input type="submit"/>
+</form>
+
+<h2>Manual Form</h2>
+<form id="manual" action="/ManualValidation" method="POST">
+     @Html.ValidationSuccess("Manual Validation Passed!")
+     @Html.ValidationSummary()
+    <div>
+        <label>Id</label>
+        @Html.TextBoxFor(x => x.Id)
+        @Html.ValidationMessageFor(x => x.Id)
+    </div>
+    <div>
+        <label>Name</label>
+        @Html.TextBoxFor(x => x.Name)
+        @Html.ValidationMessageFor(x => x.Name)
+    </div>
+    
+    <input type="submit"/>
+</form>
+
+
+<script src="/jquery-2.0.2.min.js" type="text/javascript"></script>
+<script src="/js/ss-utils.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+    $("#auto").bindForm({
+        success: function(r) {
+            console.log(r);
+        }
+    });
+</script>
+
+<!--view:Validation.cshtml-->

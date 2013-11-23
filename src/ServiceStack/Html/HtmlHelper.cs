@@ -18,7 +18,7 @@ namespace ServiceStack.Html
 {
 	public class HtmlHelper
     {
-        public static string ValidationMessageCssClassNames = "help-inline error";
+        public static string ValidationMessageCssClassNames = "help-block error";
         public static string ValidationSummaryCssClassNames = "error-summary alert alert-danger";
         public static string ValidationSuccessCssClassNames = "alert alert-success";
         public static readonly string ValidationInputCssClassName = "error";

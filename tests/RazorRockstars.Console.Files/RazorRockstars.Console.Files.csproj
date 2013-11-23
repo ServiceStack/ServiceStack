@@ -99,11 +99,15 @@
     <Compile Include="MsgPackServiceTests.cs" />
     <Compile Include="RazorRockstars_FilesTests.cs" />
     <Compile Include="ReqStarsService.cs" />
+    <Compile Include="ValidationService.cs" />
     <Compile Include="VirtualPathTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
       <SubType>Designer</SubType>
+    </None>
+    <None Include="Views\Validation.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
     <None Include="TypedModelNoController.cshtml">
@@ -123,6 +127,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <EmbeddedResource Include="Content\static-sub-embedded.txt" />
+    <Content Include="bootstrap.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content\default.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -132,6 +139,9 @@
     <EmbeddedResource Include="static-root-embedded.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
+    <Content Include="jquery-2.0.2.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="static-root.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

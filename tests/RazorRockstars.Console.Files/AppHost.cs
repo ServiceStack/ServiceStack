@@ -7,12 +7,13 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.Razor;
 using ServiceStack.Text;
+using ServiceStack.Validation;
 using ServiceStack.Web;
 
 //The entire C# code for the stand-alone RazorRockstars demo.
 namespace RazorRockstars.Console.Files
 {
-    public class AppHost : AppHostHttpListenerBase 
+    public class AppHost : AppHostHttpListenerBase
     {
         public AppHost() : base("Test Razor", typeof(AppHost).Assembly) { }
 
@@ -23,6 +24,10 @@ namespace RazorRockstars.Console.Files
             if (EnableRazor)
                 Plugins.Add(new RazorFormat());
 
+            Plugins.Add(new ValidationFeature());
+            container.RegisterValidators(typeof(AutoValidationValidator).Assembly);
+
+
             container.Register<IDbConnectionFactory>(
                 new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
 
@@ -31,7 +36,12 @@ namespace RazorRockstars.Console.Files
                 db.DropAndCreateTable<Rockstar>(); //Create table if not exists
                 db.Insert(Rockstar.SeedData); //Populate with seed data
             }
-		}
+
+            SetConfig(new HostConfig
+            {
+                DebugMode = true
+            });
+        }
 
         private static void Main(string[] args)
         {
@@ -40,8 +50,8 @@ namespace RazorRockstars.Console.Files
             appHost.Start("http://*:1337/");
             System.Console.WriteLine("Listening on http://localhost:1337/ ...");
             System.Console.ReadLine();
-			System.Threading.Thread.Sleep(System.Threading.Timeout.Infinite);
-		}
+            System.Threading.Thread.Sleep(System.Threading.Timeout.Infinite);
+        }
     }
 
     public class Rockstar
@@ -71,7 +81,7 @@ namespace RazorRockstars.Console.Files
             Age = age;
         }
     }
-    
+
     [Route("/rockstars")]
     [Route("/rockstars/aged/{Age}")]
     [Route("/rockstars/delete/{Delete}")]
@@ -91,9 +101,12 @@ namespace RazorRockstars.Console.Files
     [DataContract] //Attrs for CSV Format to recognize it's a DTO and serialize the Enumerable property
     public class RockstarsResponse
     {
-        [DataMember] public int Total { get; set; }
-        [DataMember] public int? Aged { get; set; }
-        [DataMember] public List<Rockstar> Results { get; set; }
+        [DataMember]
+        public int Total { get; set; }
+        [DataMember]
+        public int? Aged { get; set; }
+        [DataMember]
+        public List<Rockstar> Results { get; set; }
     }
 
     [Route("/ilist1/{View}")]
@@ -138,7 +151,8 @@ namespace RazorRockstars.Console.Files
                 Db.DeleteById<Rockstar>(request.Delete.ToInt());
             }
 
-            var response = new RockstarsResponse {
+            var response = new RockstarsResponse
+            {
                 Aged = request.Age,
                 Total = Db.Scalar<int>("select count(*) from Rockstar"),
                 Results = request.Id != default(int) ?
@@ -149,7 +163,8 @@ namespace RazorRockstars.Console.Files
             };
 
             if (request.View != null || request.Template != null)
-                return new HttpResult(response) {
+                return new HttpResult(response)
+                {
                     View = request.View,
                     Template = request.Template,
                 };
@@ -162,7 +177,7 @@ namespace RazorRockstars.Console.Files
             Db.Insert(request.ConvertTo<Rockstar>());
             return Get(new Rockstars());
         }
-        
+
         public IList<Rockstar> Get(IList1 request)
         {
             base.Request.Items["View"] = request.View;
@@ -185,7 +200,8 @@ namespace RazorRockstars.Console.Files
         {
             return new PartialModel
             {
-                Items = 5.Times(x => new PartialChildModel {
+                Items = 5.Times(x => new PartialChildModel
+                {
                     SomeProperty = "value " + x
                 })
             };
