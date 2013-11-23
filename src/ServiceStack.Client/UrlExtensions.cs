@@ -1,7 +1,6 @@
 ﻿using ServiceStack.Text;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -58,7 +57,7 @@ namespace ServiceStack
             return requestDto.ToUrl(HttpMethods.Delete);
         }
 
-        public static string ToUrl(this object requestDto, string httpMethod="GET", string formatFallbackToPredefinedRoute = null)
+        public static string ToUrl(this object requestDto, string httpMethod = "GET", string formatFallbackToPredefinedRoute = null)
         {
             httpMethod = httpMethod.ToUpper();
 
@@ -149,12 +148,12 @@ namespace ServiceStack
                     bestMatch = route;
                     continue;
                 }
-                
+
                 if (route.Priority < bestMatch.Priority)
                 {
                     continue;
                 }
-                
+
                 if (route.VariableCount == bestMatch.VariableCount)
                 {
                     // Choose
@@ -184,7 +183,7 @@ namespace ServiceStack
 
     public class RestRoute
     {
-        private static readonly char[] ArrayBrackets = new[] { '[', ']'};
+        private static readonly char[] ArrayBrackets = new[] { '[', ']' };
 
         private static string FormatValue(object value)
         {
@@ -222,12 +221,12 @@ namespace ServiceStack
         private readonly IDictionary<string, RouteMember> queryProperties;
         private readonly IDictionary<string, RouteMember> variablesMap = new Dictionary<string, RouteMember>(StringExtensions.InvariantComparerIgnoreCase());
 
-	    public RestRoute(Type type, string path, string verbs, int priority)
+        public RestRoute(Type type, string path, string verbs, int priority)
         {
             this.HttpMethods = (verbs ?? string.Empty).Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
             this.Type = type;
             this.Path = path;
-	        this.Priority = priority;
+            this.Priority = priority;
 
             this.queryProperties = GetQueryProperties(type);
             foreach (var variableName in GetUrlVariables(path))
@@ -237,8 +236,8 @@ namespace ServiceStack
                 RouteMember propertyInfo;
                 if (!this.queryProperties.TryGetValue(safeVarName, out propertyInfo))
                 {
-	                this.AppendError("Variable '{0}' does not match any property.".Fmt(variableName));
-	                continue;
+                    this.AppendError("Variable '{0}' does not match any property.".Fmt(variableName));
+                    continue;
                 }
 
                 this.queryProperties.Remove(safeVarName);
@@ -317,6 +316,9 @@ namespace ServiceStack
 
             foreach (var queryProperty in propertyMap)
             {
+                if (queryProperty.Value.IgnoreInQueryString)
+                    continue;
+
                 var value = queryProperty.Value.GetValue(request, true);
                 if (value == null)
                     continue;
@@ -337,7 +339,7 @@ namespace ServiceStack
 
         internal static IDictionary<string, RouteMember> GetQueryProperties(Type requestType)
         {
-            var result = new Dictionary<string, RouteMember>(StringExtensions.InvariantComparerIgnoreCase()); 
+            var result = new Dictionary<string, RouteMember>(StringExtensions.InvariantComparerIgnoreCase());
             var hasDataContract = requestType.HasAttribute<DataContractAttribute>();
 
             foreach (var propertyInfo in requestType.GetPublicProperties())
@@ -355,27 +357,26 @@ namespace ServiceStack
                         propertyName = dataMember.Name;
                     }
                 }
-                else
-                {
-                    //No benefit to prohibiting user-defined mappings here, but does allow Ids in QueryString and omitted in Body
-                    //if (propertyInfo.IsDefined(typeof(IgnoreDataMemberAttribute), true)) continue;
-                }
 
-                result[propertyName.ToCamelCase()] = new PropertyRouteMember(propertyInfo);
+                result[propertyName.ToCamelCase()] = new PropertyRouteMember(propertyInfo)
+                {
+                    IgnoreInQueryString = propertyInfo.FirstAttribute<IgnoreDataMemberAttribute>() != null, //but allow in PathInfo
+                };
             }
 
-			if (JsConfig.IncludePublicFields)
-			{
+            if (JsConfig.IncludePublicFields)
+            {
                 foreach (var fieldInfo in requestType.GetPublicFields())
                 {
-					var fieldName = fieldInfo.Name;
+                    var fieldName = fieldInfo.Name;
 
-					if (fieldInfo.IsDefined(typeof(IgnoreDataMemberAttribute), true)) continue;
+                    result[fieldName.ToCamelCase()] = new FieldRouteMember(fieldInfo)
+                    {
+                        IgnoreInQueryString = fieldInfo.FirstAttribute<IgnoreDataMemberAttribute>() != null, //but allow in PathInfo
+                    };
+                }
 
-					result[fieldName.ToCamelCase()] = new FieldRouteMember(fieldInfo);
-				}
-
-			}
+            }
 
             return result;
         }
