@@ -7,6 +7,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using System.Collections.Generic;
+using ServiceStack.Formats;
 using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
@@ -336,6 +337,7 @@ namespace ServiceStack
                 if (errorHandler != null)
                 {
                     httpReq.Items["Model"] = errorDto;
+                    httpReq.Items[HtmlFormat.ErrorStatusKey] = errorDto.GetResponseStatus();
                     errorHandler.ProcessRequest(httpReq, httpRes, httpReq.OperationName);
                     return true;
                 }

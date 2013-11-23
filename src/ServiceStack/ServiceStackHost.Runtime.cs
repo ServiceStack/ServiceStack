@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Web;
+using ServiceStack.FluentValidation;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler;
@@ -274,7 +275,8 @@ namespace ServiceStack
         public virtual void OnExceptionTypeFilter(Exception ex, ResponseStatus responseStatus)
         { 
             var argEx = ex as ArgumentException;
-            if (argEx != null)
+            var isValidationSummaryEx = argEx is ValidationException;
+            if (argEx != null && !isValidationSummaryEx && argEx.ParamName != null)
             {
                 var paramMsgIndex = argEx.Message.LastIndexOf("Parameter name:");
                 var errorMsg = paramMsgIndex > 0

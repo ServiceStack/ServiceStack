@@ -36,11 +36,6 @@ namespace RazorRockstars.Console.Files
                 db.DropAndCreateTable<Rockstar>(); //Create table if not exists
                 db.Insert(Rockstar.SeedData); //Populate with seed data
             }
-
-            SetConfig(new HostConfig
-            {
-                DebugMode = true
-            });
         }
 
         private static void Main(string[] args)

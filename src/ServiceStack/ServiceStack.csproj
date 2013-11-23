@@ -376,6 +376,7 @@
     <Compile Include="Testing\BasicResolver.cs" />
     <Compile Include="Testing\MockHttpRequest.cs" />
     <Compile Include="Testing\MockHttpResponse.cs" />
+    <Compile Include="Testing\MockRestGateway.cs" />
     <Compile Include="ValidationResultExtensions.cs" />
     <Compile Include="Validation\ExecOnlyOnce.cs" />
     <Compile Include="Validation\MultiRuleSetValidatorSelector.cs" />

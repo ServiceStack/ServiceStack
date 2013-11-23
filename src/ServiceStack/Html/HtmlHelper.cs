@@ -336,7 +336,7 @@ namespace ServiceStack.Html
 
         internal object GetModelStateValue(string key, Type destinationType)
         {
-            if (this.HttpRequest.HttpMethod == HttpMethods.Get)
+            if (this.HttpRequest == null || this.HttpRequest.HttpMethod == HttpMethods.Get)
                 return null;
 
             var postedValue = this.HttpRequest.FormData[key];

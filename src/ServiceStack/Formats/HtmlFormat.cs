@@ -16,6 +16,7 @@ namespace ServiceStack.Formats
 
         private IAppHost AppHost { get; set; }
 
+        public const string ModelKey = "Model";
         public const string ErrorStatusKey = "__errorStatus";
 
         public void Register(IAppHost appHost)

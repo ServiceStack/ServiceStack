@@ -170,7 +170,7 @@ namespace ServiceStack.Razor.Managers
             if (ViewNamesMap.TryGetValue(pageName, out viewPath))
                 this.Pages.TryGetValue(viewPath, out page);
 
-            return page;
+            return page ?? GetPageByPathInfo("/" + htmlPageName);
         }
 
         static char[] InvalidFileChars = new[]{'<','>','`'}; //Anonymous or Generic type names
