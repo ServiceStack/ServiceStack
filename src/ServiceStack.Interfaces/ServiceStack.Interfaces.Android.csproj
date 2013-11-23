@@ -135,6 +135,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="IO\IEndpoint.cs" />
+    <Compile Include="IRestGateway.cs" />
     <Compile Include="Logging\ConsoleLogFactory.cs" />
     <Compile Include="Logging\ConsoleLogger.cs" />
     <Compile Include="Logging\DebugLogFactory.cs" />

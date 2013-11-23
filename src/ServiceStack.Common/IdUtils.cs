@@ -26,8 +26,9 @@ namespace ServiceStack
 
             if (typeof(T).IsClass() || typeof(T).IsInterface)
             {
-                if (typeof(T).GetPropertyInfo(IdUtils.IdField) != null
-                    && typeof(T).GetPropertyInfo(IdUtils.IdField).GetMethodInfo() != null)
+                var piId = typeof(T).GetPropertyInfo(IdUtils.IdField);
+                if (piId != null
+                    && piId.GetMethodInfo() != null)
                 {
                     CanGetId = HasPropertyId<T>.GetId;
                     return;
@@ -40,6 +41,18 @@ namespace ServiceStack
                     CanGetId = StaticAccessors<T>.ValueUnTypedGetPropertyTypeFn(pi);
                     return;
                 }
+            }
+
+            if (typeof(T) == typeof(object))
+            {
+                CanGetId = x => {
+                    var piId = x.GetType().GetPropertyInfo(IdUtils.IdField);
+                    if (piId != null && piId.GetMethodInfo() != null)
+                        return x.GetObjectId();
+
+                    return x.GetHashCode();
+                };
+                return;
             }
 
             CanGetId = x => x.GetHashCode();
