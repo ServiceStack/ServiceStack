@@ -272,16 +272,21 @@ namespace ServiceStack
 
         internal static IHttpHandler ReturnRequestInfo(IHttpRequest httpReq)
         {
-            if (HostContext.Config.DebugOnlyReturnRequestInfo
-                || (HostContext.DebugMode && httpReq.PathInfo.EndsWith("__requestinfo")))
+            if ((HostContext.Config.DebugOnlyReturnRequestInfo
+                || HostContext.DebugMode 
+                || HostContext.Config.AdminAuthSecret != null)
+                && httpReq.QueryString["debug"] == "__requestinfo")
             {
-                var reqInfo = RequestInfoHandler.GetRequestInfo(httpReq);
+                if (HostContext.DebugMode || HostContext.HasValidAuthSecret(httpReq))
+                {
+                    var reqInfo = RequestInfoHandler.GetRequestInfo(httpReq);
 
-                reqInfo.Host = HostContext.Config.DebugHttpListenerHostEnvironment + "_v" + Env.ServiceStackVersion + "_" + HostContext.ServiceName;
-                reqInfo.PathInfo = httpReq.PathInfo;
-                reqInfo.Path = httpReq.GetPathUrl();
+                    reqInfo.Host = HostContext.Config.DebugHttpListenerHostEnvironment + "_v" + Env.ServiceStackVersion + "_" + HostContext.ServiceName;
+                    reqInfo.PathInfo = httpReq.PathInfo;
+                    reqInfo.Path = httpReq.GetPathUrl();
 
-                return new RequestInfoHandler { RequestInfo = reqInfo };
+                    return new RequestInfoHandler { RequestInfo = reqInfo };
+                }
             }
 
             return null;

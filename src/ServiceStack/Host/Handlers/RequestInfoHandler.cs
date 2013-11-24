@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Runtime.Serialization;
 using System.Web;
-using ServiceStack.Host.AspNet;
+using System.Web.Hosting;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -45,8 +45,17 @@ namespace ServiceStack.Host.Handlers
 		[DataMember]
 		public string AbsoluteUri { get; set; }
 
-		[DataMember]
-		public string ApplicationPath { get; set; }
+        [DataMember]
+        public string ApplicationPath { get; set; }
+
+        [DataMember]
+        public string ApplicationVirtualPath { get; set; }
+
+        [DataMember]
+        public string VirtualAbsolutePathRoot { get; set; }
+
+        [DataMember]
+        public string VirtualAppRelativePathRoot { get; set; }
 
 		[DataMember]
 		public string HandlerFactoryArgs { get; set; }
@@ -119,6 +128,12 @@ namespace ServiceStack.Host.Handlers
 				response.DebugString += HttpContext.Current.Request.GetType().FullName
 					+ "|" + HttpContext.Current.Response.GetType().FullName;
 			}
+            if (HostContext.IsAspNetHost)
+            {
+                response.ApplicationVirtualPath = HostingEnvironment.ApplicationVirtualPath;
+                response.VirtualAbsolutePathRoot = VirtualPathUtility.ToAbsolute("/");
+                response.VirtualAppRelativePathRoot = VirtualPathUtility.ToAppRelative("/");                
+            }
 
             var json = JsonSerializer.SerializeToString(response);
             httpRes.ContentType = MimeTypes.Json;
