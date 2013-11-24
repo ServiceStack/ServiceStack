@@ -178,20 +178,25 @@
             });
         });
     };
-    
     $.ss.__call = $.ss.__call || function (e) {
         var $el = $(e.target);
         var attr = $el.data(e.type) || $el.closest("[data-" + e.type + "]").data(e.type);
-        var fn = $.ss.handlers[attr];
-        if (fn) {
-            fn.apply(e.target, [].splice(arguments));
-        }
-        var evt = $el.data('trigger');
-        if (evt) {
-            $el.trigger(evt, [e.target]);
+        if (!attr) return;
+        var pos = attr.indexOf(':');
+        if (pos >= 0) {
+            var cmd = attr.substring(0, pos);
+            var data = attr.substring(pos + 1);
+            if (cmd == 'trigger') {
+                $el.trigger(data, [e.target]);
+            }
+        } else {
+            var fn = $.ss.handlers[attr];
+            if (fn) {
+                fn.apply(e.target, [].splice(arguments));
+            }
         }
     };
-    $.ss.listenOn = 'click change';
+    $.ss.listenOn = 'click dblclick change focus blur focusin focusout select keydown keypress keyup hover toggle';
     $.fn.bindHandlers = function (handlers) {
         $.extend($.ss.handlers, handlers || {});
         return this.each(function () {
