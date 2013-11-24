@@ -248,7 +248,7 @@ namespace ServiceStack.Auth
         {
             using (var db = dbFactory.Open())
             {
-                return db.SingleById<TUserAuth>(userAuthId);
+                return db.SingleById<TUserAuth>(int.Parse(userAuthId));
             }
         }
 
@@ -257,7 +257,7 @@ namespace ServiceStack.Auth
             using (var db = dbFactory.Open())
             {
                 var userAuth = !authSession.UserAuthId.IsNullOrEmpty()
-                    ? db.SingleById<TUserAuth>(authSession.UserAuthId)
+                    ? db.SingleById<TUserAuth>(int.Parse(authSession.UserAuthId))
                     : authSession.ConvertTo<TUserAuth>();
 
                 if (userAuth.Id == default(int) && !authSession.UserAuthId.IsNullOrEmpty())
