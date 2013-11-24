@@ -81,10 +81,73 @@
 <script src="/jquery-2.0.2.min.js" type="text/javascript"></script>
 <script src="/js/ss-utils.js" type="text/javascript"></script>
 
+<h1>Events</h1>
+<div style="height: 100px; width: 500px; background: red" 
+    data-click="click" data-dblclick="dblclick" data-change="change" data-select="select" 
+    data-focus="focus" data-blur="blur" data-focusin="focusin" data-focusout="focusout"     
+    data-keydown="keydown" data-keypress="keypress" data-keyup="keyup" 
+    data-hover="hover" data-toggle="toggle">
+    Target 1
+</div>
+<br/>
+<textarea style="height: 100px; width: 500px; background: red" 
+    data-click="click" data-dblclick="dblclick" data-change="change" data-select="select" 
+    data-focus="focus" data-blur="blur" data-focusin="focusin" data-focusout="focusout"     
+    data-keydown="keydown" data-keypress="keypress" data-keyup="keyup" 
+    data-hover="hover" data-toggle="toggle">
+>
+Target 2
+</textarea>
+
+<div id="log"></div>
+
 <script type="text/javascript">
     $("#auto").bindForm({
         success: function(r) {
             console.log(r);
+        }
+    });
+
+    var $log = $("#log");
+    $(document).bindHandlers({
+        click: function (e) {
+            $log.append("click: " + (e || "") + " / " + $(this).html());
+        },
+        dblclick: function (e) {
+            $log.append("dblclick: " + (e || "") + " / " + $(this).html());
+        },
+        change: function (e) {
+            $log.append("change: " + (e || "") + " / " + $(this).html());
+        },
+        focus: function (e) {
+            $log.append("focus: " + (e || "") + " / " + $(this).html());
+        },
+        blur: function (e) {
+            $log.append("blur: " + (e || "") + " / " + $(this).html());
+        },
+        focusin: function (e) {
+            $log.append("focusin: " + (e || "") + " / " + $(this).html());
+        },
+        focusout: function (e) {
+            $log.append("focusout: " + (e || "") + " / " + $(this).html());
+        },
+        select: function (e) {
+            $log.append("select: " + (e || "") + " / " + $(this).html());
+        },
+        keydown: function (e) {
+            $log.append("keydown: " + (e || "") + " / " + $(this).html());
+        },
+        keypress: function (e) {
+            $log.append("keypress: " + (e || "") + " / " + $(this).html());
+        },
+        keyup: function (e) {
+            $log.append("keyup: " + (e || "") + " / " + $(this).html());
+        },
+        hover: function (e) {
+            $log.append("hover: " + (e || "") + " / " + $(this).html());
+        },
+        toggle: function (e) {
+            $log.append("toggle: " + (e || "") + " / " + $(this).html());
         }
     });
 </script>
