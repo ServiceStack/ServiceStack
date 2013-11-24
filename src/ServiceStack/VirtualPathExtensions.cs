@@ -48,8 +48,11 @@ namespace ServiceStack
 
         public static byte[] ReadAllBytes(this IVirtualFile file)
         {
-            var bytes = file.OpenRead().ReadFully();
-            return bytes;
+            using (var stream = file.OpenRead())
+            {
+                var bytes = stream.ReadFully();
+                return bytes;
+            }
         }
 
         public static bool Exists(this IVirtualNode node)
