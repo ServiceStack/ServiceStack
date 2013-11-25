@@ -15,7 +15,14 @@ namespace ServiceStack.Configuration
             }
         }
 
-        public AppSettings() : base(new ConfigurationManagerWrapper()) {}
+        /// <summary>
+        /// The tier lets you specify a retrieving a setting with the tier prefix first before falling back to the original key. 
+        /// E.g a tier of 'Live' looks for 'Live.{Key}' or if not found falls back to '{Key}'.
+        /// </summary>
+        public AppSettings(string tier = null) : base(new ConfigurationManagerWrapper())
+        {
+            Tier = tier;
+        }
 
         /// <summary>
         /// Returns string if exists, otherwise null
@@ -27,6 +34,4 @@ namespace ServiceStack.Configuration
             return base.GetNullableString(name); 
         }
     }
-
-    public class ConfigurationResourceManager : AppSettings {}
 }

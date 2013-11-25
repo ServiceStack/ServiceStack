@@ -13,6 +13,8 @@ namespace ServiceStack.Configuration
         protected ISettings settings;
         const string ErrorAppsettingNotFound = "Unable to find App Setting: {0}";
 
+        public string Tier { get; set; }
+
         public ParsingStrategyDelegate ParsingStrategy { get; set; }
 
         public AppSettingsBase(ISettings settings=null)
@@ -22,7 +24,10 @@ namespace ServiceStack.Configuration
 
         public virtual string GetNullableString(string name)
         {
-            var value = settings.Get(name);
+            var value = Tier != null
+                ? settings.Get("{0}.{1}".Fmt(Tier, name)) ?? settings.Get(name)
+                : settings.Get(name);
+
             return ParsingStrategy != null
                 ? ParsingStrategy(value)
                 : value;
