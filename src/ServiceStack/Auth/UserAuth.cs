@@ -302,7 +302,7 @@ namespace ServiceStack.Auth
                 return default(T);
 
             string str;
-            instance.Meta.TryGetValue(typeof(T).Name, out str);
+            instance.Meta.TryGetValue(typeof(T).GetComplexTypeName(), out str);
             return str == null ? default(T) : TypeSerializer.DeserializeFromString<T>(str);
         }
 
@@ -313,7 +313,7 @@ namespace ServiceStack.Auth
                 throw new ArgumentNullException("instance");
 
             string str;
-            if (!instance.Meta.TryGetValue(typeof(T).Name, out str))
+            if (!instance.Meta.TryGetValue(typeof(T).GetComplexTypeName(), out str))
                 return false;
 
             value = TypeSerializer.DeserializeFromString<T>(str);
@@ -328,7 +328,7 @@ namespace ServiceStack.Auth
             if (instance.Meta == null)
                 instance.Meta = new Dictionary<string, string>();
 
-            instance.Meta[typeof(T).Name] = TypeSerializer.SerializeToString(value);
+            instance.Meta[typeof(T).GetComplexTypeName()] = TypeSerializer.SerializeToString(value);
             return value;
         }
     }

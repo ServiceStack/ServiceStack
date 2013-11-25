@@ -58,7 +58,7 @@ namespace ServiceStack.Host.Handlers
 
             return requestMsg.Headers.Action == null
                 ? Message.CreateMessage(requestMsg.Version, null, response)
-                : Message.CreateMessage(requestMsg.Version, requestType.Name + "Response", response);
+                : Message.CreateMessage(requestMsg.Version, requestType.GetComplexTypeName() + "Response", response);
         }
 
         protected Message ExecuteMessage(Message message, RequestAttributes requestAttributes, IRequest httpRequest, IResponse httpResponse)
@@ -86,7 +86,7 @@ namespace ServiceStack.Host.Handlers
             var requestMsg = message ?? GetRequestMessageFromStream(httpReq.InputStream);
             string requestXml = GetRequestXml(requestMsg);
             var requestType = GetRequestType(requestMsg, requestXml);
-            if (!HostContext.Metadata.CanAccess(requestAttributes, soapFeature.ToFormat(), requestType.Name))
+            if (!HostContext.Metadata.CanAccess(requestAttributes, soapFeature.ToFormat(), requestType.GetComplexTypeName()))
                 throw HostContext.UnauthorizedAccess(requestAttributes);
 
             try
@@ -103,7 +103,7 @@ namespace ServiceStack.Host.Handlers
                     requiresSoapMessage.Message = requestMsg;
                 }
 
-                httpReq.OperationName = requestType.Name;
+                httpReq.OperationName = requestType.GetComplexTypeName();
                 httpReq.SetItem("SoapMessage", requestMsg);
 
                 var hasRequestFilters = HostContext.GlobalRequestFilters.Count > 0
@@ -137,11 +137,11 @@ namespace ServiceStack.Host.Handlers
                 if (useXmlSerializerResponse)
                     return requestMsg.Headers.Action == null
                         ? Message.CreateMessage(requestMsg.Version, null, response, new XmlSerializerWrapper(response.GetType()))
-                        : Message.CreateMessage(requestMsg.Version, requestType.Name + "Response", response, new XmlSerializerWrapper(response.GetType()));
+                        : Message.CreateMessage(requestMsg.Version, requestType.GetComplexTypeName() + "Response", response, new XmlSerializerWrapper(response.GetType()));
                 
                 return requestMsg.Headers.Action == null
                     ? Message.CreateMessage(requestMsg.Version, null, response)
-                    : Message.CreateMessage(requestMsg.Version, requestType.Name + "Response", response);
+                    : Message.CreateMessage(requestMsg.Version, requestType.GetComplexTypeName() + "Response", response);
             }
             catch (Exception ex)
             {

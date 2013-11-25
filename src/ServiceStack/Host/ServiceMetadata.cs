@@ -50,14 +50,15 @@ namespace ServiceStack.Host
                 Routes = new List<RestPath>(),
             };
 
-            this.OperationsMap[requestType] = operation;
-            this.OperationNamesMap[requestType.Name.ToLower()] = operation;
+			this.OperationsMap[requestType] = operation;
+			this.OperationNamesMap[operation.Name.ToLower()] = operation;
+			//this.OperationNamesMap[requestType.Name.ToLower()] = operation;
+			if (responseType != null)
+			{
+				this.ResponseTypes.Add(responseType);
+				this.OperationsResponseMap[responseType] = operation;
+			}
 
-            if (responseType != null)
-            {
-                this.ResponseTypes.Add(responseType);
-                this.OperationsResponseMap[responseType] = operation;
-            }
 
             LicenseUtils.AssertValidUsage(LicenseFeature.ServiceStack, QuotaType.Operations, OperationsMap.Count);
         }
@@ -140,7 +141,7 @@ namespace ServiceStack.Host
 
         public List<string> GetAllOperationNames()
         {
-            return Operations.Select(x => x.RequestType.Name).OrderBy(operation => operation).ToList();
+            return Operations.Select(x => x.RequestType.GetComplexTypeName()).OrderBy(operation => operation).ToList();
         }
 
         public List<string> GetOperationNamesForMetadata(IRequest httpReq)
@@ -259,8 +260,15 @@ namespace ServiceStack.Host
 
     public class Operation
     {
-        public string Name { get { return RequestType.Name; } }
-        public Type RequestType { get; set; }
+    	public string Name
+    	{
+    		get 
+			{
+				return RequestType.GetComplexTypeName(); 
+			}
+    	}
+		//public string Name { get { return RequestType.Name; } }
+		public Type RequestType { get; set; }
         public Type ServiceType { get; set; }
         public Type ResponseType { get; set; }
         public RestrictAttribute RestrictTo { get; set; }
@@ -304,7 +312,7 @@ namespace ServiceStack.Host
                 .Where(x => HostContext.Config != null
                     && HostContext.MetadataPagesConfig.CanAccess(format, x.Name))
                 .Where(x => !x.IsOneWay)
-                .Select(x => x.RequestType.Name)
+                .Select(x => x.RequestType.GetComplexTypeName())
                 .ToList();
         }
 
@@ -314,7 +322,7 @@ namespace ServiceStack.Host
                 .Where(x => HostContext.Config != null
                     && HostContext.MetadataPagesConfig.CanAccess(format, x.Name))
                 .Where(x => x.IsOneWay)
-                .Select(x => x.RequestType.Name)
+                .Select(x => x.RequestType.GetComplexTypeName())
                 .ToList();
         }
 
@@ -332,7 +340,7 @@ namespace ServiceStack.Host
             var baseType = type;
             do
             {
-                if (baseType.Name == type.Name)
+                if (baseType.GetComplexTypeName() == type.GetComplexTypeName())
                     typesWithSameName.Push(baseType);
             }
             while ((baseType = baseType.BaseType) != null);
@@ -347,8 +355,8 @@ namespace ServiceStack.Host
         {
             var to = new OperationDto {
                 Name = operation.Name,
-                ResponseName = operation.IsOneWay ? null : operation.ResponseType.Name,
-                ServiceName = operation.ServiceType.Name,
+                ResponseName = operation.IsOneWay ? null : operation.ResponseType.GetComplexTypeName(),
+                ServiceName = operation.ServiceType.GetComplexTypeName(),
                 Actions = operation.Actions,
                 Routes = operation.Routes.ToDictionary(x => x.Path.PairWith(x.AllowedVerbs)),
             };

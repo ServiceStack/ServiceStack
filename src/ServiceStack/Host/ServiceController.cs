@@ -93,7 +93,7 @@ namespace ServiceStack.Host
                     assemblyName = assembly.FullName;
                     foreach (var type in assembly.GetTypes())
                     {
-                        typeName = type.Name;
+                        typeName = type.GetComplexTypeName();
                         results.Add(type);
                     }
                 }
@@ -171,7 +171,7 @@ namespace ServiceStack.Host
                     }
 
                     Log.DebugFormat("Registering {0} service '{1}' with request '{2}'",
-                        (responseType != null ? "Reply" : "OneWay"), serviceType.Name, requestType.Name);
+                        (responseType != null ? "Reply" : "OneWay"), serviceType.GetComplexTypeName(), requestType.GetComplexTypeName());
                 }
             }
         }
@@ -203,7 +203,7 @@ namespace ServiceStack.Host
 
                 if (!restPath.IsValid)
                     throw new NotSupportedException(string.Format(
-                        "RestPath '{0}' on Type '{1}' is not Valid", attr.Path, requestType.Name));
+                        "RestPath '{0}' on Type '{1}' is not Valid", attr.Path, requestType.GetComplexTypeName()));
 
                 RegisterRestPath(restPath);
             }
@@ -214,10 +214,10 @@ namespace ServiceStack.Host
         public void RegisterRestPath(RestPath restPath)
         {
             if (!restPath.Path.StartsWith("/"))
-                throw new ArgumentException("Route '{0}' on '{1}' must start with a '/'".Fmt(restPath.Path, restPath.RequestType.Name));
+                throw new ArgumentException("Route '{0}' on '{1}' must start with a '/'".Fmt(restPath.Path, restPath.RequestType.GetComplexTypeName()));
             if (restPath.Path.IndexOfAny(InvalidRouteChars) != -1)
                 throw new ArgumentException(("Route '{0}' on '{1}' contains invalid chars. " +
-                                            "See https://github.com/ServiceStack/ServiceStack/wiki/Routing for info on valid routes.").Fmt(restPath.Path, restPath.RequestType.Name));
+                                            "See https://github.com/ServiceStack/ServiceStack/wiki/Routing for info on valid routes.").Fmt(restPath.Path, restPath.RequestType.GetComplexTypeName()));
 
             List<RestPath> pathsAtFirstMatch;
             if (!RestPathMap.TryGetValue(restPath.FirstMatchHashKey, out pathsAtFirstMatch))
@@ -474,7 +474,7 @@ namespace ServiceStack.Host
             ServiceExecFn handlerFn;
             if (!requestExecMap.TryGetValue(requestType, out handlerFn))
             {
-                throw new NotImplementedException(string.Format("Unable to resolve service '{0}'", requestType.Name));
+                throw new NotImplementedException(string.Format("Unable to resolve service '{0}'", requestType.GetComplexTypeName()));
             }
 
             return handlerFn;
@@ -514,7 +514,7 @@ namespace ServiceStack.Host
 
             throw new UnauthorizedAccessException(
                 string.Format("Could not execute service '{0}', The following restrictions were not met: '{1}'" + internalDebugMsg,
-                    requestType.Name, failedScenarios));
+                    requestType.GetComplexTypeName(), failedScenarios));
         }
     }
 

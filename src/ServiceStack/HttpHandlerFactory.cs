@@ -88,7 +88,7 @@ namespace ServiceStack
             var defaultRedirectHanlder = DefaultHttpHandler as RedirectHttpHandler;
             var debugDefaultHandler = defaultRedirectHanlder != null
                 ? defaultRedirectHanlder.RelativeUrl
-                : typeof(DefaultHttpHandler).Name;
+                : typeof(DefaultHttpHandler).GetComplexTypeName();
 
             SetApplicationBaseUrl(config.WebHostUrl);
 
@@ -311,7 +311,7 @@ namespace ServiceStack
             string contentType;
             var restPath = RestHandler.FindMatchingRestPath(httpMethod, pathInfo, out contentType);
             if (restPath != null) 
-                return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.Name, ResponseContentType = contentType };
+                return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetComplexTypeName(), ResponseContentType = contentType };
 
             var existingFile = pathParts[0].ToLower();
             if (WebHostRootFileNames.Contains(existingFile))
@@ -360,7 +360,7 @@ namespace ServiceStack
                 restPath = appHost.Config.FallbackRestPath(httpMethod, pathInfo, filePath);
                 if (restPath != null)
                 {
-                    return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.Name, ResponseContentType = contentType };
+                    return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetComplexTypeName(), ResponseContentType = contentType };
                 }
             }
 

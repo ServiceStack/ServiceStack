@@ -30,9 +30,9 @@ namespace ServiceStack.Metadata
                     if (assemblyType.GetCustomAttributes(typeof(DataContractAttribute), false).Length > 0)
                     {
                         var baseTypeWithSameName = XsdMetadata.GetBaseTypeWithTheSameName(assemblyType);
-                        if (uniqueTypeNames.Contains(baseTypeWithSameName.Name))
+                        if (uniqueTypeNames.Contains(baseTypeWithSameName.GetComplexTypeName()))
                         {
-                            log.WarnFormat("Skipping duplicate type with existing name '{0}'", baseTypeWithSameName.Name);
+                            log.WarnFormat("Skipping duplicate type with existing name '{0}'", baseTypeWithSameName.GetComplexTypeName());
                         }
                         uniqueTypes.Add(baseTypeWithSameName);
                     }

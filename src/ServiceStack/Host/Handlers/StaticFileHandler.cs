@@ -45,7 +45,7 @@ namespace ServiceStack.Host.Handlers
 
 		public override void ProcessRequest(HttpContextBase context)
 		{
-		    var httpReq = context.ToRequest(GetType().Name);
+		    var httpReq = context.ToRequest(GetType().GetComplexTypeName());
 			ProcessRequest(httpReq, httpReq.Response, httpReq.OperationName);
 		}
 
