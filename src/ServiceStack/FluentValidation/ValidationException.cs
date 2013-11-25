@@ -45,7 +45,7 @@ namespace ServiceStack.FluentValidation
             var errors = Errors.Map(x =>
                 new ValidationErrorField(x.ErrorCode, x.PropertyName, x.ErrorMessage));
 
-            var responseStatus = ResponseStatusUtils.CreateResponseStatus(typeof(ValidationException).Name, Message, errors);
+            var responseStatus = ResponseStatusUtils.CreateResponseStatus(typeof(ValidationException).GetComplexTypeName(), Message, errors);
             return responseStatus;
         }
     }

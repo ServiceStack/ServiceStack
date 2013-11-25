@@ -957,7 +957,7 @@ namespace ServiceStack.Support.Markdown
                 {
                     mi = HtmlHelper.GetMethod(methodName);
                     if (mi == null)
-                        throw new ArgumentException("Unable to resolve method '" + methodExpr + "' on type " + type.Name);
+                        throw new ArgumentException("Unable to resolve method '" + methodExpr + "' on type " + type.GetComplexTypeName());
                 }
 
                 base.ReturnType = mi.ReturnType;

@@ -218,7 +218,7 @@ namespace ServiceStack.Host
             catch (Exception)
             {
                 throw new AmbiguousMatchException("Property names are case-insensitive: "
-                    + this.RequestType.Name + "." + propertyName);
+                    + this.RequestType.GetComplexTypeName() + "." + propertyName);
             }
         }
 
@@ -401,7 +401,7 @@ namespace ServiceStack.Host
                     }
  
                     throw new ArgumentException("Could not find property "
-                        + variableName + " on " + RequestType.Name);
+                        + variableName + " on " + RequestType.GetComplexTypeName());
                 }
 
                 var value = requestComponents.Length > pathIx ? requestComponents[pathIx] : null; //wildcard has arg mismatch

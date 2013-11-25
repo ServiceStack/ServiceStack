@@ -42,7 +42,7 @@ namespace ServiceStack.Validation
                 //Serializing request successfully is not critical and only provides added error info
             }
 
-            return string.Format("[{0}: {1}]:\n[REQUEST: {2}]", GetType().Name, DateTime.UtcNow, requestString);
+            return string.Format("[{0}: {1}]:\n[REQUEST: {2}]", GetType().GetComplexTypeName(), DateTime.UtcNow, requestString);
         }
     }
 

@@ -482,7 +482,7 @@ namespace ServiceStack
                 }
                 catch (Exception ex)
                 {
-                    Log.Warn("Error loading plugin " + plugin.GetType().Name, ex);
+                    Log.Warn("Error loading plugin " + plugin.GetType().GetComplexTypeName(), ex);
                 }
             }
         }

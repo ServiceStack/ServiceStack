@@ -8,7 +8,7 @@ namespace ServiceStack.Testing
     public class BasicAppHost : ServiceStackHost
     {
         public BasicAppHost(params Assembly[] serviceAssemblies)
-            : base(typeof(BasicAppHost).Name,
+            : base(typeof(BasicAppHost).GetComplexTypeName(),
                    serviceAssemblies.Length > 0 ? serviceAssemblies : new[] { Assembly.GetExecutingAssembly() }) {}
 
         public override void Configure(Container container)

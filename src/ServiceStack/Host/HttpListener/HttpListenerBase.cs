@@ -216,13 +216,13 @@ namespace ServiceStack.Host.HttpListener
         {
             try
             {
-                Log.ErrorFormat("Error this.ProcessRequest(context): [{0}]: {1}", ex.GetType().Name, ex.Message);
+                Log.ErrorFormat("Error this.ProcessRequest(context): [{0}]: {1}", ex.GetType().GetComplexTypeName(), ex.Message);
 
                 var errorResponse = new ErrorResponse
                 {
                     ResponseStatus = new ResponseStatus
                     {
-                        ErrorCode = ex.GetType().Name,
+                        ErrorCode = ex.GetType().GetComplexTypeName(),
                         Message = ex.Message,
                         StackTrace = ex.StackTrace,
                     }
@@ -260,7 +260,7 @@ namespace ServiceStack.Host.HttpListener
             catch (Exception errorEx)
             {
                 var error = "Error this.ProcessRequest(context)(Exception while writing error to the response): [{0}]: {1}"
-                            .Fmt(errorEx.GetType().Name, errorEx.Message);
+                            .Fmt(errorEx.GetType().GetComplexTypeName(), errorEx.Message);
                 Log.ErrorFormat(error);
             }
         }

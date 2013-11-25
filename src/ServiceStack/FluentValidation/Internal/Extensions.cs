@@ -120,7 +120,7 @@ namespace ServiceStack.FluentValidation.Internal
                 return new ChildValidatorAdaptor(childValidator);
             }
 
-            throw new InvalidOperationException(string.Format("The validator '{0}' cannot validate members of type '{1}' - the types are not compatible.", childValidator.GetType().Name, rule.TypeToValidate.Name));
+            throw new InvalidOperationException(string.Format("The validator '{0}' cannot validate members of type '{1}' - the types are not compatible.", childValidator.GetType().GetComplexTypeName(), rule.TypeToValidate.GetComplexTypeName()));
         }
 
         private static bool DoesImplementCompatibleIEnumerable(Type propertyType, IValidator childValidator) {

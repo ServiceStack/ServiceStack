@@ -45,7 +45,7 @@ namespace ServiceStack.Messaging
         {
             if (handlerMap.ContainsKey(typeof(T)))
             {
-                throw new ArgumentException("Message handler has already been registered for type: " + typeof(T).Name);
+                throw new ArgumentException("Message handler has already been registered for type: " + typeof(T).GetComplexTypeName());
             }
 
             handlerMap[typeof(T)] = CreateMessageHandlerFactory(processMessageFn, processExceptionEx);

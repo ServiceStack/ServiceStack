@@ -442,7 +442,7 @@ namespace Funq
                 return ex;
 
             var errMsg = "Error trying to resolve Service '{0}' from Adapter '{1}': {2}"
-                .Fmt(typeof(TService).FullName, Adapter.GetType().Name, ex.Message);
+                .Fmt(typeof(TService).FullName, Adapter.GetType().GetComplexTypeName(), ex.Message);
 
             return new Exception(errMsg, ex);
         }

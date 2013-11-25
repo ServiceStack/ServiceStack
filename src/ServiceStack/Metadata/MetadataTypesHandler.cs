@@ -16,7 +16,7 @@ namespace ServiceStack.Metadata
 
         public override void Execute(HttpContextBase context)
         {
-            var request = context.ToRequest(GetType().Name);
+            var request = context.ToRequest(GetType().GetComplexTypeName());
             ProcessRequestAsync(request, request.Response, request.OperationName);
         }
 
@@ -110,10 +110,10 @@ namespace ServiceStack.Metadata
 
             var metaType = new MetadataType
             {
-                Name = type.Name,
+                Name = type.GetComplexTypeName(),
                 Namespace = type.Namespace,
                 GenericArgs = type.IsGenericType
-                    ? type.GetGenericArguments().Select(x => x.Name).ToArray()
+                    ? type.GetGenericArguments().Select(x => x.GetComplexTypeName()).ToArray()
                     : null,
                 Attributes = type.ToAttributes(),
                 Properties = type.ToProperties(),
@@ -121,9 +121,9 @@ namespace ServiceStack.Metadata
 
             if (type.BaseType != null && type.BaseType != typeof(object))
             {
-                metaType.Inherits = type.BaseType.Name;
+                metaType.Inherits = type.BaseType.GetComplexTypeName();
                 metaType.InheritsGenericArgs = type.BaseType.IsGenericType
-                    ? type.BaseType.GetGenericArguments().Select(x => x.Name).ToArray()
+                    ? type.BaseType.GetGenericArguments().Select(x => x.GetComplexTypeName()).ToArray()
                     : null;
             }
 
@@ -136,7 +136,7 @@ namespace ServiceStack.Metadata
                 var genericMarker = type.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
                 if (genericMarker != null)
                 {
-                    metaType.ReturnMarkerGenericArgs = genericMarker.GetGenericArguments().Select(x => x.Name).ToArray();
+                    metaType.ReturnMarkerGenericArgs = genericMarker.GetGenericArguments().Select(x => x.GetComplexTypeName()).ToArray();
                 }
             }
 
@@ -239,10 +239,10 @@ namespace ServiceStack.Metadata
             {
                 Name = pi.Name,
                 Attributes = pi.GetCustomAttributes(false).ToAttributes(),
-                Type = pi.PropertyType.Name,
+                Type = pi.PropertyType.GetComplexTypeName(),
                 DataMember = pi.GetDataMember().ToDataMember(),
                 GenericArgs = pi.PropertyType.IsGenericType
-                    ? pi.PropertyType.GetGenericArguments().Select(x => x.Name).ToArray()
+                    ? pi.PropertyType.GetGenericArguments().Select(x => x.GetComplexTypeName()).ToArray()
                     : null,
             };
             if (instance != null)
@@ -263,7 +263,7 @@ namespace ServiceStack.Metadata
             {
                 Name = pi.Name,
                 Attributes = propertyAttrs.ToAttributes(),
-                Type = pi.ParameterType.Name,
+                Type = pi.ParameterType.GetComplexTypeName(),
                 Description = pi.GetDescription(),
             };
 

@@ -57,6 +57,11 @@ namespace ServiceStack
             return requestDto.ToUrl(HttpMethods.Delete);
         }
 
+		public static string GetComplexTypeName(this Type t)
+		{
+			return t.FullName.Replace(t.Namespace + ".", "").Replace("+", ".");
+		}
+
         public static string ToUrl(this object requestDto, string httpMethod = "GET", string formatFallbackToPredefinedRoute = null)
         {
             httpMethod = httpMethod.ToUpper();
@@ -70,7 +75,7 @@ namespace ServiceStack
                         + "(Note: The automatic route selection only works with [Route] attributes on the request DTO and "
                         + "not with routes registered in the IAppHost!)");
 
-                var predefinedRoute = "/{0}/reply/{1}".Fmt(formatFallbackToPredefinedRoute, requestType.Name);
+                var predefinedRoute = "/{0}/reply/{1}".Fmt(formatFallbackToPredefinedRoute, requestType.GetComplexTypeName());
                 if (httpMethod == "GET" || httpMethod == "DELETE" || httpMethod == "OPTIONS" || httpMethod == "HEAD")
                 {
                     var queryProperties = RestRoute.GetQueryProperties(requestDto.GetType());
@@ -86,7 +91,7 @@ namespace ServiceStack
             {
                 var errors = string.Join(String.Empty, routesApplied.Select(x => "\r\n\t{0}:\t{1}".Fmt(x.Route.Path, x.FailReason)).ToArray());
                 var errMsg = "None of the given rest routes matches '{0}' request:{1}"
-                    .Fmt(requestType.Name, errors);
+                    .Fmt(requestType.GetComplexTypeName(), errors);
 
                 throw new InvalidOperationException(errMsg);
             }
