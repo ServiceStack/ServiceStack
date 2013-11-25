@@ -57,10 +57,12 @@ namespace ServiceStack
             return requestDto.ToUrl(HttpMethods.Delete);
         }
 
-		public static string GetOperationName(this Type type)
-		{
-			return type.FullName.Replace(type.Namespace + ".", "").Replace("+", ".");
-		}
+        public static string GetOperationName(this Type type)
+        {
+            return type.FullName != null //can be null, e.g. generic types
+                ? type.FullName.Replace(type.Namespace + ".", "").Replace("+", ".")
+                : type.Name;
+        }
 
         public static string ToUrl(this object requestDto, string httpMethod = "GET", string formatFallbackToPredefinedRoute = null)
         {
