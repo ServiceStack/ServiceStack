@@ -98,6 +98,11 @@ namespace ServiceStack
                 AllowPartialResponses = true,
                 AllowAclUrlReservation = true,
                 RedirectToDefaultDocuments = false,
+                StripApplicationVirtualPath = true,
+                ScanSkipPaths = new List<string> {
+                    "/obj/", 
+                    "/bin/",
+                },
                 IgnoreWarningsOnPropertyNames = new List<string> {
                     "format", "callback", "debug", "_", "authsecret"
                 }
@@ -159,6 +164,8 @@ namespace ServiceStack
             this.FallbackRestPath = instance.FallbackRestPath;
             this.AllowAclUrlReservation = instance.AllowAclUrlReservation;
             this.RedirectToDefaultDocuments = instance.RedirectToDefaultDocuments;
+            this.StripApplicationVirtualPath = instance.StripApplicationVirtualPath;
+            this.ScanSkipPaths = instance.ScanSkipPaths;
             this.AdminAuthSecret = instance.AdminAuthSecret;
         }
 
@@ -228,6 +235,10 @@ namespace ServiceStack
         public bool AllowNonHttpOnlyCookies { get; set; }
         public bool AllowAclUrlReservation { get; set; }
         public bool RedirectToDefaultDocuments { get; set; }
+        public bool StripApplicationVirtualPath { get; set; }
+
+        //Skip scanning common VS.NET extensions
+        public List<string> ScanSkipPaths { get; private set; }
 
         public bool UseHttpsLinks { get; set; }
 
