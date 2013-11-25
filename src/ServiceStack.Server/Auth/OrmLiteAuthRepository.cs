@@ -16,9 +16,9 @@ namespace ServiceStack.Auth
         public OrmLiteAuthRepository(IDbConnectionFactory dbFactory, IHashProvider passwordHasher) : base(dbFactory, passwordHasher) { }
     }
 
-    public class OrmLiteAuthRepository<TUserAuth, TUserAuthProvider> : IUserAuthRepository, IClearable
+    public class OrmLiteAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IClearable
         where TUserAuth : class, IUserAuth
-        where TUserAuthProvider : class, IUserAuthDetails
+        where TUserAuthDetails : class, IUserAuthDetails
     {
         //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
         public Regex ValidUserNameRegEx = new Regex(@"^(?=.{3,15}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
@@ -51,7 +51,8 @@ namespace ServiceStack.Auth
             using (var db = dbFactory.Open())
             {
                 db.CreateTable<TUserAuth>();
-                db.CreateTable<TUserAuthProvider>();
+                db.CreateTable<TUserAuthDetails>();
+                db.CreateTable<UserAuthRole>();
             }
         }
 
@@ -60,7 +61,8 @@ namespace ServiceStack.Auth
             using (var db = dbFactory.Open())
             {
                 db.DropAndCreateTable<TUserAuth>();
-                db.DropAndCreateTable<TUserAuthProvider>();
+                db.DropAndCreateTable<TUserAuthDetails>();
+                db.DropAndCreateTable<UserAuthRole>();
             }
         }
 
@@ -294,7 +296,7 @@ namespace ServiceStack.Auth
             var id = int.Parse(userAuthId);
             using (var db = dbFactory.Open())
             {
-                return db.Select<TUserAuthProvider>(q => q.UserAuthId == id).OrderBy(x => x.ModifiedDate).Cast<IUserAuthDetails>().ToList();
+                return db.Select<TUserAuthDetails>(q => q.UserAuthId == id).OrderBy(x => x.ModifiedDate).Cast<IUserAuthDetails>().ToList();
             }
         }
 
@@ -324,7 +326,7 @@ namespace ServiceStack.Auth
 
             using (var db = dbFactory.Open())
             {
-                var oAuthProvider = db.Select<TUserAuthProvider>(
+                var oAuthProvider = db.Select<TUserAuthDetails>(
                     q =>
                         q.Provider == tokens.Provider && q.UserId == tokens.UserId).FirstOrDefault();
 
@@ -344,12 +346,12 @@ namespace ServiceStack.Auth
 
             using (var db = dbFactory.Open())
             {
-                var oAuthProvider = db.Select<TUserAuthProvider>(
+                var oAuthProvider = db.Select<TUserAuthDetails>(
                     q => q.Provider == tokens.Provider && q.UserId == tokens.UserId).FirstOrDefault();
 
                 if (oAuthProvider == null)
                 {
-                    oAuthProvider = typeof(TUserAuthProvider).CreateInstance<TUserAuthProvider>();
+                    oAuthProvider = typeof(TUserAuthDetails).CreateInstance<TUserAuthDetails>();
                     oAuthProvider.Provider = tokens.Provider;
                     oAuthProvider.UserId = tokens.UserId;
                 }
@@ -384,7 +386,7 @@ namespace ServiceStack.Auth
             using (var db = dbFactory.Open())
             {
                 db.DeleteAll<TUserAuth>();
-                db.DeleteAll<TUserAuthProvider>();
+                db.DeleteAll<TUserAuthDetails>();
             }
         }
 

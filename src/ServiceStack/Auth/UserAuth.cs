@@ -155,6 +155,27 @@ namespace ServiceStack.Auth
         public virtual string RefIdStr { get; set; }
         public virtual Dictionary<string, string> Meta { get; set; }
     }
+
+    public class UserAuthRole
+    {
+        [AutoIncrement]
+        public virtual int Id { get; set; }
+
+        public virtual int UserAuthId { get; set; }
+
+        public virtual string Role { get; set; }
+
+        public virtual string Permission { get; set; }
+
+        public virtual DateTime CreatedDate { get; set; }
+
+        public virtual DateTime ModifiedDate { get; set; }
+
+        //Custom Reference Data
+        public virtual int? RefId { get; set; }
+        public virtual string RefIdStr { get; set; }
+        public virtual Dictionary<string, string> Meta { get; set; }
+    }
     
     public static class UserAuthExtensions
     {
