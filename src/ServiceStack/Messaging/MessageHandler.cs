@@ -100,7 +100,7 @@ namespace ServiceStack.Messaging
 
         public IMessageHandlerStats GetStats()
         {
-            return new MessageHandlerStats(typeof(T).GetComplexTypeName(),
+            return new MessageHandlerStats(typeof(T).GetOperationName(),
                 TotalMessagesProcessed, TotalMessagesFailed, TotalRetries, 
                 TotalNormalMessagesReceived, TotalPriorityMessagesReceived, LastMessageProcessed);
         }
@@ -159,7 +159,7 @@ namespace ServiceStack.Messaging
                         var publishAllResponses = PublishResponsesWhitelist == null;
                         if (!publishAllResponses)
                         {
-                            var inWhitelist = PublishResponsesWhitelist.Any(publishResponse => responseType.GetComplexTypeName() == publishResponse);
+                            var inWhitelist = PublishResponsesWhitelist.Any(publishResponse => responseType.GetOperationName() == publishResponse);
                             if (!inWhitelist) return;
                         }
 
@@ -179,7 +179,7 @@ namespace ServiceStack.Messaging
                         catch (Exception ex)
                         {
                             Log.Error("Could not send response to '{0}' with client '{1}'"
-                                .Fmt(mqReplyTo, replyClient.GetType().GetComplexTypeName()), ex);
+                                .Fmt(mqReplyTo, replyClient.GetType().GetOperationName()), ex);
 
                             // Leave as-is to work around a Mono 2.6.7 compiler bug
                             if (!responseType.IsUserType()) return;

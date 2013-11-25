@@ -49,7 +49,7 @@ namespace ServiceStack.Host.Handlers
 			var request = context.Request;
 			var response = context.Response;
 
-            var httpReq = context.ToRequest(GetType().GetComplexTypeName());
+            var httpReq = context.ToRequest(GetType().GetOperationName());
 			if (!request.IsLocal)
 			{
                 ProcessRequestAsync(httpReq, httpReq.Response, null);

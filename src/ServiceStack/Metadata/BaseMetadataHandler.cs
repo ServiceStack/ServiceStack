@@ -65,7 +65,7 @@ namespace ServiceStack.Metadata
             {
                 var allTypes = metadata.GetAllTypes();
 				//var operationType = allTypes.Single(x => x.Name == operationName);
-				var operationType = allTypes.Single(x => x.GetComplexTypeName() == operationName);
+				var operationType = allTypes.Single(x => x.GetOperationName() == operationName);
 				var op = metadata.GetOperation(operationType);
                 var requestMessage = CreateResponse(operationType);
                 string responseMessage = null;

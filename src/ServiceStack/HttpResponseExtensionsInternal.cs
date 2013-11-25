@@ -222,7 +222,7 @@ namespace ServiceStack
                     {
                         throw new ArgumentNullException("defaultAction", String.Format(
                         "As result '{0}' is not a supported responseType, a defaultAction must be supplied",
-                        (result != null ? result.GetType().GetComplexTypeName() : "")));
+                        (result != null ? result.GetType().GetOperationName() : "")));
                     }
 
                     if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
@@ -238,12 +238,12 @@ namespace ServiceStack
                     if (!HostContext.Config.WriteErrorsToResponse) return originalEx.AsTaskException<bool>();
 
                     var errorMessage = String.Format(
-                    "Error occured while Processing Request: [{0}] {1}", originalEx.GetType().GetComplexTypeName(), originalEx.Message);
+                    "Error occured while Processing Request: [{0}] {1}", originalEx.GetType().GetOperationName(), originalEx.Message);
 
                     Log.Error(errorMessage, originalEx);
 
                     var operationName = result != null
-                        ? result.GetType().GetComplexTypeName().Replace("Response", "")
+                        ? result.GetType().GetOperationName().Replace("Response", "")
                         : "OperationName";
 
                     try

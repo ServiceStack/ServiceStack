@@ -55,7 +55,7 @@ namespace ServiceStack.Host
         private string operationName;
         public string OperationName
         {
-            get { return operationName ?? (operationName = Message.Body != null ? Message.Body.GetType().GetComplexTypeName() : null); }
+            get { return operationName ?? (operationName = Message.Body != null ? Message.Body.GetType().GetOperationName() : null); }
             set { operationName = value; }
         }
 

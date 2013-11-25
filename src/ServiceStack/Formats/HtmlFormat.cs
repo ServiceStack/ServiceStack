@@ -76,7 +76,7 @@ namespace ServiceStack.Formats
                 url += url.Contains("?") ? "&" : "?";
 
                 var now = DateTime.UtcNow;
-                var requestName = request.OperationName ?? dto.GetType().GetComplexTypeName();
+                var requestName = request.OperationName ?? dto.GetType().GetOperationName();
 
                 html = HtmlTemplates.GetHtmlFormatTemplate()
                     .Replace("${Dto}", json)

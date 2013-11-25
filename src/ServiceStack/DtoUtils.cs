@@ -185,7 +185,7 @@ namespace ServiceStack
                 //Serializing request successfully is not critical and only provides added error info
             }
 
-            return string.Format("[{0}: {1}]:\n[REQUEST: {2}]", (request?? new object()).GetType().GetComplexTypeName(), DateTime.UtcNow, requestString);
+            return string.Format("[{0}: {1}]:\n[REQUEST: {2}]", (request?? new object()).GetType().GetOperationName(), DateTime.UtcNow, requestString);
         }
     }
 }

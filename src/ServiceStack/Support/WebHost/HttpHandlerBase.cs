@@ -19,7 +19,7 @@ namespace ServiceStack.Support.WebHost
 			var before = DateTime.UtcNow;
 			Execute(context);
             var elapsed = DateTime.UtcNow - before;
-			log.DebugFormat("'{0}' was completed in {1}ms", this.GetType().GetComplexTypeName(), elapsed.TotalMilliseconds);
+			log.DebugFormat("'{0}' was completed in {1}ms", this.GetType().GetOperationName(), elapsed.TotalMilliseconds);
 		}
 
 		public abstract void Execute(HttpContextBase context);

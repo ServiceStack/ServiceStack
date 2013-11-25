@@ -79,7 +79,7 @@ namespace ServiceStack.Host
                         .AsTaskException();
                 }
 
-                operationName = restPath.RequestType.GetComplexTypeName();
+                operationName = restPath.RequestType.GetOperationName();
 
                 var callback = httpReq.GetJsonpCallback();
                 var doJsonp = HostContext.Config.AllowJsonpRequests

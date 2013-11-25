@@ -19,7 +19,7 @@ namespace ServiceStack.Host
         public object Execute(IRequest requestContext, object instance, object request)
         {
             return ServiceExec<TService>.Execute(requestContext, instance, request,
-                typeof(TRequest).GetComplexTypeName());
+                typeof(TRequest).GetOperationName());
         }
     }
 
@@ -60,7 +60,7 @@ namespace ServiceStack.Host
                 var requestType = args[0].ParameterType;
                 var actionCtx = new ActionContext
                 {
-                    Id = ActionContext.Key(actionName, requestType.GetComplexTypeName()),
+                    Id = ActionContext.Key(actionName, requestType.GetOperationName()),
                     ServiceType = typeof(TService),
                     RequestType = requestType,
                 };
@@ -171,7 +171,7 @@ namespace ServiceStack.Host
             var expectedMethodName = actionName.Substring(0, 1) + actionName.Substring(1).ToLower();
             throw new NotImplementedException(
                 "Could not find method named {1}({0}) or Any({0}) on Service {2}"
-                .Fmt(requestDto.GetType().GetComplexTypeName(), expectedMethodName, typeof(TService).GetComplexTypeName()));
+                .Fmt(requestDto.GetType().GetOperationName(), expectedMethodName, typeof(TService).GetOperationName()));
         }
     }
 }

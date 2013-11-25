@@ -44,7 +44,7 @@ namespace ServiceStack
 					}
 					catch (Exception ex)
 					{
-						log.Error("Error adding new Plugin " + pluginType.GetComplexTypeName(), ex);
+						log.Error("Error adding new Plugin " + pluginType.GetOperationName(), ex);
 					}
 				}
 			}

@@ -346,7 +346,7 @@ namespace ServiceStack.Formats
             {
                 dto = httpResult.Response;
             }
-            if (dto != null) return dto.GetType().GetComplexTypeName();
+            if (dto != null) return dto.GetType().GetOperationName();
             return httpRequest != null ? httpRequest.OperationName : null;
         }
 
@@ -365,7 +365,7 @@ namespace ServiceStack.Formats
 
             if (dto != null)
             {
-                var responseTypeName = dto.GetType().GetComplexTypeName();
+                var responseTypeName = dto.GetType().GetOperationName();
                 var markdownPage = GetViewPage(responseTypeName);
                 if (markdownPage != null) return markdownPage;
             }
@@ -436,7 +436,7 @@ namespace ServiceStack.Formats
             {
                 if (ShouldSkipPath(markDownFile)) continue;
 
-                if (markDownFile.GetType().GetComplexTypeName() != "ResourceVirtualFile")
+                if (markDownFile.GetType().GetOperationName() != "ResourceVirtualFile")
                     hasReloadableWebPages = true;
 
                 var pageName = markDownFile.Name.WithoutExtension();

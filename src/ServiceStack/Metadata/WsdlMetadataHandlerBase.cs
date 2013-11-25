@@ -71,7 +71,7 @@ namespace ServiceStack.Metadata
                 OptimizeForFlash = optimizeForFlash,
             }.ToString();
 
-            var soapFormat = GetType().GetComplexTypeName().StartsWith("Soap11", StringComparison.OrdinalIgnoreCase)
+            var soapFormat = GetType().GetOperationName().StartsWith("Soap11", StringComparison.OrdinalIgnoreCase)
                 ? Format.Soap11 : Format.Soap12;
 
             var wsdlTemplate = GetWsdlTemplate();

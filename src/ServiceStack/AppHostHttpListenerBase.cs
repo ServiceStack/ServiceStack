@@ -46,7 +46,7 @@ namespace ServiceStack
                 var restHandler = serviceStackHandler as RestHandler;
                 if (restHandler != null)
                 {
-                    httpReq.OperationName = operationName = restHandler.RestPath.RequestType.GetComplexTypeName();
+                    httpReq.OperationName = operationName = restHandler.RestPath.RequestType.GetOperationName();
                 }
 
                 var task = serviceStackHandler.ProcessRequestAsync(httpReq, httpRes, operationName);                

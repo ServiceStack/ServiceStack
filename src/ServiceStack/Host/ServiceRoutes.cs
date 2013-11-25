@@ -66,7 +66,7 @@ namespace ServiceStack.Host
 
             if (existingRoute != null)
             {
-                var existingRouteMsg = "Existing Route for '{0}' at '{1}' already exists".Fmt(requestType.GetComplexTypeName(), restPath);
+                var existingRouteMsg = "Existing Route for '{0}' at '{1}' already exists".Fmt(requestType.GetOperationName(), restPath);
 
                 //if (!EndpointHostConfig.SkipRouteValidation) //wait till next deployment
                 //    throw new Exception(existingRouteMsg);

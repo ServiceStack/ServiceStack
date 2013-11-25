@@ -11,7 +11,7 @@ namespace ServiceStack.Metadata
     {
 		protected BaseSoapMetadataHandler()
 		{
-			OperationName = GetType().GetComplexTypeName().Replace("Handler", "");
+			OperationName = GetType().GetOperationName().Replace("Handler", "");
 		}
 		
 		public string OperationName { get; set; }

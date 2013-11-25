@@ -141,7 +141,7 @@ namespace ServiceStack.Host
 
         public List<string> GetAllOperationNames()
         {
-            return Operations.Select(x => x.RequestType.GetComplexTypeName()).OrderBy(operation => operation).ToList();
+            return Operations.Select(x => x.RequestType.GetOperationName()).OrderBy(operation => operation).ToList();
         }
 
         public List<string> GetOperationNamesForMetadata(IRequest httpReq)
@@ -264,7 +264,7 @@ namespace ServiceStack.Host
     	{
     		get 
 			{
-				return RequestType.GetComplexTypeName(); 
+				return RequestType.GetOperationName(); 
 			}
     	}
 		//public string Name { get { return RequestType.Name; } }
@@ -312,7 +312,7 @@ namespace ServiceStack.Host
                 .Where(x => HostContext.Config != null
                     && HostContext.MetadataPagesConfig.CanAccess(format, x.Name))
                 .Where(x => !x.IsOneWay)
-                .Select(x => x.RequestType.GetComplexTypeName())
+                .Select(x => x.RequestType.GetOperationName())
                 .ToList();
         }
 
@@ -322,7 +322,7 @@ namespace ServiceStack.Host
                 .Where(x => HostContext.Config != null
                     && HostContext.MetadataPagesConfig.CanAccess(format, x.Name))
                 .Where(x => x.IsOneWay)
-                .Select(x => x.RequestType.GetComplexTypeName())
+                .Select(x => x.RequestType.GetOperationName())
                 .ToList();
         }
 
@@ -340,7 +340,7 @@ namespace ServiceStack.Host
             var baseType = type;
             do
             {
-                if (baseType.GetComplexTypeName() == type.GetComplexTypeName())
+                if (baseType.GetOperationName() == type.GetOperationName())
                     typesWithSameName.Push(baseType);
             }
             while ((baseType = baseType.BaseType) != null);
@@ -355,8 +355,8 @@ namespace ServiceStack.Host
         {
             var to = new OperationDto {
                 Name = operation.Name,
-                ResponseName = operation.IsOneWay ? null : operation.ResponseType.GetComplexTypeName(),
-                ServiceName = operation.ServiceType.GetComplexTypeName(),
+                ResponseName = operation.IsOneWay ? null : operation.ResponseType.GetOperationName(),
+                ServiceName = operation.ServiceType.GetOperationName(),
                 Actions = operation.Actions,
                 Routes = operation.Routes.ToDictionary(x => x.Path.PairWith(x.AllowedVerbs)),
             };

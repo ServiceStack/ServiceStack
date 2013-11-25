@@ -142,7 +142,7 @@ namespace ServiceStack.Host.Handlers
 
 		public override void ProcessRequest(HttpContextBase context)
 		{
-		    var request = context.ToRequest(GetType().GetComplexTypeName());
+		    var request = context.ToRequest(GetType().GetOperationName());
 			ProcessRequestAsync(request, request.Response, request.OperationName);
 		}
 
