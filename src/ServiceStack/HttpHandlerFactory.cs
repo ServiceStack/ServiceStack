@@ -128,7 +128,8 @@ namespace ServiceStack
             var appHost = HostContext.AppHost;
 
             DebugLastHandlerArgs = requestType + "|" + url + "|" + pathTranslated;
-            var httpReq = new AspNetRequest(context, pathTranslated);
+            //var httpReq = new AspNetRequest(context, url);
+            var httpReq = new AspNetRequest(context, url.SanitizedVirtualPath());
             foreach (var rawHttpHandler in appHost.RawHttpHandlers)
             {
                 var reqInfo = rawHttpHandler(httpReq);
@@ -145,6 +146,19 @@ namespace ServiceStack
             //Default Request /
             if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
             {
+                //If the fallback route can handle it, let it
+                if (appHost.Config.FallbackRestPath != null)
+                {
+                    string contentType;
+                    var sanitizedPath = RestHandler.GetSanitizedPathInfo(pathInfo, out contentType);
+
+                    var restPath = appHost.Config.FallbackRestPath(context.Request.HttpMethod, sanitizedPath, pathTranslated);
+                    if (restPath != null)
+                    {
+                        return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
+                    }
+                }
+
                 //Exception calling context.Request.Url on Apache+mod_mono
                 if (ApplicationBaseUrl == null)
                 {
@@ -229,6 +243,19 @@ namespace ServiceStack
             //Default Request /
             if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
             {
+                //If the fallback route can handle it, let it
+                if (appHost.Config.FallbackRestPath != null)
+                {
+                    string contentType;
+                    var sanitizedPath = RestHandler.GetSanitizedPathInfo(pathInfo, out contentType);
+
+                    var restPath = appHost.Config.FallbackRestPath(httpReq.HttpMethod, sanitizedPath, httpReq.GetPhysicalPath());
+                    if (restPath != null)
+                    {
+                        return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
+                    }
+                }
+
                 if (ApplicationBaseUrl == null)
                     SetApplicationBaseUrl(httpReq.GetPathUrl());
 
@@ -238,7 +265,7 @@ namespace ServiceStack
 
                 if (mode == null)
                     return DefaultHttpHandler;
-
+                 
                 if (DefaultRootFileName != null)
                     return StaticFileHandler;
 
@@ -275,7 +302,7 @@ namespace ServiceStack
             if ((HostContext.Config.DebugOnlyReturnRequestInfo
                 || HostContext.DebugMode 
                 || HostContext.Config.AdminAuthSecret != null)
-                && httpReq.QueryString["debug"] == "__requestinfo")
+                && httpReq.QueryString["debug"] == RequestInfoHandler.RestPath)
             {
                 if (HostContext.DebugMode || HostContext.HasValidAuthSecret(httpReq))
                 {
