@@ -17,13 +17,7 @@ namespace ServiceStack
 
         public override string ResolveAbsoluteUrl(string virtualPath, IRequest httpReq)
         {
-            if (HostingEnvironment.ApplicationVirtualPath != null
-                && (virtualPath.StartsWith("~" + HostingEnvironment.ApplicationVirtualPath) || 
-                    virtualPath.StartsWith(HostingEnvironment.ApplicationVirtualPath)))
-            {
-                //http://stackoverflow.com/a/757251/85785
-                virtualPath = virtualPath.Remove(0, HostingEnvironment.ApplicationVirtualPath.Length);
-            }
+            virtualPath = virtualPath.SanitizedVirtualPath();
 
             return Config.WebHostUrl == null
                 ? VirtualPathUtility.ToAbsolute(virtualPath)

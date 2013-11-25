@@ -22,7 +22,7 @@ namespace ServiceStack.Host
             return HostContext.ServiceController.GetRestPathForRequest(httpMethod, pathInfo);
         }
 
-        private static string GetSanitizedPathInfo(string pathInfo, out string contentType)
+        public static string GetSanitizedPathInfo(string pathInfo, out string contentType)
         {
             contentType = null;
             if (HostContext.Config.AllowRouteContentTypeExtensions)

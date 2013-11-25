@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Web;
+using System.Web.Hosting;
 using ServiceStack.Host.AspNet;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Host.HttpListener;
@@ -137,9 +138,19 @@ namespace ServiceStack
             return HostContext.ResolveVirtualNode(httpReq.PathInfo, httpReq);
         }
 
+        //http://stackoverflow.com/a/757251/85785
+        static readonly string[] VirtualPathPrefixes = HostingEnvironment.ApplicationVirtualPath == null || HostingEnvironment.ApplicationVirtualPath == "/"
+            ? new string[0]
+            : new[] { HostingEnvironment.ApplicationVirtualPath, "~" + HostingEnvironment.ApplicationVirtualPath };
+
+        public static string SanitizedVirtualPath(this string virtualPath)
+        {
+            return HostContext.Config.StripApplicationVirtualPath ? virtualPath.TrimPrefixes(VirtualPathPrefixes) : virtualPath;
+        }
+
         public static string GetApplicationUrl(this HttpRequestBase httpReq)
         {
-            var appPath = httpReq.ApplicationPath;
+            var appPath = httpReq.ApplicationPath.SanitizedVirtualPath();
             var baseUrl = httpReq.Url.Scheme + "://" + httpReq.Url.Host;
             if (httpReq.Url.Port != 80) baseUrl += ":" + httpReq.Url.Port;
             var appUrl = baseUrl.CombineWith(appPath);
