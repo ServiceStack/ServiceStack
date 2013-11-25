@@ -41,7 +41,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 
             public override void Configure(Container container)
             {
-                container.Register<IAppSettings>(new ConfigurationResourceManager());
+                container.Register<IAppSettings>(new AppSettings());
 
                 container.Register(c => new ExampleConfig(c.Resolve<IAppSettings>()));
                 //var appConfig = container.Resolve<ExampleConfig>();

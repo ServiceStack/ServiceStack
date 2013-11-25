@@ -461,7 +461,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 				.Add<GetHttpResult>("/gethttpresult")
 			;
 
-			container.Register<IAppSettings>(new ConfigurationResourceManager());
+			container.Register<IAppSettings>(new AppSettings());
 
 			//var appSettings = container.Resolve<IResourceManager>();
 
@@ -528,7 +528,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
                 .Add<GetHttpResult>("/gethttpresult")
             ;
 
-            container.Register<IAppSettings>(new ConfigurationResourceManager());
+            container.Register<IAppSettings>(new AppSettings());
 
             container.Register(c => new ExampleConfig(c.Resolve<IAppSettings>()));
             //var appConfig = container.Resolve<ExampleConfig>();
