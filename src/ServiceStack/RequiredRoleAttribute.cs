@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using ServiceStack.Auth;
+using ServiceStack.Configuration;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -35,6 +36,10 @@ namespace ServiceStack
             if (res.IsClosed) return; //AuthenticateAttribute already closed the request (ie auth failed)
 
             var session = req.GetSession();
+
+            if (session != null && session.HasRole(RoleNames.Admin))
+                return;
+
             if (HasAllRoles(req, session)) return;
 
             if (DoHtmlRedirectIfConfigured(req, res)) return;
@@ -78,6 +83,9 @@ namespace ServiceStack
                 return;
 
             var session = request.GetSession();
+
+            if (session != null && session.HasRole(RoleNames.Admin))
+                return;
 
             if (session != null && requiredRoles.All(session.HasRole))
                 return;

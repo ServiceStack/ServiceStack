@@ -33,6 +33,10 @@ namespace ServiceStack
             if (res.IsClosed) return; //AuthenticateAttribute already closed the request (ie auth failed)
 
             var session = req.GetSession();
+
+            if (session != null && session.HasRole(RoleNames.Admin))
+                return;
+
             if (HasAllPermissions(req, session)) return;
 
             if (DoHtmlRedirectIfConfigured(req, res)) return;
