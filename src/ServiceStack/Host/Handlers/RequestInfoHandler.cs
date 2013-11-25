@@ -110,15 +110,23 @@ namespace ServiceStack.Host.Handlers
 
         [DataMember]
         public Dictionary<string, string> RequestResponseMap { get; set; }
+
+        [DataMember]
+        public List<ResponseStatus> StartUpErrors { get; set; }
     }
 
     public class RequestInfoHandler : HttpAsyncTaskHandler
 	{
-		public const string RestPath = "_requestinfo";
+		public const string RestPath = "requestinfo";
 
 		public RequestInfoResponse RequestInfo { get; set; }
 
-		public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
+        public RequestInfoHandler()
+        {
+            this.RequestName = GetType().Name;
+        }
+
+        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
 		{
 			var response = this.RequestInfo ?? GetRequestInfo(httpReq);
 			response.HandlerFactoryArgs = HttpHandlerFactory.DebugLastHandlerArgs;
@@ -182,6 +190,7 @@ namespace ServiceStack.Host.Handlers
 				ContentLength = httpReq.ContentLength,
 				OperationName = httpReq.OperationName,
 				ResponseContentType = httpReq.ResponseContentType,
+                StartUpErrors = HostContext.AppHost.StartUpErrors,
 			};
 			return response;
 		}

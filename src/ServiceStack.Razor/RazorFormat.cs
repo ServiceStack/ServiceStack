@@ -70,7 +70,7 @@ namespace ServiceStack.Razor
             }
             catch (Exception ex)
             {
-                ex.StackTrace.PrintDump();
+                appHost.NotifyStartupException(ex);
                 throw;
             }
         }

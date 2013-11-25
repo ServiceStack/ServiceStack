@@ -35,8 +35,12 @@ namespace ServiceStack
         public static ServiceStackHost Instance { get; protected set; }
 
         public DateTime StartedAt { get; set; }
-        public DateTime AfterInitAt { get; set; }
-        public DateTime ReadyAt { get; set; }
+        public DateTime? AfterInitAt { get; set; }
+        public DateTime? ReadyAt { get; set; }
+        public bool HasStarted
+        {
+            get { return ReadyAt != null; }
+        }
 
         protected ServiceStackHost(string serviceName, params Assembly[] assembliesWithServices)
         {
@@ -62,6 +66,7 @@ namespace ServiceStack
             };
             CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
             CustomErrorHttpHandlers = new Dictionary<HttpStatusCode, IServiceStackHandler>();
+            StartUpErrors = new List<ResponseStatus>();
             Plugins = new List<IPlugin> {
                 new HtmlFormat(),
                 new CsvFormat(),
@@ -173,6 +178,8 @@ namespace ServiceStack
 
         public Dictionary<HttpStatusCode, IServiceStackHandler> CustomErrorHttpHandlers { get; set; }
 
+        public List<ResponseStatus> StartUpErrors { get; set; }
+
         public List<IPlugin> Plugins { get; set; }
 
         public IVirtualPathProvider VirtualPathProvider { get; set; }
@@ -230,6 +237,11 @@ namespace ServiceStack
                     httpRes.WriteErrorToResponse(httpReq, httpReq.ResponseContentType, operationName, errorMessage, ex, statusCode);
                 }
             }
+        }
+
+        public virtual void OnStartupException(Exception ex)
+        {
+            this.StartUpErrors.Add(DtoUtils.CreateErrorResponse(null, ex).GetResponseStatus());
         }
 
         private HostConfig config;
