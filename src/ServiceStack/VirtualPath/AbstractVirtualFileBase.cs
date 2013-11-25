@@ -106,10 +106,14 @@ namespace ServiceStack
     {
         public static bool ShouldSkipPath(this IVirtualNode node)
         {
-            foreach (var skipPath in HostContext.Config.ScanSkipPaths)
+            var appHost = HostContext.AppHost;
+            if (appHost != null)
             {
-                if (node.VirtualPath.StartsWith(skipPath, StringComparison.InvariantCultureIgnoreCase))
-                    return true;
+                foreach (var skipPath in appHost.Config.ScanSkipPaths)
+                {
+                    if (node.VirtualPath.StartsWith(skipPath, StringComparison.InvariantCultureIgnoreCase))
+                        return true;
+                }
             }
             return false;
         }

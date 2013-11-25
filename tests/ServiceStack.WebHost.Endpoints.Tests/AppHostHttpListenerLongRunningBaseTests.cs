@@ -47,7 +47,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_download_requestinfo_json()
         {
-            var html = (ListeningOn + "_requestinfo").GetStringFromUrl();
+            var html = (ListeningOn + "?debug=requestinfo").GetStringFromUrl();
             Assert.That(html.Contains("\"Host\":"));
         }
 
