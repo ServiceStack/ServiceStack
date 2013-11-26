@@ -215,7 +215,6 @@ namespace ServiceStack.Host.Handlers
 				UserHostAddress = httpReq.UserHostAddress,
 				HttpMethod = httpReq.Verb,
 				AbsoluteUri = httpReq.AbsoluteUri,
-                ApplicationBaseUrl = HttpHandlerFactory.ApplicationBaseUrl,
                 ResolveAbsoluteUrl = HostContext.AppHost.ResolveAbsoluteUrl("~/resolve", httpReq),
 				RawUrl = httpReq.RawUrl,
 				ResolvedPathInfo = httpReq.PathInfo,
