@@ -168,7 +168,7 @@ namespace ServiceStack.Host.HttpListener
             {
                 if (this.pathInfo == null)
                 {
-                    var mode = HostContext.Config.ServiceStackHandlerFactoryPath;
+                    var mode = HostContext.Config.HandlerFactoryPath;
 
                     var pos = request.RawUrl.IndexOf("?");
                     if (pos != -1)

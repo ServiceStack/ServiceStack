@@ -63,7 +63,7 @@ namespace ServiceStack
         {
             base.OnConfigLoad();
 
-            Config.ServiceStackHandlerFactoryPath = string.IsNullOrEmpty(HandlerPath)
+            Config.HandlerFactoryPath = string.IsNullOrEmpty(HandlerPath)
                 ? null
                 : HandlerPath;
 

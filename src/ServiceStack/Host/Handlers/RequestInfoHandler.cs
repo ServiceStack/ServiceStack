@@ -21,11 +21,11 @@ namespace ServiceStack.Host.Handlers
 		[DataMember]
 		public DateTime Date { get; set; }
 
-		[DataMember]
-		public string ServiceName { get; set; }
+        [DataMember]
+        public string ServiceName { get; set; }
 
 		[DataMember]
-		public string HandlerPath { get; set; }
+		public string HandlerFactoryPath { get; set; }
 
 		[DataMember]
 		public string UserHostAddress { get; set; }
@@ -39,11 +39,23 @@ namespace ServiceStack.Host.Handlers
 		[DataMember]
 		public string ResolvedPathInfo { get; set; }
 
-		[DataMember]
-		public string Path { get; set; }
+        [DataMember]
+        public string GetLeftPath { get; set; }
+
+        [DataMember]
+        public string Path { get; set; }
+
+        [DataMember]
+        public string GetPathUrl { get; set; }
 
 		[DataMember]
 		public string AbsoluteUri { get; set; }
+
+        [DataMember]
+        public string ApplicationBaseUrl { get; set; }
+
+        [DataMember]
+        public string ResolveAbsoluteUrl { get; set; }
 
         [DataMember]
         public string ApplicationPath { get; set; }
@@ -111,8 +123,23 @@ namespace ServiceStack.Host.Handlers
         [DataMember]
         public Dictionary<string, string> RequestResponseMap { get; set; }
 
+	    [DataMember] public List<string> PluginsLoaded { get; set; }
+
         [DataMember]
         public List<ResponseStatus> StartUpErrors { get; set; }
+
+        [DataMember]
+        public RequestHandlerInfo LastRequestInfo { get; set; }
+
+        [DataMember]
+        public Dictionary<string, string> Stats { get; set; }
+    }
+
+    public class RequestHandlerInfo
+    {
+        public string HandlerType { get; set; }
+        public string OperationName { get; set; }
+        public string PathInfo { get; set; }
     }
 
     public class RequestInfoHandler : HttpAsyncTaskHandler
@@ -120,6 +147,8 @@ namespace ServiceStack.Host.Handlers
 		public const string RestPath = "requestinfo";
 
 		public RequestInfoResponse RequestInfo { get; set; }
+
+        public static RequestHandlerInfo LastRequestInfo;
 
         public RequestInfoHandler()
         {
@@ -138,6 +167,11 @@ namespace ServiceStack.Host.Handlers
 			}
             if (HostContext.IsAspNetHost)
             {
+                var aspReq = (HttpRequestBase) httpReq.OriginalRequest;
+                response.GetLeftPath = aspReq.Url.GetLeftPart(UriPartial.Authority);
+                response.Path = aspReq.Path;
+                response.UserHostAddress = aspReq.UserHostAddress;
+                response.ApplicationPath = aspReq.ApplicationPath;
                 response.ApplicationVirtualPath = HostingEnvironment.ApplicationVirtualPath;
                 response.VirtualAbsolutePathRoot = VirtualPathUtility.ToAbsolute("/");
                 response.VirtualAppRelativePathRoot = VirtualPathUtility.ToAppRelative("/");                
@@ -177,9 +211,12 @@ namespace ServiceStack.Host.Handlers
 				Host = HostContext.Config.DebugHttpListenerHostEnvironment + "_v" + Env.ServiceStackVersion + "_" + HostContext.ServiceName,
 				Date = DateTime.UtcNow,
 				ServiceName = HostContext.ServiceName,
+                HandlerFactoryPath = HostContext.Config.HandlerFactoryPath,
 				UserHostAddress = httpReq.UserHostAddress,
 				HttpMethod = httpReq.Verb,
 				AbsoluteUri = httpReq.AbsoluteUri,
+                ApplicationBaseUrl = HttpHandlerFactory.ApplicationBaseUrl,
+                ResolveAbsoluteUrl = HostContext.AppHost.ResolveAbsoluteUrl("~/resolve", httpReq),
 				RawUrl = httpReq.RawUrl,
 				ResolvedPathInfo = httpReq.PathInfo,
 				ContentType = httpReq.ContentType,
@@ -190,7 +227,25 @@ namespace ServiceStack.Host.Handlers
 				ContentLength = httpReq.ContentLength,
 				OperationName = httpReq.OperationName,
 				ResponseContentType = httpReq.ResponseContentType,
+                PluginsLoaded = HostContext.AppHost.PluginsLoaded,
                 StartUpErrors = HostContext.AppHost.StartUpErrors,
+                LastRequestInfo = LastRequestInfo,
+                Stats = new Dictionary<string, string> {
+                    {"RawHttpHandlers", HostContext.AppHost.RawHttpHandlers.Count.ToString() },
+                    {"PreRequestFilters", HostContext.AppHost.PreRequestFilters.Count.ToString() },
+                    {"RequestBinders", HostContext.AppHost.RequestBinders.Count.ToString() },
+                    {"GlobalRequestFilters", HostContext.AppHost.GlobalRequestFilters.Count.ToString() },
+                    {"GlobalResponseFilters", HostContext.AppHost.GlobalResponseFilters.Count.ToString() },
+                    {"CatchAllHandlers", HostContext.AppHost.CatchAllHandlers.Count.ToString() },
+                    {"Plugins", HostContext.AppHost.Plugins.Count.ToString() },
+                    {"ViewEngines", HostContext.AppHost.ViewEngines.Count.ToString() },
+                    {"RequestTypes", HostContext.AppHost.Metadata.RequestTypes.Count.ToString() },
+                    {"ResponseTypes", HostContext.AppHost.Metadata.ResponseTypes.Count.ToString() },
+                    {"ServiceTypes", HostContext.AppHost.Metadata.ServiceTypes.Count.ToString() },
+                    {"RestPaths", HostContext.AppHost.RestPaths.Count.ToString() },
+                    {"ContentTypes", HostContext.AppHost.ContentTypes.ContentTypeFormats.Count.ToString() },
+                    {"EnableFeatures", HostContext.Config.EnableFeatures.ToString() },
+                }
 			};
 			return response;
 		}

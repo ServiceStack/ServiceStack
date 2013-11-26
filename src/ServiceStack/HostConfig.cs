@@ -41,7 +41,7 @@ namespace ServiceStack
                 LogFactory = new NullLogFactory(),
                 EnableAccessRestrictions = true,
                 WebHostPhysicalPath = "~".MapServerPath(),
-                ServiceStackHandlerFactoryPath = ServiceStackPath,
+                HandlerFactoryPath = ServiceStackPath,
                 MetadataRedirectPath = null,
                 DefaultContentType = null,
                 AllowJsonpRequests = true,
@@ -108,7 +108,7 @@ namespace ServiceStack
                 }
             };
 
-            if (config.ServiceStackHandlerFactoryPath == null)
+            if (config.HandlerFactoryPath == null)
             {
                 config.InferHttpHandlerPath();
             }
@@ -132,7 +132,7 @@ namespace ServiceStack
             this.WebHostPhysicalPath = instance.WebHostPhysicalPath;
             this.DefaultRedirectPath = instance.DefaultRedirectPath;
             this.MetadataRedirectPath = instance.MetadataRedirectPath;
-            this.ServiceStackHandlerFactoryPath = instance.ServiceStackHandlerFactoryPath;
+            this.HandlerFactoryPath = instance.HandlerFactoryPath;
             this.DefaultContentType = instance.DefaultContentType;
             this.AllowJsonpRequests = instance.AllowJsonpRequests;
             this.AllowRouteContentTypeExtensions = instance.AllowRouteContentTypeExtensions;
@@ -199,7 +199,7 @@ namespace ServiceStack
 
         public string WebHostUrl { get; set; }
         public string WebHostPhysicalPath { get; set; }
-        public string ServiceStackHandlerFactoryPath { get; set; }
+        public string HandlerFactoryPath { get; set; }
         public string DefaultRedirectPath { get; set; }
         public string MetadataRedirectPath { get; set; }
 
@@ -383,11 +383,11 @@ namespace ServiceStack
                 handlerPath = handlerPath.Replace("*", String.Empty);
             }
 
-            ServiceStackHandlerFactoryPath = locationPath ??
+            HandlerFactoryPath = locationPath ??
                 (String.IsNullOrEmpty(handlerPath) ? null : handlerPath);
 
             MetadataRedirectPath = PathUtils.CombinePaths(
-                null != locationPath ? ServiceStackHandlerFactoryPath : handlerPath
+                null != locationPath ? HandlerFactoryPath : handlerPath
                 , "metadata");
         }
 

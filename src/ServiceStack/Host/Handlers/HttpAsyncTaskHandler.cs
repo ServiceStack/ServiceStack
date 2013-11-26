@@ -45,6 +45,8 @@ namespace ServiceStack.Host.Handlers
         {
             var operationName = this.RequestName ?? context.Request.GetOperationName();
 
+            RememberLastRequestInfo(operationName, context.Request.PathInfo);
+
             if (String.IsNullOrEmpty(operationName)) return EmptyTask;
 
             if (DefaultHandledRequest(context)) return EmptyTask;
@@ -54,8 +56,21 @@ namespace ServiceStack.Host.Handlers
             if (RunAsAsync())
                 return ProcessRequestAsync(httpReq, httpReq.Response, operationName);
 
-            return new Task(() => 
+            return new Task(() =>
                 ProcessRequest(httpReq, httpReq.Response, operationName));
+        }
+
+        private void RememberLastRequestInfo(string operationName, string pathInfo)
+        {
+            if (HostContext.DebugMode)
+            {
+                RequestInfoHandler.LastRequestInfo = new RequestHandlerInfo
+                    {
+                        HandlerType = GetType().Name,
+                        OperationName = operationName,
+                        PathInfo = pathInfo,
+                    };
+            }
         }
 
         public virtual void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
@@ -74,7 +89,7 @@ namespace ServiceStack.Host.Handlers
         {
             var operationName = this.RequestName ?? context.Request.GetOperationName();
 
-            if (String.IsNullOrEmpty(operationName)) return;
+            if (string.IsNullOrEmpty(operationName)) return;
 
             if (DefaultHandledRequest(context)) return;
 
@@ -86,6 +101,8 @@ namespace ServiceStack.Host.Handlers
         public virtual void ProcessRequest(HttpListenerContext context)
         {
             var operationName = this.RequestName ?? context.Request.GetOperationName();
+
+            RememberLastRequestInfo(operationName, context.Request.RawUrl);
 
             if (String.IsNullOrEmpty(operationName)) return;
 

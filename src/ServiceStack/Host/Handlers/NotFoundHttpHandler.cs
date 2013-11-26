@@ -16,7 +16,7 @@ namespace ServiceStack.Host.Handlers
 		public bool? IsIntegratedPipeline { get; set; }
 		public string WebHostPhysicalPath { get; set; }
 		public List<string> WebHostRootFileNames { get; set; }
-		public string ApplicationBaseUrl { get; set; }
+		public string WebHostUrl { get; set; }
 		public string DefaultRootFileName { get; set; }
 		public string DefaultHandler { get; set; }
 
@@ -95,8 +95,8 @@ namespace ServiceStack.Host.Handlers
 				sb.AppendLine("App.WebHostPhysicalPath: " + WebHostPhysicalPath);
 			if (!WebHostRootFileNames.IsEmpty())
 				sb.AppendLine("App.WebHostRootFileNames: " + TypeSerializer.SerializeToString(WebHostRootFileNames));
-			if (!ApplicationBaseUrl.IsNullOrEmpty())
-				sb.AppendLine("App.ApplicationBaseUrl: " + ApplicationBaseUrl);
+			if (!WebHostUrl.IsNullOrEmpty())
+				sb.AppendLine("App.ApplicationBaseUrl: " + WebHostUrl);
 			if (!DefaultRootFileName.IsNullOrEmpty())
 				sb.AppendLine("App.DefaultRootFileName: " + DefaultRootFileName);
 			if (!DefaultHandler.IsNullOrEmpty())

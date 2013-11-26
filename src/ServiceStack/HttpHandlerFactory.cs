@@ -15,7 +15,7 @@ namespace ServiceStack
         static readonly List<string> WebHostRootFileNames = new List<string>();
         static private readonly string WebHostPhysicalPath = null;
         static private readonly string DefaultRootFileName = null;
-        static private string ApplicationBaseUrl = null;
+        internal static string ApplicationBaseUrl = null;
         static private readonly IHttpHandler DefaultHttpHandler = null;
         static private readonly RedirectHttpHandler NonRootModeDefaultHttpHandler = null;
         static private readonly IHttpHandler ForbiddenHttpHandler = null;
@@ -44,7 +44,7 @@ namespace ServiceStack
             HostAutoRedirectsDirs = isAspNetHost && !Env.IsMono;
 
             //Apache+mod_mono treats path="servicestack*" as path="*" so takes over root path, so we need to serve matching resources
-            var hostedAtRootPath = config.ServiceStackHandlerFactoryPath == null;
+            var hostedAtRootPath = config.HandlerFactoryPath == null;
 
             //DefaultHttpHandler not supported in IntegratedPipeline mode
             if (!IsIntegratedPipeline && isAspNetHost && !hostedAtRootPath && !Env.IsMono)
@@ -100,7 +100,7 @@ namespace ServiceStack
                     IsIntegratedPipeline = IsIntegratedPipeline,
                     WebHostPhysicalPath = WebHostPhysicalPath,
                     WebHostRootFileNames = WebHostRootFileNames,
-                    ApplicationBaseUrl = ApplicationBaseUrl,
+                    WebHostUrl = config.WebHostUrl,
                     DefaultRootFileName = DefaultRootFileName,
                     DefaultHandler = debugDefaultHandler,
                 };
@@ -114,7 +114,7 @@ namespace ServiceStack
                     IsIntegratedPipeline = IsIntegratedPipeline,
                     WebHostPhysicalPath = WebHostPhysicalPath,
                     WebHostRootFileNames = WebHostRootFileNames,
-                    ApplicationBaseUrl = ApplicationBaseUrl,
+                    WebHostUrl = config.WebHostUrl,
                     DefaultRootFileName = DefaultRootFileName,
                     DefaultHandler = debugDefaultHandler,
                 };
@@ -136,7 +136,7 @@ namespace ServiceStack
                 if (reqInfo != null) return reqInfo;
             }
 
-            var mode = appHost.Config.ServiceStackHandlerFactoryPath;
+            var mode = appHost.Config.HandlerFactoryPath;
             var pathInfo = context.Request.GetPathInfo();
 
             //WebDev Server auto requests '/default.aspx' so recorrect path to different default document
@@ -237,7 +237,7 @@ namespace ServiceStack
                 if (reqInfo != null) return reqInfo;
             }
 
-            var mode = appHost.Config.ServiceStackHandlerFactoryPath;
+            var mode = appHost.Config.HandlerFactoryPath;
             var pathInfo = httpReq.PathInfo;
 
             //Default Request /
@@ -310,7 +310,7 @@ namespace ServiceStack
 
                     reqInfo.Host = HostContext.Config.DebugHttpListenerHostEnvironment + "_v" + Env.ServiceStackVersion + "_" + HostContext.ServiceName;
                     reqInfo.PathInfo = httpReq.PathInfo;
-                    reqInfo.Path = httpReq.GetPathUrl();
+                    reqInfo.GetPathUrl = httpReq.GetPathUrl();
 
                     return new RequestInfoHandler { RequestInfo = reqInfo };
                 }

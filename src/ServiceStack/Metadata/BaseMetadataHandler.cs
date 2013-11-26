@@ -103,7 +103,7 @@ namespace ServiceStack.Metadata
 
                         if (!isSoap)
                         {
-                            var path = "/" + PathUtils.CombinePaths(HostContext.Config.ServiceStackHandlerFactoryPath, route.Path);
+                            var path = "/" + PathUtils.CombinePaths(HostContext.Config.HandlerFactoryPath, route.Path);
 
                             sb.AppendFormat("<th>{0}</th>", verbs);
                             sb.AppendFormat("<th>{0}</th>", path);

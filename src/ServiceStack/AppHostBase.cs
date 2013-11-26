@@ -19,7 +19,7 @@ namespace ServiceStack
         {
             virtualPath = virtualPath.SanitizedVirtualPath();
 
-            return Config.WebHostUrl == null
+            return Config.WebHostUrl == null && !Config.StripApplicationVirtualPath
                 ? VirtualPathUtility.ToAbsolute(virtualPath)
                 : httpReq.GetAbsoluteUrl(virtualPath);
         }

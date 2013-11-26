@@ -145,14 +145,16 @@ namespace ServiceStack
 
         public static string SanitizedVirtualPath(this string virtualPath)
         {
-            return HostContext.Config.StripApplicationVirtualPath ? virtualPath.TrimPrefixes(VirtualPathPrefixes) : virtualPath;
+            return HostContext.Config.StripApplicationVirtualPath 
+                ? virtualPath.TrimPrefixes(VirtualPathPrefixes) 
+                : virtualPath;
         }
 
         public static string GetApplicationUrl(this HttpRequestBase httpReq)
         {
             var appPath = httpReq.ApplicationPath.SanitizedVirtualPath();
-            var baseUrl = httpReq.Url.Scheme + "://" + httpReq.Url.Host;
-            if (httpReq.Url.Port != 80) baseUrl += ":" + httpReq.Url.Port;
+            var baseUrl = httpReq.Url.GetLeftPart(UriPartial.Authority);
+            baseUrl = baseUrl.CombineWith(HostContext.Config.HandlerFactoryPath);
             var appUrl = baseUrl.CombineWith(appPath);
             return appUrl;
         }
@@ -160,9 +162,8 @@ namespace ServiceStack
         public static string GetApplicationUrl(this IRequest httpReq)
         {
             var url = new Uri(httpReq.AbsoluteUri);
-            var baseUrl = url.Scheme + "://" + url.Host;
-            if (url.Port != 80) baseUrl += ":" + url.Port;
-            var appUrl = baseUrl.CombineWith(HostContext.Config.ServiceStackHandlerFactoryPath);
+            var baseUrl = url.GetLeftPart(UriPartial.Authority);
+            var appUrl = baseUrl.CombineWith(HostContext.Config.HandlerFactoryPath);
             return appUrl;
         }
 
@@ -431,7 +432,7 @@ namespace ServiceStack
         {
             if (!String.IsNullOrEmpty(request.PathInfo)) return request.PathInfo.TrimEnd('/');
 
-            var mode = HostContext.Config.ServiceStackHandlerFactoryPath;
+            var mode = HostContext.Config.HandlerFactoryPath;
             var appPath = String.IsNullOrEmpty(request.ApplicationPath)
                           ? WebHostDirectoryName
                           : request.ApplicationPath.TrimStart('/');
@@ -671,19 +672,22 @@ namespace ServiceStack
             var baseUrl = HttpHandlerFactory.GetBaseUrl();
             if (baseUrl != null) return baseUrl;
 
-            var handlerPath = HostContext.Config.ServiceStackHandlerFactoryPath;
+            var handlerPath = HostContext.Config.HandlerFactoryPath;
             if (handlerPath != null)
             {
-                var pos = httpReq.AbsoluteUri.IndexOf(handlerPath, StringComparison.InvariantCultureIgnoreCase);
+                var absoluteUri = httpReq.AbsoluteUri;
+                var pos = absoluteUri.IndexOf(handlerPath, StringComparison.InvariantCultureIgnoreCase);
                 if (pos >= 0)
                 {
-                    baseUrl = httpReq.AbsoluteUri.Substring(0, pos + handlerPath.Length);
+                    baseUrl = absoluteUri.Substring(0, pos + handlerPath.Length);
                     return baseUrl;
                 }
                 return "/" + handlerPath;
             }
 
-            return "/"; //Can't infer Absolute Uri, fallback to root relative path
+            return new Uri(httpReq.AbsoluteUri).GetLeftPart(UriPartial.Authority)
+                .CombineWith(handlerPath)
+                .TrimEnd('/');
         }
 
         public static RequestAttributes ToRequestAttributes(string[] attrNames)

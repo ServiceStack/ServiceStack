@@ -82,7 +82,7 @@ namespace ServiceStack.Host.HttpListener
             if (this.Listener == null)
                 Listener = new System.Net.HttpListener();
 
-            HostContext.Config.ServiceStackHandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(listeningAtUrlBase);
+            HostContext.Config.HandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(listeningAtUrlBase);
 
             Listener.Prefixes.Add(listeningAtUrlBase);
 

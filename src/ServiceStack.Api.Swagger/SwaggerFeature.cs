@@ -43,7 +43,7 @@ namespace ServiceStack.Api.Swagger
                     if (indexFile != null)
                     {
                         var html = indexFile.ReadAllText();
-                        var resourcesUrl = (appHost.Config.ServiceStackHandlerFactoryPath ?? "")
+                        var resourcesUrl = (appHost.Config.HandlerFactoryPath ?? "")
                             .CombineWith("resources");
 
                         html = html.Replace("http://petstore.swagger.wordnik.com/api/api-docs", resourcesUrl);

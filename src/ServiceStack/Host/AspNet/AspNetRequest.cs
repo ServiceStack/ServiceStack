@@ -229,7 +229,12 @@ namespace ServiceStack.Host.AspNet
             {
                 try
                 {
-                    return request.Url.AbsoluteUri.TrimEnd('/');
+                    return HostContext.Config.StripApplicationVirtualPath
+                        ? request.Url.GetLeftPart(UriPartial.Authority)
+                            .CombineWith(HostContext.Config.HandlerFactoryPath)
+                            .CombineWith(PathInfo)
+                            .TrimEnd('/')
+                        : request.Url.AbsoluteUri.TrimEnd('/');
                 }
                 catch (Exception)
                 {

@@ -67,6 +67,7 @@ namespace ServiceStack
             CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
             CustomErrorHttpHandlers = new Dictionary<HttpStatusCode, IServiceStackHandler>();
             StartUpErrors = new List<ResponseStatus>();
+            PluginsLoaded = new List<string>();
             Plugins = new List<IPlugin> {
                 new HtmlFormat(),
                 new CsvFormat(),
@@ -179,6 +180,8 @@ namespace ServiceStack
         public Dictionary<HttpStatusCode, IServiceStackHandler> CustomErrorHttpHandlers { get; set; }
 
         public List<ResponseStatus> StartUpErrors { get; set; }
+        
+        public List<string> PluginsLoaded { get; set; }
 
         public List<IPlugin> Plugins { get; set; }
 
@@ -265,7 +268,7 @@ namespace ServiceStack
         // Config has changed
         public virtual void OnAfterConfigChanged()
         {
-            config.ServiceEndpointsMetadataConfig = ServiceEndpointsMetadataConfig.Create(config.ServiceStackHandlerFactoryPath);
+            config.ServiceEndpointsMetadataConfig = ServiceEndpointsMetadataConfig.Create(config.HandlerFactoryPath);
 
             JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
             JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
@@ -325,8 +328,8 @@ namespace ServiceStack
             if ((Feature.MsgPack & config.EnableFeatures) != Feature.MsgPack)
                 Plugins.RemoveAll(x => x is IMsgPackPlugin);  //external
 
-            if (config.ServiceStackHandlerFactoryPath != null)
-                config.ServiceStackHandlerFactoryPath = config.ServiceStackHandlerFactoryPath.TrimStart('/');
+            if (config.HandlerFactoryPath != null)
+                config.HandlerFactoryPath = config.HandlerFactoryPath.TrimStart('/');
 
             var specifiedContentType = config.DefaultContentType; //Before plugins loaded
 
@@ -365,7 +368,14 @@ namespace ServiceStack
                 var preInitPlugin = plugin as IPreInitPlugin;
                 if (preInitPlugin != null)
                 {
-                    preInitPlugin.Configure(this);
+                    try
+                    {
+                        preInitPlugin.Configure(this);
+                    }
+                    catch (Exception ex)
+                    {
+                        OnStartupException(ex);
+                    }
                 }
             }
         }
@@ -491,10 +501,11 @@ namespace ServiceStack
                 try
                 {
                     plugin.Register(this);
+                    PluginsLoaded.Add(plugin.GetType().Name);
                 }
                 catch (Exception ex)
                 {
-                    Log.Warn("Error loading plugin " + plugin.GetType().GetOperationName(), ex);
+                    OnStartupException(ex);
                 }
             }
         }
