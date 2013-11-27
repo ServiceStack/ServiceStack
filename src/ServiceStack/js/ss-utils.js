@@ -123,8 +123,8 @@
                 e.preventDefault();
                 f.clearErrors();
                 f.addClass("loading");
-                var $disable = orig.onSubmitDisable || $.ss.onSubmitDisable;
-                $($disable).attr("disabled", "disabled");
+                var $disable = $(orig.onSubmitDisable || $.ss.onSubmitDisable, f);
+                $disable.attr("disabled", "disabled");
                 var opt = $.extend({}, orig, {
                     type: f.attr('method') || "POST",
                     url: f.attr('action'),
@@ -147,7 +147,7 @@
                     },
                     complete: function (jq) {
                         f.removeClass("loading");
-                        $($disable).removeAttr("disabled");
+                        $disable.removeAttr("disabled");
                         if (orig.complete) {
                             orig.complete.apply(this, arguments);
                         }
