@@ -157,8 +157,7 @@ Alternative commercial licensing is also available, contact team@servicestack.ne
 
 ## Contributing
 
-Commits should be made to the **v3-fixes** branch so they can be merged into both **v3** and **master** (v4) release branches. 
-Contributors need to approve the [Contributor License Agreement](https://docs.google.com/forms/d/16Op0fmKaqYtxGL4sg7w_g-cXXyCoWjzppgkuqzOeKyk/viewform) before any code will be reviewed, see the [Contributing wiki](https://github.com/ServiceStack/ServiceStack/wiki/Contributing) for more details. 
+Contributors need to approve the [Contributor License Agreement](https://docs.google.com/forms/d/16Op0fmKaqYtxGL4sg7w_g-cXXyCoWjzppgkuqzOeKyk/viewform) before any code will be reviewed, see the [Contributing wiki](https://github.com/ServiceStack/ServiceStack/wiki/Contributing) for more details. All contributions must include tests verifying the desired behavior.
 
 ## OSS Libraries used
 
