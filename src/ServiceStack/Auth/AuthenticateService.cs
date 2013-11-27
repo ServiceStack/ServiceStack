@@ -173,6 +173,15 @@ namespace ServiceStack.Auth
             //Remove HTML Content-Type to avoid auth providers issuing browser re-directs
             this.Request.ResponseContentType = MimeTypes.PlainText;
 
+            if (request.RememberMe.HasValue)
+            {
+                var opt = request.RememberMe.GetValueOrDefault(false)
+                    ? SessionOptions.Permanent
+                    : SessionOptions.Temporary;
+
+                base.Request.AddSessionOptions(opt);
+            }
+
             var provider = request.provider ?? AuthProviders[0].Provider;
             var oAuthConfig = GetAuthProvider(provider);
             if (oAuthConfig == null)
