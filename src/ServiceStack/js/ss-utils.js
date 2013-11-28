@@ -17,6 +17,11 @@
                 : errorMsg || splitCase(errorCode);
         }
     };
+    $.ss.clearAdjacentError = function() {
+        $(this).removeClass("error");
+        $(this).prev(".help-block,.help-block").removeClass("error").html("");
+        $(this).next(".help-block,.help-block").removeClass("error").html("");
+    };
 
     function splitCase(t) {
         return typeof t != 'string' ? t : t.replace( /([A-Z]|[0-9]+)/g , ' $1').replace( /_/g , ' ');
@@ -206,4 +211,16 @@
         });
     };
     
+    $.fn.setActiveLinks = function () {
+        var url = window.location.href;
+        return this.each(function () {
+            $(this).filter(function () {
+                console.log(url, this.href);
+                return this.href == url;
+            })
+            .addClass('active')
+            .closest("li").addClass('active');
+        });
+    };
+
 })(window.jQuery);
