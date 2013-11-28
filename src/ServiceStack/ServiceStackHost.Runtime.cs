@@ -206,29 +206,11 @@ namespace ServiceStack
 
             httpRes.StatusDescription = errorStatusDescription;
 
-            var handler = GetHandlerForErrorStatus(errorStatus);
+            var handler = GetCustomErrorHandler(errorStatus)
+                ?? Config.GlobalHtmlErrorHttpHandler
+                ?? GetNotFoundHandler();
 
             handler.ProcessRequest(httpReq, httpRes, httpReq.OperationName);
-        }
-
-        public IServiceStackHandler GetHandlerForErrorStatus(HttpStatusCode errorStatus)
-        {
-            var httpHandler = GetCustomErrorHandler(errorStatus);
-
-            switch (errorStatus)
-            {
-                case HttpStatusCode.Forbidden:
-                    return httpHandler ?? new ForbiddenHttpHandler();
-                case HttpStatusCode.NotFound:
-                    return httpHandler ?? new NotFoundHttpHandler();
-            }
-
-            if (CustomErrorHttpHandlers != null)
-            {
-                CustomErrorHttpHandlers.TryGetValue(HttpStatusCode.NotFound, out httpHandler);
-            }
-
-            return httpHandler ?? new NotFoundHttpHandler();
         }
 
         public IServiceStackHandler GetCustomErrorHandler(int errorStatusCode)
@@ -250,12 +232,33 @@ namespace ServiceStack
             {
                 CustomErrorHttpHandlers.TryGetValue(errorStatus, out httpHandler);
             }
-            return httpHandler ?? Config.GlobalHtmlErrorHttpHandler;
+
+            switch (errorStatus)
+            {
+                case HttpStatusCode.Forbidden:
+                    return httpHandler ?? new ForbiddenHttpHandler();
+                case HttpStatusCode.NotFound:
+                    return httpHandler ?? new NotFoundHttpHandler();
+            }
+
+            return httpHandler;
+        }
+
+        public IServiceStackHandler GetNotFoundHandler()
+        {
+            IServiceStackHandler httpHandler = null;
+            if (CustomErrorHttpHandlers != null)
+            {
+                CustomErrorHttpHandlers.TryGetValue(HttpStatusCode.NotFound, out httpHandler);
+            }
+
+            return httpHandler ?? new NotFoundHttpHandler();
         }
 
         public IHttpHandler GetCustomErrorHttpHandler(HttpStatusCode errorStatus)
         {
-            var ssHandler = GetCustomErrorHandler(errorStatus);
+            var ssHandler = GetCustomErrorHandler(errorStatus)
+                ?? GetNotFoundHandler();
             if (ssHandler == null) return null;
             var httpHandler = ssHandler as IHttpHandler;
             return httpHandler ?? new ServiceStackHttpHandler(ssHandler);
