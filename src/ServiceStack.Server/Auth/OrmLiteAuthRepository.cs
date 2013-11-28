@@ -256,6 +256,9 @@ namespace ServiceStack.Auth
 
         public void SaveUserAuth(IAuthSession authSession)
         {
+            if (authSession == null)
+                throw new ArgumentNullException("authSession");
+
             using (var db = dbFactory.Open())
             {
                 var userAuth = !authSession.UserAuthId.IsNullOrEmpty()
@@ -279,6 +282,9 @@ namespace ServiceStack.Auth
 
         public void SaveUserAuth(IUserAuth userAuth)
         {
+            if (userAuth == null)
+                throw new ArgumentNullException("userAuth");
+
             userAuth.ModifiedDate = DateTime.UtcNow;
             if (userAuth.CreatedDate == default(DateTime))
             {

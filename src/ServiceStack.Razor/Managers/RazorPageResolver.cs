@@ -110,7 +110,7 @@ namespace ServiceStack.Razor.Managers
             return true;
         }
 
-        private RazorPage FindRazorPage(IRequest httpReq, object model)
+        public RazorPage FindRazorPage(IRequest httpReq, object model)
         {
             var viewName = httpReq.GetItem(ViewKey) as string;
             if (viewName != null)
