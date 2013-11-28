@@ -215,7 +215,6 @@
         var url = window.location.href;
         return this.each(function () {
             $(this).filter(function () {
-                console.log(url, this.href);
                 return this.href == url;
             })
             .addClass('active')
