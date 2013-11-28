@@ -509,5 +509,10 @@ namespace ServiceStack.Razor
             var errorStatus = GetErrorStatus();
             return errorStatus == null ? null : MvcHtmlString.Create(errorStatus.Message);
         }
+
+        public MvcHtmlString GetAbsoluteUrl(string virtualPath)
+        {
+            return MvcHtmlString.Create(AppHost.ResolveAbsoluteUrl(virtualPath, Request));
+        }
     }
 }
