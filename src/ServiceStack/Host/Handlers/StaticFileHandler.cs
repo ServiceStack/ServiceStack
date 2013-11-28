@@ -171,7 +171,7 @@ namespace ServiceStack.Host.Handlers
                         }
                         else
                         {
-                            fs.WriteTo(outputStream);
+                            fs.CopyTo(outputStream, 1024 * 1024);
                             outputStream.Flush();
                         }
                     }
