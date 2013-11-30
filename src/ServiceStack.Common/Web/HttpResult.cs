@@ -265,6 +265,9 @@ namespace ServiceStack.Common.Web
             long rangeStart, rangeEnd;
             rangeHeader.ExtractHttpRanges(contentLength, out rangeStart, out rangeEnd);
 
+            if (rangeEnd > contentLength - 1)
+                rangeEnd = contentLength - 1;
+
             response.AddHttpRangeResponseHeaders(rangeStart, rangeEnd, contentLength);
 
             var outputStream = response.OutputStream;
