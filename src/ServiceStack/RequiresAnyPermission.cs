@@ -66,6 +66,7 @@ namespace ServiceStack
         {
             return this.RequiredPermissions
                 .Any(requiredPermission => session != null
+                    && session.UserAuthId != null 
                     && session.HasPermission(requiredPermission));
         }
     }

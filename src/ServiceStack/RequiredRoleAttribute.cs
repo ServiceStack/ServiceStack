@@ -84,15 +84,15 @@ namespace ServiceStack
 
             var session = request.GetSession();
 
-            if (session != null && session.HasRole(RoleNames.Admin))
+            if (session != null && session.UserAuthId != null && session.HasRole(RoleNames.Admin))
                 return;
 
-            if (session != null && requiredRoles.All(session.HasRole))
+            if (session != null && session.UserAuthId != null && requiredRoles.All(session.HasRole))
                 return;
 
             session.UpdateFromUserAuthRepo(request);
 
-            if (session != null && requiredRoles.All(session.HasRole))
+            if (session != null && session.UserAuthId != null && requiredRoles.All(session.HasRole))
                 return;
 
             var statusCode = session != null && session.IsAuthenticated

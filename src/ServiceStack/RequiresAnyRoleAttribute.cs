@@ -80,12 +80,12 @@ namespace ServiceStack
 
             var session = req.GetSession();
 
-            if (session != null && requiredRoles.Any(session.HasRole))
+            if (session != null && session.UserAuthId != null && requiredRoles.Any(session.HasRole))
                 return;
 
             session.UpdateFromUserAuthRepo(req);
 
-            if (session != null && requiredRoles.Any(session.HasRole))
+            if (session != null && session.UserAuthId != null && requiredRoles.Any(session.HasRole))
                 return;
 
             var statusCode = session != null && session.IsAuthenticated
