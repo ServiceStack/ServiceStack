@@ -3,6 +3,9 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
+    /// <summary>
+    /// Change the default HTML view or template used for the HTML response of this service
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
     public class DefaultViewAttribute : RequestFilterAttribute
     {

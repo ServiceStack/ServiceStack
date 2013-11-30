@@ -186,6 +186,11 @@ namespace ServiceStack
                 ? bestMatch
                 : null;
         }
+
+        public static string AsHttps(this string absoluteUrl)
+        {
+            return string.IsNullOrEmpty(absoluteUrl) ? null : absoluteUrl.ReplaceFirst("http://", "https://");
+        }
     }
 
     public class RestRoute
