@@ -293,8 +293,7 @@ namespace ServiceStack
 
         internal static IHttpHandler ReturnRequestInfo(IHttpRequest httpReq)
         {
-            if ((HostContext.Config.DebugOnlyReturnRequestInfo
-                || HostContext.DebugMode 
+            if ((HostContext.DebugMode 
                 || HostContext.Config.AdminAuthSecret != null)
                 && httpReq.QueryString["debug"] == RequestInfoHandler.RestPath)
             {

@@ -186,7 +186,6 @@ namespace ServiceStack
         public bool AllowJsonpRequests { get; set; }
         public bool AllowRouteContentTypeExtensions { get; set; }
         public bool DebugMode { get; set; }
-        public bool DebugOnlyReturnRequestInfo { get; set; }
         public string DebugAspNetHostEnvironment { get; set; }
         public string DebugHttpListenerHostEnvironment { get; set; }
         public List<string> DefaultDocuments { get; private set; }
