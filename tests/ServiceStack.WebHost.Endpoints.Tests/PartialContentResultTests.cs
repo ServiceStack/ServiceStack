@@ -226,6 +226,37 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public async Task Can_seek_from_beginning_to_further_than_end()
+        {
+            // Not sure if this would ever occur in real streaming scenarios, but it does occur
+            // when some crawlers use range headers to specify a max size to return.
+            // e.g. Facebook crawler always sends range header of 'bytes=0-524287'.
+
+            var mockRequest = new MockHttpRequest();
+            var mockResponse = new MockHttpResponse();
+
+            mockRequest.Headers[HttpHeaders.Range] = "bytes=0-524287";
+
+            string customText = "1234567890";
+            byte[] customTextBytes = customText.ToUtf8Bytes();
+            var ms = new MemoryStream();
+            ms.Write(customTextBytes, 0, customTextBytes.Length);
+
+            var httpResult = new HttpResult(ms, "audio/mpeg");
+
+            bool reponseWasAutoHandled = await mockResponse.WriteToResponse(mockRequest, httpResult);
+            Assert.That(reponseWasAutoHandled, Is.True);
+
+            string writtenString = mockResponse.ReadAsString();
+            Assert.That(writtenString, Is.EqualTo(customText));
+
+            Assert.That(mockResponse.Headers["Content-Range"], Is.EqualTo("bytes 0-9/10"));
+            Assert.That(mockResponse.Headers["Content-Length"], Is.EqualTo(writtenString.Length.ToString()));
+            Assert.That(mockResponse.Headers["Accept-Ranges"], Is.EqualTo("bytes"));
+            Assert.That(mockResponse.StatusCode, Is.EqualTo(206));
+        }
+
+        [Test]
         public async Task Can_seek_from_beginning_to_middle()
         {
             var mockRequest = new MockHttpRequest();

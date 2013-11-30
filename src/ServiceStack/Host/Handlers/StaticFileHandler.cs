@@ -154,6 +154,10 @@ namespace ServiceStack.Host.Handlers
                     if (HostContext.Config.AllowPartialResponses && rangeHeader != null)
                     {
                         rangeHeader.ExtractHttpRanges(contentLength, out rangeStart, out rangeEnd);
+
+                        if (rangeEnd > contentLength - 1)
+                            rangeEnd = contentLength - 1;
+
                         r.AddHttpRangeResponseHeaders(rangeStart: rangeStart, rangeEnd: rangeEnd, contentLength: contentLength);
                     }
                     else
