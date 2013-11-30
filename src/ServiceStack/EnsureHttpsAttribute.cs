@@ -14,6 +14,11 @@ namespace ServiceStack
         /// </summary>
         public bool SkipIfDebugMode { get; set; }
 
+        /// <summary>
+        /// Don't redirect if the request was a forwarded request, e.g. from a Load Balancer
+        /// </summary>
+        public bool SkipIfXForwardedFor { get; set; }
+
         public override void Execute(IRequest req, IResponse res, object requestDto)
         {
             if (SkipIfDebugMode && HostContext.Config.DebugMode)
@@ -21,6 +26,13 @@ namespace ServiceStack
 
             if (!req.IsSecureConnection)
             {
+                if (SkipIfXForwardedFor)
+                {
+                    var httpReq = req as IHttpRequest;
+                    if (httpReq != null && httpReq.XForwardedFor != null)
+                        return;
+                }
+
                 res.RedirectToUrl(req.AbsoluteUri.AsHttps());
                 res.EndRequest();
             }
