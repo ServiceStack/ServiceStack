@@ -20,6 +20,9 @@ namespace ServiceStack.Support.Markdown
 
         public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {
+            HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes);
+            if (httpRes.IsClosed) return;
+
             if (MarkdownFormat == null)
                 MarkdownFormat = MarkdownFormat.Instance;
 

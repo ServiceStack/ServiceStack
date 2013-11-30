@@ -19,7 +19,7 @@ namespace ServiceStack
             if (SkipIfDebugMode && HostContext.Config.DebugMode)
                 return;
 
-            if (!req.AbsoluteUri.StartsWith("https://"))
+            if (!req.IsSecureConnection)
             {
                 res.RedirectToUrl(req.AbsoluteUri.AsHttps());
                 res.EndRequest();

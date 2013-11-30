@@ -18,11 +18,19 @@ namespace ServiceStack
     public abstract partial class ServiceStackHost
     {
         /// <summary>
+        /// Apply PreRequest Filters for participating Custom Handlers, e.g. RazorFormat, MarkdownFormat, etc
+        /// </summary>
+        public virtual bool ApplyCustomHandlerRequestFilters(IRequest httpReq, IResponse httpRes)
+        {
+            return ApplyPreRequestFilters(httpReq, httpRes);
+        }
+
+        /// <summary>
         /// Applies the raw request filters. Returns whether or not the request has been handled 
         /// and no more processing should be done.
         /// </summary>
         /// <returns></returns>
-        public bool ApplyPreRequestFilters(IRequest httpReq, IResponse httpRes)
+        public virtual bool ApplyPreRequestFilters(IRequest httpReq, IResponse httpRes)
         {
             foreach (var requestFilter in PreRequestFilters)
             {
@@ -38,7 +46,7 @@ namespace ServiceStack
         /// and no more processing should be done.
         /// </summary>
         /// <returns></returns>
-        public bool ApplyRequestFilters(IRequest httpReq, IResponse httpRes, object requestDto)
+        public virtual bool ApplyRequestFilters(IRequest httpReq, IResponse httpRes, object requestDto)
         {
             httpReq.ThrowIfNull("httpReq");
             httpRes.ThrowIfNull("httpRes");
@@ -83,7 +91,7 @@ namespace ServiceStack
         /// and no more processing should be done.
         /// </summary>
         /// <returns></returns>
-        public bool ApplyResponseFilters(IRequest httpReq, IResponse httpRes, object response)
+        public virtual bool ApplyResponseFilters(IRequest httpReq, IResponse httpRes, object response)
         {
             httpReq.ThrowIfNull("httpReq");
             httpRes.ThrowIfNull("httpRes");

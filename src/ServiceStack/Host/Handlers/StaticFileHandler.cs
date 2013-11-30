@@ -73,6 +73,9 @@ namespace ServiceStack.Host.Handlers
 
         public override void ProcessRequest(IRequest request, IResponse response, string operationName)
 		{
+            HostContext.ApplyCustomHandlerRequestFilters(request, response);
+            if (response.IsClosed) return;
+
             response.EndHttpHandlerRequest(skipClose: true, afterBody: r => 
             {
                 var node = request.GetVirtualNode();

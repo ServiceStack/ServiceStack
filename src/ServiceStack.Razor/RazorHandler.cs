@@ -20,6 +20,9 @@ namespace ServiceStack.Razor
 
         public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {
+            HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes);
+            if (httpRes.IsClosed) return;
+
             httpRes.ContentType = MimeTypes.Html;
             if (RazorFormat == null)
                 RazorFormat = RazorFormat.Instance;

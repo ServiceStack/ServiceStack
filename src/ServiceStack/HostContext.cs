@@ -118,6 +118,11 @@ namespace ServiceStack
             get { return AssertAppHost().GlobalResponseFilters; }
         }
 
+        public static bool ApplyCustomHandlerRequestFilters(IRequest httpReq, IResponse httpRes)
+        {
+            return AssertAppHost().ApplyCustomHandlerRequestFilters(httpReq, httpRes);
+        }
+
         public static bool ApplyPreRequestFilters(IRequest httpReq, IResponse httpRes)
         {
             return AssertAppHost().ApplyPreRequestFilters(httpReq, httpRes);
