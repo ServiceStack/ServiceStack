@@ -1,6 +1,11 @@
+using System;
+using System.Diagnostics;
+using System.IO;
 using System.Runtime.Serialization;
+using System.Text;
 using NUnit.Framework;
 using ServiceStack.Common.Extensions;
+using ServiceStack.Common.Web;
 using ServiceStack.ServiceModel.Serialization;
 using DataContractSerializer=ServiceStack.ServiceModel.Serialization.DataContractSerializer;
 
@@ -72,5 +77,22 @@ namespace ServiceStack.Common.Tests
 			Assert.That(deserializedSimpleDto.Id, Is.EqualTo(simpleDto.Id));
 			Assert.That(deserializedSimpleDto.Name, Is.EqualTo(simpleDto.Name));
 		}
+
+        [Test]
+        public void WritePartialTo_has_reasonable_timeout_for_invalid_requests()
+        {
+            var contentStream = new MemoryStream(Encoding.UTF8.GetBytes("0123456789"));
+            var outputStream = new MemoryStream();
+            var writeTimer = Stopwatch.StartNew();
+            try
+            {
+                contentStream.WritePartialTo(outputStream, 0, 100);
+            }
+            catch
+            {
+            }
+            writeTimer.Stop();
+            Assert.That(writeTimer.ElapsedMilliseconds < 1000);
+        }
 	}
 }
