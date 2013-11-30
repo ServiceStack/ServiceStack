@@ -16,7 +16,7 @@ namespace ServiceStack
 
         public override void Execute(IRequest req, IResponse res, object requestDto)
         {
-            if (SkipIfDebugMode)
+            if (SkipIfDebugMode && HostContext.Config.DebugMode)
                 return;
 
             if (!req.AbsoluteUri.StartsWith("https://"))
