@@ -257,6 +257,22 @@ namespace ServiceStack.Host.AspNet
             }
         }
 
+        public int? XForwardedPort
+        {
+            get
+            {
+                return string.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedPort]) ? (int?) null : int.Parse(request.Headers[HttpHeaders.XForwardedPort]);
+            }
+        }
+
+        public string XForwardedProtocol
+        {
+            get
+            {
+                return string.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedProtocol]) ? null : request.Headers[HttpHeaders.XForwardedProtocol];
+            }
+        }
+
         public string XRealIp
         {
             get
@@ -276,7 +292,7 @@ namespace ServiceStack.Host.AspNet
 
         public bool IsSecureConnection
         {
-            get { return request.IsSecureConnection; }
+            get { return request.IsSecureConnection || XForwardedProtocol == "https"; }
         }
 
         public string[] AcceptTypes

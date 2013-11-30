@@ -114,8 +114,18 @@ namespace ServiceStack.ServiceHost.Tests
         {
             get { throw new NotImplementedException(); }
         }
-        
-        public string XRealIp
+
+	    public int? XForwardedPort
+	    {
+            get { throw new NotImplementedException(); }
+        }
+
+	    public string XForwardedProtocol
+	    {
+            get { throw new NotImplementedException(); }
+        }
+
+	    public string XRealIp
         {
             get { throw new NotImplementedException(); }
         }

@@ -99,6 +99,7 @@
     <Compile Include="AddHeaderAttribute.cs" />
     <Compile Include="CompressedFileResult.cs" />
     <Compile Include="CompressedResult.cs" />
+    <Compile Include="EnsureHttpsAttribute.cs" />
     <Compile Include="Host\ContentTypes.cs" />
     <Compile Include="Host\Handlers\CustomActionHandler.cs" />
     <Compile Include="Host\Handlers\HttpAsyncTaskHandler.cs" />

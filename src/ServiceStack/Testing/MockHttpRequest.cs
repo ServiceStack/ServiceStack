@@ -137,6 +137,8 @@ namespace ServiceStack.Testing
 
         public string RemoteIp { get; set; }
         public string XForwardedFor { get; set; }
+        public int? XForwardedPort { get; set; }
+        public string XForwardedProtocol { get; set; }
         public string XRealIp { get; set; }
 
         public bool IsSecureConnection { get; set; }

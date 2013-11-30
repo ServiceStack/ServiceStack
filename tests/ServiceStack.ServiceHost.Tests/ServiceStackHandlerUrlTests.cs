@@ -74,7 +74,9 @@ namespace ServiceStack.ServiceHost.Tests
 
             public string RemoteIp { get; set; }
             public string XForwardedFor { get; set; }
-            public string XRealIp { get; set; }
+		    public int? XForwardedPort { get; set; }
+		    public string XForwardedProtocol { get; set; }
+		    public string XRealIp { get; set; }
 
 		    public bool IsSecureConnection { get; private set; }
 			public string[] AcceptTypes { get; private set; }
