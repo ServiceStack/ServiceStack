@@ -1020,7 +1020,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
 
-        [TestCase(ExpectedException = typeof(ApplicationException))]
+        [TestCase(ExpectedException = typeof(AuthenticationException))]
         public void Meaningful_Exception_for_Unknown_Auth_Header()
         {
             var authInfo = new AuthenticationInfo("Negotiate,NTLM");
