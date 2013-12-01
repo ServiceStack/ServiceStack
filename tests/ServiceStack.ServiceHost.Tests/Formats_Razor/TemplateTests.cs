@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
@@ -940,5 +941,24 @@ Demis / Bellot
             Assert.That(templateOutput, Is.EqualTo(expectedHtml));
         }
 
+
+        [Test]
+        public void RazorPage_Compilation_Is_Thread_Safe()
+        {
+            RazorFormat.AddFileAndPage(staticTemplatePath, staticTemplateContent);
+            var dynamicPage = RazorFormat.AddFileAndPage(dynamicPagePath, dynamicPageContent);
+
+            var expectedHtml = dynamicPageContent
+                .Replace("@Model.FirstName", person.FirstName)
+                .Replace("@Model.LastName", person.LastName);
+
+            expectedHtml = staticTemplateContent.Replace(RazorFormat.TemplatePlaceHolder, expectedHtml);
+
+            Parallel.For(0, 10, i =>
+            {
+                var templateOutput = RazorFormat.RenderToHtml(dynamicPage, model: templateArgs);
+                Assert.That(templateOutput, Is.EqualTo(expectedHtml));
+            });
+        }
     }
 }

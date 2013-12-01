@@ -8,13 +8,18 @@ namespace ServiceStack.Razor.Managers
 {
     public class RazorPage
     {
+        private readonly object syncRoot = new object();
+
         public RazorPage()
         {
             this.IsValid = false;
         }
 
+        public object SyncRoot { get { return syncRoot; } }
+
         public RazorPageHost PageHost { get; set; }
 
+        public bool IsCompiling { get; set; }
         public bool IsValid { get; set; }
 
         public IVirtualFile File { get; set; }

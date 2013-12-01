@@ -187,21 +187,9 @@ namespace ServiceStack.Razor.Managers
             }
         }
 
-        public void EnsureCompiled(RazorPage page, IHttpResponse response)
-        {
-            if (page == null) return;
-            if (page.IsValid) return;
-
-            var type = page.PageHost.Compile();
-
-            page.PageType = type;
-
-            page.IsValid = true;
-        }
-
         private IRazorView CreateRazorPageInstance(IHttpRequest httpReq, IHttpResponse httpRes, object dto, RazorPage razorPage)
         {
-            EnsureCompiled(razorPage, httpRes);
+            viewManager.EnsureCompiled(razorPage);
 
             //don't proceed any further, the background compiler found there was a problem compiling the page, so throw instead
             if (razorPage.CompileException != null)

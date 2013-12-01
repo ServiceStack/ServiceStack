@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.CSharp;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Utils;
@@ -30,6 +31,7 @@ namespace ServiceStack.Razor.Managers
 
         protected IVirtualPathProvider PathProvider = null;
 
+
         public RazorViewManager(IRazorConfig viewConfig, IVirtualPathProvider virtualPathProvider)
         {
             this.Config = viewConfig;
@@ -38,7 +40,16 @@ namespace ServiceStack.Razor.Managers
 
         public void Init()
         {
+            if (Config.WaitForPrecompilationOnStartup)
+                startupPrecompilationTasks = new List<Task>();
+
             ScanForRazorPages();
+
+            if (Config.WaitForPrecompilationOnStartup)
+            {
+                Task.WaitAll(startupPrecompilationTasks.ToArray());
+                startupPrecompilationTasks = null;
+            }
         }
 
         private void ScanForRazorPages()
@@ -56,6 +67,20 @@ namespace ServiceStack.Razor.Managers
         {
             var newFile = GetVirutalFile(filePath);
             return AddPage(newFile);
+        }
+
+        public virtual void InvalidatePage(RazorPage page)
+        {
+            if (page.IsValid || page.IsCompiling)
+            {
+                lock (page.SyncRoot)
+                {
+                    page.IsValid = false;
+                }
+            }
+
+            if (Config.PrecompilePages)
+                PrecompilePage(page);
         }
 
         public virtual RazorPage AddPage(IVirtualFile file)
@@ -82,6 +107,9 @@ namespace ServiceStack.Razor.Managers
 
             //add it to our pages dictionary.
             AddPage(page);
+
+            if (Config.PrecompilePages)
+                PrecompilePage(page);
             
             return page;
         }
@@ -232,6 +260,59 @@ namespace ServiceStack.Razor.Managers
         public virtual string GetDictionaryPagePath(IVirtualFile file)
         {
             return GetDictionaryPagePath(file.VirtualPath);
+        }
+
+        private List<Task> startupPrecompilationTasks;
+
+        protected virtual Task<RazorPage> PrecompilePage(RazorPage page)
+        {
+            var task = Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    EnsureCompiled(page);
+                }
+                catch (Exception ex)
+                {
+                    Log.ErrorFormat("Precompilation of Razor page '{0}' failed: {1}", page.File.Name, ex.Message);
+                }
+                return page;
+            });
+
+            if (startupPrecompilationTasks != null )
+                startupPrecompilationTasks.Add(task);
+
+            return task;
+        }
+
+        public virtual void EnsureCompiled(RazorPage page)
+        {
+            if (page == null) return;
+            if (page.IsValid) return;
+
+            lock (page.SyncRoot)
+            {
+                if (page.IsValid) return;
+
+                var compileTimer = System.Diagnostics.Stopwatch.StartNew();
+                try
+                {
+                    page.IsCompiling = true;
+
+                    var type = page.PageHost.Compile();
+
+                    page.PageType = type;
+
+                    page.IsValid = true;
+                }
+                finally
+                {
+                    page.IsCompiling = false;
+                }
+
+                compileTimer.Stop();
+                Log.DebugFormat("Compiled Razor page '{0}' in {1}ms.", page.File.Name, compileTimer.ElapsedMilliseconds);
+            }
         }
 
         #region FileSystemWatcher Handlers
