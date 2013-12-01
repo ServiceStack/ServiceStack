@@ -23,7 +23,7 @@ namespace ServiceStack.Razor.Managers
         public const string NoTemplateFormatValue = "bare";
         public const string DefaultLayoutName = "_Layout";
 
-        private static readonly UTF8Encoding UTF8EncodingWithoutBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier:false);
+        private static readonly UTF8Encoding UTF8EncodingWithoutBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
         private readonly IRazorConfig config;
         private readonly RazorViewManager viewManager;
@@ -125,7 +125,7 @@ namespace ServiceStack.Razor.Managers
             return razorPage;
         }
 
-        public IRazorView ResolveAndExecuteRazorPage(IRequest httpReq, IResponse httpRes, object model, RazorPage razorPage=null)
+        public IRazorView ResolveAndExecuteRazorPage(IRequest httpReq, IResponse httpRes, object model, RazorPage razorPage = null)
         {
             razorPage = razorPage ?? FindRazorPage(httpReq, model);
 
@@ -140,7 +140,7 @@ namespace ServiceStack.Razor.Managers
             var includeLayout = !(httpReq.GetParam(QueryStringFormatKey) ?? "").Contains(NoTemplateFormatValue);
             if (includeLayout)
             {
-                var result = ExecuteRazorPageWithLayout(httpReq, httpRes, model, page, () => 
+                var result = ExecuteRazorPageWithLayout(httpReq, httpRes, model, page, () =>
                     httpReq.GetItem(LayoutKey) as string
                     ?? page.Layout
                     ?? DefaultLayoutName);
@@ -197,13 +197,13 @@ namespace ServiceStack.Razor.Managers
             }
 
             //else, EnsureCompiled() ensures we have a page type to work with so, create an instance of the page
-            var page = (IRazorView) razorPage.ActivateInstance();
+            var page = (IRazorView)razorPage.ActivateInstance();
 
             page.Init(viewEngine: this, httpReq: httpReq, httpRes: httpRes);
 
             //deserialize the model.
             PrepareAndSetModel(page, httpReq, dto);
-        
+
             return page;
         }
 
@@ -258,7 +258,7 @@ namespace ServiceStack.Razor.Managers
                 }
                 else
                 {
-                    writer.Write("<!--No RenderPartialFn, skipping {0}-->".Fmt(pageName));                    
+                    writer.Write("<!--No RenderPartialFn, skipping {0}-->".Fmt(pageName));
                 }
             }
             return null;

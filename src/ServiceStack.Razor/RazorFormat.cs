@@ -52,8 +52,8 @@ namespace ServiceStack.Razor
 
         public bool WatchForModifiedPages
         {
-             get { return EnableLiveReload.GetValueOrDefault(); }
-             set { EnableLiveReload = value; }
+            get { return EnableLiveReload.GetValueOrDefault(); }
+            set { EnableLiveReload = value; }
         }
 
         //managers

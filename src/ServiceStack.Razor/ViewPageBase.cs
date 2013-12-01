@@ -128,7 +128,7 @@ namespace ServiceStack.Razor
 
             return str != null ? str.ToHtmlString() : HttpUtility.HtmlEncode(Convert.ToString(value, CultureInfo.CurrentCulture));
         }
-        
+
         public virtual void WriteAttribute(string name, Tuple<string, int> prefix, Tuple<string, int> suffix, params AttributeValue[] values)
         {
             var attributeValue = this.BuildAttribute(name, prefix, suffix, values);
@@ -175,7 +175,7 @@ namespace ServiceStack.Razor
 
             return string.Empty;
         }
-        
+
         private string GetStringValue(AttributeValue value)
         {
             if (value.IsLiteral)
@@ -262,8 +262,8 @@ namespace ServiceStack.Razor
         public object RenderSection(string sectionName)
         {
             var parentPage = ParentPage as RenderingPage;
-            return parentPage != null 
-                ? parentPage.RenderChildSection(sectionName)  
+            return parentPage != null
+                ? parentPage.RenderChildSection(sectionName)
                 : RenderChildSection(sectionName);
         }
 
@@ -336,7 +336,7 @@ namespace ServiceStack.Razor
         }
 
         public abstract Type ModelType { get; }
-        
+
         public virtual void SetModel(object o)
         {
             var viewModel = o is TModel ? (TModel)o : default(TModel);
@@ -492,12 +492,12 @@ namespace ServiceStack.Razor
             if (contents == null) return;
             //Builder.Insert(0, contents);
         }
-        
+
         public bool IsPostBack
         {
             get { return this.Request.Verb == HttpMethods.Post; }
         }
-        
+
         public ResponseStatus GetErrorStatus()
         {
             var errorStatus = this.Request.GetItem(HtmlFormat.ErrorStatusKey);

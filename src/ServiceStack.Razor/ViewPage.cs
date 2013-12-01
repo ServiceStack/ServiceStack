@@ -6,20 +6,20 @@ using ServiceStack.Web;
 namespace ServiceStack.Razor
 {
     public abstract class ViewPage : ViewPageBase<dynamic>, IRazorView
-	{
-		public HtmlHelper Html = new HtmlHelper();
+    {
+        public HtmlHelper Html = new HtmlHelper();
 
-		public override Type ModelType
-		{
-			get { return typeof(DynamicRequestObject); }
-		}
+        public override Type ModelType
+        {
+            get { return typeof(DynamicRequestObject); }
+        }
 
         public void Init(IViewEngine viewEngine, IRequest httpReq, IResponse httpRes)
         {
             base.Request = httpReq;
             base.Response = httpRes;
 
-            Html.Init(viewEngine: viewEngine, httpReq: httpReq, httpRes: httpRes, razorPage:this);
+            Html.Init(viewEngine: viewEngine, httpReq: httpReq, httpRes: httpRes, razorPage: this);
         }
 
         public override void SetModel(object o)
@@ -34,7 +34,7 @@ namespace ServiceStack.Razor
             this.Execute();
             this.Output.Flush();
         }
-	}
+    }
 
     public abstract class ViewPage<TModel> : ViewPageBase<TModel>, IRazorView
     {

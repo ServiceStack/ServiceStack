@@ -80,7 +80,7 @@ namespace ServiceStack.Razor.Managers
 
         public virtual RazorPage AddPage(IVirtualFile file)
         {
-            return IsWatchedFile(file) 
+            return IsWatchedFile(file)
                 ? TrackPage(file)
                 : null;
         }
@@ -102,7 +102,7 @@ namespace ServiceStack.Razor.Managers
 
             //add it to our pages dictionary.
             AddPage(page);
-            
+
             if (Config.PrecompilePages)
                 PrecompilePage(page);
 
@@ -140,7 +140,7 @@ namespace ServiceStack.Razor.Managers
 
             if (this.Pages.TryGetValue(Path.ChangeExtension(pathInfo, Config.RazorFileExtension), out page))
                 return page;
-            
+
             if (this.Pages.TryGetValue(CombinePaths(pathInfo, Config.DefaultPageName), out page))
                 return page;
 
@@ -198,7 +198,7 @@ namespace ServiceStack.Razor.Managers
             return page ?? GetPageByPathInfo("/" + htmlPageName);
         }
 
-        static char[] InvalidFileChars = new[]{'<','>','`'}; //Anonymous or Generic type names
+        static char[] InvalidFileChars = new[] { '<', '>', '`' }; //Anonymous or Generic type names
         private string NormalizePath(IRequest request, object dto)
         {
             if (dto != null && !(dto is DynamicRequestObject)) // this is for a view inside /views
@@ -274,7 +274,7 @@ namespace ServiceStack.Razor.Managers
                 return page;
             });
 
-            if (startupPrecompilationTasks != null )
+            if (startupPrecompilationTasks != null)
                 startupPrecompilationTasks.Add(task);
 
             return task;
