@@ -44,6 +44,17 @@ namespace ServiceStack.Common.Utils
             }
             return default(T);
         }
+
+        public static void WaitWhile(Func<bool> condition, int millisecondTimeout, int millsecondPollPeriod = 10)
+        {
+            var timer = System.Diagnostics.Stopwatch.StartNew();
+            while (condition())
+            {
+                System.Threading.Thread.Sleep(millsecondPollPeriod);
+                if (timer.ElapsedMilliseconds > millisecondTimeout)
+                    throw new TimeoutException("Timed out waiting for condition function.");
+            }
+        }
     }
 
 }
