@@ -50,7 +50,11 @@ namespace ServiceStack.Razor
             return Path.GetFileName(path).StartsWith("_");
         }
 
-        public bool WatchForModifiedPages { get; set; }
+        public bool WatchForModifiedPages
+        {
+            get { return EnableLiveReload.GetValueOrDefault(); }
+            set { EnableLiveReload = value; }
+        }
 
         //managers
         protected RazorViewManager ViewManager;
