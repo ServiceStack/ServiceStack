@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.CSharp;
 using ServiceStack.IO;
 using ServiceStack.Logging;
@@ -173,7 +174,7 @@ namespace ServiceStack.Razor.Managers
 
             if (request != null)
             {
-                var contextRelativePath = NormalizePath(request, dto);
+                var contextRelativePath = NormalizePath(request, dto) ?? "/views/";
 
                 string contextParentDir = contextRelativePath;
                 do
@@ -261,11 +262,16 @@ namespace ServiceStack.Razor.Managers
 
         protected virtual Task<RazorPage> PrecompilePage(RazorPage page)
         {
+            page.MarkedForCompilation = true;
+
             var task = Task.Factory.StartNew(() =>
             {
                 try
                 {
                     EnsureCompiled(page);
+
+                    if (page.CompileException != null)
+                        Log.ErrorFormat("Precompilation of Razor page '{0}' failed: {1}", page.File.Name, page.CompileException.Message);
                 }
                 catch (Exception ex)
                 {
@@ -293,20 +299,26 @@ namespace ServiceStack.Razor.Managers
                 try
                 {
                     page.IsCompiling = true;
+                    page.CompileException = null;
 
                     var type = page.PageHost.Compile();
 
                     page.PageType = type;
 
                     page.IsValid = true;
+
+                    compileTimer.Stop();
+                    Log.DebugFormat("Compiled Razor page '{0}' in {1}ms.", page.File.Name, compileTimer.ElapsedMilliseconds);
+                }
+                catch (HttpCompileException ex)
+                {
+                    page.CompileException = ex;
                 }
                 finally
                 {
                     page.IsCompiling = false;
+                    page.MarkedForCompilation = false;
                 }
-
-                compileTimer.Stop();
-                Log.DebugFormat("Compiled Razor page '{0}' in {1}ms.", page.File.Name, compileTimer.ElapsedMilliseconds);
             }
         }
 

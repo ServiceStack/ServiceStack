@@ -97,6 +97,7 @@ namespace ServiceStack.VirtualPath
 
         public override IVirtualFile GetFile(string virtualPath)
         {
+            virtualPath = StripBeginningDirectorySeparator(virtualPath);
             return files.FirstOrDefault(x => x.FilePath == virtualPath);
         }
 
@@ -107,7 +108,7 @@ namespace ServiceStack.VirtualPath
 
         protected override IVirtualFile GetFileFromBackingDirectoryOrDefault(string fileName)
         {
-            return files.FirstOrDefault(x => x.FilePath == fileName);
+            return GetFile(fileName);
         }
 
         protected override IEnumerable<IVirtualFile> GetMatchingFilesInDir(string globPattern)
@@ -118,10 +119,14 @@ namespace ServiceStack.VirtualPath
 
         public IEnumerable<InMemoryVirtualFile> EnumerateFiles(string pattern)
         {
-            return from dir in dirs 
-                   from file in files 
-                   where file.Name.Glob(pattern) 
-                   select file;
+            foreach (var file in files.Where(f => f.Name.Glob(pattern)))
+            {
+                yield return file;
+            }
+            foreach (var file in dirs.SelectMany(d => d.EnumerateFiles(pattern)))
+            {
+                yield return file;
+            }
         }
 
         protected override IVirtualDirectory GetDirectoryFromBackingDirectoryOrDefault(string directoryName)
@@ -132,11 +137,23 @@ namespace ServiceStack.VirtualPath
         static readonly char[] DirSeps = new[] { '\\', '/' };
         public void AddFile(string filePath, string contents)
         {
+            filePath = StripBeginningDirectorySeparator(filePath);
             this.files.Add(new InMemoryVirtualFile(VirtualPathProvider, this) {
                 FilePath = filePath,
                 FileName = filePath.Split(DirSeps).Last(),
                 TextContents = contents,
             });
+        }
+
+        private static string StripBeginningDirectorySeparator(string filePath)
+        {
+            if (String.IsNullOrEmpty(filePath))
+                return filePath;
+
+            if (DirSeps.Any(d => filePath[0] == d))
+                    return filePath.Substring(1);
+
+            return filePath;
         }
     }
     
@@ -153,7 +170,7 @@ namespace ServiceStack.VirtualPath
         public string FileName { get; set; }
         public override string Name
         {
-            get { return FileName; }
+            get { return FilePath; }
         }
 
         public DateTime FileLastModified { get; set; }

@@ -88,11 +88,6 @@ namespace ServiceStack.Auth
                 ? userAuthRepo.CreateUserAuth(newUserAuth, request.Password)
                 : userAuthRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);
 
-            if (registerNewUser)
-            {
-                session.OnRegistered(this);
-            }
-
             if (request.AutoLogin.GetValueOrDefault())
             {
                 using (var authService = base.ResolveService<AuthenticateService>())
@@ -119,6 +114,12 @@ namespace ServiceStack.Auth
                         };
                     }
                 }
+            }
+
+            if (registerNewUser)
+            {
+                session = this.GetSession();
+                session.OnRegistered(this);
             }
 
             if (response == null)
