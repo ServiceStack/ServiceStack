@@ -64,7 +64,7 @@ namespace ServiceStack.Razor.Managers
             return AddPage(newFile);
         }
 
-        public virtual void InvalidatePage(RazorPage page)
+        public virtual void InvalidatePage(RazorPage page, bool compile = true)
         {
             if (page.IsValid || page.IsCompiling)
             {
@@ -73,8 +73,8 @@ namespace ServiceStack.Razor.Managers
                     page.IsValid = false;
                 }
             }
- 
-            if (Config.PrecompilePages)
+
+            if (compile)
                 PrecompilePage(page);
         }
 
