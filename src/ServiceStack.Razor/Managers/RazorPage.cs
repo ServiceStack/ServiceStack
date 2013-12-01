@@ -19,6 +19,7 @@ namespace ServiceStack.Razor.Managers
 
         public RazorPageHost PageHost { get; set; }
 
+        public bool MarkedForCompilation { get; set; }
         public bool IsCompiling { get; set; }
         public bool IsValid { get; set; }
 
