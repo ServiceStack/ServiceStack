@@ -28,7 +28,7 @@
     if (session.IsAuthenticated)
     {
         var userAuthId = session.UserAuthId.ToInt();
-        var userAuth = Db.QueryById<UserAuth>(userAuthId);
+        var userAuth = Db.SingleById<UserAuth>(userAuthId);
         var authProviders = Db.Select<UserAuthDetails>(x => x.UserAuthId == userAuthId);
 
         <h2 style="color:green">Authenticated!</h2>
