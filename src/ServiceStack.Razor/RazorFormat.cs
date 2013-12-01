@@ -40,6 +40,7 @@ namespace ServiceStack.Razor
         public string ScanRootPath { get; set; }
         public bool? EnableLiveReload { get; set; }
         public List<Predicate<string>> Deny { get; set; }
+        public bool PrecompilePages { get; set; }
         public IVirtualPathProvider VirtualPathProvider { get; set; }
         public ILiveReload LiveReload { get; set; }
         public Func<RazorViewManager, ILiveReload> LiveReloadFactory { get; set; }
@@ -243,6 +244,7 @@ namespace ServiceStack.Razor
         string ScanRootPath { get; }
         string WebHostUrl { get; }
         List<Predicate<string>> Deny { get; }
+        bool PrecompilePages { get; set; }
     }
 
 }
