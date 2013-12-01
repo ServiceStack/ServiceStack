@@ -294,7 +294,7 @@ namespace ServiceStack.Razor.Managers
                 }
 
                 compileTimer.Stop();
-                Log.InfoFormat("Compiled Razor page '{0}' in {1}ms.", page.File.Name, compileTimer.ElapsedMilliseconds);
+                Log.DebugFormat("Compiled Razor page '{0}' in {1}ms.", page.File.Name, compileTimer.ElapsedMilliseconds);
             }
         }
 
