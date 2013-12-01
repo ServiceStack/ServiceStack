@@ -35,12 +35,12 @@ namespace ServiceStack.Razor.Managers
 
         public void Init()
         {
-            if (Config.WaitForPrecompilationOnStartup)
+            if (Config.WaitForPrecompilationOnStartup.GetValueOrDefault())
                 startupPrecompilationTasks = new List<Task>();
 
             ScanForRazorPages();
 
-            if (Config.WaitForPrecompilationOnStartup)
+            if (Config.WaitForPrecompilationOnStartup.GetValueOrDefault())
             {
                 Task.WaitAll(startupPrecompilationTasks.ToArray());
                 startupPrecompilationTasks = null;
@@ -103,7 +103,7 @@ namespace ServiceStack.Razor.Managers
             //add it to our pages dictionary.
             AddPage(page);
 
-            if (Config.PrecompilePages)
+            if (Config.PrecompilePages.GetValueOrDefault())
                 PrecompilePage(page);
 
             return page;

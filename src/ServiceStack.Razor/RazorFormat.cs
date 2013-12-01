@@ -36,10 +36,10 @@ namespace ServiceStack.Razor
         public string DefaultPageName { get; set; }
         public string WebHostUrl { get; set; }
         public string ScanRootPath { get; set; }
-        public bool? EnableLiveReload { get; set; }
         public List<Predicate<string>> Deny { get; set; }
-        public bool PrecompilePages { get; set; }
-        public bool WaitForPrecompilationOnStartup { get; set; }
+        public bool? EnableLiveReload { get; set; }
+        public bool? PrecompilePages { get; set; }
+        public bool? WaitForPrecompilationOnStartup { get; set; }
         public IVirtualPathProvider VirtualPathProvider { get; set; }
         public ILiveReload LiveReload { get; set; }
         public Func<RazorViewManager, ILiveReload> LiveReloadFactory { get; set; }
@@ -66,6 +66,8 @@ namespace ServiceStack.Razor
             this.VirtualPathProvider = VirtualPathProvider ?? appHost.VirtualPathProvider;
             this.WebHostUrl = WebHostUrl ?? appHost.Config.WebHostUrl;
             this.EnableLiveReload = this.EnableLiveReload ?? appHost.Config.DebugMode;
+            this.PrecompilePages = this.PrecompilePages ?? !this.EnableLiveReload;
+            this.WaitForPrecompilationOnStartup = this.WaitForPrecompilationOnStartup ?? !this.EnableLiveReload;
 
             try
             {
@@ -239,8 +241,8 @@ namespace ServiceStack.Razor
         string ScanRootPath { get; }
         string WebHostUrl { get; }
         List<Predicate<string>> Deny { get; }
-        bool PrecompilePages { get; set; }
-        bool WaitForPrecompilationOnStartup { get; set; }
+        bool? PrecompilePages { get; set; }
+        bool? WaitForPrecompilationOnStartup { get; set; }
     }
 
 }
