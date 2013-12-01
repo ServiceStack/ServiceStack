@@ -31,6 +31,7 @@ namespace ServiceStack.Razor.Managers
 
         protected IVirtualPathProvider PathProvider = null;
 
+
         public RazorViewManager(IRazorConfig viewConfig, IVirtualPathProvider virtualPathProvider)
         {
             this.Config = viewConfig;
@@ -39,7 +40,16 @@ namespace ServiceStack.Razor.Managers
 
         public void Init()
         {
+            if (Config.WaitForPrecompilationOnStartup)
+                startupPrecompilationTasks = new List<Task>();
+
             ScanForRazorPages();
+
+            if (Config.WaitForPrecompilationOnStartup)
+            {
+                Task.WaitAll(startupPrecompilationTasks.ToArray());
+                startupPrecompilationTasks = null;
+            }
         }
 
         private void ScanForRazorPages()
@@ -252,9 +262,11 @@ namespace ServiceStack.Razor.Managers
             return GetDictionaryPagePath(file.VirtualPath);
         }
 
+        private List<Task> startupPrecompilationTasks;
+
         protected virtual Task<RazorPage> PrecompilePage(RazorPage page)
         {
-            return Task.Factory.StartNew(() =>
+            var task = Task.Factory.StartNew(() =>
             {
                 try
                 {
@@ -266,6 +278,11 @@ namespace ServiceStack.Razor.Managers
                 }
                 return page;
             });
+
+            if (startupPrecompilationTasks != null )
+                startupPrecompilationTasks.Add(task);
+
+            return task;
         }
 
         public virtual void EnsureCompiled(RazorPage page)

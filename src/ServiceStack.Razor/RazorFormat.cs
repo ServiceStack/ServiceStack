@@ -41,6 +41,7 @@ namespace ServiceStack.Razor
         public bool? EnableLiveReload { get; set; }
         public List<Predicate<string>> Deny { get; set; }
         public bool PrecompilePages { get; set; }
+        public bool WaitForPrecompilationOnStartup { get; set; }
         public IVirtualPathProvider VirtualPathProvider { get; set; }
         public ILiveReload LiveReload { get; set; }
         public Func<RazorViewManager, ILiveReload> LiveReloadFactory { get; set; }
@@ -245,6 +246,7 @@ namespace ServiceStack.Razor
         string WebHostUrl { get; }
         List<Predicate<string>> Deny { get; }
         bool PrecompilePages { get; set; }
+        bool WaitForPrecompilationOnStartup { get; set; }
     }
 
 }
