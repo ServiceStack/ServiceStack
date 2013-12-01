@@ -6,7 +6,6 @@ using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Razor.Managers;
-using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 
@@ -39,6 +38,8 @@ namespace ServiceStack.Razor
         public string ScanRootPath { get; set; }
         public bool? EnableLiveReload { get; set; }
         public List<Predicate<string>> Deny { get; set; }
+        public bool PrecompilePages { get; set; }
+        public bool WaitForPrecompilationOnStartup { get; set; }
         public IVirtualPathProvider VirtualPathProvider { get; set; }
         public ILiveReload LiveReload { get; set; }
         public Func<RazorViewManager, ILiveReload> LiveReloadFactory { get; set; }
@@ -49,7 +50,11 @@ namespace ServiceStack.Razor
             return Path.GetFileName(path).StartsWith("_");
         }
 
-        public bool WatchForModifiedPages { get; set; }
+        public bool WatchForModifiedPages
+        {
+             get { return EnableLiveReload.GetValueOrDefault(); }
+             set { EnableLiveReload = value; }
+        }
 
         //managers
         protected RazorViewManager ViewManager;
@@ -234,6 +239,8 @@ namespace ServiceStack.Razor
         string ScanRootPath { get; }
         string WebHostUrl { get; }
         List<Predicate<string>> Deny { get; }
+        bool PrecompilePages { get; set; }
+        bool WaitForPrecompilationOnStartup { get; set; }
     }
 
 }
