@@ -278,6 +278,7 @@ namespace ServiceStack
             if (ex is HttpError) return ((HttpError)ex).Status;
             if (ex is NotImplementedException || ex is NotSupportedException) return (int)HttpStatusCode.MethodNotAllowed;
             if (ex is ArgumentException || ex is SerializationException) return (int)HttpStatusCode.BadRequest;
+            if (ex is AuthenticationException) return (int) HttpStatusCode.Unauthorized;
             if (ex is UnauthorizedAccessException) return (int) HttpStatusCode.Forbidden;
             return (int)HttpStatusCode.InternalServerError;
 	    }

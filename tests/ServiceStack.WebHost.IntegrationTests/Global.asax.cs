@@ -156,7 +156,7 @@ namespace ServiceStack.WebHost.IntegrationTests
                 if (new AppSettings().Get("RecreateTables", true))
                     authRepo.DropAndReCreateTables();
                 else
-                    authRepo.CreateMissingTables();
+                    authRepo.InitSchema();
             }
         }
 

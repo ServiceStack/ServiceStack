@@ -168,6 +168,7 @@
     <Compile Include="Models\ShipperFactory.cs" />
     <Compile Include="Models\BuiltInsFactory.cs" />
     <Compile Include="OAuth\OAuthUserSessionTests.cs" />
+    <Compile Include="OAuth\OrmLiteUserAuthRepositoryTests.cs" />
     <Compile Include="OAuth\OrmLiteUserAuthTests.cs" />
     <Compile Include="OAuth\RegistrationServiceTests.cs" />
     <Compile Include="OAuth\CredentialsServiceTests.cs" />

@@ -103,7 +103,7 @@ namespace ServiceStack.AuthWeb.Tests
             if (appSettings.Get("RecreateAuthTables", false))
                 authRepo.DropAndReCreateTables(); //Drop and re-create all Auth and registration tables
             else
-                authRepo.CreateMissingTables();   //Create only the missing tables
+                authRepo.InitSchema();   //Create only the missing tables
 
             Plugins.Add(new RequestLogsFeature());
         }

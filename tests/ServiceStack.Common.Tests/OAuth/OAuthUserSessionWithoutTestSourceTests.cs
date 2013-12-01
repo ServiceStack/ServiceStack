@@ -47,18 +47,16 @@ namespace ServiceStack.Common.Tests.OAuth
 				}
 				else
 				{
-					var sqliteInMemoryRepo = new OrmLiteAuthRepository(dbFactory) {
-					    AutoCreateMissingTables = true
-					};
+					var sqliteInMemoryRepo = new OrmLiteAuthRepository(dbFactory);
 
+                    sqliteInMemoryRepo.InitSchema();
                     sqliteInMemoryRepo.Clear();
 					userAuthRepositorys.Add(sqliteInMemoryRepo);
 
-					var sqliteDbFactory = new OrmLiteConnectionFactory(
+					var sqliteDbFactory = new OrmLiteConnectionFactory( 
 						"~/App_Data/auth.sqlite".MapProjectPath()); 
-                    var sqliteDbRepo = new OrmLiteAuthRepository(sqliteDbFactory) {
-                        AutoCreateMissingTables = true
-                    };
+                    var sqliteDbRepo = new OrmLiteAuthRepository(sqliteDbFactory);
+                    sqliteDbRepo.InitSchema();
 					userAuthRepositorys.Add(sqliteDbRepo);
 				}
 			}

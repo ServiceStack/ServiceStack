@@ -22,4 +22,12 @@ namespace ServiceStack.Auth
         IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password);
         IUserAuth GetUserAuth(string userAuthId);
     }
+
+    public interface IRequiresSchema
+    {
+        /// <summary>
+        /// Creates the required missing tables or DB schema 
+        /// </summary>
+        void InitSchema();
+    }
 }

@@ -75,7 +75,7 @@ namespace ServiceStack.Common.Tests.OAuth
 				{
 					var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
 					var sqliteRepo = new OrmLiteAuthRepository(dbFactory);
-					sqliteRepo.CreateMissingTables();
+					sqliteRepo.InitSchema();
 					sqliteRepo.Clear();
 					yield return new TestCaseData(sqliteRepo);
 
@@ -83,7 +83,7 @@ namespace ServiceStack.Common.Tests.OAuth
 					if (File.Exists(dbFilePath)) File.Delete(dbFilePath);
 					var sqliteDbFactory = new OrmLiteConnectionFactory(dbFilePath);
 					var sqliteDbRepo = new OrmLiteAuthRepository(sqliteDbFactory);
-					sqliteDbRepo.CreateMissingTables();
+                    sqliteDbRepo.InitSchema();
 					yield return new TestCaseData(sqliteDbRepo);
 				}
 			}

@@ -16,26 +16,17 @@ namespace ServiceStack.Auth
         public OrmLiteAuthRepository(IDbConnectionFactory dbFactory, IHashProvider passwordHasher) : base(dbFactory, passwordHasher) { }
     }
 
-    public class OrmLiteAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IClearable
+    public class OrmLiteAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IRequiresSchema, IClearable
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
         //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
         public Regex ValidUserNameRegEx = new Regex(@"^(?=.{3,15}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
 
+        public int? MaxLoginAttempts { get; set; }
+
         private readonly IDbConnectionFactory dbFactory;
         private readonly IHashProvider passwordHasher;
-
-        public bool AutoCreateMissingTables
-        {
-            set
-            {
-                if (value)
-                {
-                    CreateMissingTables();
-                }
-            }
-        }
 
         public OrmLiteAuthRepository(IDbConnectionFactory dbFactory)
             : this(dbFactory, new SaltedHash()) { }
@@ -46,7 +37,7 @@ namespace ServiceStack.Auth
             this.passwordHasher = passwordHasher;
         }
 
-        public void CreateMissingTables()
+        public void InitSchema()
         {
             using (var db = dbFactory.Open())
             {
@@ -184,9 +175,30 @@ namespace ServiceStack.Auth
             return userAuth;
         }
 
+        protected virtual void RecordInvalidLoginAttempt(IUserAuth userAuth)
+        {
+            if (MaxLoginAttempts == null) return;
+
+            userAuth.InvalidLoginAttempts += 1;
+            userAuth.LastLoginAttempt = userAuth.ModifiedDate = DateTime.UtcNow;
+            if (userAuth.InvalidLoginAttempts >= MaxLoginAttempts.Value)
+            {
+                userAuth.LockedDate = userAuth.LastLoginAttempt;
+            }
+            SaveUserAuth(userAuth);
+        }
+
+        protected virtual void RecordSuccessfulLogin(IUserAuth userAuth)
+        {
+            if (MaxLoginAttempts == null) return;
+
+            userAuth.InvalidLoginAttempts = 0;
+            userAuth.LastLoginAttempt = userAuth.ModifiedDate = DateTime.UtcNow;
+            SaveUserAuth(userAuth);
+        }
+
         public bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)
         {
-            //userId = null;
             userAuth = GetUserAuthByUserName(userName);
             if (userAuth == null)
             {
@@ -195,9 +207,12 @@ namespace ServiceStack.Auth
 
             if (passwordHasher.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
             {
-                //userId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
+                RecordSuccessfulLogin(userAuth);
+
                 return true;
             }
+
+            RecordInvalidLoginAttempt(userAuth);
 
             userAuth = null;
             return false;
@@ -215,9 +230,13 @@ namespace ServiceStack.Auth
             var digestHelper = new DigestAuthFunctions();
             if (digestHelper.ValidateResponse(digestHeaders, privateKey, nonceTimeOut, userAuth.DigestHa1Hash, sequence))
             {
-                //userId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
+                RecordSuccessfulLogin(userAuth);
+
                 return true;
             }
+
+            RecordInvalidLoginAttempt(userAuth);
+
             userAuth = null;
             return false;
         }

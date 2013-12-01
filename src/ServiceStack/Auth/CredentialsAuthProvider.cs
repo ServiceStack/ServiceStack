@@ -38,8 +38,10 @@ namespace ServiceStack.Auth
 
             var session = authService.GetSession();
             IUserAuth userAuth;
-            if (authRepo.TryAuthenticate(userName, password, out userAuth)) 
+            if (authRepo.TryAuthenticate(userName, password, out userAuth))
             {
+                AssertNotLocked(userAuth);
+
                 session.PopulateWith(userAuth);
                 session.IsAuthenticated = true;
                 session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
@@ -135,6 +137,12 @@ namespace ServiceStack.Auth
 
             authService.SaveSession(session, SessionExpiry);
             session.OnAuthenticated(authService, session, tokens, authInfo);
+        }
+
+        protected virtual void AssertNotLocked(IUserAuth userAuth)
+        {
+            if (userAuth.LockedDate != null)
+                throw new AuthenticationException("This account has been locked");
         }
     }
 }

@@ -18,6 +18,10 @@ namespace ServiceStack.Auth
         int? RefId { get; set; }
         string RefIdStr { get; set; }
 
+        int InvalidLoginAttempts { get; set; }
+        DateTime? LastLoginAttempt { get; set; }
+        DateTime? LockedDate { get; set; }
+
         DateTime CreatedDate { get; set; }
         DateTime ModifiedDate { get; set; }
     }
@@ -99,6 +103,9 @@ namespace ServiceStack.Auth
         public virtual List<string> Permissions { get; set; }
         public virtual DateTime CreatedDate { get; set; }
         public virtual DateTime ModifiedDate { get; set; }
+        public virtual int InvalidLoginAttempts { get; set; }
+        public virtual DateTime? LastLoginAttempt { get; set; }
+        public virtual DateTime? LockedDate { get; set; }
 
         //Custom Reference Data
         public virtual int? RefId { get; set; }
@@ -330,6 +337,18 @@ namespace ServiceStack.Auth
 
             instance.Meta[typeof(T).GetOperationName()] = TypeSerializer.SerializeToString(value);
             return value;
+        }
+
+        /// <summary>
+        /// Creates the required missing tables or DB schema 
+        /// </summary>
+        public static void InitSchema(this IUserAuthRepository authRepo)
+        {
+            var requiresSchema = authRepo as IRequiresSchema;
+            if (requiresSchema != null)
+            {
+                requiresSchema.InitSchema();
+            }
         }
     }
 

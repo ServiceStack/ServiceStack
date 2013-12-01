@@ -66,7 +66,10 @@ namespace ServiceStack.Auth
             if (HostContext.GlobalRequestFilters == null
                 || !HostContext.GlobalRequestFilters.Contains(ValidationFilters.RequestFilter)) //Already gets run
             {
-                RegistrationValidator.ValidateAndThrow(request, ApplyTo.Post);
+                if (RegistrationValidator != null)
+                {
+                    RegistrationValidator.ValidateAndThrow(request, ApplyTo.Post);
+                }
             }
 
             var userAuthRepo = AuthRepo.AsUserAuthRepository(GetResolver());
