@@ -1029,12 +1029,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             );
         }
 
-
-		[TestCase(ExpectedException=typeof(ApplicationException))]
-		public void Meaningful_Exception_for_Unknown_Auth_Header()
-		{
-			AuthenticationInfo authInfo = new AuthenticationInfo("Negotiate,NTLM");
-		}
+        [TestCase(ExpectedException = typeof(AuthenticationException))]
+        public void Meaningful_Exception_for_Unknown_Auth_Header()
+        {
+	        AuthenticationInfo authInfo = new AuthenticationInfo("Negotiate,NTLM");
+        }
     }
 
     public class AuthTestsWithinVirtualDirectory : AuthTests
