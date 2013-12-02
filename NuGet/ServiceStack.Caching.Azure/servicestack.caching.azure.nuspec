@@ -10,7 +10,7 @@
         https://github.com/ServiceStack/ServiceStack/wiki/Caching
     </description> 
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
-    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/license.txt</licenseUrl>
+    <licenseUrl>https://servicestack.net/terms</licenseUrl>
     <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
     <tags>ServiceStack Caching Windows Azure Cache CacheClient POCO Code-First</tags>
     <language>en-US</language> 

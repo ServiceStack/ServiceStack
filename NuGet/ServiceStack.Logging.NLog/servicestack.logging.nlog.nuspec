@@ -12,7 +12,7 @@
       Provides NLog logging integration for other ServiceStack projects
     </description>
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
-    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/license.txt</licenseUrl>
+    <licenseUrl>https://servicestack.net/terms</licenseUrl>
     <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
     <tags>servicestack log logging nlog</tags>
     <language>en-US</language>
