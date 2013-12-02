@@ -1207,7 +1207,17 @@
         </member>
         <member name="P:ServiceStack.Web.IHttpRequest.XForwardedFor">
             <summary>
-            The value of the X-Forwarded-For header, null if null or empty
+            The IP Address of the X-Forwarded-For header, null if null or empty
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IHttpRequest.XForwardedPort">
+            <summary>
+            The Port number of the X-Forwarded-Port header, null if null or empty
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IHttpRequest.XForwardedProtocol">
+            <summary>
+            The http or https scheme of the X-Forwarded-Proto header, null if null or empty
             </summary>
         </member>
         <member name="P:ServiceStack.Web.IHttpRequest.XRealIp">
@@ -1399,6 +1409,17 @@
             <returns>The same <see cref="T:ServiceStack.Web.IServiceRoutes"/> instance;
             	never <see langword="null"/>.</returns>
         </member>
+        <member name="M:ServiceStack.Web.IServiceRoutes.Add(System.Type,System.String,System.String,System.Int32)">
+            <summary>
+            	Maps the specified REST path to the specified request DTO, 
+            	specifies the HTTP verbs supported by the path, and indicates
+            	the default MIME type of the returned response.
+            </summary>
+            <param name="priority">
+                Used to rank the precedences of route definitions in reverse routing. 
+                i.e. Priorities below 0 are auto-generated have less precedence.
+            </param>
+        </member>
         <member name="M:ServiceStack.Web.IServiceRoutes.Add(System.Type,System.String,System.String,System.String,System.String)">
             <summary>
             	Maps the specified REST path to the specified request DTO, 
@@ -1521,6 +1542,12 @@
             	A <see cref="T:System.String"/> providing a comma-delimited list of HTTP verbs supported
             	by the service, <see langword="null"/> or empty if all verbs are supported.
             </value>
+        </member>
+        <member name="P:ServiceStack.RouteAttribute.Priority">
+            <summary>
+            Used to rank the precedences of route definitions in reverse routing. 
+            i.e. Priorities below 0 are auto-generated have less precedence.
+            </summary>
         </member>
         <member name="T:ServiceStack.FallbackRouteAttribute">
             <summary>

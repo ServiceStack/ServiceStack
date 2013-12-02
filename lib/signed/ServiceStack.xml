@@ -29,6 +29,83 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="T:ServiceStack.EnsureHttpsAttribute">
+            <summary>
+            Redirect to the https:// version of this url if not already.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.EnsureHttpsAttribute.SkipIfDebugMode">
+            <summary>
+            Don't redirect when in DebugMode
+            </summary>
+        </member>
+        <member name="P:ServiceStack.EnsureHttpsAttribute.SkipIfXForwardedFor">
+            <summary>
+            Don't redirect if the request was a forwarded request, e.g. from a Load Balancer
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Messaging.IMessageHandler">
+            <summary>
+            Single threaded message handler that can process all messages
+            of a particular message type.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Messaging.IMessageHandler.Process(ServiceStack.Messaging.IMessageQueueClient)">
+            <summary>
+            Process all messages pending
+            </summary>
+            <param name="mqClient"></param>
+        </member>
+        <member name="M:ServiceStack.Messaging.IMessageHandler.ProcessQueue(ServiceStack.Messaging.IMessageQueueClient,System.String,System.Func{System.Boolean})">
+            <summary>
+            Process messages from a single queue.
+            </summary>
+            <param name="mqClient"></param>
+            <param name="queueName">The queue to process</param>
+            <param name="doNext">A predicate on whether to continue processing the next message if any</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Messaging.IMessageHandler.GetStats">
+            <summary>
+            Get Current Stats for this Message Handler
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:ServiceStack.Messaging.IMessageHandler.MessageType">
+            <summary>
+            The type of the message this handler processes
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Messaging.IMessageHandlerFactory">
+            <summary>
+            Encapsulates creating a new message handler
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Messaging.MessageHandler`1">
+            <summary>
+            Processes all messages in a Normal and Priority Queue.
+            Expects to be called in 1 thread. i.e. Non Thread-Safe.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:ServiceStack.IRepository">
+            <summary>
+            A convenient repository base class you can inherit from to reduce the boilerplate 
+            with accessing a managed IDbConnection
+            </summary>
+        </member>
+        <member name="T:ServiceStack.ILogic">
+            <summary>
+            A convenient base class for your injected service dependencies that reduces the boilerplate
+            with managed access to ServiceStack's built-in providers
+            </summary>
+        </member>
+        <member name="M:ServiceStack.HttpResult.SoftRedirect(System.String,System.Object)">
+            <summary>
+            Respond with a 'Soft redirect' so smart clients (e.g. ajax) have access to the response and 
+            can decide whether or not they should redirect
+            </summary>
+        </member>
         <member name="M:ServiceStack.HttpResultExtensions.GetDto(System.Object)">
             <summary>
             Shortcut to get the ResponseDTO whether it's bare or inside a IHttpResult
@@ -158,7 +235,7 @@
             Dynamic Session Bag
             </summary>
         </member>
-        <member name="F:ServiceStack.Service.userSession">
+        <member name="M:ServiceStack.Service.SessionAs``1">
             <summary>
             Typed UserSession
             </summary>
@@ -461,6 +538,11 @@
             Thread-safe In memory UserAuth data store so it can be used without a dependency on Redis.
             </summary>
         </member>
+        <member name="M:ServiceStack.Auth.IRequiresSchema.InitSchema">
+            <summary>
+            Creates the required missing tables or DB schema 
+            </summary>
+        </member>
         <member name="M:ServiceStack.Auth.RegisterService`1.Post(ServiceStack.Register)">
             <summary>
                 Create new Registration
@@ -481,6 +563,11 @@
             <summary>
             Create an app at https://dev.twitter.com/apps to get your ConsumerKey and ConsumerSecret for your app.
             The Callback URL for your app should match the CallbackUrl provided.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Auth.UserAuthExtensions.InitSchema(ServiceStack.Auth.IUserAuthRepository)">
+            <summary>
+            Creates the required missing tables or DB schema 
             </summary>
         </member>
         <member name="T:ServiceStack.Auth.YammerAuthProvider">
@@ -541,7 +628,7 @@
             The <see cref="T:System.Object"/>.
             </returns>
         </member>
-        <member name="M:ServiceStack.Auth.YammerAuthProvider.LoadUserAuthInfo(ServiceStack.Auth.AuthUserSession,ServiceStack.Auth.IAuthTokens,System.Collections.Generic.Dictionary{System.String,System.String})">
+        <member name="M:ServiceStack.Auth.YammerAuthProvider.LoadUserAuthInfo(ServiceStack.AuthUserSession,ServiceStack.Auth.IAuthTokens,System.Collections.Generic.Dictionary{System.String,System.String})">
             <summary>
             Load the UserAuth info into the session.
             </summary>
@@ -720,6 +807,12 @@
             More familiar name for the new crowd.
             </summary>
         </member>
+        <member name="M:ServiceStack.Configuration.AppSettings.#ctor(System.String)">
+            <summary>
+            The tier lets you specify a retrieving a setting with the tier prefix first before falling back to the original key. 
+            E.g a tier of 'Live' looks for 'Live.{Key}' or if not found falls back to '{Key}'.
+            </summary>
+        </member>
         <member name="M:ServiceStack.Configuration.AppSettings.GetString(System.String)">
             <summary>
             Returns string if exists, otherwise null
@@ -802,7 +895,8 @@
         </member>
         <member name="T:ServiceStack.CorsFeature">
             <summary>
-            Plugin adds support for Cross-origin resource sharing (CORS, see http://www.w3.org/TR/access-control/). CORS allows to access resources from different domain which usually forbidden by origin policy. 
+            Plugin adds support for Cross-origin resource sharing (CORS, see http://www.w3.org/TR/access-control/). 
+            CORS allows to access resources from different domain which usually forbidden by origin policy. 
             </summary>
         </member>
         <member name="M:ServiceStack.CorsFeature.#ctor(System.String,System.String,System.String,System.Boolean)">
@@ -818,6 +912,11 @@
         <member name="M:ServiceStack.EnableCorsAttribute.#ctor(System.String,System.String,System.String,System.Boolean)">
             <summary>
             Represents a default constructor with Allow Origin equals to "*", Allowed GET, POST, PUT, DELETE, OPTIONS request and allowed "Content-Type" header.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.DefaultViewAttribute">
+            <summary>
+            Change the default HTML view or template used for the HTML response of this service
             </summary>
         </member>
         <member name="T:ServiceStack.FluentValidation.AssemblyScanner">
@@ -2974,6 +3073,11 @@
             </summary>
             <param name="serviceTypes"></param>
         </member>
+        <member name="M:ServiceStack.ContainerTypeExtensions.Register(Funq.Container,System.Object,System.Type)">
+            <summary>
+            Register a singleton instance as a runtime type
+            </summary>
+        </member>
         <member name="T:Funq.Func`6">
             <summary>
             Encapsulates a method that has five parameters and returns a value of the 
@@ -4904,6 +5008,11 @@
         <member name="M:ServiceStack.ServiceStackHost.OnUncaughtException(ServiceStack.Web.IRequest,ServiceStack.Web.IResponse,System.String,System.Exception)">
             <summary>
             Occurs when an exception is thrown whilst processing a request.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceStackHost.ApplyCustomHandlerRequestFilters(ServiceStack.Web.IRequest,ServiceStack.Web.IResponse)">
+            <summary>
+            Apply PreRequest Filters for participating Custom Handlers, e.g. RazorFormat, MarkdownFormat, etc
             </summary>
         </member>
         <member name="M:ServiceStack.ServiceStackHost.ApplyPreRequestFilters(ServiceStack.Web.IRequest,ServiceStack.Web.IResponse)">
