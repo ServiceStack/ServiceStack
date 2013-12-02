@@ -4,8 +4,8 @@
     <id>ServiceStack.ProtoBuf</id> 
     <title>Protocol Buffers support for ServiceStack. Includes typed ProtoBuf Client</title>
     <version>4.0.0</version> 
-    <authors>Demis Bellot</authors> 
-    <owners>Demis Bellot</owners>
+    <authors>Service Stack</authors> 
+    <owners>Service Stack</owners>
     <summary>ProtoBuf Format Serializer ContentType ServiceClients for ServiceStack</summary>
     <description>
       Add the ProtoBuf binary format and endpoint to a ServiceStack web service host. 

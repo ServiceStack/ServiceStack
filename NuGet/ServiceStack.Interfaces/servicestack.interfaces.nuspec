@@ -4,8 +4,8 @@
     <id>ServiceStack.Interfaces</id>
     <title>Lightweight and implementation-free interfaces for ServiceStack</title>
     <version>4.0.0</version>
-    <authors>Demis Bellot</authors>
-    <owners>Demis Bellot</owners>
+    <authors>Service Stack</authors>
+    <owners>Service Stack</owners>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>
     <description>
       Lightweight and implementation-free interfaces for DTO's, providers and adapters.

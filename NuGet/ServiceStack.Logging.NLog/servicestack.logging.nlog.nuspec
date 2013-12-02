@@ -4,8 +4,8 @@
     <id>ServiceStack.Logging.NLog</id>
     <version>4.0.0</version>
     <title>ServiceStack.Logging.NLog</title>
-    <authors>Demis Bellot</authors>
-    <owners>Demis Bellot</owners>
+    <authors>Service Stack</authors>
+    <owners>Service Stack</owners>
     <summary>NLog logging integration for ServiceStack, the Opensource .NET and Mono REST Web Services Framework</summary>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>

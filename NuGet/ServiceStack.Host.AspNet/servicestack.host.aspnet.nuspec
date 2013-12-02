@@ -4,8 +4,8 @@
     <id>ServiceStack.Host.AspNet</id>
     <title>Starter ASP.NET Website Template - ServiceStack at /</title>
     <version>4.0.0</version> 
-    <authors>Demis Bellot</authors> 
-    <owners>Demis Bellot</owners>
+    <authors>Service Stack</authors> 
+    <owners>Service Stack</owners>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>
     <description>
 Host ServiceStack in an existing ASP.NET web application at the root path '/'. 

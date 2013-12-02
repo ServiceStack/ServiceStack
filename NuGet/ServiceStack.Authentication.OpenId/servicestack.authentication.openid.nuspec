@@ -4,8 +4,8 @@
     <id>ServiceStack.Authentication.OpenId</id> 
     <title>OpenId Auth Providers for ServiceStack - inc. Google, Yahoo, MyOpenId</title>
     <version>4.0.0</version> 
-    <authors>Demis Bellot</authors> 
-    <owners>Demis Bellot</owners>
+    <authors>Service Stack</authors> 
+    <owners>Service Stack</owners>
     <summary>OpenId Auth Providers for ServiceStack - inc. Google, Yahoo, MyOpenId</summary>
     <description>
         Adds OpenId Auth Providers for use in ServiceStack Web and REST Services. 

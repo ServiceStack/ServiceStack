@@ -4,8 +4,8 @@
     <id>ServiceStack.Logging.EntLib5</id>
     <version>4.0.0</version>
     <title>ServiceStack.Logging.EntLib5</title>
-    <authors>Demis Bellot</authors>
-    <owners>Demis Bellot</owners>
+    <authors>Service Stack</authors>
+    <owners>Service Stack</owners>
     <summary>Enterprise Library 5.0 Logging Application Block integration for ServiceStack, the Opensource .NET and Mono REST Web Services Framework</summary>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>

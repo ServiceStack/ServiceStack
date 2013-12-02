@@ -4,8 +4,8 @@
     <id>ServiceStack.Api.Swagger</id>
     <title>ServiceStack additional API for integration with Swagger</title>
     <version>4.0.0</version>
-    <authors>Demis Bellot</authors>
-    <owners>Demis Bellot</owners>
+    <authors>Service Stack</authors>
+    <owners>Service Stack</owners>
     <summary>ServiceStack integration with Swagger</summary>
     <description>
       Provides a set of services to be discovered by Swagger (http://swagger.wordnik.com/)

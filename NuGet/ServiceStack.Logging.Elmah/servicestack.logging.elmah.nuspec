@@ -4,8 +4,8 @@
     <id>ServiceStack.Logging.Elmah</id>
     <version>4.0.0</version>
     <title>ServiceStack.Logging.Elmah</title>
-    <authors>Demis Bellot</authors>
-    <owners>Demis Bellot</owners>
+    <authors>Service Stack</authors>
+    <owners>Service Stack</owners>
     <summary>Elmah logging integration for ServiceStack, the Opensource .NET and Mono REST Web Services Framework</summary>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>

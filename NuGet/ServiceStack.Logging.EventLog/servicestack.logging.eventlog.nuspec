@@ -4,8 +4,8 @@
     <id>ServiceStack.Logging.EventLog</id>
     <version>4.0.0</version>
     <title>ServiceStack.Logging.EventLog</title>
-    <authors>Demis Bellot</authors>
-    <owners>Demis Bellot</owners>
+    <authors>Service Stack</authors>
+    <owners>Service Stack</owners>
     <summary>Windows Event Log integration for ServiceStack, the Opensource .NET and Mono REST Web Services Framework</summary>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>

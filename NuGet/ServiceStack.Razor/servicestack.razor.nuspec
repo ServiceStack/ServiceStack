@@ -4,8 +4,8 @@
     <id>ServiceStack.Razor</id>
     <title>ServiceStack.Razor - ServiceStack's HTML story including MVC Razor</title>
     <version>4.0.0</version>
-    <authors>Demis Bellot</authors>
-    <owners>Demis Bellot</owners>
+    <authors>Service Stack</authors>
+    <owners>Service Stack</owners>
     <summary>Provides ServiceStack's HTML Story including integrated support for MVC Razor's ViewEngine</summary>
     <description>
       ServiceStack Razor Documentation: http://razor.servicestack.net
