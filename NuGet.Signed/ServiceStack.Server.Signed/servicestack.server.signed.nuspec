@@ -13,7 +13,7 @@
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://servicestack.net/terms</licenseUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
-    <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
+    <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>Fast JSON XML CSV HTML SOAP JSV REST Web Service Framework MONO ServiceStack</tags>
     <language>en-US</language>
     <copyright>Copyright 2013 Service Stack</copyright>

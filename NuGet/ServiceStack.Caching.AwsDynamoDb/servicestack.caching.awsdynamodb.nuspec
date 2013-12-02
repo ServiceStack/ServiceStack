@@ -11,7 +11,7 @@
     </description> 
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://servicestack.net/terms</licenseUrl>
-    <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
+    <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>ServiceStack Caching AwsDynamoDb Amazon WebServices AWS DynamoDb Cache CacheClient</tags>
     <language>en-US</language> 
     <copyright>ServiceStack 2013 and contributors</copyright>
