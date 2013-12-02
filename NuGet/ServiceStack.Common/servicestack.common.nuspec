@@ -23,7 +23,7 @@
   </metadata>
   <files>
     <file src="lib\**\*.*" target="lib" />
-    <file src="..\..\src\ServiceStack.Common\bin\Release\ServiceStack.Common.xml" target="lib" />
+    <file src="..\..\src\ServiceStack.Common\bin\Release\ServiceStack.Common.xml" target="lib\net40" />
     <file src="..\..\src\ServiceStack.Common\**\*.cs" target="src" />
   </files>
 </package>

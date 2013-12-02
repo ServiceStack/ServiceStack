@@ -24,7 +24,7 @@
   <files>
     <file src="content\**\*.*" target="content" />
     <file src="lib\**\*.*" target="lib" />
-    <file src="..\..\src\ServiceStack.Api.Swagger\bin\Release\ServiceStack.Api.Swagger.xml" target="lib" />
+    <file src="..\..\src\ServiceStack.Api.Swagger\bin\Release\ServiceStack.Api.Swagger.xml" target="lib\net40" />
     <file src="..\..\src\ServiceStack.Api.Swagger\**\*.cs" target="src" />
   </files>
 </package>

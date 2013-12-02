@@ -22,6 +22,7 @@
   </metadata>
   <files>
     <file src="lib\**\*.*" target="lib" />
+    <file src="..\..\src\ServiceStack.Caching.AwsDynamoDb\bin\Release\ServiceStack.Caching.AwsDynamoDb.xml" target="lib\net40" />
     <file src="..\..\src\ServiceStack.Caching.AwsDynamoDb\**\*.cs" target="src" />
   </files>
 </package>

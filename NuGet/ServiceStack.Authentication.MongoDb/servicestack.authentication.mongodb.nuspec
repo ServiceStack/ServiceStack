@@ -25,6 +25,7 @@
   </metadata> 
   <files>
     <file src="lib\**\*.*" target="lib" />
+    <file src="..\..\src\ServiceStack.Authentication.MongoDb\bin\Release\ServiceStack.Authentication.MongoDb.xml" target="lib\net40" />
     <file src="..\..\src\ServiceStack.Authentication.MongoDb\**\*.cs" target="src" />
   </files>
 </package>
