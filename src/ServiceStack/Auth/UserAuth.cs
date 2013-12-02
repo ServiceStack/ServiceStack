@@ -106,6 +106,7 @@ namespace ServiceStack.Auth
         public virtual int InvalidLoginAttempts { get; set; }
         public virtual DateTime? LastLoginAttempt { get; set; }
         public virtual DateTime? LockedDate { get; set; }
+        public virtual string RecoveryToken { get; set; }
 
         //Custom Reference Data
         public virtual int? RefId { get; set; }
