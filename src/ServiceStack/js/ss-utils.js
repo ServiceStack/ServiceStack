@@ -160,6 +160,13 @@
                         if (loc) {
                             location.href = loc;
                         }
+                        var evt = jq.getResponseHeader("X-Trigger");
+                        if (evt) {
+                            var pos = attr.indexOf(':');
+                            var cmd = pos >= 0 ? evt.substring(0, 1) : evt;
+                            var data = pos >= 0 ? evt.substring(pos + 1) : null;
+                            f.trigger(cmd, data ? [data] : []);
+                        }
                     },
                     dataType: "json",
                 });
