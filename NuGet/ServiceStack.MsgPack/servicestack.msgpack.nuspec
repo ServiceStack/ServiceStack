@@ -22,6 +22,7 @@
   </metadata>
   <files>
     <file src="lib\**\*.*" target="lib" />
+    <file src="..\..\lib\MsgPack.*" target="lib\net40" />
     <file src="..\..\src\ServiceStack.MsgPack\bin\Release\ServiceStack.MsgPack.xml" target="lib\net40" />
     <file src="..\..\src\ServiceStack.MsgPack\**\*.cs" target="src" />
   </files>

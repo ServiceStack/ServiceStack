@@ -34,6 +34,7 @@
   <files>
     <file src="lib\**\*.*" target="lib" />
     <file src="content\**\*.*" target="content" />
+    <file src="..\..\lib\System.Web.Razor.*" target="lib\net45" />
     <file src="..\..\src\ServiceStack.Razor\bin\Release\ServiceStack.Razor.xml" target="lib\net45" />
     <file src="..\..\src\ServiceStack.Razor\**\*.cs" target="src" />
   </files>

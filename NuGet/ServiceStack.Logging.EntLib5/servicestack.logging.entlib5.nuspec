@@ -24,6 +24,7 @@
   </metadata>
   <files>
     <file src="lib\**\*.*" target="lib" />
+    <file src="..\..\src\ServiceStack.Logging.EntLib5\bin\Release\*.config" target="lib\net40" />
     <file src="..\..\src\ServiceStack.Logging.EntLib5\**\*.cs" target="src" />
   </files>
 </package>
