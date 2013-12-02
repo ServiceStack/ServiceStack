@@ -26,7 +26,8 @@
     </dependencies> 
   </metadata>
   <files>
-      <file src="lib\**\*.*" target="lib" />
-      <file src="..\..\src\ServiceStack.Authentication.OpenId\**\*.cs" target="src" />
+    <file src="lib\**\*.*" target="lib" />
+    <file src="..\..\src\ServiceStack.Authentication.OpenId\bin\Release\ServiceStack.Authentication.OpenId.xml" target="lib" />
+    <file src="..\..\src\ServiceStack.Authentication.OpenId\**\*.cs" target="src" />
   </files>
 </package>

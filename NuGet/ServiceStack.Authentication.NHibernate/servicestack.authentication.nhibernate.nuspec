@@ -5,6 +5,7 @@
     <version>4.0.0</version>
     <authors>Joshua Lewis, ServiceStack contributors</authors> 
     <owners>Joshua Lewis, ServiceStack contributors</owners>
+    <summary>An NHibernate IUserAuthRepository to persist User registration and auth info in any RDBMS NHibernate supports</summary>
     <description>
         An NHibernate IUserAuthRepository to persist User registration and authentication info in any RDBMS NHibernate supports.
         Implements ServiceStack's built-in AuthProvider Model:

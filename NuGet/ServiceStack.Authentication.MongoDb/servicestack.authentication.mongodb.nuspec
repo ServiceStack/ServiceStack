@@ -5,6 +5,7 @@
     <version>4.0.0</version>
     <authors>Assaf Raman, ServiceStack contributors</authors> 
     <owners>Assaf Raman, ServiceStack contributors</owners>
+    <summary>A MongoDB IUserAuthRepository to persist User registration and auth info in a NoSQL Mongo DB</summary>
     <description>
         A MongoDB IUserAuthRepository to persist User registration and auth info in a NoSQL Mongo DB.
         Implements ServiceStack's built-in AuthProvider Model:

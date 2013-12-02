@@ -5,6 +5,7 @@
     <version>4.0.0</version>
     <authors>ServiceStack contributors</authors> 
     <owners>ServiceStack contributors</owners>
+    <summary>A RavenDB IUserAuthRepository to persist User registration and auth info in a NoSQL Raven DB</summary>
     <description>
       A RavenDB IUserAuthRepository to persist User registration and auth info in a NoSQL Raven DB.
       Implements ServiceStack's built-in AuthProvider Model:

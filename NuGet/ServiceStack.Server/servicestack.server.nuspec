@@ -25,6 +25,7 @@
   </metadata>
   <files>
     <file src="lib\**\*.*" target="lib" />
-    <file src="..\..\src\ServiceStack.Server\**\*.cs" target="src\ServiceStack.Server" />
+    <file src="..\..\src\ServiceStack.Server\bin\Release\ServiceStack.Server.xml" target="lib" />
+    <file src="..\..\src\ServiceStack.Server\**\*.cs" target="src" />
   </files>
 </package>
