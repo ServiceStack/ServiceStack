@@ -333,13 +333,28 @@ namespace ServiceStack
         /// Respond with a 'Soft redirect' so smart clients (e.g. ajax) have access to the response and 
         /// can decide whether or not they should redirect
         /// </summary>
-        public static HttpResult SoftRedirect(string newLocationUri, object response=null)
+        public static HttpResult SoftRedirect(string newLocationUri, object response = null)
         {
             return new HttpResult(response)
             {
                 Headers =
                 {
                     { HttpHeaders.XLocation, newLocationUri },
+                }
+            };
+        }
+
+        /// <summary>
+        /// Decorate the response with an additional client-side event to instruct participating 
+        /// smart clients (e.g. ajax) with hints to transparently invoke client-side functionality
+        /// </summary>
+        public static HttpResult TriggerEvent(object response, string eventName, string value=null)
+        {
+            return new HttpResult(response)
+            {
+                Headers =
+                {
+                    { HttpHeaders.XTrigger, eventName + (value != null ? ":" + value : "") },
                 }
             };
         }
