@@ -120,9 +120,9 @@ That's all the application code required to create a simple REST web service.
 
 If you have [NuGet](http://nuget.org) installed, the easiest way to get started is to [install ServiceStack via NuGet](https://servicestack.net/download).
 
-_Commercial support is now available for ServiceStack, see https://servicestack.net for details_
+_Commercial support is now available for ServiceStack, see https://servicestack.net/pricing for details_
 
-### [v3 Documentation and Downloads](https://github.com/ServiceStackV3/ServiceStackV3)
+### [Docs and Downloads for v3](https://github.com/ServiceStackV3/ServiceStackV3)
 
 ### Examples
 
@@ -138,10 +138,10 @@ extracting them from the published NuGet packages. The url to download a nuget p
     
  So to get the core ServiceStack and ServiceStack.Text libs in OSX/Linux (or using gnu tools for Windows) you can just do:
 
-    wget -O ServiceStack http://packages.nuget.org/api/v1/package/ServiceStack/3.9.62
+    wget -O ServiceStack http://packages.nuget.org/api/v1/package/ServiceStack/3.9.71
     unzip ServiceStack 'lib/*'
     
-    wget -O ServiceStack.Text http://packages.nuget.org/api/v1/package/ServiceStack.Text/3.9.62
+    wget -O ServiceStack.Text http://packages.nuget.org/api/v1/package/ServiceStack.Text/3.9.71
     unzip ServiceStack.Text 'lib/*'
 
 which will download and extract the dlls into your local local `lib/` folder.
@@ -149,7 +149,7 @@ which will download and extract the dlls into your local local `lib/` folder.
 ## Copying
 
 Since September 2013, ServiceStack source code is available under GNU Affero General Public License/FOSS License Exception, see license.txt in the source. 
-Alternative commercial licensing is also available, contact team@servicestack.net for details.
+Alternative commercial licensing is also available, see https://servicestack.net/pricing for details.
 
 ## Contributing
 
