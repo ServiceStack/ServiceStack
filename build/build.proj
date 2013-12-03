@@ -95,7 +95,8 @@
       <ServerFiles Include="$(SrcDir)/ServiceStack.Server/bin/$(Configuration)/ServiceStack.Server.*"></ServerFiles>
 
       <RazorFiles Include="$(SrcDir)/ServiceStack.Razor/bin/$(Configuration)/ServiceStack.Razor.*"></RazorFiles>
-      <RazorFiles Include="$(BuildSolutionDir)/lib/System.Web.Razor.*"></RazorFiles>
+      <RazorFiles Include="$(BuildSolutionDir)/lib/System.Web.Razor.dll"></RazorFiles>
+      <RazorFiles Include="$(BuildSolutionDir)/lib/System.Web.Razor.xml"></RazorFiles>
 
       <ClientFiles Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/ServiceStack.Client.*"></ClientFiles>
       <ClientFilesSL5 Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/ServiceStack.Client.*"></ClientFilesSL5>
@@ -128,7 +129,8 @@
       <ProtoBufFiles Include="$(SrcDir)/ServiceStack.ProtoBuf/bin/$(Configuration)/ServiceStack.ProtoBuf.*"></ProtoBufFiles>
 
       <MsgPackFiles Include="$(SrcDir)/ServiceStack.MsgPack/bin/$(Configuration)/ServiceStack.MsgPack.*"></MsgPackFiles>
-      <MsgPackFiles Include="$(BuildSolutionDir)/lib/MsgPack.*"></MsgPackFiles>
+      <MsgPackFiles Include="$(BuildSolutionDir)/lib/MsgPack.dll"></MsgPackFiles>
+      <MsgPackFiles Include="$(BuildSolutionDir)/lib/MsgPack.xml"></MsgPackFiles>
 
       <SwaggerFiles Include="$(SrcDir)/ServiceStack.Api.Swagger/bin/$(Configuration)/ServiceStack.Api.Swagger.*"></SwaggerFiles>
       
