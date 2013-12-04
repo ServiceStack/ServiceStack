@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -49,10 +48,10 @@ namespace ServiceStack.Host
         }
 
         readonly Dictionary<Type, ServiceExecFn> requestExecMap
-			= new Dictionary<Type, ServiceExecFn>();
+            = new Dictionary<Type, ServiceExecFn>();
 
         readonly Dictionary<Type, RestrictAttribute> requestServiceAttrs
-			= new Dictionary<Type, RestrictAttribute>();
+            = new Dictionary<Type, RestrictAttribute>();
 
         public Dictionary<Type, Func<IRequest, object>> RequestTypeFactoryMap { get; set; }
 
@@ -197,7 +196,7 @@ namespace ServiceStack.Host
                         var pathInfoParts = RestPath.GetPathPartsForMatching(pathInfo);
                         return restPath.IsMatch(httpMethod, pathInfoParts) ? restPath : null;
                     };
-                    
+
                     continue;
                 }
 
@@ -209,7 +208,7 @@ namespace ServiceStack.Host
             }
         }
 
-        private static readonly char[] InvalidRouteChars = new[] {'?', '&'};
+        private static readonly char[] InvalidRouteChars = new[] { '?', '&' };
 
         public void RegisterRestPath(RestPath restPath)
         {
@@ -237,7 +236,8 @@ namespace ServiceStack.Host
 
                 //Auto add Route Attributes so they're available in T.ToUrl() extension methods
                 restPath.RequestType
-                    .AddAttributes(new RouteAttribute(restPath.Path, restPath.AllowedVerbs) {
+                    .AddAttributes(new RouteAttribute(restPath.Path, restPath.AllowedVerbs)
+                    {
                         Priority = restPath.Priority,
                         Summary = restPath.Summary,
                         Notes = restPath.Notes,
@@ -327,19 +327,19 @@ namespace ServiceStack.Host
                     .MakeGenericType(serviceType)
                     .GetMethod("Reset", BindingFlags.Public | BindingFlags.Static);
 
-                mi.Invoke(null, new object[]{});
+                mi.Invoke(null, new object[] { });
 
                 serviceExecCache[serviceType] = requestTypes = new List<Type>();
             }
 
             if (!requestTypes.Contains(requestType))
             {
-                var mi = typeof (ServiceExec<>)
+                var mi = typeof(ServiceExec<>)
                     .MakeGenericType(serviceType)
                     .GetMethod("CreateServiceRunnersFor", BindingFlags.Public | BindingFlags.Static)
                     .MakeGenericMethod(requestType);
 
-                mi.Invoke(null, new object[]{});
+                mi.Invoke(null, new object[] { });
 
                 requestTypes.Add(requestType);
             }
@@ -352,7 +352,8 @@ namespace ServiceStack.Host
             var serviceExecDef = typeof(ServiceRequestExec<,>).MakeGenericType(serviceType, requestType);
             var iserviceExec = (IServiceExec)serviceExecDef.CreateInstance();
 
-            ServiceExecFn handlerFn = (requestContext, dto) => {
+            ServiceExecFn handlerFn = (requestContext, dto) =>
+            {
                 var service = serviceFactoryFn.CreateInstance(serviceType);
 
                 ServiceExecFn serviceExec = (reqCtx, req) =>
@@ -401,7 +402,7 @@ namespace ServiceStack.Host
                     var response = serviceExec(request, requestDto);
 
                     response = appHost.OnPostExecuteServiceFilter(service, response, request, request.Response);
-                    
+
                     return response;
                 }
                 finally
@@ -427,7 +428,7 @@ namespace ServiceStack.Host
                 serviceRequiresContext.Request = requestContext;
             }
         }
-        
+
         /// <summary>
         /// Execute MQ
         /// </summary>
@@ -479,7 +480,7 @@ namespace ServiceStack.Host
 
             return handlerFn;
         }
-        
+
         public void AssertServiceRestrictions(Type requestType, RequestAttributes actualAttributes)
         {
             if (!appHost.Config.EnableAccessRestrictions) return;
