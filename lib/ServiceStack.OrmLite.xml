@@ -1,0 +1,1684 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ServiceStack.OrmLite</name>
+    </assembly>
+    <members>
+        <member name="T:ServiceStack.OrmLite.PredicateBuilder">
+            <summary>
+            Enables the efficient, dynamic composition of query predicates.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.PredicateBuilder.True``1">
+            <summary>
+            Creates a predicate that evaluates to true.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.PredicateBuilder.False``1">
+            <summary>
+            Creates a predicate that evaluates to false.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.PredicateBuilder.Create``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Creates a predicate expression from the specified lambda expression.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.PredicateBuilder.And``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Combines the first predicate with the second using the logical "and".
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.PredicateBuilder.Or``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Combines the first predicate with the second using the logical "or".
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.PredicateBuilder.Not``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Negates the predicate.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.PredicateBuilder.Compose``1(System.Linq.Expressions.Expression{``0},System.Linq.Expressions.Expression{``0},System.Func{System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.Expression})">
+            <summary>
+            Combines the first expression with the second using the specified merge function.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.OpenTransaction(System.Data.IDbConnection)">
+            <summary>
+            Open a Transaction in OrmLite
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.OpenTransaction(System.Data.IDbConnection,System.Data.IsolationLevel)">
+            <summary>
+            Open a Transaction in OrmLite
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.GetDialectProvider(System.Data.IDbConnection)">
+            <summary>
+            Return the IOrmLiteDialectProvider on this connection.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.SqlExpression``1">
+            <summary>
+            Create a new SqlExpression builder allowing typed LINQ-like queries.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.Select``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Returns results from using a LINQ Expression. E.g:
+            <para>db.Select&lt;Person&gt;(x =&gt; x.Age &gt; 40)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.Select``1(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}})">
+            <summary>
+            Returns results from using an SqlExpression lambda. E.g:
+            <para>db.Select&lt;Person&gt;(q =&gt; q.Where(x =&gt; x.Age &gt; 40))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.Select``1(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``0})">
+            <summary>
+            Returns results from using an SqlExpression lambda. E.g:
+            <para>db.Select(db.SqlExpression&lt;Person&gt;().Where(x =&gt; x.Age &gt; 40))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.Single``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Returns a single result from using a LINQ Expression. E.g:
+            <para>db.Single&lt;Person&gt;(x =&gt; x.Age == 42)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.Single``1(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}})">
+            <summary>
+            Returns a single result from using an SqlExpression lambda. E.g:
+            <para>db.Single&lt;Person&gt;(q =&gt; q.Where(x =&gt; x.Age == 42))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.Single``1(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``0})">
+            <summary>
+            Returns results from using an SqlExpression lambda. E.g:
+            <para>db.Select&lt;Person&gt;(x =&gt; x.Age &gt; 40)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.Scalar``2(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,``1}})">
+            <summary>
+            Returns a scalar result from using an SqlExpression lambda. E.g:
+            <para>db.Scalar&lt;Person, int&gt;(x =&gt; Sql.Max(x.Age))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.Scalar``2(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,``1}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Returns a scalar result from using an SqlExpression lambda. E.g:
+            <para>db.Scalar&lt;Person, int&gt;(x =&gt; Sql.Max(x.Age), , x =&gt; x.Age &lt; 50)</para>
+            </summary>        
+        </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.Count``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Returns the count of rows that match the LINQ expression, E.g:
+            <para>db.Count&lt;Person&gt;(x =&gt; x.Age &lt; 50)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.Count``1(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}})">
+            <summary>
+            Returns the count of rows that match the SqlExpression lambda, E.g:
+            <para>db.Count&lt;Person&gt;(q =&gt; q.Where(x =&gt; x.Age &lt; 50))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.Count``1(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``0})">
+            <summary>
+            Returns the count of rows that match the supplied SqlExpression, E.g:
+            <para>db.Count(db.SqlExpression&lt;Person&gt;().Where(x =&gt; x.Age &lt; 50))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.WriteConnectionExtensions.InsertOnly``1(System.Data.IDbConnection,``0,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}})">
+            <summary>
+            Insert only fields in POCO specified by the SqlExpression lambda. E.g:
+            <para>db.InsertOnly(new Person { FirstName = "Amy", Age = 27 }, ev =&gt; ev.Insert(p =&gt; new { p.FirstName, p.Age }))</para>
+            </summary>
+        </member>
+        <member name="T:ServiceStack.OrmLite.OrmLiteConnectionWrapper">
+            <summary>
+            Wrapper IDbConnection class to manage db connection events
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Select``1(System.Data.IDbConnection)">
+            <summary>
+            Returns results from the active connection.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Select``1(System.Data.IDbConnection,System.String)">
+            <summary>
+            Returns results from using sql. E.g:
+            <para>db.Select&lt;Person&gt;("Age &gt; 40")</para>
+            <para>db.Select&lt;Person&gt;("SELECT * FROM Person WHERE Age &gt; 40")</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Select``1(System.Data.IDbConnection,System.String,System.Object)">
+            <summary>
+            Returns results from using a parameterized query. E.g:
+            <para>db.Select&lt;Person&gt;("Age &gt; @age", new { age = 40})</para>
+            <para>db.Select&lt;Person&gt;("SELECT * FROM Person WHERE Age &gt; @age", new { age = 40})</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Select``1(System.Data.IDbConnection,System.String,System.Collections.Generic.Dictionary{System.String,System.Object})">
+            <summary>
+            Returns results from using a parameterized query. E.g:
+            <para>db.Select&lt;Person&gt;("Age &gt; @age", new Dictionary&lt;string, object&gt; { { "age", 40 } })</para>
+            <para>db.Select&lt;Person&gt;("SELECT * FROM Person WHERE Age &gt; @age", new Dictionary&lt;string, object&gt; { { "age", 40 } })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SelectFmt``1(System.Data.IDbConnection,System.String,System.Object[])">
+            <summary>
+            Returns results from using an SqlFormat query. E.g:
+            <para>db.SelectFmt&lt;Person&gt;("Age &gt; {0}", 40)</para>
+            <para>db.SelectFmt&lt;Person&gt;("SELECT * FROM Person WHERE Age &gt; {0}", 40)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Select``1(System.Data.IDbConnection,System.Type)">
+            <summary>
+            Returns a partial subset of results from the specified tableType. E.g:
+            <para>db.Select&lt;EntityWithId&gt;(typeof(Person))</para>
+            <para></para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SelectFmt``1(System.Data.IDbConnection,System.Type,System.String,System.Object[])">
+            <summary>
+            Returns a partial subset of results from the specified tableType using a SqlFormat query. E.g:
+            <para>db.SelectFmt&lt;EntityWithId&gt;(typeof(Person), "Age &gt; {0}", 40)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Where``1(System.Data.IDbConnection,System.String,System.Object)">
+            <summary>
+            Returns results from using a single name, value filter. E.g:
+            <para>db.Where&lt;Person&gt;("Age", 27)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Where``1(System.Data.IDbConnection,System.Object)">
+            <summary>
+            Returns results from using an anonymous type filter. E.g:
+            <para>db.Where&lt;Person&gt;(new { Age = 27 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SelectByIds``1(System.Data.IDbConnection,System.Collections.IEnumerable)">
+            <summary>
+            Returns results using the supplied primary key ids. E.g:
+            <para>db.SelectByIds&lt;Person&gt;(new[] { 1, 2, 3 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SelectNonDefaults``1(System.Data.IDbConnection,``0)">
+            <summary>
+            Query results using the non-default values in the supplied partially populated POCO example. E.g:
+            <para>db.SelectNonDefaults(new Person { Id = 1 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SelectNonDefaults``1(System.Data.IDbConnection,System.String,``0)">
+            <summary>
+            Query results using the non-default values in the supplied partially populated POCO example. E.g:
+            <para>db.SelectNonDefaults("Age &gt; @Age", new Person { Age = 42 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SelectLazy``1(System.Data.IDbConnection)">
+            <summary>
+            Returns a lazyily loaded stream of results. E.g:
+            <para>db.SelectLazy&lt;Person&gt;()</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SelectLazy``1(System.Data.IDbConnection,System.String,System.Object)">
+            <summary>
+            Returns a lazyily loaded stream of results using a parameterized query. E.g:
+            <para>db.SelectLazy&lt;Person&gt;("Age &gt; @age", new { age = 40 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SelectLazyFmt``1(System.Data.IDbConnection,System.String,System.Object[])">
+            <summary>
+            Returns a lazyily loaded stream of results using an SqlFilter query. E.g:
+            <para>db.SelectLazyFmt&lt;Person&gt;("Age &gt; {0}", 40)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.WhereLazy``1(System.Data.IDbConnection,System.Object)">
+            <summary>
+            Returns a stream of results that are lazily loaded using a parameterized query. E.g:
+            <para>db.WhereLazy&lt;Person&gt;(new { Age = 27 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Single``1(System.Data.IDbConnection,System.Object)">
+            <summary>
+            Returns the first result using a parameterized query. E.g:
+            <para>db.Single&lt;Person&gt;(new { Age = 42 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Single``1(System.Data.IDbConnection,System.String,System.Object)">
+            <summary>
+            Returns results from using a single name, value filter. E.g:
+            <para>db.Single&lt;Person&gt;("Age = @age", new { age = 42 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SingleFmt``1(System.Data.IDbConnection,System.String,System.Object[])">
+            <summary>
+            Returns the first result using a SqlFormat query. E.g:
+            <para>db.SingleFmt&lt;Person&gt;("Age = {0}", 42)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SingleById``1(System.Data.IDbConnection,System.Object)">
+            <summary>
+            Returns the first result using a primary key id. E.g:
+            <para>db.SingleById&lt;Person&gt;(1)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SingleWhere``1(System.Data.IDbConnection,System.String,System.Object)">
+            <summary>
+            Returns the first result using a name, value filter. E.g:
+            <para>db.SingleWhere&lt;Person&gt;("Age", 42)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Scalar``1(System.Data.IDbConnection,System.String,System.Object)">
+            <summary>
+            Returns a single scalar value using a parameterized query. E.g:
+            <para>db.Scalar&lt;int&gt;("SELECT COUNT(*) FROM Person WHERE Age &gt; @age", new { age = 40 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.ScalarFmt``1(System.Data.IDbConnection,System.String,System.Object[])">
+            <summary>
+            Returns a single scalar value using an SqlFormat query. E.g:
+            <para>db.ScalarFmt&lt;int&gt;("SELECT COUNT(*) FROM Person WHERE Age &gt; {0}", 40)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Column``1(System.Data.IDbConnection,System.String,System.Object)">
+            <summary>
+            Returns the first column in a List using a SqlFormat query. E.g:
+            <para>db.Column&lt;string&gt;("SELECT LastName FROM Person WHERE Age = @age", new { age = 27 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.ColumnFmt``1(System.Data.IDbConnection,System.String,System.Object[])">
+            <summary>
+            Returns the first column in a List using a SqlFormat query. E.g:
+            <para>db.ColumnFmt&lt;string&gt;("SELECT LastName FROM Person WHERE Age = {0}", 27)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.ColumnDistinct``1(System.Data.IDbConnection,System.String,System.Object)">
+            <summary>
+            Returns the distinct first column values in a HashSet using an SqlFormat query. E.g:
+            <para>db.ColumnDistinct&lt;int&gt;("SELECT Age FROM Person WHERE Age &lt; @age", new { age = 50 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.ColumnDistinctFmt``1(System.Data.IDbConnection,System.String,System.Object[])">
+            <summary>
+            Returns the distinct first column values in a HashSet using an SqlFormat query. E.g:
+            <para>db.ColumnDistinctFmt&lt;int&gt;("SELECT Age FROM Person WHERE Age &lt; {0}", 50)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Lookup``2(System.Data.IDbConnection,System.String,System.Object)">
+            <summary>
+            Returns an Dictionary&lt;K, List&lt;V&gt;&gt; grouping made from the first two columns using an parameterized query. E.g:
+            <para>db.Lookup&lt;int, string&gt;("SELECT Age, LastName FROM Person WHERE Age &lt; @age", new { age = 50 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.LookupFmt``2(System.Data.IDbConnection,System.String,System.Object[])">
+            <summary>
+            Returns an Dictionary&lt;K, List&lt;V&gt;&gt; grouping made from the first two columns using an SqlFormat query. E.g:
+            <para>db.LookupFmt&lt;int, string&gt;("SELECT Age, LastName FROM Person WHERE Age &lt; {0}", 50)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Dictionary``2(System.Data.IDbConnection,System.String,System.Object)">
+            <summary>
+            Returns a Dictionary from the first 2 columns: Column 1 (Keys), Column 2 (Values) using sql. E.g:
+            <para>db.Dictionary&lt;int, string&gt;("SELECT Id, LastName FROM Person WHERE Age &lt; @age", new { age = 50 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.DictionaryFmt``2(System.Data.IDbConnection,System.String,System.Object[])">
+            <summary>
+            Returns a Dictionary from the first 2 columns: Column 1 (Keys), Column 2 (Values) using an SqlFormat query. E.g:
+            <para>db.DictionaryFmt&lt;int, string&gt;("SELECT Id, LastName FROM Person WHERE Age &lt; {0}", 50)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Exists``1(System.Data.IDbConnection,System.Object)">
+            <summary>
+            Returns true if the Query returns any records, using an SqlFormat query. E.g:
+            <para>db.Exists&lt;Person&gt;(new { Age = 42 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Exists``1(System.Data.IDbConnection,System.String,System.Object)">
+            <summary>
+            Returns true if the Query returns any records, using a parameterized query. E.g:
+            <para>db.Exists&lt;Person&gt;("Age = @age", new { age = 42 })</para>
+            <para>db.Exists&lt;Person&gt;("SELECT * FROM Person WHERE Age = @age", new { age = 42 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.ExistsFmt``1(System.Data.IDbConnection,System.String,System.Object[])">
+            <summary>
+            Returns true if the Query returns any records, using an SqlFormat query. E.g:
+            <para>db.ExistsFmt&lt;Person&gt;("Age = {0}", 42)</para>
+            <para>db.ExistsFmt&lt;Person&gt;("SELECT * FROM Person WHERE Age = {0}", 50)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SqlList``1(System.Data.IDbConnection,System.String,System.Object)">
+            <summary>
+            Returns results from an arbitrary parameterized raw sql query. E.g:
+            <para>db.SqlList&lt;Person&gt;("EXEC GetRockstarsAged @age", new { age = 50 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SqlList``1(System.Data.IDbConnection,System.String,System.Collections.Generic.Dictionary{System.String,System.Object})">
+            <summary>
+            Returns results from an arbitrary parameterized raw sql query. E.g:
+            <para>db.SqlList&lt;Person&gt;("EXEC GetRockstarsAged @age", new Dictionary&lt;string, object&gt; { { "age", 42 } })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SqlColumn``1(System.Data.IDbConnection,System.String,System.Object)">
+            <summary>
+            Returns the first column in a List using a parameterized query. E.g:
+            <para>db.SqlColumn&lt;string&gt;("SELECT LastName FROM Person WHERE Age &lt; @age", new { age = 50 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SqlColumn``1(System.Data.IDbConnection,System.String,System.Collections.Generic.Dictionary{System.String,System.Object})">
+            <summary>
+            Returns the first column in a List using a parameterized query. E.g:
+            <para>db.SqlColumn&lt;string&gt;("SELECT LastName FROM Person WHERE Age &lt; @age", new Dictionary&lt;string, object&gt; { { "age", 50 } })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SqlScalar``1(System.Data.IDbConnection,System.String,System.Object)">
+            <summary>
+            Returns a single Scalar value using a parameterized query. E.g:
+            <para>db.SqlScalar&lt;int&gt;("SELECT COUNT(*) FROM Person WHERE Age &lt; @age", new { age = 50 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SqlScalar``1(System.Data.IDbConnection,System.String,System.Collections.Generic.Dictionary{System.String,System.Object})">
+            <summary>
+            Returns a single Scalar value using a parameterized query. E.g:
+            <para>db.SqlScalar&lt;int&gt;("SELECT COUNT(*) FROM Person WHERE Age &lt; @age", new Dictionary&lt;string, object&gt; { { "age", 50 } })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.LastInsertId(System.Data.IDbConnection)">
+            <summary>
+            Returns the last insert Id made from this connection.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.ExecuteNonQuery(System.Data.IDbConnection,System.String)">
+            <summary>
+            Executes a raw sql non-query using sql. E.g:
+            <para>var rowsAffected = db.ExecuteNonQuery("UPDATE Person SET LastName={0} WHERE Id={1}".SqlFormat("WaterHouse", 7))</para>
+            </summary>
+            <returns>number of rows affected</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.ExecuteNonQuery(System.Data.IDbConnection,System.String,System.Object)">
+            <summary>
+            Executes a raw sql non-query using a parameterized query. E.g:
+            <para>var rowsAffected = db.ExecuteNonQuery("UPDATE Person SET LastName=@name WHERE Id=@id", new { name = "WaterHouse", id = 7 })</para>
+            </summary>
+            <returns>number of rows affected</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.ExecuteNonQuery(System.Data.IDbConnection,System.String,System.Collections.Generic.Dictionary{System.String,System.Object})">
+            <summary>
+            Executes a raw sql non-query using a parameterized query.
+            </summary>
+            <returns>number of rows affected</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SqlProcedure``1(System.Data.IDbConnection,System.Object)">
+            <summary>
+            Returns results from a Stored Procedure, using a parameterized query.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SqlProcedure``1(System.Data.IDbConnection,System.Object,System.String,System.Object[])">
+            <summary>
+            Returns results from a Stored Procedure using an SqlFormat query. E.g:
+            <para></para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.LongScalar(System.Data.IDbConnection)">
+            <summary>
+            Returns the scalar result as a long.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.LoadSingleById``1(System.Data.IDbConnection,System.Object)">
+            <summary>
+            Returns the first result with all its references loaded, using a primary key id. E.g:
+            <para>db.LoadSingleById&lt;Person&gt;(1)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SaveAllReferences``1(System.Data.IDbConnection,``0)">
+            <summary>
+            Populates all related references on the instance with its primary key and saves them. Uses '(T)Id' naming convention. E.g:
+            <para>db.SaveAllReferences(customer)</para> 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SaveReferences``2(System.Data.IDbConnection,``0,``1[])">
+            <summary>
+            Populates the related references with the instance primary key and saves them. Uses '(T)Id' naming convention. E.g:
+            <para>db.SaveReference(customer, customer.Orders)</para> 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SaveReferences``2(System.Data.IDbConnection,``0,System.Collections.Generic.List{``1})">
+            <summary>
+            Populates the related references with the instance primary key and saves them. Uses '(T)Id' naming convention. E.g:
+            <para>db.SaveReference(customer, customer.Orders)</para> 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SaveReferences``2(System.Data.IDbConnection,``0,System.Collections.Generic.IEnumerable{``1})">
+            <summary>
+            Populates the related references with the instance primary key and saves them. Uses '(T)Id' naming convention. E.g:
+            <para>db.SaveReferences(customer, customer.Orders)</para> 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.LoadReferences``1(System.Data.IDbConnection,``0)">
+            <summary>
+            Loads all the related references onto the instance. E.g:
+            <para>db.LoadReferences(customer)</para> 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.TableExists(System.Data.IDbConnection,System.String)">
+            <summary>
+            Checks whether a Table Exists. E.g:
+            <para>db.TableExists("Person")</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.CreateTables(System.Data.IDbConnection,System.Boolean,System.Type[])">
+            <summary>
+            Create DB Tables from the schemas of runtime types. E.g:
+            <para>db.CreateTables(typeof(Table1), typeof(Table2))</para> 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.CreateTable(System.Data.IDbConnection,System.Boolean,System.Type)">
+            <summary>
+            Create DB Table from the schema of the runtime type. Use overwrite to drop existing Table. E.g:
+            <para>db.CreateTable(true, typeof(Table))</para> 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.CreateTableIfNotExists(System.Data.IDbConnection,System.Type[])">
+            <summary>
+            Only Create new DB Tables from the schemas of runtime types if they don't already exist. E.g:
+            <para>db.CreateTableIfNotExists(typeof(Table1), typeof(Table2))</para> 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.DropAndCreateTables(System.Data.IDbConnection,System.Type[])">
+            <summary>
+            Drop existing DB Tables and re-create them from the schemas of runtime types. E.g:
+            <para>db.DropAndCreateTables(typeof(Table1), typeof(Table2))</para> 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.CreateTable``1(System.Data.IDbConnection,System.Boolean)">
+            <summary>
+            Create a DB Table from the generic type. Use overwrite to drop the existing table or not. E.g:
+            <para>db.CreateTable&lt;Person&gt;(overwrite=false) //default</para> 
+            <para>db.CreateTable&lt;Person&gt;(overwrite=true)</para> 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.CreateTableIfNotExists``1(System.Data.IDbConnection)">
+            <summary>
+            Only create a DB Table from the generic type if it doesn't already exist. E.g:
+            <para>db.CreateTableIfNotExists&lt;Person&gt;()</para> 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.CreateTableIfNotExists(System.Data.IDbConnection,System.Type)">
+            <summary>
+            Only create a DB Table from the runtime type if it doesn't already exist. E.g:
+            <para>db.CreateTableIfNotExists(typeof(Person))</para> 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.DropAndCreateTable``1(System.Data.IDbConnection)">
+            <summary>
+            Drop existing table if exists and re-create a DB Table from the generic type. E.g:
+            <para>db.DropAndCreateTable&lt;Person&gt;()</para> 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.DropAndCreateTable(System.Data.IDbConnection,System.Type)">
+            <summary>
+            Drop existing table if exists and re-create a DB Table from the runtime type. E.g:
+            <para>db.DropAndCreateTable(typeof(Person))</para> 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.DropTables(System.Data.IDbConnection,System.Type[])">
+            <summary>
+            Drop any existing tables from their runtime types. E.g:
+            <para>db.DropTables(typeof(Table1),typeof(Table2))</para> 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.DropTable(System.Data.IDbConnection,System.Type)">
+            <summary>
+            Drop any existing tables from the runtime type. E.g:
+            <para>db.DropTable(typeof(Person))</para> 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.DropTable``1(System.Data.IDbConnection)">
+            <summary>
+            Drop any existing tables from the generic type. E.g:
+            <para>db.DropTable&lt;Person&gt;()</para> 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.GetLastSql(System.Data.IDbConnection)">
+            <summary>
+            Get the last SQL statement that was executed.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.ExecuteSql(System.Data.IDbConnection,System.String)">
+            <summary>
+            Execute any arbitrary raw SQL.
+            </summary>
+            <returns>number of rows affected</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.Insert``1(System.Data.IDbConnection,``0,System.Boolean)">
+            <summary>
+            Insert 1 POCO, use selectIdentity to retrieve the last insert AutoIncrement id (if any). E.g:
+            <para>var id = db.Insert(new Person { Id = 1, FirstName = "Jimi }, selectIdentity:true)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.Insert``1(System.Data.IDbConnection,``0[])">
+            <summary>
+            Insert 1 or more POCOs in a transaction. E.g:
+            <para>db.Insert(new Person { Id = 1, FirstName = "Tupac", LastName = "Shakur", Age = 25 },</para>
+            <para>          new Person { Id = 2, FirstName = "Biggie", LastName = "Smalls", Age = 24 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.InsertAll``1(System.Data.IDbConnection,System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Insert a collection of POCOs in a transaction. E.g:
+            <para>db.InsertAll(new[] { new Person { Id = 9, FirstName = "Biggie", LastName = "Smalls", Age = 24 } })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.Update``1(System.Data.IDbConnection,``0)">
+            <summary>
+            Updates 1 POCO. All fields are updated except for the PrimaryKey which is used as the identity selector. E.g:
+            <para>db.Update(new Person { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.Update``1(System.Data.IDbConnection,``0[])">
+            <summary>
+            Updates 1 or more POCOs in a transaction. E.g:
+            <para>db.Update(new Person { Id = 1, FirstName = "Tupac", LastName = "Shakur", Age = 25 },</para>
+            <para>new Person { Id = 2, FirstName = "Biggie", LastName = "Smalls", Age = 24 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.UpdateAll``1(System.Data.IDbConnection,System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Updates 1 or more POCOs in a transaction. E.g:
+            <para>db.UpdateAll(new[] { new Person { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27 } })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.Delete``1(System.Data.IDbConnection,System.Object)">
+            <summary>
+            Delete rows using an anonymous type filter. E.g:
+            <para>db.Delete&lt;Person&gt;(new { FirstName = "Jimi", Age = 27 })</para>
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.Delete``1(System.Data.IDbConnection,System.Object[])">
+            <summary>
+            Delete 1 or more rows in a transaction using an anonymous type filter. E.g:
+            <para>db.Delete&lt;Person&gt;(new { FirstName = "Jimi", Age = 27 }, new { FirstName = "Janis", Age = 27 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.Delete``1(System.Data.IDbConnection,``0)">
+            <summary>
+            Delete 1 row using all fields in the filter. E.g:
+            <para>db.Delete(new Person { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27 })</para>
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.Delete``1(System.Data.IDbConnection,``0[])">
+            <summary>
+            Delete 1 or more rows in a transaction using all fields in the filter. E.g:
+            <para>db.Delete(new Person { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.DeleteNonDefaults``1(System.Data.IDbConnection,``0)">
+            <summary>
+            Delete 1 or more rows using only field with non-default values in the filter. E.g:
+            <para>db.DeleteNonDefaults(new Person { FirstName = "Jimi", Age = 27 })</para>
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.DeleteNonDefaults``1(System.Data.IDbConnection,``0[])">
+            <summary>
+            Delete 1 or more rows in a transaction using only field with non-default values in the filter. E.g:
+            <para>db.DeleteNonDefaults(new Person { FirstName = "Jimi", Age = 27 }, 
+            new Person { FirstName = "Janis", Age = 27 })</para>
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.DeleteById``1(System.Data.IDbConnection,System.Object)">
+            <summary>
+            Delete 1 row by the PrimaryKey. E.g:
+            <para>db.DeleteById&lt;Person&gt;(1)</para>
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.DeleteByIds``1(System.Data.IDbConnection,System.Collections.IEnumerable)">
+            <summary>
+            Delete all rows identified by the PrimaryKeys. E.g:
+            <para>db.DeleteById&lt;Person&gt;(new[] { 1, 2, 3 })</para>
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.DeleteAll``1(System.Data.IDbConnection)">
+            <summary>
+            Delete all rows in the generic table type. E.g:
+            <para>db.DeleteAll&lt;Person&gt;()</para>
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.DeleteAll(System.Data.IDbConnection,System.Type)">
+            <summary>
+            Delete all rows in the runtime table type. E.g:
+            <para>db.DeleteAll(typeof(Person))</para>
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.DeleteFmt``1(System.Data.IDbConnection,System.String,System.Object[])">
+            <summary>
+            Delete rows using a SqlFormat filter. E.g:
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.DeleteFmt(System.Data.IDbConnection,System.Type,System.String,System.Object[])">
+            <summary>
+            Delete rows from the runtime table type using a SqlFormat filter. E.g:
+            </summary>
+            <para>db.DeleteFmt(typeof(Person), "Age = {0}", 27)</para>
+            <returns>number of rows deleted</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.Save``1(System.Data.IDbConnection,``0,System.Boolean)">
+            <summary>
+            Insert a new row or update existing row. Returns true if a new row was inserted. 
+            Optional references param decides whether to save all related references as well. E.g:
+            <para>db.Save(customer, references:true)</para>
+            </summary>
+            <returns>true if a row was inserted; false if it was updated</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.Save``1(System.Data.IDbConnection,``0[])">
+            <summary>
+            Insert new rows or update existing rows. Return number of rows added E.g:
+            <para>db.Save(new Person { Id = 10, FirstName = "Amy", LastName = "Winehouse", Age = 27 })</para>
+            </summary>
+            <returns>number of rows added</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.SaveAll``1(System.Data.IDbConnection,System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Insert new rows or update existing rows. Return number of rows added E.g:
+            <para>db.SaveAll(new [] { new Person { Id = 10, FirstName = "Amy", LastName = "Winehouse", Age = 27 } })</para>
+            </summary>
+            <returns>number of rows added</returns>
+        </member>
+        <member name="T:ServiceStack.OrmLite.OrmLiteConnection">
+            <summary>
+            Wrapper IDbConnection class to allow for connection sharing, mocking, etc.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.OrmLite.OrmLiteConnectionFactory">
+            <summary>
+            Allow for mocking and unit testing by providing non-disposing 
+            connection factory with injectable IDbCommand and IDbTransaction proxies
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.OrmLiteConnectionFactory.AlwaysReturnCommand">
+            <summary>
+            Force the IDbConnection to always return this IDbCommand
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.OrmLiteConnectionFactory.AlwaysReturnTransaction">
+            <summary>
+            Force the IDbConnection to always return this IDbTransaction
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteConnectionFactoryExtensions.Open(ServiceStack.Data.IDbConnectionFactory)">
+            <summary>
+            Alias for OpenDbConnection
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteConnectionFactoryExtensions.Open(ServiceStack.Data.IDbConnectionFactory,System.String)">
+            <summary>
+            Alias for OpenDbConnection
+            </summary>
+        </member>
+        <member name="T:ServiceStack.OrmLite.OrmLitePersistenceProvider">
+            <summary>
+            Allow for code-sharing between OrmLite, IPersistenceProvider and ICacheClient
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.IOrmLiteDialectProvider.GetQuotedValue(System.String)">
+            <summary>
+            Quote the string so that it can be used inside an SQL-expression
+            Escape quotes inside the string
+            </summary>
+            <param name="paramValue"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteDialectProviderBase`1.SetDbValue(ServiceStack.OrmLite.FieldDefinition,System.Data.IDataReader,System.Int32,System.Object)">
+            <summary>
+            Populates row fields during re-hydration of results.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteDialectProviderBase`1.ToInsertRowStatement(System.Data.IDbCommand,System.Object,System.Collections.Generic.ICollection{System.String})">
+            Fmt
+        </member>
+        <member name="T:ServiceStack.OrmLite.SqlBuilder">
+            <summary>
+            Nice SqlBuilder class by @samsaffron from Dapper.Contrib:
+            http://samsaffron.com/archive/2011/09/05/Digging+ourselves+out+of+the+mess+Linq-2-SQL+created
+            Modified to work in .NET 3.5
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Select">
+            <summary>
+            Clear select expression. All properties will be selected.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Select(System.String)">
+            <summary>
+            set the specified selectExpression.
+            </summary>
+            <param name='selectExpression'>
+            raw Select expression: "Select SomeField1, SomeField2 from SomeTable"
+            </param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Select``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+            Fields to be selected.
+            </summary>
+            <param name='fields'>
+            x=> x.SomeProperty1 or x=> new{ x.SomeProperty1, x.SomeProperty2}
+            </param>
+            <typeparam name='TKey'>
+            objectWithProperties
+            </typeparam>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Limit(System.Int32,System.Int32)">
+            <summary>
+            Set the specified offset and rows for SQL Limit clause.
+            </summary>
+            <param name='skip'>
+            Offset of the first row to return. The offset of the initial row is 0
+            </param>
+            <param name='rows'>
+            Number of rows returned by a SELECT statement
+            </param>	
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Limit(System.Int32)">
+            <summary>
+            Set the specified rows for Sql Limit clause.
+            </summary>
+            <param name='rows'>
+            Number of rows returned by a SELECT statement
+            </param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Limit">
+            <summary>
+            Clear Sql Limit clause
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:ServiceStack.OrmLite.SqlExpression`1.Update(System.Collections.Generic.IList{System.String})" -->
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Update``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+            Fields to be updated.
+            </summary>
+            <param name='fields'>
+            x=> x.SomeProperty1 or x=> new{ x.SomeProperty1, x.SomeProperty2}
+            </param>
+            <typeparam name='TKey'>
+            objectWithProperties
+            </typeparam>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Update">
+            <summary>
+            Clear UpdateFields list ( all fields will be updated)
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Insert``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+            Fields to be inserted.
+            </summary>
+            <param name='fields'>
+            x=> x.SomeProperty1 or x=> new{ x.SomeProperty1, x.SomeProperty2}
+            </param>
+            <typeparam name='TKey'>
+            objectWithProperties
+            </typeparam>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Insert(System.Collections.Generic.IList{System.String})">
+            <summary>
+            fields to be inserted.
+            </summary>
+            <param name='insertFields'>
+            IList&lt;string&gt; containing Names of properties to be inserted
+            </param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Insert">
+            <summary>
+            Clear InsertFields list ( all fields will be inserted)
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.WriteExtensions.UpdateOnly``1(System.Data.IDbCommand,``0,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}})">
+            <summary>
+            Use an expression visitor to select which fields to update and construct the where expression, E.g: 
+            
+              dbCmd.UpdateOnly(new Person { FirstName = "JJ" }, ev => ev.Update(p => p.FirstName).Where(x => x.FirstName == "Jimi"));
+              UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("FirstName" = 'Jimi')
+            
+              What's not in the update expression doesn't get updated. No where expression updates all rows. E.g:
+            
+              dbCmd.UpdateOnly(new Person { FirstName = "JJ", LastName = "Hendo" }, ev => ev.Update(p => p.FirstName));
+              UPDATE "Person" SET "FirstName" = 'JJ'
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.WriteExtensions.UpdateOnly``1(System.Data.IDbCommand,``0,ServiceStack.OrmLite.SqlExpression{``0})">
+            <summary>
+            Use an expression visitor to select which fields to update and construct the where expression, E.g: 
+            
+              var ev = OrmLiteConfig.DialectProvider.ExpressionVisitor&gt;Person&lt;());
+              dbCmd.UpdateOnly(new Person { FirstName = "JJ" }, ev.Update(p => p.FirstName).Where(x => x.FirstName == "Jimi"));
+              UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("FirstName" = 'Jimi')
+            
+              What's not in the update expression doesn't get updated. No where expression updates all rows. E.g:
+            
+              dbCmd.UpdateOnly(new Person { FirstName = "JJ", LastName = "Hendo" }, ev.Update(p => p.FirstName));
+              UPDATE "Person" SET "FirstName" = 'JJ'
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.WriteExtensions.UpdateOnly``2(System.Data.IDbCommand,``0,System.Linq.Expressions.Expression{System.Func{``0,``1}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+             <summary>
+             Update record, updating only fields specified in updateOnly that matches the where condition (if any), E.g:
+             
+               dbCmd.UpdateOnly(new Person { FirstName = "JJ" }, p => p.FirstName, p => p.LastName == "Hendrix");
+               UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("LastName" = 'Hendrix')
+            
+               dbCmd.UpdateOnly(new Person { FirstName = "JJ" }, p => p.FirstName);
+               UPDATE "Person" SET "FirstName" = 'JJ'
+             </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.WriteExtensions.UpdateNonDefaults``1(System.Data.IDbCommand,``0,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Updates all non-default values set on item matching the where condition (if any). E.g
+            
+              dbCmd.UpdateNonDefaults(new Person { FirstName = "JJ" }, p => p.FirstName == "Jimi");
+              UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("FirstName" = 'Jimi')
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.WriteExtensions.Update``1(System.Data.IDbCommand,``0,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Updates all values set on item matching the where condition (if any). E.g
+            
+              dbCmd.Update(new Person { Id = 1, FirstName = "JJ" }, p => p.LastName == "Hendrix");
+              UPDATE "Person" SET "Id" = 1,"FirstName" = 'JJ',"LastName" = NULL,"Age" = 0 WHERE ("LastName" = 'Hendrix')
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.WriteExtensions.Update``1(System.Data.IDbCommand,System.Object,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Updates all matching fields populated on anonymousType that matches where condition (if any). E.g:
+            
+              dbCmd.Update&lt;Person&gt;(new { FirstName = "JJ" }, p => p.LastName == "Hendrix");
+              UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("LastName" = 'Hendrix')
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.WriteExtensions.UpdateFmt``1(System.Data.IDbCommand,System.String,System.String)">
+            <summary>
+            Flexible Update method to succinctly execute a free-text update statement using optional params. E.g:
+            
+              dbCmd.Update&lt;Person&gt;(set:"FirstName = {0}".Params("JJ"), where:"LastName = {0}".Params("Hendrix"));
+              UPDATE "Person" SET FirstName = 'JJ' WHERE LastName = 'Hendrix'
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.WriteExtensions.UpdateFmt(System.Data.IDbCommand,System.String,System.String,System.String)">
+            <summary>
+            Flexible Update method to succinctly execute a free-text update statement using optional params. E.g.
+            
+              dbCmd.Update(table:"Person", set: "FirstName = {0}".Params("JJ"), where: "LastName = {0}".Params("Hendrix"));
+              UPDATE "Person" SET FirstName = 'JJ' WHERE LastName = 'Hendrix'
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.WriteExtensions.InsertOnly``1(System.Data.IDbCommand,``0,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}})">
+            <summary>
+            Using an Expression Visitor to only Insert the fields specified, e.g:
+            
+              dbCmd.InsertOnly(new Person { FirstName = "Amy" }, ev => ev.Insert(p => new { p.FirstName }));
+              INSERT INTO "Person" ("FirstName") VALUES ('Amy');
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.WriteExtensions.InsertOnly``1(System.Data.IDbCommand,``0,ServiceStack.OrmLite.SqlExpression{``0})">
+            <summary>
+            Using an Expression Visitor to only Insert the fields specified, e.g:
+            
+              var ev = OrmLiteConfig.DialectProvider.ExpressionVisitor&gt;Person&lt;());
+              dbCmd.InsertOnly(new Person { FirstName = "Amy" }, ev.Insert(p => new { p.FirstName }));
+              INSERT INTO "Person" ("FirstName") VALUES ('Amy');
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.WriteExtensions.Delete``1(System.Data.IDbCommand,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Delete the rows that matches the where expression, e.g:
+            
+              dbCmd.Delete&lt;Person&gt;(p => p.Age == 27);
+              DELETE FROM "Person" WHERE ("Age" = 27)
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.WriteExtensions.Delete``1(System.Data.IDbCommand,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}})">
+            <summary>
+            Delete the rows that matches the where expression, e.g:
+            
+              dbCmd.Delete&lt;Person&gt;(ev => ev.Where(p => p.Age == 27));
+              DELETE FROM "Person" WHERE ("Age" = 27)
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.WriteExtensions.Delete``1(System.Data.IDbCommand,ServiceStack.OrmLite.SqlExpression{``0})">
+            <summary>
+            Delete the rows that matches the where expression, e.g:
+            
+              var ev = OrmLiteConfig.DialectProvider.ExpressionVisitor&gt;Person&lt;());
+              dbCmd.Delete&lt;Person&gt;(ev.Where(p => p.Age == 27));
+              DELETE FROM "Person" WHERE ("Age" = 27)
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.WriteExtensions.DeleteFmt``1(System.Data.IDbCommand,System.String)">
+            <summary>
+            Flexible Delete method to succinctly execute a delete statement using free-text where expression. E.g.
+            
+              dbCmd.Delete&lt;Person&gt;(where:"Age = {0}".Params(27));
+              DELETE FROM "Person" WHERE Age = 27
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.WriteExtensions.DeleteFmt(System.Data.IDbCommand,System.String,System.String)">
+            <summary>
+            Flexible Delete method to succinctly execute a delete statement using free-text where expression. E.g.
+            
+              dbCmd.Delete(table:"Person", where: "Age = {0}".Params(27));
+              DELETE FROM "Person" WHERE Age = 27
+            </summary>
+        </member>
+        <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper">
+            <summary>
+            Dapper, a light weight object mapper for ADO.NET
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.PurgeQueryCache">
+            <summary>
+            Purge the query cache 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GetCachedSQLCount">
+            <summary>
+            Return a count of all the cached queries by dapper
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GetCachedSQL(System.Int32)">
+            <summary>
+            Return a list of all the queries cached by dapper
+            </summary>
+            <param name="ignoreHitCountAbove"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GetHashCollissions">
+            <summary>
+            Deep diagnostics only: find any hash collisions in the cache
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.AddTypeMap(System.Type,System.Data.DbType)">
+            <summary>
+            Configire the specified type to be mapped to a given db-type
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteDapper(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute parameterized SQL  
+            </summary>
+            <returns>Number of rows affected</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Dapper(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Boolean,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Return a list of dynamic objects, reader is closed after the call
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Dapper``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Boolean,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Executes a query, returning the data typed as per T
+            </summary>
+            <remarks>the dynamic param may seem a bit odd, but this works around a major usability issue in vs, if it is Object vs completion gets annoying. Eg type new [space] get new object</remarks>
+            <returns>A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
+            created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
+            </returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.DapperMultiple(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute a command that returns multiple result sets, and access each in turn
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.DapperInternal``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Return a typed list of objects, reader is closed after the call
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Dapper``3(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Maps a query to objects
+            </summary>
+            <typeparam name="TFirst">The first type in the recordset</typeparam>
+            <typeparam name="TSecond">The second type in the recordset</typeparam>
+            <typeparam name="TReturn">The return type</typeparam>
+            <param name="cnn"></param>
+            <param name="sql"></param>
+            <param name="map"></param>
+            <param name="param"></param>
+            <param name="transaction"></param>
+            <param name="buffered"></param>
+            <param name="splitOn">The Field we should split and read the second object from (default: id)</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Dapper``4(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Maps a query to objects
+            </summary>
+            <typeparam name="TFirst"></typeparam>
+            <typeparam name="TSecond"></typeparam>
+            <typeparam name="TThird"></typeparam>
+            <typeparam name="TReturn"></typeparam>
+            <param name="cnn"></param>
+            <param name="sql"></param>
+            <param name="map"></param>
+            <param name="param"></param>
+            <param name="transaction"></param>
+            <param name="buffered"></param>
+            <param name="splitOn">The Field we should split and read the second object from (default: id)</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout</param>
+            <param name="commandType"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Dapper``5(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Perform a multi mapping query with 4 input parameters
+            </summary>
+            <typeparam name="TFirst"></typeparam>
+            <typeparam name="TSecond"></typeparam>
+            <typeparam name="TThird"></typeparam>
+            <typeparam name="TFourth"></typeparam>
+            <typeparam name="TReturn"></typeparam>
+            <param name="cnn"></param>
+            <param name="sql"></param>
+            <param name="map"></param>
+            <param name="param"></param>
+            <param name="transaction"></param>
+            <param name="buffered"></param>
+            <param name="splitOn"></param>
+            <param name="commandTimeout"></param>
+            <param name="commandType"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Dapper``6(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4,``5},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Perform a multi mapping query with 5 input parameters
+            </summary>
+            <typeparam name="TFirst"></typeparam>
+            <typeparam name="TSecond"></typeparam>
+            <typeparam name="TThird"></typeparam>
+            <typeparam name="TFourth"></typeparam>
+            <typeparam name="TFifth"></typeparam>
+            <typeparam name="TReturn"></typeparam>
+            <param name="cnn"></param>
+            <param name="sql"></param>
+            <param name="map"></param>
+            <param name="param"></param>
+            <param name="transaction"></param>
+            <param name="buffered"></param>
+            <param name="splitOn"></param>
+            <param name="commandTimeout"></param>
+            <param name="commandType"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Dapper``7(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4,``5,``6},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Perform a multi mapping query with 6 input parameters
+            </summary>
+            <typeparam name="TFirst"></typeparam>
+            <typeparam name="TSecond"></typeparam>
+            <typeparam name="TThird"></typeparam>
+            <typeparam name="TFourth"></typeparam>
+            <typeparam name="TFifth"></typeparam>
+            <typeparam name="TSixth"></typeparam>
+            <typeparam name="TReturn"></typeparam>
+            <param name="cnn"></param>
+            <param name="sql"></param>
+            <param name="map"></param>
+            <param name="param"></param>
+            <param name="transaction"></param>
+            <param name="buffered"></param>
+            <param name="splitOn"></param>
+            <param name="commandTimeout"></param>
+            <param name="commandType"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Dapper``8(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4,``5,``6,``7},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Perform a multi mapping query with 7 input parameters
+            </summary>
+            <typeparam name="TFirst"></typeparam>
+            <typeparam name="TSecond"></typeparam>
+            <typeparam name="TThird"></typeparam>
+            <typeparam name="TFourth"></typeparam>
+            <typeparam name="TFifth"></typeparam>
+            <typeparam name="TSixth"></typeparam>
+            <typeparam name="TSeventh"></typeparam>
+            <typeparam name="TReturn"></typeparam>
+            <param name="cnn"></param>
+            <param name="sql"></param>
+            <param name="map"></param>
+            <param name="param"></param>
+            <param name="transaction"></param>
+            <param name="buffered"></param>
+            <param name="splitOn"></param>
+            <param name="commandTimeout"></param>
+            <param name="commandType"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ReadChar(System.Object)">
+            <summary>
+            Internal use only
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ReadNullableChar(System.Object)">
+            <summary>
+            Internal use only
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.FindOrAddParameter(System.Data.IDataParameterCollection,System.Data.IDbCommand,System.String)">
+            <summary>
+            Internal use only
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.PackListParameters(System.Data.IDbCommand,System.String,System.Object)">
+            <summary>
+            Internal use only
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.CreateParamInfoGenerator(ServiceStack.OrmLite.Dapper.SqlMapper.Identity,System.Boolean,System.Boolean)">
+            <summary>
+            Internal use only
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GetTypeMap(System.Type)">
+            <summary>
+            Gets type-map for the given type
+            </summary>
+            <returns>Type map implementation, DefaultTypeMap instance if no override present</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.SetTypeMap(System.Type,ServiceStack.OrmLite.Dapper.SqlMapper.ITypeMap)">
+            <summary>
+            Set custom mapping for type deserializers
+            </summary>
+            <param name="type">Entity type to override</param>
+            <param name="map">Mapping rules impementation, null to remove custom map</param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GetTypeDeserializer(System.Type,System.Data.IDataReader,System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            Internal use only
+            </summary>
+            <param name="type"></param>
+            <param name="reader"></param>
+            <param name="startBound"></param>
+            <param name="length"></param>
+            <param name="returnNullIfFirstMissing"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ThrowDataException(System.Exception,System.Int32,System.Data.IDataReader)">
+            <summary>
+            Throws a data exception, only used internally
+            </summary>
+            <param name="ex"></param>
+            <param name="index"></param>
+            <param name="reader"></param>
+        </member>
+        <member name="E:ServiceStack.OrmLite.Dapper.SqlMapper.QueryCachePurged">
+            <summary>
+            Called if the query cache is purged via PurgeQueryCache
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.SqlMapper.ConnectionStringComparer">
+            <summary>
+            How should connection strings be compared for equivalence? Defaults to StringComparer.Ordinal.
+            Providing a custom implementation can be useful for allowing multi-tenancy databases with identical
+            schema to share startegies. Note that usual equivalence rules apply: any equivalent connection strings
+            <b>MUST</b> yield the same hash-code.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.IDynamicParameters">
+            <summary>
+            Implement this interface to pass an arbitrary db specific set of parameters to Dapper
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.IDynamicParameters.AddParameters(System.Data.IDbCommand,ServiceStack.OrmLite.Dapper.SqlMapper.Identity)">
+            <summary>
+            Add all the parameters needed to the command just before it executes
+            </summary>
+            <param name="command">The raw command prior to execution</param>
+            <param name="identity">Information about the query</param>
+        </member>
+        <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.ICustomQueryParameter">
+            <summary>
+            Implement this interface to pass an arbitrary db specific parameter to Dapper
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ICustomQueryParameter.AddParameter(System.Data.IDbCommand,System.String)">
+            <summary>
+            Add the parameter needed to the command before it executes
+            </summary>
+            <param name="command">The raw command prior to execution</param>
+            <param name="name">Parameter name</param>
+        </member>
+        <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.ITypeMap">
+            <summary>
+            Implement this interface to change default mapping of reader columns to type memebers
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ITypeMap.FindConstructor(System.String[],System.Type[])">
+            <summary>
+            Finds best constructor
+            </summary>
+            <param name="names">DataReader column names</param>
+            <param name="types">DataReader column types</param>
+            <returns>Matching constructor or default one</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ITypeMap.GetConstructorParameter(System.Reflection.ConstructorInfo,System.String)">
+            <summary>
+            Gets mapping for constructor parameter
+            </summary>
+            <param name="constructor">Constructor to resolve</param>
+            <param name="columnName">DataReader column name</param>
+            <returns>Mapping implementation</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ITypeMap.GetMember(System.String)">
+            <summary>
+            Gets member mapping for column
+            </summary>
+            <param name="columnName">DataReader column name</param>
+            <returns>Mapping implementation</returns>
+        </member>
+        <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.IMemberMap">
+            <summary>
+            Implements this interface to provide custom member mapping
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.SqlMapper.IMemberMap.ColumnName">
+            <summary>
+            Source DataReader column name
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.SqlMapper.IMemberMap.MemberType">
+            <summary>
+             Target member type
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.SqlMapper.IMemberMap.Property">
+            <summary>
+            Target property
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.SqlMapper.IMemberMap.Field">
+            <summary>
+            Target field
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.SqlMapper.IMemberMap.Parameter">
+            <summary>
+            Target constructor parameter
+            </summary>
+        </member>
+        <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.Link`2">
+            <summary>
+            This is a micro-cache; suitable when the number of terms is controllable (a few hundred, for example),
+            and strictly append-only; you cannot change existing values. All key matches are on **REFERENCE**
+            equality. The type is fully thread-safe.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.Identity">
+            <summary>
+            Identity of a cached query in Dapper, used for extensability
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Identity.ForDynamicParameters(System.Type)">
+            <summary>
+            Create an identity for use with DynamicParameters, internal use only
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Identity.Equals(System.Object)">
+            <summary>
+            
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
+        <member name="F:ServiceStack.OrmLite.Dapper.SqlMapper.Identity.sql">
+            <summary>
+            The sql
+            </summary>
+        </member>
+        <member name="F:ServiceStack.OrmLite.Dapper.SqlMapper.Identity.commandType">
+            <summary>
+            The command type 
+            </summary>
+        </member>
+        <member name="F:ServiceStack.OrmLite.Dapper.SqlMapper.Identity.hashCode">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:ServiceStack.OrmLite.Dapper.SqlMapper.Identity.gridIndex">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:ServiceStack.OrmLite.Dapper.SqlMapper.Identity.type">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:ServiceStack.OrmLite.Dapper.SqlMapper.Identity.connectionString">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:ServiceStack.OrmLite.Dapper.SqlMapper.Identity.parametersType">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Identity.GetHashCode">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Identity.Equals(ServiceStack.OrmLite.Dapper.SqlMapper.Identity)">
+            <summary>
+            Compare 2 Identity objects
+            </summary>
+            <param name="other"></param>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader">
+            <summary>
+            The grid reader provides interfaces for reading multiple result sets from a Dapper query 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.Read(System.Boolean)">
+            <summary>
+            Read the next grid of results, returned as a dynamic object
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.Read``1(System.Boolean)">
+            <summary>
+            Read the next grid of results
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.Read``3(System.Func{``0,``1,``2},System.String,System.Boolean)">
+            <summary>
+            Read multiple objects from a single recordset on the grid
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.Read``4(System.Func{``0,``1,``2,``3},System.String,System.Boolean)">
+            <summary>
+            Read multiple objects from a single recordset on the grid
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.Read``5(System.Func{``0,``1,``2,``3,``4},System.String,System.Boolean)">
+            <summary>
+            Read multiple objects from a single record set on the grid
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.Read``6(System.Func{``0,``1,``2,``3,``4,``5},System.String,System.Boolean)">
+            <summary>
+            Read multiple objects from a single record set on the grid
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.Read``7(System.Func{``0,``1,``2,``3,``4,``5,``6},System.String,System.Boolean)">
+            <summary>
+            Read multiple objects from a single record set on the grid
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.Read``8(System.Func{``0,``1,``2,``3,``4,``5,``6,``7},System.String,System.Boolean)">
+            <summary>
+            Read multiple objects from a single record set on the grid
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.Dispose">
+            <summary>
+            Dispose the grid, closing and disposing both the underlying reader and command.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.OrmLite.Dapper.DynamicParameters">
+            <summary>
+            A bag of parameters that can be passed to the Dapper Query and Execute methods
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.DynamicParameters.#ctor">
+            <summary>
+            construct a dynamic parameter bag
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.DynamicParameters.#ctor(System.Object)">
+            <summary>
+            construct a dynamic parameter bag
+            </summary>
+            <param name="template">can be an anonymous type or a DynamicParameters bag</param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.DynamicParameters.AddDynamicParams(System.Object)">
+            <summary>
+            Append a whole object full of params to the dynamic
+            EG: AddDynamicParams(new {A = 1, B = 2}) // will add property A and B to the dynamic
+            </summary>
+            <param name="param"></param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.DynamicParameters.Add(System.String,System.Object,System.Nullable{System.Data.DbType},System.Nullable{System.Data.ParameterDirection},System.Nullable{System.Int32})">
+            <summary>
+            Add a parameter to this dynamic parameter list
+            </summary>
+            <param name="name"></param>
+            <param name="value"></param>
+            <param name="dbType"></param>
+            <param name="direction"></param>
+            <param name="size"></param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.DynamicParameters.AddParameters(System.Data.IDbCommand,ServiceStack.OrmLite.Dapper.SqlMapper.Identity)">
+            <summary>
+            Add all the parameters needed to the command just before it executes
+            </summary>
+            <param name="command">The raw command prior to execution</param>
+            <param name="identity">Information about the query</param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.DynamicParameters.Get``1(System.String)">
+            <summary>
+            Get the value of a parameter
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="name"></param>
+            <returns>The value, note DBNull.Value is not returned, instead the value is returned as null</returns>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.DynamicParameters.RemoveUnused">
+            <summary>
+            If true, the command-text is inspected and only values that are clearly used are included on the connection
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.DynamicParameters.ParameterNames">
+            <summary>
+            All the names of the param in the bag, use Get to yank them out
+            </summary>
+        </member>
+        <member name="T:ServiceStack.OrmLite.Dapper.DbString">
+            <summary>
+            This class represents a SQL string, it can be used if you need to denote your parameter is a Char vs VarChar vs nVarChar vs nChar
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.DbString.#ctor">
+            <summary>
+            Create a new DbString
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.DbString.AddParameter(System.Data.IDbCommand,System.String)">
+            <summary>
+            Add the parameter to the command... internal use only
+            </summary>
+            <param name="command"></param>
+            <param name="name"></param>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.DbString.IsAnsi">
+            <summary>
+            Ansi vs Unicode 
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.DbString.IsFixedLength">
+            <summary>
+            Fixed length 
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.DbString.Length">
+            <summary>
+            Length of the string -1 for max
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.DbString.Value">
+            <summary>
+            The value of the string
+            </summary>
+        </member>
+        <member name="T:ServiceStack.OrmLite.Dapper.FeatureSupport">
+            <summary>
+            Handles variances in features per DBMS
+            </summary>
+        </member>
+        <member name="F:ServiceStack.OrmLite.Dapper.FeatureSupport.FeatureList">
+            <summary>
+            Dictionary of supported features index by connection type name
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.FeatureSupport.Get(System.Data.IDbConnection)">
+            <summary>
+            Gets the featureset based on the passed connection
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.FeatureSupport.Arrays">
+            <summary>
+            True if the db supports array columns e.g. Postgresql
+            </summary>
+        </member>
+        <member name="T:ServiceStack.OrmLite.Dapper.SimpleMemberMap">
+            <summary>
+            Represents simple memeber map for one of target parameter or property or field to source DataReader column
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SimpleMemberMap.#ctor(System.String,System.Reflection.PropertyInfo)">
+            <summary>
+            Creates instance for simple property mapping
+            </summary>
+            <param name="columnName">DataReader column name</param>
+            <param name="property">Target property</param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SimpleMemberMap.#ctor(System.String,System.Reflection.FieldInfo)">
+            <summary>
+            Creates instance for simple field mapping
+            </summary>
+            <param name="columnName">DataReader column name</param>
+            <param name="field">Target property</param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SimpleMemberMap.#ctor(System.String,System.Reflection.ParameterInfo)">
+            <summary>
+            Creates instance for simple constructor parameter mapping
+            </summary>
+            <param name="columnName">DataReader column name</param>
+            <param name="parameter">Target constructor parameter</param>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.SimpleMemberMap.ColumnName">
+            <summary>
+            DataReader column name
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.SimpleMemberMap.MemberType">
+            <summary>
+            Target member type
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.SimpleMemberMap.Property">
+            <summary>
+            Target property
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.SimpleMemberMap.Field">
+            <summary>
+            Target field
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.SimpleMemberMap.Parameter">
+            <summary>
+            Target constructor parameter
+            </summary>
+        </member>
+        <member name="T:ServiceStack.OrmLite.Dapper.DefaultTypeMap">
+            <summary>
+            Represents default type mapping strategy used by Dapper
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.DefaultTypeMap.#ctor(System.Type)">
+            <summary>
+            Creates default type map
+            </summary>
+            <param name="type">Entity type</param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.DefaultTypeMap.FindConstructor(System.String[],System.Type[])">
+            <summary>
+            Finds best constructor
+            </summary>
+            <param name="names">DataReader column names</param>
+            <param name="types">DataReader column types</param>
+            <returns>Matching constructor or default one</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.DefaultTypeMap.GetConstructorParameter(System.Reflection.ConstructorInfo,System.String)">
+            <summary>
+            Gets mapping for constructor parameter
+            </summary>
+            <param name="constructor">Constructor to resolve</param>
+            <param name="columnName">DataReader column name</param>
+            <returns>Mapping implementation</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.DefaultTypeMap.GetMember(System.String)">
+            <summary>
+            Gets member mapping for column
+            </summary>
+            <param name="columnName">DataReader column name</param>
+            <returns>Mapping implementation</returns>
+        </member>
+        <member name="T:ServiceStack.OrmLite.Dapper.CustomPropertyTypeMap">
+            <summary>
+            Implements custom property mapping by user provided criteria (usually presence of some custom attribute with column to member mapping)
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.CustomPropertyTypeMap.#ctor(System.Type,System.Func{System.Type,System.String,System.Reflection.PropertyInfo})">
+            <summary>
+            Creates custom property mapping
+            </summary>
+            <param name="type">Target entity type</param>
+            <param name="propertySelector">Property selector based on target type and DataReader column name</param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.CustomPropertyTypeMap.FindConstructor(System.String[],System.Type[])">
+            <summary>
+            Always returns default constructor
+            </summary>
+            <param name="names">DataReader column names</param>
+            <param name="types">DataReader column types</param>
+            <returns>Default constructor</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.CustomPropertyTypeMap.GetConstructorParameter(System.Reflection.ConstructorInfo,System.String)">
+            <summary>
+            Not impelmeneted as far as default constructor used for all cases
+            </summary>
+            <param name="constructor"></param>
+            <param name="columnName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.CustomPropertyTypeMap.GetMember(System.String)">
+            <summary>
+            Returns property based on selector strategy
+            </summary>
+            <param name="columnName">DataReader column name</param>
+            <returns>Poperty member map</returns>
+        </member>
+    </members>
+</doc>

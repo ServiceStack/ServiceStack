@@ -106,6 +106,12 @@
             can decide whether or not they should redirect
             </summary>
         </member>
+        <member name="M:ServiceStack.HttpResult.TriggerEvent(System.Object,System.String,System.String)">
+            <summary>
+            Decorate the response with an additional client-side event to instruct participating 
+            smart clients (e.g. ajax) with hints to transparently invoke client-side functionality
+            </summary>
+        </member>
         <member name="M:ServiceStack.HttpResultExtensions.GetDto(System.Object)">
             <summary>
             Shortcut to get the ResponseDTO whether it's bare or inside a IHttpResult

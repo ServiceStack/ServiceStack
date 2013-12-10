@@ -95,7 +95,7 @@
     <!-- ServiceStack.Interfaces is already signed -->
 
     <!-- ServiceStack.Client -->
-
+    
     <MSBuild Projects="../src/ServiceStack.Client/ServiceStack.Client.Signed.csproj" Properties="Configuration=$(Configuration)"/>
     <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
 
