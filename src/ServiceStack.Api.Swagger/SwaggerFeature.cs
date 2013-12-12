@@ -35,6 +35,12 @@ namespace ServiceStack.Api.Swagger
             appHost.RegisterService(typeof(SwaggerResourcesService), new[] { "/resources" });
             appHost.RegisterService(typeof(SwaggerApiService), new[] { SwaggerResourcesService.RESOURCE_PATH + "/{Name*}" });
 
+            var metadata = appHost.GetPlugin<MetadataFeature>();
+            if (metadata != null)
+            {
+                metadata.PluginLinks["swagger-ui/"] = "Swagger UI";
+            }
+
             appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) =>
             {
                 if (pathInfo == "/swagger-ui" || pathInfo == "/swagger-ui/" || pathInfo == "/swagger-ui/default.html")
@@ -43,16 +49,14 @@ namespace ServiceStack.Api.Swagger
                     if (indexFile != null)
                     {
                         var html = indexFile.ReadAllText();
-                        var resourcesUrl = (appHost.Config.HandlerFactoryPath ?? "")
-                            .CombineWith("resources");
 
-                        html = html.Replace("http://petstore.swagger.wordnik.com/api/api-docs", resourcesUrl);
-                        
                         return new CustomResponseHandler((req, res) =>
-                            {
-                                res.ContentType = MimeTypes.Html;
-                                return html;
-                            });
+                        {
+                            res.ContentType = MimeTypes.Html;
+                            var resourcesUrl = req.ResolveAbsoluteUrl("~/resources");
+                            html = html.Replace("http://petstore.swagger.wordnik.com/api/api-docs", resourcesUrl);
+                            return html;
+                        });
                     }
                 }
                 return null;
