@@ -3,6 +3,7 @@ using System.Net;
 using System.Runtime.Serialization;
 using Funq;
 using ServiceStack;
+using ServiceStack.Api.Swagger;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.MsgPack;
@@ -20,6 +21,7 @@ namespace RazorRockstars.Web
         {
             Plugins.Add(new RazorFormat());
             Plugins.Add(new MsgPackFormat());
+            Plugins.Add(new SwaggerFeature());
 
             container.Register<IDbConnectionFactory>(
                 new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
