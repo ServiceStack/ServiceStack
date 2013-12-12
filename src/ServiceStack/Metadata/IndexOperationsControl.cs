@@ -82,6 +82,15 @@ namespace ServiceStack.Metadata
                 wsdlTemplate.AppendLine("</ul>");
             }
 
+            var metadata = HostContext.GetPlugin<MetadataFeature>();
+            var pluginLinks = metadata != null && metadata.PluginLinks.Count > 0
+                ? new ListTemplate {
+                    Title = metadata.PluginLinksTitle,
+                    ListItemsMap = metadata.PluginLinks,
+                    ListItemTemplate = @"<li><a href=""{0}"">{1}</a></li>"
+                  }.ToString()
+                : "";
+
             var debugOnlyInfo = new StringBuilder();
             if (HostContext.DebugMode)
             {
@@ -98,6 +107,7 @@ namespace ServiceStack.Metadata
                 operationsPart,
                 xsdsPart,
                 wsdlTemplate,
+                pluginLinks,
                 debugOnlyInfo);
 
             output.Write(renderedTemplate);
