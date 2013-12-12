@@ -98,7 +98,7 @@ namespace ServiceStack
                 AllowPartialResponses = true,
                 AllowAclUrlReservation = true,
                 RedirectToDefaultDocuments = false,
-                StripApplicationVirtualPath = true,
+                StripApplicationVirtualPath = false,
                 ScanSkipPaths = new List<string> {
                     "/obj/", 
                     "/bin/",
