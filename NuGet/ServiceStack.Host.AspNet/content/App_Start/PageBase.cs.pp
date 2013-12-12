@@ -1,8 +1,6 @@
 using System.Web.UI;
-using ServiceStack.CacheAccess;
-using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceInterface.Auth;
-using ServiceStack.WebHost.Endpoints;
+using ServiceStack;
+using ServiceStack.Caching;
 
 
 /**
@@ -11,14 +9,14 @@ using ServiceStack.WebHost.Endpoints;
 
 namespace $rootnamespace$.App_Start
 {
-	//A customizeable typed UserSession that can be extended with your own properties
-	public class CustomUserSession : AuthUserSession
-	{
-		public string CustomProperty { get; set; }
-	}
+    //A customizeable typed UserSession that can be extended with your own properties
+    public class CustomUserSession : AuthUserSession
+    {
+        public string CustomProperty { get; set; }
+    }
 
-	public class PageBase : Page
-	{
+    public class PageBase : Page
+    {
         /// <summary>
         /// Typed UserSession
         /// </summary>
@@ -38,24 +36,24 @@ namespace $rootnamespace$.App_Start
 
         public new ICacheClient Cache
         {
-            get { return AppHostBase.Resolve<ICacheClient>(); }
+            get { return HostContext.Resolve<ICacheClient>(); }
         }
 
         private ISessionFactory sessionFactory;
         public virtual ISessionFactory SessionFactory
         {
-            get { return sessionFactory ?? (sessionFactory = AppHostBase.Resolve<ISessionFactory>()) ?? new SessionFactory(Cache); }
+            get { return sessionFactory ?? (sessionFactory = HostContext.Resolve<ISessionFactory>()) ?? new SessionFactory(Cache); }
         }
 
         /// <summary>
-        /// Dynamic Session Bag
+        /// Dynamic SessionBag Bag
         /// </summary>
-        private ISession session;
-        public new ISession Session
+        private ISession sessionBag;
+        public new ISession SessionBag
         {
             get
             {
-                return session ?? (session = SessionFactory.GetOrCreateSession());
+                return sessionBag ?? (sessionBag = SessionFactory.GetOrCreateSession());
             }
         }
 
@@ -64,5 +62,5 @@ namespace $rootnamespace$.App_Start
             userSession = null;
             this.Cache.Remove(SessionFeature.GetSessionKey());
         }
-	}
+    }
 }

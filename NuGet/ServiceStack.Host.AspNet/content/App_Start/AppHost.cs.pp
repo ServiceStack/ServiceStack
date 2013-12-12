@@ -1,13 +1,9 @@
-using System;
-using System.Linq;
 using System.Configuration;
-using System.Collections.Generic;
+using ServiceStack;
+using ServiceStack.Auth;
 using ServiceStack.Configuration;
+using ServiceStack.Data;
 using ServiceStack.OrmLite;
-using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceInterface.Auth;
-using ServiceStack.ServiceInterface.ServiceModel;
-using ServiceStack.WebHost.Endpoints;
 
 [assembly: WebActivator.PreApplicationStartMethod(typeof($rootnamespace$.App_Start.AppHost), "Start")]
 
@@ -21,8 +17,7 @@ using ServiceStack.WebHost.Endpoints;
 
 namespace $rootnamespace$.App_Start
 {
-	public class AppHost
-		: AppHostBase
+	public class AppHost : AppHostBase
 	{		
 		public AppHost() //Tell ServiceStack the name and where to find your web services
 			: base("StarterTemplate ASP.NET Host", typeof(HelloService).Assembly) { }
@@ -38,8 +33,8 @@ namespace $rootnamespace$.App_Start
 			  .Add<Hello>("/hello/{Name*}");
 
 			//Uncomment to change the default ServiceStack configuration
-			//SetConfig(new EndpointHostConfig {
-			//});
+            //SetConfig(new HostConfig {
+            //});
 
 			//Enable Authentication
 			//ConfigureAuth(container);
@@ -48,7 +43,7 @@ namespace $rootnamespace$.App_Start
 			container.Register(new TodoRepository());			
 		}
 
-		/* Uncomment to enable ServiceStack Authentication and CustomUserSession
+		/* Example ServiceStack Authentication and CustomUserSession */
 		private void ConfigureAuth(Funq.Container container)
 		{
 			var appSettings = new AppSettings();
@@ -73,10 +68,8 @@ namespace $rootnamespace$.App_Start
 			container.Register<IUserAuthRepository>(c =>
 				new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()));
 
-			var authRepo = (OrmLiteAuthRepository)container.Resolve<IUserAuthRepository>();
-			authRepo.CreateMissingTables();
+            container.Resolve<IUserAuthRepository>().InitSchema();
 		}
-		*/
 
 		public static void Start()
 		{

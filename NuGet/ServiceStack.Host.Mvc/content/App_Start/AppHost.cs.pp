@@ -1,22 +1,17 @@
-using System;
-using System.Linq;
 using System.Configuration;
-using System.Collections.Generic;
 using System.Web.Mvc;
+using ServiceStack;
+using ServiceStack.Auth;
 using ServiceStack.Configuration;
-using ServiceStack.CacheAccess;
-using ServiceStack.CacheAccess.Providers;
+using ServiceStack.Data;
 using ServiceStack.Mvc;
 using ServiceStack.OrmLite;
-using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceInterface.Auth;
-using ServiceStack.ServiceInterface.ServiceModel;
-using ServiceStack.WebHost.Endpoints;
 
 [assembly: WebActivator.PreApplicationStartMethod(typeof($rootnamespace$.App_Start.AppHost), "Start")]
 
-//IMPORTANT: Add the line below to MvcApplication.RegisterRoutes(RouteCollection) in the Global.asax:
+//IMPORTANT: Add the line below to RouteConfig.RegisterRoutes(RouteCollection) in the Global.asax:
 //routes.IgnoreRoute("api/{*pathInfo}"); 
+//More info on how to integrate with MVC: https://github.com/ServiceStack/ServiceStack/wiki/Mvc-integration
 
 /**
  * Entire ServiceStack Starter Template configured with a 'Hello' Web Service and a 'Todo' Rest Service.
@@ -51,8 +46,9 @@ namespace $rootnamespace$.App_Start
 			  .Add<Hello>("/hello/{Name*}");
 
 			//Uncomment to change the default ServiceStack configuration
-			//SetConfig(new EndpointHostConfig {
-			//});
+            //SetConfig(new HostConfig
+            //{
+            //});
 
 			//Enable Authentication
 			//ConfigureAuth(container);
@@ -64,7 +60,7 @@ namespace $rootnamespace$.App_Start
 			ControllerBuilder.Current.SetControllerFactory(new FunqControllerFactory(container));
 		}
 
-		/* Uncomment to enable ServiceStack Authentication and CustomUserSession
+		/* Uncomment to enable ServiceStack Authentication and CustomUserSession */
 		private void ConfigureAuth(Funq.Container container)
 		{
 			var appSettings = new AppSettings();
@@ -89,10 +85,8 @@ namespace $rootnamespace$.App_Start
 			container.Register<IUserAuthRepository>(c =>
 				new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()));
 
-			var authRepo = (OrmLiteAuthRepository)container.Resolve<IUserAuthRepository>();
-			authRepo.CreateMissingTables();
+            container.Resolve<IUserAuthRepository>().InitSchema();
 		}
-		*/
 
 		public static void Start()
 		{

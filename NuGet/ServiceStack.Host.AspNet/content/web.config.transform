@@ -3,7 +3,7 @@
 
 	<system.web>
 		<httpHandlers>
-			<add path="*" type="ServiceStack.WebHost.Endpoints.ServiceStackHttpHandlerFactory, ServiceStack" verb="*"/>
+			<add path="*" type="ServiceStack.HttpHandlerFactory, ServiceStack" verb="*"/>
 		</httpHandlers>
 	</system.web>
 
@@ -11,7 +11,7 @@
 		<modules runAllManagedModulesForAllRequests="true"/>
 		<validation validateIntegratedModeConfiguration="false" />
 		<handlers>
-			<add path="*" name="ServiceStack.Factory" type="ServiceStack.WebHost.Endpoints.ServiceStackHttpHandlerFactory, ServiceStack" verb="*" preCondition="integratedMode" resourceType="Unspecified" allowPathInfo="true" />
+			<add path="*" name="ServiceStack.Factory" type="ServiceStack.HttpHandlerFactory, ServiceStack" verb="*" preCondition="integratedMode" resourceType="Unspecified" allowPathInfo="true" />
 		</handlers>
 	</system.webServer>
 	
