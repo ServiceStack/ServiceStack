@@ -1,6 +1,5 @@
 using System.Reflection;
 using System.Web;
-using System.Web.Hosting;
 using ServiceStack.Host.AspNet;
 using ServiceStack.Web;
 
@@ -18,10 +17,7 @@ namespace ServiceStack
         public override string ResolveAbsoluteUrl(string virtualPath, IRequest httpReq)
         {
             virtualPath = virtualPath.SanitizedVirtualPath();
-
-            return Config.WebHostUrl == null && !Config.StripApplicationVirtualPath
-                ? VirtualPathUtility.ToAbsolute(virtualPath)
-                : httpReq.GetAbsoluteUrl(virtualPath);
+            return httpReq.GetAbsoluteUrl(virtualPath);
         }
 
         public override string ResolvePhysicalPath(string virtualPath, IRequest httpReq)
