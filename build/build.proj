@@ -129,8 +129,6 @@
       <ProtoBufFiles Include="$(SrcDir)/ServiceStack.ProtoBuf/bin/$(Configuration)/ServiceStack.ProtoBuf.*"></ProtoBufFiles>
 
       <MsgPackFiles Include="$(SrcDir)/ServiceStack.MsgPack/bin/$(Configuration)/ServiceStack.MsgPack.*"></MsgPackFiles>
-      <MsgPackFiles Include="$(BuildSolutionDir)/lib/MsgPack.dll"></MsgPackFiles>
-      <MsgPackFiles Include="$(BuildSolutionDir)/lib/MsgPack.xml"></MsgPackFiles>
 
       <SwaggerFiles Include="$(SrcDir)/ServiceStack.Api.Swagger/bin/$(Configuration)/ServiceStack.Api.Swagger.*"></SwaggerFiles>
       

@@ -18,6 +18,7 @@
     <copyright>Copyright 2013 Service Stack</copyright>
     <dependencies>
       <dependency id="ServiceStack.Client" version="4.0" />
+      <dependency id="MsgPack.Cli" version="0.4.1" />
     </dependencies>
   </metadata>
   <files>
