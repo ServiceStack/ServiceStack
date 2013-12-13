@@ -141,6 +141,30 @@ namespace ServiceStack
             }
         }
 
+        public virtual bool ApplyMessageRequestFilters(IRequest req, IResponse res, object requestDto)
+        {
+            //Exec global filters
+            foreach (var requestFilter in GlobalMessageRequestFilters)
+            {
+                requestFilter(req, res, requestDto);
+                if (res.IsClosed) return res.IsClosed;
+            }
+
+            return res.IsClosed;
+        }
+
+        public virtual bool ApplyMessageResponseFilters(IRequest req, IResponse res, object response)
+        {
+            //Exec global filters
+            foreach (var responseFilter in GlobalMessageResponseFilters)
+            {
+                responseFilter(req, res, response);
+                if (res.IsClosed) return res.IsClosed;
+            }
+
+            return res.IsClosed;
+        }
+
         public MetadataPagesConfig MetadataPagesConfig
         {
             get

@@ -53,14 +53,24 @@ namespace ServiceStack
         List<Action<IRequest, IResponse>> PreRequestFilters { get; }
 
         /// <summary>
-        /// Add Request Filters
+        /// Add Request Filters for HTTP Requests
         /// </summary>
         List<Action<IRequest, IResponse, object>> GlobalRequestFilters { get; }
 
         /// <summary>
-        /// Add Response Filters
+        /// Add Response Filters for HTTP Responses
         /// </summary>
         List<Action<IRequest, IResponse, object>> GlobalResponseFilters { get; }
+
+        /// <summary>
+        /// Add Request Filters for MQ/TCP Requests
+        /// </summary>
+        List<Action<IRequest, IResponse, object>> GlobalMessageRequestFilters { get; }
+
+        /// <summary>
+        /// Add Response Filters for MQ/TCP Responses
+        /// </summary>
+        List<Action<IRequest, IResponse, object>> GlobalMessageResponseFilters { get; }
 
         /// <summary>
         /// Add alternative HTML View Engines

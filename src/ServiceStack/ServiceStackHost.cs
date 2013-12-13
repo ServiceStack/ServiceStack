@@ -57,6 +57,8 @@ namespace ServiceStack
             PreRequestFilters = new List<Action<IRequest, IResponse>>();
             GlobalRequestFilters = new List<Action<IRequest, IResponse, object>>();
             GlobalResponseFilters = new List<Action<IRequest, IResponse, object>>();
+            GlobalMessageRequestFilters = new List<Action<IRequest, IResponse, object>>();
+            GlobalMessageResponseFilters = new List<Action<IRequest, IResponse, object>>();
             ViewEngines = new List<IViewEngine>();
             ServiceExceptionHandlers = new List<HandleServiceExceptionDelegate>();
             UncaughtExceptionHandlers = new List<HandleUncaughtExceptionDelegate>();
@@ -166,6 +168,10 @@ namespace ServiceStack
         public List<Action<IRequest, IResponse, object>> GlobalRequestFilters { get; set; }
 
         public List<Action<IRequest, IResponse, object>> GlobalResponseFilters { get; set; }
+
+        public List<Action<IRequest, IResponse, object>> GlobalMessageRequestFilters { get; private set; }
+        
+        public List<Action<IRequest, IResponse, object>> GlobalMessageResponseFilters { get; private set; }
 
         public List<IViewEngine> ViewEngines { get; set; }
 

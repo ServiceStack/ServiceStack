@@ -118,6 +118,16 @@ namespace ServiceStack
             get { return AssertAppHost().GlobalResponseFilters; }
         }
 
+        public static List<Action<IRequest, IResponse, object>> GlobalMessageRequestFilters
+        {
+            get { return AssertAppHost().GlobalMessageRequestFilters; }
+        }
+
+        public static List<Action<IRequest, IResponse, object>> GlobalMessageResponseFilters
+        {
+            get { return AssertAppHost().GlobalMessageResponseFilters; }
+        }
+
         public static bool ApplyCustomHandlerRequestFilters(IRequest httpReq, IResponse httpRes)
         {
             return AssertAppHost().ApplyCustomHandlerRequestFilters(httpReq, httpRes);
@@ -131,6 +141,16 @@ namespace ServiceStack
         public static bool ApplyRequestFilters(IRequest httpReq, IResponse httpRes, object requestDto)
         {
             return AssertAppHost().ApplyRequestFilters(httpReq, httpRes, requestDto);
+        }
+
+        public static bool ApplyMessageResponseFilters(IRequest req, IResponse res, object response)
+        {
+            return AssertAppHost().ApplyMessageResponseFilters(req, res, response);
+        }
+
+        public static bool ApplyMessageRequestFilters(IRequest req, IResponse res, object requestDto)
+        {
+            return AssertAppHost().ApplyMessageRequestFilters(req, res, requestDto);
         }
 
         public static bool ApplyResponseFilters(IRequest httpReq, IResponse httpRes, object response)
