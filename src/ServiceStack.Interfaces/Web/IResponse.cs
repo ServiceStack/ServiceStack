@@ -27,6 +27,11 @@ namespace ServiceStack.Web
 
         Stream OutputStream { get; }
 
+        /// <summary>
+        /// The Response DTO
+        /// </summary>
+        object Dto { get; set; }
+
         void Write(string text);
 
         /// <summary>

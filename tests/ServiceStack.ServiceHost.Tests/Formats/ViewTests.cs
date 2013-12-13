@@ -168,6 +168,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
             public Stream OutputStream { get { return MemoryStream; } }
 
+            public object Dto { get; set; }
+
             public void Write(string text)
             {
                 var bytes = Encoding.UTF8.GetBytes(text);

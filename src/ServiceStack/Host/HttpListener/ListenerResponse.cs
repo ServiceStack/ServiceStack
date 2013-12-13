@@ -61,6 +61,8 @@ namespace ServiceStack.Host.HttpListener
             get { return response.OutputStream; }
         }
 
+        public object Dto { get; set; }
+
         public void Write(string text)
         {
             try

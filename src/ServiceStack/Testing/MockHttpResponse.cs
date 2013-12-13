@@ -40,6 +40,8 @@ namespace ServiceStack.Testing
 
         public Stream OutputStream { get; private set; }
 
+        public object Dto { get; set; }
+
         public void Write(string text)
         {
             this.TextWritten.Append(text);

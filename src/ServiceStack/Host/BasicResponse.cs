@@ -43,6 +43,8 @@ namespace ServiceStack.Host
             get { return ms ?? (ms = new MemoryStream()); }
         }
 
+        public object Dto { get; set; }
+
         public void Write(string text)
         {
             var bytes = text.ToUtf8Bytes();

@@ -68,6 +68,8 @@ namespace ServiceStack.Host.AspNet
             get { return response.OutputStream; }
         }
 
+        public object Dto { get; set; }
+
         public void Write(string text)
         {
             response.Write(text);

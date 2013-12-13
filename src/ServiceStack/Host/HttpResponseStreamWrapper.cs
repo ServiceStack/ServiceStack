@@ -42,6 +42,8 @@ namespace ServiceStack.Host
 
         public Stream OutputStream { get; private set; }
 
+        public object Dto { get; set; }
+
         public void Write(string text)
         {
             var bytes = UTF8EncodingWithoutBom.GetBytes(text);
