@@ -1,9 +1,12 @@
 ﻿using Funq;
 using NUnit.Framework;
 using ServiceStack.Configuration;
+using ServiceStack.FluentValidation;
 using ServiceStack.Messaging;
 using ServiceStack.Messaging.Redis;
 using ServiceStack.Redis;
+using ServiceStack.Text;
+using ServiceStack.Validation;
 
 namespace ServiceStack.Common.Tests.Messaging
 {
@@ -27,6 +30,28 @@ namespace ServiceStack.Common.Tests.Messaging
         public int CorrelationId { get; set; }
     }
 
+    public class ValidateTestMq
+    {
+        public int Id { get; set; }
+    }
+
+    public class ValidateTestMqResponse
+    {
+        public int CorrelationId { get; set; }
+
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    public class ValidateTestMqValidator : AbstractValidator<ValidateTestMq>
+    {
+        public ValidateTestMqValidator()
+        {
+            RuleFor(x => x.Id)
+                .GreaterThanOrEqualTo(0)
+                .WithErrorCode("PositiveIntegersOnly");
+        }
+    }
+
     public class TestMqService : IService
     {
         public object Any(AnyTestMq request)
@@ -38,6 +63,11 @@ namespace ServiceStack.Common.Tests.Messaging
         {
             return new PostTestMqResponse { CorrelationId = request.Id };
         }
+
+        public object Post(ValidateTestMq request)
+        {
+            return new ValidateTestMqResponse { CorrelationId = request.Id };
+        }
     }
 
     public class AppHost : AppHostHttpListenerBase
@@ -47,15 +77,18 @@ namespace ServiceStack.Common.Tests.Messaging
 
         public override void Configure(Container container)
         {
+            Plugins.Add(new ValidationFeature());
+            container.RegisterValidators(typeof(ValidateTestMqValidator).Assembly);
+
             var appSettings = new AppSettings();
             container.Register<IRedisClientsManager>(c => new PooledRedisClientManager(
-                new string[] { appSettings.GetString("Redis.Host") ?? "localhost" }));
+                new[] { appSettings.GetString("Redis.Host") ?? "localhost" }));
             container.Register<IMessageService>(c => new RedisMqServer(c.Resolve<IRedisClientsManager>()));
-            container.Register<IMessageFactory>(c => c.Resolve<IMessageService>().MessageFactory);
 
             var mqServer = (RedisMqServer)container.Resolve<IMessageService>();
             mqServer.RegisterHandler<AnyTestMq>(ServiceController.ExecuteMessage);
             mqServer.RegisterHandler<PostTestMq>(ServiceController.ExecuteMessage);
+            mqServer.RegisterHandler<ValidateTestMq>(ServiceController.ExecuteMessage);
 
             mqServer.Start();
         }
@@ -141,6 +174,27 @@ namespace ServiceStack.Common.Tests.Messaging
             {
                 var msg = mqFactory.CreateMessageQueueClient().Get(QueueNames<PostTestMqResponse>.In, null)
                     .ToMessage<PostTestMqResponse>();
+                Assert.That(msg.GetBody().CorrelationId, Is.EqualTo(request.Id));
+            }
+        }
+
+        [Test]
+        public void Does_execute_validation_filters()
+        {
+            using (var mqFactory = appHost.TryResolve<IMessageFactory>())
+            {
+                var request = new ValidateTestMq { Id = -10 };
+                mqFactory.CreateMessageProducer().Publish(request);
+                var msg = mqFactory.CreateMessageQueueClient().Get(QueueNames<ValidateTestMqResponse>.Dlq, null)
+                    .ToMessage<ValidateTestMqResponse>();
+
+                msg.GetBody().PrintDump();
+                Assert.That(msg.GetBody().ResponseStatus.ErrorCode, Is.EqualTo("PositiveIntegersOnly"));
+
+                request = new ValidateTestMq { Id = 10 };
+                mqFactory.CreateMessageProducer().Publish(request);
+                msg = mqFactory.CreateMessageQueueClient().Get(QueueNames<ValidateTestMqResponse>.In, null)
+                    .ToMessage<ValidateTestMqResponse>();
                 Assert.That(msg.GetBody().CorrelationId, Is.EqualTo(request.Id));
             }
         }

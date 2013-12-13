@@ -148,12 +148,15 @@ namespace ServiceStack
                         var httpError = httpResult as IHttpError;
                         if (httpError != null)
                         {
+                            response.Dto = httpError.CreateErrorResponse();
                             if (response.HandleCustomErrorHandler(request,
-                                defaultContentType, httpError.Status, httpError.CreateErrorResponse()))
+                                defaultContentType, httpError.Status, response.Dto))
                             {
                                 return TrueTask;
                             }
                         }
+
+                        response.Dto = response.Dto ?? httpResult.GetDto();
 
                         response.StatusCode = httpResult.Status;
                         response.StatusDescription = httpResult.StatusDescription ?? httpResult.StatusCode.ToString();
@@ -162,6 +165,10 @@ namespace ServiceStack
                             httpResult.ContentType = defaultContentType;
                         }
                         response.ContentType = httpResult.ContentType;
+                    }
+                    else
+                    {
+                        response.Dto = result;
                     }
 
                     /* Mono Error: Exception: Method not found: 'System.Web.HttpResponse.get_Headers' */

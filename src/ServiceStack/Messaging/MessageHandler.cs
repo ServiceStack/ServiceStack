@@ -136,7 +136,16 @@ namespace ServiceStack.Messaging
                 if (responseEx != null)
                     throw responseEx;
 
-                this.TotalMessagesProcessed++;
+                var responseStatus = response.GetResponseStatus();
+                var isError = responseStatus != null && responseStatus.ErrorCode != null;
+                if (!isError)
+                {
+                    this.TotalMessagesFailed++;
+                }
+                else
+                {
+                    this.TotalMessagesProcessed++;
+                }
 
                 //If there's no response publish the request message to its OutQ
                 if (response == null)
@@ -165,7 +174,9 @@ namespace ServiceStack.Messaging
 
                         // Leave as-is to work around a Mono 2.6.7 compiler bug
                         if (!responseType.IsUserType()) return;
-                        mqReplyTo = new QueueNames(responseType).In;
+                        mqReplyTo = !isError 
+                            ? new QueueNames(responseType).In
+                            : new QueueNames(responseType).Dlq;
                     }
                     
                     var replyClient = ReplyClientFactory(mqReplyTo);
@@ -184,7 +195,9 @@ namespace ServiceStack.Messaging
                             // Leave as-is to work around a Mono 2.6.7 compiler bug
                             if (!responseType.IsUserType()) return;
 
-                            mqReplyTo = new QueueNames(responseType).In;
+                            mqReplyTo = !isError
+                                ? new QueueNames(responseType).In
+                                : new QueueNames(responseType).Dlq;
                         }
                     }
 
