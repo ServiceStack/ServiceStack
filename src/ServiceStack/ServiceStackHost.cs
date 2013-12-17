@@ -10,6 +10,7 @@ using System.Net;
 using System.Reflection;
 using System.Web;
 using Funq;
+using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Formats;
@@ -360,6 +361,12 @@ namespace ServiceStack
             if (registeredMqService != null && registeredMqFactory == null)
             {
                 Container.Register(c => registeredMqService.MessageFactory);
+            }
+
+            if (Container.TryResolve<IUserAuthRepository>() != null
+                && Container.TryResolve<IUserAuthRepository>() == null)
+            {
+                Container.Register<IAuthRepository>(c => c.Resolve<IUserAuthRepository>());
             }
 
             ReadyAt = DateTime.UtcNow;
