@@ -364,7 +364,7 @@ namespace ServiceStack
             }
 
             if (Container.TryResolve<IUserAuthRepository>() != null
-                && Container.TryResolve<IUserAuthRepository>() == null)
+                && Container.TryResolve<IAuthRepository>() == null)
             {
                 Container.Register<IAuthRepository>(c => c.Resolve<IUserAuthRepository>());
             }
