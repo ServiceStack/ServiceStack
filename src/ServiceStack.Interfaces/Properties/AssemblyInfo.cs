@@ -14,17 +14,14 @@ using System.Runtime.Serialization;
 [assembly: AssemblyTrademark("Service Stack")]
 [assembly: AssemblyCulture("")]
 
-// Setting ComVisible to false makes the types in this assembly not visible 
-// to COM components.  If you need to access a type in this assembly from 
-// COM, set the ComVisible attribute to true on that type.
-[assembly: ComVisible(false)]
-
 //Keep constant to prevent breaking signed-builds (build.proj on replaces 4 digits, e.g x.x.x.x)
 [assembly: AssemblyVersion("4.0.0")]
 [assembly: AssemblyFileVersion("4.0.0.0")]
 
+#if !PCL
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("d13ebd2a-6589-453d-bf31-4c744a59e993")]
+#endif
 
 [assembly: ContractNamespace("http://schemas.servicestack.net/types", 
 	ClrNamespace = "ServiceStack")]
