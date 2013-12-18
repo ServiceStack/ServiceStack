@@ -184,6 +184,13 @@ SIGN_PROJS.forEach(function(proj) {
 log("Generating Custom build .csprojs...");
 
 var CUSTOM_TEMPLATES = [{
+    Code: 'PCL',
+    Path: '../src/Templates/PclTemplate.csproj',
+    ProjectGuid: '{BF5EEDF0-594C-4660-AFF5-AF3423F3602D}',
+    RootNamespace: 'PclTemplate',
+    AssemblyName: 'PclTemplate',
+},
+{
     Code: 'SL5',
     Path: '../src/Templates/SilverlightTemplate.csproj',
     ProjectGuid: '{12B8CB9F-E397-4B5F-89AF-B6998296BFE6}',
@@ -203,7 +210,8 @@ var CUSTOM_TEMPLATES = [{
     ProjectGuid: '{BEA92E9F-00B1-4923-BD81-7F3A9CA24408}',
     RootNamespace: 'AndroidIndieTemplate',
     AssemblyName: 'AndroidIndieTemplate',
-}];
+}
+];
 
 var CUSTOM_PROJS = [{
     Path: '../src/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj',
