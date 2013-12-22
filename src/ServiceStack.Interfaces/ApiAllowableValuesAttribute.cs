@@ -33,7 +33,7 @@ namespace ServiceStack
 #if (NETFX_CORE || PCL)
 			if (enumType.GetTypeInfo().IsEnum)
 #else
-            if (enumType.IsEnum())
+            if (enumType.IsEnum)
 #endif
             {
 				Type = "LIST";
