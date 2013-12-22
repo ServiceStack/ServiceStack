@@ -75,3 +75,5 @@ COPY ..\src\ServiceStack.Interfaces\bin\Release\ServiceStack.Interfaces.dll ..\.
 COPY ..\src\ServiceStack.Interfaces\bin\Release\ServiceStack.Interfaces.dll ..\..\ServiceStack.Redis\lib
 COPY ..\src\ServiceStack.Interfaces\bin\Release\ServiceStack.Interfaces.dll ..\..\ServiceStack.OrmLite\lib
 
+COPY ..\src\ServiceStack.Interfaces\bin\Pcl\ServiceStack.Interfaces.* ..\lib\pcl
+

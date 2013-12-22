@@ -8,7 +8,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack
 {
-#if !NETFX_CORE && !WP && !SL5
+#if !(NETFX_CORE || WP || SL5 || PCL)
     [Serializable]
 #endif
     public class WebServiceException
@@ -17,9 +17,6 @@ namespace ServiceStack
         public WebServiceException() { }
         public WebServiceException(string message) : base(message) { }
         public WebServiceException(string message, Exception innerException) : base(message, innerException) { }
-#if !NETFX_CORE && !WP && !SL5
-        public WebServiceException(SerializationInfo info, StreamingContext context) : base(info, context) { }
-#endif
 
         public int StatusCode { get; set; }
 

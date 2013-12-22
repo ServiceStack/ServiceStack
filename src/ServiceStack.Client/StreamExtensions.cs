@@ -3,15 +3,18 @@
 
 using System;
 using System.IO;
-using System.Security.Cryptography;
 using System.Text;
 using ServiceStack.Caching;
+
+#if !(NETFX_CORE || SL5 || PCL)
+using System.Security.Cryptography;
+#endif
 
 namespace ServiceStack
 {
     public static class StreamExtensions
     {
-#if !SL5 && !XBOX && !IOS
+#if !(SL5 || XBOX || IOS)
         /// <summary>
         /// Compresses the specified text using the default compression method: Deflate
         /// </summary>
@@ -96,13 +99,11 @@ namespace ServiceStack
 
         public static void Close(this Stream stream)
         {
-#if NETFX_CORE
+            PclExport.Instance.CloseStream(stream);
             stream.Dispose();
-#else
-            stream.Close(); //For documentation purposes. In reality it won't call this Ext method.
-#endif
         }
-#if !SL5
+
+#if !(NETFX_CORE || SL5 || PCL)
         public static string ToMd5Hash(this Stream stream)
         {
             var hash = MD5.Create().ComputeHash(stream);

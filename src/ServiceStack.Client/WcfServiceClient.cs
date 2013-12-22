@@ -1,4 +1,4 @@
-#if !SL5 && !IOS && !XBOX && !ANDROIDINDIE
+#if !(NETFX_CORE || SL5 || IOS || ANDROID || PCL)
 using System;
 using System.IO;
 using System.Net;

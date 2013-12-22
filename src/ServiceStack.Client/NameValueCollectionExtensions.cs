@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
+#if !(SL5 || IOS || XBOX || PCL)
 
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -10,7 +11,6 @@ namespace ServiceStack
 {
     public static class NameValueCollectionExtensions
     {
-#if !SL5 && !IOS && !XBOX
 
         public static Dictionary<string, string> ToDictionary(this INameValueCollection nameValues)
         {
@@ -52,6 +52,7 @@ namespace ServiceStack
             return nameValues;
         }
 
-#endif         
     }
 }
+
+#endif
