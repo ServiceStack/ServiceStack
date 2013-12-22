@@ -95,7 +95,7 @@ namespace ServiceStack
 
         public ProgressDelegate OnDownloadProgress { get; set; } 
 
-#if SILVERLIGHT
+#if SL5
         public bool ShareCookiesWithBrowser { get; set; }
 #endif
 

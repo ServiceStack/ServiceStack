@@ -21,7 +21,7 @@ namespace ServiceStack
         {
             get
             {
-#if !(SILVERLIGHT || ANDROID)
+#if !(SL5 || ANDROID)
                 return items ?? (System.Web.HttpContext.Current != null
                     ? System.Web.HttpContext.Current.Items
                     : items = new Dictionary<object, object>());

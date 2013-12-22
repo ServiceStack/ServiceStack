@@ -56,7 +56,7 @@ namespace ServiceStack
             return WaitAll(waitHandles.ToArray(), (int)timeout.TotalMilliseconds);
         }
 
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+#if !SL5 && !IOS && !XBOX
         public static bool WaitAll(this List<IAsyncResult> asyncResults, TimeSpan timeout)
         {
             var waitHandles = asyncResults.ConvertAll(x => x.AsyncWaitHandle);

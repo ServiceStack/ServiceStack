@@ -13,7 +13,7 @@ namespace ServiceStack
         static IdUtils()
         {
 
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+#if !SL5 && !IOS && !XBOX
             var hasIdInterfaces = typeof(T).FindInterfaces(
                 (t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IHasId<>), null);
 
@@ -87,7 +87,7 @@ namespace ServiceStack
         static HasId()
         {
 
-#if MONOTOUCH || SILVERLIGHT
+#if IOS || SL5
             GetIdFn = HasPropertyId<TEntity>.GetId;
 #else
             var hasIdInterfaces = typeof(TEntity).FindInterfaces(
@@ -189,7 +189,7 @@ namespace ServiceStack
             var dir1 = idValue.Substring(0, 2);
             var dir2 = idValue.Substring(2, 2);
 
-            var path = string.Format("{1}{0}{2}{0}{3}{0}{4}", StringExtensions.DirSeparatorChar,
+            var path = string.Format("{1}{0}{2}{0}{3}{0}{4}", PclExport.Instance.DirSep,
                 rootDir, dir1, dir2, idValue);
 
             return path;

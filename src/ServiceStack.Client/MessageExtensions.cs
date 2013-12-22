@@ -10,7 +10,7 @@ namespace ServiceStack
     {
         public static string ToString(byte[] bytes)
         {
-#if !SILVERLIGHT 
+#if !SL5 
             return System.Text.Encoding.UTF8.GetString(bytes);
 #else
             return System.Text.Encoding.UTF8.GetString(bytes, 0, bytes.Length);

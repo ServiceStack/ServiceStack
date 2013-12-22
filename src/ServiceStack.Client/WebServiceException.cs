@@ -8,7 +8,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack
 {
-#if !NETFX_CORE && !WINDOWS_PHONE && !SILVERLIGHT
+#if !NETFX_CORE && !WP && !SL5
     [Serializable]
 #endif
     public class WebServiceException
@@ -17,7 +17,7 @@ namespace ServiceStack
         public WebServiceException() { }
         public WebServiceException(string message) : base(message) { }
         public WebServiceException(string message, Exception innerException) : base(message, innerException) { }
-#if !NETFX_CORE && !WINDOWS_PHONE && !SILVERLIGHT
+#if !NETFX_CORE && !WP && !SL5
         public WebServiceException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 #endif
 
@@ -46,7 +46,7 @@ namespace ServiceStack
             var rsMap = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(responseStatus);
             if (rsMap == null) return;
 
-            rsMap = new Dictionary<string, string>(rsMap, StringExtensions.InvariantComparerIgnoreCase());
+            rsMap = new Dictionary<string, string>(rsMap, PclExport.Instance.InvariantComparerIgnoreCase);
             rsMap.TryGetValue("ErrorCode", out errorCode);
             rsMap.TryGetValue("Message", out errorMessage);
             rsMap.TryGetValue("StackTrace", out serverStackTrace);
@@ -61,7 +61,7 @@ namespace ServiceStack
                     return false;
                 var jsv = TypeSerializer.SerializeToString(ResponseDto);
                 var map = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(jsv);
-                map = new Dictionary<string, string>(map, StringExtensions.InvariantComparerIgnoreCase());
+                map = new Dictionary<string, string>(map, PclExport.Instance.InvariantComparerIgnoreCase);
 
                 return map.TryGetValue("ResponseStatus", out responseStatus);
             }
@@ -78,7 +78,7 @@ namespace ServiceStack
             {
                 if (String.IsNullOrEmpty(ResponseBody)) return false;
                 var map = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(ResponseBody);
-                map = new Dictionary<string, string>(map, StringExtensions.InvariantComparerIgnoreCase());
+                map = new Dictionary<string, string>(map, PclExport.Instance.InvariantComparerIgnoreCase);
                 return map.TryGetValue("ResponseStatus", out responseStatus);
             }
             catch

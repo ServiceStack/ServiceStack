@@ -1,7 +1,7 @@
 namespace ServiceStack
 {
 
-#if SILVERLIGHT || MONOTOUCH || XBOX || ANDROID
+#if SL5 || IOS || XBOX || ANDROID
 
     using System;
     using System.IO;

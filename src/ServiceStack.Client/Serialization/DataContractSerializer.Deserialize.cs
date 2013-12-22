@@ -15,11 +15,11 @@ namespace ServiceStack.Serialization
             {
                 var bytes = Encoding.UTF8.GetBytes(xml);
 
-#if MONOTOUCH				
+#if IOS				
                 using (var reader = XmlDictionaryReader.CreateTextReader(bytes, null))
-#elif SILVERLIGHT && !WINDOWS_PHONE
+#elif SL5 && !WP
                 using (var reader = XmlDictionaryReader.CreateTextReader(bytes, XmlDictionaryReaderQuotas.Max))
-#elif WINDOWS_PHONE
+#elif WP
                 using (var reader = XmlDictionaryReader.CreateBinaryReader(bytes, XmlDictionaryReaderQuotas.Max))
 #else
                 using (var reader = XmlDictionaryReader.CreateTextReader(bytes, this.quotas))

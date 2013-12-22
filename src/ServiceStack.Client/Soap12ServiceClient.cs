@@ -1,4 +1,4 @@
-#if !(SILVERLIGHT || MONOTOUCH || XBOX || __ANDROID__)
+#if !(SL5 || XBOX || ANDROID || IOS)
 using System;
 using System.ServiceModel;
 using System.ServiceModel.Channels;

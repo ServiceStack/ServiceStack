@@ -10,7 +10,7 @@ namespace ServiceStack
 {
     public static class StringUtils
     {
-#if !SILVERLIGHT
+#if !SL5
         static readonly Regex StripHtmlUnicodeRegEx = new Regex(@"&(#)?([xX])?([^ \f\n\r\t\v;]+);", RegexOptions.Compiled);
 #else
         static readonly Regex StripHtmlUnicodeRegEx = new Regex(@"&(#)?([xX])?([^ \f\n\r\t\v;]+);");

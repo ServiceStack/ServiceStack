@@ -44,7 +44,7 @@ namespace ServiceStack
             // throws an exception if there are no wait handles
             if (waitHandles != null && waitHandles.Length > 0)
             {
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+#if !SL5 && !IOS && !XBOX
                 if (Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
                 {
                     // WaitAll for multiple handles on an STA thread is not supported.

@@ -165,7 +165,7 @@ namespace ServiceStack
         }
 #endif
 
-#if !NETFX_CORE && !SILVERLIGHT
+#if !NETFX_CORE && !SL5
         internal static string CalculateMD5Hash(string input)
         {
             // copied/pasted by adamfowleruk
@@ -196,7 +196,7 @@ namespace ServiceStack
             return ret;
         }
 
-#if !SILVERLIGHT
+#if !SL5
         internal static void AddAuthInfo(this WebRequest client, string userName, string password, AuthenticationInfo authInfo)
         {
 

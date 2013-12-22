@@ -41,7 +41,7 @@ namespace ServiceStack
 
         public static List<string> ToList(this Enum @enum)
         {
-#if !(SILVERLIGHT4 || WINDOWS_PHONE)
+#if !(SL54 || WP)
             return new List<string>(Enum.GetNames(@enum.GetType()));
 #else
             return @enum.GetType().GetFields(BindingFlags.Static | BindingFlags.Public).Select(fi => fi.Name).ToList();

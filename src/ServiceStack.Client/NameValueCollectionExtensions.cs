@@ -3,12 +3,19 @@
 
 
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {
     public static class NameValueCollectionExtensions
     {
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+#if !SL5 && !IOS && !XBOX
+
+        public static Dictionary<string, string> ToDictionary(this INameValueCollection nameValues)
+        {
+            return ToDictionary((NameValueCollection)nameValues.Original);
+        }
 
         public static Dictionary<string, string> ToDictionary(this System.Collections.Specialized.NameValueCollection nameValues)
         {

@@ -45,7 +45,7 @@ namespace ServiceStack
             return default(T);
         }
 
-#if !SILVERLIGHT //No Stopwatch
+#if !SL5 //No Stopwatch
         public static void WaitWhile(Func<bool> condition, int millisecondTimeout, int millsecondPollPeriod = 10)
         {
             var timer = System.Diagnostics.Stopwatch.StartNew();

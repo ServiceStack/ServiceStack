@@ -1,4 +1,4 @@
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+#if !SL5 && !IOS && !XBOX
 using System;
 using System.Runtime.Serialization;
 using System.Xml;

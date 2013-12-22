@@ -102,6 +102,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="CryptUtils.cs" />
+    <Compile Include="Data\DbConnectionFactory.cs" />
+    <Compile Include="Data\IDbConnectionFactory.cs" />
+    <Compile Include="Data\IHasDbConnection.cs" />
     <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="DirectoryInfoExtensions.cs">
       <SubType>Code</SubType>
@@ -119,6 +122,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="IntExtensions.cs" />
+    <Compile Include="Logging\ConsoleLogFactory.cs" />
+    <Compile Include="Logging\ConsoleLogger.cs" />
+    <Compile Include="NameValueCollectionWrapper.cs" />
     <Compile Include="Reflection\DelegateFactory.cs">
       <SubType>Code</SubType>
     </Compile>

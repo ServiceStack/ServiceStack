@@ -22,7 +22,7 @@ namespace ServiceStack
              if (endpointUrl.IndexOf("format=soap11") >= 0)
                  return new Soap11ServiceClient(endpointUrl);
 
-#if !(SILVERLIGHT || MONOTOUCH || XBOX || __ANDROID__)
+#if !(SL5 || XBOX || ANDROID || IOS)
              if (endpointUrl.IndexOf("format=soap12") >= 0)
                  return new Soap12ServiceClient(endpointUrl);
 #endif

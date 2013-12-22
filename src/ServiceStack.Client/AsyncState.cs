@@ -63,7 +63,7 @@ namespace ServiceStack
             if (this.OnSuccess == null)
                 return;
 
-#if SILVERLIGHT && !NETFX_CORE
+#if SL5 && !NETFX_CORE
                 if (this.HandleCallbackOnUIThread)
                     System.Windows.Deployment.Current.Dispatcher.BeginInvoke(() => this.OnSuccess(response));
                 else
@@ -86,7 +86,7 @@ namespace ServiceStack
                 toReturn = ex.CreateTimeoutException("The request timed out");
             }
 
-#if SILVERLIGHT && !NETFX_CORE
+#if SL5 && !NETFX_CORE
                 if (this.HandleCallbackOnUIThread)
                     System.Windows.Deployment.Current.Dispatcher.BeginInvoke(() => this.OnError(response, toReturn));
                 else

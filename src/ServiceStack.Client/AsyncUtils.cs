@@ -28,7 +28,7 @@ namespace ServiceStack
     {
         public static Exception CreateTimeoutException(this Exception ex, string errorMsg)
         {
-#if SILVERLIGHT
+#if SL5
             return new WebException("The request timed out", ex, WebExceptionStatus.RequestCanceled, null);
 #else
             return new WebException("The request timed out", ex, WebExceptionStatus.Timeout, null);
@@ -46,7 +46,7 @@ namespace ServiceStack
 
         internal static void EndReadStream(this Stream stream)
         {
-#if NETFX_CORE || WINDOWS_PHONE
+#if NETFX_CORE || WP
                 stream.Dispose();
 #else
             stream.Close();
@@ -55,7 +55,7 @@ namespace ServiceStack
 
         internal static void EndWriteStream(this Stream stream)
         {
-#if NETFX_CORE || WINDOWS_PHONE
+#if NETFX_CORE || WP
                 stream.Flush();
                 stream.Dispose();
 #else
@@ -65,7 +65,7 @@ namespace ServiceStack
 
         internal static HttpWebRequest CreateHttpWebRequest(this AsyncServiceClient client, string requestUri)
         {
-#if SILVERLIGHT && !WINDOWS_PHONE && !NETFX_CORE
+#if SL5 && !WP && !NETFX_CORE
 
             var creator = client.EmulateHttpViaPost
                 ? System.Net.Browser.WebRequestCreator.BrowserHttp
@@ -96,7 +96,7 @@ namespace ServiceStack
             }
 #endif
 
-#if !SILVERLIGHT
+#if !SL5
             if (!client.DisableAutoCompression)
             {
                 webRequest.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip,deflate");
@@ -108,7 +108,7 @@ namespace ServiceStack
 
         public static void SynchronizeCookies(this AsyncServiceClient client)
         {
-#if SILVERLIGHT && !WINDOWS_PHONE && !NETFX_CORE
+#if SL5 && !WP && !NETFX_CORE
             if (client.StoreCookies && client.ShareCookiesWithBrowser && !client.EmulateHttpViaPost)
             {
                 // browser cookies must be set on the ui thread
@@ -123,7 +123,7 @@ namespace ServiceStack
         public static bool IsWebException(this WebException webEx)
         {
             return webEx != null
-#if !SILVERLIGHT
+#if !SL5
                 && webEx.Status == WebExceptionStatus.ProtocolError
 #endif
             ;

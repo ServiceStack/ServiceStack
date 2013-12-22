@@ -1,4 +1,4 @@
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+#if !SL5 && !IOS && !XBOX
 //
 // ServiceStack: Useful extensions to simplify parsing xml with XLinq
 //

@@ -1,4 +1,4 @@
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX && !ANDROIDINDIE
+#if !SL5 && !IOS && !XBOX && !ANDROIDINDIE
 using System;
 using System.IO;
 using System.Net;

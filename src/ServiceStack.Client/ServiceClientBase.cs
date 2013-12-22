@@ -12,9 +12,9 @@ using System.Reflection;
 using ServiceStack.Logging;
 using ServiceStack.Web;
 
-#if !(MONOTOUCH || SILVERLIGHT)
+#if !(IOS || SL5)
 #endif
-#if !SILVERLIGHT
+#if !SL5
 #endif
 
 namespace ServiceStack
@@ -94,7 +94,7 @@ namespace ServiceStack
             this.StoreCookies = true; //leave
             this.Headers = new NameValueCollection();
 
-#if SILVERLIGHT
+#if SL5
             asyncClient.HandleCallbackOnUiThread = this.HandleCallbackOnUiThread = true;
             asyncClient.ShareCookiesWithBrowser = this.ShareCookiesWithBrowser = true;
 #endif
@@ -239,7 +239,7 @@ namespace ServiceStack
             set { asyncClient.OnDownloadProgress = value; }
         }
 
-#if SILVERLIGHT
+#if SL5
         private bool shareCookiesWithBrowser;
         public bool ShareCookiesWithBrowser
         {
@@ -382,7 +382,7 @@ namespace ServiceStack
             }
         }
 
-#if !SILVERLIGHT
+#if !SL5
         public virtual TResponse Send<TResponse>(IReturn<TResponse> request)
         {
             return Send<TResponse>((object)request);
@@ -754,7 +754,7 @@ namespace ServiceStack
                      : this.BaseUri.CombineWith(relativeOrAbsoluteUrl);
         }
 
-#if !SILVERLIGHT
+#if !SL5
         private byte[] DownloadBytes(string httpMethod, string requestUri, object request)
         {
             var webRequest = SendRequest(httpMethod, requestUri, request);
@@ -915,7 +915,7 @@ namespace ServiceStack
             asyncClient.CancelAsync();
         }
 
-#if !SILVERLIGHT
+#if !SL5
         public virtual TResponse Send<TResponse>(string httpMethod, string relativeOrAbsoluteUrl, object request)
         {
             var requestUri = GetUrl(relativeOrAbsoluteUrl);
@@ -1157,7 +1157,7 @@ namespace ServiceStack
                 var webRequest = PrepareWebRequest(HttpMethods.Post, requestUri, null, null);
 
                 var queryString = QueryStringSerializer.SerializeToString(request);
-#if !MONOTOUCH
+#if !IOS
                 var nameValueCollection = System.Web.HttpUtility.ParseQueryString(queryString);
 #endif
                 var boundary = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
@@ -1166,7 +1166,7 @@ namespace ServiceStack
                 var newLine = "\r\n";
                 using (var outputStream = webRequest.GetRequestStream())
                 {
-#if !MONOTOUCH
+#if !IOS
                     foreach (var key in nameValueCollection.AllKeys)
                     {
                         outputStream.Write(boundary + newLine);
