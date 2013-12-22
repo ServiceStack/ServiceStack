@@ -76,7 +76,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		private IHttpRequest ConfigureRequest(string path)
 		{
 			var request = new Mock<IHttpRequest>();
-			request.Expect(x => x.QueryString).Returns(new NameValueCollection());
+			request.Expect(x => x.QueryString).Returns(NameValueCollectionWrapper.New());
 			request.Expect(x => x.PathInfo).Returns(path);
 
 			return request.Object;

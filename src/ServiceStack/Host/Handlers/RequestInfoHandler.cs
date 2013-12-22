@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Runtime.Serialization;
 using System.Web;
 using System.Web.Hosting;
@@ -188,7 +187,7 @@ namespace ServiceStack.Host.Handlers
 			ProcessRequestAsync(request, request.Response, request.OperationName);
 		}
 
-		public static Dictionary<string, string> ToDictionary(NameValueCollection nvc)
+		public static Dictionary<string, string> ToDictionary(INameValueCollection nvc)
 		{
 			var map = new Dictionary<string, string>();
 			for (var i = 0; i < nvc.Count; i++)
@@ -198,7 +197,7 @@ namespace ServiceStack.Host.Handlers
 			return map;
 		}
 
-		public static string ToString(NameValueCollection nvc)
+		public static string ToString(INameValueCollection nvc)
 		{
 			var map = ToDictionary(nvc);
 			return TypeSerializer.SerializeToString(map);

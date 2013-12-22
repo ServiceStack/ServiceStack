@@ -22,7 +22,7 @@ namespace ServiceStack.FluentValidation.Results
     using System.Collections.Generic;
     using System.Linq;
 
-#if !SILVERLIGHT
+#if !SL5
     [Serializable]
 #endif
     public class ValidationResult {

@@ -1,4 +1,3 @@
-using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -12,7 +11,7 @@ namespace ServiceStack.Testing
     {
         public MockHttpResponse()
         {
-            this.Headers = new NameValueCollection();
+            this.Headers = NameValueCollectionWrapper.New();
             this.OutputStream = new MemoryStream();
             this.TextWritten = new StringBuilder();
             this.Cookies = new Cookies(this);
@@ -25,7 +24,8 @@ namespace ServiceStack.Testing
 
         public StringBuilder TextWritten { get; set; }
 
-        public NameValueCollection Headers { get; set; }
+        public INameValueCollection Headers { get; set; }
+
         public ICookies Cookies { get; set; }
 
         public void AddHeader(string name, string value)

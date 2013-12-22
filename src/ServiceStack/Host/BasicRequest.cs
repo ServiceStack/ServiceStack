@@ -33,22 +33,23 @@ namespace ServiceStack.Host
         {
             Message = message ?? new Message();
             ContentType = this.ResponseContentType = MimeTypes.Json;
+            this.Headers = NameValueCollectionWrapper.New();
+
             if (Message.Body != null)
             {
                 PathInfo = "/json/oneway/" + OperationName;
                 RawUrl = AbsoluteUri = "mq://" + PathInfo;
-                Headers = Message.ToHeaders().ToNameValueCollection();
+                Headers = new NameValueCollectionWrapper(Message.ToHeaders().ToNameValueCollection());
             }
 
             this.IsLocal = true;
             Response = new BasicResponse(this);
             this.RequestAttributes = requestAttributes;
 
-            this.Headers = new NameValueCollection();
             this.Cookies = new Dictionary<string, Cookie>();
             this.Items = new Dictionary<string, object>();
-            this.QueryString = new NameValueCollection();
-            this.FormData = new NameValueCollection();
+            this.QueryString = NameValueCollectionWrapper.New();
+            this.FormData = NameValueCollectionWrapper.New();
             this.Files = new IHttpFile[0];
         }
 
@@ -72,10 +73,7 @@ namespace ServiceStack.Host
             return headerValue;
         }
 
-        private NameValueCollection headers;
         public Dictionary<string, object> Items { get; private set; }
-
-        public NameValueCollection Headers { get; set; }
 
         public string UserAgent { get; private set; }
 
@@ -116,9 +114,11 @@ namespace ServiceStack.Host
         
         public Uri UrlReferrer { get; set; }
 
-        public NameValueCollection QueryString { get; set; }
+        public INameValueCollection Headers { get; set; }
 
-        public NameValueCollection FormData { get; set; }
+        public INameValueCollection QueryString { get; set; }
+
+        public INameValueCollection FormData { get; set; }
 
         public bool UseBufferedStream { get; set; }
 

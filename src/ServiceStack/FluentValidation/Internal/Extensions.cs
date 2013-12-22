@@ -147,7 +147,7 @@ namespace ServiceStack.FluentValidation.Internal
             return x => action((T)x);
         }
 
-#if WINDOWS_PHONE
+#if WP
         // WP7 doesn't support expression tree compilation.
         // As a workaround, this extension method falls back to delegate compilation. 
         // However, it only supports simple property references, ie x => x.SomeProperty

@@ -1,4 +1,4 @@
-﻿#if !SILVERLIGHT
+﻿#if !SL5
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -260,7 +260,7 @@ namespace ServiceStack.Messaging.Rcon
         void ProcessPacket(byte[] packet, Socket client, ClientSocketState userToken)
         {
             var packetObj = PacketCodec.DecodePacket(packet);
-#if !SILVERLIGHT 
+#if !SL5 
             var type = Type.GetType(Encoding.UTF8.GetString(packetObj.Words[0]));
 #else
             var bytes = packetObj.Words[0];

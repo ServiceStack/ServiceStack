@@ -190,19 +190,22 @@ namespace ServiceStack.Host.AspNet
             }
         }
 
-        public NameValueCollection Headers
+        private NameValueCollectionWrapper headers;
+        public INameValueCollection Headers
         {
-            get { return request.Headers; }
+            get { return headers ?? (headers = new NameValueCollectionWrapper(request.Headers)); }
         }
 
-        public NameValueCollection QueryString
+        private NameValueCollectionWrapper queryString;
+        public INameValueCollection QueryString
         {
-            get { return request.QueryString; }
+            get { return queryString ?? (queryString = new NameValueCollectionWrapper(request.QueryString)); }
         }
 
-        public NameValueCollection FormData
+        private NameValueCollectionWrapper formData;
+        public INameValueCollection FormData
         {
-            get { return request.Form; }
+            get { return formData ?? (formData = new NameValueCollectionWrapper(request.Form)); }
         }
 
         public string GetRawBody()

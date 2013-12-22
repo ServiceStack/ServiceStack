@@ -1,6 +1,6 @@
 ﻿
 
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+#if !SL5 && !IOS && !XBOX
 namespace ServiceStack.Web
 {
     /// <summary>

@@ -16,9 +16,9 @@ namespace ServiceStack.Testing
 
         public MockHttpRequest()
         {
-            this.FormData = new NameValueCollection();
-            this.Headers = new NameValueCollection();
-            this.QueryString = new NameValueCollection();
+            this.FormData = NameValueCollectionWrapper.New();
+            this.Headers = NameValueCollectionWrapper.New();
+            this.QueryString = NameValueCollectionWrapper.New();
             this.Cookies = new Dictionary<string, Cookie>();
             this.Items = new Dictionary<string, object>();
             this.Container = ServiceStackHost.Instance != null ? ServiceStackHost.Instance.Container : new Container();
@@ -36,8 +36,8 @@ namespace ServiceStack.Testing
             this.ResponseContentType = contentType;
             this.PathInfo = pathInfo;
             this.InputStream = inputStream;
-            this.QueryString = queryString;
-            this.FormData = formData ?? new NameValueCollection();
+            this.QueryString = queryString.InWrapper();
+            this.FormData = new NameValueCollectionWrapper(formData ?? new NameValueCollection());
         }
 
         public object OriginalRequest
@@ -104,11 +104,11 @@ namespace ServiceStack.Testing
 
         public bool HasExplicitResponseContentType { get; private set; }
 
-        public NameValueCollection Headers { get; set; }
+        public INameValueCollection Headers { get; set; }
 
-        public NameValueCollection QueryString { get; set; }
+        public INameValueCollection QueryString { get; set; }
 
-        public NameValueCollection FormData { get; set; }
+        public INameValueCollection FormData { get; set; }
 
         public bool UseBufferedStream { get; set; }
 

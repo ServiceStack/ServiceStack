@@ -68,17 +68,17 @@ namespace ServiceStack.ServiceHost.Tests
 			get { throw new NotImplementedException(); }
 		}
 
-		public System.Collections.Specialized.NameValueCollection Headers
+		public INameValueCollection Headers
 		{
 			get { throw new NotImplementedException(); }
 		}
 
-		public System.Collections.Specialized.NameValueCollection QueryString
+        public INameValueCollection QueryString
 		{
 			get { throw new NotImplementedException(); }
 		}
 
-		public System.Collections.Specialized.NameValueCollection FormData
+        public INameValueCollection FormData
 		{
 			get { throw new NotImplementedException(); }
 		}

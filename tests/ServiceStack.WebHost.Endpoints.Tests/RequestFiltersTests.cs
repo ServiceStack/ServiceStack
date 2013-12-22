@@ -473,7 +473,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			}
 		}
 
-#if !MONOTOUCH
+#if !IOS
 
 		[TestFixture]
 		public class Soap11IntegrationTests : RequestFiltersTests

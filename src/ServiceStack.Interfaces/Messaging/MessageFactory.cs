@@ -24,7 +24,7 @@ namespace ServiceStack.Messaging
                 return factoryFn(response);
 
             var genericMessageType = typeof(Message<>).MakeGenericType(type);
-#if NETFX_CORE
+#if NETFX_CORE || PCL
             var mi = genericMessageType.GetRuntimeMethods().First(p => p.Name.Equals("Create"));
             factoryFn = (MessageFactoryDelegate)mi.CreateDelegate(
                 typeof(MessageFactoryDelegate));

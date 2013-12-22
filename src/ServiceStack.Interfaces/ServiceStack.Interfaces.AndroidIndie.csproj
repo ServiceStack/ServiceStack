@@ -87,16 +87,11 @@
     <Compile Include="DataAnnotations\SchemaAttribute.cs" />
     <Compile Include="DataAnnotations\SequenceAttribute.cs" />
     <Compile Include="DataAnnotations\StringLengthAttribute.cs" />
-    <Compile Include="Data\DataException.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="Data\DataException.cs" />
     <Compile Include="Data\IEntityStore.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Data\IEntityStore.Generic.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Data\IHasDbConnection.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="DataAnnotations\AliasAttribute.cs">
@@ -132,8 +127,6 @@
     </Compile>
     <Compile Include="IO\IEndpoint.cs" />
     <Compile Include="IRestGateway.cs" />
-    <Compile Include="Logging\ConsoleLogFactory.cs" />
-    <Compile Include="Logging\ConsoleLogger.cs" />
     <Compile Include="Logging\DebugLogFactory.cs" />
     <Compile Include="Logging\DebugLogger.cs" />
     <Compile Include="Logging\NullDebugLogger.cs" />
@@ -223,8 +216,6 @@
     <Compile Include="Messaging\UnRetryableMessagingException.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Data\DbConnectionFactory.cs" />
-    <Compile Include="Data\IDbConnectionFactory.cs" />
     <Compile Include="IMeta.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Redis\Generic\IRedisHash.Generic.cs">
@@ -309,6 +300,7 @@
     <Compile Include="ApiResponse.cs" />
     <Compile Include="IService.cs" />
     <Compile Include="SwaggerType.cs" />
+    <Compile Include="Web\INameValueCollection.cs" />
     <Compile Include="Web\IRequiresRequestStream.cs" />
     <Compile Include="RequestAttributes.cs">
       <SubType>Code</SubType>

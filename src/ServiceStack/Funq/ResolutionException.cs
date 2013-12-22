@@ -6,7 +6,7 @@ namespace Funq
 	/// <summary>
 	/// Exception thrown by the container when a service cannot be resolved.
 	/// </summary>
-#if !SILVERLIGHT
+#if !SL5
 	[Serializable]
 #endif
 	public class ResolutionException : Exception

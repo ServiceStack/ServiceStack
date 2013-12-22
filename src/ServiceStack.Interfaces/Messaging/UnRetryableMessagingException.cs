@@ -21,11 +21,5 @@ namespace ServiceStack.Messaging
 		public UnRetryableMessagingException(string message, Exception innerException) : base(message, innerException)
 		{
 		}
-
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
-		protected UnRetryableMessagingException(SerializationInfo info, StreamingContext context) : base(info, context)
-		{
-		}
-#endif
     }
 }

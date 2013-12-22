@@ -145,6 +145,11 @@ namespace ServiceStack
             }
         }
 
+        private static string ToQueryString(INameValueCollection queryStringCollection)
+        {
+            return ToQueryString((NameValueCollection)queryStringCollection.Original);
+        }
+
         private static string ToQueryString(NameValueCollection queryStringCollection)
         {
             if (queryStringCollection == null || queryStringCollection.Count == 0)
