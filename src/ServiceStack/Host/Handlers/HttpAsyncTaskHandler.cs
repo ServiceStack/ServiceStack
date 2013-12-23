@@ -142,7 +142,10 @@ namespace ServiceStack.Host.Handlers
 
             task.Wait(); // avoid an exception being thrown on the finalizer thread.
 
-            task.Dispose();
+            // Shouldn't dispose of tasks:
+            // http://blogs.msdn.com/b/pfxteam/archive/2012/03/25/10287435.aspx
+            // http://bradwilson.typepad.com/blog/2012/04/tpl-and-servers-pt4.html
+            //task.Dispose();
         }
 
         protected Task HandleException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
