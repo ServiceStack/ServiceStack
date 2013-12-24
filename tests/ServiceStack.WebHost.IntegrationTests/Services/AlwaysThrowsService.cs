@@ -1,19 +1,48 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
+using ServiceStack.FluentValidation;
 using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
-	[DataContract]
-	public class AlwaysThrows
-	{
-	    [DataMember]
-	    public int? StatusCode { get; set; }
-		[DataMember]
-		public string Value { get; set; }
-	}
+    [DataContract]
+    public class AlwaysThrows
+    {
+        [DataMember]
+        public int? StatusCode { get; set; }
+        [DataMember]
+        public string Value { get; set; }
+    }
 
-	[DataContract]
+    [Route("/throwslist/{StatusCode}/{Value}")]
+    [DataContract]
+    public class AlwaysThrowsList
+    {
+        [DataMember]
+        public int? StatusCode { get; set; }
+        [DataMember]
+        public string Value { get; set; }
+    }
+
+    [Route("/throwsvalidation")]
+    [DataContract]
+    public class AlwaysThrowsValidation
+    {
+        [DataMember]
+        public string Value { get; set; }
+    }
+
+    public class AlwaysThrowsValidator : AbstractValidator<AlwaysThrowsValidation>
+    {
+        public AlwaysThrowsValidator()
+        {
+            RuleFor(x => x.Value).NotEmpty();
+        }
+    }
+
+
+    [DataContract]
 	public class AlwaysThrowsResponse
 		: IHasResponseStatus
 	{
@@ -29,23 +58,34 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class AlwaysThrowsService 
-		: Service
+	public class AlwaysThrowsService : Service
 	{
-		public object Any(AlwaysThrows request)
-		{
+        public object Any(AlwaysThrows request)
+        {
             if (request.StatusCode.HasValue)
             {
                 throw new HttpError(
                     request.StatusCode.Value,
                     typeof(NotImplementedException).Name,
-                    request.Value);
+                    GetErrorMessage(request.Value));
             }
 
-			throw new NotImplementedException(GetErrorMessage(request.Value));
-		}
+            throw new NotImplementedException(GetErrorMessage(request.Value));
+        }
 
-		public static string GetErrorMessage(string value)
+        public List<AlwaysThrows> Any(AlwaysThrowsList request)
+        {
+            Any(request.ConvertTo<AlwaysThrows>());
+
+            return new List<AlwaysThrows>();
+        }
+
+        public List<AlwaysThrows> Any(AlwaysThrowsValidation request)
+        {
+            return new List<AlwaysThrows>();
+        }
+
+        public static string GetErrorMessage(string value)
 		{
 			return value + " is not implemented";
 		}

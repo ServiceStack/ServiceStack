@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
+using ServiceStack.Messaging;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -112,7 +113,8 @@ namespace ServiceStack.Common.Tests
 
             public TResponse Send<TResponse>(object request)
             {
-                var response = ServiceManager.Execute(request);
+                var message = MessageFactory.Create(request);
+                var response = ServiceManager.ExecuteMessage(message);
                 var httpResult = response as IHttpResult;
                 if (httpResult != null)
                 {
@@ -125,6 +127,20 @@ namespace ServiceStack.Common.Tests
                         throw webEx;
                     }
                     return (TResponse) httpResult.Response;
+                }
+
+                var responseStatus = response.GetResponseStatus();
+                var isError = responseStatus != null && responseStatus.ErrorCode != null;
+                if (isError)
+                {
+                    var webEx = new WebServiceException(responseStatus.Message)
+                    {
+                        ResponseDto = response,
+                        StatusCode = responseStatus.Errors != null && responseStatus.Errors.Count > 0
+                            ? 400
+                            : 500,
+                    };
+                    throw webEx;
                 }
 
                 return (TResponse)response;

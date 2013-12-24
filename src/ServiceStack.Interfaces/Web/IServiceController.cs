@@ -16,12 +16,12 @@ namespace ServiceStack.Web
         /// <summary>
         /// Executes the MQ DTO request.
         /// </summary>
-        object ExecuteMessage<T>(IMessage<T> mqMessage);
+        object ExecuteMessage(IMessage mqMessage);
 
         /// <summary>
         /// Executes the MQ DTO request with the supplied requestContext
         /// </summary>
-        object ExecuteMessage<T>(IMessage<T> dto, IRequest requestContext);
+        object ExecuteMessage(IMessage dto, IRequest requestContext);
 
         /// <summary>
         /// Executes the DTO request under the supplied requestContext.

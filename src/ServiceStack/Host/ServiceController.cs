@@ -432,7 +432,7 @@ namespace ServiceStack.Host
         /// <summary>
         /// Execute MQ
         /// </summary>
-        public object ExecuteMessage<T>(IMessage<T> mqMessage)
+        public object ExecuteMessage(IMessage mqMessage)
         {
             return ExecuteMessage(mqMessage, new BasicRequest(mqMessage));
         }
@@ -440,7 +440,7 @@ namespace ServiceStack.Host
         /// <summary>
         /// Execute MQ with requestContext
         /// </summary>
-        public object ExecuteMessage<T>(IMessage<T> dto, IRequest req)
+        public object ExecuteMessage(IMessage dto, IRequest req)
         {
             if (HostContext.ApplyMessageRequestFilters(req, req.Response, dto.Body))
                 return req.Response.Dto;
