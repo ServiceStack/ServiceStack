@@ -43,24 +43,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		}
 	}
 
-	[DataContract]
-	public class AlwaysThrows { }
-
-	[DataContract]
-	public class AlwaysThrowsResponse : IHasResponseStatus
-	{
-		[DataMember]
-		public ResponseStatus ResponseStatus { get; set; }
-	}
-
-	public class AlwaysThrowsService : Service
-	{
-	    public object Any(AlwaysThrows request)
-		{
-			throw new ArgumentException("This service always throws an error");
-		}
-	}
-
     public class TestProgress : IReturn<string> {}
 
     public class DownloadProgressService : Service
