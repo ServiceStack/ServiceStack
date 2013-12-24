@@ -253,6 +253,14 @@ namespace ServiceStack
                 : request.GetType().FullName + ResponseDtoSuffix;
         }
 
+        public static Type GetErrorResponseDtoType<TResponse>(object request)
+        {
+            var hasResponseStatus = typeof(TResponse) is IHasResponseStatus
+                || typeof(TResponse).GetPropertyInfo("ResponseStatus") != null;
+
+            return hasResponseStatus ? typeof(TResponse) : GetErrorResponseDtoType(request);
+        }
+
         public static Type GetErrorResponseDtoType(object request)
         {
             if (request == null)

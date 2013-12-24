@@ -478,14 +478,14 @@ namespace ServiceStack
                 // than the old one.
                 // The new exception is either this one or the one thrown
                 // by the following method.
-                ThrowResponseTypeException(request, subEx, requestUri);
+                ThrowResponseTypeException<TResponse>(request, subEx, requestUri);
                 throw;
             }
 
             // If this doesn't throw, the calling method 
             // should rethrow the original exception upon
             // return value of false.
-            ThrowResponseTypeException(request, ex, requestUri);
+            ThrowResponseTypeException<TResponse>(request, ex, requestUri);
 
             response = default(TResponse);
             return false;
@@ -494,9 +494,9 @@ namespace ServiceStack
         readonly ConcurrentDictionary<Type, Action<Exception, string>> ResponseHandlers
             = new ConcurrentDictionary<Type, Action<Exception, string>>();
 
-        private void ThrowResponseTypeException(object request, Exception ex, string requestUri)
+        private void ThrowResponseTypeException<TResponse>(object request, Exception ex, string requestUri)
         {
-            var responseType = WebRequestUtils.GetErrorResponseDtoType(request);
+            var responseType = WebRequestUtils.GetErrorResponseDtoType<TResponse>(request);
             Action<Exception, string> responseHandler;
             if (!ResponseHandlers.TryGetValue(responseType, out responseHandler))
             {
