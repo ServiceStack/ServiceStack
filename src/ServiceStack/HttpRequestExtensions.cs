@@ -625,6 +625,16 @@ namespace ServiceStack
                 }
             }
 
+            if (httpReq.ContentType.MatchesContentType(MimeTypes.Soap12))
+            {
+                return MimeTypes.Soap12;
+            }
+
+            if (acceptContentTypes == null && httpReq.ContentType == MimeTypes.Soap11)
+            {
+                return MimeTypes.Soap11;
+            }
+
             //We could also send a '406 Not Acceptable', but this is allowed also
             return HostContext.Config.DefaultContentType;
         }

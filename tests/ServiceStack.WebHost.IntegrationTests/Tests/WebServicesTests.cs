@@ -98,7 +98,6 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         public void Can_Handle_Exception_from_AlwaysThrowsValidation()
         {
             var client = CreateNewServiceClient();
-            if (client is WcfServiceClient) return;
             try
             {
                 var response = client.Send<List<AlwaysThrows>>(

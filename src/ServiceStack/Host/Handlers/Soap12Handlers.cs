@@ -76,7 +76,9 @@ namespace ServiceStack.Host.Handlers
 
             var responseMessage = Send(null, httpReq, httpRes);
 
-            httpRes.ContentType = GetSoapContentType(httpReq.ContentType);
+            if (httpRes.IsClosed)
+                return;
+
             using (var writer = XmlWriter.Create(httpRes.OutputStream))
             {
                 responseMessage.WriteMessage(writer);

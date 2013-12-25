@@ -4,9 +4,9 @@ namespace ServiceStack.Web
 {
 	public interface IContentTypeWriter
 	{
-        byte[] SerializeToBytes(IRequest requestContext, object response);
+        byte[] SerializeToBytes(IRequest req, object response);
 
-        string SerializeToString(IRequest requestContext, object response);
+        string SerializeToString(IRequest req, object response);
 
         void SerializeToStream(IRequest requestContext, object response, Stream toStream);
 		

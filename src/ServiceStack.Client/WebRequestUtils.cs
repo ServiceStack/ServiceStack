@@ -245,12 +245,9 @@ namespace ServiceStack
         /// </summary>
         public const string ResponseDtoSuffix = "Response";
 
-        public static string GetResponseDtoName(object request)
+        public static string GetResponseDtoName(Type requestType)
         {
-            var requestType = request.GetType();
-            return requestType != typeof(object)
-                ? requestType.FullName + ResponseDtoSuffix
-                : request.GetType().FullName + ResponseDtoSuffix;
+            return requestType.FullName + ResponseDtoSuffix;
         }
 
         public static Type GetErrorResponseDtoType<TResponse>(object request)
@@ -263,17 +260,23 @@ namespace ServiceStack
 
         public static Type GetErrorResponseDtoType(object request)
         {
-            if (request == null)
-                return typeof(ErrorResponse);
+            return request == null 
+                ? typeof(ErrorResponse) 
+                : GetErrorResponseDtoType(request.GetType());
+        }
+
+        public static Type GetErrorResponseDtoType(Type requestType)
+        {
+            if (requestType == null)
+                return typeof (ErrorResponse);
 
             //If a conventionally-named Response type exists use that regardless if it has ResponseStatus or not
-            var responseDtoType = AssemblyUtils.FindType(GetResponseDtoName(request));
+            var responseDtoType = AssemblyUtils.FindType(GetResponseDtoName(requestType));
             if (responseDtoType == null)
             {
-                var genericDef = request.GetType().GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
+                var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
                 if (genericDef != null)
                 {
-
                     var returnDtoType = genericDef.GenericTypeArguments()[0];
                     var hasResponseStatus = returnDtoType is IHasResponseStatus
                         || returnDtoType.GetPropertyInfo("ResponseStatus") != null;
@@ -288,6 +291,28 @@ namespace ServiceStack
 
             return responseDtoType ?? typeof(ErrorResponse);
         }
+
+        /// <summary>
+        /// Shortcut to get the ResponseStatus whether it's bare or inside a IHttpResult
+        /// </summary>
+        /// <param name="response"></param>
+        /// <returns></returns>
+        public static ResponseStatus GetResponseStatus(this object response)
+        {
+            if (response == null)
+                return null;
+
+            var hasResponseStatus = response as IHasResponseStatus;
+            if (hasResponseStatus != null)
+                return hasResponseStatus.ResponseStatus;
+
+            var propertyInfo = response.GetType().GetPropertyInfo("ResponseStatus");
+            if (propertyInfo == null)
+                return null;
+
+            return propertyInfo.GetProperty(response) as ResponseStatus;
+        }
+
     }
 
 }

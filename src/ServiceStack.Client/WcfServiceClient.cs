@@ -2,12 +2,14 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
+using ServiceStack.Serialization;
 
 namespace ServiceStack
 {
@@ -145,6 +147,7 @@ namespace ServiceStack
         const string XPATH_SOAP_FAULT_REASON = "/s:Fault/s:Reason";
         const string NAMESPACE_SOAP = "http://www.w3.org/2003/05/soap-envelope";
         const string NAMESPACE_SOAP_ALIAS = "s";
+        public string WsdlServiceNamespace = "http://schemas.servicestack.net/types";
 
         public string Uri { get; set; }
 
@@ -242,20 +245,36 @@ namespace ServiceStack
 
         public T Send<T>(object request)
         {
+            Message responseMsg = null;
             try
             {
-                var responseMsg = Send(request);
-                var response = responseMsg.GetBody<T>();
-                var responseStatus = GetResponseStatus(response);
+                responseMsg = Send(request);
+
+                var requestType = request.GetType();
+
+                var responseXml = GetMessageXml(responseMsg);
+                var useXmlSerializerRequest = requestType.HasAttribute<XmlSerializerFormatAttribute>();
+
+                var responseType = responseXml.StartsWith("<ErrorResponse")
+                    ? typeof(ErrorResponse)
+                    : typeof(T);
+
+                var response = useXmlSerializerRequest
+                    ? XmlSerializableSerializer.Instance.DeserializeFromString(responseXml, responseType)
+                    : Serialization.DataContractSerializer.Instance.DeserializeFromString(responseXml, responseType);
+
+                var responseStatus = response.GetResponseStatus();
                 if (responseStatus != null && !string.IsNullOrEmpty(responseStatus.ErrorCode))
                 {
-                    throw new WebServiceException(responseStatus.Message, null) {
-                        StatusCode = 500,
+                    throw new WebServiceException(responseStatus.Message, null)
+                    {
+                        StatusCode = GetErrorStatus(responseMsg),
                         ResponseDto = response,
                         StatusDescription = responseStatus.Message,
                     };
                 }
-                return response;
+
+                return (T)response;
             }
             catch (WebServiceException webEx)
             {
@@ -266,16 +285,46 @@ namespace ServiceStack
                 var webEx = ex as WebException ?? ex.InnerException as WebException;
                 if (webEx == null)
                 {
-                    throw new WebServiceException(ex.Message, ex) {
+                    throw new WebServiceException(ex.Message, ex)
+                    {
                         StatusCode = 500,
                     };
                 }
 
                 var httpEx = webEx.Response as HttpWebResponse;
-                throw new WebServiceException(webEx.Message, webEx) {
+                throw new WebServiceException(webEx.Message, webEx)
+                {
                     StatusCode = httpEx != null ? (int)httpEx.StatusCode : 500
                 };
             }
+        }
+
+        private static string GetMessageXml(Message requestMsg)
+        {
+            string requestXml;
+            using (var reader = requestMsg.GetReaderAtBodyContents())
+            {
+                requestXml = reader.ReadOuterXml();
+            }
+            return requestXml;
+        }
+
+        private int GetErrorStatus(Message responseMsg)
+        {
+            var errorStatus = 500;
+
+            try
+            {
+                var statusCode = responseMsg.Headers.GetHeader<string>(
+                    HttpHeaders.XStatus, WsdlServiceNamespace);
+                if (statusCode != null)
+                {
+                    int.TryParse(statusCode, out errorStatus);
+                }
+            }
+            catch (Exception) {}
+
+            return errorStatus;
         }
 
         public TResponse Send<TResponse>(IReturn<TResponse> request)
@@ -286,22 +335,6 @@ namespace ServiceStack
         public void Send(IReturnVoid request)
         {
             throw new NotImplementedException();
-        }
-
-        public ResponseStatus GetResponseStatus(object response)
-        {
-            if (response == null)
-                return null;
-
-            var hasResponseStatus = response as IHasResponseStatus;
-            if (hasResponseStatus != null)
-                return hasResponseStatus.ResponseStatus;
-
-            var propertyInfo = response.GetType().GetProperty("ResponseStatus");
-            if (propertyInfo == null)
-                return null;
-
-            return propertyInfo.GetProperty(response) as ResponseStatus;
         }
 
         public void Get(IReturnVoid request)

@@ -64,26 +64,6 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Shortcut to get the ResponseStatus whether it's bare or inside a IHttpResult
-        /// </summary>
-        /// <param name="response"></param>
-        /// <returns></returns>
-        public static ResponseStatus GetResponseStatus(this object response)
-        {
-            if (response == null) return null;
-
-            var hasResponseStatus = response as IHasResponseStatus;
-            if (hasResponseStatus != null)
-                return hasResponseStatus.ResponseStatus;
-
-            var propertyInfo = response.GetType().GetPropertyInfo("ResponseStatus");
-            if (propertyInfo == null)
-                return null;
-
-            return propertyInfo.GetProperty(response) as ResponseStatus;
-        }
-
-        /// <summary>
         /// Whether the response is an IHttpError or Exception
         /// </summary>
         public static bool IsErrorResponse(this object response)

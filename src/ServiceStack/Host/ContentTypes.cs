@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Serialization;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -90,9 +91,9 @@ namespace ServiceStack.Host
             this.ContentTypeDeserializers[contentType] = streamDeserializer;
         }
         
-        public byte[] SerializeToBytes(IRequest requestContext, object response)
+        public byte[] SerializeToBytes(IRequest req, object response)
         {
-            var contentType = requestContext.ResponseContentType;
+            var contentType = req.ResponseContentType;
 
             StreamSerializerDelegate responseStreamWriter;
             if (this.ContentTypeSerializers.TryGetValue(contentType, out responseStreamWriter) ||
@@ -100,7 +101,7 @@ namespace ServiceStack.Host
             {
                 using (var ms = new MemoryStream())
                 {
-                    responseStreamWriter(requestContext, response, ms);
+                    responseStreamWriter(req, response, ms);
                     ms.Position = 0;
                     return ms.ToArray();
                 }
@@ -113,7 +114,7 @@ namespace ServiceStack.Host
                 using (var ms = new MemoryStream())
                 {
                     var httpRes = new HttpResponseStreamWrapper(ms);
-                    responseWriter(requestContext, response, httpRes);
+                    responseWriter(req, response, httpRes);
                     ms.Position = 0;
                     return ms.ToArray();
                 }
@@ -130,14 +131,20 @@ namespace ServiceStack.Host
 
                 case RequestAttributes.Jsv:
                     return TypeSerializer.SerializeToString(response).ToUtf8Bytes();
+
+                case RequestAttributes.Soap11:
+                    return SoapHandler.SerializeSoap11ToBytes(req, response);
+
+                case RequestAttributes.Soap12:
+                    return SoapHandler.SerializeSoap12ToBytes(req, response);
             }
 
             throw new NotSupportedException("ContentType not supported: " + contentType);
         }
 
-        public string SerializeToString(IRequest requestContext, object response)
+        public string SerializeToString(IRequest req, object response)
         {
-            var contentType = requestContext.ResponseContentType;
+            var contentType = req.ResponseContentType;
 
             StreamSerializerDelegate responseStreamWriter;
             if (this.ContentTypeSerializers.TryGetValue(contentType, out responseStreamWriter) ||
@@ -145,7 +152,7 @@ namespace ServiceStack.Host
             {
                 using (var ms = new MemoryStream())
                 {
-                    responseStreamWriter(requestContext, response, ms);
+                    responseStreamWriter(req, response, ms);
 
                     ms.Position = 0;
                     var result = new StreamReader(ms, UTF8EncodingWithoutBom).ReadToEnd();
@@ -163,7 +170,7 @@ namespace ServiceStack.Host
                     var httpRes = new HttpResponseStreamWrapper(ms) {
                         KeepOpen = true, //Don't let view engines close the OutputStream
                     };
-                    responseWriter(requestContext, response, httpRes);
+                    responseWriter(req, response, httpRes);
 
                     var bytes = ms.ToArray();
                     var result = bytes.FromUtf8Bytes();
@@ -185,6 +192,12 @@ namespace ServiceStack.Host
 
                 case RequestAttributes.Jsv:
                     return TypeSerializer.SerializeToString(response);
+
+                case RequestAttributes.Soap11:
+                    return SoapHandler.SerializeSoap11ToBytes(req, response).FromUtf8Bytes();
+
+                case RequestAttributes.Soap12:
+                    return SoapHandler.SerializeSoap12ToBytes(req, response).FromUtf8Bytes();
             }
 
             throw new NotSupportedException("ContentType not supported: " + contentType);
@@ -246,6 +259,12 @@ namespace ServiceStack.Host
 
                 case RequestAttributes.Jsv:
                     return (r, o, s) => TypeSerializer.SerializeToStream(o, s);
+
+                case RequestAttributes.Soap11:
+                    return SoapHandler.SerializeSoap11ToStream;
+
+                case RequestAttributes.Soap12:
+                    return SoapHandler.SerializeSoap12ToStream;
             }
 
             return null;

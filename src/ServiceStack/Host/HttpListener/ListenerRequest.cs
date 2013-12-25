@@ -167,7 +167,8 @@ namespace ServiceStack.Host.HttpListener
         private string responseContentType;
         public string ResponseContentType
         {
-            get { return responseContentType ?? (responseContentType = this.GetResponseContentType()); }
+            get { return responseContentType 
+                ?? (responseContentType = this.GetResponseContentType()); }
             set
             {
                 this.responseContentType = value;
