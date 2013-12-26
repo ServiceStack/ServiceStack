@@ -13,24 +13,24 @@ namespace ServiceStack.Serialization
         /// <summary>
         /// Default MaxStringContentLength is 8k, and throws an exception when reached
         /// </summary>
-#if !SL5 && !IOS && !XBOX
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
         private readonly XmlDictionaryReaderQuotas quotas;
 #endif
 
         public static DataContractSerializer Instance
             = new DataContractSerializer(
-#if !SL5 && !IOS && !XBOX
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
 new XmlDictionaryReaderQuotas { MaxStringContentLength = 1024 * 1024, }
 #endif
 );
 
         public DataContractSerializer(
-#if !SL5 && !IOS && !XBOX
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
 XmlDictionaryReaderQuotas quotas = null
 #endif
 )
         {
-#if !SL5 && !IOS && !XBOX
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
             this.quotas = quotas;
 #endif
         }
@@ -43,7 +43,7 @@ XmlDictionaryReaderQuotas quotas = null
                 using (var ms = new MemoryStream())
                 {
                     var serializer = new System.Runtime.Serialization.DataContractSerializer(from.GetType());
-#if !SL5 && !IOS && !XBOX
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
                     using (var xw = new XmlTextWriter(ms, Encoding)) 
                     {
                         if (indentXml)
@@ -63,7 +63,7 @@ XmlDictionaryReaderQuotas quotas = null
                             return reader.ReadToEnd();
                         }
 
-#if !SL5 && !IOS && !XBOX
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
                     }
 #endif
                 }
@@ -82,7 +82,7 @@ XmlDictionaryReaderQuotas quotas = null
 
         public void SerializeToStream(object obj, Stream stream)
         {
-#if !SL5 && !IOS && !XBOX
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
             using (var xw = new XmlTextWriter(stream, Encoding))
             {
                 var serializer = new System.Runtime.Serialization.DataContractSerializer(obj.GetType());
@@ -94,7 +94,7 @@ XmlDictionaryReaderQuotas quotas = null
 #endif
         }
 
-#if !SL5 && !IOS && !XBOX
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
         public void CompressToStream<XmlDto>(XmlDto from, Stream stream)
         {
             using (var deflateStream = new System.IO.Compression.DeflateStream(stream, System.IO.Compression.CompressionMode.Compress))

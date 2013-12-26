@@ -1,4 +1,3 @@
-#if !SL5 && !IOS && !XBOX
 using ServiceStack.Web;
 
 namespace ServiceStack.Caching
@@ -23,4 +22,3 @@ namespace ServiceStack.Caching
 		ISession GetOrCreateSession();
 	}
 }
-#endif

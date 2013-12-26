@@ -1,7 +1,4 @@
-﻿
-
-#if !SL5 && !IOS && !XBOX
-namespace ServiceStack.Web
+﻿namespace ServiceStack.Web
 {
     /// <summary>
     /// This interface can be implemented by an attribute
@@ -30,4 +27,3 @@ namespace ServiceStack.Web
         IHasResponseFilter Copy();
     }
 }
-#endif

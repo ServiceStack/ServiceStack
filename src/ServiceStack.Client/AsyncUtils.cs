@@ -123,7 +123,7 @@ namespace ServiceStack
         public static bool IsWebException(this WebException webEx)
         {
             return webEx != null
-#if !SL5
+#if !(SL5 || PCL)
                 && webEx.Status == WebExceptionStatus.ProtocolError
 #endif
             ;
@@ -140,7 +140,7 @@ namespace ServiceStack
         }
     }
 
-#if NETFX_CORE
+#if (NETFX_CORE)
 
     public class NetFxAsyncTimer : ITimer
     {

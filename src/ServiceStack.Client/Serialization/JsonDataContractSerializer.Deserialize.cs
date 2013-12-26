@@ -13,7 +13,7 @@ namespace ServiceStack.Serialization
             if (TextSerializer != null)
                 return TextSerializer.DeserializeFromString(json, returnType);
 
-#if !SL5 && !IOS && !XBOX && !ANDROIDINDIE
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
             if (!UseBcl)
                 return JsonSerializer.DeserializeFromString(json, returnType);
 
@@ -33,7 +33,7 @@ namespace ServiceStack.Serialization
                 throw new SerializationException("JsonDataContractDeserializer: Error converting to type: " + ex.Message, ex);
             }
 #else
-                return JsonSerializer.DeserializeFromString(json, returnType);
+            return JsonSerializer.DeserializeFromString(json, returnType);
 #endif
         }
 
@@ -59,7 +59,7 @@ namespace ServiceStack.Serialization
                 }
             }
 
-#if !SL5 && !IOS && !XBOX && !ANDROIDINDIE
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
             if (UseBcl)
             {
                 var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(typeof(T));
@@ -80,7 +80,7 @@ namespace ServiceStack.Serialization
                 }
             }
 
-#if !SL5 && !IOS && !XBOX && !ANDROIDINDIE
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
             if (UseBcl)
             {
                 var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(type);

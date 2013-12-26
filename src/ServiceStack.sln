@@ -128,8 +128,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{
 		Templates\SilverlightTemplate.csproj = Templates\SilverlightTemplate.csproj
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Interfaces.PCL", "ServiceStack.Interfaces\ServiceStack.Interfaces.PCL.csproj", "{57749182-052C-4498-834D-5FB973EF23EE}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1252,41 +1250,6 @@ Global
 		{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.Build.0 = Release|Any CPU
 		{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}.STATIC_ONLY NO_EXPRESSIONS|x86.ActiveCfg = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.MonoDebug|Any CPU.ActiveCfg = Debug|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.MonoDebug|Any CPU.Build.0 = Debug|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.MonoDebug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.MonoDebug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.MonoDebug|x86.ActiveCfg = Debug|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.MonoRelease|Any CPU.ActiveCfg = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.MonoRelease|Any CPU.Build.0 = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.MonoRelease|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.MonoRelease|Mixed Platforms.Build.0 = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.MonoRelease|x86.ActiveCfg = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.MonoTouch|Any CPU.Build.0 = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.MonoTouch|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.MonoTouch|Mixed Platforms.Build.0 = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.MonoTouch|x86.ActiveCfg = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.Release|x86.ActiveCfg = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.Signed|Any CPU.ActiveCfg = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.Signed|Any CPU.Build.0 = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.Signed|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.Signed|Mixed Platforms.Build.0 = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.Signed|x86.ActiveCfg = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.ActiveCfg = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.Build.0 = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.Build.0 = Release|Any CPU
-		{57749182-052C-4498-834D-5FB973EF23EE}.STATIC_ONLY NO_EXPRESSIONS|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

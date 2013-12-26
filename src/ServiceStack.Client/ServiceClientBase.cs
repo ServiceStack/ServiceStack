@@ -12,7 +12,7 @@ using System.Reflection;
 using ServiceStack.Logging;
 using ServiceStack.Web;
 
-#if !(IOS || SL5)
+#if !(__IOS__ || SL5)
 #endif
 #if !SL5
 #endif
@@ -1151,7 +1151,7 @@ namespace ServiceStack
                 var webRequest = PrepareWebRequest(HttpMethods.Post, requestUri, null, null);
 
                 var queryString = QueryStringSerializer.SerializeToString(request);
-#if !IOS
+#if !__IOS__
                 var nameValueCollection = System.Web.HttpUtility.ParseQueryString(queryString);
 #endif
                 var boundary = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
@@ -1160,7 +1160,7 @@ namespace ServiceStack
                 var newLine = "\r\n";
                 using (var outputStream = webRequest.GetRequestStream())
                 {
-#if !IOS
+#if !__IOS__
                     foreach (var key in nameValueCollection.AllKeys)
                     {
                         outputStream.Write(boundary + newLine);
