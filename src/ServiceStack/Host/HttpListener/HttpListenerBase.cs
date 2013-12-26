@@ -36,8 +36,10 @@ namespace ServiceStack.Host.HttpListener
         protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices) {}
 
-        public virtual void OnAfterInit()
+        public override void OnAfterInit()
         {
+            base.OnAfterInit();
+
             SetAppDomainData();
         }
 
