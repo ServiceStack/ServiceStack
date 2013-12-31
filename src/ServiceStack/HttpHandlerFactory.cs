@@ -198,7 +198,7 @@ namespace ServiceStack
             }
 
             return GetHandlerForPathInfo(
-                context.Request.HttpMethod, pathInfo, context.Request.FilePath, pathTranslated)
+                httpReq.HttpMethod, pathInfo, context.Request.FilePath, pathTranslated)
                    ?? NotFoundHttpHandler;
         }
 
