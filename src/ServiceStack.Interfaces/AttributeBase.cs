@@ -8,13 +8,21 @@ namespace ServiceStack
 {
     public class AttributeBase : Attribute
     {
+
 #if !(NETFX_CORE || WP || SL5 || PCL)
+        protected readonly Guid typeId;
+
+        public AttributeBase()
+        {
+            this.typeId = Guid.NewGuid();
+        }
+
         /// <summary>
         /// Required when using a TypeDescriptor to make it unique
         /// </summary>
         public override object TypeId
         {
-            get { return this; }
+            get { return this.typeId; }
         }
 #endif
         
