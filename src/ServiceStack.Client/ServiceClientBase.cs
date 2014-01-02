@@ -504,7 +504,7 @@ namespace ServiceStack
                     .MakeGenericMethod(new[] { responseType });
 
                 responseHandler = (Action<Exception, string>)mi.CreateDelegate(
-                    typeof(Action<Exception, string>));
+                    typeof(Action<Exception, string>), this);
 
                 ResponseHandlers[responseType] = responseHandler;
             }
