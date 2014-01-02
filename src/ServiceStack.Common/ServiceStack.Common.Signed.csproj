@@ -124,7 +124,6 @@
     <Compile Include="IntExtensions.cs" />
     <Compile Include="Logging\ConsoleLogFactory.cs" />
     <Compile Include="Logging\ConsoleLogger.cs" />
-    <Compile Include="NameValueCollectionWrapper.cs" />
     <Compile Include="Reflection\DelegateFactory.cs">
       <SubType>Code</SubType>
     </Compile>

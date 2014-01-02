@@ -28,7 +28,7 @@ namespace ServiceStack
     {
         public static Exception CreateTimeoutException(this Exception ex, string errorMsg)
         {
-#if SL5
+#if SL5 || PCL
             return new WebException("The request timed out", ex, WebExceptionStatus.RequestCanceled, null);
 #else
             return new WebException("The request timed out", ex, WebExceptionStatus.Timeout, null);
@@ -37,17 +37,13 @@ namespace ServiceStack
 
         internal static ITimer CreateTimer<TResponse>(this AsyncState<TResponse> state, TimeSpan timeOut)
         {
-#if NETFX_CORE
-            return new NetFxAsyncTimer(ThreadPoolTimer.CreateTimer(request.TimedOut, timeOut)); 
-#else
-            return new AsyncTimer(new Timer(state.TimedOut, state, (int)timeOut.TotalMilliseconds, Timeout.Infinite));
-#endif
+            return PclExportClient.Instance.CreateTimer(state, timeOut);
         }
 
         internal static void EndReadStream(this Stream stream)
         {
 #if NETFX_CORE || WP
-                stream.Dispose();
+            stream.Dispose();
 #else
             stream.Close();
 #endif
@@ -65,7 +61,7 @@ namespace ServiceStack
 
         internal static HttpWebRequest CreateHttpWebRequest(this AsyncServiceClient client, string requestUri)
         {
-#if SL5 && !WP && !NETFX_CORE
+#if SL5
 
             var creator = client.EmulateHttpViaPost
                 ? System.Net.Browser.WebRequestCreator.BrowserHttp
@@ -87,7 +83,7 @@ namespace ServiceStack
 
 #else
             var webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
-            webRequest.MaximumResponseHeadersLength = int.MaxValue; //throws "The message length limit was exceeded" exception
+            PclExport.Instance.Config(webRequest);
             client.CancelAsyncFn = webRequest.Abort;
 
             if (client.StoreCookies)
@@ -99,8 +95,7 @@ namespace ServiceStack
 #if !SL5
             if (!client.DisableAutoCompression)
             {
-                webRequest.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip,deflate");
-                webRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+                PclExport.Instance.AddCompression(webRequest);
             }
 #endif
             return webRequest;
@@ -108,7 +103,7 @@ namespace ServiceStack
 
         public static void SynchronizeCookies(this AsyncServiceClient client)
         {
-#if SL5 && !WP && !NETFX_CORE
+#if SL5
             if (client.StoreCookies && client.ShareCookiesWithBrowser && !client.EmulateHttpViaPost)
             {
                 // browser cookies must be set on the ui thread
@@ -139,55 +134,6 @@ namespace ServiceStack
 #endif
         }
     }
-
-#if (NETFX_CORE)
-
-    public class NetFxAsyncTimer : ITimer
-    {
-        public ThreadPoolTimer Timer;
-
-        public NetFxAsyncTimer(ThreadPoolTimer timer)
-        {
-            Timer = timer;
-        }
-
-        public void Cancel()
-        {
-            this.Timer.Cancel();
-        }
-
-        public void Dispose()
-        {
-            this.Timer.Dispose();
-            this.Timer = null;
-        }
-    }
-
-#else
-
-    public class AsyncTimer : ITimer
-    {
-        public Timer Timer;
-
-        public AsyncTimer(Timer timer)
-        {
-            Timer = timer;
-        }
-
-        public void Cancel()
-        {
-            this.Timer.Change(Timeout.Infinite, Timeout.Infinite);
-            this.Dispose();
-        }
-
-        public void Dispose()
-        {
-            this.Timer.Dispose();
-            this.Timer = null;
-        }
-    }
-
-#endif
 
 #if !NET45
     internal class TaskConstants<T>
@@ -238,13 +184,6 @@ namespace ServiceStack
             return stream.ReadAsync(buffer, offset, count, CancellationToken.None);
         }
 
-        public static Task<int> ReadAsync(this Stream stream, byte[] buffer, int offset, int count, CancellationToken token)
-        {
-            return token.IsCancellationRequested
-                ? TaskConstants<int>.Canceled
-                : Task<int>.Factory.FromAsync(stream.BeginRead, stream.EndRead, buffer, offset, count, null);
-        }
-
         public static Task WriteAsync(this Stream stream, byte[] buffer)
         {
             return stream.WriteAsync(buffer, 0, buffer.Length, CancellationToken.None);
@@ -255,10 +194,20 @@ namespace ServiceStack
             return stream.WriteAsync(buffer, offset, count, CancellationToken.None);
         }
 
+#if !PCL
+        public static Task<int> ReadAsync(this Stream stream, byte[] buffer, int offset, int count, CancellationToken token)
+        {
+            return token.IsCancellationRequested
+                ? TaskConstants<int>.Canceled
+                : Task<int>.Factory.FromAsync(stream.BeginRead, stream.EndRead, buffer, offset, count, null);
+        }
+
         public static Task WriteAsync(this Stream stream, byte[] buffer, int offset, int count, CancellationToken token)
         {
             return Task.Factory.FromAsync(stream.BeginWrite, stream.EndWrite, buffer, offset, count, null);
         }
+#endif
+
     }
 #endif
 

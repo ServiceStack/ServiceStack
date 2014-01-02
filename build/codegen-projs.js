@@ -234,7 +234,7 @@ var CUSTOM_PROJS = [{
     ReplaceElements: {
         ProjectGuid: '{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}',
         RootNamespace: 'ServiceStack',
-        AssemblyName: 'ServiceStack.Interfaces'
+        AssemblyName: 'ServiceStack.Client'
     },
     ReplaceTexts: {
         '<!--ItemGroup,ProjectReference-->': [

@@ -1,7 +1,7 @@
 namespace ServiceStack
 {
 
-#if SL5 || __IOS__ || XBOX || ANDROID
+#if SL5 || __IOS__ || XBOX || ANDROID || PCL
 
     using System;
     using System.IO;
@@ -174,6 +174,16 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
+        public TResponse Send<TResponse>(IReturn<TResponse> request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Send(IReturnVoid request)
+        {
+            throw new NotImplementedException();
+        }
+
         public void Get(IReturnVoid request)
         {
             throw new NotImplementedException();
@@ -334,12 +344,13 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
-        public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
+        public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
         {
             throw new NotImplementedException();
         }
 
-        public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
+#if !PCL
+        public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
         {
             throw new NotImplementedException();
         }
@@ -348,6 +359,7 @@ namespace ServiceStack
         {
             throw new NotImplementedException();
         }
+#endif
 
         public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName,
                                                         object request)

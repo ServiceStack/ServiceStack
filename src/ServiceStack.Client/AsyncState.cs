@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace ServiceStack
 {
-    internal class AsyncState<TResponse> : IDisposable
+    public class AsyncState<TResponse> : IDisposable
     {
         private bool timedOut; // Pass the correct error back even on Async Calls
 

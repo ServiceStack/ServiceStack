@@ -48,9 +48,9 @@ namespace ServiceStack.ServiceHost.Tests.Formats
         {
             var httpReq = new MockHttpRequest
             {
-                Headers = NameValueCollectionWrapper.New(),
+                Headers = PclExportClient.Instance.NewNameValueCollection(),
                 OperationName = "OperationName",
-                QueryString = NameValueCollectionWrapper.New(),
+                QueryString = PclExportClient.Instance.NewNameValueCollection(),
             };
             httpReq.QueryString.Add("format", format);
             using (var ms = new MemoryStream())
@@ -214,7 +214,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
             {
                 MarkdownFormat = markdownFormat,
             };
-            var httpReq = new MockHttpRequest { QueryString = NameValueCollectionWrapper.New() };
+            var httpReq = new MockHttpRequest { QueryString = PclExportClient.Instance.NewNameValueCollection() };
             var httpRes = new MockHttpResponse();
             markdownHandler.ProcessRequestAsync(httpReq, httpRes, "Static").Wait();
 

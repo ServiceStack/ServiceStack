@@ -21,7 +21,7 @@ namespace ServiceStack
         {
             get
             {
-#if !(SL5 || ANDROID)
+#if !(SL5 || ANDROID || __IOS__ || PCL)
                 return items ?? (System.Web.HttpContext.Current != null
                     ? System.Web.HttpContext.Current.Items
                     : items = new Dictionary<object, object>());

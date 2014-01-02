@@ -3,7 +3,6 @@ using System.Net;
 using System.Text;
 using ServiceStack.Text;
 using ServiceStack.Logging;
-using System.Security.Cryptography;
 
 #if NETFX_CORE
 using System.Net.Http.Headers;
@@ -165,12 +164,12 @@ namespace ServiceStack
         }
 #endif
 
-#if !NETFX_CORE && !SL5
+#if !(NETFX_CORE || SL5 || PCL)
         internal static string CalculateMD5Hash(string input)
         {
             // copied/pasted by adamfowleruk
             // step 1, calculate MD5 hash from input
-            MD5 md5 = System.Security.Cryptography.MD5.Create();
+            System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create();
             byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
             byte[] hash = md5.ComputeHash(inputBytes);
 
@@ -196,7 +195,6 @@ namespace ServiceStack
             return ret;
         }
 
-#if !SL5
         internal static void AddAuthInfo(this WebRequest client, string userName, string password, AuthenticationInfo authInfo)
         {
 
@@ -214,6 +212,9 @@ namespace ServiceStack
 
         internal static void AddDigestAuth(this WebRequest client, string userName, string password, AuthenticationInfo authInfo)
         {
+            //Silverlight MD5 impl at: http://archive.msdn.microsoft.com/SilverlightMD5
+
+#if !(SL5 || PCL)
             // by adamfowleruk
             // See Client Request at http://en.wikipedia.org/wiki/Digest_access_authentication
 
@@ -238,8 +239,11 @@ namespace ServiceStack
 
             client.Headers[HttpHeaders.Authorization] = header;
 
-        }
+#else 
+            throw new NotImplementedException();
 #endif
+        }
+
         /// <summary>
         /// Naming convention for the request's Response DTO
         /// </summary>

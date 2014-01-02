@@ -71,7 +71,7 @@ namespace ServiceStack
         /// <summary>
         /// Gets the collection of headers to be added to outgoing requests.
         /// </summary>
-        public NameValueCollection Headers { get; private set; }
+        public INameValueCollection Headers { get; private set; }
 
         public const string DefaultHttpMethod = "POST";
 
@@ -92,7 +92,7 @@ namespace ServiceStack
             };
             this.CookieContainer = new CookieContainer();
             this.StoreCookies = true; //leave
-            this.Headers = new NameValueCollection();
+            this.Headers = PclExportClient.Instance.NewNameValueCollection();
 
 #if SL5
             asyncClient.HandleCallbackOnUiThread = this.HandleCallbackOnUiThread = true;
@@ -400,7 +400,7 @@ namespace ServiceStack
 
             try
             {
-                var webResponse = client.GetResponse();
+                var webResponse = PclExport.Instance.GetResponse(client);
                 return HandleResponse<TResponse>(webResponse);
             }
             catch (Exception ex)
@@ -411,7 +411,7 @@ namespace ServiceStack
                     request,
                     requestUri,
                     () => SendRequest(HttpMethods.Post, requestUri, request),
-                    c => c.GetResponse(),
+                    c => PclExport.Instance.GetResponse(c),
                     out response))
                 {
                     throw;
@@ -500,12 +500,11 @@ namespace ServiceStack
             Action<Exception, string> responseHandler;
             if (!ResponseHandlers.TryGetValue(responseType, out responseHandler))
             {
-                var mi = GetType().GetMethod("ThrowWebServiceException",
-                        BindingFlags.Instance | BindingFlags.NonPublic)
+                var mi = GetType().GetNonPublicInstanceMethod("ThrowWebServiceException")
                     .MakeGenericMethod(new[] { responseType });
 
-                responseHandler = (Action<Exception, string>)Delegate.CreateDelegate(
-                    typeof(Action<Exception, string>), this, mi);
+                responseHandler = (Action<Exception, string>)mi.CreateDelegate(
+                    typeof(Action<Exception, string>));
 
                 ResponseHandlers[responseType] = responseHandler;
             }
@@ -515,7 +514,11 @@ namespace ServiceStack
         protected internal void ThrowWebServiceException<TResponse>(Exception ex, string requestUri)
         {
             var webEx = ex as WebException;
-            if (webEx != null && webEx.Status == WebExceptionStatus.ProtocolError)
+            if (webEx != null
+#if !(SL5 || PCL)
+                 && webEx.Status == WebExceptionStatus.ProtocolError
+#endif
+            )
             {
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 log.Error(webEx);
@@ -582,7 +585,7 @@ namespace ServiceStack
             return PrepareWebRequest(httpMethod, requestUri, request, client =>
             {
                 using (__requestAccess())
-                using (var requestStream = client.GetRequestStream())
+                using (var requestStream = PclExport.Instance.GetRequestStream(client))
                 {
                     SerializeToStream(null, request, requestStream);
                 }
@@ -609,14 +612,16 @@ namespace ServiceStack
 
             try
             {
-                client.MaximumResponseHeadersLength = int.MaxValue; //throws "The message length limit was exceeded" exception
                 client.Accept = Accept;
                 client.Method = httpMethod;
-                client.Headers.Add(Headers);
+                PclExportClient.Instance.AddHeader(client, Headers);
 
                 if (Proxy != null) client.Proxy = Proxy;
-                if (this.Timeout.HasValue) client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
-                if (this.ReadWriteTimeout.HasValue) client.ReadWriteTimeout = (int)this.ReadWriteTimeout.Value.TotalMilliseconds;
+                PclExport.Instance.Config(client,
+                    allowAutoRedirect: AllowAutoRedirect,
+                    timeout: this.Timeout,
+                    readWriteTimeout: ReadWriteTimeout);
+
                 if (this.credentials != null) client.Credentials = this.credentials;
 
                 if (null != this.authInfo)
@@ -630,8 +635,7 @@ namespace ServiceStack
 
                 if (!DisableAutoCompression)
                 {
-                    client.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip,deflate");
-                    client.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+                    PclExport.Instance.AddCompression(client);
                 }
 
                 if (StoreCookies)
@@ -639,7 +643,6 @@ namespace ServiceStack
                     client.CookieContainer = CookieContainer;
                 }
 
-                client.AllowAutoRedirect = AllowAutoRedirect;
 
                 ApplyWebRequestFilters(client);
 
@@ -752,7 +755,7 @@ namespace ServiceStack
         private byte[] DownloadBytes(string httpMethod, string requestUri, object request)
         {
             var webRequest = SendRequest(httpMethod, requestUri, request);
-            using (var response = webRequest.GetResponse())
+            using (var response = PclExport.Instance.GetResponse(webRequest))
             {
                 ApplyWebResponseFilters(response);
                 using (var stream = response.GetResponseStream())
@@ -917,7 +920,7 @@ namespace ServiceStack
 
             try
             {
-                var webResponse = client.GetResponse();
+                var webResponse = PclExport.Instance.GetResponse(client);
                 return HandleResponse<TResponse>(webResponse);
             }
             catch (Exception ex)
@@ -929,7 +932,7 @@ namespace ServiceStack
                     request,
                     requestUri,
                     () => SendRequest(httpMethod, requestUri, request),
-                    c => c.GetResponse(),
+                    c => PclExport.Instance.GetResponse(c),
                     out response))
                 {
                     throw;
@@ -1132,7 +1135,7 @@ namespace ServiceStack
             return Send<HttpWebResponse>(HttpMethods.Head, relativeOrAbsoluteUrl, null);
         }
 
-
+#if !PCL
         public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request)
         {
             using (FileStream fileStream = fileToUpload.OpenRead())
@@ -1140,6 +1143,7 @@ namespace ServiceStack
                 return PostFileWithRequest<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, request);
             }
         }
+#endif
 
         public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request)
         {
@@ -1151,16 +1155,14 @@ namespace ServiceStack
                 var webRequest = PrepareWebRequest(HttpMethods.Post, requestUri, null, null);
 
                 var queryString = QueryStringSerializer.SerializeToString(request);
-#if !__IOS__
-                var nameValueCollection = System.Web.HttpUtility.ParseQueryString(queryString);
-#endif
+
+                var nameValueCollection = PclExportClient.Instance.ParseQueryString(queryString);
                 var boundary = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
                 webRequest.ContentType = "multipart/form-data; boundary=" + boundary;
                 boundary = "--" + boundary;
                 var newLine = "\r\n";
-                using (var outputStream = webRequest.GetRequestStream())
+                using (var outputStream = PclExport.Instance.GetRequestStream(webRequest))
                 {
-#if !__IOS__
                     foreach (var key in nameValueCollection.AllKeys)
                     {
                         outputStream.Write(boundary + newLine);
@@ -1168,7 +1170,7 @@ namespace ServiceStack
                         outputStream.Write("Content-Type: text/plain;charset=utf-8{0}{1}".FormatWith(newLine, newLine));
                         outputStream.Write(nameValueCollection[key] + newLine);
                     }
-#endif
+
                     outputStream.Write(boundary + newLine);
                     outputStream.Write("Content-Disposition: form-data;name=\"{0}\";filename=\"{1}\"{2}{3}".FormatWith("upload", fileName, newLine, newLine));
                     var buffer = new byte[4096];
@@ -1187,7 +1189,7 @@ namespace ServiceStack
             try
             {
                 var webRequest = createWebRequest();
-                var webResponse = webRequest.GetResponse();
+                var webResponse = PclExport.Instance.GetResponse(webRequest);
                 return HandleResponse<TResponse>(webResponse);
             }
             catch (Exception ex)
@@ -1198,7 +1200,9 @@ namespace ServiceStack
                 fileToUpload.Seek(currentStreamPosition, SeekOrigin.Begin);
 
                 if (!HandleResponseException(
-                    ex, request, requestUri, createWebRequest, c => c.GetResponse(), out response))
+                    ex, request, requestUri, createWebRequest,
+                    c => PclExport.Instance.GetResponse(c), 
+                    out response))
                 {
                     throw;
                 }
@@ -1207,6 +1211,7 @@ namespace ServiceStack
             }
         }
 
+#if !PCL
         public virtual TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
         {
             using (FileStream fileStream = fileToUpload.OpenRead())
@@ -1214,6 +1219,7 @@ namespace ServiceStack
                 return PostFile<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, mimeType);
             }
         }
+#endif
 
         public virtual TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
         {
@@ -1225,7 +1231,7 @@ namespace ServiceStack
             {
                 var webRequest = createWebRequest();
                 webRequest.UploadFile(fileToUpload, fileName, mimeType);
-                var webResponse = webRequest.GetResponse();
+                var webResponse = PclExport.Instance.GetResponse(webRequest);
                 return HandleResponse<TResponse>(webResponse);
             }
             catch (Exception ex)
@@ -1239,7 +1245,10 @@ namespace ServiceStack
                     null,
                     requestUri,
                     createWebRequest,
-                    c => { c.UploadFile(fileToUpload, fileName, mimeType); return c.GetResponse(); },
+                    c => { 
+                        c.UploadFile(fileToUpload, fileName, mimeType);
+                        return PclExport.Instance.GetResponse(c); 
+                    },
                     out response))
                 {
                     throw;

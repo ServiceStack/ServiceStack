@@ -33,7 +33,7 @@ namespace ServiceStack.Host
         {
             Message = message ?? new Message();
             ContentType = this.ResponseContentType = MimeTypes.Json;
-            this.Headers = NameValueCollectionWrapper.New();
+            this.Headers = PclExportClient.Instance.NewNameValueCollection();
 
             if (Message.Body != null)
             {
@@ -48,8 +48,8 @@ namespace ServiceStack.Host
 
             this.Cookies = new Dictionary<string, Cookie>();
             this.Items = new Dictionary<string, object>();
-            this.QueryString = NameValueCollectionWrapper.New();
-            this.FormData = NameValueCollectionWrapper.New();
+            this.QueryString = PclExportClient.Instance.NewNameValueCollection();
+            this.FormData = PclExportClient.Instance.NewNameValueCollection();
             this.Files = new IHttpFile[0];
         }
 

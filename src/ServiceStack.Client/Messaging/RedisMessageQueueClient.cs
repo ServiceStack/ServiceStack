@@ -54,7 +54,7 @@ namespace ServiceStack.Messaging
 
 		public void Publish<T>(T messageBody)
 		{
-            if (typeof(IMessage).IsAssignableFrom(typeof(T)))
+            if (typeof(IMessage).IsAssignableFromType(typeof(T)))
                 Publish((IMessage)messageBody);
             else
                 Publish<T>(new Message<T>(messageBody));

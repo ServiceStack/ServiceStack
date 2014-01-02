@@ -16,9 +16,9 @@ namespace ServiceStack.Testing
 
         public MockHttpRequest()
         {
-            this.FormData = NameValueCollectionWrapper.New();
-            this.Headers = NameValueCollectionWrapper.New();
-            this.QueryString = NameValueCollectionWrapper.New();
+            this.FormData = PclExportClient.Instance.NewNameValueCollection();
+            this.Headers = PclExportClient.Instance.NewNameValueCollection();
+            this.QueryString = PclExportClient.Instance.NewNameValueCollection();
             this.Cookies = new Dictionary<string, Cookie>();
             this.Items = new Dictionary<string, object>();
             this.Container = ServiceStackHost.Instance != null ? ServiceStackHost.Instance.Container : new Container();
