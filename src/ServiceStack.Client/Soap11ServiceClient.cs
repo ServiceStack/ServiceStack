@@ -1,7 +1,7 @@
 namespace ServiceStack
 {
 
-#if SL5 || __IOS__ || XBOX || ANDROID || PCL
+#if SL5 || __IOS__ || XBOX || ANDROID
 
     using System;
     using System.IO;
@@ -174,16 +174,6 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
-        public TResponse Send<TResponse>(IReturn<TResponse> request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Send(IReturnVoid request)
-        {
-            throw new NotImplementedException();
-        }
-
         public void Get(IReturnVoid request)
         {
             throw new NotImplementedException();
@@ -344,13 +334,12 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
-        public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
+        public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
         {
             throw new NotImplementedException();
         }
 
-#if !PCL
-        public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
+        public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
         {
             throw new NotImplementedException();
         }
@@ -359,7 +348,6 @@ namespace ServiceStack
         {
             throw new NotImplementedException();
         }
-#endif
 
         public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName,
                                                         object request)
@@ -389,7 +377,7 @@ namespace ServiceStack
                     this.binding = new System.ServiceModel.BasicHttpBinding
                     {
                         MaxReceivedMessageSize = int.MaxValue,
-                        HostNameComparisonMode = System.ServiceModel.HostNameComparisonMode.StrongWildcard
+                        HostNameComparisonMode = System.ServiceModel.HostNameComparisonMode.StrongWildcard,
                     };
                 }
                 return this.binding;

@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Runtime.Serialization;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.FluentValidation;
+using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Validation;
 
@@ -59,6 +61,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
+    [DataContract]
+    public class BasicAuthRequired
+    {
+        public string Name { get; set; }
+    }
+
 	public class AlwaysThrowsService : Service
 	{
         public object Any(AlwaysThrows request)
@@ -90,6 +98,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			return value + " is not implemented";
 		}
+
+        public object Any(BasicAuthRequired request)
+        {
+            return request;
+        }
 	}
 
     public class AlwaysThrowsAppHost : AppHostHttpListenerBase
@@ -102,9 +115,44 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Plugins.Add(new ValidationFeature());
 
             container.RegisterValidators(typeof(AlwaysThrowsValidator).Assembly);
+
+            Plugins.Add(new CustomAuthenticationPlugin());
         }
     }
 
+    public class CustomAuthenticationPlugin : IPlugin
+    {
+        public void Register(IAppHost appHost)
+        {
+            appHost.PreRequestFilters.Add((httpReq, httpResp) =>
+            {
+                if (httpReq.OperationName != typeof(BasicAuthRequired).Name)
+                    return;
+
+                var credentials = httpReq.GetBasicAuthUserAndPassword();
+                if (!credentials.HasValue)
+                {
+                    // throw new UnauthorizedAccessException();
+                    httpResp.StatusCode = (int)HttpStatusCode.Unauthorized;
+                    httpResp.EndRequestWithNoContent();
+                    return;
+                }
+
+                string username = credentials.Value.Key;
+                string password = credentials.Value.Value;
+
+                // TODO: get DI working
+                // TODO: Use PasswordList.SystemPass in production
+                var isAuth = password == "p@55word";
+                if (!isAuth)
+                {
+                    // throw new UnauthorizedAccessException();
+                    httpResp.StatusCode = (int)HttpStatusCode.Unauthorized;
+                    httpResp.EndRequestWithNoContent();
+                }
+            });
+        }
+    }
 
     /// <summary>
     /// This base class executes all Web Services ignorant of the endpoints its hosted on.
@@ -204,6 +252,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(status.Errors[0].ErrorCode, Is.EqualTo("NotEmpty"));
                 Assert.That(status.Errors[0].FieldName, Is.EqualTo("Value"));
                 Assert.That(status.Errors[0].Message, Is.EqualTo("'Value' should not be empty."));
+            }
+        }
+
+        [Test]
+        public void Can_handle_no_content_BasicAuth_exception()
+        {
+            var client = CreateNewServiceClient();
+            try
+            {
+                var response = client.Send<BasicAuthRequired>(
+                    new BasicAuthRequired { Name = "Test" });
+
+                Assert.Fail("Should throw HTTP errors");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+                Assert.That(webEx.ResponseDto, Is.Null);
             }
         }
     }

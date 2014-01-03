@@ -22,12 +22,13 @@ namespace ServiceStack
             {
                 if (this.binding == null)
                 {
-                    this.binding = new WSHttpBinding {
+                    this.binding = new WSHttpBinding
+                    {
                         MaxReceivedMessageSize = int.MaxValue,
-                        HostNameComparisonMode = HostNameComparisonMode.StrongWildcard,						
+                        HostNameComparisonMode = HostNameComparisonMode.StrongWildcard,
                         MaxBufferPoolSize = 524288,
+                        Security = { Mode = SecurityMode.None },
                     };
-                    this.binding.Security.Mode = SecurityMode.None;
                     // CCB Custom
                     // Yes, you need this to manage cookies yourself.  Seems counterintutive, but set to true,
                     // it only means that the framework will manage cookie propagation for the same call, which is

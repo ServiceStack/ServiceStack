@@ -630,7 +630,8 @@ namespace ServiceStack
                 }
                 else
                 {
-                    if (this.AlwaysSendBasicAuthHeader) client.AddBasicAuth(this.UserName, this.Password);
+                    if (this.AlwaysSendBasicAuthHeader) 
+                        client.AddBasicAuth(this.UserName, this.Password);
                 }
 
                 if (!DisableAutoCompression)

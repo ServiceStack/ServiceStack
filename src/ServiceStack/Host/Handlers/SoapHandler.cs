@@ -80,10 +80,19 @@ namespace ServiceStack.Host.Handlers
             if (httpRes == null)
                 throw new ArgumentNullException("httpResponse");
 
+            var requestMsg = message ?? GetRequestMessageFromStream(httpReq.InputStream);
+
+            var soapAction = httpReq.GetHeader(HttpHeaders.SOAPAction)
+                ?? GetAction(requestMsg);
+
+            if (soapAction != null)
+            {
+                httpReq.OperationName = soapAction.Trim('"');
+            }
+
             if (HostContext.ApplyPreRequestFilters(httpReq, httpRes))
                 return PrepareEmptyResponse(message, httpReq);
 
-            var requestMsg = message ?? GetRequestMessageFromStream(httpReq.InputStream);
             string requestXml = GetRequestXml(requestMsg);
             var requestType = GetRequestType(requestMsg, requestXml);
             httpReq.OperationName = requestType.GetOperationName();
@@ -154,6 +163,20 @@ namespace ServiceStack.Host.Handlers
             }
         }
 
+        public static string GetAction(Message message)
+        {
+            var headers = message.Headers;
+            for (var i = 0; i < headers.Count; i++)
+            {
+                var header = headers[i];
+                if (header.Name != "Action") continue;
+
+                var xr = headers.GetReaderAtHeader(i);
+                return xr.ReadElementContentAsString();
+            }
+            return null;
+        }
+
         public static Message CreateResponseMessage(object response, MessageVersion msgVersion, Type requestType, bool noMsgAction)
         {
             var useXmlSerializerResponse = response != null && response.GetType().HasAttribute<XmlSerializerFormatAttribute>();
@@ -172,9 +195,13 @@ namespace ServiceStack.Host.Handlers
                 : Message.CreateMessage(msgVersion, requestType.GetOperationName() + "Response", response);
         }
 
-        private Message PrepareEmptyResponse(Message message, IRequest httpRequest)
+        private Message PrepareEmptyResponse(Message message, IRequest req)
         {
-            var requestMessage = message ?? GetRequestMessageFromStream(httpRequest.InputStream);
+            //Usually happens
+            if (req.Response.IsClosed)
+                return null;
+
+            var requestMessage = message ?? GetRequestMessageFromStream(req.InputStream);
             string requestXml = GetRequestXml(requestMessage);
             var requestType = GetRequestType(requestMessage, requestXml);
             return EmptyResponse(requestMessage, requestType);
