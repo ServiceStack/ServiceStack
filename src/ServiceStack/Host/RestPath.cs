@@ -282,7 +282,7 @@ namespace ServiceStack.Host
             wildcardMatchCount = 0;
 
             if (withPathInfoParts.Length != this.PathComponentsCount && !this.IsWildCardPath) return false;
-            if (!this.allowsAllVerbs && !this.allowedVerbs.Contains(httpMethod)) return false;
+            if (!this.allowsAllVerbs && !this.allowedVerbs.Contains(httpMethod.ToUpper())) return false;
 
             if (!ExplodeComponents(ref withPathInfoParts)) return false;
             if (this.TotalComponentsCount != withPathInfoParts.Length && !this.IsWildCardPath) return false;
