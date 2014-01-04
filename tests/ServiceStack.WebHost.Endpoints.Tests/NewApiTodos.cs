@@ -3,8 +3,6 @@ using System.Linq;
 using Funq;
 using NUnit.Framework;
 using ServiceStack;
-using ServiceStack.Common.Tests;
-using ServiceStack.WebHost.Endpoints.Tests;
 
 namespace NewApi.Todos
 {
