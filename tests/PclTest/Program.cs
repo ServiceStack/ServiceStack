@@ -4,6 +4,7 @@ using System.Linq;
 using Funq;
 using PclTest.ServiceModel;
 using ServiceStack;
+using ServiceStack.Text;
 
 namespace PclTest
 {
@@ -96,6 +97,7 @@ namespace PclTest
                 .Init()
                 .Start("http://*:81/");
 
+            "http://localhost:81/".Print();
             Console.ReadLine();
         }
     }
