@@ -12,6 +12,8 @@ namespace ServiceStack
 {
     public class WinStorePclExportClient : PclExportClient
     {
+        public static WinStorePclExportClient Provider = new WinStorePclExportClient();
+
         public override INameValueCollection NewNameValueCollection()
         {
             return new NameValueCollectionWrapper(new NameValueCollection());
@@ -25,6 +27,18 @@ namespace ServiceStack
         public override ITimer CreateTimer<TResponse>(AsyncState<TResponse> state, TimeSpan timeOut)
         {
             return new WinStoreAsyncTimer(ThreadPoolTimer.CreateTimer(state.TimedOut, timeOut));
+        }
+
+        public override void RunOnUiThread(Action fn)
+        {
+            Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
+                Windows.UI.Core.CoreDispatcherPriority.Normal, () => fn());
+        }
+
+        public static void Configure()
+        {
+            Instance = Provider;
+            WinStorePclExport.Configure();
         }
     }
 

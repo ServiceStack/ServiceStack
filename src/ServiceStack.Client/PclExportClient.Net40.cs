@@ -13,6 +13,10 @@ namespace ServiceStack
 {
     public class Net40PclExportClient : PclExportClient
     {
+        public static Net40PclExportClient Provider = new Net40PclExportClient();
+
+        public SynchronizationContext UiContext;
+
         public override INameValueCollection NewNameValueCollection()
         {
             return new NameValueCollectionWrapper(new NameValueCollection());
@@ -27,6 +31,18 @@ namespace ServiceStack
         {
             return new AsyncTimer(new
                 System.Threading.Timer(state.TimedOut, state, (int)timeOut.TotalMilliseconds, Timeout.Infinite));
+        }
+
+        public override void RunOnUiThread(Action fn)
+        {
+            UiContext.Post(_ => fn(), null);
+        }
+
+        public static void Configure()
+        {
+            Provider.UiContext = SynchronizationContext.Current;
+            Instance = Provider;
+            Net40PclExport.Configure();
         }
     }
 
