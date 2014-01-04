@@ -22,7 +22,7 @@ namespace ServiceStack
             if (toMessageFn != null) return toMessageFn;
 
             var genericType = typeof(MessageExtensions<>).MakeGenericType(type);
-            var mi = genericType.GetPublicStaticMethod("ConvertToMessage");
+            var mi = genericType.GetStaticMethod("ConvertToMessage");
             toMessageFn = (ToMessageDelegate)mi.MakeDelegate(typeof(ToMessageDelegate));
 
             Dictionary<Type, ToMessageDelegate> snapshot, newCache;

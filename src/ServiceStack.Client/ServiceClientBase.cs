@@ -94,8 +94,9 @@ namespace ServiceStack
             this.StoreCookies = true; //leave
             this.Headers = PclExportClient.Instance.NewNameValueCollection();
 
-#if SL5
             asyncClient.HandleCallbackOnUiThread = this.HandleCallbackOnUiThread = true;
+
+#if SL5
             asyncClient.ShareCookiesWithBrowser = this.ShareCookiesWithBrowser = true;
 #endif
         }
@@ -500,7 +501,7 @@ namespace ServiceStack
             Action<Exception, string> responseHandler;
             if (!ResponseHandlers.TryGetValue(responseType, out responseHandler))
             {
-                var mi = GetType().GetNonPublicInstanceMethod("ThrowWebServiceException")
+                var mi = GetType().GetInstanceMethod("ThrowWebServiceException")
                     .MakeGenericMethod(new[] { responseType });
 
                 responseHandler = (Action<Exception, string>)mi.CreateDelegate(
@@ -511,10 +512,10 @@ namespace ServiceStack
             responseHandler(ex, requestUri);
         }
 
-        protected internal void ThrowWebServiceException<TResponse>(Exception ex, string requestUri)
+        public void ThrowWebServiceException<TResponse>(Exception ex, string requestUri)
         {
             var webEx = ex as WebException;
-            if (webEx != null
+            if (webEx != null && webEx.Response != null
 #if !(SL5 || PCL)
                  && webEx.Status == WebExceptionStatus.ProtocolError
 #endif

@@ -117,7 +117,7 @@ namespace ServiceStack
 
         public static bool IsWebException(this WebException webEx)
         {
-            return webEx != null
+            return webEx != null && webEx.Response != null
 #if !(SL5 || PCL)
                 && webEx.Status == WebExceptionStatus.ProtocolError
 #endif
