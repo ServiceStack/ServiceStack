@@ -1578,18 +1578,18 @@ namespace ServiceStack
             if (Instance != null) 
                 return;
 
-            if (Env.IsMonoTouch)
-                Instance = AssemblyUtils.FindType("ServiceStack.IosPclExportClient").CreateInstance() as PclExportClient;
-            else if (Env.IsAndroid)
-                Instance = AssemblyUtils.FindType("ServiceStack.AndroidPclExportClient").CreateInstance() as PclExportClient;
-            else if (Env.IsWinRT)
-                Instance = AssemblyUtils.FindType("ServiceStack.WinStorePclExportClient").CreateInstance() as PclExportClient;
-            else if (Env.IsWindowsPhone)
-                Instance = AssemblyUtils.FindType("ServiceStack.WpPclExportClient").CreateInstance() as PclExportClient;
-            else if (Env.IsSilverlight)
-                Instance = AssemblyUtils.FindType("ServiceStack.Sl5PclExportClient").CreateInstance() as PclExportClient;
-            else
-                Instance = AssemblyUtils.FindType("ServiceStack.Net40PclExportClient").CreateInstance() as PclExportClient;
+            //if (Env.IsMonoTouch)
+            //    Instance = AssemblyUtils.FindType("ServiceStack.IosPclExportClient").CreateInstance() as PclExportClient;
+            //else if (Env.IsAndroid)
+            //    Instance = AssemblyUtils.FindType("ServiceStack.AndroidPclExportClient").CreateInstance() as PclExportClient;
+            //else if (Env.IsWinRT)
+            //    Instance = AssemblyUtils.FindType("ServiceStack.WinStorePclExportClient").CreateInstance() as PclExportClient;
+            //else if (Env.IsWindowsPhone)
+            //    Instance = AssemblyUtils.FindType("ServiceStack.WpPclExportClient").CreateInstance() as PclExportClient;
+            //else if (Env.IsSilverlight)
+            //    Instance = AssemblyUtils.FindType("ServiceStack.Sl5PclExportClient").CreateInstance() as PclExportClient;
+            //else
+            //    Instance = AssemblyUtils.FindType("ServiceStack.Net40PclExportClient").CreateInstance() as PclExportClient;
         }
 
         public virtual INameValueCollection NewNameValueCollection()
@@ -1618,6 +1618,11 @@ namespace ServiceStack
             return new AsyncTimer(new
                 System.Threading.Timer(state.TimedOut, state, (int)timeOut.TotalMilliseconds, Timeout.Infinite));
 #endif
+        }
+
+        public virtual void RunOnUiThread(Action fn)
+        {
+            fn();
         }
     }
 
