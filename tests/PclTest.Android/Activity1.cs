@@ -43,8 +43,8 @@ namespace PclTest.Android
             {
                 try
                 {
-                    var result = client.Get(new Hello { Name = txtName.Text });
-                    txvResults.Text = result.Result;
+                    var response = client.Get(new Hello { Name = txtName.Text });
+                    txvResults.Text = response.Result;
                 }
                 catch (Exception ex)
                 {
@@ -54,19 +54,13 @@ namespace PclTest.Android
 
             btnGoAsync.Click += delegate
             {
-                client.GetAsync(new Hello { Name = txtName.Text }).ContinueWith(t =>
-                {
-                    try
-                    {
-                        txvResults.Text = t.IsFaulted
-                            ? t.Exception.InnerException.ToString()
-                            : t.Result.Result;
-                    }
-                    catch (Exception ex)
-                    {
-                        RunOnUiThread(() => txvResults.Text = ex.ToString());
-                    }
-                }, TaskScheduler.FromCurrentSynchronizationContext());
+                client.GetAsync(new Hello { Name = txtName.Text })
+                    .Success(response => {
+                        txvResults.Text = response.Result;
+                    })
+                    .Error(ex => {
+                        txvResults.Text = ex.ToString();    
+                    });
             };
         }
     }

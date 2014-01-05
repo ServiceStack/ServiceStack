@@ -211,4 +211,21 @@ namespace ServiceStack
     }
 #endif
 
+    public static class TaskExtensions
+    {
+        public static Task<T> Success<T>(this Task<T> task, Action<T> fn,
+            TaskContinuationOptions taskOptions = TaskContinuationOptions.OnlyOnRanToCompletion)
+        {
+            task.ContinueWith(t => fn(t.Result), TaskScheduler.FromCurrentSynchronizationContext());
+            return task;
+        }
+
+        public static Task<T> Error<T>(this Task<T> task, Action<Exception> fn,
+            TaskContinuationOptions taskOptions = TaskContinuationOptions.NotOnRanToCompletion)
+        {
+            task.ContinueWith(t => fn(t.Exception), TaskScheduler.FromCurrentSynchronizationContext());
+            return task;
+        }
+    }
+
 }
