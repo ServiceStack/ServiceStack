@@ -1622,7 +1622,14 @@ namespace ServiceStack
 
         public virtual void RunOnUiThread(Action fn)
         {
-            fn();
+            UiContext.Post(_ => fn(), null);
+        }
+
+        public SynchronizationContext UiContext;
+        public static void Configure(PclExportClient instance)
+        {
+            Instance = instance;
+            Instance.UiContext = SynchronizationContext.Current;
         }
     }
 

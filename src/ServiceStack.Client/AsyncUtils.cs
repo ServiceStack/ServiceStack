@@ -214,17 +214,42 @@ namespace ServiceStack
     public static class TaskExtensions
     {
         public static Task<T> Success<T>(this Task<T> task, Action<T> fn,
+            bool onUiThread = true,
             TaskContinuationOptions taskOptions = TaskContinuationOptions.OnlyOnRanToCompletion)
         {
-            task.ContinueWith(t => fn(t.Result), TaskScheduler.FromCurrentSynchronizationContext());
+            if (onUiThread)
+            {
+                task.ContinueWith(t => fn(t.Result), TaskScheduler.FromCurrentSynchronizationContext());
+            }
+            else
+            {
+                task.ContinueWith(t => fn(t.Result));
+            }
             return task;
         }
 
         public static Task<T> Error<T>(this Task<T> task, Action<Exception> fn,
-            TaskContinuationOptions taskOptions = TaskContinuationOptions.NotOnRanToCompletion)
+            bool onUiThread = true,
+            TaskContinuationOptions taskOptions = TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.OnlyOnCanceled)
         {
-            task.ContinueWith(t => fn(t.Exception), TaskScheduler.FromCurrentSynchronizationContext());
+            if (onUiThread)
+            {
+                task.ContinueWith(t => fn(t.UnwrapSingleException()),
+                    TaskScheduler.FromCurrentSynchronizationContext());
+            }
+            else
+            {
+                task.ContinueWith(t => fn(t.UnwrapSingleException()));
+            }
             return task;
+        }
+
+        public static Exception UnwrapSingleException<T>(this Task<T> task)
+        {
+            if (task.Exception.InnerExceptions != null
+                && task.Exception.InnerExceptions.Count == 1)
+                return task.Exception.InnerExceptions[0];
+            return task.Exception;
         }
     }
 

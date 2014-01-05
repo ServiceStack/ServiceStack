@@ -37,7 +37,7 @@ namespace ServiceStack
 
         public static void Configure()
         {
-            Instance = Provider;
+            Configure(Provider);
             WinStorePclExport.Configure();
         }
     }

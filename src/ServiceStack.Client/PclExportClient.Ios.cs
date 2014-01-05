@@ -13,8 +13,6 @@ namespace ServiceStack
     {
         public static IosPclExportClient Provider = new IosPclExportClient();
 
-        public SynchronizationContext UiContext;
-
         public override INameValueCollection NewNameValueCollection()
         {
             return new NameValueCollectionWrapper(new NameValueCollection());
@@ -25,15 +23,9 @@ namespace ServiceStack
             return ServiceStack.Pcl.HttpUtility.ParseQueryString(query).InWrapper();
         }
 
-        public override void RunOnUiThread(Action fn)
-        {
-            UiContext.Post(_ => fn(), null);
-        }
-
         public static void Configure()
         {
-            Provider.UiContext = SynchronizationContext.Current;
-            Instance = Provider;
+            Configure(Provider);
             IosPclExport.Configure();
         }
     }

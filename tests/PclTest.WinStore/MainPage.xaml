@@ -1,0 +1,18 @@
+﻿<Page
+    x:Class="PclTest.WinStore.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:PclTest.WinStore"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{StaticResource ApplicationPageBackgroundThemeBrush}">
+        <TextBlock HorizontalAlignment="Left" Margin="28,63,0,0" TextWrapping="Wrap" Text="Name:" VerticalAlignment="Top" FontSize="48"/>
+        <TextBox x:Name="txtName" HorizontalAlignment="Left" Margin="216,53,0,0" TextWrapping="Wrap" Text="Test" VerticalAlignment="Top" FontSize="48" Width="448"/>
+        <Button x:Name="btnGoSync" Content="Go Sync" HorizontalAlignment="Left" Margin="691,49,0,0" VerticalAlignment="Top" FontSize="48" Width="295" Click="btnGoSync_Click"/>
+        <Button x:Name="btnGoAsync" Content="Go Async" HorizontalAlignment="Left" Margin="1016,49,0,0" VerticalAlignment="Top" FontSize="48" Width="295" Click="btnGoAsync_Click"/>
+        <TextBlock x:Name="lblResults" HorizontalAlignment="Left" Margin="28,164,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" FontSize="48" Width="1283" Height="594"/>
+
+    </Grid>
+</Page>

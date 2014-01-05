@@ -3,11 +3,6 @@
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
-    <Button
-        android:id="@+id/MyButton"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/Hello" />
     <LinearLayout
         android:orientation="horizontal"
         android:minWidth="25px"
@@ -38,14 +33,15 @@
         <Button
             android:text="Go Sync"
             android:id="@+id/btnGoSync"
-            android:layout_width="162.2dp"
+            android:layout_width="185dp"
             android:layout_height="match_parent"
             android:layout_marginRight="0.0dp" />
         <Button
             android:text="Go Async"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/btnGoAsync" />
+            android:id="@+id/btnGoAsync"
+            android:layout_marginLeft="0.0dp" />
     </LinearLayout>
     <TextView
         android:layout_width="match_parent"

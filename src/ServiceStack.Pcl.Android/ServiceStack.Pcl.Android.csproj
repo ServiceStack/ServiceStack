@@ -5,100 +5,76 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{2FC501AE-E06B-42CB-9188-07BAC1C86453}</ProjectGuid>
+    <ProjectGuid>{20837D3A-FD17-4867-B242-00523A9252D4}</ProjectGuid>
     <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PclTest.Android</RootNamespace>
-    <AssemblyName>PclTest.Android</AssemblyName>
+    <RootNamespace>ServiceStack.Pcl.Android</RootNamespace>
+    <AssemblyName>ServiceStack.Pcl.Android</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <AndroidApplication>true</AndroidApplication>
     <AndroidResgenFile>Resources\Resource.Designer.cs</AndroidResgenFile>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
-    <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
-    <AndroidUseLatestPlatformSdk />
-    <TargetFrameworkVersion>v4.0.3</TargetFrameworkVersion>
-    <AndroidSupportedAbis>armeabi-v7a,x86</AndroidSupportedAbis>
-    <AndroidStoreUncompressedFileExtensions />
-    <MandroidI18n />
-    <JavaMaximumHeapSize />
-    <JavaOptions />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;ANDROID</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AndroidUseSharedRuntime>True</AndroidUseSharedRuntime>
-    <AndroidLinkMode>None</AndroidLinkMode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;ANDROID</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
-    <AndroidLinkMode>SdkOnly</AndroidLinkMode>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Android" />
     <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Activity1.cs" />
+    <Compile Include="..\..\..\ServiceStack\src\ServiceStack.Client\Pcl.NameValueCollectionWrapper.cs">
+      <Link>Pcl.NameValueCollectionWrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\ServiceStack\src\ServiceStack.Client\PclExportClient.Android.cs">
+      <Link>PclExportClient.Android.cs</Link>
+    </Compile>
+    <Compile Include="PclExport.Net40.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
-    <None Include="Assets\AboutAssets.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidResource Include="Resources\Layout\Main.axml" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\Values\Strings.xml" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="Resources\Drawable\Icon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Properties\AndroidManifest.xml" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Client\ServiceStack.Client.PCL.csproj">
+      <Project>{135808a7-ce69-4c32-be30-25a8ffbf4a58}</Project>
+      <Name>ServiceStack.Client.PCL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Interfaces\ServiceStack.Interfaces.PCL.csproj">
+      <Project>{42e1c8c0-a163-44cc-92b1-8f416f2c0b01}</Project>
+      <Name>ServiceStack.Interfaces.PCL</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.PCL.csproj">
       <Project>{579b3fdb-cdad-44e1-8417-885c38e49a0e}</Project>
       <Name>ServiceStack.Text.PCL</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.PCL.csproj">
-      <Project>{135808a7-ce69-4c32-be30-25a8ffbf4a58}</Project>
-      <Name>ServiceStack.Client.PCL</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.PCL.csproj">
-      <Project>{42e1c8c0-a163-44cc-92b1-8f416f2c0b01}</Project>
-      <Name>ServiceStack.Interfaces.PCL</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Pcl.Android\ServiceStack.Pcl.Android.csproj">
-      <Project>{20837D3A-FD17-4867-B242-00523A9252D4}</Project>
-      <Name>ServiceStack.Pcl.Android</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PclTest.ServiceModel.Pcl\PclTest.ServiceModel.Pcl.csproj">
-      <Project>{891d214f-c5b2-46b7-b648-fb735612c1c9}</Project>
-      <Name>PclTest.ServiceModel.Pcl</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-     Other similar extension points exist, see Microsoft.Common.targets.
+       Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
   <Target Name="AfterBuild">

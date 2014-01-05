@@ -14,12 +14,6 @@ namespace ServiceStack
     {
         public static AndroidPclExportClient Provider = new AndroidPclExportClient();
 
-        public Handler UIHandler;
-
-        public SynchronizationContext UiContext;
-
-        public Action<Action> RunOnUiThreadFn;
-
         public override INameValueCollection NewNameValueCollection()
         {
             return new NameValueCollectionWrapper(new NameValueCollection());
@@ -30,26 +24,13 @@ namespace ServiceStack
             return ServiceStack.Pcl.HttpUtility.ParseQueryString(query).InWrapper();
         }
 
-        public override void RunOnUiThread(Action fn)
+        public Handler UiHandler;
+        public static void Configure()
         {
-            if (RunOnUiThreadFn != null)
-            {
-                RunOnUiThreadFn(fn);
-            }
-            else
-            {
-                UiContext.Post(_ => fn(), null);
-                //UIHandler.Post(fn);
-            }
-        }
-
-        public static void Configure(Action<Action> runOnUiThread=null)
-        {
-            Provider.RunOnUiThreadFn = runOnUiThread;
-            Provider.UIHandler = new Handler(Looper.MainLooper);
-            Provider.UiContext = SynchronizationContext.Current;
-            Instance = Provider;
+            Configure(Provider);
             AndroidPclExport.Configure();
+
+            Provider.UiHandler = new Handler(Looper.MainLooper);
         }
     }
 }
