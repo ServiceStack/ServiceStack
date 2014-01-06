@@ -9,7 +9,7 @@
 
     <Grid Background="{StaticResource ApplicationPageBackgroundThemeBrush}">
         <TextBlock HorizontalAlignment="Left" Margin="28,63,0,0" TextWrapping="Wrap" Text="Name:" VerticalAlignment="Top" FontSize="48"/>
-        <TextBox x:Name="txtName" HorizontalAlignment="Left" Margin="216,53,0,0" TextWrapping="Wrap" Text="Test" VerticalAlignment="Top" FontSize="48" Width="448"/>
+        <TextBox x:Name="txtName" HorizontalAlignment="Left" Margin="216,49,0,0" TextWrapping="Wrap" Text="Test" VerticalAlignment="Top" FontSize="48" Width="448"/>
         <Button x:Name="btnGoSync" Content="Go Sync" HorizontalAlignment="Left" Margin="691,49,0,0" VerticalAlignment="Top" FontSize="48" Width="295" Click="btnGoSync_Click"/>
         <Button x:Name="btnGoAsync" Content="Go Async" HorizontalAlignment="Left" Margin="1016,49,0,0" VerticalAlignment="Top" FontSize="48" Width="295" Click="btnGoAsync_Click"/>
         <TextBlock x:Name="lblResults" HorizontalAlignment="Left" Margin="28,164,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" FontSize="48" Width="1283" Height="594"/>

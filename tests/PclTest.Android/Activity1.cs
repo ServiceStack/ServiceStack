@@ -48,12 +48,8 @@ namespace PclTest.Android
             btnGoAsync.Click += delegate
             {
                 client.GetAsync(new Hello { Name = txtName.Text })
-                    .Success(response => {
-                        txvResults.Text = response.Result;
-                    })
-                    .Error(ex => {
-                        txvResults.Text = ex.ToString();
-                    });
+                    .Success(response => txvResults.Text = response.Result)
+                    .Error(ex => txvResults.Text = ex.ToString());
             };
         }
     }
