@@ -9,6 +9,18 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>MinimumOSVersion</key>
-	<string>6.0</string>
+	<string></string>
+	<key>UIDeviceFamily</key>
+	<array>
+		<integer>1</integer>
+	</array>
+	<key>CFBundleDisplayName</key>
+	<string>PclTest.iOS</string>
+	<key>CFBundleIdentifier</key>
+	<string>pcltest.servicestack.net</string>
+	<key>CFBundleVersion</key>
+	<string></string>
+	<key>NSMainNibFile</key>
+	<string></string>
 </dict>
 </plist>
