@@ -69,7 +69,7 @@ namespace ServiceStack
 
         public override bool IsAnonymousType(Type type)
         {
-            return Attribute.IsDefined(type, typeof(CompilerGeneratedAttribute), false)
+            return type.HasAttribute<CompilerGeneratedAttribute>()
                    && type.IsGeneric() && type.Name.Contains("AnonymousType")
                    && (type.Name.StartsWith("<>", StringComparison.Ordinal) || type.Name.StartsWith("VB$", StringComparison.Ordinal))
                    && (type.Attributes & TypeAttributes.NotPublic) == TypeAttributes.NotPublic;

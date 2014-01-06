@@ -362,7 +362,7 @@ namespace ServiceStack
                 if (!propertyInfo.CanRead) continue;
                 if (hasDataContract)
                 {
-                    if (!propertyInfo.IsDefined(typeof(DataMemberAttribute), true)) continue;
+                    if (!propertyInfo.HasAttribute<DataMemberAttribute>()) continue;
 
                     var dataMember = propertyInfo.FirstAttribute<DataMemberAttribute>();
                     if (!string.IsNullOrEmpty(dataMember.Name))
