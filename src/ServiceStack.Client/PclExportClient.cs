@@ -1622,7 +1622,14 @@ namespace ServiceStack
 
         public virtual void RunOnUiThread(Action fn)
         {
-            UiContext.Post(_ => fn(), null);
+            if (UiContext == null)
+            {
+                fn();
+            }
+            else
+            {
+                UiContext.Post(_ => fn(), null);
+            }
         }
 
         public SynchronizationContext UiContext;
