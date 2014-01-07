@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 using ServiceStack.Configuration;
 
@@ -123,7 +122,3 @@ namespace ServiceStack.Web
         Uri UrlReferrer { get; }
     }
 }
-
-#if SL5
-public class NameValueCollection : Dictionary<string, string> {}
-#endif
