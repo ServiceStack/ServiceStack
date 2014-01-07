@@ -80,6 +80,7 @@ namespace ServiceStack.Host.Handlers
             if (httpRes == null)
                 throw new ArgumentNullException("httpResponse");
 
+            httpReq.UseBufferedStream = true;
             var requestMsg = message ?? GetRequestMessageFromStream(httpReq.InputStream);
 
             var soapAction = httpReq.GetHeader(HttpHeaders.SOAPAction)
