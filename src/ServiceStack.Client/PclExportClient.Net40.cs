@@ -25,6 +25,26 @@ namespace ServiceStack
             return HttpUtility.ParseQueryString(query).InWrapper();
         }
 
+        public override string UrlEncode(string url)
+        {
+            return HttpUtility.UrlEncode(url);
+        }
+
+        public override string UrlDecode(string url)
+        {
+            return HttpUtility.UrlDecode(url);
+        }
+
+        public override string HtmlEncode(string html)
+        {
+            return HttpUtility.HtmlEncode(html);
+        }
+
+        public override string HtmlDecode(string html)
+        {
+            return HttpUtility.HtmlDecode(html);
+        }
+
         public override ITimer CreateTimer<TResponse>(AsyncState<TResponse> state, TimeSpan timeOut)
         {
             return new AsyncTimer(new

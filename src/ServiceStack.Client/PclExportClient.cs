@@ -35,7 +35,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Text;
 
-#if NETFX_CORE || PCL
+#if NETFX_CORE || PCL || SL5
 //namespace System.Collections.Specialized
 namespace ServiceStack.Pcl
 {
@@ -1070,7 +1070,11 @@ namespace ServiceStack.Pcl
 
             SerializationEntry entry = serialized[name];
 
+#if SL5
+            if (entry.Value != null && !type.IsAssignableFrom(entry.Value.GetType()))
+#else
             if (entry.Value != null && !type.GetTypeInfo().IsAssignableFrom(entry.Value.GetType().GetTypeInfo()))
+#endif
                 return converter.Convert(entry.Value, type);
             else
                 return entry.Value;
@@ -1401,7 +1405,7 @@ namespace ServiceStack.Pcl
 
         public object Convert(object value, Type type)
         {
-            return System.Convert.ChangeType(value, type);
+            return System.Convert.ChangeType(value, type, null);
         }
 
         //public object Convert(object value, TypeCode typeCode)
@@ -1602,6 +1606,42 @@ namespace ServiceStack
             return HttpUtility.ParseQueryString(query).InWrapper();
         }
 
+        public virtual string UrlEncode(string url)
+        {
+#if SL5
+            return System.Windows.Browser.HttpUtility.UrlEncode(url);
+#else
+            return WebUtility.UrlEncode(url);
+#endif
+        }
+
+        public virtual string UrlDecode(string url)
+        {
+#if SL5
+            return System.Windows.Browser.HttpUtility.UrlDecode(url);
+#else
+            return WebUtility.UrlDecode(url);
+#endif
+        }
+
+        public virtual string HtmlEncode(string html)
+        {
+#if SL5
+            return System.Windows.Browser.HttpUtility.HtmlEncode(html);
+#else
+            return WebUtility.HtmlEncode(html);
+#endif
+        }
+
+        public virtual string HtmlDecode(string html)
+        {
+#if SL5
+            return System.Windows.Browser.HttpUtility.HtmlDecode(html);
+#else
+            return WebUtility.HtmlDecode(html);
+#endif
+        }
+ 
         public virtual void AddHeader(WebRequest webReq, INameValueCollection headers)
         {
             foreach (var name in headers.AllKeys)

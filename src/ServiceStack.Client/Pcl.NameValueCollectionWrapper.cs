@@ -34,13 +34,13 @@ using System.Collections;
 using System.Collections.Generic;
 using ServiceStack.Web;
 
-#if PCL
+#if PCL || SL5
 using ServiceStack.Pcl;
 #else
 using System.Collections.Specialized;
 #endif
 
-#if NETFX_CORE || ANDROID || __IOS__ || PCL
+#if NETFX_CORE || ANDROID || __IOS__ || PCL || SL5
 //namespace System.Collections.Specialized
 namespace ServiceStack.Pcl
 {
@@ -95,7 +95,7 @@ namespace ServiceStack.Pcl
             if (query.Length == 0)
                 return;
 
-            string decoded = WebUtility.HtmlDecode(query);
+            string decoded = PclExportClient.Instance.HtmlDecode(query);
             int decodedLength = decoded.Length;
             int namePos = 0;
             bool first = true;
@@ -130,7 +130,7 @@ namespace ServiceStack.Pcl
                 }
                 else
                 {
-                    name = WebUtility.UrlDecode(decoded.Substring(namePos, valuePos - namePos - 1));
+                    name = PclExportClient.Instance.UrlDecode(decoded.Substring(namePos, valuePos - namePos - 1));
                 }
                 if (valueEnd < 0)
                 {
@@ -141,7 +141,7 @@ namespace ServiceStack.Pcl
                 {
                     namePos = valueEnd + 1;
                 }
-                value = WebUtility.UrlDecode(decoded.Substring(valuePos, valueEnd - valuePos));
+                value = PclExportClient.Instance.UrlDecode(decoded.Substring(valuePos, valueEnd - valuePos));
 
                 result.Add(name, value);
                 if (namePos == -1)
