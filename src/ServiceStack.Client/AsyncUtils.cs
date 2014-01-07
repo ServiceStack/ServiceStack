@@ -62,7 +62,6 @@ namespace ServiceStack
         internal static HttpWebRequest CreateHttpWebRequest(this AsyncServiceClient client, string requestUri)
         {
 #if SL5
-
             var creator = client.EmulateHttpViaPost
                 ? System.Net.Browser.WebRequestCreator.BrowserHttp
                 : System.Net.Browser.WebRequestCreator.ClientHttp;
@@ -92,12 +91,11 @@ namespace ServiceStack
             }
 #endif
 
-#if !SL5
             if (!client.DisableAutoCompression)
             {
                 PclExport.Instance.AddCompression(webRequest);
             }
-#endif
+
             return webRequest;
         }
 

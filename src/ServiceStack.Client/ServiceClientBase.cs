@@ -571,11 +571,6 @@ namespace ServiceStack
             }
         }
 
-        private IDisposable __requestAccess()
-        {
-            return LicenseUtils.RequestAccess(AccessToken.__accessToken, LicenseFeature.Client, LicenseFeature.Text);
-        }
-
         private WebRequest SendRequest(string requestUri, object request)
         {
             return SendRequest(HttpMethod ?? DefaultHttpMethod, requestUri, request);
@@ -744,6 +739,11 @@ namespace ServiceStack
             }
         }
 #endif
+
+        private IDisposable __requestAccess()
+        {
+            return LicenseUtils.RequestAccess(AccessToken.__accessToken, LicenseFeature.Client, LicenseFeature.Text);
+        }
 
         public virtual string GetUrl(string relativeOrAbsoluteUrl)
         {
