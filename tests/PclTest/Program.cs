@@ -15,6 +15,8 @@ namespace PclTest
 
         public override void Configure(Container container)
         {
+            Plugins.Add(new CorsFeature());
+
             Routes.AddFromAssembly(typeof(WebServices).Assembly);
 
             container.Register(new TodoRepository());
