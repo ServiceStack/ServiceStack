@@ -1610,8 +1610,10 @@ namespace ServiceStack
         {
 #if SL5
             return System.Windows.Browser.HttpUtility.UrlEncode(url);
-#else
+#elif PCL
             return WebUtility.UrlEncode(url);
+#else
+            return HttpUtility.UrlEncode(url);
 #endif
         }
 
@@ -1619,8 +1621,10 @@ namespace ServiceStack
         {
 #if SL5
             return System.Windows.Browser.HttpUtility.UrlDecode(url);
-#else
+#elif PCL
             return WebUtility.UrlDecode(url);
+#else
+            return HttpUtility.UrlDecode(url);
 #endif
         }
 
@@ -1628,8 +1632,10 @@ namespace ServiceStack
         {
 #if SL5
             return System.Windows.Browser.HttpUtility.HtmlEncode(html);
-#else
+#elif PCL
             return WebUtility.HtmlEncode(html);
+#else
+            return HttpUtility.HtmlEncode(html);
 #endif
         }
 
@@ -1637,8 +1643,10 @@ namespace ServiceStack
         {
 #if SL5
             return System.Windows.Browser.HttpUtility.HtmlDecode(html);
-#else
+#elif PCL
             return WebUtility.HtmlDecode(html);
+#else
+            return HttpUtility.HtmlDecode(html);
 #endif
         }
  
