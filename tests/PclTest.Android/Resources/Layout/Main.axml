@@ -46,7 +46,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="327.8dp"
-        android:id="@+id/txvResults"
+        android:id="@+id/lblResults"
         android:padding="10px"
         android:layout_marginBottom="175.6dp" />
 </LinearLayout>

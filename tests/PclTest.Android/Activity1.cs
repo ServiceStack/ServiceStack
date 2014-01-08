@@ -26,7 +26,7 @@ namespace PclTest.Android
             var btnGoSync = FindViewById<Button>(Resource.Id.btnGoSync);
             var btnGoAsync = FindViewById<Button>(Resource.Id.btnGoAsync);
             var txtName = FindViewById<EditText>(Resource.Id.txtName);
-            var txvResults = FindViewById<TextView>(Resource.Id.txvResults);
+            var lblResults = FindViewById<TextView>(Resource.Id.lblResults);
 
             //10.0.2.2 = loopback
             //http://developer.android.com/tools/devices/emulator.html
@@ -37,19 +37,19 @@ namespace PclTest.Android
                 try
                 {
                     var response = client.Get(new Hello { Name = txtName.Text });
-                    txvResults.Text = response.Result;
+                    lblResults.Text = response.Result;
                 }
                 catch (Exception ex)
                 {
-                    txvResults.Text = ex.ToString();
+                    lblResults.Text = ex.ToString();
                 }
             };
 
             btnGoAsync.Click += delegate
             {
                 client.GetAsync(new Hello { Name = txtName.Text })
-                    .Success(response => txvResults.Text = response.Result)
-                    .Error(ex => txvResults.Text = ex.ToString());
+                    .Success(response => lblResults.Text = response.Result)
+                    .Error(ex => lblResults.Text = ex.ToString());
             };
         }
     }

@@ -71,6 +71,9 @@ namespace PclTest.Android
 			// aapt resource value: 0x7f050001
 			public const int lblName = 2131034113;
 			
+			// aapt resource value: 0x7f050006
+			public const int lblResults = 2131034118;
+			
 			// aapt resource value: 0x7f050000
 			public const int linearLayout1 = 2131034112;
 			
@@ -79,9 +82,6 @@ namespace PclTest.Android
 			
 			// aapt resource value: 0x7f050002
 			public const int txtName = 2131034114;
-			
-			// aapt resource value: 0x7f050006
-			public const int txvResults = 2131034118;
 			
 			static Id()
 			{
