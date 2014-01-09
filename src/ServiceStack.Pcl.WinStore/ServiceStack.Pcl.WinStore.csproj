@@ -110,14 +110,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\..\ServiceStack\src\ServiceStack.Client\PclExportClient.WinStore.cs">
-      <Link>PclExportClient.WinStore.cs</Link>
-    </Compile>
     <Compile Include="..\ServiceStack.Client\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Pcl.Dynamic.cs" />
     <Compile Include="PclExport.WinStore.cs" />
+    <Compile Include="PclExportClient.WinStore.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ServiceStack.Text, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">

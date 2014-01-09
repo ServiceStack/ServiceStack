@@ -16,3 +16,11 @@ COPY ..\..\ServiceStack.Text\src\ServiceStack.Text\Pcl.* ..\src\ServiceStack.Pcl
 COPY ..\..\ServiceStack.Text\src\ServiceStack.Text\Pcl.* ..\src\ServiceStack.Pcl.Net45
 COPY ..\..\ServiceStack.Text\src\ServiceStack.Text\Pcl.* ..\src\ServiceStack.Pcl.WinStore
 
+COPY ..\src\ServiceStack.Client\Pcl.NameValueCollectionWrapper.cs ..\src\ServiceStack.Pcl.Android
+COPY ..\src\ServiceStack.Client\PclExportClient.Android.cs ..\src\ServiceStack.Pcl.Android
+COPY ..\src\ServiceStack.Client\Pcl.NameValueCollectionWrapper.cs ..\src\ServiceStack.Pcl.iOS
+COPY ..\src\ServiceStack.Client\PclExportClient.iOS.cs ..\src\ServiceStack.Pcl.iOS
+COPY ..\src\ServiceStack.Client\Pcl.NameValueCollectionWrapper.cs ..\src\ServiceStack.Pcl.Net45
+COPY ..\src\ServiceStack.Client\PclExportClient.Net40.cs ..\src\ServiceStack.Pcl.Net45
+REM COPY ..\src\ServiceStack.Client\Pcl.NameValueCollectionWrapper.cs ..\src\ServiceStack.Pcl.WinStore //Not Required
+COPY ..\src\ServiceStack.Client\PclExportClient.WinStore.cs ..\src\ServiceStack.Pcl.WinStore

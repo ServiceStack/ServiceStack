@@ -47,14 +47,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\..\ServiceStack\src\ServiceStack.Client\Pcl.NameValueCollectionWrapper.cs">
-      <Link>Pcl.NameValueCollectionWrapper.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\ServiceStack\src\ServiceStack.Client\PclExportClient.Android.cs">
-      <Link>PclExportClient.Android.cs</Link>
-    </Compile>
     <Compile Include="Pcl.Dynamic.cs" />
+    <Compile Include="Pcl.NameValueCollectionWrapper.cs" />
     <Compile Include="PclExport.Net40.cs" />
+    <Compile Include="PclExportClient.Android.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

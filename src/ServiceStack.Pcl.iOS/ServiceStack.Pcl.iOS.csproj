@@ -34,13 +34,9 @@
     <CodesignKey>iPhone Developer</CodesignKey>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\..\ServiceStack\src\ServiceStack.Client\Pcl.NameValueCollectionWrapper.cs">
-      <Link>Pcl.NameValueCollectionWrapper.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\ServiceStack\src\ServiceStack.Client\PclExportClient.Ios.cs">
-      <Link>PclExportClient.Ios.cs</Link>
-    </Compile>
+    <Compile Include="Pcl.NameValueCollectionWrapper.cs" />
     <Compile Include="PclExport.Net40.cs" />
+    <Compile Include="PclExportClient.Ios.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

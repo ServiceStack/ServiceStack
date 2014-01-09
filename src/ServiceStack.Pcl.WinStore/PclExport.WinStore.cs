@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using ServiceStack.Text.Common;
 
 namespace ServiceStack
 {
@@ -125,17 +124,6 @@ namespace ServiceStack
         //    // .Net 4.0+ does this under the hood anyway.
         //    return TimeZoneInfo.ConvertTimeToUtc(dateTime);
         //}
-
-        public override ParseStringDelegate GetJsReaderParseMethod<TSerializer>(Type type)
-        {
-            if (type.AssignableFrom(typeof(System.Dynamic.IDynamicMetaObjectProvider)) ||
-                type.HasInterface(typeof(System.Dynamic.IDynamicMetaObjectProvider)))
-            {
-                return DeserializeDynamic<TSerializer>.Parse;
-            }
-
-            return null;
-        }
     }
 }
 

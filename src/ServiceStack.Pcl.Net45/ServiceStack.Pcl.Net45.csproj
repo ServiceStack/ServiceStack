@@ -46,17 +46,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\..\ServiceStack\src\ServiceStack.Client\Pcl.NameValueCollectionWrapper.cs">
-      <Link>Pcl.NameValueCollectionWrapper.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\ServiceStack\src\ServiceStack.Client\PclExportClient.Net40.cs">
-      <Link>PclExportClient.Net40.cs</Link>
-    </Compile>
     <Compile Include="..\ServiceStack.Client\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Pcl.Dynamic.cs" />
+    <Compile Include="Pcl.NameValueCollectionWrapper.cs" />
     <Compile Include="PclExport.Net40.cs" />
+    <Compile Include="PclExportClient.Net40.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Client\ServiceStack.Client.PCL.csproj">
