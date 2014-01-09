@@ -81,7 +81,7 @@
 
     <!-- NET 4.5 pcl provider -->
 
-    <MSBuild Projects="../src/ServiceStack.Pcl.Net45/ServiceStack.Pcl.Net45.csproj" Properties="Configuration=$(Configuration)"/>
+    <MSBuild Projects="../src/ServiceStack.Pcl.Net45/ServiceStack.Pcl.Net45.csproj" Properties="Configuration=$(Configuration);OutputPath=bin/$(Configuration)"/>
     <Copy SourceFiles="%(Net45Files.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Pcl.Net45/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Pcl.Net45/lib/net45')" />
@@ -89,7 +89,7 @@
 
     <!-- WinStore pcl provider -->
 
-    <MSBuild Projects="../src/ServiceStack.Pcl.WinStore/ServiceStack.Pcl.WinStore.csproj" Properties="Configuration=$(Configuration)"/>
+    <MSBuild Projects="../src/ServiceStack.Pcl.WinStore/ServiceStack.Pcl.WinStore.csproj" Properties="Configuration=$(Configuration);OutputPath=bin/$(Configuration)"/>
     <Copy SourceFiles="%(WinStoreFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Pcl.WinStore/lib/win" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Pcl.WinStore/lib/win')" />
