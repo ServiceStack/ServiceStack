@@ -4,12 +4,15 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using ServiceStack.IO;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 
 namespace ServiceStack.VirtualPath
 {
     public class ResourceVirtualDirectory : AbstractVirtualDirectoryBase
     {
+        private static ILog Log = LogManager.GetLogger(typeof(ResourceVirtualDirectory));
+
         protected Assembly backingAssembly;
 
         protected List<ResourceVirtualDirectory> SubDirectories;
@@ -65,6 +68,7 @@ namespace ServiceStack.VirtualPath
             SubFiles.AddRange(resourceNames
                 .Where(n => n.Count(c => c == '.') <= 1)
                 .Select(CreateVirtualFile)
+                .Where(f => f != null)
                 .OrderBy(f => f.Name));
 
             SubDirectories.AddRange(resourceNames
@@ -96,14 +100,17 @@ namespace ServiceStack.VirtualPath
                 var fullResourceName = String.Concat(RealPath, VirtualPathProvider.RealPathSeparator, resourceName);
                 var mrInfo = backingAssembly.GetManifestResourceInfo(fullResourceName);
                 if (mrInfo == null)
-                    throw new FileNotFoundException("Virtual file not found", fullResourceName);
+                {
+                    Log.Warn("Virtual file not found: " + fullResourceName);
+                    return null;
+                }
 
                 return new ResourceVirtualFile(VirtualPathProvider, this, resourceName);
             }
             catch (Exception ex)
             {
-                ex.Message.Print();
-                throw;
+                Log.Warn(ex.Message, ex);
+                return null;
             }
         }
 
