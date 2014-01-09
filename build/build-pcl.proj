@@ -83,34 +83,25 @@
 
     <MSBuild Projects="../src/ServiceStack.Pcl.Net45/ServiceStack.Pcl.Net45.csproj" Properties="Configuration=$(Configuration);OutputPath=bin/$(Configuration)"/>
     <Copy SourceFiles="%(Net45Files.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
-
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Pcl.Net45/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Pcl.Net45/lib/net45')" />
     <Copy SourceFiles="%(Net45Files.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/net45" />
 
     <!-- WinStore pcl provider -->
 
     <MSBuild Projects="../src/ServiceStack.Pcl.WinStore/ServiceStack.Pcl.WinStore.csproj" Properties="Configuration=$(Configuration);OutputPath=bin/$(Configuration)"/>
     <Copy SourceFiles="%(WinStoreFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
-
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Pcl.WinStore/lib/win" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Pcl.WinStore/lib/win')" />
     <Copy SourceFiles="%(WinStoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/win" />
 
     <!-- Android pcl provider -->
 
     <MSBuild Projects="../src/ServiceStack.Pcl.Android/ServiceStack.Pcl.Android.csproj" Properties="Configuration=$(Configuration);OutputPath=bin/$(Configuration)"/>
     <Copy SourceFiles="%(AndroidFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
-
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Pcl.Android/lib/MonoAndroid" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Pcl.Android/lib/MonoAndroid')" />
     <Copy SourceFiles="%(AndroidFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/MonoAndroid" />
 
     <!-- iOS pcl provider -->
 
     <MSBuild Projects="../src/ServiceStack.Pcl.iOS/ServiceStack.Pcl.iOS.csproj" Properties="Configuration=$(Configuration);OutputPath=bin/iPhone/$(Configuration)" />
     <Copy SourceFiles="%(IosFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
-
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Pcl.iOS/lib/MonoTouch" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Pcl.iOS/lib/MonoTouch')" />
     <Copy SourceFiles="%(IosFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/MonoTouch" />
-
 
 
     <!-- ServiceStack.Interfaces -->
