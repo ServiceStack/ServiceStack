@@ -31,6 +31,7 @@
 /*** REMINDER: Keep this file in sync with ServiceStack.Text/Pcl.NameValueCollection.cs ***/
 
 using System.Net;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Text;
@@ -1582,18 +1583,33 @@ namespace ServiceStack
             if (Instance != null) 
                 return;
 
-            //if (Env.IsMonoTouch)
-            //    Instance = AssemblyUtils.FindType("ServiceStack.IosPclExportClient").CreateInstance() as PclExportClient;
-            //else if (Env.IsAndroid)
-            //    Instance = AssemblyUtils.FindType("ServiceStack.AndroidPclExportClient").CreateInstance() as PclExportClient;
-            //else if (Env.IsWinRT)
-            //    Instance = AssemblyUtils.FindType("ServiceStack.WinStorePclExportClient").CreateInstance() as PclExportClient;
-            //else if (Env.IsWindowsPhone)
-            //    Instance = AssemblyUtils.FindType("ServiceStack.WpPclExportClient").CreateInstance() as PclExportClient;
-            //else if (Env.IsSilverlight)
-            //    Instance = AssemblyUtils.FindType("ServiceStack.Sl5PclExportClient").CreateInstance() as PclExportClient;
-            //else
-            //    Instance = AssemblyUtils.FindType("ServiceStack.Net40PclExportClient").CreateInstance() as PclExportClient;
+            try
+            {
+                if (ConfigureProvider("ServiceStack.IosPclExportClient, ServiceStack.Pcl.iOS"))
+                    return;
+                if (ConfigureProvider("ServiceStack.AndroidPclExportClient, ServiceStack.Pcl.Android"))
+                    return;
+                if (ConfigureProvider("ServiceStack.WinStorePclExportClient, ServiceStack.Pcl.WinStore"))
+                    return;
+                if (ConfigureProvider("ServiceStack.Net40PclExportClient, ServiceStack.Pcl.Net45"))
+                    return;
+            }
+            catch (Exception /*ignore*/) {}
+        }
+
+        public static bool ConfigureProvider(string typeName)
+        {
+            var type = Type.GetType(typeName);
+            if (type == null)
+                return false;
+
+            var mi = type.GetMethod("Configure");
+            if (mi != null)
+            {
+                mi.Invoke(null, new object[0]);
+            }
+
+            return true;
         }
 
         public virtual INameValueCollection NewNameValueCollection()

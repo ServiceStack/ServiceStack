@@ -27,7 +27,7 @@ namespace PclTest.Wpf
         public MainWindow()
         {
             InitializeComponent();
-            Net40PclExportClient.Configure();
+            //Net40PclExportClient.Configure();
             client = new JsonServiceClient("http://localhost:81/");
         }
 

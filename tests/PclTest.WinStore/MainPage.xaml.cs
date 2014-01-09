@@ -28,7 +28,8 @@ namespace PclTest.WinStore
         public MainPage()
         {
             this.InitializeComponent();
-            WinStorePclExportClient.Configure();
+
+//            WinStorePclExportClient.Configure();
             client = new JsonServiceClient("http://localhost:81/");
         }
 

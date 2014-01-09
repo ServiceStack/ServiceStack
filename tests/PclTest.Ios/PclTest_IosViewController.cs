@@ -14,7 +14,7 @@ namespace PclTest.Ios
 
 		public PclTest_IosViewController () : base ("PclTest_IosViewController", null)
 		{
-			IosPclExportClient.Configure ();
+            //IosPclExportClient.Configure ();
 			client = new JsonServiceClient ("http://localhost:81/");
 		}
 
