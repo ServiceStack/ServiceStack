@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using ServiceStack;
 using ServiceStack.Text;
 
 namespace RazorRockstars.Console.Files
