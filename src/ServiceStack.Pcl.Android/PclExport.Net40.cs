@@ -324,6 +324,18 @@ namespace ServiceStack
             return null;
         }
 
+        public override ParseStringDelegate GetJsReaderParseMethod<TSerializer>(Type type)
+        {
+#if !__IOS__
+            if (type.AssignableFrom(typeof(System.Dynamic.IDynamicMetaObjectProvider)) ||
+                type.HasInterface(typeof(System.Dynamic.IDynamicMetaObjectProvider)))
+            {
+                return DeserializeDynamic<TSerializer>.Parse;
+            }
+#endif
+			return null;
+        }
+
         public override XmlSerializer NewXmlSerializer()
         {
             return new XmlSerializer();

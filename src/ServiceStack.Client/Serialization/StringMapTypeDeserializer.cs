@@ -112,7 +112,7 @@ namespace ServiceStack.Serialization
                         continue;
                     }
 
-                    if (propertySerializerEntry.PropertyType.GetTypeCode() == TypeCode.Boolean)
+                    if (propertySerializerEntry.PropertyType == typeof(bool))
                     {
                         //InputExtensions.cs#530 MVC Checkbox helper emits extra hidden input field, generating 2 values, first is the real value
                         propertyTextValue = propertyTextValue.SplitOnFirst(',').First(); 

@@ -5,6 +5,7 @@
 using System;
 using System.Threading;
 using ServiceStack.Pcl;
+using ServiceStack.Text.Common;
 using ServiceStack.Web;
 using Windows.System.Threading;
 

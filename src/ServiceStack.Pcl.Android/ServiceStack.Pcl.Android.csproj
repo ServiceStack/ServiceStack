@@ -33,6 +33,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Mono.Android" />
     <Reference Include="mscorlib" />
     <Reference Include="ServiceStack.Text, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -52,6 +53,7 @@
     <Compile Include="..\..\..\ServiceStack\src\ServiceStack.Client\PclExportClient.Android.cs">
       <Link>PclExportClient.Android.cs</Link>
     </Compile>
+    <Compile Include="Pcl.Dynamic.cs" />
     <Compile Include="PclExport.Net40.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

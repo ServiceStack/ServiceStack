@@ -116,6 +116,7 @@
     <Compile Include="..\ServiceStack.Client\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Pcl.Dynamic.cs" />
     <Compile Include="PclExport.WinStore.cs" />
   </ItemGroup>
   <ItemGroup>

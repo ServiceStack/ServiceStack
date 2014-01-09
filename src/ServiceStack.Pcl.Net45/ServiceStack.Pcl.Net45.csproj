@@ -55,6 +55,7 @@
     <Compile Include="..\ServiceStack.Client\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Pcl.Dynamic.cs" />
     <Compile Include="PclExport.Net40.cs" />
   </ItemGroup>
   <ItemGroup>

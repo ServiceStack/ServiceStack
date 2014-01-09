@@ -1,130 +1,176 @@
-﻿//Copyright (c) Service Stack LLC. All Rights Reserved.
+//Copyright (c) Service Stack LLC. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
-#if NETFX_CORE
+#if !PCL
+
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Dynamic;
+using ServiceStack.Text;
+using ServiceStack.Text.Common;
+using ServiceStack.Text.Json;
 using System.Linq;
-using System.Reflection;
+using System.Text;
 
 namespace ServiceStack
 {
-    public class WinStorePclExport : PclExport
+    public static class DeserializeDynamic<TSerializer>
+        where TSerializer : ITypeSerializer
     {
-        public new static WinStorePclExport Provider = new WinStorePclExport();
+        private static readonly ITypeSerializer Serializer = JsWriter.GetTypeSerializer<TSerializer>();
 
-        public WinStorePclExport()
+        private static readonly ParseStringDelegate CachedParseFn;
+        static DeserializeDynamic()
         {
-            this.PlatformName = "WindowsStore";
+            CachedParseFn = ParseDynamic;
         }
 
-        public static void Configure()
+        public static ParseStringDelegate Parse
         {
-            Configure(Provider);
+            get { return CachedParseFn; }
         }
 
-        public override string ReadAllText(string filePath)
+        public static IDynamicMetaObjectProvider ParseDynamic(string value)
         {
-            var task = Windows.Storage.StorageFile.GetFileFromPathAsync(filePath);
-            task.AsTask().Wait();
+            var index = VerifyAndGetStartIndex(value, typeof(ExpandoObject));
 
-            var file = task.GetResults();
-            
-            var streamTask = file.OpenStreamForReadAsync();
-            streamTask.Wait();
+            var result = new ExpandoObject();
 
-            var fileStream = streamTask.Result;
+            if (JsonTypeSerializer.IsEmptyMap(value)) return result;
 
-            return new StreamReader(fileStream).ReadToEnd();
-        }
+            var container = (IDictionary<String, Object>)result;
 
-        public override bool FileExists(string filePath)
-        {
-            try
+            var tryToParsePrimitiveTypes = JsConfig.TryToParsePrimitiveTypeValues;
+
+            var valueLength = value.Length;
+            while (index < valueLength)
             {
-                var task = Windows.Storage.StorageFile.GetFileFromPathAsync(filePath);
-                //no exception means file exists
-                return true;
-            }
-            catch (Exception ex)
-            {
-                //find out through exception 
-                return false;
-            }
-        }
+                var keyValue = Serializer.EatMapKey(value, ref index);
+                Serializer.EatMapKeySeperator(value, ref index);
+                var elementValue = Serializer.EatValue(value, ref index);
 
-        public override void WriteLine(string line)
-        {
-            System.Diagnostics.Debug.WriteLine(line);
-        }
+                var mapKey = Serializer.UnescapeString(keyValue);
 
-        public override void WriteLine(string format, params object[] args)
-        {
-            System.Diagnostics.Debug.WriteLine(format, args);
-        }
-
-        public override Assembly[] GetAllAssemblies()
-        {
-            return AppDomain.CurrentDomain.GetAssemblies();
-        }
-
-        private sealed class AppDomain
-        {
-            public static AppDomain CurrentDomain { get; private set; }
-            public static Assembly[] cacheObj = null;
- 
-            static AppDomain()
-            {
-                CurrentDomain = new AppDomain();
-            }
- 
-            public Assembly[] GetAssemblies()
-            {
-                return cacheObj ?? GetAssemblyListAsync().Result.ToArray();
-            }
- 
-            private async System.Threading.Tasks.Task<IEnumerable<Assembly>> GetAssemblyListAsync()
-            {
-                var folder = Windows.ApplicationModel.Package.Current.InstalledLocation;
- 
-                var assemblies = new List<Assembly>();
-                foreach (Windows.Storage.StorageFile file in await folder.GetFilesAsync())
+                if (JsonUtils.IsJsObject(elementValue))
                 {
-                    if (file.FileType == ".dll" || file.FileType == ".exe")
-                    {
-                        try
-                        {
-                            var filename = file.Name.Substring(0, file.Name.Length - file.FileType.Length);
-                            AssemblyName name = new AssemblyName() { Name = filename };
-                            Assembly asm = Assembly.Load(name);
-                            assemblies.Add(asm);
-                        }
-                        catch (Exception)
-                        {
-                            // Invalid WinRT assembly!
-                        }
-                    }
+                    container[mapKey] = ParseDynamic(elementValue);
+                }
+                else if (JsonUtils.IsJsArray(elementValue))
+                {
+                    container[mapKey] = DeserializeList<List<object>, TSerializer>.Parse(elementValue);
+                }
+                else if (tryToParsePrimitiveTypes)
+                {
+                    container[mapKey] = DeserializeType<TSerializer>.ParsePrimitive(elementValue) ?? Serializer.UnescapeString(elementValue);
+                }
+                else
+                {
+                    container[mapKey] = Serializer.UnescapeString(elementValue);
                 }
 
-                cacheObj = assemblies.ToArray();
- 
-                return cacheObj;
+                Serializer.EatItemSeperatorOrMapEndChar(value, ref index);
+            }
+
+            return result;
+        }
+
+        private static int VerifyAndGetStartIndex(string value, Type createMapType)
+        {
+            var index = 0;
+            if (!Serializer.EatMapStartChar(value, ref index))
+            {
+                //Don't throw ex because some KeyValueDataContractDeserializer don't have '{}'
+                Tracer.Instance.WriteDebug("WARN: Map definitions should start with a '{0}', expecting serialized type '{1}', got string starting with: {2}",
+                    JsWriter.MapStartChar, createMapType != null ? createMapType.Name : "Dictionary<,>", value.Substring(0, value.Length < 50 ? value.Length : 50));
+            }
+            return index;
+        }
+    }
+
+    public class DynamicJson : DynamicObject
+    {
+        private readonly IDictionary<string, object> _hash = new Dictionary<string, object>();
+
+        public static string Serialize(dynamic instance)
+        {
+            var json = JsonSerializer.SerializeToString(instance);
+            return json;
+        }
+
+        public static dynamic Deserialize(string json)
+        {
+            // Support arbitrary nesting by using JsonObject
+            var deserialized = JsonSerializer.DeserializeFromString<JsonObject>(json);
+            var hash = deserialized.ToDictionary<KeyValuePair<string, string>, string, object>(entry => entry.Key, entry => entry.Value);
+            return new DynamicJson(hash);
+        }
+
+        public DynamicJson(IEnumerable<KeyValuePair<string, object>> hash)
+        {
+            _hash.Clear();
+            foreach (var entry in hash)
+            {
+                _hash.Add(Underscored(entry.Key), entry.Value);
             }
         }
 
-        public override string GetAssemblyCodeBase(Assembly assembly)
+        public override bool TrySetMember(SetMemberBinder binder, object value)
         {
-            return assembly.GetName().FullName;
+            var name = Underscored(binder.Name);
+            _hash[name] = value;
+            return _hash[name] == value;
         }
 
-        //public override DateTime ToStableUniversalTime(DateTime dateTime)
-        //{
-        //    // .Net 2.0 - 3.5 has an issue with DateTime.ToUniversalTime, but works ok with TimeZoneInfo.ConvertTimeToUtc.
-        //    // .Net 4.0+ does this under the hood anyway.
-        //    return TimeZoneInfo.ConvertTimeToUtc(dateTime);
-        //}
+        public override bool TryGetMember(GetMemberBinder binder, out object result)
+        {
+            var name = Underscored(binder.Name);
+            return YieldMember(name, out result);
+        }
+
+        public override string ToString()
+        {
+            return JsonSerializer.SerializeToString(_hash);
+        }
+
+        private bool YieldMember(string name, out object result)
+        {
+            if (_hash.ContainsKey(name))
+            {
+                var json = _hash[name].ToString();
+                if (json.TrimStart(' ').StartsWith("{", StringComparison.Ordinal))
+                {
+                    result = Deserialize(json);
+                    return true;
+                }
+                result = json;
+                return _hash[name] == result;
+            }
+            result = null;
+            return false;
+        }
+
+        internal static string Underscored(string pascalCase)
+        {
+            return Underscored(pascalCase.ToCharArray());
+        }
+
+        internal static string Underscored(IEnumerable<char> pascalCase)
+        {
+            var sb = new StringBuilder();
+            var i = 0;
+            foreach (var c in pascalCase)
+            {
+                if (char.IsUpper(c) && i > 0)
+                {
+                    sb.Append("_");
+                }
+                sb.Append(c);
+                i++;
+            }
+            return sb.ToString().ToLowerInvariant();
+        }
     }
 }
 
 #endif
+
