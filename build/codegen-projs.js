@@ -196,8 +196,8 @@ var CUSTOM_TEMPLATES = [{
     ProjectGuid: '{12B8CB9F-E397-4B5F-89AF-B6998296BFE6}',
     RootNamespace: 'SilverlightTemplate',
     AssemblyName: 'SilverlightTemplate',
-},
-{
+}
+/*,{
     Code: 'Android',
     Path: '../src/Templates/AndroidTemplate.csproj',
     ProjectGuid: '{BEA92E9F-00B1-4923-BD81-7F3A9CA24408}',
@@ -210,7 +210,7 @@ var CUSTOM_TEMPLATES = [{
     ProjectGuid: '{BEA92E9F-00B1-4923-BD81-7F3A9CA24408}',
     RootNamespace: 'AndroidIndieTemplate',
     AssemblyName: 'AndroidIndieTemplate',
-}
+}*/
 ];
 
 var CUSTOM_PROJS = [{
