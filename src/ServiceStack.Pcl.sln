@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Pcl.Android", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{64877404-3576-4C0F-9185-7025746C30BE}"
 	ProjectSection(SolutionItems) = preProject
+		..\build\build-pcl.proj = ..\build\build-pcl.proj
+		..\build\build.bat = ..\build\build.bat
 		..\build\copy-pcl.bat = ..\build\copy-pcl.bat
 	EndProjectSection
 EndProject
