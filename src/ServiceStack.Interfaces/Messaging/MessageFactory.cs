@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 
+
 namespace ServiceStack.Messaging
 {
     internal delegate IMessage MessageFactoryDelegate(object body);
@@ -24,7 +25,7 @@ namespace ServiceStack.Messaging
                 return factoryFn(response);
 
             var genericMessageType = typeof(Message<>).MakeGenericType(type);
-#if NETFX_CORE || PCL
+#if NETFX_CORE
             var mi = genericMessageType.GetRuntimeMethods().First(p => p.Name.Equals("Create"));
             factoryFn = (MessageFactoryDelegate)mi.CreateDelegate(
                 typeof(MessageFactoryDelegate));

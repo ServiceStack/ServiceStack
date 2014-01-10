@@ -1,11 +1,15 @@
 ﻿using System.Reflection;
-using ServiceStack.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+
+#if SL5
+using ServiceStack.Text;
+#else
 using System.Collections.Concurrent;
+#endif
 
 namespace ServiceStack
 {
@@ -336,7 +340,7 @@ namespace ServiceStack
                 if (value == null)
                     continue;
 
-                var qsName = JsConfig.EmitLowercaseUnderscoreNames
+                var qsName = ServiceStack.Text.JsConfig.EmitLowercaseUnderscoreNames
                     ? queryProperty.Key.ToLowercaseUnderscore()
                     : queryProperty.Key;
 
@@ -377,7 +381,7 @@ namespace ServiceStack
                 };
             }
 
-            if (JsConfig.IncludePublicFields)
+            if (ServiceStack.Text.JsConfig.IncludePublicFields)
             {
                 foreach (var fieldInfo in requestType.GetPublicFields())
                 {

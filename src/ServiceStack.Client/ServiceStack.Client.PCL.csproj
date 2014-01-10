@@ -33,6 +33,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <!-- A reference to the entire .NET Framework is automatically included -->
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="AsyncState.cs" />
     <Compile Include="AsyncServiceClient.cs" />
     <Compile Include="AsyncUtils.cs" />
