@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Client.Signed"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common.Signed", "ServiceStack.Common\ServiceStack.Common.Signed.csproj", "{982416DB-C143-4028-A0C3-CF41892D18D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Interfaces", "ServiceStack.Interfaces\ServiceStack.Interfaces.csproj", "{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Server.Signed", "ServiceStack.Server\ServiceStack.Server.Signed.csproj", "{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Text.Signed", "..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.Signed.csproj", "{579B3FDB-CDAD-44E1-8417-885C38E49A0E}"
@@ -61,15 +59,6 @@ Global
 		{982416DB-C143-4028-A0C3-CF41892D18D3}.Signed|Any CPU.ActiveCfg = Signed|Any CPU
 		{982416DB-C143-4028-A0C3-CF41892D18D3}.Signed|Any CPU.Build.0 = Signed|Any CPU
 		{982416DB-C143-4028-A0C3-CF41892D18D3}.Signed|x86.ActiveCfg = Release|Any CPU
-		{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}.Release|Any CPU.Build.0 = Release|Any CPU
-		{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}.Release|x86.ActiveCfg = Release|Any CPU
-		{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}.Signed|Any CPU.ActiveCfg = Signed|Any CPU
-		{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}.Signed|Any CPU.Build.0 = Signed|Any CPU
-		{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}.Signed|x86.ActiveCfg = Signed|Any CPU
 		{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}.Debug|x86.ActiveCfg = Debug|Any CPU
