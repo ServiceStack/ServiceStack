@@ -61,35 +61,14 @@ namespace ServiceStack
 
         internal static HttpWebRequest CreateHttpWebRequest(this AsyncServiceClient client, string requestUri)
         {
-#if SL5
-            var creator = client.EmulateHttpViaPost
-                ? System.Net.Browser.WebRequestCreator.BrowserHttp
-                : System.Net.Browser.WebRequestCreator.ClientHttp;
-
-            var webRequest = (HttpWebRequest) creator.Create(new Uri(requestUri));
-
-            if (client.StoreCookies && !client.EmulateHttpViaPost)
-            {
-                if (client.ShareCookiesWithBrowser)
-                {
-                    if (client.CookieContainer == null)
-                        client.CookieContainer = new CookieContainer();
-                    client.CookieContainer.SetCookies(new Uri(requestUri), System.Windows.Browser.HtmlPage.Document.Cookies);
-                }
-                
-                webRequest.CookieContainer = client.CookieContainer;	
-            }
-
-#else
-            var webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
+            var webRequest = PclExport.Instance.CreateWebRequest(requestUri);
             PclExport.Instance.Config(webRequest);
             client.CancelAsyncFn = webRequest.Abort;
 
             if (client.StoreCookies)
             {
-                webRequest.CookieContainer = client.CookieContainer;
+                PclExportClient.Instance.SetCookieContainer(webRequest, client);
             }
-#endif
 
             if (!client.DisableAutoCompression)
             {
@@ -99,20 +78,6 @@ namespace ServiceStack
             return webRequest;
         }
 
-        public static void SynchronizeCookies(this AsyncServiceClient client)
-        {
-#if SL5
-            if (client.StoreCookies && client.ShareCookiesWithBrowser && !client.EmulateHttpViaPost)
-            {
-                // browser cookies must be set on the ui thread
-                System.Windows.Deployment.Current.Dispatcher.BeginInvoke(() => {
-                    var cookieHeader = client.CookieContainer.GetCookieHeader(new Uri(client.BaseUri));
-                    System.Windows.Browser.HtmlPage.Document.Cookies = cookieHeader;
-                });
-            }
-#endif
-        }
-
         public static bool IsWebException(this WebException webEx)
         {
             return webEx != null && webEx.Response != null
@@ -120,16 +85,6 @@ namespace ServiceStack
                 && webEx.Status == WebExceptionStatus.ProtocolError
 #endif
             ;
-        }
-
-        public static void ResetStream(this Stream stream)
-        {
-#if !IOS
-            // MonoTouch throws NotSupportedException when setting System.Net.WebConnectionStream.Position
-            // Not sure if the stream is used later though, so may have to copy to MemoryStream and
-            // pass that around instead after this point?
-            stream.Position = 0;
-#endif
         }
     }
 

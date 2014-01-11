@@ -1674,6 +1674,20 @@ namespace ServiceStack
             }
         }
 
+        public virtual void SetCookieContainer(HttpWebRequest webRequest, ServiceClientBase client)
+        {
+            webRequest.CookieContainer = client.CookieContainer;
+        }
+
+        public virtual void SetCookieContainer(HttpWebRequest webRequest, AsyncServiceClient client)
+        {
+            webRequest.CookieContainer = client.CookieContainer;
+        }
+
+        public virtual void SynchronizeCookies(AsyncServiceClient client)
+        {
+        }
+
         public virtual ITimer CreateTimer<TResponse>(AsyncState<TResponse> state, TimeSpan timeOut)
         {
 #if PCL

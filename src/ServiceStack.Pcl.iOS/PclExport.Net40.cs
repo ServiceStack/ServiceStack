@@ -510,6 +510,13 @@ namespace ServiceStack
         {
             Configure(Provider);
         }
+
+        public override void ResetStream(Stream stream)
+        {
+            // MonoTouch throws NotSupportedException when setting System.Net.WebConnectionStream.Position
+            // Not sure if the stream is used later though, so may have to copy to MemoryStream and
+            // pass that around instead after this point?
+        }
     }
 #endif
 

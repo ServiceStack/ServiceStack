@@ -25,26 +25,39 @@ namespace PclTest.SL5
             client = new JsonServiceClient("http://localhost:81/");
         }
 
-        private void btnGoSync_Click(object sender, RoutedEventArgs e)
+        private void btnSync_Click(object sender, RoutedEventArgs e)
         {
-            //try
-            //{
-            //    var response = client.Get(new Hello { Name = txtName.Text });
-            //    lblResults.Text = response.Result;
-            //}
-            //catch (Exception ex)
-            //{
-            //    lblResults.Text = ex.ToString();
-            //}
+            try
+            {
+                var response = client.Get(new Hello { Name = txtName.Text });
+                lblResults.Content = response.Result;
+            }
+            catch (Exception ex)
+            {
+                lblResults.Content = ex.ToString();
+            }
         }
 
-        private void btnGoAsync_Click(object sender, RoutedEventArgs e)
+        private void btnAsync_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 client.GetAsync(new Hello { Name = txtName.Text })
                     .Success(r => lblResults.Content = r.Result)
                     .Error(ex => lblResults.Content = ex.ToString());
+            }
+            catch (Exception ex)
+            {
+                lblResults.Content = ex.ToString();
+            }
+        }
+
+        private async void btnAwait_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var response = await client.GetAsync(new Hello { Name = txtName.Text });
+                lblResults.Content = response.Result;
             }
             catch (Exception ex)
             {

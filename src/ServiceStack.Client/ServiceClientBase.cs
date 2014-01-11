@@ -99,10 +99,7 @@ namespace ServiceStack
             this.Headers = PclExportClient.Instance.NewNameValueCollection();
 
             asyncClient.HandleCallbackOnUiThread = this.HandleCallbackOnUiThread = true;
-
-#if SL5
             asyncClient.ShareCookiesWithBrowser = this.ShareCookiesWithBrowser = true;
-#endif
         }
 
         protected ServiceClientBase(string syncReplyBaseUri, string asyncOneWayBaseUri)
@@ -244,14 +241,14 @@ namespace ServiceStack
             set { asyncClient.OnDownloadProgress = value; }
         }
 
-#if SL5
         private bool shareCookiesWithBrowser;
         public bool ShareCookiesWithBrowser
         {
             get { return this.shareCookiesWithBrowser; }
             set { asyncClient.ShareCookiesWithBrowser = this.shareCookiesWithBrowser = value; }
         }
-#else
+
+#if !SL5
         public IWebProxy Proxy { get; set; }
 #endif
 
@@ -642,9 +639,8 @@ namespace ServiceStack
 
                 if (StoreCookies)
                 {
-                    client.CookieContainer = CookieContainer;
+                    PclExportClient.Instance.SetCookieContainer(client, this);
                 }
-
 
                 ApplyWebRequestFilters(client);
 
