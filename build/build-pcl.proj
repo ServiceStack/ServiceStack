@@ -38,6 +38,9 @@
   </Target>
 
   <Target Name="BuildSolutions">
+    <!--<MSBuild Projects="$(SrcDir)/ServiceStack.SL5.sln" Targets="Build"
+      Properties="Configuration=$(Configuration)" />-->
+
     <!--<MSBuild Projects="$(SrcDir)/ServiceStack.Signed.sln" Targets="Build" Properties="Configuration=$(Configuration);" />-->
 
     <!--<MSBuild Projects="$(SrcDir)/ServiceStack.sln" Targets="Build"
@@ -135,8 +138,10 @@
 
     <!-- Silverlight -->
     <MSBuild Projects="$(SrcDir)/ServiceStack.Client/ServiceStack.Client.SL5.csproj"
-               Targets="Build"
-               Properties="Version=$(PackageVersion);Configuration=$(Configuration);DefineConstants=SL5;Platform=x86;PlatformTarget=x86;OutputPath=bin/SL5" />
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration);Optimize=True;DebugSymbols=True;DefineConstants=SL5;Platform=Any CPU;OutputPath=bin/SL5;DocumentationFile=bin/SL5/ServiceStack.Text.xml" />
+
+    <Copy SourceFiles="%(ClientFilesSL5.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/sl5" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/sl5" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/sl5')" />
     <Copy SourceFiles="%(ClientFilesSL5.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/sl5" />
