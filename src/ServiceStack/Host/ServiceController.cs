@@ -111,13 +111,11 @@ namespace ServiceStack.Host
             try
             {
                 var isNService = typeof(IService).IsAssignableFrom(serviceType);
-                if (isNService)
-                {
-                    RegisterService(typeFactory, serviceType);
-                    appHost.Container.RegisterAutoWiredType(serviceType);
-                }
-
-                throw new ArgumentException("Type {0} is not a Web Service that inherits IService".Fmt(serviceType.FullName));
+                if (!isNService)
+                    throw new ArgumentException("Type {0} is not a Web Service that inherits IService".Fmt(serviceType.FullName));
+                
+                RegisterService(typeFactory, serviceType);
+                appHost.Container.RegisterAutoWiredType(serviceType);
             }
             catch (Exception ex)
             {
