@@ -26,8 +26,8 @@ goog.require("goog.structs.Map");
  * @constructor
  */
 JsonServiceClient = function(baseUri) {
-    this.baseSyncReplyUri = Path.combine(baseUri, "Json/SyncReply");
-    this.baseAsyncOneWayUri = Path.combine(baseUri, "Json/AsyncOneWay");
+    this.baseSyncReplyUri = Path.combine(baseUri, "Json/reply");
+    this.baseAsyncOneWayUri = Path.combine(baseUri, "Json/oneway");
 }
 JsonServiceClient.prototype.send = function(webMethod, request, onSuccess, onError, ajaxOptions) {
     var startCallTime = new Date();
