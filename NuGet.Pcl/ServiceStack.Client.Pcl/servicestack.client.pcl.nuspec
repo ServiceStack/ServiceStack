@@ -28,5 +28,6 @@
     <file src="..\..\src\ServiceStack.Pcl.Android\Pcl.Dynamic.cs" target="src" />
     <file src="..\..\src\ServiceStack.Pcl.Android\PclExport.Net40.cs" target="src" />
     <file src="..\..\src\ServiceStack.Pcl.Android\Resources\*.cs" target="src" />
+    <file src="..\..\src\ServiceStack.Pcl.WinStore\PclExport.WinStore.cs" target="src" />
   </files>
 </package>
