@@ -25,9 +25,6 @@
   <files>
     <file src="lib\**\*.*" target="lib" />
     <file src="..\..\src\ServiceStack.Client\**\*.cs" target="src" />
-    <file src="..\..\src\ServiceStack.Pcl.Android\**\*.cs" target="src" />
-    <file src="..\..\src\ServiceStack.Pcl.iOS\**\*.cs" target="src" />
-    <file src="..\..\src\ServiceStack.Pcl.Net45\**\*.cs" target="src" />
-    <file src="..\..\src\ServiceStack.Pcl.WinStore\**\*.cs" target="src" />
+    <file src="..\..\src\ServiceStack.Pcl.Android\Pcl.Dynamic.cs" target="src" />
   </files>
 </package>
