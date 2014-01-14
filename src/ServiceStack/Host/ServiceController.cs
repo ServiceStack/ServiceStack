@@ -119,7 +119,8 @@ namespace ServiceStack.Host
             }
             catch (Exception ex)
             {
-                Log.Error(ex);
+                appHost.NotifyStartupException(ex);
+                Log.Error(ex.Message, ex);
             }
         }
 

@@ -59,8 +59,13 @@ namespace ServiceStack.Host
 				this.OperationsResponseMap[responseType] = operation;
 			}
 
+            //Only count non-core ServiceStack Services, i.e. defined outside of ServiceStack.dll or Swagger
+            var nonCoreServicesCount = OperationsMap.Values
+                .Count(x => x.ServiceType.Assembly != typeof(Service).Assembly
+                && x.ServiceType.FullName != "ServiceStack.Api.Swagger.SwaggerApiService"
+                && x.ServiceType.FullName != "ServiceStack.Api.Swagger.SwaggerResourcesService");
 
-            LicenseUtils.AssertValidUsage(LicenseFeature.ServiceStack, QuotaType.Operations, OperationsMap.Count);
+            LicenseUtils.AssertValidUsage(LicenseFeature.ServiceStack, QuotaType.Operations, nonCoreServicesCount);
         }
 
         public void AfterInit()
