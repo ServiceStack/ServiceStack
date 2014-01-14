@@ -83,6 +83,8 @@ namespace ServiceStack
         public static bool NotifyStartupException(this IAppHost appHost, Exception ex)
         {
             var ssHost = HostContext.AppHost;
+            if (ssHost == null) return false;
+
             if (!ssHost.HasStarted)
             {
                 ssHost.OnStartupException(ex);
