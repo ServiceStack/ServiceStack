@@ -384,12 +384,19 @@ namespace ServiceStack
             Thread.EndThreadAffinity();
         }
 
-        public override void Config(HttpWebRequest webReq, bool? allowAutoRedirect = null, TimeSpan? timeout = null, TimeSpan? readWriteTimeout = null)
+        public override void Config(HttpWebRequest req,
+            bool? allowAutoRedirect = null,
+            TimeSpan? timeout = null,
+            TimeSpan? readWriteTimeout = null,
+            string userAgent = null,
+            bool? preAuthenticate = null)
         {
-            webReq.MaximumResponseHeadersLength = int.MaxValue; //throws "The message length limit was exceeded" exception
-            if (allowAutoRedirect.HasValue) webReq.AllowAutoRedirect = allowAutoRedirect.Value;
-            if (readWriteTimeout.HasValue) webReq.ReadWriteTimeout = (int)readWriteTimeout.Value.TotalMilliseconds;
-            if (timeout.HasValue) webReq.Timeout = (int)timeout.Value.TotalMilliseconds;
+            req.MaximumResponseHeadersLength = int.MaxValue; //throws "The message length limit was exceeded" exception
+            if (allowAutoRedirect.HasValue) req.AllowAutoRedirect = allowAutoRedirect.Value;
+            if (readWriteTimeout.HasValue) req.ReadWriteTimeout = (int)readWriteTimeout.Value.TotalMilliseconds;
+            if (timeout.HasValue) req.Timeout = (int)timeout.Value.TotalMilliseconds;
+            if (userAgent != null) req.UserAgent = userAgent;
+            if (preAuthenticate.HasValue) req.PreAuthenticate = preAuthenticate.Value;
         }
 
 #if !__IOS__
