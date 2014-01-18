@@ -15,6 +15,13 @@ namespace ServiceStack
     {
         public static Net40PclExportClient Provider = new Net40PclExportClient();
 
+        public static PclExportClient Configure()
+        {
+            Configure(Provider);
+            Net40PclExport.Configure();
+            return Provider;
+        }
+
         public override INameValueCollection NewNameValueCollection()
         {
             return new NameValueCollectionWrapper(new NameValueCollection());
@@ -49,12 +56,6 @@ namespace ServiceStack
         {
             return new AsyncTimer(new
                 System.Threading.Timer(state.TimedOut, state, (int)timeOut.TotalMilliseconds, Timeout.Infinite));
-        }
-
-        public static void Configure()
-        {
-            Configure(Provider);
-            Net40PclExport.Configure();
         }
     }
 

@@ -19,9 +19,10 @@ namespace ServiceStack
             this.PlatformName = "WindowsStore";
         }
 
-        public static void Configure()
+        public static PclExport Configure()
         {
             Configure(Provider);
+            return Provider;
         }
 
         public override string ReadAllText(string filePath)

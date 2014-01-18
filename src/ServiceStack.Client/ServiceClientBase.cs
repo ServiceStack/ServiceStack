@@ -14,7 +14,11 @@ using ServiceStack.Web;
 
 #if !(__IOS__ || SL5)
 #endif
-#if !SL5
+
+#if SL5
+using ServiceStack.Text;
+#else
+using System.Collections.Concurrent;
 #endif
 
 namespace ServiceStack
@@ -95,10 +99,7 @@ namespace ServiceStack
             this.Headers = PclExportClient.Instance.NewNameValueCollection();
 
             asyncClient.HandleCallbackOnUiThread = this.HandleCallbackOnUiThread = true;
-
-#if SL5
             asyncClient.ShareCookiesWithBrowser = this.ShareCookiesWithBrowser = true;
-#endif
         }
 
         protected ServiceClientBase(string syncReplyBaseUri, string asyncOneWayBaseUri)
@@ -240,14 +241,14 @@ namespace ServiceStack
             set { asyncClient.OnDownloadProgress = value; }
         }
 
-#if SL5
         private bool shareCookiesWithBrowser;
         public bool ShareCookiesWithBrowser
         {
             get { return this.shareCookiesWithBrowser; }
             set { asyncClient.ShareCookiesWithBrowser = this.shareCookiesWithBrowser = value; }
         }
-#else
+
+#if !SL5
         public IWebProxy Proxy { get; set; }
 #endif
 
@@ -383,7 +384,6 @@ namespace ServiceStack
             }
         }
 
-#if !SL5
         public virtual TResponse Send<TResponse>(IReturn<TResponse> request)
         {
             return Send<TResponse>((object)request);
@@ -612,7 +612,9 @@ namespace ServiceStack
                 client.Method = httpMethod;
                 PclExportClient.Instance.AddHeader(client, Headers);
 
+#if !SL5
                 if (Proxy != null) client.Proxy = Proxy;
+#endif
                 PclExport.Instance.Config(client,
                     allowAutoRedirect: AllowAutoRedirect,
                     timeout: this.Timeout,
@@ -637,9 +639,8 @@ namespace ServiceStack
 
                 if (StoreCookies)
                 {
-                    client.CookieContainer = CookieContainer;
+                    PclExportClient.Instance.SetCookieContainer(client, this);
                 }
-
 
                 ApplyWebRequestFilters(client);
 
@@ -678,67 +679,6 @@ namespace ServiceStack
             if (GlobalRequestFilter != null)
                 GlobalRequestFilter(client);
         }
-#else
-        private void SendRequest(string requestUri, object request, Action<WebRequest> callback)
-        {
-            var isHttpGet = HttpMethod != null && HttpMethod.ToUpper() == "GET";
-            if (isHttpGet)
-            {
-                var queryString = QueryStringSerializer.SerializeToString(request);
-                if (!string.IsNullOrEmpty(queryString))
-                {
-                    requestUri += "?" + queryString;
-                }
-            }
-
-            SendRequest(HttpMethod ?? DefaultHttpMethod, requestUri, request, callback);
-        }
-
-        private void SendRequest(string httpMethod, string requestUri, object request, Action<WebRequest> callback)
-        {
-            if (httpMethod == null)
-                throw new ArgumentNullException("httpMethod");
-
-            var client = (HttpWebRequest)WebRequest.Create(requestUri);
-            try
-            {
-                client.Accept = ContentType;
-                client.Method = httpMethod;
-
-                if (this.credentials != null) client.Credentials = this.credentials;
-                if (this.AlwaysSendBasicAuthHeader) client.AddBasicAuth(this.UserName, this.Password);
-
-                if (StoreCookies)
-                {
-                    client.CookieContainer = CookieContainer;
-                }
-
-                if (this.RequestFilter != null)
-                    RequestFilter(client);
-
-                if (GlobalRequestFilter != null)
-                    GlobalRequestFilter(client);
-
-                if (httpMethod != HttpMethods.Get
-                    && httpMethod != HttpMethods.Delete)
-                {
-                    client.ContentType = ContentType;
-
-                    client.BeginGetRequestStream(delegate(IAsyncResult target)
-                    {
-                        var webReq = (HttpWebRequest)target.AsyncState;
-                        var requestStream = webReq.EndGetRequestStream(target);
-                        SerializeToStream(null, request, requestStream);
-                        callback(client);
-                    }, null);
-                }
-            }
-            catch (AuthenticationException ex)
-            {
-                throw WebRequestUtils.CreateCustomException(requestUri, ex) ?? ex;
-            }
-        }
-#endif
 
         private IDisposable __requestAccess()
         {
@@ -753,7 +693,6 @@ namespace ServiceStack
                      : this.BaseUri.CombineWith(relativeOrAbsoluteUrl);
         }
 
-#if !SL5
         private byte[] DownloadBytes(string httpMethod, string requestUri, object request)
         {
             var webRequest = SendRequest(httpMethod, requestUri, request);
@@ -764,24 +703,6 @@ namespace ServiceStack
                     return stream.ReadFully();
             }
         }
-#else
-        private void DownloadBytes(string httpMethod, string requestUri, object request, Action<byte[]> callback = null)
-        {
-            SendRequest(httpMethod, requestUri, request, webRequest => webRequest.BeginGetResponse(delegate(IAsyncResult result)
-            {
-                var webReq = (HttpWebRequest)result.AsyncState;
-                var response = (HttpWebResponse)webReq.EndGetResponse(result);
-                using (var stream = response.GetResponseStream())
-                {
-                    var bytes = stream.ReadFully();
-                    if (callback != null)
-                    {
-                        callback(bytes);
-                    }
-                }
-            }, null));
-        }
-#endif
 
         public virtual void SendOneWay(object requestDto)
         {
@@ -914,7 +835,6 @@ namespace ServiceStack
             asyncClient.CancelAsync();
         }
 
-#if !SL5
         public virtual TResponse Send<TResponse>(string httpMethod, string relativeOrAbsoluteUrl, object request)
         {
             var requestUri = GetUrl(relativeOrAbsoluteUrl);
@@ -1203,7 +1123,7 @@ namespace ServiceStack
 
                 if (!HandleResponseException(
                     ex, request, requestUri, createWebRequest,
-                    c => PclExport.Instance.GetResponse(c), 
+                    c => PclExport.Instance.GetResponse(c),
                     out response))
                 {
                     throw;
@@ -1247,9 +1167,10 @@ namespace ServiceStack
                     null,
                     requestUri,
                     createWebRequest,
-                    c => { 
+                    c =>
+                    {
                         c.UploadFile(fileToUpload, fileName, mimeType);
-                        return PclExport.Instance.GetResponse(c); 
+                        return PclExport.Instance.GetResponse(c);
                     },
                     out response))
                 {
@@ -1266,7 +1187,7 @@ namespace ServiceStack
 
             if (typeof(TResponse) == typeof(HttpWebResponse) && (webResponse is HttpWebResponse))
             {
-                return (TResponse)Convert.ChangeType(webResponse, typeof(TResponse));
+                return (TResponse)Convert.ChangeType(webResponse, typeof(TResponse), null);
             }
             if (typeof(TResponse) == typeof(Stream)) //Callee Needs to dispose manually
             {
@@ -1294,8 +1215,6 @@ namespace ServiceStack
                 }
             }
         }
-
-#endif
 
         public void Dispose() { }
     }

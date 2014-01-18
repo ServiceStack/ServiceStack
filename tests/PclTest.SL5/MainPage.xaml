@@ -10,9 +10,10 @@
     <Grid x:Name="LayoutRoot" Background="White" Margin="0,0,-669,-302">
 
         <sdk:Label HorizontalAlignment="Left" Height="49" Margin="10,10,0,0" VerticalAlignment="Top" Width="162" FontSize="36" Content="Name:" RenderTransformOrigin="0.481,0.337"/>
-        <TextBox x:Name="txtName" HorizontalAlignment="Left" Height="56" Margin="157,10,0,0" TextWrapping="Wrap" Text="Test" VerticalAlignment="Top" Width="436" FontSize="36"/>
-        <Button x:Name="btnGoSync" Content="Go Sync" HorizontalAlignment="Left" Margin="10,90,0,0" VerticalAlignment="Top" Width="284" FontSize="36" Click="btnGoSync_Click"/>
-        <Button x:Name="btnGoAsync" Content="Go Async" HorizontalAlignment="Left" Margin="309,90,0,0" VerticalAlignment="Top" Width="284" FontSize="36" Click="btnGoAsync_Click"/>
+        <TextBox x:Name="txtName" HorizontalAlignment="Left" Height="56" Margin="157,10,0,0" TextWrapping="Wrap" Text="Test" VerticalAlignment="Top" Width="735" FontSize="36"/>
+        <Button x:Name="btnSync" Content="Sync" HorizontalAlignment="Left" Margin="10,90,0,0" VerticalAlignment="Top" Width="284" FontSize="36" Click="btnSync_Click"/>
+        <Button x:Name="btnAsync" Content="Async" HorizontalAlignment="Left" Margin="309,90,0,0" VerticalAlignment="Top" Width="284" FontSize="36" Click="btnAsync_Click"/>
+        <Button x:Name="btnAwait" Content="Await" HorizontalAlignment="Left" Margin="608,90,0,0" VerticalAlignment="Top" Width="284" FontSize="36" Click="btnAwait_Click" />
         <sdk:Label x:Name="lblResults" HorizontalAlignment="Left" Height="427" Margin="10,165,0,0" VerticalAlignment="Top" Width="1049" FontSize="36" Content="" RenderTransformOrigin="0.481,0.337"/>
 
     </Grid>

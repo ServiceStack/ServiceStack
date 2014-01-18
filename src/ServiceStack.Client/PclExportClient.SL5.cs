@@ -4,6 +4,7 @@
 #if SL5
 using System;
 using System.Collections.Specialized;
+using System.Net;
 using System.Threading;
 using System.Web;
 using ServiceStack.Pcl;
@@ -14,6 +15,13 @@ namespace ServiceStack
     public class Sl5PclExportClient : PclExportClient
     {
         public static Sl5PclExportClient Provider = new Sl5PclExportClient();
+
+        public static PclExportClient Configure()
+        {
+            Configure(Provider);
+            Sl5PclExport.Configure();
+            return Provider;
+        }
 
         public override INameValueCollection NewNameValueCollection()
         {
@@ -30,10 +38,47 @@ namespace ServiceStack
             System.Windows.Deployment.Current.Dispatcher.BeginInvoke(fn);
         }
 
-        public static void Configure()
+        public override void SetCookieContainer(HttpWebRequest webRequest, ServiceClientBase client)
         {
-            Configure(Provider);
-            Sl5PclExport.Configure();
+            if (!client.EmulateHttpViaPost)
+            {
+                if (client.ShareCookiesWithBrowser)
+                {
+                    if (client.CookieContainer == null)
+                        client.CookieContainer = new CookieContainer();
+                    client.CookieContainer.SetCookies(webRequest.RequestUri, System.Windows.Browser.HtmlPage.Document.Cookies);
+                }
+            }
+
+            //webRequest.CookieContainer = client.CookieContainer;
+        }
+
+        public override void SetCookieContainer(HttpWebRequest webRequest, AsyncServiceClient client)
+        {
+            if (!client.EmulateHttpViaPost)
+            {
+                if (client.ShareCookiesWithBrowser)
+                {
+                    if (client.CookieContainer == null)
+                        client.CookieContainer = new CookieContainer();
+                    client.CookieContainer.SetCookies(webRequest.RequestUri, System.Windows.Browser.HtmlPage.Document.Cookies);
+                }
+            }
+
+            webRequest.CookieContainer = client.CookieContainer;
+        }
+
+        public override void SynchronizeCookies(AsyncServiceClient client)
+        {
+            if (client.StoreCookies && client.ShareCookiesWithBrowser && !client.EmulateHttpViaPost)
+            {
+                // browser cookies must be set on the ui thread
+                System.Windows.Deployment.Current.Dispatcher.BeginInvoke(() =>
+                {
+                    var cookieHeader = client.CookieContainer.GetCookieHeader(new Uri(client.BaseUri));
+                    System.Windows.Browser.HtmlPage.Document.Cookies = cookieHeader;
+                });
+            }
         }
     }
 

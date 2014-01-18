@@ -23,10 +23,11 @@ namespace ServiceStack
             return ServiceStack.Pcl.HttpUtility.ParseQueryString(query).InWrapper();
         }
 
-        public static void Configure()
+        public static PclExportClient Configure()
         {
             Configure(Provider);
             IosPclExport.Configure();
+            return Provider;
         }
     }
 }

@@ -47,9 +47,10 @@ namespace ServiceStack
             this.PlatformName = Environment.OSVersion.Platform.ToString();
         }
 
-        public static void Configure()
+        public static PclExport Configure()
         {
             Configure(Provider);
+            return Provider;
         }
 
         public override string ReadAllText(string filePath)
@@ -384,12 +385,19 @@ namespace ServiceStack
             Thread.EndThreadAffinity();
         }
 
-        public override void Config(HttpWebRequest webReq, bool? allowAutoRedirect = null, TimeSpan? timeout = null, TimeSpan? readWriteTimeout = null)
+        public override void Config(HttpWebRequest req,
+            bool? allowAutoRedirect = null,
+            TimeSpan? timeout = null,
+            TimeSpan? readWriteTimeout = null,
+            string userAgent = null,
+            bool? preAuthenticate = null)
         {
-            webReq.MaximumResponseHeadersLength = int.MaxValue; //throws "The message length limit was exceeded" exception
-            if (allowAutoRedirect.HasValue) webReq.AllowAutoRedirect = allowAutoRedirect.Value;
-            if (readWriteTimeout.HasValue) webReq.ReadWriteTimeout = (int)readWriteTimeout.Value.TotalMilliseconds;
-            if (timeout.HasValue) webReq.Timeout = (int)timeout.Value.TotalMilliseconds;
+            req.MaximumResponseHeadersLength = int.MaxValue; //throws "The message length limit was exceeded" exception
+            if (allowAutoRedirect.HasValue) req.AllowAutoRedirect = allowAutoRedirect.Value;
+            if (readWriteTimeout.HasValue) req.ReadWriteTimeout = (int)readWriteTimeout.Value.TotalMilliseconds;
+            if (timeout.HasValue) req.Timeout = (int)timeout.Value.TotalMilliseconds;
+            if (userAgent != null) req.UserAgent = userAgent;
+            if (preAuthenticate.HasValue) req.PreAuthenticate = preAuthenticate.Value;
         }
 
 #if !__IOS__
@@ -509,6 +517,13 @@ namespace ServiceStack
         public new static void Configure()
         {
             Configure(Provider);
+        }
+
+        public override void ResetStream(Stream stream)
+        {
+            // MonoTouch throws NotSupportedException when setting System.Net.WebConnectionStream.Position
+            // Not sure if the stream is used later though, so may have to copy to MemoryStream and
+            // pass that around instead after this point?
         }
     }
 #endif

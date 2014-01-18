@@ -25,12 +25,14 @@ namespace ServiceStack
         }
 
         public Handler UiHandler;
-        public static void Configure()
+        public static PclExportClient Configure()
         {
             Configure(Provider);
             AndroidPclExport.Configure();
 
             Provider.UiHandler = new Handler(Looper.MainLooper);
+
+            return Provider;
         }
     }
 }

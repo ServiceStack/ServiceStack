@@ -93,11 +93,9 @@ namespace ServiceStack
 
         public bool EmulateHttpViaPost { get; set; }
 
-        public ProgressDelegate OnDownloadProgress { get; set; } 
+        public ProgressDelegate OnDownloadProgress { get; set; }
 
-#if SL5
         public bool ShareCookiesWithBrowser { get; set; }
-#endif
 
         internal Action CancelAsyncFn;
 
@@ -348,7 +346,7 @@ namespace ServiceStack
                             }
                         }
 
-                        this.SynchronizeCookies();
+                        PclExportClient.Instance.SynchronizeCookies(this);
 
                         requestState.HandleSuccess(response);
                     }
@@ -396,7 +394,7 @@ namespace ServiceStack
                         //stream.Position = 0;
                         serviceEx.ResponseBody = stream.ReadFully().FromUtf8Bytes();
 
-                        stream.ResetStream();
+                        PclExport.Instance.ResetStream(stream);
 
                         serviceEx.ResponseDto = this.StreamDeserializer(typeof(TResponse), stream);
                         state.HandleError((TResponse)serviceEx.ResponseDto, serviceEx);
