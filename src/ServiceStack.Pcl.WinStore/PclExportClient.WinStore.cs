@@ -5,7 +5,6 @@
 using System;
 using System.Threading;
 using ServiceStack.Pcl;
-using ServiceStack.Text.Common;
 using ServiceStack.Web;
 using Windows.System.Threading;
 
@@ -14,6 +13,13 @@ namespace ServiceStack
     public class WinStorePclExportClient : PclExportClient
     {
         public static WinStorePclExportClient Provider = new WinStorePclExportClient();
+
+        public static PclExportClient Configure()
+        {
+            Configure(Provider);
+            WinStorePclExport.Configure();
+            return Provider;
+        }
 
         public override INameValueCollection NewNameValueCollection()
         {
@@ -34,12 +40,6 @@ namespace ServiceStack
         {
             Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
                 Windows.UI.Core.CoreDispatcherPriority.Normal, () => fn());
-        }
-
-        public static void Configure()
-        {
-            Configure(Provider);
-            WinStorePclExport.Configure();
         }
     }
 

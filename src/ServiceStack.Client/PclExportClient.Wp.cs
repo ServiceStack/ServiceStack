@@ -11,6 +11,15 @@ namespace ServiceStack
 {
     public class WpPclExportClient : PclExportClient
     {
+        public static WpPclExportClient Provider = new WpPclExportClient();
+
+        public static PclExportClient Configure()
+        {
+            Configure(Provider);
+            WpPclExport.Configure();
+            return Provider;
+        }
+
         public override INameValueCollection NewNameValueCollection()
         {
             return new NameValueCollectionWrapper(new NameValueCollection());

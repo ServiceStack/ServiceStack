@@ -16,6 +16,13 @@ namespace ServiceStack
     {
         public static Sl5PclExportClient Provider = new Sl5PclExportClient();
 
+        public static PclExportClient Configure()
+        {
+            Configure(Provider);
+            Sl5PclExport.Configure();
+            return Provider;
+        }
+
         public override INameValueCollection NewNameValueCollection()
         {
             return new NameValueCollectionWrapper(new NameValueCollection());
@@ -29,12 +36,6 @@ namespace ServiceStack
         public override void RunOnUiThread(Action fn)
         {
             System.Windows.Deployment.Current.Dispatcher.BeginInvoke(fn);
-        }
-
-        public static void Configure()
-        {
-            Configure(Provider);
-            Sl5PclExport.Configure();
         }
 
         public override void SetCookieContainer(HttpWebRequest webRequest, ServiceClientBase client)

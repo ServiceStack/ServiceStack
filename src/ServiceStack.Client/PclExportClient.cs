@@ -1562,19 +1562,19 @@ namespace ServiceStack
 #if PCL
           /*attempts to be inferred otherwise needs to be set explicitly by host project*/
 #elif SL5
-          = new Sl5PclExportClient()
+          = Sl5PclExportClient.Configure()
 #elif NETFX_CORE
-          = new WinStorePclExportClient()
+          = WinStorePclExportClient.Configure()
 #elif WP
-          = new WpPclExportClient()
+          = WpPclExportClient.Configure()
 #elif XBOX
-          = new XboxPclExportClient()
+          = XboxPclExportClient.Configure()
 #elif __IOS__
-          = new IosPclExportClient()
+          = IosPclExportClient.Configure()
 #elif ANDROID
-          = new AndroidPclExportClient()
+          = AndroidPclExportClient.Configure()
 #else
-          = new Net40PclExportClient()
+          = Net40PclExportClient.Configure()
 #endif
         ;
 

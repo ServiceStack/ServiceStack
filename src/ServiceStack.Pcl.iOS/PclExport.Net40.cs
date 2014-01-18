@@ -47,9 +47,10 @@ namespace ServiceStack
             this.PlatformName = Environment.OSVersion.Platform.ToString();
         }
 
-        public static void Configure()
+        public static PclExport Configure()
         {
             Configure(Provider);
+            return Provider;
         }
 
         public override string ReadAllText(string filePath)
