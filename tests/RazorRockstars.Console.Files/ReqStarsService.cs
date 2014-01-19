@@ -12,6 +12,7 @@ using ServiceStack.Data;
 using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.MsgPack;
+using ServiceStack.NetSerializer;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -398,6 +399,7 @@ namespace RazorRockstars.Console.Files
                 EnableRazor = true, //Uncomment for faster tests!
             };
             appHost.Plugins.Add(new MsgPackFormat());
+            //appHost.Plugins.Add(new NetSerializerFormat());
             //Fast
             appHost.Init();
             HostContext.Config.DebugMode = true;
@@ -507,6 +509,7 @@ namespace RazorRockstars.Console.Files
 			new XmlServiceClient(BaseUri),
 			new JsvServiceClient(BaseUri),
 			new MsgPackServiceClient(BaseUri),
+            //new NetSerializerServiceClient(BaseUri), 
 		};
 
         protected static IServiceClient[] ServiceClients =

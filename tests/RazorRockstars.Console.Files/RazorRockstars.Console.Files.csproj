@@ -293,6 +293,10 @@
       <Project>{6b751a07-75d4-4a9d-b3a0-eea27808e64c}</Project>
       <Name>ServiceStack.MsgPack</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.NetSerializer\ServiceStack.NetSerializer.csproj">
+      <Project>{23202156-C4C7-4D03-8D92-E380C8B66EC8}</Project>
+      <Name>ServiceStack.NetSerializer</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj">
       <Project>{D73274AE-006B-4CEE-BA60-0ECF5873048D}</Project>
       <Name>ServiceStack.Razor</Name>
