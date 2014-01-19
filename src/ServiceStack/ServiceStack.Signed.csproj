@@ -345,7 +345,6 @@
     <Compile Include="MiniProfiler\Storage\DatabaseStorageBase.cs" />
     <Compile Include="MiniProfiler\Storage\HttpRuntimeCacheStorage.cs" />
     <Compile Include="MiniProfiler\Storage\IStorage.cs" />
-    <Compile Include="MiniProfiler\Storage\SqlServerStorage.cs" />
     <Compile Include="MiniProfiler\Timing.cs" />
     <Compile Include="MiniProfiler\UI\MiniProfilerHandler.cs" />
     <Compile Include="MiniProfiler\WebRequestProfilerProvider.cs" />
