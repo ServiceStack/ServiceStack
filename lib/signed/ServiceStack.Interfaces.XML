@@ -4,7 +4,7 @@
         <name>ServiceStack.Interfaces</name>
     </assembly>
     <members>
-        <member name="P:ServiceStack.AttributeBase.TypeId">
+        <member name="F:ServiceStack.AttributeBase.typeId">
             <summary>
             Required when using a TypeDescriptor to make it unique
             </summary>
@@ -328,9 +328,9 @@
             Decorate any type or property with adhoc info
             </summary>
         </member>
-        <member name="T:ServiceStack.Logging.ConsoleLogFactory">
+        <member name="T:ServiceStack.Logging.DebugLogFactory">
             <summary>
-            Creates a Console Logger, that logs all messages to: System.Console
+            Creates a Debug Logger, that logs all messages to: System.Diagnostics.Debug
             
             Made public so its testable
             </summary>
@@ -350,9 +350,9 @@
             Gets the logger.
             </summary>
         </member>
-        <member name="T:ServiceStack.Logging.ConsoleLogger">
+        <member name="T:ServiceStack.Logging.DebugLogger">
             <summary>
-            Default logger is to Console.WriteLine
+            Default logger is to System.Diagnostics.Debug.WriteLine
             
             Made public so its testable
             </summary>
@@ -469,45 +469,6 @@
             <value>
             	<c>true</c> if this instance is debug enabled; otherwise, <c>false</c>.
             </value>
-        </member>
-        <member name="M:ServiceStack.Logging.ConsoleLogger.#ctor(System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:ServiceStack.Logging.DebugLogger"/> class.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Logging.ConsoleLogger.#ctor(System.Type)">
-            <summary>
-            Initializes a new instance of the <see cref="T:ServiceStack.Logging.DebugLogger"/> class.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Logging.ConsoleLogger.Log(System.Object,System.Exception)">
-            <summary>
-            Logs the specified message.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Logging.ConsoleLogger.LogFormat(System.Object,System.Object[])">
-            <summary>
-            Logs the format.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Logging.ConsoleLogger.Log(System.Object)">
-            <summary>
-            Logs the specified message.
-            </summary>
-        </member>
-        <member name="T:ServiceStack.Logging.DebugLogFactory">
-            <summary>
-            Creates a Debug Logger, that logs all messages to: System.Diagnostics.Debug
-            
-            Made public so its testable
-            </summary>
-        </member>
-        <member name="T:ServiceStack.Logging.DebugLogger">
-            <summary>
-            Default logger is to System.Diagnostics.Debug.WriteLine
-            
-            Made public so its testable
-            </summary>
         </member>
         <member name="M:ServiceStack.Logging.DebugLogger.#ctor(System.String)">
             <summary>
@@ -1257,6 +1218,11 @@
             The underlying ASP.NET or HttpListener HttpResponse
             </summary>
         </member>
+        <member name="P:ServiceStack.Web.IResponse.Dto">
+            <summary>
+            The Response DTO
+            </summary>
+        </member>
         <member name="P:ServiceStack.Web.IResponse.IsClosed">
             <summary>
             Gets a value indicating whether this instance is closed.
@@ -1335,12 +1301,12 @@
             Returns the first matching RestPath
             </summary>
         </member>
-        <member name="M:ServiceStack.Web.IServiceController.ExecuteMessage``1(ServiceStack.Messaging.IMessage{``0})">
+        <member name="M:ServiceStack.Web.IServiceController.ExecuteMessage(ServiceStack.Messaging.IMessage)">
             <summary>
             Executes the MQ DTO request.
             </summary>
         </member>
-        <member name="M:ServiceStack.Web.IServiceController.ExecuteMessage``1(ServiceStack.Messaging.IMessage{``0},ServiceStack.Web.IRequest)">
+        <member name="M:ServiceStack.Web.IServiceController.ExecuteMessage(ServiceStack.Messaging.IMessage,ServiceStack.Web.IRequest)">
             <summary>
             Executes the MQ DTO request with the supplied requestContext
             </summary>
