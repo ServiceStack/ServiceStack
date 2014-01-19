@@ -1,11 +1,11 @@
-﻿#if false
+﻿#if true
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Data.SqlClient;
 using System.Data.Common;
-using ServiceStack.MiniProfiler.Helpers;
+using ServiceStack.OrmLite.Dapper;
 
 namespace ServiceStack.MiniProfiler.Storage
 {
@@ -70,7 +70,7 @@ where not exists (select 1 from MiniProfilers where Id = @Id)"; // this syntax w
 
             using (var conn = GetOpenConnection())
             {
-                var insertCount = conn.Execute(sql, new
+                var insertCount = conn.ExecuteDapper(sql, new
                 {
                     Id = profiler.Id,
                     Name = profiler.Name.Truncate(200),
@@ -136,7 +136,7 @@ values      (@Id,
              @ExecutedScalars,
              @ExecutedNonQueries)";
 
-            conn.Execute(sql, new
+            conn.ExecuteDapper(sql, new
             {
                 Id = t.Id,
                 MiniProfilerId = profiler.Id,
@@ -202,7 +202,7 @@ values      (@Id,
              @StackTraceSnippet,
              @CommandString)";
 
-            conn.Execute(sql, new
+            conn.ExecuteDapper(sql, new
             {
                 Id = st.Id,
                 MiniProfilerId = profiler.Id,
@@ -244,7 +244,7 @@ values      (@MiniProfilerId,
 
             foreach (var p in st.Parameters)
             {
-                conn.Execute(sql, new
+                conn.ExecuteDapper(sql, new
                 {
                     MiniProfilerId = profiler.Id,
                     ParentSqlTimingId = st.Id,
@@ -284,7 +284,7 @@ values      (@MiniProfilerId,
                     // loading a profiler means we've viewed it
                     if (!result.HasUserViewed)
                     {
-                        conn.Execute("update MiniProfilers set HasUserViewed = 1 where Id = @id", idParameter);
+                        conn.ExecuteDapper("update MiniProfilers set HasUserViewed = 1 where Id = @id", idParameter);
                     }
                 }
 
@@ -296,7 +296,7 @@ values      (@MiniProfilerId,
         {
             Profiler result;
 
-            using (var multi = conn.QueryMultiple(LoadSqlBatch, idParameter))
+            using (var multi = conn.DapperMultiple(LoadSqlBatch, idParameter))
             {
                 result = multi.Read<Profiler>().SingleOrDefault();
 
@@ -329,7 +329,7 @@ values      (@MiniProfilerId,
 
         private List<T> LoadFor<T>(DbConnection conn, object idParameter)
         {
-            return conn.Query<T>(LoadSqlStatements[typeof(T)], idParameter).ToList();
+            return conn.Dapper<T>(LoadSqlStatements[typeof(T)], idParameter).ToList();
         }
 
 
@@ -348,7 +348,7 @@ order  by Started";
 
             using (var conn = GetOpenConnection())
             {
-                return conn.Query<Guid>(sql, new { user }).ToList();
+                return conn.Dapper<Guid>(sql, new { user }).ToList();
             }
         }
 
@@ -434,5 +434,15 @@ create table MiniProfilerSqlTimingParameters
      Value             nvarchar(max) null -- sqlite: remove (max) -- sql server ce: replace with ntext
   );";
     }
+
+    public static class MiniProfilerExt
+    {
+        public static string Truncate(this string s, int maxLength)
+        {
+            return s != null && s.Length > maxLength ? s.Substring(0, maxLength) : s;
+        }
+    }
 }
+
+
 #endif
