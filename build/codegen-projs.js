@@ -25,10 +25,12 @@ var SIGN_PROJS = [
     '../../ServiceStack.Redis/src/ServiceStack.Redis/ServiceStack.Redis.csproj',
     '../../ServiceStack.OrmLite/src/ServiceStack.OrmLite/ServiceStack.OrmLite.csproj',
     '../../ServiceStack.OrmLite/src/ServiceStack.OrmLite.SqlServer/ServiceStack.OrmLite.SqlServer.csproj',
+    '../../ServiceStack.OrmLite/src/ServiceStack.OrmLite.Oracle/ServiceStack.OrmLite.Oracle.csproj',
     '../src/ServiceStack.Common/ServiceStack.Common.csproj',
     '../src/ServiceStack.Client/ServiceStack.Client.csproj',
     '../src/ServiceStack.Server/ServiceStack.Server.csproj',
     '../src/ServiceStack.Razor/ServiceStack.Razor.csproj',
+    '../src/ServiceStack.Api.Swagger/ServiceStack.Api.Swagger.csproj',
     '../src/ServiceStack/ServiceStack.csproj'
 ];
 var SIGN_REPLACE_TEXTS = {
