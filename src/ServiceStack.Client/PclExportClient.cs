@@ -1619,7 +1619,11 @@ namespace ServiceStack
 
         public virtual INameValueCollection ParseQueryString(string query)
         {
+#if SL5 || PCL
             return ServiceStack.Pcl.HttpUtility.ParseQueryString(query).InWrapper();
+#else
+            return HttpUtility.ParseQueryString(query).InWrapper();
+#endif
         }
 
         public virtual string UrlEncode(string url)
