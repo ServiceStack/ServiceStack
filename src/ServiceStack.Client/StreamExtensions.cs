@@ -14,7 +14,7 @@ namespace ServiceStack
 {
     public static class StreamExtensions
     {
-#if !(SL5 || XBOX || __IOS__)
+		#if !(SL5 || XBOX || ANDROID || __IOS__)
         /// <summary>
         /// Compresses the specified text using the default compression method: Deflate
         /// </summary>

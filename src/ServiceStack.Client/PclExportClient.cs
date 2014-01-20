@@ -1619,7 +1619,7 @@ namespace ServiceStack
 
         public virtual INameValueCollection ParseQueryString(string query)
         {
-            return HttpUtility.ParseQueryString(query).InWrapper();
+            return ServiceStack.Pcl.HttpUtility.ParseQueryString(query).InWrapper();
         }
 
         public virtual string UrlEncode(string url)
@@ -1629,7 +1629,7 @@ namespace ServiceStack
 #elif PCL
             return WebUtility.UrlEncode(url);
 #else
-            return HttpUtility.UrlEncode(url);
+            return System.Web.HttpUtility.UrlEncode(url);
 #endif
         }
 
@@ -1640,7 +1640,7 @@ namespace ServiceStack
 #elif PCL
             return WebUtility.UrlDecode(url);
 #else
-            return HttpUtility.UrlDecode(url);
+            return System.Web.HttpUtility.UrlDecode(url);
 #endif
         }
 
@@ -1651,7 +1651,7 @@ namespace ServiceStack
 #elif PCL
             return WebUtility.HtmlEncode(html);
 #else
-            return HttpUtility.HtmlEncode(html);
+            return System.Web.HttpUtility.HtmlEncode(html);
 #endif
         }
 
@@ -1662,7 +1662,7 @@ namespace ServiceStack
 #elif PCL
             return WebUtility.HtmlDecode(html);
 #else
-            return HttpUtility.HtmlDecode(html);
+            return System.Web.HttpUtility.HtmlDecode(html);
 #endif
         }
  
