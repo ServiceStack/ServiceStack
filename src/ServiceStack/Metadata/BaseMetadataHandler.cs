@@ -175,6 +175,12 @@ namespace ServiceStack.Metadata
                 OperationNames = metadata.GetOperationNamesForMetadata(httpReq),
             };
 
+            var metadataFeature = HostContext.GetPlugin<MetadataFeature>();
+            if (metadataFeature != null && metadataFeature.IndexPageFilter != null)
+            {
+                metadataFeature.IndexPageFilter(defaultPage);
+            }
+
             defaultPage.RenderControl(writer);
         }
         
@@ -225,6 +231,12 @@ namespace ServiceStack.Metadata
             if (!this.ContentFormat.IsNullOrEmpty())
             {
                 operationControl.ContentFormat = this.ContentFormat;
+            }
+
+            var metadataFeature = HostContext.GetPlugin<MetadataFeature>();
+            if (metadataFeature != null && metadataFeature.DetailPageFilter != null)
+            {
+                metadataFeature.DetailPageFilter(operationControl);
             }
 
             operationControl.Render(writer);

@@ -6,7 +6,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Metadata
 {
-    internal class IndexOperationsControl : System.Web.UI.Control
+    public class IndexOperationsControl : System.Web.UI.Control
     {
         public IRequest HttpRequest { get; set; }
         public string Title { get; set; }

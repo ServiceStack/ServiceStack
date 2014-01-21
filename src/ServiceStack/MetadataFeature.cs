@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Web;
-using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Metadata;
 
@@ -10,6 +10,8 @@ namespace ServiceStack
     {
         public string PluginLinksTitle { get; set; }
         public Dictionary<string, string> PluginLinks { get; set; }
+        public Action<IndexOperationsControl> IndexPageFilter { get; set; }
+        public Action<OperationControl> DetailPageFilter { get; set; }
 
         public MetadataFeature()
         {

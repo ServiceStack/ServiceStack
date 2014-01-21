@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using Funq;
@@ -22,6 +23,11 @@ namespace RazorRockstars.Web
             Plugins.Add(new RazorFormat());
             Plugins.Add(new MsgPackFormat());
             Plugins.Add(new SwaggerFeature());
+
+            var metadata = (MetadataFeature)Plugins.First(x => x is MetadataFeature);
+            metadata.IndexPageFilter = page => {
+                page.OperationNames.Sort((x,y) => y.CompareTo(x));
+            };
 
             container.Register<IDbConnectionFactory>(
                 new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));

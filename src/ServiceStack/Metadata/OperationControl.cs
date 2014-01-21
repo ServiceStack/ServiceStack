@@ -42,7 +42,7 @@ namespace ServiceStack.Metadata
             }
         }
 
-        public void Render(HtmlTextWriter output)
+        public virtual void Render(HtmlTextWriter output)
         {
             var baseUrl = HttpRequest.GetParentAbsolutePath().ToParentPath();
             if (string.IsNullOrEmpty(baseUrl))
