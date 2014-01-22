@@ -23,12 +23,6 @@ namespace ServiceStack.MiniProfiler.Storage
         }
 
         /// <summary>
-        /// A full install of Sql Server can return multiple result sets in one query, allowing the use of <see cref="SqlMapper.QueryMultiple"/>.
-        /// However, Sql Server CE and Sqlite cannot do this, so inheritors for those providers can return false here.
-        /// </summary>
-        public virtual bool EnableBatchSelects { get { return true; } }
-
-        /// <summary>
         /// Stores <param name="profiler"/> to dbo.MiniProfilers under its <see cref="Profiler.Id"/>; 
         /// stores all child Timings and SqlTimings to their respective tables.
         /// </summary>
@@ -50,7 +44,8 @@ namespace ServiceStack.MiniProfiler.Storage
              HasTrivialTimings,
              HasAllTrivialTimings,
              TrivialDurationThresholdMilliseconds,
-             HasUserViewed)
+             HasUserViewed,
+             Json)
 select       @Id,
              @Name,
              @Started,
@@ -65,7 +60,8 @@ select       @Id,
              @HasTrivialTimings,
              @HasAllTrivialTimings,
              @TrivialDurationThresholdMilliseconds,
-             @HasUserViewed
+             @HasUserViewed,
+             @Json
 where not exists (select 1 from MiniProfilers where Id = @Id)"; // this syntax works on both mssql and sqlite
 
             using (var conn = GetOpenConnection())
@@ -86,182 +82,15 @@ where not exists (select 1 from MiniProfilers where Id = @Id)"; // this syntax w
                     HasTrivialTimings = profiler.HasTrivialTimings,
                     HasAllTrivialTimings = profiler.HasAllTrivialTimings,
                     TrivialDurationThresholdMilliseconds = profiler.TrivialDurationThresholdMilliseconds,
-                    HasUserViewed = profiler.HasUserViewed
-                });
-
-                if (insertCount > 0)
-                    SaveTiming(conn, profiler, profiler.Root);
-            }
-        }
-
-        /// <summary>
-        /// Saves parameter Timing to the dbo.MiniProfilerTimings table.
-        /// </summary>
-        protected virtual void SaveTiming(DbConnection conn, Profiler profiler, Timing t)
-        {
-            const string sql =
-@"insert into MiniProfilerTimings
-            (Id,
-             MiniProfilerId,
-             ParentTimingId,
-             Name,
-             Depth,
-             StartMilliseconds,
-             DurationMilliseconds,
-             DurationWithoutChildrenMilliseconds,
-             SqlTimingsDurationMilliseconds,
-             IsRoot,
-             HasChildren,
-             IsTrivial,
-             HasSqlTimings,
-             HasDuplicateSqlTimings,
-             ExecutedReaders,
-             ExecutedScalars,
-             ExecutedNonQueries)
-values      (@Id,
-             @MiniProfilerId,
-             @ParentTimingId,
-             @Name,
-             @Depth,
-             @StartMilliseconds,
-             @DurationMilliseconds,
-             @DurationWithoutChildrenMilliseconds,
-             @SqlTimingsDurationMilliseconds,
-             @IsRoot,
-             @HasChildren,
-             @IsTrivial,
-             @HasSqlTimings,
-             @HasDuplicateSqlTimings,
-             @ExecutedReaders,
-             @ExecutedScalars,
-             @ExecutedNonQueries)";
-
-            conn.ExecuteDapper(sql, new
-            {
-                Id = t.Id,
-                MiniProfilerId = profiler.Id,
-                ParentTimingId = t.IsRoot ? (Guid?)null : t.ParentTiming.Id,
-                Name = t.Name.Truncate(200),
-                Depth = t.Depth,
-                StartMilliseconds = t.StartMilliseconds,
-                DurationMilliseconds = t.DurationMilliseconds,
-                DurationWithoutChildrenMilliseconds = t.DurationWithoutChildrenMilliseconds,
-                SqlTimingsDurationMilliseconds = t.SqlTimingsDurationMilliseconds,
-                IsRoot = t.IsRoot,
-                HasChildren = t.HasChildren,
-                IsTrivial = t.IsTrivial,
-                HasSqlTimings = t.HasSqlTimings,
-                HasDuplicateSqlTimings = t.HasDuplicateSqlTimings,
-                ExecutedReaders = t.ExecutedReaders,
-                ExecutedScalars = t.ExecutedScalars,
-                ExecutedNonQueries = t.ExecutedNonQueries
-            });
-
-            if (t.HasSqlTimings)
-            {
-                foreach (var st in t.SqlTimings)
-                {
-                    SaveSqlTiming(conn, profiler, st);
-                }
-            }
-
-            if (t.HasChildren)
-            {
-                foreach (var child in t.Children)
-                {
-                    SaveTiming(conn, profiler, child);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Saves parameter SqlTiming to the dbo.MiniProfilerSqlTimings table.
-        /// </summary>
-        protected virtual void SaveSqlTiming(DbConnection conn, Profiler profiler, SqlTiming st)
-        {
-            const string sql =
-@"insert into MiniProfilerSqlTimings
-            (Id,
-             MiniProfilerId,
-             ParentTimingId,
-             ExecuteType,
-             StartMilliseconds,
-             DurationMilliseconds,
-             FirstFetchDurationMilliseconds,
-             IsDuplicate,
-             StackTraceSnippet,
-             CommandString)
-values      (@Id,
-             @MiniProfilerId,
-             @ParentTimingId,
-             @ExecuteType,
-             @StartMilliseconds,
-             @DurationMilliseconds,
-             @FirstFetchDurationMilliseconds,
-             @IsDuplicate,
-             @StackTraceSnippet,
-             @CommandString)";
-
-            conn.ExecuteDapper(sql, new
-            {
-                Id = st.Id,
-                MiniProfilerId = profiler.Id,
-                ParentTimingId = st.ParentTiming.Id,
-                ExecuteType = st.ExecuteType,
-                StartMilliseconds = st.StartMilliseconds,
-                DurationMilliseconds = st.DurationMilliseconds,
-                FirstFetchDurationMilliseconds = st.FirstFetchDurationMilliseconds,
-                IsDuplicate = st.IsDuplicate,
-                StackTraceSnippet = st.StackTraceSnippet.Truncate(200),
-                CommandString = st.CommandString
-            });
-
-            if (st.Parameters != null && st.Parameters.Count > 0)
-            {
-                SaveSqlTimingParameters(conn, profiler, st);
-            }
-        }
-
-        /// <summary>
-        /// Saves any SqlTimingParameters used in the profiled SqlTiming to the dbo.MiniProfilerSqlTimingParameters table.
-        /// </summary>
-        protected virtual void SaveSqlTimingParameters(DbConnection conn, Profiler profiler, SqlTiming st)
-        {
-            const string sql =
-@"insert into MiniProfilerSqlTimingParameters
-            (MiniProfilerId,
-             ParentSqlTimingId,
-             Name,
-             DbType,
-             Size,
-             Value)
-values      (@MiniProfilerId,
-             @ParentSqlTimingId,
-             @Name,
-             @DbType,
-             @Size,
-             @Value)";
-
-            foreach (var p in st.Parameters)
-            {
-                conn.ExecuteDapper(sql, new
-                {
-                    MiniProfilerId = profiler.Id,
-                    ParentSqlTimingId = st.Id,
-                    Name = p.Name.Truncate(130),
-                    DbType = p.DbType.Truncate(50),
-                    Size = p.Size,
-                    Value = p.Value
+                    HasUserViewed = profiler.HasUserViewed,
+                    Json = profiler.Root.ToJson()
                 });
             }
         }
 
         private static readonly Dictionary<Type, string> LoadSqlStatements = new Dictionary<Type, string>
         {
-            { typeof(Profiler), "select * from MiniProfilers where Id = @id" },
-            { typeof(Timing), "select * from MiniProfilerTimings where MiniProfilerId = @id order by RowId" },
-            { typeof(SqlTiming), "select * from MiniProfilerSqlTimings where MiniProfilerId = @id order by RowId" },
-            { typeof(SqlTimingParameter), "select * from MiniProfilerSqlTimingParameters where MiniProfilerId = @id" }
+            { typeof(Profiler), "select * from MiniProfilers where Id = @id" }
         };
 
         private static readonly string LoadSqlBatch = string.Join("\n", LoadSqlStatements.Select(pair => pair.Value).ToArray());
@@ -274,7 +103,7 @@ values      (@MiniProfilerId,
             using (var conn = GetOpenConnection())
             {
                 var idParameter = new { id };
-                var result = EnableBatchSelects ? LoadInBatch(conn, idParameter) : LoadIndividually(conn, idParameter);
+                var result = LoadIndividually(conn, idParameter);
 
                 if (result != null)
                 {
@@ -292,36 +121,16 @@ values      (@MiniProfilerId,
             }
         }
 
-        private Profiler LoadInBatch(DbConnection conn, object idParameter)
-        {
-            Profiler result;
-
-            using (var multi = conn.DapperMultiple(LoadSqlBatch, idParameter))
-            {
-                result = multi.Read<Profiler>().SingleOrDefault();
-
-                if (result != null)
-                {
-                    var timings = multi.Read<Timing>().ToList();
-                    var sqlTimings = multi.Read<SqlTiming>().ToList();
-                    var sqlParameters = multi.Read<SqlTimingParameter>().ToList();
-                    MapTimings(result, timings, sqlTimings, sqlParameters);
-                }
-            }
-
-            return result;
-        }
-
         private Profiler LoadIndividually(DbConnection conn, object idParameter)
         {
             var result = LoadFor<Profiler>(conn, idParameter).SingleOrDefault();
 
             if (result != null)
             {
-                var timings = LoadFor<Timing>(conn, idParameter);
-                var sqlTimings = LoadFor<SqlTiming>(conn, idParameter);
-                var sqlParameters = LoadFor<SqlTimingParameter>(conn, idParameter);
-                MapTimings(result, timings, sqlTimings, sqlParameters);
+                if (!String.IsNullOrWhiteSpace(result.Json))
+                {
+                    result.Root = result.Json.FromJson<Timing>();
+                }
             }
 
             return result;
