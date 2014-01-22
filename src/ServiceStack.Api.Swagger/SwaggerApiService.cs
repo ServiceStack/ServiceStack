@@ -214,7 +214,7 @@ namespace ServiceStack.Api.Swagger
 
             return ClrTypesToSwaggerScalarTypes.ContainsKey(lookupType)
                 ? ClrTypesToSwaggerScalarTypes[lookupType]
-                : lookupType.Name;
+                : GetModelTypeName(lookupType);
         }
 
         private static Type GetListElementType(Type type)
@@ -238,11 +238,23 @@ namespace ServiceStack.Api.Swagger
             return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
 
+		private static string GetModelTypeName(Type modelType)
+		{
+			if (!modelType.IsGenericType)
+				return modelType.Name;
+
+			var modelTypeName = modelType.FullName.Replace("`1[[", "`").Replace(modelType.Namespace + ".", "");
+			var index = modelTypeName.IndexOf(",", StringComparison.Ordinal);
+			var genericNamespace = modelType.GenericTypeArguments()[0].Namespace + ".";
+
+			return modelTypeName.Substring(0, index).Replace(genericNamespace, "") + "`";
+		}
+
         private void ParseModel(IDictionary<string, SwaggerModel> models, Type modelType)
         {
             if (IsSwaggerScalarType(modelType)) return;
 
-            var modelId = modelType.Name;
+	        var modelId = GetModelTypeName(modelType);
             if (models.ContainsKey(modelId)) return;
 
             var model = new SwaggerModel
