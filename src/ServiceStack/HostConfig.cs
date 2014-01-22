@@ -385,9 +385,7 @@ namespace ServiceStack
             HandlerFactoryPath = locationPath ??
                 (String.IsNullOrEmpty(handlerPath) ? null : handlerPath);
 
-            MetadataRedirectPath = PathUtils.CombinePaths(
-                null != locationPath ? HandlerFactoryPath : handlerPath
-                , "metadata");
+            MetadataRedirectPath = "metadata";
         }
 
         private static string ExtractHandlerPathFromWebServerConfigurationXml(string rawXml)
