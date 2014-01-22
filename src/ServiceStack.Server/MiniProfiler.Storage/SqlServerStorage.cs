@@ -365,12 +365,12 @@ order  by Started";
         /// </summary>
         /// <remarks>
         /// Works in sql server and sqlite (with documented removals).
-        /// TODO: add indexes
         /// </remarks>
         public const string TableCreationScript =
 @"create table MiniProfilers
   (
-     Id                                   uniqueidentifier not null primary key,
+     RowId                                integer not null identity constraint PK_MiniProfilers primary key clustered, -- Need a clustered primary key for SQL Azure
+     Id                                   uniqueidentifier not null, -- don't cluster on a guid
      Name                                 nvarchar(200) not null,
      Started                              datetime not null,
      MachineName                          nvarchar(100) null,
@@ -384,55 +384,15 @@ order  by Started";
      HasTrivialTimings                    bit not null,
      HasAllTrivialTimings                 bit not null,
      TrivialDurationThresholdMilliseconds decimal(5, 1) null,
-     HasUserViewed                        bit not null
+     HasUserViewed                        bit not null,
+     Json                                 nvarchar(max)
   );
-
-create table MiniProfilerTimings
-  (
-     RowId                               integer primary key identity, -- sqlite: replace identity with autoincrement
-     Id                                  uniqueidentifier not null,
-     MiniProfilerId                      uniqueidentifier not null,
-     ParentTimingId                      uniqueidentifier null,
-     Name                                nvarchar(200) not null,
-     Depth                               smallint not null,
-     StartMilliseconds                   decimal(7, 1) not null,
-     DurationMilliseconds                decimal(7, 1) not null,
-     DurationWithoutChildrenMilliseconds decimal(7, 1) not null,
-     SqlTimingsDurationMilliseconds      decimal(7, 1) null,
-     IsRoot                              bit not null,
-     HasChildren                         bit not null,
-     IsTrivial                           bit not null,
-     HasSqlTimings                       bit not null,
-     HasDuplicateSqlTimings              bit not null,
-     ExecutedReaders                     smallint not null,
-     ExecutedScalars                     smallint not null,
-     ExecutedNonQueries                  smallint not null
-  );
-
-create table MiniProfilerSqlTimings
-  (
-     RowId                          integer primary key identity, -- sqlite: replace identity with autoincrement
-     Id                             uniqueidentifier not null,
-     MiniProfilerId                 uniqueidentifier not null,
-     ParentTimingId                 uniqueidentifier not null,
-     ExecuteType                    tinyint not null,
-     StartMilliseconds              decimal(7, 1) not null,
-     DurationMilliseconds           decimal(7, 1) not null,
-     FirstFetchDurationMilliseconds decimal(7, 1) null,
-     IsDuplicate                    bit not null,
-     StackTraceSnippet              nvarchar(200) not null,
-     CommandString                  nvarchar(max) not null -- sqlite: remove (max) -- sql server ce: replace with ntext
-  );
-
-create table MiniProfilerSqlTimingParameters
-  (
-     MiniProfilerId    uniqueidentifier not null,
-     ParentSqlTimingId uniqueidentifier not null,
-     Name              nvarchar(130) not null,
-     DbType            nvarchar(50) null,
-     Size              int null,
-     Value             nvarchar(max) null -- sqlite: remove (max) -- sql server ce: replace with ntext
-  );";
+  -- displaying results selects everything based on the main MiniProfilers.Id column
+  create unique nonclustered index IX_MiniProfilers_Id on MiniProfilers (Id);
+                
+  -- speeds up a query that is called on every .Stop()
+  create nonclustered index IX_MiniProfilers_User_HasUserViewed_Includes on MiniProfilers ([User], HasUserViewed) include (Id, [Started]);
+";
     }
 
     public static class MiniProfilerExt
