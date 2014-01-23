@@ -127,16 +127,16 @@ namespace ServiceStack.Auth
                         userAuthProvider.LoadUserOAuthProvider(session, oAuthToken);
                     }
                 }
-
-                //var httpRes = authService.RequestContext.Get<IHttpResponse>();
-                //if (httpRes != null)
-                //{
-                //    httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
-                //}
             }
 
-            authService.SaveSession(session, SessionExpiry);
-            session.OnAuthenticated(authService, session, tokens, authInfo);
+            try
+            {
+                session.OnAuthenticated(authService, session, tokens, authInfo);
+            }
+            finally
+            {
+                authService.SaveSession(session, SessionExpiry);
+            }
         }
 
         public override void OnFailedAuthentication(IAuthSession session, IRequest httpReq, IResponse httpRes)

@@ -153,9 +153,14 @@ namespace ServiceStack.Auth
                 
             }
 
-            //OnSaveUserAuth(authService, session);
-            authService.SaveSession(session, SessionExpiry);
-            session.OnAuthenticated(authService, session, tokens, authInfo);
+            try
+            {
+                session.OnAuthenticated(authService, session, tokens, authInfo);
+            }
+            finally
+            {
+                authService.SaveSession(session, SessionExpiry);
+            }
         }
 
         protected virtual void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo) { }

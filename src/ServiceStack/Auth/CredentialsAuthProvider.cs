@@ -135,8 +135,14 @@ namespace ServiceStack.Auth
                 }
             }
 
-            authService.SaveSession(session, SessionExpiry);
-            session.OnAuthenticated(authService, session, tokens, authInfo);
+            try
+            {
+                session.OnAuthenticated(authService, session, tokens, authInfo);
+            }
+            finally
+            {
+                authService.SaveSession(session, SessionExpiry);
+            }
         }
 
         protected virtual void AssertNotLocked(IUserAuth userAuth)
