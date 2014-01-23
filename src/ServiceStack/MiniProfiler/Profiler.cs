@@ -180,6 +180,15 @@ namespace ServiceStack.MiniProfiler
 		internal long ElapsedTicks { get { return _sw.ElapsedTicks; } }
 
         /// <summary>
+        /// Json representing the collection of CustomTimings relating to this Profiler
+        /// </summary>
+        /// <remarks>
+        /// Is used when storing the Profiler in SqlStorage
+        /// </remarks>
+        [DataMember(Order = 14)]
+        public string Json { get; set; }
+
+        /// <summary>
         /// Points to the currently executing Timing. 
         /// </summary>
         public Timing Head { get; set; }
