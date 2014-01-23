@@ -24,6 +24,11 @@ namespace RazorRockstars.Web
             Plugins.Add(new MsgPackFormat());
             Plugins.Add(new SwaggerFeature());
 
+            typeof(Resources)
+                .AddAttributes(new RestrictAttribute { VisibilityTo = RequestAttributes.None });
+            typeof(ResourceRequest)
+                .AddAttributes(new RestrictAttribute { VisibilityTo = RequestAttributes.None });
+
             var metadata = (MetadataFeature)Plugins.First(x => x is MetadataFeature);
             metadata.IndexPageFilter = page => {
                 page.OperationNames.Sort((x,y) => y.CompareTo(x));
