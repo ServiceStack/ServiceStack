@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ServiceStack.Host.Handlers;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {
@@ -58,23 +59,30 @@ namespace ServiceStack
             if (allowCredentials)
                 appHost.Config.GlobalResponseHeaders.Add(HttpHeaders.AllowCredentials, "true");
 
+            Action<IRequest, IResponse> allowOriginFilter = null;
+
             if (allowOriginWhitelist != null)
             {
-                appHost.GlobalRequestFilters.Add((httpReq, httpRes, requestDto) =>
-                {
+                allowOriginFilter = (httpReq, httpRes) => {
                     var origin = httpReq.Headers.Get("Origin");
                     if (allowOriginWhitelist.Contains(origin))
                     {
                         httpRes.AddHeader(HttpHeaders.AllowOrigin, origin);
                     }
-                });
+                };
+
+                appHost.PreRequestFilters.Add(allowOriginFilter);
             }
 
             if (AutoHandleOptionsRequests)
             {
                 //Handles Request and closes Response after emitting global HTTP Headers
                 var emitGlobalHeadersHandler = new CustomActionHandler(
-                    (httpReq, httpRes) => httpRes.EndRequest());
+                    (httpReq, httpRes) => {
+                        if (allowOriginFilter != null)
+                            allowOriginFilter(httpReq, httpRes);
+                        httpRes.EndRequest();
+                    });
 
                 appHost.RawHttpHandlers.Add(httpReq =>
                     httpReq.HttpMethod == HttpMethods.Options
