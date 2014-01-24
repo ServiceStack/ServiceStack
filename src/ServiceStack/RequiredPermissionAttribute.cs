@@ -29,12 +29,16 @@ namespace ServiceStack
 
         public override void Execute(IRequest req, IResponse res, object requestDto)
         {
+            if (HostContext.AppHost.HasValidAuthSecret(req))
+                return;
+
             base.Execute(req, res, requestDto); //first check if session is authenticated
             if (res.IsClosed) return; //AuthenticateAttribute already closed the request (ie auth failed)
 
             var session = req.GetSession();
 
-            if (session != null && session.HasRole(RoleNames.Admin))
+            if (session != null && session.UserAuthId != null 
+                && session.HasRole(RoleNames.Admin))
                 return;
 
             if (HasAllPermissions(req, session)) return;
@@ -50,13 +54,7 @@ namespace ServiceStack
         {
             if (HasAllPermissions(session)) return true;
 
-            if (userAuthRepo == null) 
-                userAuthRepo = req.TryResolve<IAuthRepository>();
-
-            if (userAuthRepo == null) return false;
-
-            var userAuth = userAuthRepo.GetUserAuth(session, null);
-            session.UpdateSession(userAuth);
+            session.UpdateFromUserAuthRepo(req, userAuthRepo);
 
             if (HasAllPermissions(session))
             {
@@ -68,10 +66,10 @@ namespace ServiceStack
 
         public bool HasAllPermissions(IAuthSession session)
         {
-            return this.RequiredPermissions
-                .All(requiredPermission => session != null
-                    && session.UserAuthId != null 
-                    && session.HasPermission(requiredPermission));
+            if (session == null || session.UserAuthId == null)
+                return false;
+
+            return this.RequiredPermissions.All(session.HasPermission);
         }
     }
 

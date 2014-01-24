@@ -37,7 +37,8 @@ namespace ServiceStack
 
             var session = req.GetSession();
 
-            if (session != null && session.HasRole(RoleNames.Admin))
+            if (session != null && session.UserAuthId != null 
+                && session.HasRole(RoleNames.Admin))
                 return;
 
             if (HasAllRoles(req, session)) return;
@@ -65,32 +66,35 @@ namespace ServiceStack
 
         public bool HasAllRoles(IAuthSession session)
         {
-            return this.RequiredRoles
-                .All(requiredRole => session != null
-                    && session.HasRole(requiredRole));
+            if (session == null || session.UserAuthId == null)
+                return false;
+
+            return this.RequiredRoles.All(session.HasRole);
         }
 
         /// <summary>
         /// Check all session is in all supplied roles otherwise a 401 HttpError is thrown
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="req"></param>
         /// <param name="requiredRoles"></param>
-        public static void AssertRequiredRoles(IRequest request, params string[] requiredRoles)
+        public static void AssertRequiredRoles(IRequest req, params string[] requiredRoles)
         {
             if (requiredRoles.IsEmpty()) return;
 
-            if (HostContext.HasValidAuthSecret(request))
+            if (HostContext.HasValidAuthSecret(req))
                 return;
 
-            var session = request.GetSession();
+            var session = req.GetSession();
 
-            if (session != null && session.UserAuthId != null && session.HasRole(RoleNames.Admin))
-                return;
+            if (session != null && session.UserAuthId != null)
+            {
+                if (session.HasRole(RoleNames.Admin))
+                    return;
+                if (requiredRoles.All(session.HasRole))
+                    return;
+            }
 
-            if (session != null && session.UserAuthId != null && requiredRoles.All(session.HasRole))
-                return;
-
-            session.UpdateFromUserAuthRepo(request);
+            session.UpdateFromUserAuthRepo(req);
 
             if (session != null && session.UserAuthId != null && requiredRoles.All(session.HasRole))
                 return;
