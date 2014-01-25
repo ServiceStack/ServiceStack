@@ -1,7 +1,6 @@
 ﻿using Funq;
 using NUnit.Framework;
 using ServiceStack.Configuration;
-using ServiceStack.FluentValidation;
 using ServiceStack.Messaging;
 using ServiceStack.Messaging.Redis;
 using ServiceStack.Redis;
@@ -10,69 +9,9 @@ using ServiceStack.Validation;
 
 namespace ServiceStack.Common.Tests.Messaging
 {
-    public class AnyTestMq
+    public class RedisMqAppHost : AppHostHttpListenerBase
     {
-        public int Id { get; set; }
-    }
-
-    public class AnyTestMqResponse
-    {
-        public int CorrelationId { get; set; }
-    }
-
-    public class PostTestMq
-    {
-        public int Id { get; set; }
-    }
-
-    public class PostTestMqResponse
-    {
-        public int CorrelationId { get; set; }
-    }
-
-    public class ValidateTestMq
-    {
-        public int Id { get; set; }
-    }
-
-    public class ValidateTestMqResponse
-    {
-        public int CorrelationId { get; set; }
-
-        public ResponseStatus ResponseStatus { get; set; }
-    }
-
-    public class ValidateTestMqValidator : AbstractValidator<ValidateTestMq>
-    {
-        public ValidateTestMqValidator()
-        {
-            RuleFor(x => x.Id)
-                .GreaterThanOrEqualTo(0)
-                .WithErrorCode("PositiveIntegersOnly");
-        }
-    }
-
-    public class TestMqService : IService
-    {
-        public object Any(AnyTestMq request)
-        {
-            return new AnyTestMqResponse { CorrelationId = request.Id };
-        }
-
-        public object Post(PostTestMq request)
-        {
-            return new PostTestMqResponse { CorrelationId = request.Id };
-        }
-
-        public object Post(ValidateTestMq request)
-        {
-            return new ValidateTestMqResponse { CorrelationId = request.Id };
-        }
-    }
-
-    public class AppHost : AppHostHttpListenerBase
-    {
-        public AppHost()
+        public RedisMqAppHost()
             : base("Service Name", typeof(AnyTestMq).Assembly) { }
 
         public override void Configure(Container container)
@@ -95,20 +34,20 @@ namespace ServiceStack.Common.Tests.Messaging
     }
 
     [TestFixture]
-    public class RedisMqServerTests
+    public class RedisMqServerInAppHostTests
     {
         private const string ListeningOn = "http://*:1337/";
         public const string Host = "http://localhost:1337";
         private const string BaseUri = Host + "/";
 
-        AppHost appHost;
+        ServiceStackHost appHost;
 
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
-            appHost = new AppHost();
-            appHost.Init();
-            appHost.Start(ListeningOn);
+            appHost = new RedisMqAppHost()
+                .Init()
+                .Start(ListeningOn);
 
             using (var redis = appHost.TryResolve<IRedisClientsManager>().GetClient())
                 redis.FlushAll();
@@ -126,10 +65,16 @@ namespace ServiceStack.Common.Tests.Messaging
             using (var mqFactory = appHost.TryResolve<IMessageFactory>())
             {
                 var request = new AnyTestMq { Id = 1 };
-                mqFactory.CreateMessageProducer().Publish(request);
-                var msg = mqFactory.CreateMessageQueueClient().Get(QueueNames<AnyTestMqResponse>.In, null)
-                    .ToMessage<AnyTestMqResponse>();
-                Assert.That(msg.GetBody().CorrelationId, Is.EqualTo(request.Id));
+
+                using (var mqProducer = mqFactory.CreateMessageProducer())
+                    mqProducer.Publish(request);
+
+                using (var mqClient = mqFactory.CreateMessageQueueClient())
+                {
+                    var msg = mqClient.Get<AnyTestMqResponse>(QueueNames<AnyTestMqResponse>.In, null);
+                    mqClient.Ack(msg);
+                    Assert.That(msg.GetBody().CorrelationId, Is.EqualTo(request.Id));
+                }
             }
         }
 
@@ -139,10 +84,16 @@ namespace ServiceStack.Common.Tests.Messaging
             using (var mqFactory = appHost.TryResolve<IMessageFactory>())
             {
                 var request = new PostTestMq { Id = 2 };
-                mqFactory.CreateMessageProducer().Publish(request);
-                var msg = mqFactory.CreateMessageQueueClient().Get(QueueNames<PostTestMqResponse>.In, null)
-                    .ToMessage<PostTestMqResponse>();
-                Assert.That(msg.GetBody().CorrelationId, Is.EqualTo(request.Id));
+
+                using (var mqProducer = mqFactory.CreateMessageProducer())
+                    mqProducer.Publish(request);
+
+                using (var mqClient = mqFactory.CreateMessageQueueClient())
+                {
+                    var msg = mqClient.Get<PostTestMqResponse>(QueueNames<PostTestMqResponse>.In, null);
+                    mqClient.Ack(msg);
+                    Assert.That(msg.GetBody().CorrelationId, Is.EqualTo(request.Id));
+                }
             }
         }
 
@@ -155,9 +106,10 @@ namespace ServiceStack.Common.Tests.Messaging
             client.SendOneWay(request);
 
             using (var mqFactory = appHost.TryResolve<IMessageFactory>())
+            using (var mqClient = mqFactory.CreateMessageQueueClient())
             {
-                var msg = mqFactory.CreateMessageQueueClient().Get(QueueNames<AnyTestMqResponse>.In, null)
-                    .ToMessage<AnyTestMqResponse>();
+                var msg = mqClient.Get<AnyTestMqResponse>(QueueNames<AnyTestMqResponse>.In, null);
+                mqClient.Ack(msg);
                 Assert.That(msg.GetBody().CorrelationId, Is.EqualTo(request.Id));
             }
         }
@@ -171,9 +123,10 @@ namespace ServiceStack.Common.Tests.Messaging
             client.SendOneWay(request);
 
             using (var mqFactory = appHost.TryResolve<IMessageFactory>())
+            using (var mqClient = mqFactory.CreateMessageQueueClient())
             {
-                var msg = mqFactory.CreateMessageQueueClient().Get(QueueNames<PostTestMqResponse>.In, null)
-                    .ToMessage<PostTestMqResponse>();
+                var msg = mqClient.Get<PostTestMqResponse>(QueueNames<PostTestMqResponse>.In, null);
+                mqClient.Ack(msg);
                 Assert.That(msg.GetBody().CorrelationId, Is.EqualTo(request.Id));
             }
         }
@@ -184,19 +137,26 @@ namespace ServiceStack.Common.Tests.Messaging
             using (var mqFactory = appHost.TryResolve<IMessageFactory>())
             {
                 var request = new ValidateTestMq { Id = -10 };
-                mqFactory.CreateMessageProducer().Publish(request);
-                var msg = mqFactory.CreateMessageQueueClient().Get(QueueNames<ValidateTestMqResponse>.Dlq, null)
-                    .ToMessage<ValidateTestMqResponse>();
 
-                msg.GetBody().PrintDump();
-                Assert.That(msg.GetBody().ResponseStatus.ErrorCode, Is.EqualTo("PositiveIntegersOnly"));
+                using (var mqProducer = mqFactory.CreateMessageProducer())
+                using (var mqClient = mqFactory.CreateMessageQueueClient())
+                {
+                    mqProducer.Publish(request);
 
-                request = new ValidateTestMq { Id = 10 };
-                mqFactory.CreateMessageProducer().Publish(request);
-                msg = mqFactory.CreateMessageQueueClient().Get(QueueNames<ValidateTestMqResponse>.In, null)
-                    .ToMessage<ValidateTestMqResponse>();
-                Assert.That(msg.GetBody().CorrelationId, Is.EqualTo(request.Id));
+                    var msg = mqClient.Get<ValidateTestMqResponse>(QueueNames<ValidateTestMqResponse>.Dlq, null);
+                    mqClient.Ack(msg);
+
+                    msg.GetBody().PrintDump();
+                    Assert.That(msg.GetBody().ResponseStatus.ErrorCode, Is.EqualTo("PositiveIntegersOnly"));
+
+                    request = new ValidateTestMq { Id = 10 };
+                    mqProducer.Publish(request);
+                    msg = mqClient.Get<ValidateTestMqResponse>(QueueNames<ValidateTestMqResponse>.In, null);
+                    mqClient.Ack(msg);
+                    Assert.That(msg.GetBody().CorrelationId, Is.EqualTo(request.Id));
+                }
             }
         }
+
     }
 }

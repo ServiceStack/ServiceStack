@@ -46,6 +46,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\src\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
+    <Reference Include="RabbitMQ.Client, Version=3.2.1.0, Culture=neutral, PublicKeyToken=89e7d7c5feba84ce, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\src\packages\RabbitMQ.Client.3.2.1\lib\net30\RabbitMQ.Client.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Interfaces">
       <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
@@ -76,6 +80,7 @@
   <ItemGroup>
     <Compile Include="Benchmarks\RedisMqServerBenchmarks.cs" />
     <Compile Include="Benchmarks\RedisMqServerServerBenchmarks.cs" />
+    <Compile Include="Messaging\RabbitMqServerTests.cs" />
     <Compile Include="Messaging\InMemoryTransientMessagingHostTests.cs" />
     <Compile Include="Messaging\MessageSerializationTests.cs" />
     <Compile Include="Messaging\MessagingHostTestBase.cs" />
@@ -101,6 +106,10 @@
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416db-c143-4028-a0c3-cf41892d18d3}</Project>
       <Name>ServiceStack.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.RabbitMq\ServiceStack.RabbitMq.csproj">
+      <Project>{E940929C-9E76-41CD-BD09-08029FE9B440}</Project>
+      <Name>ServiceStack.RabbitMq</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj">
       <Project>{5a315f92-80d2-4c60-a5a4-22e027ac7e7e}</Project>

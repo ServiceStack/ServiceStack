@@ -11,10 +11,6 @@ namespace ServiceStack.Messaging.Redis
         public const int Starting = 2;
         public const int Started = 3;
 
-        //Control Commands
-        public const string StopCommand = "STOP";
-        public const string ResetCommand = "RESET";
-
         public static string ToString(int workerStatus)
         {
             switch (workerStatus)
@@ -32,5 +28,15 @@ namespace ServiceStack.Messaging.Redis
             }
             return "Unknown";
         }
+    }
+
+    public static class WorkerOperation
+    {
+        public const string ControlCommand = "CTRL";
+
+        public const int NoOp = 0;
+        public const int Stop = 1;
+        public const int Reset = 2;
+        public const int Restart = 3;
     }
 }

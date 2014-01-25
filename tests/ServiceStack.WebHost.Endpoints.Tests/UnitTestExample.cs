@@ -8,6 +8,7 @@ using System.Data;
 using System.Linq;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.Testing;

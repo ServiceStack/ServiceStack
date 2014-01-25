@@ -140,6 +140,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.RazorV4", "Ser
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.NetSerializer", "ServiceStack.NetSerializer\ServiceStack.NetSerializer.csproj", "{23202156-C4C7-4D03-8D92-E380C8B66EC8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.RabbitMq", "ServiceStack.RabbitMq\ServiceStack.RabbitMq.csproj", "{E940929C-9E76-41CD-BD09-08029FE9B440}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1332,6 +1334,41 @@ Global
 		{23202156-C4C7-4D03-8D92-E380C8B66EC8}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{23202156-C4C7-4D03-8D92-E380C8B66EC8}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.Build.0 = Release|Any CPU
 		{23202156-C4C7-4D03-8D92-E380C8B66EC8}.STATIC_ONLY NO_EXPRESSIONS|x86.ActiveCfg = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.MonoDebug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.MonoDebug|Any CPU.Build.0 = Debug|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.MonoDebug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.MonoDebug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.MonoDebug|x86.ActiveCfg = Debug|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.MonoRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.MonoRelease|Any CPU.Build.0 = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.MonoRelease|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.MonoRelease|Mixed Platforms.Build.0 = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.MonoRelease|x86.ActiveCfg = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.MonoTouch|Any CPU.Build.0 = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.MonoTouch|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.MonoTouch|Mixed Platforms.Build.0 = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.MonoTouch|x86.ActiveCfg = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Release|x86.ActiveCfg = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Signed|Any CPU.ActiveCfg = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Signed|Any CPU.Build.0 = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Signed|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Signed|Mixed Platforms.Build.0 = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Signed|x86.ActiveCfg = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.ActiveCfg = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.Build.0 = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.Build.0 = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.STATIC_ONLY NO_EXPRESSIONS|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

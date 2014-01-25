@@ -32,7 +32,7 @@ namespace ServiceStack.Messaging.Redis
     public class RedisMqServer : IMessageService
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(RedisMqServer));
-        public const int DefaultRetryCount = 2; //Will be a total of 3 attempts
+        public const int DefaultRetryCount = 1; //Will be a total of 2 attempts
 
         public int RetryCount { get; protected set; }
 
@@ -99,6 +99,7 @@ namespace ServiceStack.Messaging.Redis
         private int noOfContinuousErrors = 0;
         private string lastExMsg = null;
         private int status;
+        private int doOperation = WorkerOperation.NoOp;
 
         private Thread bgThread; //Subscription controller thread
         private long bgThreadCount = 0;
@@ -310,21 +311,25 @@ namespace ServiceStack.Messaging.Redis
 
                             subscription.OnMessage = (channel, msg) =>
                             {
-                                if (msg == WorkerStatus.StopCommand)
+                                if (msg == WorkerOperation.ControlCommand)
                                 {
-                                    Log.Debug("Stop Command Issued");
+                                    var op = Interlocked.CompareExchange(ref doOperation, WorkerOperation.NoOp, doOperation);
+                                    switch (op)
+                                    {
+                                        case WorkerOperation.Stop:
+                                            Log.Debug("Stop Command Issued");
 
-                                    if (Interlocked.CompareExchange(ref status, WorkerStatus.Stopped, WorkerStatus.Started) != WorkerStatus.Started)
-                                        Interlocked.CompareExchange(ref status, WorkerStatus.Stopped, WorkerStatus.Stopping);
+                                            if (Interlocked.CompareExchange(ref status, WorkerStatus.Stopped, WorkerStatus.Started) != WorkerStatus.Started)
+                                                Interlocked.CompareExchange(ref status, WorkerStatus.Stopped, WorkerStatus.Stopping);
 
-                                    Log.Debug("UnSubscribe From All Channels...");
-                                    subscription.UnSubscribeFromAllChannels(); //Un block thread.
-                                    return;
-                                }
-                                if (msg == WorkerStatus.ResetCommand)
-                                {
-                                    subscription.UnSubscribeFromAllChannels(); //Un block thread.
-                                    return;
+                                            Log.Debug("UnSubscribe From All Channels...");
+                                            subscription.UnSubscribeFromAllChannels(); //Un block thread.
+                                            return;
+
+                                        case WorkerOperation.Reset:
+                                            subscription.UnSubscribeFromAllChannels(); //Un block thread.
+                                            return;
+                                    }
                                 }
 
                                 if (!string.IsNullOrEmpty(msg))
@@ -385,7 +390,8 @@ namespace ServiceStack.Messaging.Redis
                 {
                     using (var redis = clientsManager.GetClient())
                     {
-                        redis.PublishMessage(QueueNames.TopicIn, WorkerStatus.StopCommand);
+                        Interlocked.CompareExchange(ref doOperation, WorkerOperation.Stop, doOperation);
+                        redis.PublishMessage(QueueNames.TopicIn, WorkerOperation.ControlCommand);
                     }
                 }
                 catch (Exception ex)
@@ -405,7 +411,8 @@ namespace ServiceStack.Messaging.Redis
                     //New thread-safe client with same connection info as connected master
                     using (var currentlySubscribedClient = ((RedisClient)masterClient).CloneClient())
                     {
-                        currentlySubscribedClient.PublishMessage(QueueNames.TopicIn, WorkerStatus.ResetCommand);
+                        Interlocked.CompareExchange(ref doOperation, WorkerOperation.Reset, doOperation);
+                        currentlySubscribedClient.PublishMessage(QueueNames.TopicIn, WorkerOperation.ControlCommand);
                     }
                 }
                 else
