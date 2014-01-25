@@ -616,45 +616,19 @@ namespace ServiceStack.ServiceClient.Web
 #endif
 )
             {
-                var errorResponse = ((HttpWebResponse)webEx.Response);
-                Log.Error(webEx);
-                Log.DebugFormat("Status Code : {0}", errorResponse.StatusCode);
-                Log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
+                var serviceEx = WebRequestUtils.CreateWebServiceException<TResponse>(ContentType, webEx, this.StreamDeserializer, Log);
 
-                var serviceEx = new WebServiceException(errorResponse.StatusDescription)
-                {
-                    StatusCode = (int)errorResponse.StatusCode,
-                };
-
+                TResponse responseDto;
                 try
                 {
-                    using (var stream = errorResponse.GetResponseStream())
-                    {
-                        //Uncomment to Debug exceptions:
-                        //var strResponse = new StreamReader(stream).ReadToEnd();
-                        //Console.WriteLine("Response: " + strResponse);
-                        //stream.Position = 0;
-                        serviceEx.ResponseBody = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
-#if !MONOTOUCH
-                        // MonoTouch throws NotSupportedException when setting System.Net.WebConnectionStream.Position
-                        // Not sure if the stream is used later though, so may have to copy to MemoryStream and
-                        // pass that around instead after this point?
-                        stream.Position = 0;
-#endif
-
-                        serviceEx.ResponseDto = this.StreamDeserializer(typeof(TResponse), stream);
-                        requestState.HandleError((TResponse)serviceEx.ResponseDto, serviceEx);
-                    }
+                    responseDto = (TResponse)serviceEx.ResponseDto;
                 }
-                catch (Exception innerEx)
+                catch
                 {
-                    // Oh, well, we tried
-                    Log.Debug(string.Format("WebException Reading Response Error: {0}", innerEx.Message), innerEx);
-                    requestState.HandleError(default(TResponse), new WebServiceException(errorResponse.StatusDescription, innerEx)
-                    {
-                        StatusCode = (int)errorResponse.StatusCode,
-                    });
-                }
+                    responseDto = default(TResponse);
+                }                
+
+                requestState.HandleError(responseDto, serviceEx);
                 return;
             }
 

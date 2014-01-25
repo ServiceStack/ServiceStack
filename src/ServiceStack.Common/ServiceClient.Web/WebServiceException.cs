@@ -33,23 +33,43 @@ namespace ServiceStack.ServiceClient.Web
 
         private void ParseResponseDto()
         {
-            string responseStatus;
-            if (!TryGetResponseStatusFromResponseDto(out responseStatus))
+            var responseStatus = ResponseStatus;
+            if (responseStatus != null)
             {
-                if (!TryGetResponseStatusFromResponseBody(out responseStatus))
+                errorCode = responseStatus.ErrorCode;
+                errorMessage = responseStatus.Message;
+                serverStackTrace = responseStatus.StackTrace;
+
+                return;
+            }
+
+            string responseStatusString;
+            if (!TryGetResponseStatusFromResponseDto(out responseStatusString))
+            {
+                if (!TryGetResponseStatusFromResponseBody(out responseStatusString))
                 {
                     errorCode = StatusDescription;
                     return;
                 }
             }
 
-            var rsMap = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(responseStatus);
+            var rsMap = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(responseStatusString);
             if (rsMap == null) return;
 
             rsMap = new Dictionary<string, string>(rsMap, StringExtensions.InvariantComparerIgnoreCase());
             rsMap.TryGetValue("ErrorCode", out errorCode);
             rsMap.TryGetValue("Message", out errorMessage);
             rsMap.TryGetValue("StackTrace", out serverStackTrace);
+
+            if (!string.IsNullOrEmpty(errorCode))
+            {
+                ResponseStatus = new ResponseStatus
+                                     {
+                                         ErrorCode = errorCode,
+                                         Message = errorMessage,
+                                         StackTrace = serverStackTrace
+                                     };
+            }
         }
 
         private bool TryGetResponseStatusFromResponseDto(out string responseStatus)
@@ -113,6 +133,7 @@ namespace ServiceStack.ServiceClient.Web
         }
 
         private string serverStackTrace;
+
         public string ServerStackTrace
         {
             get
@@ -125,10 +146,14 @@ namespace ServiceStack.ServiceClient.Web
             }
         }
 
+        private ResponseStatus _responseStatus;
+
         public ResponseStatus ResponseStatus
         {
             get
             {
+                if (this._responseStatus != null) return this._responseStatus;
+                
                 if (this.ResponseDto == null)
                     return null;
 
@@ -141,6 +166,10 @@ namespace ServiceStack.ServiceClient.Web
                     return null;
 
                 return ReflectionUtils.GetProperty(this.ResponseDto, propertyInfo) as ResponseStatus;
+            }
+            set
+            {
+                this._responseStatus = value;
             }
         }
 

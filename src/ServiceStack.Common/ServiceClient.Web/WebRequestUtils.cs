@@ -1,7 +1,9 @@
 using System;
+using System.IO;
 using System.Net;
 using System.Text;
 using System.Reflection;
+using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
@@ -253,7 +255,7 @@ namespace ServiceStack.ServiceClient.Web
                 {
 
                     var returnDtoType = genericDef.GenericTypeArguments()[0];
-                    var hasResponseStatus = returnDtoType is IHasResponseStatus
+                    var hasResponseStatus = typeof(IHasResponseStatus).IsAssignableFrom(returnDtoType)
                         || returnDtoType.GetPropertyInfo("ResponseStatus") != null;
                    
                     //Only use the specified Return type if it has a ResponseStatus property
@@ -265,6 +267,83 @@ namespace ServiceStack.ServiceClient.Web
             }
 
             return responseDtoType ?? typeof(ErrorResponse);
+        }
+
+        public static WebServiceException CreateWebServiceException<TResponse>(string contentType, WebException webEx, StreamDeserializerDelegate streamDeserializer, ILog log)
+        {
+            var errorResponse = ((HttpWebResponse)webEx.Response);
+            log.Error(webEx);
+            log.DebugFormat("Status Code : {0}", errorResponse.StatusCode);
+            log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
+
+            var serviceEx = new WebServiceException(errorResponse.StatusDescription)
+            {
+                StatusCode = (int)errorResponse.StatusCode,
+                StatusDescription = errorResponse.StatusDescription,
+            };
+
+            ResponseStatus responseStatus = null;
+
+            try
+            {
+                if (errorResponse.ContentType.MatchesContentType(contentType))
+                {
+                    var bytes = errorResponse.GetResponseStream().ReadFully();
+
+                    // attempt to read ErrorResponse from stream
+                    using (var stream = new MemoryStream(bytes))
+                    {
+                        try
+                        {
+                            var errorResponseDto = streamDeserializer(typeof(ErrorResponse), stream) as ErrorResponse;
+                            if (errorResponseDto != null && errorResponseDto.ResponseStatus != null &&
+                                !string.IsNullOrEmpty(errorResponseDto.ResponseStatus.ErrorCode))
+                            {
+                                responseStatus = errorResponseDto.ResponseStatus;
+                            }
+                        }
+                        catch
+                        {
+                            // ignore
+                        }
+                    }
+
+                    using (var stream = new MemoryStream(bytes))
+                    {
+                        serviceEx.ResponseBody = bytes.FromUtf8Bytes();
+
+                        var hasResponseStatus = typeof(IHasResponseStatus).IsAssignableFrom(typeof(TResponse))
+                            || typeof(TResponse).GetPropertyInfo("ResponseStatus") != null;
+
+                        serviceEx.ResponseDto = typeof(TResponse) == typeof(HttpWebResponse)
+                            ? errorResponse
+                            : streamDeserializer(typeof(TResponse), stream);
+
+                        if (!hasResponseStatus && responseStatus != null)
+                        {
+                            serviceEx.ResponseStatus = responseStatus;
+                        }
+
+                    }
+                }
+                else
+                {
+                    serviceEx.ResponseBody = errorResponse.GetResponseStream().ToUtf8String();
+                }
+
+                return serviceEx;
+            }
+            catch (Exception innerEx)
+            {
+                // Oh, well, we tried
+                return new WebServiceException(errorResponse.StatusDescription, innerEx)
+                {
+                    StatusCode = (int)errorResponse.StatusCode,
+                    StatusDescription = errorResponse.StatusDescription,
+                    ResponseBody = serviceEx.ResponseBody,
+                    ResponseStatus = responseStatus
+                };
+            }
         }
     }
 

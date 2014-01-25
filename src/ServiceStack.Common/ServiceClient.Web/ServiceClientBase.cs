@@ -539,48 +539,13 @@ namespace ServiceStack.ServiceClient.Web
         protected internal void ThrowWebServiceException<TResponse>(Exception ex, string requestUri)
         {
             var webEx = ex as WebException;
-            if (webEx != null && webEx.Status == WebExceptionStatus.ProtocolError)
+            if (webEx != null
+#if !SILVERLIGHT
+ && webEx.Status == WebExceptionStatus.ProtocolError
+#endif
+)
             {
-                var errorResponse = ((HttpWebResponse)webEx.Response);
-                log.Error(webEx);
-                log.DebugFormat("Status Code : {0}", errorResponse.StatusCode);
-                log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
-
-                var serviceEx = new WebServiceException(errorResponse.StatusDescription)
-                {
-                    StatusCode = (int)errorResponse.StatusCode,
-                    StatusDescription = errorResponse.StatusDescription,
-                };
-
-                try
-                {
-                    if (errorResponse.ContentType.MatchesContentType(ContentType))
-                    {
-                        var bytes = errorResponse.GetResponseStream().ReadFully();
-                        using (var stream = new MemoryStream(bytes))
-                        {
-                            serviceEx.ResponseBody = bytes.FromUtf8Bytes();
-                            serviceEx.ResponseDto = DeserializeFromStream<TResponse>(stream);
-                        }
-                    }
-                    else
-                    {
-                        serviceEx.ResponseBody = errorResponse.GetResponseStream().ToUtf8String();
-                    }
-                }
-                catch (Exception innerEx)
-                {
-                    // Oh, well, we tried
-                    throw new WebServiceException(errorResponse.StatusDescription, innerEx)
-                    {
-                        StatusCode = (int)errorResponse.StatusCode,
-                        StatusDescription = errorResponse.StatusDescription,
-                        ResponseBody = serviceEx.ResponseBody
-                    };
-                }
-
-                //Escape deserialize exception handling and throw here
-                throw serviceEx;
+                throw WebRequestUtils.CreateWebServiceException<TResponse>(ContentType, webEx, this.StreamDeserializer, log);
             }
 
             var authEx = ex as AuthenticationException;
