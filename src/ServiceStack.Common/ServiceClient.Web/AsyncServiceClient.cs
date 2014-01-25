@@ -474,7 +474,7 @@ namespace ServiceStack.ServiceClient.Web
             catch (Exception ex)
             {
                 var firstCall = Interlocked.Increment(ref requestState.RequestCount) == 1;
-                if (firstCall && WebRequestUtils.ShouldAuthenticate(ex, this.UserName, this.Password))
+                if (firstCall && WebRequestUtils.ShouldAuthenticate(ex, this.UserName, this.Password, requestState.WebRequest))
                 {
                     try
                     {

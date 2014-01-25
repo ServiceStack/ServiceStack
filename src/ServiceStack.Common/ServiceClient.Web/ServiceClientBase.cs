@@ -430,7 +430,8 @@ namespace ServiceStack.ServiceClient.Web
                     requestUri,
                     () => SendRequest(HttpMethods.Post, requestUri, request),
                     c => c.GetResponse(),
-                    out response))
+                    out response,
+                    client))
                 {
                     throw;
                 }
@@ -450,11 +451,12 @@ namespace ServiceStack.ServiceClient.Web
         /// <c>WebServiceException</c> containing the parsed DTO. Then override Send to handle that exception.
         /// </summary>
         protected virtual bool HandleResponseException<TResponse>(Exception ex, object request, string requestUri,
-            Func<WebRequest> createWebRequest, Func<WebRequest, WebResponse> getResponse, out TResponse response)
+            Func<WebRequest> createWebRequest, Func<WebRequest, WebResponse> getResponse, out TResponse response,
+            WebRequest oldRequest)
         {
             try
             {
-                if (WebRequestUtils.ShouldAuthenticate(ex, this.UserName, this.Password))
+                if (WebRequestUtils.ShouldAuthenticate(ex, this.UserName, this.Password, oldRequest))
                 {
                     // adamfowleruk : Check response object to see what type of auth header to add
 
@@ -906,7 +908,8 @@ namespace ServiceStack.ServiceClient.Web
                     requestUri,
                     () => SendRequest(httpMethod, requestUri, request),
                     c => c.GetResponse(),
-                    out response))
+                    out response,
+                    client))
                 {
                     throw;
                 }
@@ -1068,10 +1071,11 @@ namespace ServiceStack.ServiceClient.Web
                 return webRequest;
             };
 
+            WebRequest outerWebRequest = null;
             try
             {
-                var webRequest = createWebRequest();
-                var webResponse = webRequest.GetResponse();
+                outerWebRequest = createWebRequest();
+                var webResponse = outerWebRequest.GetResponse();
                 return HandleResponse<TResponse>(webResponse);
             }
             catch (Exception ex)
@@ -1082,7 +1086,7 @@ namespace ServiceStack.ServiceClient.Web
                 fileToUpload.Seek(currentStreamPosition, SeekOrigin.Begin);
 
                 if (!HandleResponseException(
-                    ex, request, requestUri, createWebRequest, c => c.GetResponse(), out response))
+                    ex, request, requestUri, createWebRequest, c => c.GetResponse(), out response, outerWebRequest))
                 {
                     throw;
                 }
@@ -1105,9 +1109,10 @@ namespace ServiceStack.ServiceClient.Web
             var requestUri = GetUrl(relativeOrAbsoluteUrl);
             Func<WebRequest> createWebRequest = () => PrepareWebRequest(HttpMethods.Post, requestUri, null, null);
 
+            WebRequest webRequest = null;
             try
             {
-                var webRequest = createWebRequest();
+                webRequest = createWebRequest();
                 webRequest.UploadFile(fileToUpload, fileName, mimeType);
                 var webResponse = webRequest.GetResponse();
                 return HandleResponse<TResponse>(webResponse);
@@ -1124,7 +1129,8 @@ namespace ServiceStack.ServiceClient.Web
                     requestUri,
                     createWebRequest,
                     c => { c.UploadFile(fileToUpload, fileName, mimeType); return c.GetResponse(); },
-                    out response))
+                    out response,
+                    webRequest))
                 {
                     throw;
                 }
