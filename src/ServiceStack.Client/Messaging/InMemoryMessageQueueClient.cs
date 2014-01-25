@@ -25,29 +25,40 @@ namespace ServiceStack.Messaging
             factory.PublishMessage(QueueNames<T>.In, message);
         }
 
-        public void Publish(string queueName, byte[] messageBytes)
+        public void Publish(string queueName, IMessage message)
         {
+            var messageBytes = message.ToBytes();
             factory.PublishMessage(queueName, messageBytes);
         }
 
-        public void Notify(string queueName, byte[] messageBytes)
+        public void Notify(string queueName, IMessage message)
         {
+            var messageBytes = message.ToBytes();
             factory.PublishMessage(queueName, messageBytes);
         }
 
-        public byte[] GetAsync(string queueName)
+        public IMessage<T> Get<T>(string queueName, TimeSpan? timeOut)
         {
-            return factory.GetMessageAsync(queueName);
+            return GetAsync<T>(queueName);
         }
 
-        public string WaitForNotifyOnAny(params string[] channelNames)
+        public IMessage<T> GetAsync<T>(string queueName)
         {
-            throw new NotImplementedException();
+            return factory.GetMessageAsync(queueName)
+                .ToMessage<T>();
         }
 
-        public byte[] Get(string queueName, TimeSpan? timeOut)
+        public void Ack(IMessage message)
         {
-            throw new NotImplementedException();
+        }
+
+        public void Nak(IMessage message, bool requeue)
+        {
+            var queueName = requeue
+                ? message.ToInQueueName()
+                : message.ToDlqQueueName();
+
+            Publish(queueName, message);
         }
 
         public void Dispose()

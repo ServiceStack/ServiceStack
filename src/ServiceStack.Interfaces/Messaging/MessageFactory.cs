@@ -52,6 +52,7 @@ namespace ServiceStack.Messaging
         public string ReplyTo { get; set; }
         public int Options { get; set; }
         public MessageError Error { get; set; }
+        public string Tag { get; set; }
         public object Body { get; set; }
     }
 

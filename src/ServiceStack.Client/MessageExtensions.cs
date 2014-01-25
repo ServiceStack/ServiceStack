@@ -40,6 +40,9 @@ namespace ServiceStack
 
         public static IMessage ToMessage(this byte[] bytes, Type ofType)
         {
+            if (bytes == null)
+                return null;
+
             var msgFn = GetToMessageFn(ofType);
             var msg = msgFn(bytes);
             return msg;
@@ -47,6 +50,9 @@ namespace ServiceStack
 
         public static Message<T> ToMessage<T>(this byte[] bytes)
         {
+            if (bytes == null)
+                return null;
+
             var messageText = ToString(bytes);
             return JsonSerializer.DeserializeFromString<Message<T>>(messageText);
         }
@@ -68,8 +74,13 @@ namespace ServiceStack
             var queueName = message.Priority > 0
                 ? new QueueNames(message.Body.GetType()).Priority
                 : new QueueNames(message.Body.GetType()).In;
-            
+
             return queueName;
+        }
+
+        public static string ToDlqQueueName(this IMessage message)
+        {
+            return new QueueNames(message.Body.GetType()).Dlq;
         }
 
         public static string ToInQueueName<T>(this IMessage<T> message)

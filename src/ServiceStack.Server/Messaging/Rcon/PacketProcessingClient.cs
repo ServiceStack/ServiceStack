@@ -30,71 +30,64 @@ namespace ServiceStack.Messaging.Rcon
                 Publish<T>(new Message<T>(messageBody));
         }
 
-        public void Publish(IMessage message)
-        {
-            var messageBytes = message.ToBytes();
-            Publish(new QueueNames(message.Body.GetType()).In, messageBytes);
-        }
-
         public void Publish<T>(IMessage<T> message)
         {
-            var messageBytes = message.ToBytes();
-            Publish(message.ToInQueueName(), messageBytes);
+            Publish(message.ToInQueueName(), message);
         }
 
         /// <summary>
         /// Publish the specified message into the durable queue @queueName
         /// </summary>
-        /// <param name="queueName"></param>
-        /// <param name="messageBytes"></param>
-        public void Publish(string queueName, byte[] messageBytes)
+        public void Publish(string queueName, IMessage message)
         {
+            var messageBytes = message.ToBytes();
             theServer.Publish(queueName, messageBytes, theClient, thePacket.Sequence);
         }
         
         /// <summary>
         /// Publish the specified message into the transient queue @queueName
         /// </summary>
-        /// <param name="queueName"></param>
-        /// <param name="messageBytes"></param>
-        public void Notify(string queueName, byte[] messageBytes)
+        public void Notify(string queueName, IMessage message)
         {
+            var messageBytes = message.ToBytes();
             theServer.Notify(queueName, messageBytes, theClient, thePacket.Sequence);
         }
 
         /// <summary>
         /// Synchronous blocking get.
         /// </summary>
-        /// <param name="queueName"></param>
-        /// <param name="timeOut"></param>
-        /// <returns></returns>
-        public byte[] Get(string queueName, TimeSpan? timeOut)
+        public IMessage<T> Get<T>(string queueName, TimeSpan? timeOut)
         {
             if (givenPacket)
                 return null;
             var ret = thePacket.Words[1];
             givenPacket = true;
-            return ret;
+            return ret.ToMessage<T>();
         }
         
         /// <summary>
         /// Non blocking get message
         /// </summary>
-        /// <param name="queueName"></param>
-        /// <returns></returns>
-        public byte[] GetAsync(string queueName)
+        public IMessage<T> GetAsync<T>(string queueName)
         {
-            return Get(queueName, TimeSpan.MinValue);
+            return Get<T>(queueName, TimeSpan.MinValue);
         }
 
-        /// <summary>
-        /// Blocking wait for notifications on any of the supplied channels
-        /// </summary>
-        /// <param name="channelNames"></param>
-        /// <returns></returns>
-        public string WaitForNotifyOnAny(params string[] channelNames)
+        public void Ack(IMessage message)
         {
-            return null;
+        }
+
+        public void Nak(IMessage message, bool requeue)
+        {
+            var queueName = requeue
+                ? message.ToInQueueName()
+                : message.ToDlqQueueName();
+
+            Publish(queueName, message);
+        }
+
+        public void Nak(IMessage message)
+        {
         }
 
         public void Dispose()

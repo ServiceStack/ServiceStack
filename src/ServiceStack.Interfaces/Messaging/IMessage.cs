@@ -20,6 +20,8 @@ namespace ServiceStack.Messaging
 
         MessageError Error { get; set; }
 
+        string Tag { get; set; }
+
         object Body { get; set; }
     }
 
