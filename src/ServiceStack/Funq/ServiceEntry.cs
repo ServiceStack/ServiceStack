@@ -36,5 +36,10 @@ namespace Funq
 			this.Reuse = scope;
 			return this;
 		}
-	}
+
+        public virtual object GetInstance()
+        {
+            return null;
+        }
+    }
 }

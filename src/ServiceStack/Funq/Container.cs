@@ -76,7 +76,16 @@ namespace Funq
                     childContainers.Pop().Dispose();
                 }
             }
-		}
+
+            foreach (var serviceEntry in services.Values)
+            {
+                var disposable = serviceEntry.GetInstance() as IDisposable;
+                if (disposable != null && !(disposable is Container))
+                {
+                    disposable.Dispose();
+                }
+            }
+        }
 
 		/// <include file='Container.xdoc' path='docs/doc[@for="Container.Register(instance)"]/*'/>
 		public void Register<TService>(TService instance)
