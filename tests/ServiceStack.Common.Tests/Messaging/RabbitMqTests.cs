@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -12,7 +13,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests.Messaging
 {
-    public class Hello
+    public class HelloRabbit
     {
         public string Name { get; set; }
     }
@@ -21,7 +22,21 @@ namespace ServiceStack.Common.Tests.Messaging
     public class RabbitMqTests
     {
         private readonly ConnectionFactory mqFactory = new ConnectionFactory { HostName = "localhost" };
-        private const string ExchangeName = "mq:exchange";
+        private const string Exchange = "mq:tests";
+        private const string ExchangeDlq = "mq:tests.dlq";
+        private const string ExchangeTopic = "mq:tests.topic";
+
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
+        {
+            using (IConnection connection = mqFactory.CreateConnection())
+            using (IModel channel = connection.CreateModel())
+            {
+                channel.RegisterDirectExchange(Exchange);
+                channel.RegisterDlqExchange(ExchangeDlq);
+                channel.PurgeQueue<HelloRabbit>();
+            }
+        }
 
         [Test]
         public void Can_publish_messages_to_RabbitMQ()
@@ -29,22 +44,22 @@ namespace ServiceStack.Common.Tests.Messaging
             using (IConnection connection = mqFactory.CreateConnection())
             using (IModel channel = connection.CreateModel())
             {
-                channel.ExchangeDeclare(ExchangeName, "direct");
-                channel.QueueDeclare(QueueNames<Hello>.In, durable: true, exclusive: false, autoDelete: false, arguments: null);
-                channel.QueueBind(QueueNames<Hello>.In, ExchangeName, routingKey: QueueNames<Hello>.In);
+                channel.RegisterDirectExchange(Exchange);
+                channel.RegisterDlqExchange(ExchangeDlq);
+                RegisterDlq(channel, QueueNames<HelloRabbit>.Dlq);
+                RegisterQueue(channel, QueueNames<HelloRabbit>.In);
 
-                for (int i = 0; i < 100; i++)
-                {
-                    byte[] payload = new Hello { Name = "World! #{0}".Fmt(i) }.ToJson().ToUtf8Bytes();
+                5.Times(i => {
+                    byte[] payload = new HelloRabbit { Name = "World! #{0}".Fmt(i) }.ToJson().ToUtf8Bytes();
                     var props = channel.CreateBasicProperties();
                     props.SetPersistent(true);
 
-                    channel.BasicPublish(exchange: ExchangeName,
-                        routingKey: QueueNames<Hello>.In, basicProperties: props, body: payload);
+                    channel.BasicPublish(exchange: Exchange,
+                        routingKey: QueueNames<HelloRabbit>.In, basicProperties: props, body: payload);
 
                     Console.WriteLine("Sent Message " + i);
                     Thread.Sleep(1000);
-                }
+                });
             }
         }
 
@@ -54,13 +69,14 @@ namespace ServiceStack.Common.Tests.Messaging
             using (IConnection connection = mqFactory.CreateConnection())
             using (IModel channel = connection.CreateModel())
             {
-                channel.ExchangeDeclare(ExchangeName, "direct");
-                channel.QueueDeclare(QueueNames<Hello>.In, durable: true, exclusive: false, autoDelete: false, arguments: null);
-                channel.QueueBind(QueueNames<Hello>.In, ExchangeName, routingKey: QueueNames<Hello>.In);
+                channel.RegisterDirectExchange(Exchange);
+                RegisterQueue(channel, QueueNames<HelloRabbit>.In);
+
+                PublishHelloRabbit(channel);
 
                 while (true)
                 {
-                    var basicGetMsg = channel.BasicGet(QueueNames<Hello>.In, noAck: false);
+                    var basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.In, noAck: false);
 
                     if (basicGetMsg == null)
                     {
@@ -68,7 +84,7 @@ namespace ServiceStack.Common.Tests.Messaging
                         return;
                     }
 
-                    var msg = basicGetMsg.Body.FromUtf8Bytes().FromJson<Hello>();
+                    var msg = basicGetMsg.Body.FromUtf8Bytes().FromJson<HelloRabbit>();
 
                     msg.PrintDump();
 
@@ -85,12 +101,18 @@ namespace ServiceStack.Common.Tests.Messaging
             using (IConnection connection = mqFactory.CreateConnection())
             using (IModel channel = connection.CreateModel())
             {
-                channel.ExchangeDeclare(ExchangeName, "direct");
-                channel.QueueDeclare(QueueNames<Hello>.In, durable: true, exclusive: false, autoDelete: false, arguments: null);
-                channel.QueueBind(QueueNames<Hello>.In, ExchangeName, routingKey: QueueNames<Hello>.In);
+                channel.RegisterDirectExchange(Exchange);
+                RegisterQueue(channel, QueueNames<HelloRabbit>.In);
 
                 var consumer = new QueueingBasicConsumer(channel);
-                var consumerTag = channel.BasicConsume(QueueNames<Hello>.In, noAck: false, consumer: consumer);
+                var consumerTag = channel.BasicConsume(QueueNames<HelloRabbit>.In, noAck: false, consumer: consumer);
+                string recvMsg = null;
+
+                ThreadPool.QueueUserWorkItem(_ => {
+                    Thread.Sleep(100);
+                    PublishHelloRabbit(channel);
+                });
+
                 while (true)
                 {
                     try
@@ -99,13 +121,12 @@ namespace ServiceStack.Common.Tests.Messaging
                         "Dequeued".Print();
 
                         var props = e.BasicProperties;
-                        var msg = e.Body.FromUtf8Bytes().FromJson<Hello>();
+                        recvMsg = e.Body.FromUtf8Bytes();
                         // ... process the message
-                        msg.PrintDump();
-
-                        Thread.Sleep(1000);
+                        recvMsg.Print();
 
                         channel.BasicAck(e.DeliveryTag, multiple: false);
+                        break;
                     }
                     catch (OperationInterruptedException ex)
                     {
@@ -116,6 +137,8 @@ namespace ServiceStack.Common.Tests.Messaging
                         break;
                     }
                 }
+                
+                Assert.That(recvMsg, Is.Not.Null);
             }
         }
 
@@ -125,22 +148,48 @@ namespace ServiceStack.Common.Tests.Messaging
             using (IConnection connection = mqFactory.CreateConnection())
             using (IModel channel = connection.CreateModel())
             {
-                channel.RegisterDirectExchange(QueueNames.Exchange);
-                channel.RegisterQueue(QueueNames<Hello>.In);
-                channel.RegisterQueue(QueueNames<Hello>.Priority);
+                channel.RegisterDirectExchange(Exchange);
+                RegisterQueue(channel, QueueNames<HelloRabbit>.In);
+                RegisterQueue(channel, QueueNames<HelloRabbit>.Priority);
 
-                byte[] payload = new Hello { Name = "World!" }.ToJson().ToUtf8Bytes();
-                var props = channel.CreateBasicProperties();
-                props.SetPersistent(true);
+                PublishHelloRabbit(channel);
 
-                channel.BasicPublish(QueueNames.Exchange, QueueNames<Hello>.In, props, payload);
-
-                var basicGetMsg = channel.BasicGet(QueueNames<Hello>.In, noAck: true);
+                var basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.In, noAck: true);
                 Assert.That(basicGetMsg, Is.Not.Null);
 
-                basicGetMsg = channel.BasicGet(QueueNames<Hello>.Priority, noAck: true);
+                basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.Priority, noAck: true);
                 Assert.That(basicGetMsg, Is.Null);
             }
+        }
+
+        private static void PublishHelloRabbit(IModel channel, string text = "World!")
+        {
+            byte[] payload = new HelloRabbit {Name = text}.ToJson().ToUtf8Bytes();
+            var props = channel.CreateBasicProperties();
+            props.SetPersistent(true);
+            channel.BasicPublish(Exchange, QueueNames<HelloRabbit>.In, props, payload);
+        }
+
+        public static void RegisterQueue(IModel channel, string queueName, string exchange=Exchange)
+        {
+            var args = new Dictionary<string, object> {
+                {"x-dead-letter-exchange", ExchangeDlq },
+                {"x-dead-letter-routing-key", queueName.Replace(".inq",".dlq").Replace(".priorityq",".dlq") },
+            };
+            channel.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false, arguments: args);
+            channel.QueueBind(queueName, exchange, routingKey: queueName);
+        }
+
+        public static void RegisterTopic(IModel channel, string queueName)
+        {
+            channel.QueueDeclare(queueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
+            channel.QueueBind(queueName, ExchangeTopic, routingKey: queueName);
+        }
+
+        public static void RegisterDlq(IModel channel, string queueName)
+        {
+            channel.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+            channel.QueueBind(queueName, ExchangeDlq, routingKey: queueName);
         }
 
         [Test]
@@ -149,24 +198,20 @@ namespace ServiceStack.Common.Tests.Messaging
             using (IConnection connection = mqFactory.CreateConnection())
             using (IModel channel = connection.CreateModel())
             {
-                channel.ExchangeDeclare(QueueNames.ExchangeTopic, "fanout");
+                channel.RegisterTopicExchange(ExchangeTopic);
 
-                channel.QueueDeclare(QueueNames<Hello>.In, durable: true, exclusive: false, autoDelete: false, arguments: null);
-                channel.QueueBind(QueueNames<Hello>.In, QueueNames.ExchangeTopic, routingKey: QueueNames<Hello>.In);
+                RegisterQueue(channel, QueueNames<HelloRabbit>.In, exchange:ExchangeTopic);
+                RegisterTopic(channel, QueueNames<HelloRabbit>.Out);
 
-                channel.QueueDeclare(QueueNames<Hello>.Priority, durable: true, exclusive: false, autoDelete: false, arguments: null);
-                channel.QueueBind(QueueNames<Hello>.Priority, QueueNames.ExchangeTopic, routingKey: QueueNames<Hello>.Priority);
-
-                byte[] payload = new Hello { Name = "World!" }.ToJson().ToUtf8Bytes();
+                byte[] payload = new HelloRabbit { Name = "World!" }.ToJson().ToUtf8Bytes();
                 var props = channel.CreateBasicProperties();
                 props.SetPersistent(true);
+                channel.BasicPublish(ExchangeTopic, QueueNames<HelloRabbit>.In, props, payload);
 
-                channel.BasicPublish(QueueNames.ExchangeTopic, QueueNames<Hello>.In, props, payload);
-
-                var basicGetMsg = channel.BasicGet(QueueNames<Hello>.In, noAck: true);
+                var basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.In, noAck: true);
                 Assert.That(basicGetMsg, Is.Not.Null);
 
-                basicGetMsg = channel.BasicGet(QueueNames<Hello>.Priority, noAck: true);
+                basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.Out, noAck: true);
                 Assert.That(basicGetMsg, Is.Not.Null);
             }
         }
@@ -177,32 +222,28 @@ namespace ServiceStack.Common.Tests.Messaging
             using (IConnection connection = mqFactory.CreateConnection())
             using (IModel channel = connection.OpenChannel())
             {
-                channel.RegisterQueue(QueueNames<Hello>.In);
-                channel.RegisterDlq(QueueNames<Hello>.Dlq);
+                RegisterQueue(channel, QueueNames<HelloRabbit>.In);
+                RegisterDlq(channel, QueueNames<HelloRabbit>.Dlq);
 
-                byte[] payload = new Hello { Name = "World!" }.ToJson().ToUtf8Bytes();
-                var props = channel.CreateBasicProperties();
-                props.SetPersistent(true);
+                PublishHelloRabbit(channel);
 
-                channel.BasicPublish(QueueNames.Exchange, QueueNames<Hello>.In, props, payload);
-
-                var basicGetMsg = channel.BasicGet(QueueNames<Hello>.In, noAck: true);
-                var dlqBasicMsg = channel.BasicGet(QueueNames<Hello>.Dlq, noAck: true);
+                var basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.In, noAck: true);
+                var dlqBasicMsg = channel.BasicGet(QueueNames<HelloRabbit>.Dlq, noAck: true);
                 Assert.That(basicGetMsg, Is.Not.Null);
                 Assert.That(dlqBasicMsg, Is.Null);
 
-                channel.BasicPublish(QueueNames.Exchange, QueueNames<Hello>.In, props, payload);
+                PublishHelloRabbit(channel);
 
-                basicGetMsg = channel.BasicGet(QueueNames<Hello>.In, noAck: false);
+                basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.In, noAck: false);
                 Thread.Sleep(500);
-                dlqBasicMsg = channel.BasicGet(QueueNames<Hello>.Dlq, noAck: false);
+                dlqBasicMsg = channel.BasicGet(QueueNames<HelloRabbit>.Dlq, noAck: false);
                 Assert.That(basicGetMsg, Is.Not.Null);
                 Assert.That(dlqBasicMsg, Is.Null);
 
                 channel.BasicNack(basicGetMsg.DeliveryTag, multiple: false, requeue: false);
 
                 Thread.Sleep(500);
-                dlqBasicMsg = channel.BasicGet(QueueNames<Hello>.Dlq, noAck: true);
+                dlqBasicMsg = channel.BasicGet(QueueNames<HelloRabbit>.Dlq, noAck: true);
                 Assert.That(dlqBasicMsg, Is.Not.Null);
             }
         }
@@ -213,8 +254,8 @@ namespace ServiceStack.Common.Tests.Messaging
             using (IConnection connection = mqFactory.CreateConnection())
             using (IModel channel = connection.CreateModel())
             {
-                channel.RegisterDirectExchange(QueueNames.Exchange);
-                channel.RegisterQueue(QueueNames<Hello>.In);
+                channel.RegisterDirectExchange(Exchange);
+                RegisterQueue(channel, QueueNames<HelloRabbit>.In);
 
                 string recvMsg = null;
                 EndOfStreamException lastEx = null;
@@ -223,7 +264,7 @@ namespace ServiceStack.Common.Tests.Messaging
                     try
                     {
                         var consumer = new QueueingBasicConsumer(channel);
-                        channel.BasicConsume(QueueNames<Hello>.In, noAck: false, consumer: consumer);
+                        channel.BasicConsume(QueueNames<HelloRabbit>.In, noAck: false, consumer: consumer);
 
                         while (true)
                         {
@@ -257,17 +298,14 @@ namespace ServiceStack.Common.Tests.Messaging
                 };
                 bgThread.Start();
 
-                byte[] payload = new Hello { Name = "World!" }.ToJson().ToUtf8Bytes();
-                var props = channel.CreateBasicProperties();
-                props.SetPersistent(true);
-
-                channel.BasicPublish(QueueNames.Exchange, QueueNames<Hello>.In, props, payload);
+                PublishHelloRabbit(channel);
+                Thread.Sleep(100);
 
                 //closing either throws EndOfStreamException in bgthread
                 channel.Close();
                 //connection.Close();
 
-                Thread.Sleep(3000);
+                Thread.Sleep(2000);
 
                 Assert.That(recvMsg, Is.Not.Null);
                 Assert.That(lastEx, Is.Not.Null);
@@ -282,8 +320,8 @@ namespace ServiceStack.Common.Tests.Messaging
             using (IConnection connection = mqFactory.CreateConnection())
             using (IModel channel = connection.CreateModel())
             {
-                channel.RegisterDirectExchange(QueueNames.Exchange);
-                channel.RegisterQueue(QueueNames<Hello>.In);
+                channel.RegisterDirectExchange(Exchange);
+                RegisterQueue(channel, QueueNames<HelloRabbit>.In);
                 OperationInterruptedException lastEx = null;
 
                 channel.Close();
@@ -291,11 +329,7 @@ namespace ServiceStack.Common.Tests.Messaging
                 ThreadPool.QueueUserWorkItem(_ => {
                     try
                     {
-                        byte[] payload = new Hello { Name = "World!" }.ToJson().ToUtf8Bytes();
-                        var props = channel.CreateBasicProperties();
-                        props.SetPersistent(true);
-
-                        channel.BasicPublish(QueueNames.Exchange, QueueNames<Hello>.In, props, payload);
+                        PublishHelloRabbit(channel);
                     }
                     catch (Exception ex)
                     {
