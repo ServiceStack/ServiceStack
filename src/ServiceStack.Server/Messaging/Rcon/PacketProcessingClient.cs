@@ -86,6 +86,11 @@ namespace ServiceStack.Messaging.Rcon
             Publish(queueName, message);
         }
 
+        public IMessage<T> CreateMessage<T>(object mqResponse)
+        {
+            return (IMessage<T>)mqResponse;
+        }
+
         public void Nak(IMessage message)
         {
         }

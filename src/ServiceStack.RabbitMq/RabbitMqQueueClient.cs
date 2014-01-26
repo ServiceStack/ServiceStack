@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using RabbitMQ.Client;
 using ServiceStack.Messaging;
 
 namespace ServiceStack.RabbitMq
@@ -69,6 +70,17 @@ namespace ServiceStack.RabbitMq
         {
             var deliveryTag = ulong.Parse(message.Tag);
             Channel.BasicNack(deliveryTag, multiple: false, requeue: requeue);
+        }
+
+        public IMessage<T> CreateMessage<T>(object mqResponse)
+        {
+            var msgResult = mqResponse as BasicGetResult;
+            if (msgResult != null)
+            {
+                return msgResult.ToMessage<T>();
+            }
+
+            return (IMessage<T>) mqResponse;
         }
     }
 }

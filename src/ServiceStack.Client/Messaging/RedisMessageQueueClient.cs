@@ -116,6 +116,11 @@ namespace ServiceStack.Messaging
             Publish(queueName, message);
         }
 
+        public IMessage<T> CreateMessage<T>(object mqResponse)
+        {
+            return (IMessage<T>)mqResponse;
+        }
+
         public void Dispose()
         {
             if (this.readOnlyClient != null)

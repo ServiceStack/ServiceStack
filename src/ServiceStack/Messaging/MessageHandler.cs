@@ -81,17 +81,15 @@ namespace ServiceStack.Messaging
                 {
                     ProcessMessage(mqClient, message);
 
-                    this.TotalNormalMessagesReceived++;
                     msgsProcessed++;
-                    LastMessageProcessed = DateTime.UtcNow;
 
-                    if (doNext != null && !doNext()) return msgsProcessed;
+                    if (doNext != null && !doNext()) 
+                        return msgsProcessed;
                 }
             }
             catch (Exception ex)
             {
-                var lastEx = ex;
-                Log.Error("Error serializing message from mq server: " + lastEx.Message, ex);
+                Log.Error("Error serializing message from mq server: " + ex.Message, ex);
             }
 
             return msgsProcessed;
@@ -122,6 +120,12 @@ namespace ServiceStack.Messaging
             MqClient.Nak(message, requeue: requeue);
         }
 
+        public void ProcessMessage(IMessageQueueClient mqClient, object mqResponse)
+        {
+            var message = mqClient.CreateMessage<T>(mqResponse);
+            ProcessMessage(mqClient, message);
+        }
+
         public void ProcessMessage(IMessageQueueClient mqClient, IMessage<T> message)
         {
             this.MqClient = mqClient;
@@ -149,7 +153,7 @@ namespace ServiceStack.Messaging
                 //If there's no response publish the request message to its OutQ
                 if (response == null)
                 {
-                    var messageOptions = (MessageOption)message.Options;
+                    var messageOptions = (MessageOption) message.Options;
                     if (messageOptions.Has(MessageOption.NotifyOneWay))
                     {
                         mqClient.Notify(QueueNames<T>.Out, message);
@@ -167,15 +171,17 @@ namespace ServiceStack.Messaging
                         var publishAllResponses = PublishResponsesWhitelist == null;
                         if (!publishAllResponses)
                         {
-                            var inWhitelist = PublishResponsesWhitelist.Any(publishResponse => responseType.GetOperationName() == publishResponse);
+                            var inWhitelist =
+                                PublishResponsesWhitelist.Any(
+                                    publishResponse => responseType.GetOperationName() == publishResponse);
                             if (!inWhitelist) return;
                         }
 
                         // Leave as-is to work around a Mono 2.6.7 compiler bug
                         if (!responseType.IsUserType()) return;
                         mqReplyTo = !isError
-                            ? new QueueNames(responseType).In
-                            : new QueueNames(responseType).Dlq;
+                                        ? new QueueNames(responseType).In
+                                        : new QueueNames(responseType).Dlq;
                     }
 
                     var replyClient = ReplyClientFactory(mqReplyTo);
@@ -189,14 +195,14 @@ namespace ServiceStack.Messaging
                         catch (Exception ex)
                         {
                             Log.Error("Could not send response to '{0}' with client '{1}'"
-                                .Fmt(mqReplyTo, replyClient.GetType().GetOperationName()), ex);
+                                          .Fmt(mqReplyTo, replyClient.GetType().GetOperationName()), ex);
 
                             // Leave as-is to work around a Mono 2.6.7 compiler bug
                             if (!responseType.IsUserType()) return;
 
                             mqReplyTo = !isError
-                                ? new QueueNames(responseType).In
-                                : new QueueNames(responseType).Dlq;
+                                            ? new QueueNames(responseType).In
+                                            : new QueueNames(responseType).Dlq;
                         }
                     }
 
@@ -217,6 +223,11 @@ namespace ServiceStack.Messaging
                 {
                     Log.Error("Message exception handler threw an error", exHandlerEx);
                 }
+            }
+            finally
+            {
+                this.TotalNormalMessagesReceived++;
+                LastMessageProcessed = DateTime.UtcNow;
             }
         }
 

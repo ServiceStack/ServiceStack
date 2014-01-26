@@ -29,6 +29,11 @@ namespace ServiceStack.Messaging
         int ProcessQueue(IMessageQueueClient mqClient, string queueName, Func<bool> doNext = null);
 
         /// <summary>
+        /// Process a single message
+        /// </summary>
+        void ProcessMessage(IMessageQueueClient mqClient, object mqResponse);
+
+        /// <summary>
         /// Get Current Stats for this Message Handler
         /// </summary>
         /// <returns></returns>

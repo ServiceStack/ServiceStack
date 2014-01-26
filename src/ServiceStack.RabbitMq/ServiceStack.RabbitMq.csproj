@@ -50,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RabbitMqBasicConsumer.cs" />
     <Compile Include="RabbitMqExtensions.cs" />
     <Compile Include="RabbitMqMessageFactory.cs" />
     <Compile Include="RabbitMqServer.cs" />

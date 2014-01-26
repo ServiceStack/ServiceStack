@@ -1,19 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using RabbitMQ.Client;
+using ServiceStack.Logging;
 using ServiceStack.Messaging;
 
 namespace ServiceStack.RabbitMq
 {
     public class RabbitMqProducer : IMessageProducer
     {
+        public static ILog Log = LogManager.GetLogger(typeof(RabbitMqProducer));
         protected readonly RabbitMqMessageFactory msgFactory;
         public int RetryCount { get; set; }
         public Action OnPublishedCallback { get; set; }
         protected HashSet<string> declaredQueues = new HashSet<string>();
 
         private IConnection connection;
-        protected IConnection Connection
+        public IConnection Connection
         {
             get
             {
@@ -25,19 +27,19 @@ namespace ServiceStack.RabbitMq
             }
         }
 
-        private IModel model;
-        protected IModel Channel
+        private IModel channel;
+        public IModel Channel
         {
             get
             {
-                if (model == null)
+                if (channel == null)
                 {
-                    model = Connection.OpenChannel();
+                    channel = Connection.OpenChannel();
                     //http://www.rabbitmq.com/blog/2012/04/25/rabbitmq-performance-measurements-part-2/
                     //http://www.rabbitmq.com/amqp-0-9-1-reference.html
-                    model.BasicQos(prefetchCount: 10, prefetchSize: 0, global: false);
+                    channel.BasicQos(prefetchCount: 20, prefetchSize: 0, global: false);
                 }
-                return model;
+                return channel;
             }
         }
 
@@ -87,14 +89,28 @@ namespace ServiceStack.RabbitMq
         public virtual void Dispose()
         {
             declaredQueues = new HashSet<string>();
-            if (model != null)
+            if (channel != null)
             {
-                model.Dispose();
-                model = null;
+                try
+                {
+                    channel.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error trying to dispose RabbitMqProducer model", ex);
+                } 
+                channel = null;
             }
             if (connection != null)
             {
-                connection.Dispose();
+                try
+                {
+                    connection.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error trying to dispose RabbitMqProducer connection", ex);
+                }
                 connection = null;
             }
         }

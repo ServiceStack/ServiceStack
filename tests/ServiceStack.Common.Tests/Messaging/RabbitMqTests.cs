@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Text;
 using System.Threading;
 using NUnit.Framework;
@@ -205,6 +206,112 @@ namespace ServiceStack.Common.Tests.Messaging
                 Assert.That(dlqBasicMsg, Is.Not.Null);
             }
         }
+
+        [Test]
+        public void Can_interrupt_BasicConsumer_in_bgthread_by_closing_channel()
+        {
+            using (IConnection connection = mqFactory.CreateConnection())
+            using (IModel channel = connection.CreateModel())
+            {
+                channel.RegisterDirectExchange(QueueNames.Exchange);
+                channel.RegisterQueue(QueueNames<Hello>.In);
+
+                string recvMsg = null;
+                EndOfStreamException lastEx = null;
+
+                var bgThread = new Thread(() => {
+                    try
+                    {
+                        var consumer = new QueueingBasicConsumer(channel);
+                        channel.BasicConsume(QueueNames<Hello>.In, noAck: false, consumer: consumer);
+
+                        while (true)
+                        {
+                            try
+                            {
+                                var e = consumer.Queue.Dequeue();
+                                recvMsg = e.Body.FromUtf8Bytes();
+                            }
+                            catch (EndOfStreamException ex)
+                            {
+                                // The consumer was cancelled, the model closed, or the
+                                // connection went away.
+                                "EndOfStreamException in bgthread: {0}".Print(ex.Message);
+                                lastEx = ex;
+                                return;
+                            }
+                            catch (Exception ex)
+                            {
+                                Assert.Fail("Unexpected exception in bgthread: " + ex.Message);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        "Exception in bgthread: {0}: {1}".Print(ex.GetType().Name,ex.Message);
+                    }
+                })
+                {
+                    Name = "Closing Channel Test",
+                    IsBackground = true,
+                };
+                bgThread.Start();
+
+                byte[] payload = new Hello { Name = "World!" }.ToJson().ToUtf8Bytes();
+                var props = channel.CreateBasicProperties();
+                props.SetPersistent(true);
+
+                channel.BasicPublish(QueueNames.Exchange, QueueNames<Hello>.In, props, payload);
+
+                //closing either throws EndOfStreamException in bgthread
+                channel.Close();
+                //connection.Close();
+
+                Thread.Sleep(3000);
+
+                Assert.That(recvMsg, Is.Not.Null);
+                Assert.That(lastEx, Is.Not.Null);
+
+                "EOF...".Print();
+            }
+        }
+
+        [Test]
+        public void Can_consume_messages_with_BasicConsumer()
+        {
+            using (IConnection connection = mqFactory.CreateConnection())
+            using (IModel channel = connection.CreateModel())
+            {
+                channel.RegisterDirectExchange(QueueNames.Exchange);
+                channel.RegisterQueue(QueueNames<Hello>.In);
+                OperationInterruptedException lastEx = null;
+
+                channel.Close();
+
+                ThreadPool.QueueUserWorkItem(_ => {
+                    try
+                    {
+                        byte[] payload = new Hello { Name = "World!" }.ToJson().ToUtf8Bytes();
+                        var props = channel.CreateBasicProperties();
+                        props.SetPersistent(true);
+
+                        channel.BasicPublish(QueueNames.Exchange, QueueNames<Hello>.In, props, payload);
+                    }
+                    catch (Exception ex)
+                    {
+                        lastEx = ex as OperationInterruptedException;
+                        "Caught {0}: {1}".Print(ex.GetType().Name, ex);
+                    }    
+                });
+
+                Thread.Sleep(1000);
+
+                Assert.That(lastEx, Is.Not.Null);
+
+                "EOF...".Print();
+            }
+        }
+
 
     }
 }

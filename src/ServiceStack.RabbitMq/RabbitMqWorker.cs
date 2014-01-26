@@ -1,5 +1,8 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Exceptions;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Messaging.Redis;
@@ -16,6 +19,7 @@ namespace ServiceStack.RabbitMq
         private IMessageQueueClient mqClient;
         private readonly IMessageHandler messageHandler;
         public string QueueName { get; set; }
+        public bool AutoReconnect { get; set; }
 
         private int status;
         public int Status
@@ -26,7 +30,7 @@ namespace ServiceStack.RabbitMq
         private Thread bgThread;
         private int timesStarted = 0;
         private bool receivedNewMsgs = false;
-        public int SleepTimeoutMs = 5000;
+        public int SleepTimeoutMs = 1000;
         public Action<RabbitMqWorker, Exception> errorHandler { get; set; }
 
         private DateTime lastMsgProcessed;
@@ -48,18 +52,39 @@ namespace ServiceStack.RabbitMq
         }
 
         public RabbitMqWorker(RabbitMqMessageFactory mqFactory,
-                              IMessageHandler messageHandler, string queueName,
-                              Action<RabbitMqWorker, Exception> errorHandler)
+            IMessageHandler messageHandler, string queueName,
+            Action<RabbitMqWorker, Exception> errorHandler,
+            bool autoConnect = true)
         {
             this.mqFactory = mqFactory;
             this.messageHandler = messageHandler;
             this.QueueName = queueName;
             this.errorHandler = errorHandler;
+            this.AutoReconnect = autoConnect;
         }
 
         public RabbitMqWorker Clone()
         {
-            return new RabbitMqWorker(mqFactory, messageHandler, QueueName, errorHandler);
+            return new RabbitMqWorker(mqFactory, messageHandler, QueueName, errorHandler, AutoReconnect);
+        }
+
+        public IMessageQueueClient MqClient
+        {
+            get
+            {
+                if (mqClient == null)
+                {
+                    mqClient = mqFactory.CreateMessageQueueClient();
+                }
+                return mqClient;
+            }
+        }
+
+        private IModel GetChannel()
+        {
+            var rabbitClient = (RabbitMqQueueClient)MqClient;
+            var channel = rabbitClient.Channel;
+            return channel;
         }
 
         public void Start()
@@ -98,26 +123,16 @@ namespace ServiceStack.RabbitMq
 
             try
             {
-                lock (msgLock)
+                if (mqFactory.UsePolling)
                 {
-                    mqClient = mqFactory.CreateMessageQueueClient();
-
-                    while (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Started)
+                    lock (msgLock)
                     {
-                        receivedNewMsgs = false;
-
-                        var msgsProcessedThisTime = messageHandler.ProcessQueue(
-                            mqClient, QueueName,
-                            () => Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Started);
-
-                        totalMessagesProcessed += msgsProcessedThisTime;
-
-                        if (msgsProcessedThisTime > 0)
-                            lastMsgProcessed = DateTime.UtcNow;
-
-                        if (!receivedNewMsgs)
-                            Monitor.Wait(msgLock, millisecondsTimeout: SleepTimeoutMs);
+                        StartPolling();
                     }
+                }
+                else
+                {
+                    StartSubscription();
                 }
             }
             catch (Exception ex)
@@ -130,14 +145,15 @@ namespace ServiceStack.RabbitMq
                 }
 
                 Stop();
-                if (this.errorHandler != null) this.errorHandler(this, ex);
+
+                if (this.errorHandler != null) 
+                    this.errorHandler(this, ex);
             }
             finally
             {
                 try
                 {
-                    mqClient.Dispose();
-                    mqClient = null;
+                    DisposeMqClient();
                 }
                 catch {}
 
@@ -146,7 +162,124 @@ namespace ServiceStack.RabbitMq
                 {
                     Dispose();
                 }
+                //status is either 'Stopped' or 'Disposed' at this point
+
+                bgThread = null;
             }
+        }
+
+        private void StartPolling()
+        {
+            while (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Started)
+            {
+                try
+                {
+                    receivedNewMsgs = false;
+
+                    var msgsProcessedThisTime = messageHandler.ProcessQueue(
+                        MqClient, QueueName,
+                        () => Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Started);
+
+                    totalMessagesProcessed += msgsProcessedThisTime;
+
+                    if (msgsProcessedThisTime > 0)
+                        lastMsgProcessed = DateTime.UtcNow;
+
+                    if (!receivedNewMsgs)
+                        Monitor.Wait(msgLock, millisecondsTimeout: SleepTimeoutMs);
+                }
+                catch (Exception ex)
+                {
+                    if (!(ex is OperationInterruptedException
+                        || ex is EndOfStreamException))
+                        throw;
+
+                    //The consumer was cancelled, the model or the connection went away.
+                    if (Interlocked.CompareExchange(ref status, 0, 0) != WorkerStatus.Started
+                        || !AutoReconnect)
+                        return;
+
+                    //If it was an unexpected exception, try reconnecting
+                    WaitForReconnect();
+                }
+            }
+        }
+
+        private IModel WaitForReconnect()
+        {
+            var retries = 1;
+            while (true)
+            {
+                DisposeMqClient();
+                try
+                {
+                    var channel = GetChannel();
+                    return channel;
+                }
+                catch (Exception ex)
+                {
+                    var waitMs = Math.Min(retries++ * 100, 10000);
+                    Log.Debug("Retrying to Reconnect after {0}ms...".Fmt(waitMs));
+                    Thread.Sleep(waitMs);
+                }
+            }
+        }
+
+        private void StartSubscription()
+        {
+            var consumer = ConnectSubscription();
+
+            // At this point, messages will be being asynchronously delivered,
+            // and will be queueing up in consumer.Queue.
+            while (true)
+            {
+                try
+                {
+                    var e = consumer.Queue.Dequeue();
+                    messageHandler.ProcessMessage(mqClient, e);
+                }
+                catch (Exception ex)
+                {
+                    if (!(ex is OperationInterruptedException
+                        || ex is EndOfStreamException))
+                        throw;
+
+                    // The consumer was cancelled, the model closed, or the connection went away.
+                    if (Interlocked.CompareExchange(ref status, 0, 0) != WorkerStatus.Started
+                        || !AutoReconnect)
+                        return;
+
+                    //If it was an unexpected exception, try reconnecting
+                    consumer = WaitForReconnectSubscription();
+                }
+            }
+        }
+
+        private RabbitMqBasicConsumer WaitForReconnectSubscription()
+        {
+            var retries = 1;
+            while (true)
+            {
+                DisposeMqClient();
+                try
+                {
+                    return ConnectSubscription();
+                }
+                catch (Exception ex)
+                {
+                    var waitMs = Math.Min(retries++ * 100, 10000);
+                    Log.Debug("Retrying to Reconnect Subscription after {0}ms...".Fmt(waitMs));
+                    Thread.Sleep(waitMs);
+                }
+            }
+        }
+
+        private RabbitMqBasicConsumer ConnectSubscription()
+        {
+            var channel = GetChannel();
+            var consumer = new RabbitMqBasicConsumer(channel);
+            channel.BasicConsume(QueueName, noAck: false, consumer: consumer);
+            return consumer;
         }
 
         public void Stop()
@@ -156,13 +289,26 @@ namespace ServiceStack.RabbitMq
 
             if (Interlocked.CompareExchange(ref status, WorkerStatus.Stopping, WorkerStatus.Started) == WorkerStatus.Started)
             {
-                Log.Debug("Stopping MQ Handler Worker: {0}...".Fmt(QueueName));
-                Thread.Sleep(100);
-                lock (msgLock)
+                Log.Debug("Stopping Rabbit MQ Handler Worker: {0}...".Fmt(QueueName));
+                if (mqFactory.UsePolling)
                 {
-                    Monitor.Pulse(msgLock);
+                    Thread.Sleep(100);
+                    lock (msgLock)
+                    {
+                        Monitor.Pulse(msgLock);
+                    }
                 }
+
+                DisposeMqClient();
             }
+        }
+
+        private void DisposeMqClient()
+        {
+            //Disposing mqClient causes an EndOfStreamException to be thrown in StartSubscription
+            if (mqClient == null) return;
+            mqClient.Dispose();
+            mqClient = null;
         }
 
         private void KillBgThreadIfExists()
@@ -188,7 +334,7 @@ namespace ServiceStack.RabbitMq
             finally
             {
                 bgThread = null;
-                status = WorkerStatus.Stopped;
+                Interlocked.CompareExchange(ref status, WorkerStatus.Stopped, status);
             }
         }
 

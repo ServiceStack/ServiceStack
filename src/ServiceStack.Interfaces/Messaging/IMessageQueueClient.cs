@@ -34,5 +34,10 @@ namespace ServiceStack.Messaging
         /// Negative acknowledgement the message was not processed correctly
         /// </summary>
         void Nak(IMessage message, bool requeue);
+
+        /// <summary>
+        /// Create a typed message from a raw MQ Response artefact
+        /// </summary>
+        IMessage<T> CreateMessage<T>(object mqResponse);
     }
 }

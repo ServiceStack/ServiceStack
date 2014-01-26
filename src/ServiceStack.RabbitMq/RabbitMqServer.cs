@@ -23,6 +23,12 @@ namespace ServiceStack.RabbitMq
             set { messageFactory.RetryCount = value; }
         }
 
+        public bool UsePolling
+        {
+            get { return messageFactory.UsePolling; }
+            set { messageFactory.UsePolling = value; }
+        }
+
         public int? KeepAliveRetryAfterMs { get; set; }
 
         private RabbitMqMessageFactory messageFactory;
@@ -41,6 +47,8 @@ namespace ServiceStack.RabbitMq
         {
             get { return connection ?? (connection = ConnectionFactory.CreateConnection()); }
         }
+
+        public bool AutoReconnect { get; set; }
 
         /// <summary>
         /// Execute global transformation or custom logic before a request is processed.
@@ -121,6 +129,7 @@ namespace ServiceStack.RabbitMq
             this.messageFactory = messageFactory;
             this.ErrorHandler = ex => Log.Error("Exception in Rabbit MQ Server: " + ex.Message, ex);
             RetryCount = DefaultRetryCount;
+            AutoReconnect = true;
         }
 
 
@@ -253,7 +262,8 @@ namespace ServiceStack.RabbitMq
                                 messageFactory,
                                 handlerFactory.CreateMessageHandler(),
                                 queueNames.Priority,
-                                WorkerErrorHandler)));
+                                WorkerErrorHandler,
+                                AutoReconnect)));
 
                         channel.RegisterQueue(queueNames.Priority);
                     }
@@ -263,7 +273,8 @@ namespace ServiceStack.RabbitMq
                                 messageFactory,
                                 handlerFactory.CreateMessageHandler(),
                                 queueNames.In,
-                                WorkerErrorHandler)));
+                                WorkerErrorHandler,
+                                AutoReconnect)));
 
                     channel.RegisterQueue(queueNames.In);
                     channel.RegisterTopic(queueNames.Out);
