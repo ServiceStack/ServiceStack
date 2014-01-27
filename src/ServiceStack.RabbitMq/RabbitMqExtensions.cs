@@ -55,6 +55,33 @@ namespace ServiceStack.RabbitMq
             channel.QueueBind(queueName, QueueNames.ExchangeTopic, routingKey: queueName);
         }
 
+        public static void DeleteQueue<T>(this IModel model)
+        {
+            var queueNames = new[] {
+                QueueNames<T>.In,
+                QueueNames<T>.Priority,
+                QueueNames<T>.Out, //topic is non-durable
+                QueueNames<T>.Dlq,
+            };
+            model.DeleteQueues(queueNames);
+        }
+
+        public static void DeleteQueues(this IModel channel, params string[] queues)
+        {
+            foreach (var queue in queues)
+            {
+                try
+                {
+                    channel.QueueDelete(queue, ifUnused:true, ifEmpty:true);
+                }
+                catch (OperationInterruptedException ex)
+                {
+                    if (!ex.Message.Contains("code=404"))
+                        throw;
+                }
+            }
+        }
+
         public static void PurgeQueue<T>(this IModel model)
         {
             var queueNames = new[] {
@@ -71,7 +98,7 @@ namespace ServiceStack.RabbitMq
             foreach (var queue in queues)
             {
                 try
-                { 
+                {
                     model.QueuePurge(queue);
                 }
                 catch (OperationInterruptedException ex)
