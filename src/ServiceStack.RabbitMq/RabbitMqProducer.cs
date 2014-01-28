@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Exceptions;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
 
@@ -12,7 +13,6 @@ namespace ServiceStack.RabbitMq
         protected readonly RabbitMqMessageFactory msgFactory;
         public int RetryCount { get; set; }
         public Action OnPublishedCallback { get; set; }
-        protected HashSet<string> declaredQueues = new HashSet<string>();
 
         private IConnection connection;
         public IConnection Connection
@@ -32,7 +32,7 @@ namespace ServiceStack.RabbitMq
         {
             get
             {
-                if (channel == null)
+                if (channel == null || !channel.IsOpen)
                 {
                     channel = Connection.OpenChannel();
                     //http://www.rabbitmq.com/blog/2012/04/25/rabbitmq-performance-measurements-part-2/
@@ -64,19 +64,18 @@ namespace ServiceStack.RabbitMq
 
         public void Publish(string queueName, IMessage message)
         {
-            if (!declaredQueues.Contains(queueName))
-            {
-                Channel.RegisterQueue(queueName);
-                declaredQueues.Add(queueName);
-            }
+            Publish(queueName, message, QueueNames.Exchange);
+        }
 
+        public void Publish(string queueName, IMessage message, string exchange)
+        {
             var props = Channel.CreateBasicProperties();
             props.SetPersistent(true);
             props.PopulateFromMessage(message);
 
             var messageBytes = message.Body.ToJson().ToUtf8Bytes();
 
-            Channel.BasicPublish(QueueNames.Exchange,
+            PublishMessage(exchange ?? QueueNames.Exchange,
                 routingKey: queueName,
                 basicProperties: props, body: messageBytes);
 
@@ -86,9 +85,58 @@ namespace ServiceStack.RabbitMq
             }
         }
 
+        static HashSet<string> Queues = new HashSet<string>();
+
+        public void PublishMessage(string exchange, string routingKey, IBasicProperties basicProperties, byte[] body)
+        {
+            try
+            {
+                if (!Queues.Contains(routingKey))
+                {
+                    Channel.RegisterQueueByName(routingKey);
+                    Queues = new HashSet<string>(Queues) { routingKey };
+                }
+
+                Channel.BasicPublish(exchange, routingKey, basicProperties, body);
+            }
+            catch (OperationInterruptedException ex)
+            {
+                if (ex.Is404())
+                {
+                    Channel.RegisterExchangeByName(exchange);
+
+                    Channel.BasicPublish(exchange, routingKey, basicProperties, body);
+                }
+                throw;
+            }
+        }
+
+        public BasicGetResult GetMessage(string queueName, bool noAck)
+        {
+            try
+            {
+                if (!Queues.Contains(queueName))
+                {
+                    Channel.RegisterQueueByName(queueName);
+                    Queues = new HashSet<string>(Queues) { queueName };
+                }
+
+                return Channel.BasicGet(queueName, noAck: noAck);
+            }
+            catch (OperationInterruptedException ex)
+            {
+                if (ex.Is404())
+                {
+                    Channel.RegisterQueueByName(queueName);
+
+                    return Channel.BasicGet(queueName, noAck: noAck);
+                }
+                throw;
+            }
+        }
+
         public virtual void Dispose()
         {
-            declaredQueues = new HashSet<string>();
             if (channel != null)
             {
                 try
