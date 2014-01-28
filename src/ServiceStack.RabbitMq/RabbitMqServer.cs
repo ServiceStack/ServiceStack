@@ -265,7 +265,6 @@ namespace ServiceStack.RabbitMq
                                 WorkerErrorHandler,
                                 AutoReconnect)));
 
-                        channel.RegisterQueue(queueNames.Priority);
                     }
 
                     noOfThreads.Times(i =>
@@ -276,9 +275,7 @@ namespace ServiceStack.RabbitMq
                                 WorkerErrorHandler,
                                 AutoReconnect)));
 
-                    channel.RegisterQueue(queueNames.In);
-                    channel.RegisterTopic(queueNames.Out);
-                    channel.RegisterDlq(queueNames.Dlq);
+                    channel.RegisterQueues(queueNames);
                 }
 
                 workers = workerBuilder.ToArray();
@@ -352,8 +349,10 @@ namespace ServiceStack.RabbitMq
                 }
                 catch (Exception ex)
                 {
-                    ex.Message.Print();
-                    if (this.ErrorHandler != null) this.ErrorHandler(ex);
+                    if (this.ErrorHandler != null)
+                        this.ErrorHandler(ex);
+                    else
+                        throw;
                 }
             }
         }

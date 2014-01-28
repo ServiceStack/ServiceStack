@@ -1,10 +1,5 @@
-﻿using Funq;
-using ServiceStack.Configuration;
+﻿using System;
 using ServiceStack.FluentValidation;
-using ServiceStack.Messaging;
-using ServiceStack.Messaging.Redis;
-using ServiceStack.Redis;
-using ServiceStack.Validation;
 
 namespace ServiceStack.Common.Tests.Messaging
 {
@@ -40,6 +35,11 @@ namespace ServiceStack.Common.Tests.Messaging
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+    public class ThrowGenericError
+    {
+        public int Id { get; set; }
+    }
+
     public class ValidateTestMqValidator : AbstractValidator<ValidateTestMq>
     {
         public ValidateTestMqValidator()
@@ -65,6 +65,11 @@ namespace ServiceStack.Common.Tests.Messaging
         public object Post(ValidateTestMq request)
         {
             return new ValidateTestMqResponse { CorrelationId = request.Id };
+        }
+
+        public object Post(ThrowGenericError request)
+        {
+            throw new ArgumentException("request");
         }
     }
 }

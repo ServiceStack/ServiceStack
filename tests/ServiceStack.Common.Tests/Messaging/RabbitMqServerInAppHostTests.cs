@@ -29,6 +29,7 @@ namespace ServiceStack.Common.Tests.Messaging
             mqServer.RegisterHandler<AnyTestMq>(ServiceController.ExecuteMessage);
             mqServer.RegisterHandler<PostTestMq>(ServiceController.ExecuteMessage);
             mqServer.RegisterHandler<ValidateTestMq>(ServiceController.ExecuteMessage);
+            mqServer.RegisterHandler<ThrowGenericError>(ServiceController.ExecuteMessage);
 
             mqServer.Start();
         }
@@ -59,6 +60,7 @@ namespace ServiceStack.Common.Tests.Messaging
                 channel.PurgeQueue<PostTestMqResponse>();
                 channel.PurgeQueue<ValidateTestMq>();
                 channel.PurgeQueue<ValidateTestMqResponse>();
+                channel.PurgeQueue<ThrowGenericError>();
             }
         }
 
@@ -163,6 +165,27 @@ namespace ServiceStack.Common.Tests.Messaging
                     msg = mqClient.Get<ValidateTestMqResponse>(QueueNames<ValidateTestMqResponse>.In, null);
                     mqClient.Ack(msg);
                     Assert.That(msg.GetBody().CorrelationId, Is.EqualTo(request.Id));
+                }
+            }
+        }
+
+        [Test]
+        public void Does_handle_generic_errors()
+        {
+            using (var mqFactory = appHost.TryResolve<IMessageFactory>())
+            {
+                var request = new ThrowGenericError { Id = 1 };
+
+                using (var mqProducer = mqFactory.CreateMessageProducer())
+                using (var mqClient = mqFactory.CreateMessageQueueClient())
+                {
+                    mqProducer.Publish(request);
+
+                    var msg = mqClient.Get<ThrowGenericError>(QueueNames<ThrowGenericError>.Dlq, null);
+                    mqClient.Ack(msg);
+
+                    msg.PrintDump();
+                    Assert.That(msg.Error.ErrorCode, Is.EqualTo("ArgumentException"));
                 }
             }
         }

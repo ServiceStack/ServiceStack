@@ -46,8 +46,7 @@ namespace ServiceStack.Server.Tests.Messaging
 		public void Can_Serialize_and_Message_with_Error()
 		{
 			var message = new Message<Greet>(new Greet { Name = "Test" }) {
-				Error = new MessagingException(
-					"Test Error", new ArgumentNullException("Test")).ToMessageError()
+                Error = new ArgumentNullException("Test").ToResponseStatus()
 			};
 			Serialize(message);
 		}

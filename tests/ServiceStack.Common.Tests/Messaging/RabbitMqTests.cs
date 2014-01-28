@@ -336,7 +336,13 @@ namespace ServiceStack.Common.Tests.Messaging
             }
         }
 
-        //[Test]
+        [Test]
+        public void Can_()
+        {
+            
+        }
+
+        [Test]
         public void Delete_all_queues_and_exchanges()
         {
             var exchangeNames = new[] {
@@ -364,6 +370,7 @@ namespace ServiceStack.Common.Tests.Messaging
                 channel.DeleteQueue<PostTestMqResponse>();
                 channel.DeleteQueue<ValidateTestMq>();
                 channel.DeleteQueue<ValidateTestMqResponse>();
+                channel.DeleteQueue<ThrowGenericError>();
                 channel.DeleteQueue<Reverse>();
                 channel.DeleteQueue<Rot13>();
                 channel.DeleteQueue<Wait>();
