@@ -33,6 +33,22 @@ namespace ServiceStack.RabbitMq
             channel.ExchangeDeclare(exchangeName ?? QueueNames.ExchangeTopic, "fanout", durable: false, autoDelete: false, arguments:null);
         }
 
+        public static void RegisterQueues<T>(this IModel channel)
+        {
+            channel.RegisterQueue(QueueNames<T>.In);
+            channel.RegisterQueue(QueueNames<T>.Priority);
+            channel.RegisterTopic(QueueNames<T>.Out);
+            channel.RegisterDlq(QueueNames<T>.Dlq);
+        }
+
+        public static void RegisterQueues(this IModel channel, QueueNames queueNames)
+        {
+            channel.RegisterQueue(queueNames.In);
+            channel.RegisterQueue(queueNames.Priority);
+            channel.RegisterTopic(queueNames.Out);
+            channel.RegisterDlq(queueNames.Dlq);
+        }
+
         public static void RegisterQueue(this IModel channel, string queueName)
         {
             var args = new Dictionary<string, object> {
@@ -57,13 +73,7 @@ namespace ServiceStack.RabbitMq
 
         public static void DeleteQueue<T>(this IModel model)
         {
-            var queueNames = new[] {
-                QueueNames<T>.In,
-                QueueNames<T>.Priority,
-                QueueNames<T>.Out, //topic is non-durable
-                QueueNames<T>.Dlq,
-            };
-            model.DeleteQueues(queueNames);
+            model.DeleteQueues(QueueNames<T>.AllQueueNames);
         }
 
         public static void DeleteQueues(this IModel channel, params string[] queues)
@@ -72,7 +82,7 @@ namespace ServiceStack.RabbitMq
             {
                 try
                 {
-                    channel.QueueDelete(queue, ifUnused:true, ifEmpty:true);
+                    channel.QueueDelete(queue, ifUnused:false, ifEmpty:false);
                 }
                 catch (OperationInterruptedException ex)
                 {
@@ -84,13 +94,7 @@ namespace ServiceStack.RabbitMq
 
         public static void PurgeQueue<T>(this IModel model)
         {
-            var queueNames = new[] {
-                QueueNames<T>.In,
-                QueueNames<T>.Priority,
-                QueueNames<T>.Out, //topic is non-durable
-                QueueNames<T>.Dlq,
-            };
-            model.PurgeQueues(queueNames);
+            model.PurgeQueues(QueueNames<T>.AllQueueNames);
         }
 
         public static void PurgeQueues(this IModel model, params string[] queues)
@@ -103,10 +107,35 @@ namespace ServiceStack.RabbitMq
                 }
                 catch (OperationInterruptedException ex)
                 {
-                    if (!ex.Message.Contains("code=404"))
+                    if (!ex.Is404())
                         throw;
                 }
             }
+        }
+
+        public static void RegisterExchangeByName(this IModel channel, string exchange)
+        {
+            if (exchange.EndsWith(".dlq"))
+                channel.RegisterDlqExchange(exchange);
+            else if (exchange.EndsWith(".topic"))
+                channel.RegisterTopicExchange(exchange);
+            else 
+                channel.RegisterDirectExchange(exchange);
+        }
+
+        public static void RegisterQueueByName(this IModel channel, string queueName)
+        {
+            if (queueName.EndsWith(".dlq"))
+                channel.RegisterDlq(queueName);
+            else if (queueName.EndsWith(".outq"))
+                channel.RegisterTopic(queueName);
+            else
+                channel.RegisterQueue(queueName);
+        }
+
+        internal static bool Is404(this OperationInterruptedException ex)
+        {
+            return ex.Message.Contains("code=404");
         }
 
         public static void PopulateFromMessage(this IBasicProperties props, IMessage message)
@@ -128,6 +157,8 @@ namespace ServiceStack.RabbitMq
 
             if (message.Error != null)
             {
+                if (props.Headers == null)
+                    props.Headers = new Dictionary<string, object>();
                 props.Headers["Error"] = message.Error.ToJson();
             }
         }
@@ -161,8 +192,11 @@ namespace ServiceStack.RabbitMq
                 props.Headers.TryGetValue("Error", out errors);
                 if (errors != null)
                 {
-                    var errorsJson = (string)errors;
-                    message.Error = errorsJson.FromJson<MessageError>();
+                    var errorBytes = errors as byte[];
+                    var errorsJson = errorBytes != null
+                        ? errorBytes.FromUtf8Bytes()
+                        : errors.ToString();
+                    message.Error = errorsJson.FromJson<ResponseStatus>();
                 }
             }
 
