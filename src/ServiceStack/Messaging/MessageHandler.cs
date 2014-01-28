@@ -113,11 +113,10 @@ namespace ServiceStack.Messaging
             {
                 message.RetryAttempts++;
                 this.TotalRetries++;
-
-                message.Error = new MessagingException(ex.Message, ex).ToMessageError();
             }
 
-            MqClient.Nak(message, requeue: requeue);
+            message.Error = ex.ToResponseStatus();
+            MqClient.Nak(message, requeue: requeue, exception:ex);
         }
 
         public void ProcessMessage(IMessageQueueClient mqClient, object mqResponse)
@@ -129,26 +128,43 @@ namespace ServiceStack.Messaging
         public void ProcessMessage(IMessageQueueClient mqClient, IMessage<T> message)
         {
             this.MqClient = mqClient;
+            bool msgHandled = false;
 
             try
             {
                 var response = processMessageFn(message);
                 var responseEx = response as Exception;
+
+                if (responseEx == null)
+                {
+                    var responseStatus = response.GetResponseStatus();
+                    var isError = responseStatus != null && responseStatus.ErrorCode != null;
+                    if (isError)
+                    {
+                        responseEx = new MessagingException(responseStatus, response);
+                    }
+                }
+                
                 if (responseEx != null)
-                    throw responseEx;
-
-                mqClient.Ack(message);
-
-                var responseStatus = response.GetResponseStatus();
-                var isError = responseStatus != null && responseStatus.ErrorCode != null;
-                if (!isError)
                 {
-                    this.TotalMessagesProcessed++;
+                    TotalMessagesFailed++;
+                    msgHandled = true;
+
+                    if (message.ReplyTo != null)
+                    {
+                        var replyClient = ReplyClientFactory(message.ReplyTo);
+                        if (replyClient != null)
+                        {
+                            replyClient.SendOneWay(message.ReplyTo, response);
+                            return;
+                        }
+                    }
+
+                    processInExceptionFn(message, responseEx);
+                    return;
                 }
-                else
-                {
-                    this.TotalMessagesFailed++;
-                }
+
+                this.TotalMessagesProcessed++;
 
                 //If there's no response publish the request message to its OutQ
                 if (response == null)
@@ -171,17 +187,14 @@ namespace ServiceStack.Messaging
                         var publishAllResponses = PublishResponsesWhitelist == null;
                         if (!publishAllResponses)
                         {
-                            var inWhitelist =
-                                PublishResponsesWhitelist.Any(
-                                    publishResponse => responseType.GetOperationName() == publishResponse);
+                            var inWhitelist = PublishResponsesWhitelist.Any(
+                                publishResponse => responseType.GetOperationName() == publishResponse);
                             if (!inWhitelist) return;
                         }
 
                         // Leave as-is to work around a Mono 2.6.7 compiler bug
                         if (!responseType.IsUserType()) return;
-                        mqReplyTo = !isError
-                                        ? new QueueNames(responseType).In
-                                        : new QueueNames(responseType).Dlq;
+                        mqReplyTo = new QueueNames(responseType).In;
                     }
 
                     var replyClient = ReplyClientFactory(mqReplyTo);
@@ -195,14 +208,12 @@ namespace ServiceStack.Messaging
                         catch (Exception ex)
                         {
                             Log.Error("Could not send response to '{0}' with client '{1}'"
-                                          .Fmt(mqReplyTo, replyClient.GetType().GetOperationName()), ex);
+                                .Fmt(mqReplyTo, replyClient.GetType().GetOperationName()), ex);
 
                             // Leave as-is to work around a Mono 2.6.7 compiler bug
                             if (!responseType.IsUserType()) return;
 
-                            mqReplyTo = !isError
-                                            ? new QueueNames(responseType).In
-                                            : new QueueNames(responseType).Dlq;
+                            mqReplyTo = new QueueNames(responseType).In;
                         }
                     }
 
@@ -217,6 +228,7 @@ namespace ServiceStack.Messaging
                 try
                 {
                     TotalMessagesFailed++;
+                    msgHandled = true;
                     processInExceptionFn(message, ex);
                 }
                 catch (Exception exHandlerEx)
@@ -226,6 +238,9 @@ namespace ServiceStack.Messaging
             }
             finally
             {
+                if (!msgHandled)
+                    mqClient.Ack(message);
+
                 this.TotalNormalMessagesReceived++;
                 LastMessageProcessed = DateTime.UtcNow;
             }
