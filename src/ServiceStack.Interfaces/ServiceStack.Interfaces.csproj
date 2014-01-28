@@ -176,6 +176,7 @@
     <Compile Include="Logging\StringBuilderLog.cs" />
     <Compile Include="Logging\TestLogFactory.cs" />
     <Compile Include="Logging\TestLogger.cs" />
+    <Compile Include="Messaging\MessagingException.cs" />
     <Compile Include="Model\IHasGuidId.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -237,9 +238,6 @@
     <Compile Include="Messaging\IMessageService.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Messaging\MessageError.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Messaging\MessageFactory.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -247,9 +245,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Messaging\MessageOption.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Messaging\MessagingException.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Messaging\QueueNames.cs">

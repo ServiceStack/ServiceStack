@@ -34,6 +34,19 @@ namespace ServiceStack.Messaging
 
         public static string Dlq { get; private set; }
         public static byte[] DlqBytes { get; private set; }
+
+        public static string[] AllQueueNames
+        {
+            get
+            {
+                return new[] {
+                    In,
+                    Priority,
+                    Out,
+                    Dlq,
+                };
+            }
+        }
     }
 
     /// <summary>
