@@ -1025,6 +1025,42 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var authInfo = new AuthenticationInfo("Negotiate,NTLM");
         }
+
+        [Test]
+        public void Can_logout_using_CredentailsAuth()
+        {
+            Assert.That(AuthenticateService.LogoutAction, Is.EqualTo("logout"));
+
+            try
+            {
+                var client = GetClient();
+
+                var authResponse = client.Send(new Authenticate
+                {
+                    provider = CredentialsAuthProvider.Name,
+                    UserName = "user",
+                    Password = "p@55word",
+                    RememberMe = true,
+                });
+
+                Assert.That(authResponse.SessionId, Is.Not.Null);
+
+                var logoutResponse = client.Get<AuthenticateResponse>("/auth/logout");
+
+                Assert.That(logoutResponse.ResponseStatus.ErrorCode, Is.Null);
+
+                logoutResponse = client.Send(new Authenticate
+                {
+                    provider = AuthenticateService.LogoutAction,
+                });
+
+                Assert.That(logoutResponse.ResponseStatus.ErrorCode, Is.Null);
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.Fail(webEx.Message);
+            }
+        }
     }
 
     public class AuthTestsWithinVirtualDirectory : AuthTests
