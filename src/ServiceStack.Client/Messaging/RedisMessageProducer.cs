@@ -37,23 +37,33 @@ namespace ServiceStack.Messaging
 
 		public void Publish<T>(T messageBody)
 		{
-            if (typeof(IMessage<T>).IsAssignableFromType(typeof(T)))
-                Publish((IMessage<T>)messageBody);
+            var message = messageBody as IMessage;
+            if (message != null)
+            {
+                Publish(message.ToInQueueName(), message);
+            }
             else
-                Publish((IMessage<T>)new Message<T>(messageBody));
+            {
+                Publish(new Message<T>(messageBody));
+            }
         }
 
-		public void Publish<T>(IMessage<T> message)
-		{
-			var messageBytes = message.ToBytes();
-			this.ReadWriteClient.LPush(message.ToInQueueName(), messageBytes);
-			this.ReadWriteClient.Publish(QueueNames.TopicIn, message.ToInQueueName().ToUtf8Bytes());
-			
-			if (onPublishedCallback != null)
-			{
-				onPublishedCallback();
-			}
-		}
+        public void Publish<T>(IMessage<T> message)
+        {
+            Publish(message.ToInQueueName(), message);
+        }
+
+        public void Publish(string queueName, IMessage message)
+        {
+            var messageBytes = message.ToBytes();
+            this.ReadWriteClient.LPush(queueName, messageBytes);
+            this.ReadWriteClient.Publish(QueueNames.TopicIn, queueName.ToUtf8Bytes());
+
+            if (onPublishedCallback != null)
+            {
+                onPublishedCallback();
+            }
+        }
 
 		public void Dispose()
 		{

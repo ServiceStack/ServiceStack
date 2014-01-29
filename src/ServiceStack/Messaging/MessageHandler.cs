@@ -146,9 +146,8 @@ namespace ServiceStack.Messaging
                 }
                 
                 if (responseEx != null)
-                {
+                { 
                     TotalMessagesFailed++;
-                    msgHandled = true;
 
                     if (message.ReplyTo != null)
                     {
@@ -156,10 +155,16 @@ namespace ServiceStack.Messaging
                         if (replyClient != null)
                         {
                             replyClient.SendOneWay(message.ReplyTo, response);
-                            return;
                         }
+                        else
+                        {
+                            var responseDto = response.GetResponseDto();
+                            mqClient.Publish(message.ReplyTo, MessageFactory.Create(responseDto));
+                        }
+                        return;
                     }
 
+                    msgHandled = true;
                     processInExceptionFn(message, responseEx);
                     return;
                 }

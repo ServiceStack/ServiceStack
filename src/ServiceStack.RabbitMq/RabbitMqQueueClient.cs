@@ -52,15 +52,6 @@ namespace ServiceStack.RabbitMq
         {
             try
             {
-                var msgEx = exception as MessagingException;
-                if (!requeue && msgEx != null && msgEx.ResponseDto != null)
-                {
-                    var msg = MessageFactory.Create(msgEx.ResponseDto);
-                    Publish(msg.ToDlqQueueName(), msg, QueueNames.ExchangeDlq);
-                    Ack(message);
-                    return;
-                }
-
                 if (requeue)
                 {
                     var deliveryTag = ulong.Parse(message.Tag);

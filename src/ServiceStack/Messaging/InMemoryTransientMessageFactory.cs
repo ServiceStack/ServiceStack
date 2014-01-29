@@ -52,12 +52,26 @@ namespace ServiceStack.Messaging
 
             public void Publish<T>(T messageBody)
             {
-                Publish((IMessage<T>)new Message<T>(messageBody));
+                var message = messageBody as IMessage;
+                if (message != null)
+                {
+                    Publish(message.ToInQueueName(), message);
+                }
+                else
+                {
+                    Publish(new Message<T>(messageBody));
+                }
             }
 
             public void Publish<T>(IMessage<T> message)
             {
-                this.parent.transientMessageService.MessageQueueFactory.PublishMessage(QueueNames<T>.In, message);
+                Publish(message.ToInQueueName(), message);
+            }
+
+            public void Publish(string queueName, IMessage message)
+            {
+                this.parent.transientMessageService.MessageQueueFactory
+                    .PublishMessage(queueName, message.ToBytes());
             }
 
             public void Dispose()

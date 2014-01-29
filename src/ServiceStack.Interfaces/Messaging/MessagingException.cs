@@ -12,10 +12,13 @@ namespace ServiceStack.Messaging
         public MessagingException(string message, Exception innerException) : base(message, innerException) {}
 
         public MessagingException(ResponseStatus responseStatus, Exception innerException = null)
-            : base(responseStatus.Message ?? responseStatus.ErrorCode, innerException) { }
+            : base(responseStatus.Message ?? responseStatus.ErrorCode, innerException)
+        {
+            ResponseStatus = responseStatus;
+        }
 
         public MessagingException(ResponseStatus responseStatus, object responseDto, Exception innerException = null)
-            : base(responseStatus.Message ?? responseStatus.ErrorCode, innerException)
+            : this(responseStatus, innerException)
         {
             ResponseDto = responseDto;
         }

@@ -2,16 +2,13 @@
 using NUnit.Framework;
 using ServiceStack.Configuration;
 using ServiceStack.Messaging;
-using ServiceStack.Messaging.Redis;
-using ServiceStack.Redis;
-using ServiceStack.Text;
 using ServiceStack.Validation;
 
 namespace ServiceStack.Common.Tests.Messaging
 {
-    public class RedisMqAppHost : AppHostHttpListenerBase
+    public class InMemoryMqAppHost : AppHostHttpListenerBase
     {
-        public RedisMqAppHost()
+        public InMemoryMqAppHost()
             : base("Service Name", typeof(AnyTestMq).Assembly) { }
 
         public override void Configure(Container container)
@@ -20,11 +17,9 @@ namespace ServiceStack.Common.Tests.Messaging
             container.RegisterValidators(typeof(ValidateTestMqValidator).Assembly);
 
             var appSettings = new AppSettings();
-            container.Register<IRedisClientsManager>(c => new PooledRedisClientManager(
-                new[] { appSettings.GetString("Redis.Host") ?? "localhost" }));
-            container.Register<IMessageService>(c => new RedisMqServer(c.Resolve<IRedisClientsManager>()));
+            container.Register<IMessageService>(c => new InMemoryTransientMessageService());
 
-            var mqServer = (RedisMqServer)container.Resolve<IMessageService>();
+            var mqServer = (InMemoryTransientMessageService)container.Resolve<IMessageService>();
             mqServer.RegisterHandler<AnyTestMq>(ServiceController.ExecuteMessage);
             mqServer.RegisterHandler<PostTestMq>(ServiceController.ExecuteMessage);
             mqServer.RegisterHandler<ValidateTestMq>(ServiceController.ExecuteMessage);
@@ -35,16 +30,13 @@ namespace ServiceStack.Common.Tests.Messaging
     }
 
     [TestFixture]
-    public class RedisMqServerInAppHostTests : MqServerInAppHostTests
+    public class InMemoryMqServerInAppHostTests : MqServerInAppHostTests
     {
         protected override void TestFixtureSetUp()
         {
-            appHost = new RedisMqAppHost()
+            appHost = new InMemoryMqAppHost()
                 .Init()
                 .Start(ListeningOn);
-
-            using (var redis = appHost.TryResolve<IRedisClientsManager>().GetClient())
-                redis.FlushAll();
         }
     }
 }

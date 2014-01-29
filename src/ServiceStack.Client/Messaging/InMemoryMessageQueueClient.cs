@@ -54,14 +54,6 @@ namespace ServiceStack.Messaging
 
         public void Nak(IMessage message, bool requeue, Exception exception = null)
         {
-            var msgEx = exception as MessagingException;
-            if (!requeue && msgEx != null && msgEx.ResponseDto != null)
-            {
-                var msg = MessageFactory.Create(msgEx.ResponseDto);
-                Publish(msg.ToDlqQueueName(), msg);
-                return;
-            }
-
             var queueName = requeue
                 ? message.ToInQueueName()
                 : message.ToDlqQueueName();
