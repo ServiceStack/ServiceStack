@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Reflection;
 using System.Threading;
+using Funq;
 using NUnit.Framework;
 using ServiceStack.Messaging;
 using ServiceStack.RabbitMq;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 
 namespace ServiceStack.Server.Tests.Messaging
@@ -15,6 +18,29 @@ namespace ServiceStack.Server.Tests.Messaging
     public class HelloResponse
     {
         public string Result { get; set; }
+    }
+
+    public class HelloService : Service
+    {
+        public object Any(Hello request)
+        {
+            return new HelloResponse { Result = "Hello, {0}!".Fmt(request.Name) };
+        }
+    }
+
+    public class AppHost : AppHostHttpListenerBase
+    {
+        public AppHost() : base("Rabbit MQ Test Host", typeof(HelloService).Assembly) {}
+
+        public override void Configure(Container container)
+        {
+            container.Register<IMessageService>(c => new RabbitMqServer());
+
+            var mqServer = container.Resolve<IMessageService>();
+
+            mqServer.RegisterHandler<Hello>(ServiceController.ExecuteMessage);
+            mqServer.Start();
+        }
     }
 
     [TestFixture]
@@ -88,5 +114,47 @@ namespace ServiceStack.Server.Tests.Messaging
                 }
             }
         }
+
+        [Test]
+        public void Does_process_messages_in_HttpListener_AppHost()
+        {
+            using (var appHost = new AppHost().Init())
+            {
+                using (var mqClient = appHost.Resolve<IMessageFactory>().CreateMessageQueueClient())
+                {
+                    mqClient.Publish(new Hello { Name = "World" });
+
+                    IMessage<HelloResponse> msgCopy = mqClient.Get<HelloResponse>(QueueNames<HelloResponse>.In);
+                    mqClient.Ack(msgCopy);
+                    Assert.That(msgCopy.GetBody().Result, Is.EqualTo("Hello, World!"));
+                }
+            }
+        }
+
+        [Test]
+        public void Does_process_messages_in_BasicAppHost()
+        {
+            using (var appHost = new BasicAppHost(typeof(HelloService).Assembly) {
+                ConfigureAppHost = host => {
+                    host.Container.Register<IMessageService>(c => new RabbitMqServer());
+
+                    var mqServer = host.Container.Resolve<IMessageService>();
+
+                    mqServer.RegisterHandler<Hello>(host.ServiceController.ExecuteMessage);
+                    mqServer.Start();
+                }
+                }.Init())
+            {
+                using (var mqClient = appHost.Resolve<IMessageFactory>().CreateMessageQueueClient())
+                {
+                    mqClient.Publish(new Hello { Name = "World" });
+
+                    IMessage<HelloResponse> msgCopy = mqClient.Get<HelloResponse>(QueueNames<HelloResponse>.In);
+                    mqClient.Ack(msgCopy);
+                    Assert.That(msgCopy.GetBody().Result, Is.EqualTo("Hello, World!"));
+                }
+            }
+        }
+
     }
 }
