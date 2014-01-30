@@ -113,7 +113,7 @@ namespace ServiceStack.RabbitMq
             get { return handlerMap.Keys.ToList(); }
         }
 
-        public RabbitMqServer(string connectionString,
+        public RabbitMqServer(string connectionString="localhost",
             string username = null, string password = null)
         {
             Init(new RabbitMqMessageFactory(connectionString, username, password));

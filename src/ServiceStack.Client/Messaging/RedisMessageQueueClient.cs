@@ -85,7 +85,7 @@ namespace ServiceStack.Messaging
             this.ReadWriteClient.Publish(QueueNames.TopicOut, queueName.ToUtf8Bytes());
         }
 
-        public IMessage<T> Get<T>(string queueName, TimeSpan? timeOut)
+        public IMessage<T> Get<T>(string queueName, TimeSpan? timeOut = null)
         {
             var unblockingKeyAndValue = this.ReadOnlyClient.BRPop(queueName, (int)timeOut.GetValueOrDefault().TotalSeconds);
             var messageBytes = unblockingKeyAndValue.Length != 2

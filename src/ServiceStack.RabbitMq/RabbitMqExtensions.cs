@@ -173,7 +173,7 @@ namespace ServiceStack.RabbitMq
 
             var message = new Message<T>(body)
             {
-                Id = Guid.Parse(props.MessageId),
+                Id = props.MessageId != null ? Guid.Parse(props.MessageId) : new Guid(),
                 CreatedDate = ((int) props.Timestamp.UnixTime).FromUnixTime(),
                 Priority = props.Priority,
                 ReplyTo = props.ReplyTo,

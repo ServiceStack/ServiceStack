@@ -18,7 +18,7 @@ namespace ServiceStack.Messaging
         /// <summary>
         /// Synchronous blocking get.
         /// </summary>
-        IMessage<T> Get<T>(string queueName, TimeSpan? timeOut);
+        IMessage<T> Get<T>(string queueName, TimeSpan? timeOut=null);
 
         /// <summary>
         /// Non blocking get message

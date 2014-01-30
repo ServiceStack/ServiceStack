@@ -19,7 +19,7 @@ namespace ServiceStack.RabbitMq
                 basicProperties: null, body: messageBytes);
         }
 
-        public IMessage<T> Get<T>(string queueName, TimeSpan? timeOut)
+        public IMessage<T> Get<T>(string queueName, TimeSpan? timeOut = null)
         {
             var now = DateTime.UtcNow;
 

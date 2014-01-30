@@ -56,7 +56,7 @@ namespace ServiceStack.Messaging.Rcon
         /// <summary>
         /// Synchronous blocking get.
         /// </summary>
-        public IMessage<T> Get<T>(string queueName, TimeSpan? timeOut)
+        public IMessage<T> Get<T>(string queueName, TimeSpan? timeOut = null)
         {
             if (givenPacket)
                 return null;

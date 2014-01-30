@@ -37,7 +37,7 @@ namespace ServiceStack.Messaging
             factory.PublishMessage(queueName, messageBytes);
         }
 
-        public IMessage<T> Get<T>(string queueName, TimeSpan? timeOut)
+        public IMessage<T> Get<T>(string queueName, TimeSpan? timeOut = null)
         {
             return GetAsync<T>(queueName);
         }
