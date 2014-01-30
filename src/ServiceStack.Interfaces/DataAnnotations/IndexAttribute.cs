@@ -13,5 +13,9 @@ namespace ServiceStack.DataAnnotations
 		}
 
 		public bool Unique { get; set; }
-	}
+
+        public bool Clustered { get; set; }
+
+        public bool NonClustered { get; set; }
+    }
 }
