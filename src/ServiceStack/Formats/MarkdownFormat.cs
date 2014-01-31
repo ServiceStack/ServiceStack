@@ -331,16 +331,15 @@ namespace ServiceStack.Formats
             stream.Write(markupBytes, 0, markupBytes.Length);
         }
 
-        public string GetPageName(object dto, IRequest requestContext)
+        public string GetPageName(object dto, IRequest req)
         {
-            var httpRequest = requestContext != null ? requestContext.TryResolve<IHttpRequest>() : null;
             var httpResult = dto as IHttpResult;
             if (httpResult != null)
             {
                 dto = httpResult.Response;
             }
             if (dto != null) return dto.GetType().GetOperationName();
-            return httpRequest != null ? httpRequest.OperationName : null;
+            return req != null ? req.OperationName : null;
         }
 
         public MarkdownPage GetViewPageByResponse(object dto, IRequest httpReq)

@@ -70,11 +70,10 @@ namespace ServiceStack
         /// </summary>
         /// <param name="request"></param>
         /// <param name="requiredRoles"></param>
-        public static void AssertRequiredRoles(IRequest request, params string[] requiredRoles)
+        public static void AssertRequiredRoles(IRequest req, params string[] requiredRoles)
         {
             if (requiredRoles.IsEmpty()) return;
 
-            var req = request.TryResolve<IHttpRequest>();
             if (HostContext.HasValidAuthSecret(req))
                 return;
 
