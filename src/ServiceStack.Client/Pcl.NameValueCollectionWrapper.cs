@@ -255,6 +255,11 @@ namespace ServiceStack
         {
             get { return false; }
         }
+
+        public override string ToString()
+        {
+            return data.ToString();
+        }
     }
 
     public static class NameValueCollectionWrapperExtensions
