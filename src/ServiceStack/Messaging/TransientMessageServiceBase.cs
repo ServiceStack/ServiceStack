@@ -10,9 +10,9 @@ namespace ServiceStack.Messaging
         : IMessageService, IMessageHandlerDisposer
     {
         private bool isRunning;
-        public const int DefaultRetryCount = 2; //Will be a total of 3 attempts
+        public const int DefaultRetryCount = 1; //Will be a total of 2 attempts
 
-        public int RetryCount { get; protected set; }
+        public int RetryCount { get; set; }
         public TimeSpan? RequestTimeOut { get; protected set; }
 
         public int PoolSize { get; protected set; } //use later

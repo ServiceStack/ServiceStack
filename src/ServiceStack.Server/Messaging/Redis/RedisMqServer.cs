@@ -34,7 +34,7 @@ namespace ServiceStack.Messaging.Redis
         private static readonly ILog Log = LogManager.GetLogger(typeof(RedisMqServer));
         public const int DefaultRetryCount = 1; //Will be a total of 2 attempts
 
-        public int RetryCount { get; protected set; }
+        public int RetryCount { get; set; }
 
         public int? KeepAliveRetryAfterMs { get; set; }
 
@@ -76,6 +76,11 @@ namespace ServiceStack.Messaging.Redis
         }
 
         private readonly IRedisClientsManager clientsManager; //Thread safe redis client/conn factory
+
+        public IRedisClientsManager ClientsManager
+        {
+            get { return clientsManager; }
+        }
 
         public IMessageQueueClient CreateMessageQueueClient()
         {

@@ -1,15 +1,39 @@
 ﻿using System;
-using System.Reflection;
-using System.Threading;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Messaging;
+using ServiceStack.Messaging.Redis;
 using ServiceStack.RabbitMq;
+using ServiceStack.Redis;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 
 namespace ServiceStack.Server.Tests.Messaging
 {
+    public class RabbitMqServerIntroTests : MqServerIntroTests
+    {
+        public override IMessageService CreateMqServer(int retryCount = 1)
+        {
+            return new RabbitMqServer { RetryCount = retryCount };
+        }
+    }
+
+    public class RedisMqServerIntroTests : MqServerIntroTests
+    {
+        public override IMessageService CreateMqServer(int retryCount = 1)
+        {
+            return new RedisMqServer(new BasicRedisClientManager()) { RetryCount = retryCount };
+        }
+    }
+
+    public class InMemoryMqServerIntroTests : MqServerIntroTests
+    {
+        public override IMessageService CreateMqServer(int retryCount = 1)
+        {
+            return new InMemoryTransientMessageService { RetryCount = retryCount };
+        }
+    }
+
     public class Hello
     {
         public string Name { get; set; }
@@ -30,11 +54,17 @@ namespace ServiceStack.Server.Tests.Messaging
 
     public class AppHost : AppHostHttpListenerBase
     {
-        public AppHost() : base("Rabbit MQ Test Host", typeof(HelloService).Assembly) { }
+        private readonly Func<IMessageService> createMqServerFn;
+
+        public AppHost(Func<IMessageService> createMqServerFn)
+            : base("Rabbit MQ Test Host", typeof (HelloService).Assembly)
+        {
+            this.createMqServerFn = createMqServerFn;
+        }
 
         public override void Configure(Container container)
         {
-            container.Register<IMessageService>(c => new RabbitMqServer());
+            container.Register(c => createMqServerFn());
 
             var mqServer = container.Resolve<IMessageService>();
 
@@ -44,8 +74,10 @@ namespace ServiceStack.Server.Tests.Messaging
     }
 
     [TestFixture]
-    public class RabbitMqServerIntroTests
+    public abstract class MqServerIntroTests
     {
+        public abstract IMessageService CreateMqServer(int retryCount = 1);
+
         [Test]
         public void Messages_with_no_responses_are_published_to_Request_outq_topic()
         {
@@ -92,7 +124,7 @@ namespace ServiceStack.Server.Tests.Messaging
         [Test]
         public void Message_with_exceptions_are_retried_then_published_to_Request_dlq()
         {
-            using (var mqServer = new RabbitMqServer { RetryCount = 1 })
+            using (var mqServer = CreateMqServer(retryCount:1))
             {
                 var called = 0;
                 mqServer.RegisterHandler<Hello>(m =>
@@ -143,7 +175,7 @@ namespace ServiceStack.Server.Tests.Messaging
         [Test]
         public void Does_process_messages_in_HttpListener_AppHost()
         {
-            using (var appHost = new AppHost().Init())
+            using (var appHost = new AppHost(() => CreateMqServer()).Init())
             {
                 using (var mqClient = appHost.Resolve<IMessageService>().CreateMessageQueueClient())
                 {
@@ -182,6 +214,6 @@ namespace ServiceStack.Server.Tests.Messaging
                 }
             }
         }
-
     }
+
 }

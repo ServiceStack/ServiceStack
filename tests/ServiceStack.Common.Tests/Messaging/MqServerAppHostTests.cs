@@ -1,11 +1,65 @@
 ﻿using System;
+using Funq;
 using NUnit.Framework;
 using ServiceStack.FluentValidation;
 using ServiceStack.Messaging;
+using ServiceStack.Messaging.Redis;
+using ServiceStack.RabbitMq;
+using ServiceStack.Redis;
 using ServiceStack.Text;
+using ServiceStack.Validation;
 
 namespace ServiceStack.Common.Tests.Messaging
 {
+    [TestFixture]
+    public class RedisMqServerAppHostTests : MqServerAppHostTests
+    {
+        public RedisMqServerAppHostTests()
+        {
+            using (var redis = ((RedisMqServer)CreateMqServer()).ClientsManager.GetClient())
+                redis.FlushAll();
+        }
+
+        public override IMessageService CreateMqServer(int retryCount = 1)
+        {
+            return new RedisMqServer(new PooledRedisClientManager()) { RetryCount = retryCount };
+        }
+    }
+
+    [TestFixture]
+    public class RabbitMqServerAppHostTests : MqServerAppHostTests
+    {
+        public RabbitMqServerAppHostTests()
+        {
+            using (var conn = ((RabbitMqServer)CreateMqServer()).ConnectionFactory.CreateConnection())
+            using (var channel = conn.CreateModel())
+            {
+                channel.PurgeQueue<AnyTestMq>();
+                channel.PurgeQueue<AnyTestMqResponse>();
+                channel.PurgeQueue<PostTestMq>();
+                channel.PurgeQueue<PostTestMqResponse>();
+                channel.PurgeQueue<ValidateTestMq>();
+                channel.PurgeQueue<ValidateTestMqResponse>();
+                channel.PurgeQueue<ThrowGenericError>();
+            }
+        }
+
+        public override IMessageService CreateMqServer(int retryCount = 1)
+        {
+            return new RabbitMqServer { RetryCount = 1 };
+        }
+    }
+
+    [TestFixture]
+    public class MemoryMqServerAppHostTests : MqServerAppHostTests
+    {
+        public override IMessageService CreateMqServer(int retryCount = 1)
+        {
+            return new InMemoryTransientMessageService { RetryCount = retryCount };
+        }
+    }
+
+
     public class AnyTestMq
     {
         public int Id { get; set; }
@@ -76,8 +130,35 @@ namespace ServiceStack.Common.Tests.Messaging
         }
     }
 
+    public class MqTestsAppHost : AppHostHttpListenerBase
+    {
+        private readonly Func<IMessageService> createMqServerFn;
+
+        public MqTestsAppHost(Func<IMessageService> createMqServerFn)
+            : base("Service Name", typeof(AnyTestMq).Assembly)
+        {
+            this.createMqServerFn = createMqServerFn;
+        }
+
+        public override void Configure(Container container)
+        {
+            Plugins.Add(new ValidationFeature());
+            container.RegisterValidators(typeof(ValidateTestMqValidator).Assembly);
+
+            container.Register(c => createMqServerFn());
+
+            var mqServer = container.Resolve<IMessageService>();
+            mqServer.RegisterHandler<AnyTestMq>(ServiceController.ExecuteMessage);
+            mqServer.RegisterHandler<PostTestMq>(ServiceController.ExecuteMessage);
+            mqServer.RegisterHandler<ValidateTestMq>(ServiceController.ExecuteMessage);
+            mqServer.RegisterHandler<ThrowGenericError>(ServiceController.ExecuteMessage);
+
+            mqServer.Start();
+        }
+    }
+
     [TestFixture]
-    public abstract class MqServerInAppHostTests
+    public abstract class MqServerAppHostTests
     {
         protected const string ListeningOn = "http://*:1337/";
         public const string Host = "http://localhost:1337";
@@ -85,8 +166,15 @@ namespace ServiceStack.Common.Tests.Messaging
 
         protected ServiceStackHost appHost;
 
+        public abstract IMessageService CreateMqServer(int retryCount = 1);
+
         [TestFixtureSetUp]
-        protected abstract void TestFixtureSetUp();
+        public void TestFixtureSetUp()
+        {
+            appHost = new MqTestsAppHost(() => CreateMqServer())
+                .Init()
+                .Start(ListeningOn);
+        }
 
         [TestFixtureTearDown]
         public virtual void TestFixtureTearDown()

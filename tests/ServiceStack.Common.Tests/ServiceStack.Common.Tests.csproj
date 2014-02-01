@@ -152,11 +152,8 @@
     <Compile Include="FunqTests.cs" />
     <Compile Include="MappingTests.cs" />
     <Compile Include="MessagingTests.cs" />
-    <Compile Include="Messaging\InMemoryMqServerInAppHostTests.cs" />
-    <Compile Include="Messaging\RabbitMqServerInAppHostTests.cs" />
     <Compile Include="Messaging\RabbitMqTests.cs" />
-    <Compile Include="Messaging\MqServerInAppHostTests.cs" />
-    <Compile Include="Messaging\RedisMqServerInAppHostTests.cs" />
+    <Compile Include="Messaging\MqServerAppHostTests.cs" />
     <Compile Include="MockRestGatewayTests.cs" />
     <Compile Include="Models\ModelWithNamedCompositeIndex.cs" />
     <Compile Include="Models\DdnContentIngest.cs" />
