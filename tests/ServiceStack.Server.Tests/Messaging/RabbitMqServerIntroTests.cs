@@ -81,9 +81,9 @@ namespace ServiceStack.Server.Tests.Messaging
                 {
                     mqClient.Publish(new Hello { Name = "World" });
 
-                    IMessage<HelloResponse> msgCopy = mqClient.Get<HelloResponse>(QueueNames<HelloResponse>.In);
-                    mqClient.Ack(msgCopy);
-                    Assert.That(msgCopy.GetBody().Result, Is.EqualTo("Hello, World!"));
+                    IMessage<HelloResponse> responseMsg = mqClient.Get<HelloResponse>(QueueNames<HelloResponse>.In);
+                    mqClient.Ack(responseMsg);
+                    Assert.That(responseMsg.GetBody().Result, Is.EqualTo("Hello, World!"));
                 }
             }
         }
@@ -104,13 +104,13 @@ namespace ServiceStack.Server.Tests.Messaging
                 {
                     mqClient.Publish(new Hello { Name = "World" });
 
-                    IMessage<Hello> msg = mqClient.Get<Hello>(QueueNames<Hello>.Dlq);
-                    mqClient.Ack(msg);
+                    IMessage<Hello> dlqMsg = mqClient.Get<Hello>(QueueNames<Hello>.Dlq);
+                    mqClient.Ack(dlqMsg);
 
                     Assert.That(called, Is.EqualTo(2));
-                    Assert.That(msg.GetBody().Name, Is.EqualTo("World"));
-                    Assert.That(msg.Error.ErrorCode, Is.EqualTo(typeof(ArgumentException).Name));
-                    Assert.That(msg.Error.Message, Is.EqualTo("Name"));
+                    Assert.That(dlqMsg.GetBody().Name, Is.EqualTo("World"));
+                    Assert.That(dlqMsg.Error.ErrorCode, Is.EqualTo(typeof(ArgumentException).Name));
+                    Assert.That(dlqMsg.Error.Message, Is.EqualTo("Name"));
                 }
             }
         }
@@ -124,9 +124,9 @@ namespace ServiceStack.Server.Tests.Messaging
                 {
                     mqClient.Publish(new Hello { Name = "World" });
 
-                    IMessage<HelloResponse> msgCopy = mqClient.Get<HelloResponse>(QueueNames<HelloResponse>.In);
-                    mqClient.Ack(msgCopy);
-                    Assert.That(msgCopy.GetBody().Result, Is.EqualTo("Hello, World!"));
+                    IMessage<HelloResponse> responseMsg = mqClient.Get<HelloResponse>(QueueNames<HelloResponse>.In);
+                    mqClient.Ack(responseMsg);
+                    Assert.That(responseMsg.GetBody().Result, Is.EqualTo("Hello, World!"));
                 }
             }
         }
@@ -149,9 +149,9 @@ namespace ServiceStack.Server.Tests.Messaging
                 {
                     mqClient.Publish(new Hello { Name = "World" });
 
-                    IMessage<HelloResponse> msgCopy = mqClient.Get<HelloResponse>(QueueNames<HelloResponse>.In);
-                    mqClient.Ack(msgCopy);
-                    Assert.That(msgCopy.GetBody().Result, Is.EqualTo("Hello, World!"));
+                    IMessage<HelloResponse> responseMsg = mqClient.Get<HelloResponse>(QueueNames<HelloResponse>.In);
+                    mqClient.Ack(responseMsg);
+                    Assert.That(responseMsg.GetBody().Result, Is.EqualTo("Hello, World!"));
                 }
             }
         }

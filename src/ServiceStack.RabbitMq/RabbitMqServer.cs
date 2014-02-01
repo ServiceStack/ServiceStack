@@ -7,7 +7,6 @@ using RabbitMQ.Client;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Messaging.Redis;
-using ServiceStack.Text;
 
 namespace ServiceStack.RabbitMq
 {
@@ -17,38 +16,50 @@ namespace ServiceStack.RabbitMq
 
         public const int DefaultRetryCount = 1; //Will be a total of 2 attempts
 
+        /// <summary>
+        /// The RabbitMQ.Client Connection factory to introspect connection properties and create a low-level connection
+        /// </summary>
+        public ConnectionFactory ConnectionFactory
+        {
+            get { return messageFactory.ConnectionFactory; }
+        }
+
+        /// <summary>
+        /// Whether Rabbit MQ should auto-retry connecting when a connection to Rabbit MQ Server instance is dropped
+        /// </summary>
+        public bool AutoReconnect { get; set; }
+
+        /// <summary>
+        /// How many times a message should be retried before sending to the DLQ (Max of 1).
+        /// </summary>
         public int RetryCount
         {
             get { return messageFactory.RetryCount; }
             set { messageFactory.RetryCount = value; }
         }
 
+        /// <summary>
+        /// Whether to use polling for consuming messages instead of a long-term subscription
+        /// </summary>
         public bool UsePolling
         {
             get { return messageFactory.UsePolling; }
             set { messageFactory.UsePolling = value; }
         }
 
+        /// <summary>
+        /// Wait before Starting the MQ Server after a restart 
+        /// </summary>
         public int? KeepAliveRetryAfterMs { get; set; }
 
+        /// <summary>
+        /// The Message Factory used by this MQ Server
+        /// </summary>
         private RabbitMqMessageFactory messageFactory;
         public IMessageFactory MessageFactory
         {
             get { return messageFactory; }
         }
-
-        public ConnectionFactory ConnectionFactory
-        {
-            get { return messageFactory.ConnectionFactory; }
-        }
-
-        private IConnection connection;
-        private IConnection Connection
-        {
-            get { return connection ?? (connection = ConnectionFactory.CreateConnection()); }
-        }
-
-        public bool AutoReconnect { get; set; }
 
         /// <summary>
         /// Execute global transformation or custom logic before a request is processed.
@@ -83,20 +94,24 @@ namespace ServiceStack.RabbitMq
             }
         }
 
-        public IMessageQueueClient CreateMessageQueueClient()
-        {
-            return new RabbitMqQueueClient(messageFactory);
-        }
-
         /// <summary>
         /// Opt-in to only publish responses on this white list. 
         /// Publishes all responses by default.
         /// </summary>
         public string[] PublishResponsesWhitelist { get; set; }
 
+        /// <summary>
+        /// Don't publish any response messages
+        /// </summary>
         public bool DisablePublishingResponses
         {
             set { PublishResponsesWhitelist = value ? new string[0] : null; }
+        }
+
+        private IConnection connection;
+        private IConnection Connection
+        {
+            get { return connection ?? (connection = ConnectionFactory.CreateConnection()); }
         }
 
         private readonly Dictionary<Type, IMessageHandlerFactory> handlerMap
