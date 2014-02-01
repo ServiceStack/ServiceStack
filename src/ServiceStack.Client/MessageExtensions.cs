@@ -89,6 +89,16 @@ namespace ServiceStack
                 ? QueueNames<T>.Priority
                 : QueueNames<T>.In;
         }
+
+        public static IMessageQueueClient CreateMessageQueueClient(this IMessageService mqServer)
+        {
+            return mqServer.MessageFactory.CreateMessageQueueClient();
+        }
+
+        public static IMessageProducer CreateMessageProducer(this IMessageService mqServer)
+        {
+            return mqServer.MessageFactory.CreateMessageProducer();
+        }
     }
 
     internal delegate IMessage ToMessageDelegate(object param);

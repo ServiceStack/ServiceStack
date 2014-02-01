@@ -120,7 +120,7 @@ namespace ServiceStack.Server.Tests.Messaging
         {
             using (var appHost = new AppHost().Init())
             {
-                using (var mqClient = appHost.Resolve<IMessageFactory>().CreateMessageQueueClient())
+                using (var mqClient = appHost.Resolve<IMessageService>().CreateMessageQueueClient())
                 {
                     mqClient.Publish(new Hello { Name = "World" });
 
@@ -145,7 +145,7 @@ namespace ServiceStack.Server.Tests.Messaging
                 }
                 }.Init())
             {
-                using (var mqClient = appHost.Resolve<IMessageFactory>().CreateMessageQueueClient())
+                using (var mqClient = appHost.Resolve<IMessageService>().CreateMessageQueueClient())
                 {
                     mqClient.Publish(new Hello { Name = "World" });
 
