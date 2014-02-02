@@ -4,7 +4,7 @@ using ServiceStack.Auth;
 
 namespace ServiceStack.Authentication.NHibernate
 {
-    public class UserAuthMap : ClassMap<UserAuthPersistenceDto>
+    public class UserAuthMap : ClassMap<UserAuthNHibernate>
     {
         public UserAuthMap()
         {
@@ -36,13 +36,13 @@ namespace ServiceStack.Authentication.NHibernate
         }
     }
 
-    public class UserAuthPersistenceDto : UserAuth
+    public class UserAuthNHibernate : UserAuth
     {
-        public UserAuthPersistenceDto()
+        public UserAuthNHibernate()
             : base()
         { }
 
-        public UserAuthPersistenceDto(IUserAuth userAuth)
+        public UserAuthNHibernate(IUserAuth userAuth)
         {
             Id = userAuth.Id;
             UserName = userAuth.UserName;

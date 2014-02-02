@@ -52,14 +52,14 @@ namespace ServiceStack.Authentication.NHibernate
             if (tokens == null || string.IsNullOrEmpty(tokens.Provider) || string.IsNullOrEmpty(tokens.UserId))
                 return null;
 
-            var oAuthProvider = Session.QueryOver<UserAuthDetails>()
+            var oAuthProvider = Session.QueryOver<UserAuthDetailsNHibernate>()
                 .Where(x => x.Provider == tokens.Provider)
                 .And(x => x.UserId == tokens.UserId)
                 .SingleOrDefault();
 
             if (oAuthProvider != null)
             {
-                return Session.QueryOver<UserAuthPersistenceDto>()
+                return Session.QueryOver<UserAuthNHibernate>()
                     .Where(x => x.Id == oAuthProvider.UserAuthId)
                     .SingleOrDefault();
             }
@@ -70,7 +70,7 @@ namespace ServiceStack.Authentication.NHibernate
         public IUserAuth GetUserAuth(string userAuthId)
         {
             int authId = int.Parse(userAuthId);
-            return Session.QueryOver<UserAuthPersistenceDto>()
+            return Session.QueryOver<UserAuthNHibernate>()
                 .Where(x => x.Id == authId)
                 .SingleOrDefault();
         }
@@ -118,16 +118,16 @@ namespace ServiceStack.Authentication.NHibernate
 
         public IUserAuth GetUserAuthByUserName(string userNameOrEmail)
         {
-            UserAuthPersistenceDto user = null;
+            UserAuthNHibernate user = null;
             if (userNameOrEmail.Contains("@"))
             {
-                user = Session.QueryOver<UserAuthPersistenceDto>()
+                user = Session.QueryOver<UserAuthNHibernate>()
                     .Where(x => x.Email == userNameOrEmail)
                     .SingleOrDefault();
             }
             else
             {
-                user = Session.QueryOver<UserAuthPersistenceDto>()
+                user = Session.QueryOver<UserAuthNHibernate>()
                     .Where(x => x.UserName == userNameOrEmail)
                     .SingleOrDefault();
             }
@@ -139,14 +139,14 @@ namespace ServiceStack.Authentication.NHibernate
         {
             var userAuth = (UserAuth)GetUserAuth(authSession, tokens) ?? new UserAuth();
 
-            var oAuthProvider = Session.QueryOver<UserAuthDetails>()
+            var oAuthProvider = Session.QueryOver<UserAuthDetailsNHibernate>()
                 .Where(x => x.Provider == tokens.Provider)
                 .And(x => x.UserId == tokens.UserId)
                 .SingleOrDefault();
 
             if (oAuthProvider == null)
             {
-                oAuthProvider = new UserAuthDetails {
+                oAuthProvider = new UserAuthDetailsNHibernate {
                     Provider = tokens.Provider,
                     UserId = tokens.UserId,
                 };
@@ -159,7 +159,7 @@ namespace ServiceStack.Authentication.NHibernate
             if (userAuth.CreatedDate == default(DateTime))
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
-            Session.Save(new UserAuthPersistenceDto(userAuth));
+            Session.Save(new UserAuthNHibernate(userAuth));
 
             oAuthProvider.UserAuthId = userAuth.Id;
 
@@ -175,7 +175,7 @@ namespace ServiceStack.Authentication.NHibernate
         public List<IUserAuthDetails> GetUserAuthDetails(string userAuthId)
         {
             int authId = int.Parse(userAuthId);
-            var value = Session.QueryOver<UserAuthDetails>()
+            var value = Session.QueryOver<UserAuthDetailsNHibernate>()
                 .Where(x => x.UserAuthId == authId)
                 .OrderBy(x => x.ModifiedDate).Asc
                 .List();
@@ -206,7 +206,7 @@ namespace ServiceStack.Authentication.NHibernate
             newUser.CreatedDate = DateTime.UtcNow;
             newUser.ModifiedDate = newUser.CreatedDate;
 
-            Session.Save(new UserAuthPersistenceDto(newUser));
+            Session.Save(new UserAuthNHibernate(newUser));
             return newUser;
         }
 
@@ -250,13 +250,13 @@ namespace ServiceStack.Authentication.NHibernate
             if (userAuth.CreatedDate == default(DateTime))
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
-            Session.Save(new UserAuthPersistenceDto(userAuth));
+            Session.Save(new UserAuthNHibernate(userAuth));
         }
 
         public void SaveUserAuth(IAuthSession authSession)
         {
             var userAuth = !string.IsNullOrEmpty(authSession.UserAuthId)
-                ? Session.Load<UserAuthPersistenceDto>(int.Parse(authSession.UserAuthId))
+                ? Session.Load<UserAuthNHibernate>(int.Parse(authSession.UserAuthId))
                 : authSession.ConvertTo<UserAuth>();
 
             if (userAuth.Id == default(int) && !string.IsNullOrEmpty(authSession.UserAuthId))
@@ -266,7 +266,7 @@ namespace ServiceStack.Authentication.NHibernate
             if (userAuth.CreatedDate == default(DateTime))
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
-            Session.Save(new UserAuthPersistenceDto(userAuth));
+            Session.Save(new UserAuthNHibernate(userAuth));
         }
 
         public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password)
@@ -289,7 +289,7 @@ namespace ServiceStack.Authentication.NHibernate
             newUser.CreatedDate = existingUser.CreatedDate;
             newUser.ModifiedDate = DateTime.UtcNow;
 
-            Session.Save(new UserAuthPersistenceDto(newUser));
+            Session.Save(new UserAuthNHibernate(newUser));
 
             return newUser;
         }
