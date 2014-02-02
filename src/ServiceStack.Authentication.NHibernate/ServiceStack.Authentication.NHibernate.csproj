@@ -73,7 +73,7 @@
     <Compile Include="NHibernateUserAuthRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UserAuthMap.cs" />
-    <Compile Include="UserOAuthProviderMap.cs" />
+    <Compile Include="UserAuthDetailsMap.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

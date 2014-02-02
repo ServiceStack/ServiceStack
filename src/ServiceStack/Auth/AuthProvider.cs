@@ -131,7 +131,7 @@ namespace ServiceStack.Auth
                     session.UserAuthId = authRepo.CreateOrMergeAuthSession(session, tokens);
                 }
                 //SaveUserAuth(authService, userSession, authRepo, tokens);
-                
+
                 authRepo.LoadUserAuth(session, tokens);
 
                 foreach (var oAuthToken in session.ProviderOAuthAccess)
@@ -144,17 +144,18 @@ namespace ServiceStack.Auth
                         userAuthProvider.LoadUserOAuthProvider(session, oAuthToken);
                     }
                 }
-        
+
                 var httpRes = authService.Request.Response as IHttpResponse;
                 if (httpRes != null)
                 {
                     httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
                 }
-                
+
             }
 
             try
             {
+                session.IsAuthenticated = true;
                 session.OnAuthenticated(authService, session, tokens, authInfo);
             }
             finally
@@ -218,7 +219,7 @@ namespace ServiceStack.Auth
             return authProvider != null && authProvider.IsAuthorized(session, tokens);
         }
 
-        public static IUserAuthRepository AsUserAuthRepository(this IAuthRepository authRepo, IResolver resolver=null)
+        public static IUserAuthRepository AsUserAuthRepository(this IAuthRepository authRepo, IResolver resolver = null)
         {
             if (resolver == null)
                 resolver = HostContext.AppHost;

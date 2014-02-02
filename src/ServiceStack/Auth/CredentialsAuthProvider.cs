@@ -27,10 +27,10 @@ namespace ServiceStack.Auth
         }
 
         public CredentialsAuthProvider(IAppSettings appSettings, string authRealm, string oAuthProvider)
-            : base(appSettings, authRealm, oAuthProvider) {}
+            : base(appSettings, authRealm, oAuthProvider) { }
 
         public CredentialsAuthProvider(IAppSettings appSettings)
-            : base(appSettings, Realm, Name) {}
+            : base(appSettings, Realm, Name) { }
 
         public virtual bool TryAuthenticate(IServiceBase authService, string userName, string password)
         {
@@ -46,7 +46,7 @@ namespace ServiceStack.Auth
                 session.IsAuthenticated = true;
                 session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
                 session.ProviderOAuthAccess = authRepo.GetUserAuthDetails(session.UserAuthId)
-                    .ConvertAll(x => (IAuthTokens) x);
+                    .ConvertAll(x => (IAuthTokens)x);
 
                 return true;
             }
@@ -56,8 +56,10 @@ namespace ServiceStack.Auth
 
         public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)
         {
-            if (request != null) {
-                if (!LoginMatchesSession(session, request.UserName)) {
+            if (request != null)
+            {
+                if (!LoginMatchesSession(session, request.UserName))
+                {
                     return false;
                 }
             }
@@ -78,22 +80,23 @@ namespace ServiceStack.Auth
 
         protected object Authenticate(IServiceBase authService, IAuthSession session, string userName, string password, string referrerUrl)
         {
-            if (!LoginMatchesSession(session, userName)) 
+            if (!LoginMatchesSession(session, userName))
             {
                 authService.RemoveSession();
                 session = authService.GetSession();
             }
 
-            if (TryAuthenticate(authService, userName, password)) 
+            if (TryAuthenticate(authService, userName, password))
             {
-                if (session.UserAuthName == null) 
+                if (session.UserAuthName == null)
                 {
                     session.UserAuthName = userName;
                 }
 
                 OnAuthenticated(authService, session, null, null);
 
-                return new AuthenticateResponse {
+                return new AuthenticateResponse
+                {
                     UserName = userName,
                     SessionId = session.Id,
                     ReferrerUrl = referrerUrl
@@ -106,30 +109,36 @@ namespace ServiceStack.Auth
         public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
             var userSession = session as AuthUserSession;
-            if (userSession != null) {
+            if (userSession != null)
+            {
                 LoadUserAuthInfo(userSession, tokens, authInfo);
             }
 
             var authRepo = authService.TryResolve<IAuthRepository>();
-            if (authRepo != null) {
-                if (tokens != null) {
+            if (authRepo != null)
+            {
+                if (tokens != null)
+                {
                     authInfo.ForEach((x, y) => tokens.Items[x] = y);
                     session.UserAuthId = authRepo.CreateOrMergeAuthSession(session, tokens);
                 }
 
-                foreach (var oAuthToken in session.ProviderOAuthAccess) {
+                foreach (var oAuthToken in session.ProviderOAuthAccess)
+                {
                     var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
-                    if (authProvider == null) {
+                    if (authProvider == null)
+                    {
                         continue;
                     }
                     var userAuthProvider = authProvider as OAuthProvider;
-                    if (userAuthProvider != null) {
+                    if (userAuthProvider != null)
+                    {
                         userAuthProvider.LoadUserOAuthProvider(session, oAuthToken);
                     }
                 }
 
                 var httpRes = authService.Request.Response as IHttpResponse;
-                if (httpRes != null) 
+                if (httpRes != null)
                 {
                     httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
                 }
@@ -137,6 +146,7 @@ namespace ServiceStack.Auth
 
             try
             {
+                session.IsAuthenticated = true;
                 session.OnAuthenticated(authService, session, tokens, authInfo);
             }
             finally

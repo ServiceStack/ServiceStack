@@ -37,8 +37,7 @@ namespace ServiceStack
 
             var session = req.GetSession();
 
-            if (session != null && session.UserAuthId != null 
-                && session.HasRole(RoleNames.Admin))
+            if (session != null && session.HasRole(RoleNames.Admin))
                 return;
 
             if (HasAllPermissions(req, session)) return;
@@ -66,7 +65,7 @@ namespace ServiceStack
 
         public bool HasAllPermissions(IAuthSession session)
         {
-            if (session == null || session.UserAuthId == null)
+            if (session == null)
                 return false;
 
             return this.RequiredPermissions.All(session.HasPermission);

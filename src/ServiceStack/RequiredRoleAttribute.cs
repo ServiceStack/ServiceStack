@@ -37,8 +37,7 @@ namespace ServiceStack
 
             var session = req.GetSession();
 
-            if (session != null && session.UserAuthId != null 
-                && session.HasRole(RoleNames.Admin))
+            if (session != null && session.HasRole(RoleNames.Admin))
                 return;
 
             if (HasAllRoles(req, session)) return;
@@ -66,7 +65,7 @@ namespace ServiceStack
 
         public bool HasAllRoles(IAuthSession session)
         {
-            if (session == null || session.UserAuthId == null)
+            if (session == null)
                 return false;
 
             return this.RequiredRoles.All(session.HasRole);
@@ -86,7 +85,7 @@ namespace ServiceStack
 
             var session = req.GetSession();
 
-            if (session != null && session.UserAuthId != null)
+            if (session != null)
             {
                 if (session.HasRole(RoleNames.Admin))
                     return;
@@ -96,7 +95,7 @@ namespace ServiceStack
 
             session.UpdateFromUserAuthRepo(req);
 
-            if (session != null && session.UserAuthId != null && requiredRoles.All(session.HasRole))
+            if (session != null && requiredRoles.All(session.HasRole))
                 return;
 
             var statusCode = session != null && session.IsAuthenticated
