@@ -535,7 +535,6 @@
     <EmbeddedResource Include="MiniProfiler\UI\includes.tmpl">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <None Include="MiniProfiler\UI\includes.tmpl.orig" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Funq\License.txt" />
@@ -543,8 +542,6 @@
     <EmbeddedResource Include="Templates\OperationControl.html" />
     <EmbeddedResource Include="Templates\IndexOperations.html" />
     <EmbeddedResource Include="Templates\HtmlFormat.html" />
-    <None Include="MiniProfiler\UI\jquery.tmpl.beta1.js.orig" />
-    <None Include="MiniProfiler\UI\jquery.1.6.2.js.orig" />
     <EmbeddedResource Include="MiniProfiler\UI\includes.css" />
     <EmbeddedResource Include="MiniProfiler\UI\includes.js" />
     <EmbeddedResource Include="MiniProfiler\UI\jquip.all.js" />
