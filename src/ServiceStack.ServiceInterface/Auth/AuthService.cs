@@ -113,14 +113,14 @@ namespace ServiceStack.ServiceInterface.Auth
                 throw new ConfigurationException("No OAuth providers have been registered in your AppHost.");
         }
 
-        public void Options(Auth request) {}
+        public virtual void Options(Auth request) {}
 
-        public object Get(Auth request)
+        public virtual object Get(Auth request)
         {
             return Post(request);
         }
 
-        public object Post(Auth request)
+        public virtual object Post(Auth request)
         {
             AssertAuthProviders();
 
@@ -204,7 +204,7 @@ namespace ServiceStack.ServiceInterface.Auth
         /// </summary>
         /// <param name="request"></param>
         /// <returns>null; if already autenticated otherwise a populated instance of AuthResponse</returns>
-        public AuthResponse Authenticate(Auth request)
+        public virtual AuthResponse Authenticate(Auth request)
         {
             //Remove HTML Content-Type to avoid auth providers issuing browser re-directs
             ((HttpRequestContext)this.RequestContext).ResponseContentType = ContentType.PlainText;
@@ -240,7 +240,7 @@ namespace ServiceStack.ServiceInterface.Auth
             return response;
         }
 
-        public object Delete(Auth request)
+        public virtual object Delete(Auth request)
         {
             if (ValidateFn != null)
             {
