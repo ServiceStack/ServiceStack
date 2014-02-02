@@ -59,18 +59,19 @@ namespace ServiceStack.Host.Handlers
                     return taskResponse
                         .ContinueWith(task =>
                         {
+                            if (task.IsFaulted)
+                                return errorCallback(task.Exception);
+
+                            if (task.IsCanceled)
+                                return errorCallback(new OperationCanceledException("The async Task operation was cancelled"));
+
                             if (task.IsCompleted)
                             {
                                 var taskResult = task.GetResult();
                                 return callback(taskResult);
                             }
 
-                            if (task.IsFaulted)
-                                return errorCallback(task.Exception);
-
-                            return task.IsCanceled
-                                ? errorCallback(new OperationCanceledException("The async Task operation was cancelled"))
-                                : errorCallback(new InvalidOperationException("Unknown Task state"));
+                            return errorCallback(new InvalidOperationException("Unknown Task state"));
                         });
                 }
 
