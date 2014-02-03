@@ -24,7 +24,7 @@ namespace ServiceStack.RabbitMq
 
         public bool UsePolling { get; set; }
 
-        public RabbitMqMessageFactory(string connectionString,
+        public RabbitMqMessageFactory(string connectionString = "localhost",
             string username = null, string password = null)
         {
             if (connectionString == null)

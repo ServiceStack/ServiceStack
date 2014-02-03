@@ -406,5 +406,19 @@ namespace ServiceStack.Server.Tests.Messaging
 
             Assert.That(timesCalled, Is.EqualTo(msgs));
         }
+
+        [Test]
+        public void Can_publish_and_receive_messages_with_MessageFactory()
+        {
+            using (var mqFactory = new RabbitMqMessageFactory("localhost"))
+            using (var mqClient = mqFactory.CreateMessageQueueClient())
+            {
+                mqClient.Publish(new Hello { Name = "Foo" });
+                var msg = mqClient.Get<Hello>(QueueNames<Hello>.In);
+
+                Assert.That(msg.GetBody().Name, Is.EqualTo("Foo"));
+            }
+        }
+
     }
 }
