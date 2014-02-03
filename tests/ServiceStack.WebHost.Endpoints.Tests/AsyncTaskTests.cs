@@ -1,3 +1,5 @@
+using System;
+using System.Net;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Funq;
@@ -121,6 +123,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Result, Is.EqualTo(GetFactorialAsyncService.GetFactorial(Param)));
         }
 
+        [Test]
+        public async Task GetAsync_ThrowErrorAwaitAsync()
+        {
+            try
+            {
+                var response = await CreateServiceClient().GetAsync(new ThrowErrorAwaitAsync { Message = "Forbidden Test" });
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Forbidden));
+                Assert.That(ex.Message, Is.EqualTo("Forbidden Test"));
+            }            
+        }
 
         [TestFixture]
         public class JsonAsyncTaskTests : AsyncTaskTests
@@ -213,6 +228,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public long Result { get; set; }
     }
 
+    [Route("/factorial/throwerror")]
+    [DataContract]
+    public class ThrowErrorAwaitAsync : IReturn<GetFactorialResponse>
+    {
+        [DataMember]
+        public string Message { get; set; }
+    }
+
     public class GetFactorialAsyncService : IService
     {
         public object Any(GetFactorialSync request)
@@ -263,6 +286,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public Task<GetFactorialResponse> Any(GetFactorialNewTcsAsync request)
         {
             return new GetFactorialResponse { Result = GetFactorial(request.ForNumber) }.AsTaskResult();
+        }
+
+        public async Task<GetFactorialResponse> Any(ThrowErrorAwaitAsync request)
+        {
+            throw new HttpError(System.Net.HttpStatusCode.Forbidden, request.Message ?? "Request is forbidden");
         }
 
         public static long GetFactorial(long n)

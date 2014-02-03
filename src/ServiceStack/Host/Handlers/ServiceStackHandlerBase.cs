@@ -60,7 +60,7 @@ namespace ServiceStack.Host.Handlers
                         .ContinueWith(task =>
                         {
                             if (task.IsFaulted)
-                                return errorCallback(task.Exception);
+                                return errorCallback(task.Exception.UnwrapIfSingleException());
 
                             if (task.IsCanceled)
                                 return errorCallback(new OperationCanceledException("The async Task operation was cancelled"));

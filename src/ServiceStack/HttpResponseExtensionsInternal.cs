@@ -324,6 +324,7 @@ namespace ServiceStack
             }
 
             httpRes.StatusCode = statusCode;
+            httpRes.StatusDescription = errorMessage;
             var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
             if (serializer != null)
             {

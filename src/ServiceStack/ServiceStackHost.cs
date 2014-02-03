@@ -237,7 +237,7 @@ namespace ServiceStack
             }
             else
             {
-                var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
+                var errorMessage = ex.Message;
                 var statusCode = ex.ToStatusCode();
 
                 //httpRes.WriteToResponse always calls .Close in it's finally statement so 
