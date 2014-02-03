@@ -237,7 +237,9 @@ namespace ServiceStack
             }
             else
             {
-                var errorMessage = ex.Message;
+                //Only add custom error messages to StatusDescription
+                var httpError = ex as IHttpError;
+                var errorMessage = httpError != null ? httpError.Message : null;
                 var statusCode = ex.ToStatusCode();
 
                 //httpRes.WriteToResponse always calls .Close in it's finally statement so 
