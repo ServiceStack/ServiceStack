@@ -323,10 +323,11 @@ namespace ServiceStack
                 httpRes.ContentType += ContentFormat.Utf8Suffix;
             }
 
+            if (errorMessage != null && (httpRes.StatusDescription == null || httpRes.StatusDescription == "OK"))
+                httpRes.StatusDescription = errorMessage;
+
             httpRes.StatusCode = statusCode;
-            if (httpRes.StatusDescription == null)
-                httpRes.StatusDescription = errorMessage; 
-    
+
             var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
             if (serializer != null)
             {
