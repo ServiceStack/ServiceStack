@@ -8,6 +8,9 @@ namespace ServiceStack
         public void Register(IAppHost appHost)
         {
             appHost.CatchAllHandlers.Add(ProcessRequest);
+
+            appHost.GetPlugin<MetadataFeature>()
+                .AddDebugLink("?debug=requestinfo", "Request Info");
         }
 
         public IHttpHandler ProcessRequest(string httpMethod, string pathInfo, string filePath)

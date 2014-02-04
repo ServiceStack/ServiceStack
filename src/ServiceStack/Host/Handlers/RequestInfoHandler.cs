@@ -8,35 +8,38 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
 {
-	[DataContract]
-	public class RequestInfo { }
+    [DataContract]
+    public class RequestInfo { }
 
-	[DataContract]
-	public class RequestInfoResponse
-	{
-		[DataMember]
-		public string Host { get; set; }
+    [DataContract]
+    public class RequestInfoResponse
+    {
+        [DataMember]
+        public string Usage { get; set; }
 
-		[DataMember]
-		public DateTime Date { get; set; }
+        [DataMember]
+        public string Host { get; set; }
+
+        [DataMember]
+        public DateTime Date { get; set; }
 
         [DataMember]
         public string ServiceName { get; set; }
 
-		[DataMember]
-		public string HandlerFactoryPath { get; set; }
+        [DataMember]
+        public string HandlerFactoryPath { get; set; }
 
-		[DataMember]
-		public string UserHostAddress { get; set; }
+        [DataMember]
+        public string UserHostAddress { get; set; }
 
-		[DataMember]
-		public string HttpMethod { get; set; }
+        [DataMember]
+        public string HttpMethod { get; set; }
 
-		[DataMember]
-		public string PathInfo { get; set; }
+        [DataMember]
+        public string PathInfo { get; set; }
 
-		[DataMember]
-		public string ResolvedPathInfo { get; set; }
+        [DataMember]
+        public string ResolvedPathInfo { get; set; }
 
         [DataMember]
         public string GetLeftPath { get; set; }
@@ -47,8 +50,8 @@ namespace ServiceStack.Host.Handlers
         [DataMember]
         public string GetPathUrl { get; set; }
 
-		[DataMember]
-		public string AbsoluteUri { get; set; }
+        [DataMember]
+        public string AbsoluteUri { get; set; }
 
         [DataMember]
         public string ApplicationBaseUrl { get; set; }
@@ -68,47 +71,47 @@ namespace ServiceStack.Host.Handlers
         [DataMember]
         public string VirtualAppRelativePathRoot { get; set; }
 
-		[DataMember]
-		public string HandlerFactoryArgs { get; set; }
+        [DataMember]
+        public string HandlerFactoryArgs { get; set; }
 
-		[DataMember]
-		public string RawUrl { get; set; }
+        [DataMember]
+        public string RawUrl { get; set; }
 
-		[DataMember]
-		public string Url { get; set; }
+        [DataMember]
+        public string Url { get; set; }
 
-		[DataMember]
-		public string ContentType { get; set; }
+        [DataMember]
+        public string ContentType { get; set; }
 
-		[DataMember]
-		public int Status { get; set; }
+        [DataMember]
+        public int Status { get; set; }
 
-		[DataMember]
-		public long ContentLength { get; set; }
+        [DataMember]
+        public long ContentLength { get; set; }
 
-		[DataMember]
-		public Dictionary<string, string> Headers { get; set; }
+        [DataMember]
+        public Dictionary<string, string> Headers { get; set; }
 
-		[DataMember]
-		public Dictionary<string, string> QueryString { get; set; }
+        [DataMember]
+        public Dictionary<string, string> QueryString { get; set; }
 
-		[DataMember]
-		public Dictionary<string, string> FormData { get; set; }
+        [DataMember]
+        public Dictionary<string, string> FormData { get; set; }
 
-		[DataMember]
-		public List<string> AcceptTypes { get; set; }
+        [DataMember]
+        public List<string> AcceptTypes { get; set; }
 
-		[DataMember]
-		public string OperationName { get; set; }
+        [DataMember]
+        public string OperationName { get; set; }
 
-		[DataMember]
-		public string ResponseContentType { get; set; }
+        [DataMember]
+        public string ResponseContentType { get; set; }
 
-		[DataMember]
-		public string ErrorCode { get; set; }
+        [DataMember]
+        public string ErrorCode { get; set; }
 
-		[DataMember]
-		public string ErrorMessage { get; set; }
+        [DataMember]
+        public string ErrorMessage { get; set; }
 
         [DataMember]
         public string DebugString { get; set; }
@@ -122,7 +125,8 @@ namespace ServiceStack.Host.Handlers
         [DataMember]
         public Dictionary<string, string> RequestResponseMap { get; set; }
 
-	    [DataMember] public List<string> PluginsLoaded { get; set; }
+        [DataMember]
+        public List<string> PluginsLoaded { get; set; }
 
         [DataMember]
         public List<ResponseStatus> StartUpErrors { get; set; }
@@ -142,10 +146,10 @@ namespace ServiceStack.Host.Handlers
     }
 
     public class RequestInfoHandler : HttpAsyncTaskHandler
-	{
-		public const string RestPath = "requestinfo";
+    {
+        public const string RestPath = "requestinfo";
 
-		public RequestInfoResponse RequestInfo { get; set; }
+        public RequestInfoResponse RequestInfo { get; set; }
 
         public static RequestHandlerInfo LastRequestInfo;
 
@@ -155,76 +159,77 @@ namespace ServiceStack.Host.Handlers
         }
 
         public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
-		{
-			var response = this.RequestInfo ?? GetRequestInfo(httpReq);
-			response.HandlerFactoryArgs = HttpHandlerFactory.DebugLastHandlerArgs;
-			response.DebugString = "";
-			if (HttpContext.Current != null)
-			{
-				response.DebugString += HttpContext.Current.Request.GetType().FullName
-					+ "|" + HttpContext.Current.Response.GetType().FullName;
-			}
+        {
+            var response = this.RequestInfo ?? GetRequestInfo(httpReq);
+            response.HandlerFactoryArgs = HttpHandlerFactory.DebugLastHandlerArgs;
+            response.DebugString = "";
+            if (HttpContext.Current != null)
+            {
+                response.DebugString += HttpContext.Current.Request.GetType().FullName
+                    + "|" + HttpContext.Current.Response.GetType().FullName;
+            }
             if (HostContext.IsAspNetHost)
             {
-                var aspReq = (HttpRequestBase) httpReq.OriginalRequest;
+                var aspReq = (HttpRequestBase)httpReq.OriginalRequest;
                 response.GetLeftPath = aspReq.Url.GetLeftPart(UriPartial.Authority);
                 response.Path = aspReq.Path;
                 response.UserHostAddress = aspReq.UserHostAddress;
                 response.ApplicationPath = aspReq.ApplicationPath;
                 response.ApplicationVirtualPath = HostingEnvironment.ApplicationVirtualPath;
                 response.VirtualAbsolutePathRoot = VirtualPathUtility.ToAbsolute("/");
-                response.VirtualAppRelativePathRoot = VirtualPathUtility.ToAppRelative("/");                
+                response.VirtualAppRelativePathRoot = VirtualPathUtility.ToAppRelative("/");
             }
 
             var json = JsonSerializer.SerializeToString(response);
             httpRes.ContentType = MimeTypes.Json;
-			httpRes.Write(json);
-		}
+            httpRes.Write(json);
+        }
 
-		public override void ProcessRequest(HttpContextBase context)
-		{
-		    var request = context.ToRequest(GetType().GetOperationName());
-			ProcessRequestAsync(request, request.Response, request.OperationName);
-		}
+        public override void ProcessRequest(HttpContextBase context)
+        {
+            var request = context.ToRequest(GetType().GetOperationName());
+            ProcessRequestAsync(request, request.Response, request.OperationName);
+        }
 
-		public static Dictionary<string, string> ToDictionary(INameValueCollection nvc)
-		{
-			var map = new Dictionary<string, string>();
-			for (var i = 0; i < nvc.Count; i++)
-			{
-				map[nvc.GetKey(i)] = nvc.Get(i);
-			}
-			return map;
-		}
+        public static Dictionary<string, string> ToDictionary(INameValueCollection nvc)
+        {
+            var map = new Dictionary<string, string>();
+            for (var i = 0; i < nvc.Count; i++)
+            {
+                map[nvc.GetKey(i)] = nvc.Get(i);
+            }
+            return map;
+        }
 
-		public static string ToString(INameValueCollection nvc)
-		{
-			var map = ToDictionary(nvc);
-			return TypeSerializer.SerializeToString(map);
-		}
+        public static string ToString(INameValueCollection nvc)
+        {
+            var map = ToDictionary(nvc);
+            return TypeSerializer.SerializeToString(map);
+        }
 
-		public static RequestInfoResponse GetRequestInfo(IRequest httpReq)
-		{
-			var response = new RequestInfoResponse
-			{
-				Host = HostContext.Config.DebugHttpListenerHostEnvironment + "_v" + Env.ServiceStackVersion + "_" + HostContext.ServiceName,
-				Date = DateTime.UtcNow,
-				ServiceName = HostContext.ServiceName,
+        public static RequestInfoResponse GetRequestInfo(IRequest httpReq)
+        {
+            var response = new RequestInfoResponse
+            {
+                Usage = "append '?debug=requestinfo' to any querystring",
+                Host = HostContext.Config.DebugHttpListenerHostEnvironment + "_v" + Env.ServiceStackVersion + "_" + HostContext.ServiceName,
+                Date = DateTime.UtcNow,
+                ServiceName = HostContext.ServiceName,
                 HandlerFactoryPath = HostContext.Config.HandlerFactoryPath,
-				UserHostAddress = httpReq.UserHostAddress,
-				HttpMethod = httpReq.Verb,
-				AbsoluteUri = httpReq.AbsoluteUri,
+                UserHostAddress = httpReq.UserHostAddress,
+                HttpMethod = httpReq.Verb,
+                AbsoluteUri = httpReq.AbsoluteUri,
                 ResolveAbsoluteUrl = HostContext.AppHost.ResolveAbsoluteUrl("~/resolve", httpReq),
-				RawUrl = httpReq.RawUrl,
-				ResolvedPathInfo = httpReq.PathInfo,
-				ContentType = httpReq.ContentType,
-				Headers = ToDictionary(httpReq.Headers),
-				QueryString = ToDictionary(httpReq.QueryString),
-				FormData = ToDictionary(httpReq.FormData),
-				AcceptTypes = new List<string>(httpReq.AcceptTypes ?? new string[0]),
-				ContentLength = httpReq.ContentLength,
-				OperationName = httpReq.OperationName,
-				ResponseContentType = httpReq.ResponseContentType,
+                RawUrl = httpReq.RawUrl,
+                ResolvedPathInfo = httpReq.PathInfo,
+                ContentType = httpReq.ContentType,
+                Headers = ToDictionary(httpReq.Headers),
+                QueryString = ToDictionary(httpReq.QueryString),
+                FormData = ToDictionary(httpReq.FormData),
+                AcceptTypes = new List<string>(httpReq.AcceptTypes ?? new string[0]),
+                ContentLength = httpReq.ContentLength,
+                OperationName = httpReq.OperationName,
+                ResponseContentType = httpReq.ResponseContentType,
                 PluginsLoaded = HostContext.AppHost.PluginsLoaded,
                 StartUpErrors = HostContext.AppHost.StartUpErrors,
                 LastRequestInfo = LastRequestInfo,
@@ -244,8 +249,8 @@ namespace ServiceStack.Host.Handlers
                     {"ContentTypes", HostContext.AppHost.ContentTypes.ContentTypeFormats.Count.ToString() },
                     {"EnableFeatures", HostContext.Config.EnableFeatures.ToString() },
                 }
-			};
-			return response;
-		}
-	}
+            };
+            return response;
+        }
+    }
 }

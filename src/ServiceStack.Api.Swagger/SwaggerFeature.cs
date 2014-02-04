@@ -35,11 +35,8 @@ namespace ServiceStack.Api.Swagger
             appHost.RegisterService(typeof(SwaggerResourcesService), new[] { "/resources" });
             appHost.RegisterService(typeof(SwaggerApiService), new[] { SwaggerResourcesService.RESOURCE_PATH + "/{Name*}" });
 
-            var metadata = appHost.GetPlugin<MetadataFeature>();
-            if (metadata != null)
-            {
-                metadata.PluginLinks["swagger-ui/"] = "Swagger UI";
-            }
+            appHost.GetPlugin<MetadataFeature>()
+                .AddPluginLink("swagger-ui/", "Swagger UI");
 
             appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) =>
             {

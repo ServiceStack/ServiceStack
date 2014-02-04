@@ -2,13 +2,12 @@
 using System.Runtime.Serialization;
 using Funq;
 using ServiceStack;
+using ServiceStack.Api.Swagger;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.Razor;
-using ServiceStack.Text;
 using ServiceStack.Validation;
-using ServiceStack.Web;
 
 //The entire C# code for the stand-alone RazorRockstars demo.
 namespace RazorRockstars.Console.Files
@@ -24,6 +23,10 @@ namespace RazorRockstars.Console.Files
             if (EnableRazor)
                 Plugins.Add(new RazorFormat());
 
+            Plugins.Add(new SwaggerFeature());
+            Plugins.Add(new RequestInfoFeature());
+            Plugins.Add(new RequestLogsFeature());
+
             Plugins.Add(new ValidationFeature());
             container.RegisterValidators(typeof(AutoValidationValidator).Assembly);
 
@@ -36,6 +39,11 @@ namespace RazorRockstars.Console.Files
                 db.DropAndCreateTable<Rockstar>(); //Create table if not exists
                 db.Insert(Rockstar.SeedData); //Populate with seed data
             }
+
+            SetConfig(new HostConfig {
+                AdminAuthSecret = "secret",
+                DebugMode = true,
+            });
         }
 
         private static void Main(string[] args)

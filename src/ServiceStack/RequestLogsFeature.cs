@@ -93,6 +93,9 @@ namespace ServiceStack
                     httpReq.UseBufferedStream = EnableRequestBodyTracking;
                 });
             }
+
+            appHost.GetPlugin<MetadataFeature>()
+                .AddDebugLink(AtRestPath, "Request Logs");
         }
     }
 }

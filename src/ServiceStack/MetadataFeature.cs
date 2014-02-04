@@ -10,6 +10,10 @@ namespace ServiceStack
     {
         public string PluginLinksTitle { get; set; }
         public Dictionary<string, string> PluginLinks { get; set; }
+
+        public string DebugLinksTitle { get; set; }
+        public Dictionary<string, string> DebugLinks { get; set; }
+
         public Action<IndexOperationsControl> IndexPageFilter { get; set; }
         public Action<OperationControl> DetailPageFilter { get; set; }
 
@@ -17,6 +21,11 @@ namespace ServiceStack
         {
             PluginLinksTitle = "Plugin Links:";
             PluginLinks = new Dictionary<string, string>();
+
+            DebugLinksTitle = "Debug Info:";
+            DebugLinks = new Dictionary<string, string> {
+                {"operations/metadata", "Operations Metadata"},
+            };
         }
 
         public void Register(IAppHost appHost)
@@ -99,6 +108,27 @@ namespace ServiceStack
                     break;
             }
             return null;
+        }
+    }
+
+    public static class MetadataFeatureExtensions
+    {
+        public static MetadataFeature AddPluginLink(this MetadataFeature metadata, string href, string title)
+        {
+            if (metadata != null)
+            {
+                metadata.PluginLinks[href] = title;
+            }
+            return metadata;
+        }
+
+        public static MetadataFeature AddDebugLink(this MetadataFeature metadata, string href, string title)
+        {
+            if (metadata != null)
+            {
+                metadata.DebugLinks[href] = title;
+            }
+            return metadata;
         }
     }
 }

@@ -91,14 +91,13 @@ namespace ServiceStack.Metadata
                   }.ToString()
                 : "";
 
-            var debugOnlyInfo = new StringBuilder();
-            if (HostContext.DebugMode)
-            {
-                debugOnlyInfo.Append("<h3>Debug Info:</h3>");
-                debugOnlyInfo.AppendLine("<ul>");
-                debugOnlyInfo.AppendLine("<li><a href=\"operations/metadata\">Operations Metadata</a></li>");
-                debugOnlyInfo.AppendLine("</ul>");
-            }
+            var debugOnlyInfo = HostContext.DebugMode && metadata != null && metadata.DebugLinks.Count > 0
+                ? new ListTemplate {
+                    Title = metadata.DebugLinksTitle,
+                    ListItemsMap = metadata.DebugLinks,
+                    ListItemTemplate = @"<li><a href=""{0}"">{1}</a></li>"
+                }.ToString()
+                : "";
 
             var renderedTemplate = HtmlTemplates.Format(
                 HtmlTemplates.GetIndexOperationsTemplate(),
