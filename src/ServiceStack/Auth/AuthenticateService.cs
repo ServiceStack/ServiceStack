@@ -108,7 +108,7 @@ namespace ServiceStack.Auth
             if (oAuthConfig == null)
                 throw HttpError.NotFound("No configuration was added for OAuth provider '{0}'".Fmt(provider));
 
-            if (request.provider == LogoutAction)
+            if (LogoutAction.EqualsIgnoreCase(request.provider))
                 return oAuthConfig.Logout(this, request);
 
             var session = this.GetSession();
