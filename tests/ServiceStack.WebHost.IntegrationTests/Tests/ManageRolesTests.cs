@@ -241,7 +241,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         {
             try
             {
-                BaseUri.AppendPath("requestlogs").GetStringFromUrl();
+                BaseUri.AppendPath("requiresadmin").GetStringFromUrl();
 
                 Assert.Fail("Should not allow access to protected resource");
             }
@@ -257,7 +257,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         [Test]
         public void Can_access_Admin_service_with_AuthSecret()
         {
-            BaseUri.AppendPath("requestlogs").AddQueryParam("authsecret", AuthSecret).GetStringFromUrl();
+            BaseUri.AppendPath("requiresadmin").AddQueryParam("authsecret", AuthSecret).GetStringFromUrl();
         }
 
 	}
