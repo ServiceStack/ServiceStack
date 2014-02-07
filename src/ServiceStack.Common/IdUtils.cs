@@ -26,19 +26,19 @@ namespace ServiceStack
 
             if (typeof(T).IsClass() || typeof(T).IsInterface)
             {
-                var piId = typeof(T).GetPropertyInfo(IdUtils.IdField);
-                if (piId != null
-                    && piId.GetMethodInfo() != null)
-                {
-                    CanGetId = HasPropertyId<T>.GetId;
-                    return;
-                }
-
                 foreach (var pi in typeof(T).GetPublicProperties()
                     .Where(pi => pi.AllAttributes<Attribute>()
                              .Any(attr => attr.GetType().Name == "PrimaryKeyAttribute")))
                 {
                     CanGetId = StaticAccessors<T>.ValueUnTypedGetPropertyTypeFn(pi);
+                    return;
+                }
+
+                var piId = typeof(T).GetPropertyInfo(IdUtils.IdField);
+                if (piId != null
+                    && piId.GetMethodInfo() != null)
+                {
+                    CanGetId = HasPropertyId<T>.GetId;
                     return;
                 }
             }
