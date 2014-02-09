@@ -201,9 +201,12 @@
     <Compile Include="Services\AsyncTaskServices.cs" />
     <Compile Include="Services\CookiesService.cs" />
     <Compile Include="Tests\AsyncProgressTests.cs" />
-    <Compile Include="PageBase.cs" />
+    <Compile Include="PageBase.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
@@ -219,6 +222,7 @@
     <Compile Include="Services\TestProgressService.cs" />
     <Compile Include="Subpages\Test.aspx.cs">
       <DependentUpon>Test.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Subpages\Test.aspx.designer.cs">
       <DependentUpon>Test.aspx</DependentUpon>
@@ -274,6 +278,7 @@
     <Compile Include="Services\ReverseService.cs" />
     <Compile Include="Soap11WebService.asmx.cs">
       <DependentUpon>Soap11WebService.asmx</DependentUpon>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Tests\CustomerServiceValidationTests.cs" />
     <Compile Include="Tests\CustomRequestDataTests.cs" />
