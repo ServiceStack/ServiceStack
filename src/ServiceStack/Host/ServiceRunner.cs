@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Text;
@@ -103,9 +104,28 @@ namespace ServiceStack.Host
                     {
                         var attrInstance = responseFilter.Copy();
                         container.AutoWire(attrInstance);
-                        attrInstance.ResponseFilter(request, request.Response, response);
-                        AppHost.Release(attrInstance);
-                        if (request.Response.IsClosed) return null;
+
+                        var taskResponse = response as Task;
+                        if (taskResponse != null) 
+                        {
+                            return taskResponse.ContinueWith(task => {
+                                response = task.GetResult();
+                                attrInstance.ResponseFilter(request, request.Response, response);
+                                AppHost.Release(attrInstance);
+
+                                if (request.Response.IsClosed)
+                                    return null;
+
+                                return response;
+                            });
+                        }
+                        else
+                        {
+                            attrInstance.ResponseFilter(request, request.Response, response);
+                            AppHost.Release(attrInstance);
+
+                            if (request.Response.IsClosed) return null;
+                        }
                     }
                 }
 

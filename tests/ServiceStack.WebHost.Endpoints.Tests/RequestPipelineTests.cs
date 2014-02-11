@@ -1,6 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -38,46 +40,86 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public bool GlobalResponseFilter { get; set; }
     }
 
-    public class ServiceRequestFilterAttribute : RequestFilterAttribute
+    public class ServiceRequestFilterAttribute : RequestFilterAttribute, IDisposable
     {
+        public DisposableDependency Dep { get; set; }
+
         public override void Execute(IRequest req, IResponse res, object requestDto)
         {
+            Dep.AssertNotDisposed();
+
             ((ITestFilters)requestDto).ServiceRequestAttributeFilter = true;
         }
+
+        public void Dispose()
+        {
+            Dep.Dispose();
+        }
     }
 
-    public class ActionRequestFilterAttribute : RequestFilterAttribute
+    public class ActionRequestFilterAttribute : RequestFilterAttribute, IDisposable
     {
+        public DisposableDependency Dep { get; set; }
+
         public override void Execute(IRequest req, IResponse res, object requestDto)
         {
+            Dep.AssertNotDisposed();
+
             ((ITestFilters)requestDto).ActionRequestAttributeFilter = true;
         }
-    }
 
-    public class ServiceResponseFilterAttribute : ResponseFilterAttribute
-    {
-        public override void Execute(IRequest req, IResponse res, object responseDto)
+        public void Dispose()
         {
-            ((ITestFilters)responseDto).ServiceResponseAttributeFilter = true;
+            Dep.Dispose();
         }
     }
 
-    public class ActionResponseFilterAttribute : ResponseFilterAttribute
+    public class ServiceResponseFilterAttribute : ResponseFilterAttribute, IDisposable
     {
+        public DisposableDependency Dep { get; set; }
+
         public override void Execute(IRequest req, IResponse res, object responseDto)
         {
+            Dep.AssertNotDisposed();
+
+            ((ITestFilters)responseDto).ServiceResponseAttributeFilter = true;
+        }
+
+        public void Dispose()
+        {
+            Dep.Dispose();
+        }
+    }
+
+    public class ActionResponseFilterAttribute : ResponseFilterAttribute, IDisposable
+    {
+        public DisposableDependency Dep { get; set; }
+
+        public override void Execute(IRequest req, IResponse res, object responseDto)
+        {
+            Dep.AssertNotDisposed();
+
             ((ITestFilters)responseDto).ActionResponseAttributeFilter = true;
+        }
+
+        public void Dispose()
+        {
+            Dep.Dispose();
         }
     }
 
     [ServiceRequestFilter]
     [ServiceResponseFilter]
-    public class GlobalFiltersService : Service
+    public class RequestPipelineService : Service
     {
+        public DisposableDependency Dep { get; set; }
+
         [ActionRequestFilter]
         [ActionResponseFilter]
         public object Any(TestFiltersSync request)
         {
+            Dep.AssertNotDisposed();
+
             request.Service = true;
 
             return request;
@@ -87,34 +129,66 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [ActionResponseFilter]
         public async Task<TestFiltersAsync> Any(TestFiltersAsync request)
         {
+            await Task.Delay(100);
+
+            Dep.AssertNotDisposed();
+
             return await Task.Factory.StartNew(() =>
             {
+                Task.Delay(100);
+
+                Dep.AssertNotDisposed();
+
                 request.Service = true;
                 return request;
             });
         }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            Dep.Dispose();
+        }
     }
 
-    public class GlobalFiltersAppHost : AppHostHttpListenerBase
+    public class DisposableDependency : IDisposable
     {
-        public GlobalFiltersAppHost() : base(typeof(BufferedRequestTests).Name, typeof(MyService).Assembly) { }
+        private bool isDisposed;
+
+        public void AssertNotDisposed()
+        {
+            if (isDisposed)
+                throw new ObjectDisposedException("DisposableDependency");
+        }
+
+        public void Dispose()
+        {
+            isDisposed = true;
+        }
+    }
+
+    public class RequestPipelineAppHost : AppHostHttpListenerBase
+    {
+        public RequestPipelineAppHost() : base(typeof(RequestPipelineTests).Name, typeof(RequestPipelineService).Assembly) { }
 
         public override void Configure(Container container)
         {
+            container.Register(c => new DisposableDependency()).ReusedWithin(ReuseScope.None);
+
             this.GlobalRequestFilters.Add((req, res, dto) => ((ITestFilters)dto).GlobalRequestFilter = true);
             this.GlobalResponseFilters.Add((req, res, dto) => ((ITestFilters)dto).GlobalResponseFilter = true);
         }
     }
 
     [TestFixture]
-    public class GlobalFiltersTests
+    public class RequestPipelineTests
     {
         private ServiceStackHost appHost;
 
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
-            appHost = new GlobalFiltersAppHost()
+            appHost = new RequestPipelineAppHost()
                 .Init()
                 .Start(Config.AbsoluteBaseUri);
         }
@@ -162,8 +236,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var response = await client.GetAsync(new TestFiltersAsync());
 
-            Assert.That(AllFieldsTrue(response), Is.True);
+            Assert.That(AllFieldsTrue(response));
         }
-         
     }
 }

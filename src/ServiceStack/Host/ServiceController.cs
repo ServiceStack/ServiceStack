@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using Funq;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
@@ -390,6 +391,7 @@ namespace ServiceStack.Host
             {
                 InjectRequestContext(service, request);
 
+                object response = null;
                 try
                 {
                     request.Dto = requestDto;
@@ -398,7 +400,7 @@ namespace ServiceStack.Host
                     request.Dto = requestDto;
 
                     //Executes the service and returns the result
-                    var response = serviceExec(request, requestDto);
+                    response = serviceExec(request, requestDto);
 
                     response = appHost.OnPostExecuteServiceFilter(service, response, request, request.Response);
 
@@ -407,7 +409,15 @@ namespace ServiceStack.Host
                 finally
                 {
                     //Gets disposed by AppHost or ContainerAdapter if set
-                    appHost.Release(service);
+                    var taskResponse = response as Task;
+                    if (taskResponse != null)
+                    {
+                        taskResponse.ContinueWith(task => appHost.Release(service));
+                    }
+                    else
+                    {
+                        appHost.Release(service);
+                    }
                 }
             }
             catch (TargetInvocationException tex)
