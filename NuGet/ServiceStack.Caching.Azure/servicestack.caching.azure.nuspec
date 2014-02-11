@@ -17,7 +17,7 @@
     <copyright>ServiceStack 2013 and contributors</copyright>
     <dependencies>
       <dependency id="ServiceStack.Common" version="4.0" />
-      <dependency id="WindowsAzure.Caching" />
+      <dependency id="WindowsAzure.Caching" version="2.2.0.0" />
     </dependencies>
   </metadata>
   <files>

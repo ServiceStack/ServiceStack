@@ -20,7 +20,7 @@
     <copyright>ServiceStack 2013 and contributors</copyright>
     <dependencies>
       <dependency id="ServiceStack" version="4.0" />	
-      <dependency id="mongocsharpdriver" />
+      <dependency id="mongocsharpdriver" version="1.8.3" />
     </dependencies> 
   </metadata> 
   <files>

@@ -17,7 +17,7 @@
     <copyright>ServiceStack 2013 and contributors</copyright>
     <dependencies>
       <dependency id="ServiceStack.Common" version="4.0" />
-      <dependency id="EnyimMemcached" version="2.12.0" />
+      <dependency id="EnyimMemcached" version="2.12" />
     </dependencies>
   </metadata>
   <files>

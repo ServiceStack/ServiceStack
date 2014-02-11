@@ -22,7 +22,7 @@
     <copyright>Copyright 2013 Service Stack</copyright>
     <dependencies>
         <dependency id="ServiceStack" version="4.0" />
-        <dependency id="DotNetOpenAuth.Ultimate" />
+        <dependency id="DotNetOpenAuth.Ultimate" version="4.3.4.13329" />
     </dependencies> 
   </metadata>
   <files>

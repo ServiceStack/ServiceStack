@@ -20,9 +20,9 @@
     <copyright>ServiceStack 2013 and contributors</copyright>
     <dependencies>
       <dependency id="ServiceStack" version="4.0" />
-      <dependency id="Iesi.Collections" />
-      <dependency id="NHibernate" />
-      <dependency id="FluentNHibernate" />
+      <dependency id="NHibernate" version="3.3.3.4001" />
+      <dependency id="Iesi.Collections" version="3.3.3.4001" />
+      <dependency id="FluentNHibernate" version="1.4.0.0" />
     </dependencies>
   </metadata>
   <files>
