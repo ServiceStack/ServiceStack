@@ -156,6 +156,7 @@
     <Compile Include="CachedServiceTests.cs" />
     <Compile Include="CompressionTests.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="GlobalFiltersTests.cs" />
     <Compile Include="NestedServiceTests.cs" />
     <Compile Include="CorsFeaturePluginTests.cs" />
     <Compile Include="CustomServiceRunnerTests.cs" />

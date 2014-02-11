@@ -361,10 +361,10 @@ namespace RazorRockstars.Console.Files
     public class MyResponseFilterAttribute : ResponseFilterAttribute
     {
         public static int Called = 0;
-        public override void Execute(IRequest req, IResponse res, object requestDto)
+        public override void Execute(IRequest req, IResponse res, object responseDto)
         {
             Called++;
-            var x = requestDto;
+            var x = responseDto;
         }
     }
 

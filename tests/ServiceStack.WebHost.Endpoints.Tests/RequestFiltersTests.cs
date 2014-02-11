@@ -3,18 +3,11 @@ using System.IO;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Host;
-using ServiceStack.Host.Handlers;
-using ServiceStack.Support;
-using ServiceStack.Support.WebHost;
-using ServiceStack.Testing;
 using ServiceStack.Text;
-using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 

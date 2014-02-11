@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -30,7 +31,19 @@ namespace ServiceStack
         {
             ApplyTo httpMethod = req.HttpMethodAsApplyTo();
             if (ApplyTo.Has(httpMethod))
-                this.Execute(req, res, response);
+            {
+                var taskResponse = response as Task;
+                if (taskResponse != null)
+                {
+                    //block so we can run through filters expecting a real Response DTO
+                    taskResponse.Wait(); 
+                    this.Execute(req, res, taskResponse.GetResult()); 
+                }
+                else
+                {
+                    this.Execute(req, res, response);
+                }
+            }
         }
 
         /// <summary>
