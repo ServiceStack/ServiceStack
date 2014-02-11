@@ -456,6 +456,14 @@ namespace ServiceStack.Host
 
             var response = Execute(dto.Body, req);
 
+            var taskResponse = response as Task;
+            if (taskResponse != null)
+            {
+                //Ensure messages are executed synchronously
+                taskResponse.Wait();
+                response = taskResponse.GetResult();
+            }
+
             if (HostContext.ApplyMessageResponseFilters(req, req.Response, response))
                 return req.Response.Dto;
 

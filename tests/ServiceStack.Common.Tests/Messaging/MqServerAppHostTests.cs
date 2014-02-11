@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.FluentValidation;
@@ -35,6 +36,7 @@ namespace ServiceStack.Common.Tests.Messaging
             using (var channel = conn.CreateModel())
             {
                 channel.PurgeQueue<AnyTestMq>();
+                channel.PurgeQueue<AnyTestMqAsync>();
                 channel.PurgeQueue<AnyTestMqResponse>();
                 channel.PurgeQueue<PostTestMq>();
                 channel.PurgeQueue<PostTestMqResponse>();
@@ -61,6 +63,11 @@ namespace ServiceStack.Common.Tests.Messaging
 
 
     public class AnyTestMq
+    {
+        public int Id { get; set; }
+    }
+
+    public class AnyTestMqAsync
     {
         public int Id { get; set; }
     }
@@ -114,6 +121,12 @@ namespace ServiceStack.Common.Tests.Messaging
             return new AnyTestMqResponse { CorrelationId = request.Id };
         }
 
+        public async Task<object> Any(AnyTestMqAsync request)
+        {
+            return await Task.Factory.StartNew(() => 
+                new AnyTestMqResponse {CorrelationId = request.Id});
+        }
+
         public object Post(PostTestMq request)
         {
             return new PostTestMqResponse { CorrelationId = request.Id };
@@ -149,6 +162,8 @@ namespace ServiceStack.Common.Tests.Messaging
 
             var mqServer = container.Resolve<IMessageService>();
             mqServer.RegisterHandler<AnyTestMq>(ServiceController.ExecuteMessage);
+            mqServer.RegisterHandler<AnyTestMqAsync>(msg 
+             => ServiceController.ExecuteMessage(msg));
             mqServer.RegisterHandler<PostTestMq>(ServiceController.ExecuteMessage);
             mqServer.RegisterHandler<ValidateTestMq>(ServiceController.ExecuteMessage);
             mqServer.RegisterHandler<ThrowGenericError>(ServiceController.ExecuteMessage);
@@ -188,6 +203,25 @@ namespace ServiceStack.Common.Tests.Messaging
             using (var mqFactory = appHost.TryResolve<IMessageFactory>())
             {
                 var request = new AnyTestMq { Id = 1 };
+
+                using (var mqProducer = mqFactory.CreateMessageProducer())
+                    mqProducer.Publish(request);
+
+                using (var mqClient = mqFactory.CreateMessageQueueClient())
+                {
+                    var msg = mqClient.Get<AnyTestMqResponse>(QueueNames<AnyTestMqResponse>.In, null);
+                    mqClient.Ack(msg);
+                    Assert.That(msg.GetBody().CorrelationId, Is.EqualTo(request.Id));
+                }
+            }
+        }
+
+        [Test]
+        public void Can_Publish_to_AnyTestMqAsync_Service()
+        {
+            using (var mqFactory = appHost.TryResolve<IMessageFactory>())
+            {
+                var request = new AnyTestMqAsync { Id = 1 };
 
                 using (var mqProducer = mqFactory.CreateMessageProducer())
                     mqProducer.Publish(request);
