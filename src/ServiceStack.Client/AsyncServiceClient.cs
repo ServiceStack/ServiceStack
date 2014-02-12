@@ -53,6 +53,8 @@ namespace ServiceStack
 
         public bool StoreCookies { get; set; }
 
+        public INameValueCollection Headers { get; set; }
+
         public CookieContainer CookieContainer { get; set; }
 
         /// <summary>
@@ -179,6 +181,8 @@ namespace ServiceStack
             {
                 webRequest.Method = httpMethod;
             }
+
+            PclExportClient.Instance.AddHeader(webRequest, Headers);
 
             if (this.Credentials != null) webRequest.Credentials = this.Credentials;
             if (this.AlwaysSendBasicAuthHeader) webRequest.AddBasicAuth(this.UserName, this.Password);

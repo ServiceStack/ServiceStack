@@ -172,6 +172,7 @@
     <Compile Include="RuntimeAttributeTests.cs" />
     <Compile Include="ServiceClientsBuiltInResponseTests.cs" />
     <Compile Include="SessionTests.cs" />
+    <Compile Include="Support\Services\EchoService.cs" />
     <Compile Include="Support\Services\TestRestService.cs" />
     <Compile Include="Support\Types\KeyAttribute.cs" />
     <Compile Include="PartialContentResultTests.cs" />

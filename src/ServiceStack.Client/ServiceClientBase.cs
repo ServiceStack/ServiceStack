@@ -84,6 +84,8 @@ namespace ServiceStack
         protected ServiceClientBase()
         {
             this.HttpMethod = DefaultHttpMethod;
+            this.Headers = PclExportClient.Instance.NewNameValueCollection();
+
             asyncClient = new AsyncServiceClient
             {
                 ContentType = ContentType,
@@ -92,11 +94,11 @@ namespace ServiceStack
                 UserName = this.UserName,
                 Password = this.Password,
                 RequestFilter = this.RequestFilter,
-                ResponseFilter = this.ResponseFilter
+                ResponseFilter = this.ResponseFilter,
+                Headers = this.Headers,
             };
             this.CookieContainer = new CookieContainer();
             this.StoreCookies = true; //leave
-            this.Headers = PclExportClient.Instance.NewNameValueCollection();
 
             asyncClient.HandleCallbackOnUiThread = this.HandleCallbackOnUiThread = true;
             asyncClient.ShareCookiesWithBrowser = this.ShareCookiesWithBrowser = true;
