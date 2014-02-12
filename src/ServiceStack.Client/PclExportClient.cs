@@ -1622,7 +1622,7 @@ namespace ServiceStack
 #if SL5 || PCL
             return ServiceStack.Pcl.HttpUtility.ParseQueryString(query).InWrapper();
 #else
-            return HttpUtility.ParseQueryString(query).InWrapper();
+			return System.Web.HttpUtility.ParseQueryString(query).InWrapper();
 #endif
         }
 
