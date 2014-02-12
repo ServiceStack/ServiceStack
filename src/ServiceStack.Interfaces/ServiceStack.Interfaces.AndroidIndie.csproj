@@ -195,9 +195,6 @@
     <Compile Include="Messaging\IMessageService.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Messaging\MessageError.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Messaging\MessageFactory.cs">
       <SubType>Code</SubType>
     </Compile>
