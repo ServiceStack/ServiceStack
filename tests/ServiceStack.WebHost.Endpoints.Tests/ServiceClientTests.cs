@@ -56,6 +56,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(response.Headers["Foo"], Is.EqualTo("Bar"));
         }
+
+        [Test]
+        public async Task Does_add_HttpHeaders_in_RequestFilter_for_Get_Async()
+        {
+            client.RequestFilter = req => req.Headers.Add("Foo", "Bar");
+
+            var response = await client.GetAsync(new EchoRequestInfo());
+
+            Assert.That(response.Headers["Foo"], Is.EqualTo("Bar"));
+        }
     }
 
 }
