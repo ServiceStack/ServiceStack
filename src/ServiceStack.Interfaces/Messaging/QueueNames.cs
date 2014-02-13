@@ -9,17 +9,17 @@ namespace ServiceStack.Messaging
     /// <typeparam name="T"></typeparam>
     public static class QueueNames<T>
     {
-        static QueueNames()
+        static QueueNames() 
         {
             var utf8 = new UTF8Encoding(false);
 
-            Priority = "mq:" + typeof(T).Name + ".priorityq";
+            Priority = QueueNames.ResolveQueueNameFn(typeof(T).Name, ".priorityq");
             PriorityBytes = utf8.GetBytes(Priority);
-            In = "mq:" + typeof(T).Name + ".inq";
+            In = QueueNames.ResolveQueueNameFn(typeof(T).Name, ".inq");
             InBytes = utf8.GetBytes(In);
-            Out = "mq:" + typeof(T).Name + ".outq";
+            Out = QueueNames.ResolveQueueNameFn(typeof(T).Name, ".outq");
             OutBytes = utf8.GetBytes(Out);
-            Dlq = "mq:" + typeof(T).Name + ".dlq";
+            Dlq = QueueNames.ResolveQueueNameFn(typeof(T).Name, ".dlq");
             DlqBytes = utf8.GetBytes(Dlq);
         }
 
@@ -58,14 +58,23 @@ namespace ServiceStack.Messaging
         public static string ExchangeDlq = "mx.servicestack.dlq";
         public static string ExchangeTopic = "mx.servicestack.topic";
 
-        public static string TopicIn = "mq:topic:in";
-        public static string TopicOut = "mq:topic:out";
+        public static string MqPrefix = "mq:";
         public static string QueuePrefix = "";
+
+        public static string TopicIn = MqPrefix + "topic:in";
+        public static string TopicOut = MqPrefix + "topic:out";
+
+        public static Func<string, string, string> ResolveQueueNameFn = ResolveQueueName;
+
+        public static string ResolveQueueName(string typeName, string queueSuffix)
+        {
+            return QueuePrefix + MqPrefix + typeName + queueSuffix;
+        }
 
         public static void SetQueuePrefix(string prefix)
         {
-            TopicIn = prefix + "mq:topic:in";
-            TopicOut = prefix + "mq:topic:out";
+            TopicIn = prefix + MqPrefix + "topic:in";
+            TopicOut = prefix + MqPrefix + "topic:out";
             QueuePrefix = prefix;
         }
 
@@ -78,22 +87,22 @@ namespace ServiceStack.Messaging
 
         public string Priority
         {
-            get { return QueuePrefix + "mq:" + messageType.Name + ".priorityq"; }
+            get { return ResolveQueueNameFn(messageType.Name, ".priorityq"); }
         }
 
         public string In
         {
-            get { return QueuePrefix + "mq:" + messageType.Name + ".inq"; }
+            get { return ResolveQueueNameFn(messageType.Name, ".inq"); }
         }
 
         public string Out
         {
-            get { return QueuePrefix + "mq:" + messageType.Name + ".outq"; }
+            get { return ResolveQueueNameFn(messageType.Name, ".outq"); }
         }
 
         public string Dlq
         {
-            get { return QueuePrefix + "mq:" + messageType.Name + ".dlq"; }
+            get { return ResolveQueueNameFn(messageType.Name, ".dlq"); }
         }
     }
 
