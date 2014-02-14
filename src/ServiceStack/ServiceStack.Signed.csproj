@@ -97,6 +97,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AddHeaderAttribute.cs" />
+    <Compile Include="Auth\UserAuthRepositoryExtensions.cs" />
     <Compile Include="CompressedFileResult.cs" />
     <Compile Include="CompressedResult.cs" />
     <Compile Include="EnsureHttpsAttribute.cs" />
