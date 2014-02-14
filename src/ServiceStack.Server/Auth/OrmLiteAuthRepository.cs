@@ -16,7 +16,7 @@ namespace ServiceStack.Auth
         public OrmLiteAuthRepository(IDbConnectionFactory dbFactory, IHashProvider passwordHasher) : base(dbFactory, passwordHasher) { }
     }
 
-    public class OrmLiteAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IRequiresSchema, IClearable
+    public class OrmLiteAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IRequiresSchema, IClearable, IManageRoles
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
@@ -27,6 +27,8 @@ namespace ServiceStack.Auth
 
         private readonly IDbConnectionFactory dbFactory;
         private readonly IHashProvider passwordHasher;
+
+        public bool UseDistinctRoleTables { get; set; }
 
         public OrmLiteAuthRepository(IDbConnectionFactory dbFactory)
             : this(dbFactory, new SaltedHash()) { }
@@ -415,5 +417,168 @@ namespace ServiceStack.Auth
             }
         }
 
+        public ICollection<string> GetRoles(string userAuthId)
+        {
+            if (!UseDistinctRoleTables)
+            {
+                var userAuth = GetUserAuth(userAuthId);
+                return userAuth.Roles;
+            }
+            else
+            {
+                using (var db = dbFactory.Open())
+                {
+                    return db.Select<UserAuthRole>(q => q.UserAuthId == int.Parse(userAuthId) && q.Role != null).ConvertAll(x => x.Role);
+                }
+            }
+        }
+
+        public ICollection<string> GetPermissions(string userAuthId)
+        {
+            if (!UseDistinctRoleTables)
+            {
+                var userAuth = GetUserAuth(userAuthId);
+                return userAuth.Permissions;
+            }
+            else
+            {
+                using (var db = dbFactory.Open())
+                {
+                    return db.Select<UserAuthRole>(q => q.UserAuthId == int.Parse(userAuthId) && q.Permission != null).ConvertAll(x => x.Permission);
+                }
+            }
+        }
+
+        public bool HasRole(string userAuthId, string role)
+        {
+            if (!UseDistinctRoleTables)
+            {
+                var userAuth = GetUserAuth(userAuthId);
+                return userAuth.Roles != null && userAuth.Roles.Contains(role);
+            }
+            else
+            {
+                using (var db = dbFactory.Open())
+                {
+                    return db.Count<UserAuthRole>(q =>
+                        q.UserAuthId == int.Parse(userAuthId) && q.Role == role) > 0;
+                }
+            }
+        }
+
+        public bool HasPermission(string userAuthId, string permission)
+        {
+            if (!UseDistinctRoleTables)
+            {
+                var userAuth = GetUserAuth(userAuthId);
+                return userAuth.Permissions != null && userAuth.Permissions.Contains(permission);
+            }
+            else
+            {
+                using (var db = dbFactory.Open())
+                {
+                    return db.Count<UserAuthRole>(q =>
+                        q.UserAuthId == int.Parse(userAuthId) && q.Permission == permission) > 0;
+                }
+            }
+        }
+
+        public void AssignRoles(string userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null)
+        {
+            var userAuth = GetUserAuth(userAuthId);
+            if (!UseDistinctRoleTables)
+            {
+                if (!roles.IsEmpty())
+                {
+                    foreach (var missingRole in roles.Where(x => !userAuth.Roles.Contains(x)))
+                    {
+                        userAuth.Roles.Add(missingRole);
+                    }
+                }
+
+                if (!permissions.IsEmpty())
+                {
+                    foreach (var missingPermission in permissions.Where(x => !userAuth.Permissions.Contains(x)))
+                    {
+                        userAuth.Permissions.Add(missingPermission);
+                    }
+                }
+
+                SaveUserAuth(userAuth);
+            }
+            else
+            {
+                using (var db = dbFactory.Open())
+                {
+                    var now = DateTime.UtcNow;
+                    var userRoles = db.Select<UserAuthRole>(q => q.UserAuthId == userAuth.Id);
+
+                    if (!roles.IsEmpty())
+                    {
+                        var roleSet = userRoles.Where(x => x.Role != null).Select(x => x.Role).ToHashSet();
+                        foreach (var role in roles)
+                        {
+                            if (!roleSet.Contains(role))
+                            {
+                                db.Insert(new UserAuthRole
+                                {
+                                    UserAuthId = userAuth.Id,
+                                    Role = role,
+                                    CreatedDate = now,
+                                    ModifiedDate = now,
+                                });
+                            }
+                        }
+                    }
+
+                    if (!permissions.IsEmpty())
+                    {
+                        var permissionSet = userRoles.Where(x => x.Permission != null).Select(x => x.Permission).ToHashSet();
+                        foreach (var permission in permissions)
+                        {
+                            if (!permissionSet.Contains(permission))
+                            {
+                                db.Insert(new UserAuthRole
+                                {
+                                    UserAuthId = userAuth.Id,
+                                    Permission = permission,
+                                    CreatedDate = now,
+                                    ModifiedDate = now,
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public void UnAssignRoles(string userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null)
+        {
+            var userAuth = GetUserAuth(userAuthId);
+            if (!UseDistinctRoleTables)
+            {
+                roles.Each(x => userAuth.Roles.Remove(x));
+                permissions.Each(x => userAuth.Permissions.Remove(x));
+
+                if (roles != null || permissions != null)
+                {
+                    SaveUserAuth(userAuth);
+                }
+            }
+            else
+            {
+                using (var db = dbFactory.Open())
+                {
+                    if (!roles.IsEmpty())
+                    {
+                        db.Delete<UserAuthRole>(q => q.UserAuthId == userAuth.Id && roles.Contains(q.Role));
+                    }
+                    if (!permissions.IsEmpty())
+                    {
+                        db.Delete<UserAuthRole>(q => q.UserAuthId == userAuth.Id && permissions.Contains(q.Permission));
+                    }
+                }
+            }
+        }
     }
 }

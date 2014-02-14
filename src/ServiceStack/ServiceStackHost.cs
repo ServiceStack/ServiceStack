@@ -530,6 +530,11 @@ namespace ServiceStack
             return ExecuteService(requestDto, RequestAttributes.None);
         }
 
+        public virtual object ExecuteService(object requestDto, IRequest req)
+        {
+            return ServiceController.Execute(requestDto, req);
+        }
+
         public virtual object ExecuteService(object requestDto, RequestAttributes requestAttributes)
         {
             return ServiceController.Execute(requestDto, new BasicRequest(requestDto, requestAttributes));

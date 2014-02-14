@@ -64,11 +64,23 @@ namespace ServiceStack
 
         public virtual bool HasPermission(string permission)
         {
+            var managesRoles = HostContext.TryResolve<IAuthRepository>() as IManageRoles;
+            if (managesRoles != null)
+            {
+                return managesRoles.HasPermission(this.UserAuthId, permission);
+            }
+
             return this.Permissions != null && this.Permissions.Contains(permission);
         }
 
         public virtual bool HasRole(string role)
         {
+            var managesRoles = HostContext.TryResolve<IAuthRepository>() as IManageRoles;
+            if (managesRoles != null)
+            {
+                return managesRoles.HasRole(this.UserAuthId, role);
+            }
+
             return this.Roles != null && this.Roles.Contains(role);
         }
 

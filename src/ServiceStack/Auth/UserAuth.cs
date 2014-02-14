@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.DataAnnotations;
+using ServiceStack.FluentValidation.Internal;
 using ServiceStack.Text;
 
 namespace ServiceStack.Auth
@@ -338,18 +340,6 @@ namespace ServiceStack.Auth
 
             instance.Meta[typeof(T).GetOperationName()] = TypeSerializer.SerializeToString(value);
             return value;
-        }
-
-        /// <summary>
-        /// Creates the required missing tables or DB schema 
-        /// </summary>
-        public static void InitSchema(this IUserAuthRepository authRepo)
-        {
-            var requiresSchema = authRepo as IRequiresSchema;
-            if (requiresSchema != null)
-            {
-                requiresSchema.InitSchema();
-            }
         }
     }
 

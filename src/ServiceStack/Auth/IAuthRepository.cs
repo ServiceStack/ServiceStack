@@ -23,6 +23,21 @@ namespace ServiceStack.Auth
         IUserAuth GetUserAuth(string userAuthId);
     }
 
+    public interface IManageRoles
+    {
+        ICollection<string> GetRoles(string userAuthId);
+        ICollection<string> GetPermissions(string userAuthId);
+
+        bool HasRole(string userAuthId, string role);
+        bool HasPermission(string userAuthId, string permission);
+
+        void AssignRoles(string userAuthId,
+            ICollection<string> roles = null, ICollection<string> permissions = null);
+
+        void UnAssignRoles(string userAuthId,
+            ICollection<string> roles = null, ICollection<string> permissions = null);
+    }
+
     public interface IRequiresSchema
     {
         /// <summary>
