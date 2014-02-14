@@ -94,7 +94,6 @@
     <Compile Include="RouteMember.cs" />
     <Compile Include="Serialization\DataContractSerializer.Deserialize.cs" />
     <Compile Include="Serialization\DataContractSerializer.cs" />
-    <Compile Include="Serialization\IStringSerializer.cs" />
     <Compile Include="Serialization\IStringStreamSerializer.cs" />
     <Compile Include="Serialization\JsonDataContractSerializer.Deserialize.cs" />
     <Compile Include="Serialization\JsonDataContractSerializer.cs" />
