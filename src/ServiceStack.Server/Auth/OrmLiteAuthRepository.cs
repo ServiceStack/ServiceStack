@@ -451,6 +451,12 @@ namespace ServiceStack.Auth
 
         public bool HasRole(string userAuthId, string role)
         {
+            if (role == null)
+                throw new ArgumentNullException("role");
+
+            if (userAuthId == null)
+                return false;
+
             if (!UseDistinctRoleTables)
             {
                 var userAuth = GetUserAuth(userAuthId);
@@ -468,6 +474,12 @@ namespace ServiceStack.Auth
 
         public bool HasPermission(string userAuthId, string permission)
         {
+            if (permission == null)
+                throw new ArgumentNullException("permission");
+
+            if (userAuthId == null)
+                return false;
+
             if (!UseDistinctRoleTables)
             {
                 var userAuth = GetUserAuth(userAuthId);
