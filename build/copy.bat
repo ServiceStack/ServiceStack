@@ -68,6 +68,8 @@ COPY ..\src\ServiceStack\bin\%BUILD%\ServiceStack.Text.dll ..\..\ServiceStack.Or
 COPY ..\src\ServiceStack\bin\%BUILD%\ServiceStack.Text.pdb ..\..\ServiceStack.OrmLite\lib
 COPY ..\src\ServiceStack\bin\%BUILD%\ServiceStack.Common.dll ..\..\ServiceStack.OrmLite\lib
 COPY ..\src\ServiceStack\bin\%BUILD%\ServiceStack.Common.pdb ..\..\ServiceStack.OrmLite\lib
+COPY ..\src\ServiceStack\bin\%BUILD%\ServiceStack.Client.dll ..\..\ServiceStack.OrmLite\lib
+COPY ..\src\ServiceStack\bin\%BUILD%\ServiceStack.Client.pdb ..\..\ServiceStack.OrmLite\lib
 COPY ..\tests\ServiceStack.Common.Tests\bin\%BUILD%\ServiceStack.Common.Tests.* ..\..\ServiceStack.OrmLite\lib\tests
 
 COPY ..\src\ServiceStack.Interfaces\bin\Release\ServiceStack.Interfaces.dll ..\lib
