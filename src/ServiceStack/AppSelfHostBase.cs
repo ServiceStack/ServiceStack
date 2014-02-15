@@ -1,88 +1,35 @@
-﻿//Copyright (c) Service Stack LLC. All Rights Reserved.
-//License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
-
-using System;
+﻿using System;
 using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using ServiceStack.Host.HttpListener;
+using Amib.Threading;
 using ServiceStack.Logging;
 
 namespace ServiceStack
 {
-    public abstract class AppHostHttpListenerPoolBase : AppHostHttpListenerBase
+    public abstract class AppSelfHostBase
+        : AppHostHttpListenerBase
     {
-        private class ThreadPoolManager : IDisposable
-        {
-            private readonly object syncRoot = new object();
-            private volatile bool isDisposing;
-            private readonly AutoResetEvent autoResetEvent;
-            private int avalaibleThreadCount = 0;
-
-            public ThreadPoolManager(int poolSize)
-            {
-                autoResetEvent = new AutoResetEvent(false);
-                avalaibleThreadCount = poolSize;
-            }
-
-            public Thread Peek(ThreadStart threadStart)
-            {
-                while (!isDisposing && avalaibleThreadCount == 0)
-                    autoResetEvent.WaitOne();
-
-                lock (syncRoot)
-                {
-                    if (isDisposing)
-                        return null;
-
-                    if (Interlocked.Decrement(ref avalaibleThreadCount) < 0)
-                        return Peek(threadStart);
-                }
-
-                return new Thread(threadStart);
-            }
-
-            public void Free()
-            {
-                Interlocked.Increment(ref avalaibleThreadCount);
-                autoResetEvent.Set();
-            }
-
-            /// <summary>
-            /// Exécute les tâches définies par l'application associées à la libération ou à la redéfinition des ressources non managées.
-            /// </summary>
-            /// <filterpriority>2</filterpriority>
-            public void Dispose()
-            {
-                lock (this)
-                {
-                    if (isDisposing)
-                        return;
-
-                    isDisposing = true;
-                }
-            }
-        }
-
+        private readonly ILog log = LogManager.GetLogger(typeof(AppSelfHostBase));
         private readonly AutoResetEvent listenForNextRequest = new AutoResetEvent(false);
-        private readonly ThreadPoolManager threadPoolManager;
-        private readonly ILog log = LogManager.GetLogger(typeof(HttpListenerBase));
+        private readonly SmartThreadPool threadPoolManager;
+        private const int IdleTimeout = 300;
 
-        protected AppHostHttpListenerPoolBase(string serviceName, params Assembly[] assembliesWithServices)
+        protected AppSelfHostBase(string serviceName, params Assembly[] assembliesWithServices)
             : this(serviceName, 500, assembliesWithServices) { }
 
-        protected AppHostHttpListenerPoolBase(string serviceName, int poolSize, params Assembly[] assembliesWithServices)
-            : base(serviceName, assembliesWithServices) { threadPoolManager = new ThreadPoolManager(poolSize); }
+        protected AppSelfHostBase(string serviceName, int poolSize, params Assembly[] assembliesWithServices)
+            : base(serviceName, assembliesWithServices) { threadPoolManager = new SmartThreadPool(IdleTimeout, poolSize); }
 
-        protected AppHostHttpListenerPoolBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
+        protected AppSelfHostBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
             : this(serviceName, handlerPath, 500, assembliesWithServices) { }
 
-        protected AppHostHttpListenerPoolBase(string serviceName, string handlerPath, int poolSize, params Assembly[] assembliesWithServices)
-            : base(serviceName, handlerPath, assembliesWithServices) { threadPoolManager = new ThreadPoolManager(poolSize); }
-
+        protected AppSelfHostBase(string serviceName, string handlerPath, int poolSize, params Assembly[] assembliesWithServices)
+            : base(serviceName, handlerPath, assembliesWithServices) { threadPoolManager = new SmartThreadPool(IdleTimeout, poolSize); }
 
         private bool disposed = false;
+
         protected override void Dispose(bool disposing)
         {
             if (disposed) return;
@@ -92,9 +39,7 @@ namespace ServiceStack
                 if (disposed) return;
 
                 if (disposing)
-                {
                     threadPoolManager.Dispose();
-                }
 
                 // new shared cleanup logic
                 disposed = true;
@@ -103,9 +48,22 @@ namespace ServiceStack
             }
         }
 
-        public override ServiceStackHost Start(string listeningAtUrlBase)
+        public override ServiceStackHost Start(string urlBase)
         {
-            Start(listeningAtUrlBase, Listen);
+            // *** Already running - just leave it in place
+            if (IsStarted)
+                return this;
+
+            if (Listener == null)
+                Listener = new HttpListener();
+
+            Listener.Prefixes.Add(urlBase);
+
+            IsStarted = true;
+            Listener.Start();
+
+            ThreadPool.QueueUserWorkItem(Listen);
+
             return this;
         }
 
@@ -178,8 +136,7 @@ namespace ServiceStack
 
             RaiseReceiveWebRequest(context);
 
-
-            threadPoolManager.Peek(() =>
+            threadPoolManager.QueueWorkItem(() =>
             {
                 try
                 {
@@ -203,9 +160,7 @@ namespace ServiceStack
                 {
                     HandleError(ex, context);
                 }
-
-                threadPoolManager.Free();
-            }).Start();
+            });
         }
     }
 }

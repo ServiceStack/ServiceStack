@@ -146,6 +146,7 @@
     <Compile Include="AppHostListenerEchoRequestTests.cs" />
     <Compile Include="AppHostHttpListenerLongRunningBaseTests.cs" />
     <Compile Include="AppHostListenerBaseTests.cs" />
+    <Compile Include="AppSelfHostTests.cs" />
     <Compile Include="AsyncProgressTests.cs" />
     <Compile Include="AsyncRestClientTests.cs" />
     <Compile Include="AsyncServiceClientTests.cs" />
