@@ -56,6 +56,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .Start(Config.ListeningOn);
         }
 
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
+
         [Test]
         public void Can_call_SelfHost_Services()
         {
