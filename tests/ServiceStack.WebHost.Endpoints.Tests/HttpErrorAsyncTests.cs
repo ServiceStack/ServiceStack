@@ -8,44 +8,46 @@ using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-	[TestFixture]
-	public class HttpErrorTests
-	{
-		private const string ListeningOn = "http://localhost:82/";
+    [TestFixture]
+    public class HttpErrorAsyncTests
+    {
+        private const string ListeningOn = "http://localhost:82/";
 
-		ExampleAppHostHttpListener appHost;
+        ExampleAppHostHttpListener appHost;
 
-		[TestFixtureSetUp]
-		public void OnTestFixtureSetUp()
-		{
-			appHost = new ExampleAppHostHttpListener();
-			appHost.Init();
-			appHost.Start(ListeningOn);
-		}
+        [TestFixtureSetUp]
+        public void OnTestFixtureSetUp()
+        {
+            appHost = new ExampleAppHostHttpListener();
+            appHost.Init();
+            appHost.Start(ListeningOn);
+        }
 
-		[TestFixtureTearDown]
-		public void OnTestFixtureTearDown()
-		{
-			appHost.Dispose();
-		}
+        [TestFixtureTearDown]
+        public void OnTestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
 
-		private static void FailOnAsyncError<T>(T response, Exception ex)
-		{
-			Assert.Fail(ex.Message);
-		}
+        private static void FailOnAsyncError<T>(T response, Exception ex)
+        {
+            Assert.Fail(ex.Message);
+        }
 
-		public IRestClientAsync CreateRestClient()
-		{
-			return new JsonServiceClient();
-		}
+        public IRestClientAsync CreateRestClient(string baseUri = null)
+        {
+            return baseUri != null
+                ? new JsonServiceClient(baseUri)
+                : new JsonServiceClient();
+        }
 
-		[Test]
+        [Test]
         public async Task GET_returns_ArgumentNullException()
-		{
-			var restClient = CreateRestClient();
+        {
+            var restClient = CreateRestClient();
             try
             {
-                var response = await restClient.GetAsync<HttpErrorResponse>(ListeningOn + "errors");
+                var response = await restClient.GetAsync<ThrowHttpErrorResponse>(ListeningOn + "errors");
 
                 Assert.Fail("Should throw");
             }
@@ -56,13 +58,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
-		[Test]
+        [Test]
         public async Task GET_returns_custom_Exception_and_StatusCode()
-		{
-			var restClient = CreateRestClient();
+        {
+            var restClient = CreateRestClient();
             try
             {
-                var response = await restClient.GetAsync<HttpErrorResponse>(
+                var response = await restClient.GetAsync<ThrowHttpErrorResponse>(
                     ListeningOn + "errors/FileNotFoundException/404");
 
                 Assert.Fail("Should throw");
@@ -72,16 +74,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(webEx.StatusCode, Is.EqualTo(404));
                 Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(typeof(FileNotFoundException).Name));
             }
-		}
+        }
 
-		[Test]
-		public async Task GET_returns_custom_Exception_Message_and_StatusCode()
-		{
-			var restClient = CreateRestClient();
+        [Test]
+        public async Task GET_returns_custom_Exception_Message_and_StatusCode()
+        {
+            var restClient = CreateRestClient();
 
             try
             {
-                var response = await restClient.GetAsync<HttpErrorResponse>(
+                var response = await restClient.GetAsync<ThrowHttpErrorResponse>(
                     ListeningOn + "errors/FileNotFoundException/404/ClientErrorMessage");
 
                 Assert.Fail("Should throw");
@@ -92,8 +94,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(typeof(FileNotFoundException).Name));
                 Assert.That(webEx.ResponseStatus.Message, Is.EqualTo("ClientErrorMessage"));
             }
-		}
+        }
 
-	}
+    }
 
 }
