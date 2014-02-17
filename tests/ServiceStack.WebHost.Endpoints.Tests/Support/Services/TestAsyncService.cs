@@ -19,12 +19,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 		public int ExecuteAsyncTimes { get; set; }
 	}
 
+    [Route("/returnsvoid")]
+    [DataContract]
+    public class ReturnsVoid : IReturnVoid
+    {
+        [DataMember]
+        public string Message { get; set; }
+    }
+
 	public class TestAsyncService : IService
 	{
 		private readonly IFoo foo;
 
 		public static int ExecuteTimes { get; private set; }
 		public static int ExecuteAsyncTimes { get; private set; }
+	    public static string ReturnVoidMessage;
 		
 		public static void ResetStats()
 		{
@@ -41,5 +50,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 		{
 			return new TestAsyncResponse { Foo = this.foo, ExecuteTimes = ++ExecuteTimes };
 		}
+
+        public void Any(ReturnsVoid request)
+        {
+            ReturnVoidMessage = request.Message;
+        }
 	}
 }

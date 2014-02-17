@@ -735,6 +735,11 @@ namespace ServiceStack
             return asyncClient.SendAsync<TResponse>(HttpMethods.Post, requestUri, requestDto);
         }
 
+        public virtual Task<HttpWebResponse> SendAsync(IReturnVoid requestDto)
+        {
+            return SendAsync<HttpWebResponse>(requestDto);
+        }
+
 
         public virtual Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto)
         {
@@ -751,6 +756,12 @@ namespace ServiceStack
             return asyncClient.SendAsync<TResponse>(HttpMethods.Get, GetUrl(relativeOrAbsoluteUrl), null);
         }
 
+        public virtual Task<HttpWebResponse> GetAsync(IReturnVoid requestDto)
+        {
+            return GetAsync<HttpWebResponse>(requestDto.ToUrl(HttpMethods.Get, Format));
+        }
+
+
         public virtual Task<TResponse> DeleteAsync<TResponse>(IReturn<TResponse> requestDto)
         {
             return DeleteAsync<TResponse>(requestDto.ToUrl(HttpMethods.Delete, Format));
@@ -764,6 +775,11 @@ namespace ServiceStack
         public virtual Task<TResponse> DeleteAsync<TResponse>(string relativeOrAbsoluteUrl)
         {
             return asyncClient.SendAsync<TResponse>(HttpMethods.Delete, GetUrl(relativeOrAbsoluteUrl), null);
+        }
+
+        public virtual Task<HttpWebResponse> DeleteAsync(IReturnVoid requestDto)
+        {
+            return DeleteAsync<HttpWebResponse>(requestDto.ToUrl(HttpMethods.Delete, Format));
         }
 
 
@@ -782,6 +798,11 @@ namespace ServiceStack
             return asyncClient.SendAsync<TResponse>(HttpMethods.Post, GetUrl(relativeOrAbsoluteUrl), request);
         }
 
+        public virtual Task<HttpWebResponse> PostAsync(IReturnVoid requestDto)
+        {
+            return PostAsync<HttpWebResponse>(requestDto.ToUrl(HttpMethods.Post, Format), requestDto);
+        }
+
 
         public virtual Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto)
         {
@@ -796,6 +817,11 @@ namespace ServiceStack
         public virtual Task<TResponse> PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request)
         {
             return asyncClient.SendAsync<TResponse>(HttpMethods.Put, GetUrl(relativeOrAbsoluteUrl), request);
+        }
+
+        public virtual Task<HttpWebResponse> PutAsync(IReturnVoid requestDto)
+        {
+            return PutAsync<HttpWebResponse>(requestDto.ToUrl(HttpMethods.Put, Format), requestDto);
         }
 
 
@@ -814,6 +840,11 @@ namespace ServiceStack
             return asyncClient.SendAsync<TResponse>(HttpMethods.Patch, GetUrl(relativeOrAbsoluteUrl), request);
         }
 
+        public virtual Task<HttpWebResponse> PatchAsync(IReturnVoid requestDto)
+        {
+            return PatchAsync<HttpWebResponse>(requestDto.ToUrl(HttpMethods.Patch, Format), requestDto);
+        }
+
 
         public virtual Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
         {
@@ -829,6 +860,14 @@ namespace ServiceStack
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
             return asyncClient.SendAsync<TResponse>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestDto);
+        }
+
+        public virtual Task<HttpWebResponse> CustomMethodAsync(string httpVerb, IReturnVoid requestDto)
+        {
+            if (!HttpMethods.HasVerb(httpVerb))
+                throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
+
+            return asyncClient.SendAsync<HttpWebResponse>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestDto);
         }
 
 

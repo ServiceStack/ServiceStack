@@ -66,6 +66,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(response.Headers["Foo"], Is.EqualTo("Bar"));
         }
+
+        [Test]
+        public async Task Can_call_return_void()
+        {
+            client.Post(new ReturnsVoid { Message = "Foo" });
+            Assert.That(TestAsyncService.ReturnVoidMessage, Is.EqualTo("Foo"));
+
+            await client.PostAsync(new ReturnsVoid { Message = "Foo" });
+            Assert.That(TestAsyncService.ReturnVoidMessage, Is.EqualTo("Foo"));
+        }
     }
 
 }
