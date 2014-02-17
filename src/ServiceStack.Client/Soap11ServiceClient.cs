@@ -40,6 +40,11 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
+        public Task<HttpWebResponse> GetAsync(IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<TResponse> DeleteAsync<TResponse>(IReturn<TResponse> requestDto)
         {
             throw new NotImplementedException();
@@ -51,6 +56,11 @@ namespace ServiceStack
         }
 
         public Task<TResponse> DeleteAsync<TResponse>(string relativeOrAbsoluteUrl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<HttpWebResponse> DeleteAsync(IReturnVoid requestDto)
         {
             throw new NotImplementedException();
         }
@@ -70,6 +80,11 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
+        public Task<HttpWebResponse> PostAsync(IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto)
         {
             throw new NotImplementedException();
@@ -85,12 +100,22 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
+        public Task<HttpWebResponse> PutAsync(IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
         {
             throw new NotImplementedException();
         }
 
         public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<HttpWebResponse> CustomMethodAsync(string httpVerb, IReturnVoid requestDto)
         {
             throw new NotImplementedException();
         }
