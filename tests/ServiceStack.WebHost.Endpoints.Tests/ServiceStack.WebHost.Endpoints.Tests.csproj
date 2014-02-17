@@ -157,6 +157,7 @@
     <Compile Include="CachedServiceTests.cs" />
     <Compile Include="CompressionTests.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="HttpErrorSyncTests.cs" />
     <Compile Include="RequestPipelineTests.cs" />
     <Compile Include="NestedServiceTests.cs" />
     <Compile Include="CorsFeaturePluginTests.cs" />
@@ -214,7 +215,7 @@
     <Compile Include="CsvContentTypeFilterTests.cs" />
     <Compile Include="EndpointRestrictionTests.cs" />
     <Compile Include="FileUploadTests.cs" />
-    <Compile Include="HttpErrorTests.cs" />
+    <Compile Include="HttpErrorAsyncTests.cs" />
     <Compile Include="RequestContextTests.cs" />
     <Compile Include="RequestFiltersTests.cs" />
     <Compile Include="Support\DirectServiceClient.cs" />
