@@ -17,7 +17,15 @@ namespace ServiceStack.Messaging
 
         public void Publish<T>(T messageBody)
         {
-            factory.PublishMessage(QueueNames<T>.In, new Message<T>(messageBody));
+            var message = messageBody as IMessage;
+            if (message != null)
+            {
+                Publish(message.ToInQueueName(), message);
+            }
+            else
+            {
+                Publish(new Message<T>(messageBody));
+            }
         }
 
         public void Publish<T>(IMessage<T> message)

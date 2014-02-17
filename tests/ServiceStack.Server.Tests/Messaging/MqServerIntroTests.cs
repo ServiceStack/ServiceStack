@@ -81,7 +81,7 @@ namespace ServiceStack.Server.Tests.Messaging
         [Test]
         public void Messages_with_no_responses_are_published_to_Request_outq_topic()
         {
-            using (var mqServer = new RabbitMqServer())
+            using (var mqServer = CreateMqServer())
             {
                 mqServer.RegisterHandler<Hello>(m =>
                 {
@@ -104,7 +104,7 @@ namespace ServiceStack.Server.Tests.Messaging
         [Test]
         public void Message_with_response_are_published_to_Response_inq()
         {
-            using (var mqServer = new RabbitMqServer())
+            using (var mqServer = CreateMqServer())
             {
                 mqServer.RegisterHandler<Hello>(m =>
                     new HelloResponse { Result = "Hello, {0}!".Fmt(m.GetBody().Name) });
@@ -152,7 +152,7 @@ namespace ServiceStack.Server.Tests.Messaging
         [Test]
         public void Message_with_ReplyTo_are_published_to_the_ReplyTo_queue()
         {
-            using (var mqServer = new RabbitMqServer())
+            using (var mqServer = CreateMqServer())
             {
                 mqServer.RegisterHandler<Hello>(m =>
                     new HelloResponse { Result = "Hello, {0}!".Fmt(m.GetBody().Name) });
@@ -195,7 +195,7 @@ namespace ServiceStack.Server.Tests.Messaging
             {
                 ConfigureAppHost = host =>
                 {
-                    host.Container.Register<IMessageService>(c => new RabbitMqServer());
+                    host.Container.Register(c => CreateMqServer());
 
                     var mqServer = host.Container.Resolve<IMessageService>();
 

@@ -169,7 +169,8 @@ namespace ServiceStack.RabbitMq
                 return null;
 
             var props = msgResult.BasicProperties;
-            var body = msgResult.Body.FromUtf8Bytes().FromJson<T>();
+            var json = msgResult.Body.FromUtf8Bytes();
+            var body = json.FromJson<T>();
 
             var message = new Message<T>(body)
             {

@@ -12,7 +12,8 @@ namespace ServiceStack.RabbitMq
 
         public void Notify(string queueName, IMessage message)
         {
-            var messageBytes = message.Body.ToJson().ToUtf8Bytes();
+            var json = message.Body.ToJson();
+            var messageBytes = json.ToUtf8Bytes();
 
             PublishMessage(QueueNames.ExchangeTopic,
                 routingKey: queueName,

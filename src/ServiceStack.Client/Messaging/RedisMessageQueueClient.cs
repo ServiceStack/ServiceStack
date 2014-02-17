@@ -53,11 +53,15 @@ namespace ServiceStack.Messaging
 
         public void Publish<T>(T messageBody)
         {
-            var message = typeof(IMessage).IsAssignableFromType(typeof(T))
-                ? (IMessage<T>)messageBody
-                : new Message<T>(messageBody);
-
-            Publish(message);
+            var message = messageBody as IMessage;
+            if (message != null)
+            {
+                Publish(message.ToInQueueName(), message);
+            }
+            else
+            {
+                Publish(new Message<T>(messageBody));
+            }
         }
 
         public void Publish<T>(IMessage<T> message)

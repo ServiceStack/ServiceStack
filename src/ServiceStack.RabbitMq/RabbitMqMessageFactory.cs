@@ -30,7 +30,9 @@ namespace ServiceStack.RabbitMq
             if (connectionString == null)
                 throw new ArgumentNullException("connectionString");
 
-            ConnectionFactory = new ConnectionFactory();
+            ConnectionFactory = new ConnectionFactory {
+                RequestedHeartbeat = 10,
+            };
 
             if (username != null)
                 ConnectionFactory.UserName = username;
