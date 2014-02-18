@@ -36,7 +36,7 @@ namespace ServiceStack.Razor
 
         public override Type GetGeneratedType(CompilerResults results)
         {
-            return results.CompiledAssembly.GetType(string.Format(CultureInfo.CurrentCulture, "{0}.{1}", new object[] { this.host.DefaultNamespace, this.host.DefaultClassName }));
+            return results.CompiledAssembly.GetType(string.Format(CultureInfo.InvariantCulture, "{0}.{1}", new object[] { this.host.DefaultNamespace, this.host.DefaultClassName }));
         }
 
         private CodeCompileUnit GetGeneratedCode()
