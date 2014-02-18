@@ -5,38 +5,38 @@ namespace ServiceStack
 {
 	public interface IRestClient 
 	{
-        void Get(IReturnVoid request);
-        void Get(object request);
+        HttpWebResponse Get(IReturnVoid request);
+        HttpWebResponse Get(object request);
         TResponse Get<TResponse>(IReturn<TResponse> requestDto);
         TResponse Get<TResponse>(object requestDto);
         TResponse Get<TResponse>(string relativeOrAbsoluteUrl);
 
-        void Delete(IReturnVoid requestDto);
-        void Delete(object requestDto);
+        HttpWebResponse Delete(IReturnVoid requestDto);
+        HttpWebResponse Delete(object requestDto);
         TResponse Delete<TResponse>(IReturn<TResponse> request);
         TResponse Delete<TResponse>(object request);
         TResponse Delete<TResponse>(string relativeOrAbsoluteUrl);
 
-        void Post(IReturnVoid requestDto);
-        void Post(object requestDto);
+        HttpWebResponse Post(IReturnVoid requestDto);
+        HttpWebResponse Post(object requestDto);
         TResponse Post<TResponse>(IReturn<TResponse> requestDto);
         TResponse Post<TResponse>(object requestDto);
         TResponse Post<TResponse>(string relativeOrAbsoluteUrl, object request);
 
-        void Put(IReturnVoid requestDto);
-        void Put(object requestDto);
+        HttpWebResponse Put(IReturnVoid requestDto);
+        HttpWebResponse Put(object requestDto);
         TResponse Put<TResponse>(IReturn<TResponse> requestDto);
         TResponse Put<TResponse>(object requestDto);
         TResponse Put<TResponse>(string relativeOrAbsoluteUrl, object requestDto);
 
-        void Patch(IReturnVoid requestDto);
-        void Patch(object requestDto);
+        HttpWebResponse Patch(IReturnVoid requestDto);
+        HttpWebResponse Patch(object requestDto);
         TResponse Patch<TResponse>(IReturn<TResponse> requestDto);
         TResponse Patch<TResponse>(object requestDto);
         TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object requestDto);
 
-        void CustomMethod(string httpVerb, IReturnVoid requestDto);
-        void CustomMethod(string httpVerb, object requestDto);
+        HttpWebResponse CustomMethod(string httpVerb, IReturnVoid requestDto);
+        HttpWebResponse CustomMethod(string httpVerb, object requestDto);
         TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> requestDto);
         TResponse CustomMethod<TResponse>(string httpVerb, object requestDto);
 

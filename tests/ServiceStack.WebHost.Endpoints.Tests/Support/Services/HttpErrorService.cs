@@ -24,6 +24,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
     }
 
     [DataContract]
+    [Route("/errors")]
+    [Route("/errors/{Type}")]
+    [Route("/errors/{Type}/{StatusCode}")]
+    [Route("/errors/{Type}/{StatusCode}/{Message}")]
+    public class ThrowHttpErrorNoReturn : IReturnVoid
+    {
+        [DataMember]
+        public string Type { get; set; }
+
+        [DataMember]
+        public string Message { get; set; }
+
+        [DataMember]
+        public int? StatusCode { get; set; }
+    }
+
+    [DataContract]
     public class ThrowHttpErrorResponse
         : IHasResponseStatus
     {

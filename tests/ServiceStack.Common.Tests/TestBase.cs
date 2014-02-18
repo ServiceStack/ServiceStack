@@ -156,7 +156,7 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
-            public void Get(object request)
+            public HttpWebResponse Get(object request)
             {
                 throw new NotImplementedException();
             }
@@ -171,7 +171,7 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
-            public void Get(IReturnVoid request)
+            public HttpWebResponse Get(IReturnVoid request)
             {
                 throw new NotImplementedException();
             }
@@ -181,7 +181,7 @@ namespace ServiceStack.Common.Tests
                 return parent.ExecutePath<TResponse>(HttpMethods.Get, new UrlParts(relativeOrAbsoluteUrl), null);
             }
 
-            public void Delete(object requestDto)
+            public HttpWebResponse Delete(object requestDto)
             {
                 throw new NotImplementedException();
             }
@@ -196,7 +196,7 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
-            public void Delete(IReturnVoid requestDto)
+            public HttpWebResponse Delete(IReturnVoid requestDto)
             {
                 throw new NotImplementedException();
             }
@@ -206,7 +206,7 @@ namespace ServiceStack.Common.Tests
                 return parent.ExecutePath<TResponse>(HttpMethods.Delete, new UrlParts(relativeOrAbsoluteUrl), null);
             }
 
-            public void Post(object requestDto)
+            public HttpWebResponse Post(object requestDto)
             {
                 throw new NotImplementedException();
             }
@@ -226,7 +226,7 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
-            public void Post(IReturnVoid requestDto)
+            public HttpWebResponse Post(IReturnVoid requestDto)
             {
                 throw new NotImplementedException();
             }
@@ -236,7 +236,7 @@ namespace ServiceStack.Common.Tests
                 return parent.ExecutePath<TResponse>(HttpMethods.Post, new UrlParts(relativeOrAbsoluteUrl), request);
             }
 
-            public void Put(object requestDto)
+            public HttpWebResponse Put(object requestDto)
             {
                 throw new NotImplementedException();
             }
@@ -256,7 +256,7 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
-            public void Put(IReturnVoid requestDto)
+            public HttpWebResponse Put(IReturnVoid requestDto)
             {
                 throw new NotImplementedException();
             }
@@ -266,7 +266,7 @@ namespace ServiceStack.Common.Tests
                 return parent.ExecutePath<TResponse>(HttpMethods.Put, new UrlParts(relativeOrAbsoluteUrl), requestDto);
             }
 
-            public void Patch(object requestDto)
+            public HttpWebResponse Patch(object requestDto)
             {
                 throw new NotImplementedException();
             }
@@ -286,7 +286,7 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
-            public void Patch(IReturnVoid requestDto)
+            public HttpWebResponse Patch(IReturnVoid requestDto)
             {
                 throw new NotImplementedException();
             }
@@ -301,12 +301,12 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
-            public void CustomMethod(string httpVerb, IReturnVoid requestDto)
+            public HttpWebResponse CustomMethod(string httpVerb, IReturnVoid requestDto)
             {
                 throw new NotImplementedException();
             }
 
-            public void CustomMethod(string httpVerb, object requestDto)
+            public HttpWebResponse CustomMethod(string httpVerb, object requestDto)
             {
                 throw new NotImplementedException();
             }
