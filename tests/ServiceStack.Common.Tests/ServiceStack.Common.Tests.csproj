@@ -149,6 +149,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AttributeTests.cs" />
+    <Compile Include="CheckWebTests.cs" />
     <Compile Include="Configuration\AppSettingsTests.cs" />
     <Compile Include="CryptUtilTest.cs" />
     <Compile Include="EndpointHandlerBaseTests.cs" />
