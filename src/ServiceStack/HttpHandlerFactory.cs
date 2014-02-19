@@ -59,7 +59,7 @@ namespace ServiceStack
                     if (!fileNameLower.EndsWith(".aspx"))
                     {
                         DefaultRootFileName = fileNameLower;
-                        ((StaticFileHandler)StaticFileHandler).SetDefaultFile(file.Name, file.ReadAllBytes(), file.LastModified);
+                        ((StaticFileHandler)StaticFileHandler).SetDefaultFile(file.VirtualPath, file.ReadAllBytes(), file.LastModified);
 
                         if (DefaultHttpHandler == null)
                             DefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = DefaultRootFileName };
