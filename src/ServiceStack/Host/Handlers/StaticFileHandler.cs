@@ -52,6 +52,11 @@ namespace ServiceStack.Host.Handlers
 		private DateTime DefaultFileModified { get; set; }
 		private string DefaultFilePath { get; set; }
 		private byte[] DefaultFileContents { get; set; }
+		public int DefaultBufferSize
+		{
+			get { return _bufferSize; }
+			set { _bufferSize = value; }
+		}
 
 		/// <summary>
 		/// Keep default file contents in-memory
@@ -139,7 +144,7 @@ namespace ServiceStack.Host.Handlers
                     r.AddHeaderLastModified(file.LastModified);
                     r.ContentType = MimeTypes.GetMimeType(file.Name);
 
-                    if (file.Name.EqualsIgnoreCase(this.DefaultFilePath))
+                    if (file.VirtualPath.EqualsIgnoreCase(this.DefaultFilePath))
                     {
                         if (file.LastModified > this.DefaultFileModified)
                             SetDefaultFile(this.DefaultFilePath, file.ReadAllBytes(), file.LastModified); //reload
@@ -178,7 +183,7 @@ namespace ServiceStack.Host.Handlers
                         }
                         else
                         {
-                            fs.WriteTo(outputStream);
+	                        fs.CopyTo(outputStream, _bufferSize);
                             outputStream.Flush();
                         }
                     }
@@ -232,7 +237,7 @@ namespace ServiceStack.Host.Handlers
 			get { return true; }
 		}
 
-        public static bool DirectoryExists(string dirPath, string appFilePath)
+	    public static bool DirectoryExists(string dirPath, string appFilePath)
         {
             if (dirPath == null) return false;
 
@@ -258,8 +263,9 @@ namespace ServiceStack.Host.Handlers
 
         private static Dictionary<string, string> allDirs; //populated by GetFiles()
         private static Dictionary<string, string> allFiles;
+				private int _bufferSize = 1024 * 1024;
 
-        static IEnumerable<string> GetFiles(string path)
+	    static IEnumerable<string> GetFiles(string path)
         {
             var queue = new Queue<string>();
             queue.Enqueue(path);
