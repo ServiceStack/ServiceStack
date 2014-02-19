@@ -40,8 +40,8 @@ using ServiceStack.Web;
 namespace ServiceStack.Host.Handlers
 {
     public class StaticFileHandler : HttpAsyncTaskHandler
-	{
-		private static readonly ILog log = LogManager.GetLogger(typeof(StaticFileHandler));
+    {
+        private static readonly ILog log = LogManager.GetLogger(typeof(StaticFileHandler));
         public static int DefaultBufferSize = 1024 * 1024;
 
         public StaticFileHandler()
@@ -50,40 +50,40 @@ namespace ServiceStack.Host.Handlers
         }
 
         public override void ProcessRequest(HttpContextBase context)
-		{
-		    var httpReq = context.ToRequest(GetType().GetOperationName());
-			ProcessRequest(httpReq, httpReq.Response, httpReq.OperationName);
-		}
+        {
+            var httpReq = context.ToRequest(GetType().GetOperationName());
+            ProcessRequest(httpReq, httpReq.Response, httpReq.OperationName);
+        }
 
         public int BufferSize { get; set; }
         private DateTime DefaultFileModified { get; set; }
-		private string DefaultFilePath { get; set; }
-		private byte[] DefaultFileContents { get; set; }
+        private string DefaultFilePath { get; set; }
+        private byte[] DefaultFileContents { get; set; }
 
-		/// <summary>
-		/// Keep default file contents in-memory
-		/// </summary>
-		/// <param name="defaultFilePath"></param>
-		public void SetDefaultFile(string defaultFilePath, byte[] defaultFileContents, DateTime defaultFileModified)
-		{
-			try
-			{
-				this.DefaultFilePath = defaultFilePath;
+        /// <summary>
+        /// Keep default file contents in-memory
+        /// </summary>
+        /// <param name="defaultFilePath"></param>
+        public void SetDefaultFile(string defaultFilePath, byte[] defaultFileContents, DateTime defaultFileModified)
+        {
+            try
+            {
+                this.DefaultFilePath = defaultFilePath;
                 this.DefaultFileContents = defaultFileContents;
                 this.DefaultFileModified = defaultFileModified;
-			}
-			catch (Exception ex)
-			{
-				log.Error(ex.Message, ex);
-			}
-		}
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex.Message, ex);
+            }
+        }
 
         public override void ProcessRequest(IRequest request, IResponse response, string operationName)
-		{
+        {
             HostContext.ApplyCustomHandlerRequestFilters(request, response);
             if (response.IsClosed) return;
 
-            response.EndHttpHandlerRequest(skipClose: true, afterBody: r => 
+            response.EndHttpHandlerRequest(skipClose: true, afterBody: r =>
             {
                 var node = request.GetVirtualNode();
                 var file = node as IVirtualFile;
@@ -206,21 +206,21 @@ namespace ServiceStack.Host.Handlers
                     throw new HttpException(403, "Forbidden.");
                 }
             });
-		}
+        }
 
-	    static Dictionary<string, string> CreateFileIndex(string appFilePath)
-	    {
-	        log.Debug("Building case-insensitive fileIndex for Mono at: "
-	                  + appFilePath);
+        static Dictionary<string, string> CreateFileIndex(string appFilePath)
+        {
+            log.Debug("Building case-insensitive fileIndex for Mono at: "
+                      + appFilePath);
 
-	        var caseInsensitiveLookup = new Dictionary<string, string>();
-	        foreach (var file in GetFiles(appFilePath))
-	        {
-	            caseInsensitiveLookup[file.ToLower()] = file;
-	        }
+            var caseInsensitiveLookup = new Dictionary<string, string>();
+            foreach (var file in GetFiles(appFilePath))
+            {
+                caseInsensitiveLookup[file.ToLower()] = file;
+            }
 
-	        return caseInsensitiveLookup;
-	    }
+            return caseInsensitiveLookup;
+        }
 
         static Dictionary<string, string> CreateDirIndex(string appFilePath)
         {
@@ -234,12 +234,12 @@ namespace ServiceStack.Host.Handlers
             return indexDirs;
         }
 
-	    public override bool IsReusable
-		{
-			get { return true; }
-		}
+        public override bool IsReusable
+        {
+            get { return true; }
+        }
 
-	    public static bool DirectoryExists(string dirPath, string appFilePath)
+        public static bool DirectoryExists(string dirPath, string appFilePath)
         {
             if (dirPath == null) return false;
 
@@ -266,7 +266,7 @@ namespace ServiceStack.Host.Handlers
         private static Dictionary<string, string> allDirs; //populated by GetFiles()
         private static Dictionary<string, string> allFiles;
 
-	    static IEnumerable<string> GetFiles(string path)
+        static IEnumerable<string> GetFiles(string path)
         {
             var queue = new Queue<string>();
             queue.Enqueue(path);
@@ -330,5 +330,5 @@ namespace ServiceStack.Host.Handlers
 
             return results;
         }
-	}
+    }
 }
