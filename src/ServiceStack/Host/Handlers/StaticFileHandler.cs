@@ -42,21 +42,23 @@ namespace ServiceStack.Host.Handlers
     public class StaticFileHandler : HttpAsyncTaskHandler
 	{
 		private static readonly ILog log = LogManager.GetLogger(typeof(StaticFileHandler));
+        public static int DefaultBufferSize = 1024 * 1024;
 
-		public override void ProcessRequest(HttpContextBase context)
+        public StaticFileHandler()
+        {
+            BufferSize = DefaultBufferSize;
+        }
+
+        public override void ProcessRequest(HttpContextBase context)
 		{
 		    var httpReq = context.ToRequest(GetType().GetOperationName());
 			ProcessRequest(httpReq, httpReq.Response, httpReq.OperationName);
 		}
 
-		private DateTime DefaultFileModified { get; set; }
+        public int BufferSize { get; set; }
+        private DateTime DefaultFileModified { get; set; }
 		private string DefaultFilePath { get; set; }
 		private byte[] DefaultFileContents { get; set; }
-		public int DefaultBufferSize
-		{
-			get { return _bufferSize; }
-			set { _bufferSize = value; }
-		}
 
 		/// <summary>
 		/// Keep default file contents in-memory
@@ -183,7 +185,7 @@ namespace ServiceStack.Host.Handlers
                         }
                         else
                         {
-	                        fs.CopyTo(outputStream, _bufferSize);
+                            fs.CopyTo(outputStream, BufferSize);
                             outputStream.Flush();
                         }
                     }
@@ -263,7 +265,6 @@ namespace ServiceStack.Host.Handlers
 
         private static Dictionary<string, string> allDirs; //populated by GetFiles()
         private static Dictionary<string, string> allFiles;
-				private int _bufferSize = 1024 * 1024;
 
 	    static IEnumerable<string> GetFiles(string path)
         {
