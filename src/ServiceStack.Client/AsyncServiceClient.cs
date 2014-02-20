@@ -91,6 +91,8 @@ namespace ServiceStack
 
         public StreamDeserializerDelegate StreamDeserializer { get; set; }
 
+        public bool CaptureSynchronizationContext { get; set; }
+
         public bool HandleCallbackOnUiThread { get; set; }
 
         public bool EmulateHttpViaPost { get; set; }
@@ -157,6 +159,7 @@ namespace ServiceStack
                 Request = request,
                 OnSuccess = onSuccess,
                 OnError = onError,
+                UseSynchronizationContext = CaptureSynchronizationContext ? SynchronizationContext.Current : null,
                 HandleCallbackOnUIThread = HandleCallbackOnUiThread,
             };
             requestState.StartTimer(this.Timeout.GetValueOrDefault(DefaultTimeout));

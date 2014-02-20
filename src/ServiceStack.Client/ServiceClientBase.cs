@@ -224,7 +224,16 @@ namespace ServiceStack
         public abstract string ContentType { get; }
 
         public string HttpMethod { get; set; }
-      
+
+        /// <summary>
+        /// Whether to execute async callbacks on the same Synchronization Context it was called from.
+        /// </summary>
+        public bool CaptureSynchronizationContext
+        {
+            get { return asyncClient.CaptureSynchronizationContext; }
+            set { asyncClient.CaptureSynchronizationContext = value; }
+        }
+
         public bool HandleCallbackOnUiThread
         {
             get { return asyncClient.HandleCallbackOnUiThread; }

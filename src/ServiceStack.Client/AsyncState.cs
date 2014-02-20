@@ -50,6 +50,8 @@ namespace ServiceStack
 
         public Action<TResponse, Exception> OnError;
 
+        public SynchronizationContext UseSynchronizationContext;
+
         public bool HandleCallbackOnUIThread;
 
         public long ResponseBytesRead;
@@ -63,7 +65,9 @@ namespace ServiceStack
             if (this.OnSuccess == null)
                 return;
 
-            if (this.HandleCallbackOnUIThread)
+            if (UseSynchronizationContext != null)
+                UseSynchronizationContext.Post(asyncState => this.OnSuccess(response), this);
+            else if (this.HandleCallbackOnUIThread)
                 PclExportClient.Instance.RunOnUiThread(() => this.OnSuccess(response));
             else
                 this.OnSuccess(response);
@@ -82,7 +86,9 @@ namespace ServiceStack
                 toReturn = ex.CreateTimeoutException("The request timed out");
             }
 
-            if (this.HandleCallbackOnUIThread)
+            if (UseSynchronizationContext != null)
+                UseSynchronizationContext.Post(asyncState => this.OnError(response, toReturn), this);
+            else if (this.HandleCallbackOnUIThread)
                 PclExportClient.Instance.RunOnUiThread(() => this.OnError(response, toReturn));
             else
                 this.OnError(response, toReturn);

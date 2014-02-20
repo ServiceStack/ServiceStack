@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Funq;
 using ServiceStack;
 using ServiceStack.Api.Swagger;
@@ -40,6 +41,11 @@ namespace CheckWeb
                 // Disable SOAP endpoints
                 EnableFeatures = Feature.All.Remove(Feature.Soap)
             });
+
+            container.Register<IServiceClient>(c =>
+                new JsonServiceClient("http://localhost:55799/") {
+                    CaptureSynchronizationContext = true,
+                });
 
             // Configure JSON serialization properties.
             this.ConfigureSerialization(container);
@@ -147,7 +153,7 @@ namespace CheckWeb
     /// </summary>
     [Api("Echoes a sentence")]
     [Route("/echoes", "POST", Summary = @"Echoes a sentence.")]
-    public class Echoes : IReturn<IEcho>
+    public class Echoes : IReturn<Echo>
     {
         /// <summary>
         /// Gets or sets the sentence to echo.
@@ -160,11 +166,15 @@ namespace CheckWeb
         public string Sentence { get; set; }
     }
 
+    public class AsyncTest : IReturn<Echo> {}
+
     /// <summary>
     /// The Echoes web service.
     /// </summary>
     public class EchoesService : Service
     {
+        public IServiceClient Client { get; set; }
+
         /// <summary>
         /// GET echoes.
         /// </summary>
@@ -173,6 +183,12 @@ namespace CheckWeb
         public object Post(Echoes request)
         {
             return new Echo { Sentence = request.Sentence };
+        }
+
+        public async Task<object> Any(AsyncTest request)
+        {
+            var response = await Client.PostAsync(new Echoes { Sentence = "Foo" });
+            return response;
         }
     }
 
