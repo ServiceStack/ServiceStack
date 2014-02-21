@@ -389,6 +389,7 @@ namespace ServiceStack
                 var serviceEx = new WebServiceException(errorResponse.StatusDescription)
                 {
                     StatusCode = (int)errorResponse.StatusCode,
+                    StatusDescription = errorResponse.StatusDescription,
                 };
 
                 try
@@ -413,6 +414,7 @@ namespace ServiceStack
                     Log.Debug(string.Format("WebException Reading Response Error: {0}", innerEx.Message), innerEx);
                     state.HandleError(default(TResponse), new WebServiceException(errorResponse.StatusDescription, innerEx) {
                         StatusCode = (int)errorResponse.StatusCode,
+                        StatusDescription = errorResponse.StatusDescription,
                     });
                 }
                 return;
