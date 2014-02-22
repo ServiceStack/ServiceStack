@@ -70,7 +70,7 @@ namespace ServiceStack
             do
             {
                 base64Id = CreateRandomBase64Id();
-            } while (IsBase64UrlFriendly(base64Id));
+            } while (Base64StringContainsUrlUnfriendlyChars(base64Id));
             return base64Id;
         }
 
@@ -82,7 +82,7 @@ namespace ServiceStack
         }
 
         static readonly char[] UrlUnsafeBase64Chars = new[] { '+', '/' };
-        public static bool IsBase64UrlFriendly(string base64)
+        public static bool Base64StringContainsUrlUnfriendlyChars(string base64)
         {
             return base64.IndexOfAny(UrlUnsafeBase64Chars) >= 0;
         }
