@@ -16,7 +16,7 @@ namespace ServiceStack
     /// <summary>
     /// Configure ServiceStack to have ISession support
     /// </summary>
-    public static class SessionExtensions 
+    public static class SessionExtensions
     {
         public static string GetSessionId(this IRequest httpReq)
         {
@@ -64,11 +64,27 @@ namespace ServiceStack
         }
 
         static readonly RandomNumberGenerator randgen = new RNGCryptoServiceProvider();
-        internal static string CreateRandomSessionId()
+        public static string CreateRandomSessionId()
+        {
+            string base64Id;
+            do
+            {
+                base64Id = CreateRandomBase64Id();
+            } while (IsBase64UrlFriendly(base64Id));
+            return base64Id;
+        }
+
+        public static string CreateRandomBase64Id()
         {
             var data = new byte[15];
             randgen.GetBytes(data);
             return Convert.ToBase64String(data);
+        }
+
+        static readonly char[] UrlUnsafeBase64Chars = new[] { '+', '/' };
+        public static bool IsBase64UrlFriendly(string base64)
+        {
+            return base64.IndexOfAny(UrlUnsafeBase64Chars) >= 0;
         }
 
         public static string CreatePermanentSessionId(this IResponse res, IRequest req)
@@ -148,7 +164,7 @@ namespace ServiceStack
                 httpRes.Cookies.AddPermanentCookie(SessionFeature.SessionOptionsKey, strOptions);
 
             req.Items[SessionFeature.SessionOptionsKey] = strOptions;
-            
+
             return existingOptions;
         }
 

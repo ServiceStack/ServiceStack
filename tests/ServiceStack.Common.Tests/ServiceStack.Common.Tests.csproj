@@ -220,6 +220,7 @@
     <Compile Include="ServiceClient.Web\ServiceClientBaseTester.cs" />
     <Compile Include="ServiceClient.Web\ServiceClientBaseTests.cs" />
     <Compile Include="ServiceClient.Web\UrlExtensionsTests.cs" />
+    <Compile Include="SessionExtensionTests.cs" />
     <Compile Include="StreamExtensionsTests.cs" />
     <Compile Include="StringExtensionTests.cs" />
     <Compile Include="ReflectionUtilTests.cs" />
