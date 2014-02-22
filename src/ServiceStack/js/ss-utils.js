@@ -65,7 +65,7 @@
 
         if (errors && errors.length) {
             var fieldMap = { }, fieldLabelMap = {};
-            this.find("input").each(function() {
+            this.find("input,textarea,select,button").each(function() {
                 var $el = $(this);
                 var $prev = $el.prev(), $next = $el.next();
                 var fieldId = this.id || $el.attr("name");
