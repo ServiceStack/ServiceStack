@@ -365,6 +365,11 @@ namespace ServiceStack.Razor
             return this.AppHost.TryResolve<T>();
         }
 
+        public virtual T TryResolve<T>()
+        {
+            return this.AppHost.TryResolve<T>();
+        }
+
         public virtual T ResolveService<T>()
         {
             var service = Get<T>();
