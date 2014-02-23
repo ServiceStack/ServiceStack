@@ -25,6 +25,7 @@ using ServiceStack.MiniProfiler.UI;
 using ServiceStack.Serialization;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
+using ServiceStack.Redis;
 
 namespace ServiceStack
 {
@@ -354,7 +355,8 @@ namespace ServiceStack
             {
                 if (registeredCacheClient == null)
                 {
-                    Container.Register<ICacheClient>(new MemoryCacheClient());
+		    var redisClientsManager = Container.TryResolve<IRedisClientsManager>();
+		    Container.Register<ICacheClient>(redisClientsManager != null ? redisClientsManager.GetCacheClient() : new MemoryCacheClient());
                 }
             }
 
