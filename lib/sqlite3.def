@@ -27,6 +27,7 @@ sqlite3_blob_reopen
 sqlite3_blob_write
 sqlite3_busy_handler
 sqlite3_busy_timeout
+sqlite3_cancel_auto_extension
 sqlite3_changes
 sqlite3_clear_bindings
 sqlite3_close
@@ -164,6 +165,7 @@ sqlite3_step
 sqlite3_stmt_busy
 sqlite3_stmt_readonly
 sqlite3_stmt_status
+sqlite3_strglob
 sqlite3_stricmp
 sqlite3_strnicmp
 sqlite3_table_column_metadata
