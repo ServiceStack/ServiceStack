@@ -326,8 +326,8 @@ namespace ServiceStack
             {
                 if (registeredCacheClient == null)
                 {
-					var redisClientsManager = Container.Resolve<IRedisClientsManager>();
-					Container.Register<ICacheClient>(redisClientsManager != null ? redisClientsManager.GetCacheClient() : new MemoryCacheClient());
+		    var redisClientsManager = Container.TryResolve<IRedisClientsManager>();
+		    Container.Register<ICacheClient>(redisClientsManager != null ? redisClientsManager.GetCacheClient() : new MemoryCacheClient());
                 }
             }
 
