@@ -91,6 +91,8 @@ namespace ServiceStack
 
         public StreamDeserializerDelegate StreamDeserializer { get; set; }
 
+        public string UserAgent { get; set; }
+
         public bool CaptureSynchronizationContext { get; set; }
 
         public bool HandleCallbackOnUiThread { get; set; }
@@ -185,6 +187,7 @@ namespace ServiceStack
                 webRequest.Method = httpMethod;
             }
 
+            webRequest.UserAgent = UserAgent;
             PclExportClient.Instance.AddHeader(webRequest, Headers);
 
             if (this.Credentials != null) webRequest.Credentials = this.Credentials;

@@ -10,6 +10,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Reflection;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 #if !(__IOS__ || SL5)
@@ -78,6 +79,7 @@ namespace ServiceStack
         public INameValueCollection Headers { get; private set; }
 
         public const string DefaultHttpMethod = "POST";
+        public static string DefaultUserAgent = "ServiceStack .NET Client " + Env.ServiceStackVersion;
 
         readonly AsyncServiceClient asyncClient;
 
@@ -99,6 +101,7 @@ namespace ServiceStack
             };
             this.CookieContainer = new CookieContainer();
             this.StoreCookies = true; //leave
+            this.UserAgent = DefaultUserAgent;
 
             asyncClient.HandleCallbackOnUiThread = this.HandleCallbackOnUiThread = true;
             asyncClient.ShareCookiesWithBrowser = this.ShareCookiesWithBrowser = true;
@@ -192,6 +195,20 @@ namespace ServiceStack
         public string SyncReplyBaseUri { get; set; }
 
         public string AsyncOneWayBaseUri { get; set; }
+
+        private string userAgent;
+        public string UserAgent
+        {
+            get
+            {
+                return userAgent;
+            }
+            set
+            {
+                userAgent = value;
+                asyncClient.UserAgent = value;
+            }
+        }
 
         private TimeSpan? timeout;
         public TimeSpan? Timeout
@@ -621,6 +638,7 @@ namespace ServiceStack
             {
                 client.Accept = Accept;
                 client.Method = httpMethod;
+                client.UserAgent = UserAgent;
                 PclExportClient.Instance.AddHeader(client, Headers);
 
 #if !SL5
