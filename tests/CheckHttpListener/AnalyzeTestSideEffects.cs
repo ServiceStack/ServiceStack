@@ -14,9 +14,10 @@ namespace CheckHttpListener
         public static string ListeningOn = "http://localhost:3000/";
     }
 
-    public class Analyze
+    public class Analyze : IReturn<Analyze>
     {
         public int Id { get; set; }
+        public string Type { get; set; }
     }
 
     public class Analyze01 { }
@@ -34,7 +35,7 @@ namespace CheckHttpListener
     {
         public object Any(Analyze request)
         {
-            return request;
+            return Db.Single<Analyze>(q => q.Type == request.Type);
         }
 
         public object Any(Analyze02 request)
@@ -174,7 +175,7 @@ namespace CheckHttpListener
             DbConnection.DropAndCreateTable<Analyze>();
 
             //MockSiteVisitDatabase.DropAndCreateDummyDatabaseSchema(DbConnection);
-            10.Times(i => DbConnection.Insert(new Analyze { Id = i }));
+            10.Times(i => DbConnection.Insert(new Analyze { Id = i, Type = "Type" + i }));
 
             //IdGenerator = AppHost.Container.TryResolve<IDatabaseIdGenerator>();
 
@@ -189,214 +190,222 @@ namespace CheckHttpListener
 
     public class AnalyzeTestSideEffects_ManyTests : AnalyzeTestSideEffectsBase
     {
-        [Test]
-        public void Test00() { }
-        [Test]
-        public void Test01() { }
-        [Test]
-        public void Test02() { }
-        [Test]
-        public void Test03() { }
-        [Test]
-        public void Test04() { }
-        [Test]
-        public void Test05() { }
-        [Test]
-        public void Test06() { }
-        [Test]
-        public void Test07() { }
-        [Test]
-        public void Test08() { }
-        [Test]
-        public void Test09() { }
-        [Test]
-        public void Test10() { }
+        public void Test(int i)
+        {
+            var request = new Analyze { Type = "Type" + i };
+            var response = ServiceClient.Get(request);
+
+            Assert.That(response.Id, Is.EqualTo(i));
+        }
 
         [Test]
-        public void Test11() { }
+        public void Test00() { Test(0); }
         [Test]
-        public void Test12() { }
+        public void Test01() { Test(1); }
         [Test]
-        public void Test13() { }
+        public void Test02() { Test(2); }
         [Test]
-        public void Test14() { }
+        public void Test03() { Test(3); }
         [Test]
-        public void Test15() { }
+        public void Test04() { Test(4); }
         [Test]
-        public void Test16() { }
+        public void Test05() { Test(5); }
         [Test]
-        public void Test17() { }
+        public void Test06() { Test(6); }
         [Test]
-        public void Test18() { }
+        public void Test07() { Test(7); }
         [Test]
-        public void Test19() { }
+        public void Test08() { Test(8); }
         [Test]
-        public void Test20() { }
+        public void Test09() { Test(9); }
+        [Test]
+        public void Test10() { Test(0); }
 
         [Test]
-        public void Test21() { }
+        public void Test11() { Test(1); }
         [Test]
-        public void Test22() { }
+        public void Test12() { Test(2); }
         [Test]
-        public void Test23() { }
+        public void Test13() { Test(3); }
         [Test]
-        public void Test24() { }
+        public void Test14() { Test(4); }
         [Test]
-        public void Test25() { }
+        public void Test15() { Test(5); }
         [Test]
-        public void Test26() { }
+        public void Test16() { Test(6); }
         [Test]
-        public void Test27() { }
+        public void Test17() { Test(7); }
         [Test]
-        public void Test28() { }
+        public void Test18() { Test(8); }
         [Test]
-        public void Test29() { }
+        public void Test19() { Test(9); }
         [Test]
-        public void Test30() { }
+        public void Test20() { Test(0); }
 
         [Test]
-        public void Test31() { }
+        public void Test21() { Test(1); }
         [Test]
-        public void Test32() { }
+        public void Test22() { Test(2); }
         [Test]
-        public void Test33() { }
+        public void Test23() { Test(3); }
         [Test]
-        public void Test34() { }
+        public void Test24() { Test(4); }
         [Test]
-        public void Test35() { }
+        public void Test25() { Test(5); }
         [Test]
-        public void Test36() { }
+        public void Test26() { Test(6); }
         [Test]
-        public void Test37() { }
+        public void Test27() { Test(7); }
         [Test]
-        public void Test38() { }
+        public void Test28() { Test(8); }
         [Test]
-        public void Test39() { }
+        public void Test29() { Test(9); }
         [Test]
-        public void Test40() { }
+        public void Test30() { Test(0); }
 
         [Test]
-        public void Test41() { }
+        public void Test31() { Test(1); }
         [Test]
-        public void Test42() { }
+        public void Test32() { Test(2); }
         [Test]
-        public void Test43() { }
+        public void Test33() { Test(3); }
         [Test]
-        public void Test44() { }
+        public void Test34() { Test(4); }
         [Test]
-        public void Test45() { }
+        public void Test35() { Test(5); }
         [Test]
-        public void Test46() { }
+        public void Test36() { Test(6); }
         [Test]
-        public void Test47() { }
+        public void Test37() { Test(7); }
         [Test]
-        public void Test48() { }
+        public void Test38() { Test(8); }
         [Test]
-        public void Test49() { }
+        public void Test39() { Test(9); }
         [Test]
-        public void Test50() { }
+        public void Test40() { Test(0); }
 
         [Test]
-        public void Test51() { }
+        public void Test41() { Test(1); }
         [Test]
-        public void Test52() { }
+        public void Test42() { Test(2); }
         [Test]
-        public void Test53() { }
+        public void Test43() { Test(3); }
         [Test]
-        public void Test54() { }
+        public void Test44() { Test(4); }
         [Test]
-        public void Test55() { }
+        public void Test45() { Test(5); }
         [Test]
-        public void Test56() { }
+        public void Test46() { Test(6); }
         [Test]
-        public void Test57() { }
+        public void Test47() { Test(7); }
         [Test]
-        public void Test58() { }
+        public void Test48() { Test(8); }
         [Test]
-        public void Test59() { }
+        public void Test49() { Test(9); }
         [Test]
-        public void Test60() { }
+        public void Test50() { Test(0); }
 
         [Test]
-        public void Test61() { }
+        public void Test51() { Test(1); }
         [Test]
-        public void Test62() { }
+        public void Test52() { Test(2); }
         [Test]
-        public void Test63() { }
+        public void Test53() { Test(3); }
         [Test]
-        public void Test64() { }
+        public void Test54() { Test(4); }
         [Test]
-        public void Test65() { }
+        public void Test55() { Test(5); }
         [Test]
-        public void Test66() { }
+        public void Test56() { Test(6); }
         [Test]
-        public void Test67() { }
+        public void Test57() { Test(7); }
         [Test]
-        public void Test68() { }
+        public void Test58() { Test(8); }
         [Test]
-        public void Test69() { }
+        public void Test59() { Test(9); }
         [Test]
-        public void Test70() { }
+        public void Test60() { Test(0); }
 
         [Test]
-        public void Test71() { }
+        public void Test61() { Test(1); }
         [Test]
-        public void Test72() { }
+        public void Test62() { Test(2); }
         [Test]
-        public void Test73() { }
+        public void Test63() { Test(3); }
         [Test]
-        public void Test74() { }
+        public void Test64() { Test(4); }
         [Test]
-        public void Test75() { }
+        public void Test65() { Test(5); }
         [Test]
-        public void Test76() { }
+        public void Test66() { Test(6); }
         [Test]
-        public void Test77() { }
+        public void Test67() { Test(7); }
         [Test]
-        public void Test78() { }
+        public void Test68() { Test(8); }
         [Test]
-        public void Test79() { }
+        public void Test69() { Test(9); }
         [Test]
-        public void Test80() { }
+        public void Test70() { Test(0); }
 
         [Test]
-        public void Test81() { }
+        public void Test71() { Test(1); }
         [Test]
-        public void Test82() { }
+        public void Test72() { Test(2); }
         [Test]
-        public void Test83() { }
+        public void Test73() { Test(3); }
         [Test]
-        public void Test84() { }
+        public void Test74() { Test(4); }
         [Test]
-        public void Test85() { }
+        public void Test75() { Test(5); }
         [Test]
-        public void Test86() { }
+        public void Test76() { Test(6); }
         [Test]
-        public void Test87() { }
+        public void Test77() { Test(7); }
         [Test]
-        public void Test88() { }
+        public void Test78() { Test(8); }
         [Test]
-        public void Test89() { }
+        public void Test79() { Test(9); }
         [Test]
-        public void Test90() { }
+        public void Test80() { Test(0); }
 
         [Test]
-        public void Test91() { }
+        public void Test81() { Test(1); }
         [Test]
-        public void Test92() { }
+        public void Test82() { Test(2); }
         [Test]
-        public void Test93() { }
+        public void Test83() { Test(3); }
         [Test]
-        public void Test94() { }
+        public void Test84() { Test(4); }
         [Test]
-        public void Test95() { }
+        public void Test85() { Test(5); }
         [Test]
-        public void Test96() { }
+        public void Test86() { Test(6); }
         [Test]
-        public void Test97() { }
+        public void Test87() { Test(7); }
         [Test]
-        public void Test98() { }
+        public void Test88() { Test(8); }
         [Test]
-        public void Test99() { }
+        public void Test89() { Test(9); }
+        [Test]
+        public void Test90() { Test(0); }
+
+        [Test]
+        public void Test91() { Test(1); }
+        [Test]
+        public void Test92() { Test(2); }
+        [Test]
+        public void Test93() { Test(3); }
+        [Test]
+        public void Test94() { Test(4); }
+        [Test]
+        public void Test95() { Test(5); }
+        [Test]
+        public void Test96() { Test(6); }
+        [Test]
+        public void Test97() { Test(7); }
+        [Test]
+        public void Test98() { Test(8); }
+        [Test]
+        public void Test99() { Test(9); }
     }
 }
