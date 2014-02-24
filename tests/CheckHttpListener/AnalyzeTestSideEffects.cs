@@ -19,9 +19,65 @@ namespace CheckHttpListener
         public int Id { get; set; }
     }
 
+    public class Analyze01 { }
+    public class Analyze02 { }
+    public class Analyze03 { }
+    public class Analyze04 { }
+    public class Analyze05 { }
+    public class Analyze06 { }
+    public class Analyze07 { }
+    public class Analyze08 { }
+    public class Analyze09 { }
+    public class Analyze10 { }
+
     public class AnalyzeServices : Service
     {
         public object Any(Analyze request)
+        {
+            return request;
+        }
+
+        public object Any(Analyze02 request)
+        {
+            return request;
+        }
+
+        public object Any(Analyze03 request)
+        {
+            return request;
+        }
+
+        public object Any(Analyze04 request)
+        {
+            return request;
+        }
+
+        public object Any(Analyze05 request)
+        {
+            return request;
+        }
+
+        public object Any(Analyze06 request)
+        {
+            return request;
+        }
+
+        public object Any(Analyze07 request)
+        {
+            return request;
+        }
+
+        public object Any(Analyze08 request)
+        {
+            return request;
+        }
+
+        public object Any(Analyze09 request)
+        {
+            return request;
+        }
+
+        public object Any(Analyze10 request)
         {
             return request;
         }
