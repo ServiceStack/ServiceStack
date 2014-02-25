@@ -187,8 +187,9 @@ namespace ServiceStack
                 webRequest.Method = httpMethod;
             }
 
-            webRequest.UserAgent = UserAgent;
             PclExportClient.Instance.AddHeader(webRequest, Headers);
+
+            PclExport.Instance.Config(webRequest, userAgent: UserAgent);
 
             if (this.Credentials != null) webRequest.Credentials = this.Credentials;
             if (this.AlwaysSendBasicAuthHeader) webRequest.AddBasicAuth(this.UserName, this.Password);

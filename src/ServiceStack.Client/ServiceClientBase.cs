@@ -638,7 +638,6 @@ namespace ServiceStack
             {
                 client.Accept = Accept;
                 client.Method = httpMethod;
-                client.UserAgent = UserAgent;
                 PclExportClient.Instance.AddHeader(client, Headers);
 
 #if !SL5
@@ -647,7 +646,8 @@ namespace ServiceStack
                 PclExport.Instance.Config(client,
                     allowAutoRedirect: AllowAutoRedirect,
                     timeout: this.Timeout,
-                    readWriteTimeout: ReadWriteTimeout);
+                    readWriteTimeout: ReadWriteTimeout,
+                    userAgent: UserAgent);
 
                 if (this.credentials != null) client.Credentials = this.credentials;
 
