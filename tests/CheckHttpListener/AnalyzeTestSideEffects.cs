@@ -14,21 +14,34 @@ namespace CheckHttpListener
         public static string ListeningOn = "http://localhost:3000/";
     }
 
+    [Route("/analyze")]
+    [Route("/analyze/{Id}")]
+    [Route("/analyze/{Id}/{Type}")]
     public class Analyze : IReturn<Analyze>
     {
         public int Id { get; set; }
         public string Type { get; set; }
     }
 
+    [Route("/analyze-01")]
     public class Analyze01 { }
+    [Route("/analyze-02")]
     public class Analyze02 { }
+    [Route("/analyze-03")]
     public class Analyze03 { }
+    [Route("/analyze-04")]
     public class Analyze04 { }
+    [Route("/analyze-05")]
     public class Analyze05 { }
+    [Route("/analyze-06")]
     public class Analyze06 { }
+    [Route("/analyze-07")]
     public class Analyze07 { }
+    [Route("/analyze-08")]
     public class Analyze08 { }
+    [Route("/analyze-09")]
     public class Analyze09 { }
+    [Route("/analyze-10")]
     public class Analyze10 { }
 
     public class AnalyzeServices : Service
