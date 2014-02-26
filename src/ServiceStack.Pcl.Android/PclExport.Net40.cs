@@ -280,6 +280,98 @@ namespace ServiceStack
             }
         }
 
+        private static readonly MethodInfo setFieldMethod =
+            typeof(Net40PclExport).GetStaticMethod("SetField");
+
+        internal static void SetField<TValue>(ref TValue field, TValue newValue)
+        {
+            field = newValue;
+        }
+        
+        public override PropertySetterDelegate GetFieldSetterFn(FieldInfo fieldInfo)
+        {
+            if (!SupportsExpression)
+                return base.GetFieldSetterFn(fieldInfo);
+
+            var fieldDeclaringType = fieldInfo.DeclaringType;
+
+            var sourceParameter = Expression.Parameter(typeof(object), "source");
+            var valueParameter = Expression.Parameter(typeof(object), "value");
+
+            var sourceExpression = this.GetCastOrConvertExpression(sourceParameter, fieldDeclaringType);
+
+            var fieldExpression = Expression.Field(sourceExpression, fieldInfo);
+
+            var valueExpression = this.GetCastOrConvertExpression(valueParameter, fieldExpression.Type);
+
+            var genericSetFieldMethodInfo = setFieldMethod.MakeGenericMethod(fieldExpression.Type);
+
+            var setFieldMethodCallExpression = Expression.Call(
+                null, genericSetFieldMethodInfo, fieldExpression, valueExpression);
+
+            var setterFn = Expression.Lambda<PropertySetterDelegate>(
+                setFieldMethodCallExpression, sourceParameter, valueParameter).Compile();
+
+            return setterFn;
+        }
+
+        public override PropertyGetterDelegate GetFieldGetterFn(FieldInfo fieldInfo)
+        {
+            if (!SupportsExpression)
+                return base.GetFieldGetterFn(fieldInfo);
+
+            try
+            {
+                var fieldDeclaringType = fieldInfo.DeclaringType;
+
+                var oInstanceParam = Expression.Parameter(typeof(object), "source");
+                var instanceParam = this.GetCastOrConvertExpression(oInstanceParam, fieldDeclaringType);
+
+                var exprCallFieldGetFn = Expression.Field(instanceParam, fieldInfo);
+                //var oExprCallFieldGetFn = this.GetCastOrConvertExpression(exprCallFieldGetFn, typeof(object));
+                var oExprCallFieldGetFn = Expression.Convert(exprCallFieldGetFn, typeof(object));
+
+                var fieldGetterFn = Expression.Lambda<PropertyGetterDelegate>
+                    (
+                        oExprCallFieldGetFn, 
+                        oInstanceParam
+                    )
+                    .Compile();
+
+                return fieldGetterFn;
+            }
+            catch (Exception ex)
+            {
+                Tracer.Instance.WriteError(ex);
+                throw;
+            }
+        }
+
+        private Expression GetCastOrConvertExpression(Expression expression, Type targetType)
+        {
+            Expression result;
+            var expressionType = expression.Type;
+
+            if (targetType.IsAssignableFrom(expressionType))
+            {
+                result = expression;
+            }
+            else
+            {
+                // Check if we can use the as operator for casting or if we must use the convert method
+                if (targetType.IsValueType && !targetType.IsNullableType())
+                {
+                    result = Expression.Convert(expression, targetType);
+                }
+                else
+                {
+                    result = Expression.TypeAs(expression, targetType);
+                }
+            }
+
+            return result;
+        }
+
         public override string ToXsdDateTimeString(DateTime dateTime)
         {
             return XmlConvert.ToString(dateTime.ToStableUniversalTime(), XmlDateTimeSerializationMode.Utc);
@@ -371,7 +463,7 @@ namespace ServiceStack
 
         public override void VerifyInAssembly(Type accessType, string assemblyName)
         {
-            if (accessType.Assembly.ManifestModule.Name != assemblyName) //might get merged/mangled on alt platforms
+            if (!assemblyName.EqualsIgnoreCase(accessType.Assembly.ManifestModule.Name)) //might get merged/mangled on alt platforms
                 throw new LicenseException(LicenseUtils.ErrorMessages.UnauthorizedAccessRequest);
         }
 
@@ -500,6 +592,12 @@ namespace ServiceStack
     }
 
 #if __IOS__
+    [MonoTouch.Foundation.Preserve(AllMembers = true)]
+    internal class Poco
+    {
+        public string Dummy { get; set; }
+    }
+
     public class IosPclExport : Net40PclExport
     {
         public static new IosPclExport Provider = new IosPclExport();
@@ -524,6 +622,219 @@ namespace ServiceStack
             // MonoTouch throws NotSupportedException when setting System.Net.WebConnectionStream.Position
             // Not sure if the stream is used later though, so may have to copy to MemoryStream and
             // pass that around instead after this point?
+        }
+
+        /// <summary>
+        /// Provide hint to IOS AOT compiler to pre-compile generic classes for all your DTOs.
+        /// Just needs to be called once in a static constructor.
+        /// </summary>
+        [MonoTouch.Foundation.Preserve]
+        public static void InitForAot()
+        {
+        }
+
+        [MonoTouch.Foundation.Preserve]
+        public override void RegisterForAot()
+        {
+            RegisterTypeForAot<Poco>();
+
+            RegisterElement<Poco, string>();
+
+            RegisterElement<Poco, bool>();
+            RegisterElement<Poco, char>();
+            RegisterElement<Poco, byte>();
+            RegisterElement<Poco, sbyte>();
+            RegisterElement<Poco, short>();
+            RegisterElement<Poco, ushort>();
+            RegisterElement<Poco, int>();
+            RegisterElement<Poco, uint>();
+
+            RegisterElement<Poco, long>();
+            RegisterElement<Poco, ulong>();
+            RegisterElement<Poco, float>();
+            RegisterElement<Poco, double>();
+            RegisterElement<Poco, decimal>();
+
+            RegisterElement<Poco, bool?>();
+            RegisterElement<Poco, char?>();
+            RegisterElement<Poco, byte?>();
+            RegisterElement<Poco, sbyte?>();
+            RegisterElement<Poco, short?>();
+            RegisterElement<Poco, ushort?>();
+            RegisterElement<Poco, int?>();
+            RegisterElement<Poco, uint?>();
+            RegisterElement<Poco, long?>();
+            RegisterElement<Poco, ulong?>();
+            RegisterElement<Poco, float?>();
+            RegisterElement<Poco, double?>();
+            RegisterElement<Poco, decimal?>();
+
+            //RegisterElement<Poco, JsonValue>();
+
+            RegisterTypeForAot<DayOfWeek>(); // used by DateTime
+
+            // register built in structs
+            RegisterTypeForAot<Guid>();
+            RegisterTypeForAot<TimeSpan>();
+            RegisterTypeForAot<DateTime>();
+            RegisterTypeForAot<DateTime?>();
+            RegisterTypeForAot<TimeSpan?>();
+            RegisterTypeForAot<Guid?>();
+        }
+
+        [MonoTouch.Foundation.Preserve]
+        public static void RegisterTypeForAot<T>()
+        {
+            AotConfig.RegisterSerializers<T>();
+        }
+
+        [MonoTouch.Foundation.Preserve]
+        static void RegisterQueryStringWriter()
+        {
+            var i = 0;
+            if (QueryStringWriter<Poco>.WriteFn() != null) i++;
+        }
+
+        [MonoTouch.Foundation.Preserve]
+        internal static int RegisterElement<T, TElement>()
+        {
+            var i = 0;
+            i += AotConfig.RegisterSerializers<TElement>();
+            AotConfig.RegisterElement<T, TElement, JsonTypeSerializer>();
+            AotConfig.RegisterElement<T, TElement, Text.Jsv.JsvTypeSerializer>();
+            return i;
+        }
+
+        ///<summary>
+        /// Class contains Ahead-of-Time (AOT) explicit class declarations which is used only to workaround "-aot-only" exceptions occured on device only. 
+        /// </summary>			
+        [MonoTouch.Foundation.Preserve(AllMembers = true)]
+        internal class AotConfig
+        {
+            internal static JsReader<JsonTypeSerializer> jsonReader;
+            internal static JsWriter<JsonTypeSerializer> jsonWriter;
+            internal static JsReader<Text.Jsv.JsvTypeSerializer> jsvReader;
+            internal static JsWriter<Text.Jsv.JsvTypeSerializer> jsvWriter;
+            internal static JsonTypeSerializer jsonSerializer;
+            internal static Text.Jsv.JsvTypeSerializer jsvSerializer;
+
+            static AotConfig()
+            {
+                jsonSerializer = new JsonTypeSerializer();
+                jsvSerializer = new Text.Jsv.JsvTypeSerializer();
+                jsonReader = new JsReader<JsonTypeSerializer>();
+                jsonWriter = new JsWriter<JsonTypeSerializer>();
+                jsvReader = new JsReader<Text.Jsv.JsvTypeSerializer>();
+                jsvWriter = new JsWriter<Text.Jsv.JsvTypeSerializer>();
+            }
+
+            internal static int RegisterSerializers<T>()
+            {
+                var i = 0;
+                i += Register<T, JsonTypeSerializer>();
+                if (jsonSerializer.GetParseFn<T>() != null) i++;
+                if (jsonSerializer.GetWriteFn<T>() != null) i++;
+                if (jsonReader.GetParseFn<T>() != null) i++;
+                if (jsonWriter.GetWriteFn<T>() != null) i++;
+
+                i += Register<T, Text.Jsv.JsvTypeSerializer>();
+                if (jsvSerializer.GetParseFn<T>() != null) i++;
+                if (jsvSerializer.GetWriteFn<T>() != null) i++;
+                if (jsvReader.GetParseFn<T>() != null) i++;
+                if (jsvWriter.GetWriteFn<T>() != null) i++;
+
+                //RegisterCsvSerializer<T>();
+                RegisterQueryStringWriter();
+                return i;
+            }
+
+            internal static void RegisterCsvSerializer<T>()
+            {
+                CsvSerializer<T>.WriteFn();
+                CsvSerializer<T>.WriteObject(null, null);
+                CsvWriter<T>.Write(null, default(IEnumerable<T>));
+                CsvWriter<T>.WriteRow(null, default(T));
+            }
+
+            public static ParseStringDelegate GetParseFn(Type type)
+            {
+                var parseFn = JsonTypeSerializer.Instance.GetParseFn(type);
+                return parseFn;
+            }
+
+            internal static int Register<T, TSerializer>() where TSerializer : ITypeSerializer
+            {
+                var i = 0;
+
+                if (JsonWriter<T>.WriteFn() != null) i++;
+                if (JsonWriter.Instance.GetWriteFn<T>() != null) i++;
+                if (JsonReader.Instance.GetParseFn<T>() != null) i++;
+                if (JsonReader<T>.Parse(null) != null) i++;
+                if (JsonReader<T>.GetParseFn() != null) i++;
+                //if (JsWriter.GetTypeSerializer<JsonTypeSerializer>().GetWriteFn<T>() != null) i++;
+                if (new List<T>() != null) i++;
+                if (new T[0] != null) i++;
+
+                JsConfig<T>.ExcludeTypeInfo = false;
+
+                if (JsConfig<T>.OnDeserializedFn != null) i++;
+                if (JsConfig<T>.HasDeserializeFn) i++;
+                if (JsConfig<T>.SerializeFn != null) i++;
+                if (JsConfig<T>.DeSerializeFn != null) i++;
+                //JsConfig<T>.SerializeFn = arg => "";
+                //JsConfig<T>.DeSerializeFn = arg => default(T);
+                if (TypeConfig<T>.Properties != null) i++;
+
+/*
+                if (WriteType<T, TSerializer>.Write != null) i++;
+                if (WriteType<object, TSerializer>.Write != null) i++;
+				
+                if (DeserializeBuiltin<T>.Parse != null) i++;
+                if (DeserializeArray<T[], TSerializer>.Parse != null) i++;
+                DeserializeType<TSerializer>.ExtractType(null);
+                DeserializeArrayWithElements<T, TSerializer>.ParseGenericArray(null, null);
+                DeserializeCollection<TSerializer>.ParseCollection<T>(null, null, null);
+                DeserializeListWithElements<T, TSerializer>.ParseGenericList(null, null, null);
+
+                SpecializedQueueElements<T>.ConvertToQueue(null);
+                SpecializedQueueElements<T>.ConvertToStack(null);
+*/
+
+                WriteListsOfElements<T, TSerializer>.WriteList(null, null);
+                WriteListsOfElements<T, TSerializer>.WriteIList(null, null);
+                WriteListsOfElements<T, TSerializer>.WriteEnumerable(null, null);
+                WriteListsOfElements<T, TSerializer>.WriteListValueType(null, null);
+                WriteListsOfElements<T, TSerializer>.WriteIListValueType(null, null);
+                WriteListsOfElements<T, TSerializer>.WriteGenericArrayValueType(null, null);
+                WriteListsOfElements<T, TSerializer>.WriteArray(null, null);
+
+                TranslateListWithElements<T>.LateBoundTranslateToGenericICollection(null, null);
+                TranslateListWithConvertibleElements<T, T>.LateBoundTranslateToGenericICollection(null, null);
+
+                QueryStringWriter<T>.WriteObject(null, null);
+                return i;
+            }
+
+            internal static void RegisterElement<T, TElement, TSerializer>() where TSerializer : ITypeSerializer
+            {
+                DeserializeDictionary<TSerializer>.ParseDictionary<T, TElement>(null, null, null, null);
+                DeserializeDictionary<TSerializer>.ParseDictionary<TElement, T>(null, null, null, null);
+
+                ToStringDictionaryMethods<T, TElement, TSerializer>.WriteIDictionary(null, null, null, null);
+                ToStringDictionaryMethods<TElement, T, TSerializer>.WriteIDictionary(null, null, null, null);
+
+                // Include List deserialisations from the Register<> method above.  This solves issue where List<Guid> properties on responses deserialise to null.
+                // No idea why this is happening because there is no visible exception raised.  Suspect IOS is swallowing an AOT exception somewhere.
+                DeserializeArrayWithElements<TElement, TSerializer>.ParseGenericArray(null, null);
+                DeserializeListWithElements<TElement, TSerializer>.ParseGenericList(null, null, null);
+
+                // Cannot use the line below for some unknown reason - when trying to compile to run on device, mtouch bombs during native code compile.
+                // Something about this line or its inner workings is offensive to mtouch. Luckily this was not needed for my List<Guide> issue.
+                // DeserializeCollection<JsonTypeSerializer>.ParseCollection<TElement>(null, null, null);
+
+                TranslateListWithElements<TElement>.LateBoundTranslateToGenericICollection(null, typeof(List<TElement>));
+                TranslateListWithConvertibleElements<TElement, TElement>.LateBoundTranslateToGenericICollection(null, typeof(List<TElement>));
+            }
         }
     }
 #endif
