@@ -31,11 +31,11 @@ namespace ServiceStack.FluentValidation
     {
         public IEnumerable<ValidationFailure> Errors { get; private set; }
 
-        public ValidationException(IEnumerable<ValidationFailure> errors) : base(BuildErrorMesage(errors)) {
+        public ValidationException(IEnumerable<ValidationFailure> errors) : base(BuildErrorMessage(errors)) {
             Errors = errors;
         }
 
-        private static string BuildErrorMesage(IEnumerable<ValidationFailure> errors) {
+        private static string BuildErrorMessage(IEnumerable<ValidationFailure> errors) {
             var arr = errors.Select(x => "\r\n -- " + x.ErrorMessage).ToArray();
             return "Validation failed: " + string.Join("", arr);
         }
