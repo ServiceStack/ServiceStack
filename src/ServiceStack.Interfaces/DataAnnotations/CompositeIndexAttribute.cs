@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ServiceStack.DataAnnotations
 {
-	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
     public class CompositeIndexAttribute : AttributeBase
 	{
 		public CompositeIndexAttribute()

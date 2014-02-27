@@ -2,7 +2,7 @@
 
 namespace ServiceStack.DataAnnotations
 {
-    [AttributeUsage(AttributeTargets.Class)]
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public class PreCreateTableAttribute : AttributeBase
     {
         public string Sql { get; set; }
