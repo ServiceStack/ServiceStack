@@ -117,6 +117,7 @@ namespace ServiceStack
         /// </summary>
         public int Priority { get; set; }
 
+#if !(NETFX_CORE || WP || SL5 || PCL)
         public override object TypeId
         {
             get
@@ -125,6 +126,7 @@ namespace ServiceStack
                     + (Verbs ?? "");
             }
         }
+#endif
     }
 
 
