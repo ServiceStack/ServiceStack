@@ -116,6 +116,15 @@ namespace ServiceStack
         /// i.e. Priorities below 0 are auto-generated have less precedence.
         /// </summary>
         public int Priority { get; set; }
+
+        public override object TypeId
+        {
+            get
+            {
+                return (Path ?? "")
+                    + (Verbs ?? "");
+            }
+        }
     }
 
 
