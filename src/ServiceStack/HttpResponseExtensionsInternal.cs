@@ -242,16 +242,13 @@ namespace ServiceStack
                 }
                 catch (Exception originalEx)
                 {
-                    if (!HostContext.Config.WriteErrorsToResponse) return originalEx.AsTaskException<bool>();
+                    HostContext.RaiseUncaughtException(request, response, request.OperationName, originalEx);
+
+                    if (!HostContext.Config.WriteErrorsToResponse) 
+                        return originalEx.AsTaskException<bool>();
 
                     var errorMessage = String.Format(
                     "Error occured while Processing Request: [{0}] {1}", originalEx.GetType().GetOperationName(), originalEx.Message);
-
-                    Log.Error(errorMessage, originalEx);
-
-                    var operationName = result != null
-                        ? result.GetType().GetOperationName().Replace("Response", "")
-                        : "OperationName";
 
                     try
                     {
@@ -260,7 +257,7 @@ namespace ServiceStack
                             response.WriteErrorToResponse(
                                 request,
                                 defaultContentType,
-                                operationName,
+                                request.OperationName,
                                 errorMessage,
                                 originalEx,
                                 (int)HttpStatusCode.InternalServerError);
