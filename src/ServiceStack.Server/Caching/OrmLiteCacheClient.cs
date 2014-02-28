@@ -28,13 +28,17 @@ namespace ServiceStack.Caching
         public bool Remove(string key)
         {
             using (var db = DbFactory.Open())
+            {
                 return db.DeleteById<CacheEntry>(key) > 0;
+            }
         }
 
         public void RemoveAll(IEnumerable<string> keys)
         {
             using (var db = DbFactory.Open())
+            {
                 db.DeleteByIds<CacheEntry>(keys);
+            }
         }
 
         public T Get<T>(string key)
@@ -114,7 +118,6 @@ namespace ServiceStack.Caching
                 {
                     db.Insert(CreateEntry(key, db.Serialize(value)));
                 }
-
                 return true;
             }
             catch (Exception)
@@ -128,13 +131,13 @@ namespace ServiceStack.Caching
             using (var db = DbFactory.Open())
             {
                 var exists = db.UpdateOnly(new CacheEntry
-                {
-                    Id = key,
-                    Data = db.Serialize(value),
-                    ModifiedDate = DateTime.UtcNow,
-                },
-                    q => new { q.Data, q.ModifiedDate },
-                    q => q.Id == key) == 1;
+                    {
+                        Id = key,
+                        Data = db.Serialize(value),
+                        ModifiedDate = DateTime.UtcNow,
+                    },
+                    onlyFields: q => new { q.Data, q.ModifiedDate },
+                    where: q => q.Id == key) == 1;
 
                 if (!exists)
                 {
@@ -150,13 +153,13 @@ namespace ServiceStack.Caching
             using (var db = DbFactory.Open())
             {
                 var exists = db.UpdateOnly(new CacheEntry
-                {
-                    Id = key,
-                    Data = db.Serialize(value),
-                    ModifiedDate = DateTime.UtcNow,
-                },
-                    q => new { q.Data, q.ModifiedDate },
-                    q => q.Id == key) == 1;
+                    {
+                        Id = key,
+                        Data = db.Serialize(value),
+                        ModifiedDate = DateTime.UtcNow,
+                    },
+                    onlyFields: q => new { q.Data, q.ModifiedDate },
+                    where: q => q.Id == key) == 1;
 
                 if (!exists)
                 {
@@ -194,8 +197,8 @@ namespace ServiceStack.Caching
                         ExpiryDate = expiresAt,
                         ModifiedDate = DateTime.UtcNow,
                     },
-                    q => new { q.Data, ExpiredDate = q.ExpiryDate, q.ModifiedDate },
-                    q => q.Id == key) == 1;
+                    onlyFields: q => new { q.Data, ExpiredDate = q.ExpiryDate, q.ModifiedDate },
+                    where: q => q.Id == key) == 1;
 
                 if (!exists)
                 {
@@ -217,8 +220,8 @@ namespace ServiceStack.Caching
                         ExpiryDate = expiresAt,
                         ModifiedDate = DateTime.UtcNow,
                     },
-                    q => new {q.Data, ExpiredDate = q.ExpiryDate, q.ModifiedDate},
-                    q => q.Id == key) == 1;
+                    onlyFields: q => new { q.Data, ExpiredDate = q.ExpiryDate, q.ModifiedDate },
+                    where: q => q.Id == key) == 1;
 
                 if (!exists)
                 {
@@ -257,8 +260,8 @@ namespace ServiceStack.Caching
                         ExpiryDate = DateTime.UtcNow.Add(expiresIn),
                         ModifiedDate = DateTime.UtcNow,
                     },
-                    q => new { q.Data, ExpiredDate = q.ExpiryDate, q.ModifiedDate },
-                    q => q.Id == key) == 1;
+                    onlyFields: q => new { q.Data, ExpiredDate = q.ExpiryDate, q.ModifiedDate },
+                    where: q => q.Id == key) == 1;
 
                 if (!exists)
                 {
@@ -274,14 +277,14 @@ namespace ServiceStack.Caching
             using (var db = DbFactory.Open())
             {
                 var exists = db.UpdateOnly(new CacheEntry
-                {
-                    Id = key,
-                    Data = db.Serialize(value),
-                    ExpiryDate = DateTime.UtcNow.Add(expiresIn),
-                    ModifiedDate = DateTime.UtcNow,
-                },
-                    q => new { q.Data, ExpiredDate = q.ExpiryDate, q.ModifiedDate },
-                    q => q.Id == key) == 1;
+                    {
+                        Id = key,
+                        Data = db.Serialize(value),
+                        ExpiryDate = DateTime.UtcNow.Add(expiresIn),
+                        ModifiedDate = DateTime.UtcNow,
+                    },
+                    onlyFields: q => new { q.Data, ExpiredDate = q.ExpiryDate, q.ModifiedDate },
+                    where: q => q.Id == key) == 1;
 
                 if (!exists)
                 {

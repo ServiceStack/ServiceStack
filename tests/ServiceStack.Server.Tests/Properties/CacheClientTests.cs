@@ -41,7 +41,7 @@ namespace ServiceStack.Server.Tests.Properties
         }
     }
 
-    public class OrmLiteCacheClientTests : CacheClientTestsBase
+    public class SqlServerOrmLiteCacheClientTests : CacheClientTestsBase
     {
         public override ICacheClient CreateClient()
         {
@@ -50,12 +50,27 @@ namespace ServiceStack.Server.Tests.Properties
                 DbFactory = new OrmLiteConnectionFactory(
                     Config.SqlServerBuildDb, SqlServerDialect.Provider)
             };
-            
+
             //using (var db = cache.DbFactory.Open())
             //{
             //    db.DropTable<CacheEntry>();
             //}
 
+            cache.InitSchema();
+
+            return cache;
+        }
+    }
+
+    public class SqliteOrmLiteCacheClientTests : CacheClientTestsBase
+    {
+        public override ICacheClient CreateClient()
+        {
+            var cache = new OrmLiteCacheClient
+            {
+                DbFactory = new OrmLiteConnectionFactory(
+                    ":memory:", SqliteDialect.Provider)
+            };
             cache.InitSchema();
 
             return cache;
@@ -69,6 +84,14 @@ namespace ServiceStack.Server.Tests.Properties
             return new MemoryCacheClient();
         }
     }
+
+    //public class RedisCacheClientTests : CacheClientTestsBase
+    //{
+    //    public override ICacheClient CreateClient()
+    //    {
+    //        return new RedisClient(Environment.GetEnvironmentVariable("CI_HOST"));
+    //    }
+    //}
 
     [TestFixture]
     public abstract class CacheClientTestsBase
