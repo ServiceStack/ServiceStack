@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Funq;
 using NUnit.Framework;
 using ServiceStack;
+using ServiceStack.Caching;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
@@ -105,6 +106,21 @@ namespace CheckHttpListener
         {
             container.Register<IDbConnectionFactory>(c =>
                 new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
+
+            container.RegisterAs<OrmLiteCacheClient, ICacheClient>();
+
+            container.Resolve<ICacheClient>().InitSchema();
+
+            using (var cache = container.Resolve<ICacheClient>())
+            {
+                cache.Set("key:test", new Analyze { Id = 1 });
+            }
+
+            using (var cache = container.Resolve<ICacheClient>())
+            {
+                var test = cache.Get<Analyze>("key:test");
+                test.Id.PrintDump();
+            }
         }
     }
 
