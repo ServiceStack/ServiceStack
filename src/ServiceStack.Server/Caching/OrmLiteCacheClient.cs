@@ -346,7 +346,7 @@ namespace ServiceStack.Caching
             var expired = results.RemoveAll(x => x.ExpiryDate != null && DateTime.UtcNow > x.ExpiryDate);
             if (expired > 0)
             {
-                db.Delete<CacheEntry>(q => q.ExpiryDate > DateTime.UtcNow);
+                db.Delete<CacheEntry>(q => DateTime.UtcNow > q.ExpiryDate);
             }
 
             return results;
