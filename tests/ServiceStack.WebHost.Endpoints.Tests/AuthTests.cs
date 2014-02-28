@@ -9,6 +9,8 @@ using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Common.Tests.ServiceClient.Web;
+using ServiceStack.Data;
+using ServiceStack.OrmLite;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
@@ -274,11 +276,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             : AppHostHttpListenerBase
         {
             private readonly string webHostUrl;
+            private Action<Container> configureFn;
 
-            public AuthAppHostHttpListener(string webHostUrl)
+            public AuthAppHostHttpListener(string webHostUrl, Action<Container> configureFn=null)
                 : base("Validation Tests", typeof(CustomerService).Assembly)
             {
                 this.webHostUrl = webHostUrl;
+                this.configureFn = configureFn;
             }
 
             private InMemoryAuthRepository userRep;
@@ -294,9 +298,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         new CustomAuthProvider()
 					}, "~/" + LoginUrl));
 
-                container.Register<ICacheClient>(new MemoryCacheClient());
+                container.Register(new MemoryCacheClient());
                 userRep = new InMemoryAuthRepository();
                 container.Register<IAuthRepository>(userRep);
+
+                if (configureFn != null)
+                {
+                    configureFn(container);
+                }
 
                 CreateUser(1, UserName, null, Password, new List<string> { "TheRole" }, new List<string> { "ThePermission" });
                 CreateUser(2, UserNameWithSessionRedirect, null, PasswordForSessionRedirect);
@@ -337,7 +346,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [TestFixtureSetUp]
         public void OnTestFixtureSetUp()
         {
-            appHost = new AuthAppHostHttpListener(WebHostUrl);
+            appHost = new AuthAppHostHttpListener(WebHostUrl, Configure);
             appHost.Init();
             appHost.Start(ListeningOn);
         }
@@ -346,6 +355,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();
+        }
+
+        public virtual void Configure(Container container)
+        {
         }
 
         private static void FailOnAsyncError<T>(T response, Exception ex)
@@ -1068,5 +1081,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         protected override string VirtualDirectory { get { return "somevirtualdirectory"; } }
         protected override string ListeningOn { get { return "http://localhost:82/" + VirtualDirectory + "/"; } }
         protected override string WebHostUrl { get { return "http://mydomain.com/" + VirtualDirectory; } }
+    }
+
+    public class AuthTestsWithinOrmLiteCache : AuthTests
+    {
+        protected override string VirtualDirectory { get { return "somevirtualdirectory"; } }
+        protected override string ListeningOn { get { return "http://localhost:82/" + VirtualDirectory + "/"; } }
+        protected override string WebHostUrl { get { return "http://mydomain.com/" + VirtualDirectory; } }
+
+        public override void Configure(Container container)
+        {
+            container.Register<IDbConnectionFactory>(c =>
+                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
+
+            container.RegisterAs<OrmLiteCacheClient, ICacheClient>();
+            container.Resolve<ICacheClient>().InitSchema();
+        }
     }
 }
