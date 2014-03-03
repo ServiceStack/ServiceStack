@@ -85,13 +85,13 @@ namespace ServiceStack.Server.Tests.Properties
         }
     }
 
-    //public class RedisCacheClientTests : CacheClientTestsBase
-    //{
-    //    public override ICacheClient CreateClient()
-    //    {
-    //        return new RedisClient(Environment.GetEnvironmentVariable("CI_HOST"));
-    //    }
-    //}
+    public class RedisCacheClientTests : CacheClientTestsBase
+    {
+        public override ICacheClient CreateClient()
+        {
+            return new RedisClient(Environment.GetEnvironmentVariable("CI_HOST"));
+        }
+    }
 
     [TestFixture]
     public abstract class CacheClientTestsBase
@@ -196,7 +196,7 @@ namespace ServiceStack.Server.Tests.Properties
 
             Assert.That(Cache.Get<Item>(key), Is.Null);
 
-            Cache.Set(key, new Item { Id = 1, Name = "Foo" }, DateTime.UtcNow.AddMilliseconds(100));
+            Cache.Set(key, new Item { Id = 1, Name = "Foo" }, DateTime.UtcNow.AddMilliseconds(200));
             Assert.That(Cache.Get<Item>(key), Is.Not.Null);
             Thread.Sleep(200);
 
