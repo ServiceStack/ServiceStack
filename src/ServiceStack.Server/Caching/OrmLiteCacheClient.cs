@@ -5,16 +5,18 @@ using System.Linq;
 using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
+using ServiceStack.Text;
 
 namespace ServiceStack.Caching
 {
     public class OrmLiteCacheClient : ICacheClient, IRequiresSchema
     {
-        CacheEntry CreateEntry(string id, string data=null, 
-            DateTime? created=null, DateTime? expires=null)
+        CacheEntry CreateEntry(string id, string data = null,
+            DateTime? created = null, DateTime? expires = null)
         {
             var createdDate = created ?? DateTime.UtcNow;
-            return new CacheEntry {
+            return new CacheEntry
+            {
                 Id = id,
                 Data = data,
                 ExpiryDate = expires,
@@ -25,36 +27,48 @@ namespace ServiceStack.Caching
 
         public IDbConnectionFactory DbFactory { get; set; }
 
-        public bool Remove(string key)
+        public T Exec<T>(Func<IDbConnection, T> action)
         {
+            using (JsConfig.With(excludeTypeInfo: false))
             using (var db = DbFactory.Open())
             {
-                return db.DeleteById<CacheEntry>(key) > 0;
+                return action(db);
             }
+        }
+
+        public void Exec(Action<IDbConnection> action)
+        {
+            using (JsConfig.With(excludeTypeInfo: false))
+            using (var db = DbFactory.Open())
+            {
+                action(db);
+            }
+        }
+
+        public bool Remove(string key)
+        {
+            return Exec(db => db.DeleteById<CacheEntry>(key) > 0);
         }
 
         public void RemoveAll(IEnumerable<string> keys)
         {
-            using (var db = DbFactory.Open())
-            {
-                db.DeleteByIds<CacheEntry>(keys);
-            }
+            Exec(db => db.DeleteByIds<CacheEntry>(keys) > 0);
         }
 
         public T Get<T>(string key)
         {
-            using (var db = DbFactory.Open())
+            return Exec(db =>
             {
                 var cache = Verify(db, db.SingleById<CacheEntry>(key));
                 return cache == null
                     ? default(T)
                     : db.Deserialize<T>(cache.Data);
-            }
+            });
         }
 
         public long Increment(string key, uint amount)
         {
-            using (var db = DbFactory.Open())
+            return Exec(db =>
             {
                 long nextVal;
                 using (var dbTrans = db.OpenTransaction(IsolationLevel.ReadCommitted))
@@ -78,12 +92,12 @@ namespace ServiceStack.Caching
                 }
 
                 return nextVal;
-            }
+            });
         }
 
         public long Decrement(string key, uint amount)
         {
-            using (var db = DbFactory.Open())
+            return Exec(db =>
             {
                 long nextVal;
                 using (var dbTrans = db.OpenTransaction(IsolationLevel.ReadCommitted))
@@ -107,17 +121,17 @@ namespace ServiceStack.Caching
                 }
 
                 return nextVal;
-            }
+            });
         }
 
         public bool Add<T>(string key, T value)
         {
             try
             {
-                using (var db = DbFactory.Open())
+                Exec(db =>
                 {
                     db.Insert(CreateEntry(key, db.Serialize(value)));
-                }
+                });
                 return true;
             }
             catch (Exception)
@@ -128,7 +142,7 @@ namespace ServiceStack.Caching
 
         public bool Set<T>(string key, T value)
         {
-            using (var db = DbFactory.Open())
+            return Exec(db =>
             {
                 var exists = db.UpdateOnly(new CacheEntry
                     {
@@ -145,12 +159,12 @@ namespace ServiceStack.Caching
                 }
 
                 return true;
-            }
+            });
         }
 
         public bool Replace<T>(string key, T value)
         {
-            using (var db = DbFactory.Open())
+            return Exec(db =>
             {
                 var exists = db.UpdateOnly(new CacheEntry
                     {
@@ -167,17 +181,17 @@ namespace ServiceStack.Caching
                 }
 
                 return true;
-            }
+            });
         }
 
         public bool Add<T>(string key, T value, DateTime expiresAt)
         {
             try
             {
-                using (var db = DbFactory.Open())
+                Exec(db =>
                 {
                     db.Insert(CreateEntry(key, db.Serialize(value), expires: expiresAt));
-                }
+                });
                 return true;
             }
             catch (Exception)
@@ -188,7 +202,7 @@ namespace ServiceStack.Caching
 
         public bool Set<T>(string key, T value, DateTime expiresAt)
         {
-            using (var db = DbFactory.Open())
+            return Exec(db =>
             {
                 var exists = db.UpdateOnly(new CacheEntry
                     {
@@ -206,12 +220,12 @@ namespace ServiceStack.Caching
                 }
 
                 return true;
-            }
+            });
         }
 
         public bool Replace<T>(string key, T value, DateTime expiresAt)
         {
-            using (var db = DbFactory.Open())
+            return Exec(db =>
             {
                 var exists = db.UpdateOnly(new CacheEntry
                     {
@@ -229,18 +243,18 @@ namespace ServiceStack.Caching
                 }
 
                 return true;
-            }
+            });
         }
 
         public bool Add<T>(string key, T value, TimeSpan expiresIn)
         {
             try
             {
-                using (var db = DbFactory.Open())
+                Exec(db =>
                 {
                     db.Insert(CreateEntry(key, db.Serialize(value),
                         expires: DateTime.UtcNow.Add(expiresIn)));
-                }
+                });
                 return true;
             }
             catch (Exception)
@@ -251,7 +265,7 @@ namespace ServiceStack.Caching
 
         public bool Set<T>(string key, T value, TimeSpan expiresIn)
         {
-            using (var db = DbFactory.Open())
+            return Exec(db =>
             {
                 var exists = db.UpdateOnly(new CacheEntry
                     {
@@ -269,12 +283,12 @@ namespace ServiceStack.Caching
                 }
 
                 return true;
-            }
+            });
         }
 
         public bool Replace<T>(string key, T value, TimeSpan expiresIn)
         {
-            using (var db = DbFactory.Open())
+            return Exec(db =>
             {
                 var exists = db.UpdateOnly(new CacheEntry
                     {
@@ -292,20 +306,20 @@ namespace ServiceStack.Caching
                 }
 
                 return true;
-            }
+            });
         }
 
         public void FlushAll()
         {
-            using (var db = DbFactory.Open())
+            Exec(db =>
             {
                 db.DeleteAll<CacheEntry>();
-            }
+            });
         }
 
         public IDictionary<string, T> GetAll<T>(IEnumerable<string> keys)
         {
-            using (var db = DbFactory.Open())
+            return Exec(db =>
             {
                 var results = Verify(db, db.SelectByIds<CacheEntry>(keys));
                 var map = new Dictionary<string, T>();
@@ -320,27 +334,27 @@ namespace ServiceStack.Caching
                 }
 
                 return map;
-            }
+            });
         }
 
         public void SetAll<T>(IDictionary<string, T> values)
         {
-            using (var db = DbFactory.Open())
+            Exec(db =>
             {
                 var rows = values.Select(entry =>
                     CreateEntry(entry.Key, db.Serialize(entry.Value)))
                     .ToList();
 
                 db.InsertAll(rows);
-            }
+            });
         }
 
         public void InitSchema()
         {
-            using (var db = DbFactory.Open())
+            Exec(db =>
             {
                 db.CreateTableIfNotExists<CacheEntry>();
-            }
+            });
         }
 
         public List<CacheEntry> Verify(IDbConnection db, IEnumerable<CacheEntry> entries)
@@ -366,7 +380,7 @@ namespace ServiceStack.Caching
             return entry;
         }
 
-        public void Dispose() {}
+        public void Dispose() { }
     }
 
     public class CacheEntry
@@ -396,8 +410,8 @@ namespace ServiceStack.Caching
 
         public static T Deserialize<T>(this IDbConnection db, string text)
         {
-            return text == null 
-                ? default(T) 
+            return text == null
+                ? default(T)
                 : db.GetDialectProvider().StringSerializer.DeserializeFromString<T>(text);
         }
     }
