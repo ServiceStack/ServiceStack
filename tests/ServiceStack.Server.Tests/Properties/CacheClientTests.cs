@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using NUnit.Framework;
+using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.OrmLite;
 using ServiceStack.Redis;
+using ServiceStack.Text;
 
 namespace ServiceStack.Server.Tests.Properties
 {
@@ -39,6 +42,12 @@ namespace ServiceStack.Server.Tests.Properties
                 return (Id*397) ^ (Name != null ? Name.GetHashCode() : 0);
             }
         }
+    }
+
+    public class CustomAuthSession : AuthUserSession
+    {
+        [DataMember]
+        public string Custom { get; set; }
     }
 
     public class SqlServerOrmLiteCacheClientTests : CacheClientTestsBase
@@ -227,6 +236,52 @@ namespace ServiceStack.Server.Tests.Properties
 
             Assert.That(cacheMap.Count, Is.EqualTo(5));
             Assert.That(cacheMap.Values.All(x => x == null));
+        }
+
+        [Test]
+        public void Can_retrieve_IAuthSession()
+        {
+            IAuthSession session = new CustomAuthSession
+            {
+                Id = "sess-1",
+                UserAuthId = "1",
+                Custom = "custom"
+            };
+
+            var sessionKey = SessionFeature.GetSessionKey(session.Id);
+            Cache.Set(sessionKey, session, HostContext.GetDefaultSessionExpiry());
+
+            var sessionCache = Cache.Get<IAuthSession>(sessionKey);
+            Assert.That(sessionCache, Is.Not.Null);
+
+            var typedSession = sessionCache as CustomAuthSession;
+            Assert.That(typedSession, Is.Not.Null);
+            Assert.That(typedSession.Custom, Is.EqualTo("custom"));
+        }
+
+        [Test]
+        public void Can_retrieve_IAuthSession_with_global_ExcludeTypeInfo_set()
+        {
+            JsConfig.ExcludeTypeInfo = true;
+
+            IAuthSession session = new CustomAuthSession
+            {
+                Id = "sess-1",
+                UserAuthId = "1",
+                Custom = "custom"
+            };
+
+            var sessionKey = SessionFeature.GetSessionKey(session.Id);
+            Cache.Set(sessionKey, session, HostContext.GetDefaultSessionExpiry());
+
+            var sessionCache = Cache.Get<IAuthSession>(sessionKey);
+            Assert.That(sessionCache, Is.Not.Null);
+
+            var typedSession = sessionCache as CustomAuthSession;
+            Assert.That(typedSession, Is.Not.Null);
+            Assert.That(typedSession.Custom, Is.EqualTo("custom"));
+
+            JsConfig.ExcludeTypeInfo = false;
         }
     }
 }
