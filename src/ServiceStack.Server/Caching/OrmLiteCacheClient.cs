@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using ServiceStack.Auth;
 using ServiceStack.Data;
+using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 
@@ -386,6 +387,7 @@ namespace ServiceStack.Caching
     public class CacheEntry
     {
         public string Id { get; set; }
+        [StringLength(StringLengthAttribute.MaxText)]
         public string Data { get; set; }
         public DateTime? ExpiryDate { get; set; }
         public DateTime CreatedDate { get; set; }
