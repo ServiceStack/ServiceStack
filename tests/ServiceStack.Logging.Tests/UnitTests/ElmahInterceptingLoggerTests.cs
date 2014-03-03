@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Web;
 using NUnit.Framework;
 using Rhino.Mocks;
 using ServiceStack.Logging.Elmah;
@@ -12,7 +13,7 @@ namespace ServiceStack.Logging.Tests.UnitTests
 		public void ElmahInterceptingLoggerTest()
 		{
 			var wrappedLogger = MockRepository.GenerateStub<ILog>();
-			ILog log = new ElmahInterceptingLogger(wrappedLogger);
+			ILog log = new ElmahInterceptingLogger(wrappedLogger, new HttpApplication());
 			Assert.IsNotNull(log);
 		}
 
@@ -24,7 +25,7 @@ namespace ServiceStack.Logging.Tests.UnitTests
 			string messageFormat = "Message Format: message: {0}, exception: {1}";
 
 			var wrappedLogger = MockRepository.GenerateStub<ILog>();
-			ILog log = new ElmahInterceptingLogger(wrappedLogger);
+            ILog log = new ElmahInterceptingLogger(wrappedLogger, new HttpApplication());
 			Assert.IsNotNull(log);
 
 			log.Debug(message);
