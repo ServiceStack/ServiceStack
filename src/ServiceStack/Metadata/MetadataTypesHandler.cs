@@ -27,79 +27,11 @@ namespace ServiceStack.Metadata
 
         public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
-            var metadata = new MetadataTypes
-            {
-                Config = Config,
-            };
-            var existingTypes = new HashSet<Type> {
-                typeof(ResponseStatus),
-                typeof(ErrorResponse),
-            };
-
-            var meta = HostContext.Metadata;
-            foreach (var operation in meta.Operations)
-            {
-                if (!meta.IsVisible(httpReq, operation))
-                    continue;
-
-                metadata.Operations.Add(new MetadataOperationType
-                {
-                    Actions = operation.Actions,
-                    Request = operation.RequestType.ToType(),
-                    Response = operation.ResponseType.ToType(),
-                });
-
-                existingTypes.Add(operation.RequestType);
-                if (operation.ResponseType != null)
-                {
-                    existingTypes.Add(operation.ResponseType);
-                }
-            }
-
-            foreach (var type in meta.GetAllTypes())
-            {
-                if (existingTypes.Contains(type))
-                    continue;
-
-                metadata.Operations.Add(new MetadataOperationType
-                {
-                    Request = type.ToType(),
-                });
-
-                existingTypes.Add(type);
-            }
-
-            var considered = new HashSet<Type>(existingTypes);
-            var queue = new Queue<Type>(existingTypes);
-
-            while (queue.Count > 0)
-            {
-                var type = queue.Dequeue();
-                foreach (var pi in type.GetSerializableProperties())
-                {
-                    if (pi.PropertyType.IsUserType())
-                    {
-                        if (considered.Contains(pi.PropertyType))
-                            continue;
-
-                        considered.Add(pi.PropertyType);
-                        queue.Enqueue(pi.PropertyType);
-                        metadata.Types.Add(pi.PropertyType.ToType());
-                    }
-                }
-
-                if (type.BaseType != null
-                    && type.BaseType.IsUserType()
-                    && !considered.Contains(type.BaseType))
-                {
-                    considered.Add(type.BaseType);
-                    queue.Enqueue(type.BaseType);
-                    metadata.Types.Add(type.BaseType.ToType());
-                }
-            }
+            var metadata = DtoGenFeature.GetMetadataTypes(Config, httpReq);
 
             return httpRes.WriteToResponse(httpReq, metadata);
         }
+
     }
 
     public static class MetadataTypeExtensions

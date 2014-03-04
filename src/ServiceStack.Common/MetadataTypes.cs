@@ -58,6 +58,27 @@ namespace ServiceStack
         public bool AddResponseStatus { get; set; }
         public string AddDefaultXmlNamespace { get; set; }
         public List<string> DefaultNamespaces { get; set; }
+
+
+        public MetadataTypesConfig Clone()
+        {
+            return new MetadataTypesConfig
+            {
+                BaseUrl = BaseUrl,
+                MakePartial = MakePartial,
+                MakeVirtual = MakeVirtual,
+                AddReturnMarker = AddReturnMarker,
+                AddDescriptionAsComments = AddDescriptionAsComments,
+                AddDataContractAttributes = AddDataContractAttributes,
+                MakeDataContractsExtensible = MakeDataContractsExtensible,
+                AddIndexesToDataMembers = AddIndexesToDataMembers,
+                InitializeCollections = InitializeCollections,
+                AddImplicitVersion = AddImplicitVersion,
+                AddResponseStatus = AddResponseStatus,
+                AddDefaultXmlNamespace = AddDefaultXmlNamespace,
+                DefaultNamespaces = DefaultNamespaces,
+            };
+        }
     }
 
     public class MetadataTypes

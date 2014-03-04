@@ -79,3 +79,4 @@ COPY ..\src\ServiceStack.Interfaces\bin\Release\ServiceStack.Interfaces.dll ..\.
 
 COPY ..\src\ServiceStack.Interfaces\bin\Pcl\ServiceStack.Interfaces.* ..\lib\pcl
 
+COPY ..\src\ServiceStack.DtoGen\*.cs  ..\src\ServiceStack\DtoGen
