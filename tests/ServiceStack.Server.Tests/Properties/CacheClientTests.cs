@@ -60,10 +60,10 @@ namespace ServiceStack.Server.Tests.Properties
                     Config.SqlServerBuildDb, SqlServerDialect.Provider)
             };
 
-            //using (var db = cache.DbFactory.Open())
-            //{
-            //    db.DropTable<CacheEntry>();
-            //}
+            using (var db = cache.DbFactory.Open())
+            {
+                db.DropTable<CacheEntry>();
+            }
 
             cache.InitSchema();
 
