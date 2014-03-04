@@ -101,6 +101,9 @@
     <Compile Include="Auth\UserAuthRepositoryExtensions.cs" />
     <Compile Include="CompressedFileResult.cs" />
     <Compile Include="CompressedResult.cs" />
+    <Compile Include="DtoGenFeature.cs" />
+    <Compile Include="DtoGen\CSharpGenerator.cs" />
+    <Compile Include="DtoGen\StringBuilderWrapper.cs" />
     <Compile Include="EnsureHttpsAttribute.cs" />
     <Compile Include="Host\ContentTypes.cs" />
     <Compile Include="Host\Handlers\CustomActionHandler.cs" />
