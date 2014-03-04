@@ -352,10 +352,7 @@ namespace ServiceStack.Caching
 
         public void InitSchema()
         {
-            Exec(db =>
-            {
-                db.CreateTableIfNotExists<CacheEntry>();
-            });
+            Exec(db => db.CreateTableIfNotExists<CacheEntry>());
         }
 
         public List<CacheEntry> Verify(IDbConnection db, IEnumerable<CacheEntry> entries)
