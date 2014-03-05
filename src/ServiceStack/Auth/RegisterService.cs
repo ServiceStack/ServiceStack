@@ -59,6 +59,14 @@ namespace ServiceStack.Auth
         public IValidator<Register> RegistrationValidator { get; set; }
 
         /// <summary>
+        /// Update an existing registraiton
+        /// </summary>
+        public object Put(Register request)
+        {
+            return Post(request);
+        }
+
+        /// <summary>
         ///     Create new Registration
         /// </summary>
         public object Post(Register request)
