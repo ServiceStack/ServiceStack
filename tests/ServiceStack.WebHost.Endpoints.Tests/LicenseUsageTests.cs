@@ -9,12 +9,15 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
+using ServiceStack.Messaging;
+using ServiceStack.RabbitMq;
+using ServiceStack.Redis;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
     [TestFixture]
-    public class FreeLicenseUsageTests : LicenseUsageTests
+    public class FreeLicenseUsageServiceClientTests : LicenseUsageTests
     {
         [SetUp]
         public void SetUp()
@@ -75,6 +78,56 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.Throws<LicenseException>(() =>
                 MegaDto.Create().ToJson());
+        }
+    }
+
+    [TestFixture]
+    public class FreeUsageRabbitMqClientTests : LicenseUsageTests
+    {
+        [Test]
+        public void Allows_MegaDto_through_RabbitMqClients()
+        {
+            var mqFactory = new RabbitMqMessageFactory();
+
+            var request = MegaDto.Create();
+
+            using (var mqClient = mqFactory.CreateMessageProducer())
+            {
+                mqClient.Publish(request);
+            }
+
+            using (var mqClient = mqFactory.CreateMessageQueueClient())
+            {
+                var msg = mqClient.Get<MegaDto>(QueueNames<MegaDto>.In);
+                var response = msg.GetBody();
+
+                Assert.That(request.T01.Id, Is.EqualTo(response.T01.Id));
+            }
+        }
+    }
+
+    [TestFixture]
+    public class FreeUsageRedisMqClientTests : LicenseUsageTests
+    {
+        [Test]
+        public void Allows_MegaDto_through_RedisMqClients()
+        {
+            var mqFactory = new RedisMessageFactory(new BasicRedisClientManager());
+
+            var request = MegaDto.Create();
+
+            using (var mqClient = mqFactory.CreateMessageProducer())
+            {
+                mqClient.Publish(request);
+            }
+
+            using (var mqClient = mqFactory.CreateMessageQueueClient())
+            {
+                var msg = mqClient.Get<MegaDto>(QueueNames<MegaDto>.In);
+                var response = msg.GetBody();
+
+                Assert.That(request.T01.Id, Is.EqualTo(response.T01.Id));
+            }
         }
     }
 

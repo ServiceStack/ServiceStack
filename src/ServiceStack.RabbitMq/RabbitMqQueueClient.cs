@@ -12,35 +12,44 @@ namespace ServiceStack.RabbitMq
 
         public void Notify(string queueName, IMessage message)
         {
-            var json = message.Body.ToJson();
-            var messageBytes = json.ToUtf8Bytes();
+            using (__requestAccess())
+            {
+                var json = message.Body.ToJson();
+                var messageBytes = json.ToUtf8Bytes();
 
-            PublishMessage(QueueNames.ExchangeTopic,
-                routingKey: queueName,
-                basicProperties: null, body: messageBytes);
+                PublishMessage(QueueNames.ExchangeTopic,
+                    routingKey: queueName,
+                    basicProperties: null, body: messageBytes);
+            }
         }
 
         public IMessage<T> Get<T>(string queueName, TimeSpan? timeOut = null)
         {
-            var now = DateTime.UtcNow;
-
-            while (timeOut == null || (DateTime.Now - now) < timeOut.Value)
+            using (__requestAccess())
             {
-                var basicMsg = GetMessage(queueName, noAck: false);
-                if (basicMsg != null)
-                {
-                    return basicMsg.ToMessage<T>();
-                }
-                Thread.Sleep(100);
-            }
+                var now = DateTime.UtcNow;
 
-            return null;
+                while (timeOut == null || (DateTime.Now - now) < timeOut.Value)
+                {
+                    var basicMsg = GetMessage(queueName, noAck: false);
+                    if (basicMsg != null)
+                    {
+                        return basicMsg.ToMessage<T>();
+                    }
+                    Thread.Sleep(100);
+                }
+
+                return null;
+            }
         }
 
         public IMessage<T> GetAsync<T>(string queueName)
         {
-            var basicMsg = GetMessage(queueName, noAck:false);
-            return basicMsg.ToMessage<T>();
+            using (__requestAccess())
+            {
+                var basicMsg = GetMessage(queueName, noAck: false);
+                return basicMsg.ToMessage<T>();
+            }
         }
 
         public void Ack(IMessage message)
@@ -73,13 +82,16 @@ namespace ServiceStack.RabbitMq
 
         public IMessage<T> CreateMessage<T>(object mqResponse)
         {
-            var msgResult = mqResponse as BasicGetResult;
-            if (msgResult != null)
+            using (__requestAccess())
             {
-                return msgResult.ToMessage<T>();
-            }
+                var msgResult = mqResponse as BasicGetResult;
+                if (msgResult != null)
+                {
+                    return msgResult.ToMessage<T>();
+                }
 
-            return (IMessage<T>) mqResponse;
+                return (IMessage<T>)mqResponse;
+            }
         }
     }
 }
