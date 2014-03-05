@@ -122,7 +122,7 @@ namespace ServiceStack
                 var pathProviders = new List<IVirtualPathProvider> {
                     new FileSystemVirtualPathProvider(this, Config.WebHostPhysicalPath)
                 };
-                pathProviders.AddRange(Config.EmbeddedResourceSources.Map(x => 
+                pathProviders.AddRange(Config.EmbeddedResourceSources.Map(x =>
                     new ResourceVirtualPathProvider(this, x)));
 
                 VirtualPathProvider = pathProviders.Count > 1
@@ -172,7 +172,7 @@ namespace ServiceStack
         public List<Action<IRequest, IResponse, object>> GlobalResponseFilters { get; set; }
 
         public List<Action<IRequest, IResponse, object>> GlobalMessageRequestFilters { get; private set; }
-        
+
         public List<Action<IRequest, IResponse, object>> GlobalMessageResponseFilters { get; private set; }
 
         public List<IViewEngine> ViewEngines { get; set; }
@@ -182,13 +182,13 @@ namespace ServiceStack
         public List<HandleUncaughtExceptionDelegate> UncaughtExceptionHandlers { get; set; }
 
         public List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers { get; set; }
-        
+
         public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
 
         public Dictionary<HttpStatusCode, IServiceStackHandler> CustomErrorHttpHandlers { get; set; }
 
         public List<ResponseStatus> StartUpErrors { get; set; }
-        
+
         public List<string> PluginsLoaded { get; set; }
 
         public List<IPlugin> Plugins { get; set; }
@@ -283,9 +283,9 @@ namespace ServiceStack
             JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
             JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
         }
-        
+
         public virtual void OnBeforeInit()
-        {            
+        {
         }
 
         //After configure called
@@ -355,8 +355,8 @@ namespace ServiceStack
             {
                 if (registeredCacheClient == null)
                 {
-		    var redisClientsManager = Container.TryResolve<IRedisClientsManager>();
-		    Container.Register<ICacheClient>(redisClientsManager != null ? redisClientsManager.GetCacheClient() : new MemoryCacheClient());
+                    var redisClientsManager = Container.TryResolve<IRedisClientsManager>();
+                    Container.Register<ICacheClient>(redisClientsManager != null ? redisClientsManager.GetCacheClient() : new MemoryCacheClient());
                 }
             }
 
@@ -507,7 +507,7 @@ namespace ServiceStack
 
         public virtual IVirtualNode ResolveVirtualNode(string virtualPath, IRequest httpReq)
         {
-            return (IVirtualNode) ResolveVirtualFile(virtualPath, httpReq) 
+            return (IVirtualNode)ResolveVirtualFile(virtualPath, httpReq)
                 ?? ResolveVirtualDirectory(virtualPath, httpReq);
         }
 
