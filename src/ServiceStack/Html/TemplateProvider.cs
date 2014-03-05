@@ -24,8 +24,8 @@ namespace ServiceStack.Html
             this.defaultTemplateName = defaultTemplateName;
         }
 
-        readonly Dictionary<string, IVirtualFile> templatePathsFound = new Dictionary<string, IVirtualFile>(StringComparer.InvariantCultureIgnoreCase);
-        readonly HashSet<string> templatePathsNotFound = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+        readonly Dictionary<string, IVirtualFile> templatePathsFound = new Dictionary<string, IVirtualFile>(StringComparer.OrdinalIgnoreCase);
+        readonly HashSet<string> templatePathsNotFound = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         public string GetTemplatePath(IVirtualDirectory fileDir)
         {

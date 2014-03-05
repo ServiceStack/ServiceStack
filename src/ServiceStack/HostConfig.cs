@@ -60,8 +60,8 @@ namespace ServiceStack
 					"default.ashx",
 				},
                 GlobalResponseHeaders = new Dictionary<string, string> { { "X-Powered-By", Env.ServerUserAgent } },
-                IgnoreFormatsInMetadata = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase),
-                AllowFileExtensions = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
+                IgnoreFormatsInMetadata = new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                AllowFileExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
 				{
 					"js", "css", "htm", "html", "shtm", "txt", "xml", "rss", "csv", "pdf",  
 					"jpg", "jpeg", "gif", "png", "bmp", "ico", "tif", "tiff", "svg",

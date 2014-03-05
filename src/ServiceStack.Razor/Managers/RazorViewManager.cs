@@ -21,8 +21,8 @@ namespace ServiceStack.Razor.Managers
     {
         public static ILog Log = LogManager.GetLogger(typeof(RazorViewManager));
 
-        public Dictionary<string, RazorPage> Pages = new Dictionary<string, RazorPage>(StringComparer.InvariantCultureIgnoreCase);
-        protected Dictionary<string, string> ViewNamesMap = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+        public Dictionary<string, RazorPage> Pages = new Dictionary<string, RazorPage>(StringComparer.OrdinalIgnoreCase);
+        protected Dictionary<string, string> ViewNamesMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         protected IRazorConfig Config { get; set; }
 
