@@ -608,7 +608,7 @@ namespace ServiceStack
             SupportsEmit = SupportsExpression = false;
         }
 
-        public override void VerifyInAssembly(Type accessType, string assemblyName)
+        public override void VerifyInAssembly(Type accessType, ICollection<string> assemblyNames)
         {
         }
 
@@ -849,7 +849,7 @@ namespace ServiceStack
             PlatformName = "Android";
         }
 
-        public override void VerifyInAssembly(Type accessType, string assemblyName)
+        public override void VerifyInAssembly(Type accessType, ICollection<string> assemblyNames)
         {
         }
 
