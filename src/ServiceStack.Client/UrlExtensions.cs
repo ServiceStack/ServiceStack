@@ -62,6 +62,26 @@ namespace ServiceStack
             return requestDto.ToUrl(HttpMethods.Delete);
         }
 
+        public static string ToOneWayUrl(this object requestDto, string format = "json")
+        {
+            var requestType = requestDto.GetType();
+            var predefinedRoute = "/{0}/oneway/{1}".Fmt(format, requestType.GetOperationName());
+            var queryProperties = RestRoute.GetQueryProperties(requestDto.GetType());
+            predefinedRoute += "?" + RestRoute.GetQueryString(requestDto, queryProperties);
+
+            return predefinedRoute;
+        }
+
+        public static string ToReplyUrl(this object requestDto, string format = "json")
+        {
+            var requestType = requestDto.GetType();
+            var predefinedRoute = "/{0}/reply/{1}".Fmt(format, requestType.GetOperationName());
+            var queryProperties = RestRoute.GetQueryProperties(requestDto.GetType());
+            predefinedRoute += "?" + RestRoute.GetQueryString(requestDto, queryProperties);
+
+            return predefinedRoute;
+        }
+
         public static string GetOperationName(this Type type)
         {
             return type.FullName != null //can be null, e.g. generic types

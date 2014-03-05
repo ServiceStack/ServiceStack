@@ -222,5 +222,24 @@ namespace ServiceStack.Common.Tests
             Assert.That(Uri.EscapeDataString(data), Is.EqualTo("amp%26mod%25space%20comma%2Cdot.colon%3Asemicolon%3Bslash%2F"));
         }
 
+        [Test]
+        public void Can_generate_OneWay_path()
+        {
+            var url = new JustId { Id = 1 }.ToOneWayUrl();
+            Assert.That(url, Is.EqualTo("/json/oneway/JustId?id=1"));
+
+            url = new JustId { Id = 1 }.ToOneWayUrl(format: "xml");
+            Assert.That(url, Is.EqualTo("/xml/oneway/JustId?id=1"));
+        }
+
+        [Test]
+        public void Can_generate_Reply_path()
+        {
+            var url = new JustId { Id = 1 }.ToReplyUrl();
+            Assert.That(url, Is.EqualTo("/json/reply/JustId?id=1"));
+
+            url = new JustId { Id = 1 }.ToReplyUrl(format: "xml");
+            Assert.That(url, Is.EqualTo("/xml/reply/JustId?id=1"));
+        }
     }
 }
