@@ -19,8 +19,8 @@
     };
     $.ss.clearAdjacentError = function() {
         $(this).removeClass("error");
-        $(this).prev(".help-block,.help-block").removeClass("error").html("");
-        $(this).next(".help-block,.help-block").removeClass("error").html("");
+        $(this).prev(".help-inline,.help-block").removeClass("error").html("");
+        $(this).next(".help-inline,.help-block").removeClass("error").html("");
     };
 
     function splitCase(t) {
