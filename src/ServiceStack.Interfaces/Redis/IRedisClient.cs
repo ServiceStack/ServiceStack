@@ -71,7 +71,9 @@ namespace ServiceStack.Redis
 		bool RemoveEntry(params string[] args);
 		long IncrementValue(string key);
 		long IncrementValueBy(string key, int count);
-		long DecrementValue(string key);
+        long IncrementValueBy(string key, long count);
+        double IncrementValueBy(string key, double count);
+        long DecrementValue(string key);
 		long DecrementValueBy(string key, int count);
 		List<string> SearchKeys(string pattern);
 
@@ -239,6 +241,7 @@ namespace ServiceStack.Redis
 		bool SetEntryInHashIfNotExists(string hashId, string key, string value);
 		void SetRangeInHash(string hashId, IEnumerable<KeyValuePair<string, string>> keyValuePairs);
 		long IncrementValueInHash(string hashId, string key, int incrementBy);
+        double IncrementValueInHash(string hashId, string key, double incrementBy);
 		string GetValueFromHash(string hashId, string key);
 		List<string> GetValuesFromHash(string hashId, params string[] keys);
 		bool RemoveEntryFromHash(string hashId, string key);
