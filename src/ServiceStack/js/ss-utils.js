@@ -80,6 +80,11 @@
                     fieldLabelMap[key] = $next;
                 }
             });
+            this.find(".help-inline[data-for],.help-block[data-for]").each(function() {
+                var $el = $(this);
+                var key = $el.data("for").toLowerCase();
+                fieldLabelMap[key] = $el;
+            });
             $.each(errors, function (i, error) {
                 var key = (error.fieldName || "").toLowerCase();
                 var $field = fieldMap[key];
