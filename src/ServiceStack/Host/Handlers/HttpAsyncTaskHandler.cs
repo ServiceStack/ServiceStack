@@ -56,8 +56,19 @@ namespace ServiceStack.Host.Handlers
             if (RunAsAsync())
                 return ProcessRequestAsync(httpReq, httpReq.Response, operationName);
 
-            return new Task(() =>
-                ProcessRequest(httpReq, httpReq.Response, operationName));
+            return CreateProcessRequestTask(httpReq, httpReq.Response, operationName);
+        }
+
+        protected virtual Task CreateProcessRequestTask(IRequest httpReq, IResponse httpRes, string operationName)
+        {
+            var currentCulture = Thread.CurrentThread.CurrentCulture;
+            var currentUiCulture = Thread.CurrentThread.CurrentUICulture;
+
+            return new Task(() => {
+                Thread.CurrentThread.CurrentCulture = currentCulture;
+                Thread.CurrentThread.CurrentUICulture = currentUiCulture;
+                ProcessRequest(httpReq, httpReq.Response, operationName);
+            });
         }
 
         private void RememberLastRequestInfo(string operationName, string pathInfo)
@@ -80,7 +91,7 @@ namespace ServiceStack.Host.Handlers
 
         public virtual Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
-            var task = new Task(() => ProcessRequest(httpReq, httpRes, operationName));
+            var task = CreateProcessRequestTask(httpReq, httpRes, operationName);
             task.Start();
             return task;
         }
