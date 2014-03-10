@@ -73,7 +73,7 @@ namespace ServiceStack
 		{
 			var resolvedPathInfo = httpReq.PathInfo;
 
-			var pos = httpReq.RawUrl.IndexOf(resolvedPathInfo, StringComparison.InvariantCultureIgnoreCase);
+			var pos = httpReq.RawUrl.IndexOf(resolvedPathInfo, StringComparison.OrdinalIgnoreCase);
 			if (pos == -1)
 				throw new ArgumentException(
 					String.Format("PathInfo '{0}' is not in Url '{1}'", resolvedPathInfo, httpReq.RawUrl));
@@ -92,7 +92,7 @@ namespace ServiceStack
 
 			var pos = resolvedPathInfo == String.Empty
 				? httpReq.AbsoluteUri.Length
-				: httpReq.AbsoluteUri.IndexOf(resolvedPathInfo, StringComparison.InvariantCultureIgnoreCase);
+				: httpReq.AbsoluteUri.IndexOf(resolvedPathInfo, StringComparison.OrdinalIgnoreCase);
 
 			if (pos == -1)
 				throw new ArgumentException(
@@ -476,7 +476,7 @@ namespace ServiceStack
                     pathRootFound = true;
                     for (var mappedPathRootIndex = 0; mappedPathRootIndex < mappedPathRootParts.Length; mappedPathRootIndex++)
                     {
-                        if (!String.Equals(fullPathParts[fullPathIndex - fullPathIndexOffset + mappedPathRootIndex], mappedPathRootParts[mappedPathRootIndex], StringComparison.InvariantCultureIgnoreCase))
+                        if (!String.Equals(fullPathParts[fullPathIndex - fullPathIndexOffset + mappedPathRootIndex], mappedPathRootParts[mappedPathRootIndex], StringComparison.OrdinalIgnoreCase))
                         {
                             pathRootFound = false;
                             break;
@@ -492,7 +492,7 @@ namespace ServiceStack
 
         public static bool IsContentType(this IRequest request, string contentType)
         {
-            return request.ContentType.StartsWith(contentType, StringComparison.InvariantCultureIgnoreCase);
+            return request.ContentType.StartsWith(contentType, StringComparison.OrdinalIgnoreCase);
         }
 
         public static bool HasAnyOfContentTypes(this IRequest request, params string[] contentTypes)
@@ -687,7 +687,7 @@ namespace ServiceStack
             if (handlerPath != null)
             {
                 var absoluteUri = httpReq.AbsoluteUri;
-                var pos = absoluteUri.IndexOf(handlerPath, StringComparison.InvariantCultureIgnoreCase);
+                var pos = absoluteUri.IndexOf(handlerPath, StringComparison.OrdinalIgnoreCase);
                 if (pos >= 0)
                 {
                     baseUrl = absoluteUri.Substring(0, pos + handlerPath.Length);
