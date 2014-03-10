@@ -98,7 +98,14 @@ namespace ServiceStack.VirtualPath
             try
             {
                 var fullResourceName = String.Concat(RealPath, VirtualPathProvider.RealPathSeparator, resourceName);
-                var mrInfo = backingAssembly.GetManifestResourceInfo(fullResourceName);
+
+                var resourceNames = new[]
+                {
+                    fullResourceName,
+                    fullResourceName.Replace(VirtualPathProvider.RealPathSeparator, ".").Trim('.')
+                };
+
+                var mrInfo = resourceNames.FirstOrDefault(x => backingAssembly.GetManifestResourceInfo(x) != null);
                 if (mrInfo == null)
                 {
                     Log.Warn("Virtual file not found: " + fullResourceName);
