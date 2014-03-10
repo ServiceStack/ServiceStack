@@ -67,7 +67,7 @@ namespace ServiceStack.Host.Handlers
             return new Task(() => {
                 Thread.CurrentThread.CurrentCulture = currentCulture;
                 Thread.CurrentThread.CurrentUICulture = currentUiCulture;
-                ProcessRequest(httpReq, httpReq.Response, operationName);
+                ProcessRequest(httpReq, httpRes, operationName);
             });
         }
 
