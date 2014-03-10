@@ -621,9 +621,7 @@ namespace ServiceStack
             if (httpMethod == null)
                 throw new ArgumentNullException("httpMethod");
 
-            var httpMethodGetOrHead = httpMethod == HttpMethods.Get || httpMethod == HttpMethods.Head;
-
-            if (httpMethodGetOrHead && request != null)
+            if (!httpMethod.HasRequestBody() && request != null)
             {
                 var queryString = QueryStringSerializer.SerializeToString(request);
                 if (!string.IsNullOrEmpty(queryString))
@@ -673,13 +671,12 @@ namespace ServiceStack
 
                 ApplyWebRequestFilters(client);
 
-                if (httpMethod != HttpMethods.Get
-                    && httpMethod != HttpMethods.Delete
-                    && httpMethod != HttpMethods.Head)
+                if (httpMethod.HasRequestBody())
                 {
                     client.ContentType = ContentType;
 
-                    if (sendRequestAction != null) sendRequestAction(client);
+                    if (sendRequestAction != null) 
+                        sendRequestAction(client);
                 }
             }
             catch (AuthenticationException ex)
@@ -895,7 +892,8 @@ namespace ServiceStack
             if (!HttpMethods.HasVerb(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
-            return asyncClient.SendAsync<TResponse>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestDto);
+            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
+            return asyncClient.SendAsync<TResponse>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestBody);
         }
 
         public virtual Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto)
@@ -903,7 +901,8 @@ namespace ServiceStack
             if (!HttpMethods.HasVerb(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
-            return asyncClient.SendAsync<TResponse>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestDto);
+            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
+            return asyncClient.SendAsync<TResponse>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestBody);
         }
 
         public virtual Task<HttpWebResponse> CustomMethodAsync(string httpVerb, IReturnVoid requestDto)
@@ -911,7 +910,8 @@ namespace ServiceStack
             if (!HttpMethods.HasVerb(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
-            return asyncClient.SendAsync<HttpWebResponse>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestDto);
+            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
+            return asyncClient.SendAsync<HttpWebResponse>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestBody);
         }
 
 
@@ -1097,7 +1097,8 @@ namespace ServiceStack
 
         public virtual HttpWebResponse CustomMethod(string httpVerb, object requestDto)
         {
-            return CustomMethod<HttpWebResponse>(httpVerb, requestDto.ToUrl(httpVerb, Format), requestDto);
+            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
+            return CustomMethod<HttpWebResponse>(httpVerb, requestDto.ToUrl(httpVerb, Format), requestBody);
         }
 
         public virtual HttpWebResponse CustomMethod(string httpVerb, string relativeOrAbsoluteUrl, object requestDto)
@@ -1110,12 +1111,14 @@ namespace ServiceStack
 
         public virtual TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
         {
-            return CustomMethod<TResponse>(httpVerb, requestDto.ToUrl(httpVerb, Format), requestDto);
+            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
+            return CustomMethod<TResponse>(httpVerb, requestDto.ToUrl(httpVerb, Format), requestBody);
         }
 
         public virtual TResponse CustomMethod<TResponse>(string httpVerb, object requestDto)
         {
-            return CustomMethod<TResponse>(httpVerb, requestDto.ToUrl(httpVerb, Format), requestDto);
+            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
+            return CustomMethod<TResponse>(httpVerb, requestDto.ToUrl(httpVerb, Format), requestBody);
         }
 
         public virtual TResponse CustomMethod<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object requestDto = null)

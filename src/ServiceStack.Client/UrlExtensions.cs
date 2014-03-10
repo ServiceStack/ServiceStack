@@ -140,7 +140,7 @@ namespace ServiceStack
             }
 
             var url = matchingRoute.Uri;
-            if (httpMethod == HttpMethods.Get || httpMethod == HttpMethods.Delete || httpMethod == HttpMethods.Head)
+            if (!httpMethod.HasRequestBody())
             {
                 var queryParams = matchingRoute.Route.FormatQueryParameters(requestDto);
                 if (!String.IsNullOrEmpty(queryParams))
@@ -150,6 +150,20 @@ namespace ServiceStack
             }
 
             return url;
+        }
+
+        public static bool HasRequestBody(this string httpMethod)
+        {
+            switch (httpMethod)
+            {
+                case HttpMethods.Get:
+                case HttpMethods.Delete:
+                case HttpMethods.Head:
+                case HttpMethods.Options:
+                    return false;
+            }
+
+            return true;
         }
 
         private static List<RestRoute> GetRoutesForType(Type requestType)
