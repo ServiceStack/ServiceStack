@@ -7,35 +7,35 @@ using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {
-	[TestFixture]
-	public class ErrorRestTests : IntegrationTestBase
-	{
-		[Test]
-		public void ReproduceErrorTest()
-		{
-			var restClient = new JsonServiceClient(BaseUrl);
+    [TestFixture]
+    public class ErrorRestTests : IntegrationTestBase
+    {
+        [Test]
+        public void ReproduceErrorTest()
+        {
+            var restClient = new JsonServiceClient(BaseUrl);
 
-			var errorList = restClient.Get<ErrorCollectionResponse>("error");
-			Assert.That(errorList.Result.Count, Is.EqualTo(1));
+            var errorList = restClient.Get<ErrorCollectionResponse>("error");
+            Assert.That(errorList.Result.Count, Is.EqualTo(1));
 
             var error = restClient.Post<ErrorResponse>("error", new Error { Id = "Test" });
-			Assert.That(error, !Is.Null);
-		}
+            Assert.That(error, !Is.Null);
+        }
 
-		[Test]
-		public void UseSameRestClientError()
-		{
-			var restClient = new JsonServiceClient(BaseUrl);
-			var errorList = restClient.Get<ErrorCollectionResponse>("error");
-			Assert.That(errorList.Result.Count, Is.EqualTo(1));
+        [Test]
+        public void UseSameRestClientError()
+        {
+            var restClient = new JsonServiceClient(BaseUrl);
+            var errorList = restClient.Get<ErrorCollectionResponse>("error");
+            Assert.That(errorList.Result.Count, Is.EqualTo(1));
 
-			var error = restClient.Get<ErrorResponse>("error/Test");
-			Assert.That(error, !Is.Null);
-		}
+            var error = restClient.Get<ErrorResponse>("error/Test");
+            Assert.That(error, !Is.Null);
+        }
 
-	    [Test]
-	    public void Handles_error_from_Filter()
-	    {
+        [Test]
+        public void Handles_error_from_Filter()
+        {
             try
             {
                 var client = new JsonServiceClient(BaseUrl);
@@ -49,7 +49,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
             }
         }
 
-	    [Test]
+        [Test]
         public void Handles_error_from_Filter_async()
         {
             try
@@ -65,7 +65,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
                 Assert.That(ex.Message, Is.EqualTo("NullReferenceException"));
             }
         }
-	}
+    }
 
     [Route("/error")]
     [Route("/error/{Id}")]
@@ -93,52 +93,52 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
         }
     }
 
-	public class ErrorService : Service
-	{
-		public object Get(Error request)
-		{
-			if (request != null && !String.IsNullOrEmpty(request.Id))
-				return new ErrorResponse(new Error { Id = "Test" });
+    public class ErrorService : Service
+    {
+        public object Get(Error request)
+        {
+            if (request != null && !String.IsNullOrEmpty(request.Id))
+                return new ErrorResponse(new Error { Id = "Test" });
 
-			return new ErrorCollectionResponse(new List<Error> { new Error { Id = "TestCollection" } });
-		}
+            return new ErrorCollectionResponse(new List<Error> { new Error { Id = "TestCollection" } });
+        }
 
-		public object Post(Error request)
-		{
-			return new ErrorResponse(request);
-		}
-        
+        public object Post(Error request)
+        {
+            return new ErrorResponse(request);
+        }
+
         [ActionErrorFilter]
         public object Any(ActionError request)
         {
             return new ActionError();
         }
-	}
+    }
 
-	public class ErrorResponse : IHasResponseStatus
-	{
-		public ErrorResponse(Error result)
-		{
-			Result = result;
-			ResponseStatus = new ResponseStatus();
-		}
+    public class ErrorResponse : IHasResponseStatus
+    {
+        public ErrorResponse(Error result)
+        {
+            Result = result;
+            ResponseStatus = new ResponseStatus();
+        }
 
-		public Error Result { get; set; }
+        public Error Result { get; set; }
 
-		public ResponseStatus ResponseStatus { get; set; }
-	}
+        public ResponseStatus ResponseStatus { get; set; }
+    }
 
-	public class ErrorCollectionResponse : IHasResponseStatus
-	{
-		public ErrorCollectionResponse(IList<Error> result)
-		{
-			Result = new Collection<Error>(result);
-			ResponseStatus = new ResponseStatus();
-		}
+    public class ErrorCollectionResponse : IHasResponseStatus
+    {
+        public ErrorCollectionResponse(IList<Error> result)
+        {
+            Result = new Collection<Error>(result);
+            ResponseStatus = new ResponseStatus();
+        }
 
-		public Collection<Error> Result { get; set; }
+        public Collection<Error> Result { get; set; }
 
-		public ResponseStatus ResponseStatus { get; set; }
-	}
+        public ResponseStatus ResponseStatus { get; set; }
+    }
 
 }
