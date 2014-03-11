@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using NUnit.Framework;
+using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {
@@ -30,19 +32,66 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 			var error = restClient.Get<ErrorResponse>("error/Test");
 			Assert.That(error, !Is.Null);
 		}
+
+	    [Test]
+	    public void Handles_error_from_Filter()
+	    {
+            try
+            {
+                var client = new JsonServiceClient(BaseUrl);
+                client.Post(new ActionError { Id = "ActionError" });
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo(500));
+                Assert.That(ex.StatusDescription, Is.EqualTo("NullReferenceException"));
+                Assert.That(ex.Message, Is.EqualTo("NullReferenceException"));
+            }
+        }
+
+	    [Test]
+        public void Handles_error_from_Filter_async()
+        {
+            try
+            {
+                var client = new JsonServiceClient(BaseUrl);
+                client.PostAsync(new ActionError { Id = "ActionError" }).Wait();
+            }
+            catch (AggregateException aex)
+            {
+                var ex = (WebServiceException)aex.UnwrapIfSingleException();
+                Assert.That(ex.StatusCode, Is.EqualTo(500));
+                Assert.That(ex.StatusDescription, Is.EqualTo("NullReferenceException"));
+                Assert.That(ex.Message, Is.EqualTo("NullReferenceException"));
+            }
+        }
 	}
 
-	[Route("/error")]
-	[Route("/error/{Id}")]
-	public class Error
-	{
-		public Error()
-		{
-		}
+    [Route("/error")]
+    [Route("/error/{Id}")]
+    public class Error
+    {
+        public Error()
+        {
+        }
 
-		public string Id { get; set; }
-		public Error Inner { get; set; }
-	}
+        public string Id { get; set; }
+        public Error Inner { get; set; }
+    }
+
+    [Route("/actionerror")]
+    public class ActionError : IReturn<ActionError>
+    {
+        public string Id { get; set; }
+    }
+
+    public class ActionErrorFilter : RequestFilterAttribute
+    {
+        public override void Execute(IRequest req, IResponse res, object requestDto)
+        {
+            throw new NullReferenceException();
+        }
+    }
 
 	public class ErrorService : Service
 	{
@@ -58,6 +107,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 		{
 			return new ErrorResponse(request);
 		}
+        
+        [ActionErrorFilter]
+        public object Any(ActionError request)
+        {
+            return new ActionError();
+        }
 	}
 
 	public class ErrorResponse : IHasResponseStatus
