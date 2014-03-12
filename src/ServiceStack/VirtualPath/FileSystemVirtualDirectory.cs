@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using ServiceStack.IO;
+using ServiceStack.Logging;
 
 namespace ServiceStack.VirtualPath
 {
     public class FileSystemVirtualDirectory : AbstractVirtualDirectoryBase
     {
+        private static ILog Log = LogManager.GetLogger(typeof(FileSystemVirtualDirectory));
+
         protected DirectoryInfo BackingDirInfo;
 
         public override IEnumerable<IVirtualFile> Files
@@ -46,16 +49,44 @@ namespace ServiceStack.VirtualPath
 
         public override IEnumerator<IVirtualNode> GetEnumerator()
         {
-            var directoryNodes = BackingDirInfo.GetDirectories()
+            var directoryNodes = GetDirectories()
                 .Select(dInfo => new FileSystemVirtualDirectory(VirtualPathProvider, this, dInfo))
                 .Where(x => !x.ShouldSkipPath());
 
-            var fileNodes = BackingDirInfo.GetFiles()
+            var fileNodes = GetFiles()
                 .Select(fInfo => new FileSystemVirtualFile(VirtualPathProvider, this, fInfo));
 
             return directoryNodes.Cast<IVirtualNode>()
                 .Union<IVirtualNode>(fileNodes.Cast<IVirtualNode>())
                 .GetEnumerator();
+        }
+
+        private FileInfo[] GetFiles()
+        {
+            try
+            {
+                return BackingDirInfo.GetFiles();
+            }
+            catch (DirectoryNotFoundException ex)
+            {
+                //Possible exception from scanning symbolic links
+                Log.Warn("Unable to GetFiles for {0}".Fmt(RealPath), ex);
+                return new FileInfo[0];
+            }
+        }
+
+        private DirectoryInfo[] GetDirectories()
+        {
+            try
+            {
+                return BackingDirInfo.GetDirectories();
+            }
+            catch (DirectoryNotFoundException ex)
+            {
+                //Possible exception from scanning symbolic links
+                Log.Warn("Unable to GetDirectories for {0}".Fmt(RealPath), ex);
+                return new DirectoryInfo[0];
+            }
         }
 
         protected override IVirtualFile GetFileFromBackingDirectoryOrDefault(string fName)
@@ -68,11 +99,20 @@ namespace ServiceStack.VirtualPath
         }
 
         protected override IEnumerable<IVirtualFile> GetMatchingFilesInDir(string globPattern)
-        {
-            var matchingFilesInBackingDir = EnumerateFiles(globPattern)
-                .Select(fInfo => (IVirtualFile)new FileSystemVirtualFile(VirtualPathProvider, this, fInfo));
-            
-            return matchingFilesInBackingDir;
+        { 
+            try
+            {
+                var matchingFilesInBackingDir = EnumerateFiles(globPattern)
+                    .Select(fInfo => (IVirtualFile)new FileSystemVirtualFile(VirtualPathProvider, this, fInfo));
+
+                return matchingFilesInBackingDir;
+            }
+            catch (DirectoryNotFoundException ex)
+            {
+                //Possible exception from scanning symbolic links
+                Log.Warn("Unable to scan for {0} in {1}".Fmt(globPattern, RealPath), ex);
+                return new IVirtualFile[0];
+            }
         }
 
         protected override IVirtualDirectory GetDirectoryFromBackingDirectoryOrDefault(string dName)
