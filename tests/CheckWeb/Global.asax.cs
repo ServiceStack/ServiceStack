@@ -18,7 +18,7 @@ namespace CheckWeb
         /// Initializes a new instance of the <see cref="AppHost"/> class.
         /// </summary>
         public AppHost()
-            : base("ServiceStack Test (1) REST API", typeof(AppHost).Assembly)
+            : base("CheckWeb", typeof(AppHost).Assembly)
         {
         }
 
@@ -36,7 +36,7 @@ namespace CheckWeb
                 // Set to return JSON if no request content type is defined
                 // e.g. text/html or application/json
                 DefaultContentType = MimeTypes.Json,
-#if DEBUG
+#if !DEBUG
                 // Show StackTraces in service responses during development
                 DebugMode = true,
 #endif
