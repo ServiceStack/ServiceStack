@@ -154,9 +154,8 @@ namespace ServiceStack
         {
             var appPath = httpReq.ApplicationPath.SanitizedVirtualPath();
             var baseUrl = httpReq.Url.GetLeftPart(UriPartial.Authority);
-            baseUrl = baseUrl.CombineWith(HostContext.Config.HandlerFactoryPath);
-            var appUrl = baseUrl.CombineWith(appPath);
-            return appUrl;
+            baseUrl = baseUrl.CombineWith(appPath, HostContext.Config.HandlerFactoryPath);
+            return baseUrl;
         }
 
         public static string GetApplicationUrl(this IRequest httpReq)
