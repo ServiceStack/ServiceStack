@@ -81,7 +81,7 @@ namespace ServiceStack.VirtualPath
             {
                 return BackingDirInfo.GetDirectories();
             }
-            catch (DirectoryNotFoundException ex)
+            catch (Exception ex)
             {
                 //Possible exception from scanning symbolic links
                 Log.Warn("Unable to GetDirectories for {0}".Fmt(RealPath), ex);
@@ -107,7 +107,7 @@ namespace ServiceStack.VirtualPath
 
                 return matchingFilesInBackingDir;
             }
-            catch (DirectoryNotFoundException ex)
+            catch (Exception ex)
             {
                 //Possible exception from scanning symbolic links
                 Log.Warn("Unable to scan for {0} in {1}".Fmt(globPattern, RealPath), ex);
