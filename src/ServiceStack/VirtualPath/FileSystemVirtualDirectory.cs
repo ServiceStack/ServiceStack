@@ -67,7 +67,7 @@ namespace ServiceStack.VirtualPath
             {
                 return BackingDirInfo.GetFiles();
             }
-            catch (DirectoryNotFoundException ex)
+            catch (Exception ex)
             {
                 //Possible exception from scanning symbolic links
                 Log.Warn("Unable to GetFiles for {0}".Fmt(RealPath), ex);
