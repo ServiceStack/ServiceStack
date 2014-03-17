@@ -20,7 +20,7 @@
     <copyright>Copyright 2014 Service Stack</copyright>
     <dependencies>
       <dependency id="RabbitMQ.Client" />
-      <dependency id="ServiceStack.Server" version="4.0" />
+      <dependency id="ServiceStack" version="4.0" />
     </dependencies>
   </metadata>
   <files>
