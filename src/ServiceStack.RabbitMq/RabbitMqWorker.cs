@@ -5,7 +5,6 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
-using ServiceStack.Messaging.Redis;
 
 namespace ServiceStack.RabbitMq
 {

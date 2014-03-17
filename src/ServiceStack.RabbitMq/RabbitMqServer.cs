@@ -6,7 +6,6 @@ using System.Threading;
 using RabbitMQ.Client;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
-using ServiceStack.Messaging.Redis;
 
 namespace ServiceStack.RabbitMq
 {
