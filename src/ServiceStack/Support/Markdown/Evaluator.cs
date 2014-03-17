@@ -44,7 +44,7 @@ namespace ServiceStack.Support.Markdown
 		private Type[] GenericArgs { get; set; }
 		private IDictionary<string, Type> TypeProperties { get; set; }
 
-	    static readonly List<Assembly> Assemblies = new List<Assembly> {
+        public static readonly List<Assembly> Assemblies = new List<Assembly> {
 			typeof(string).Assembly,       //"system.dll",
 //			typeof(XmlDocument).Assembly,  //"system.xml.dll",
             typeof(System.Web.HtmlString).Assembly, //"system.web.dll",
@@ -55,7 +55,7 @@ namespace ServiceStack.Support.Markdown
 			typeof(UrnId).Assembly, //"ServiceStack.Common.dll"
 		};
 
-	    static readonly List<string> AssemblyNames = new List<string> {
+	    public static readonly List<string> AssemblyNames = new List<string> {
 	        "System",
             "System.Text",
 //            "System.Xml",
