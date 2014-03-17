@@ -1106,15 +1106,15 @@ namespace ServiceStack
         }
 
 
-        public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request)
+        public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request, string fieldName = "upload")
         {
             using (FileStream fileStream = fileToUpload.OpenRead())
             {
-                return PostFileWithRequest<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, request);
+                return PostFileWithRequest<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, request, fieldName);
             }
         }
 
-        public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request)
+        public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request, string fieldName = "upload")
         {
             var requestUri = GetUrl(relativeOrAbsoluteUrl);
             var currentStreamPosition = fileToUpload.Position;
@@ -1143,7 +1143,7 @@ namespace ServiceStack
                     }
 #endif
                     outputStream.Write(boundary + newLine);
-                    outputStream.Write("Content-Disposition: form-data;name=\"{0}\";filename=\"{1}\"{2}{3}".FormatWith("upload", fileName, newLine, newLine));
+                    outputStream.Write("Content-Disposition: form-data;name=\"{0}\";filename=\"{1}\"{2}{3}".FormatWith(fieldName, fileName, newLine, newLine));
                     var buffer = new byte[4096];
                     int byteCount;
                     while ((byteCount = fileToUpload.Read(buffer, 0, 4096)) > 0)
