@@ -113,7 +113,6 @@
     <Compile Include="Messaging\Redis\RedisTransientMessageFactory.cs" />
     <Compile Include="Messaging\Redis\RedisTransientMessageService.cs" />
     <Compile Include="Messaging\Rcon\Server.cs" />
-    <Compile Include="Messaging\Redis\WorkerStatus.cs" />
     <Compile Include="MiniProfiler.Storage\SqlServerStorage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -116,6 +116,7 @@
     <Compile Include="Messaging\MessageHandler.cs" />
     <Compile Include="Messaging\MessageHandlerFactory.cs" />
     <Compile Include="Messaging\TransientMessageServiceBase.cs" />
+    <Compile Include="Messaging\WorkerStatus.cs" />
     <Compile Include="MqExtensions.cs" />
     <Compile Include="ILogic.cs" />
     <Compile Include="SmartThreadPool\CallerThreadContext.cs" />
