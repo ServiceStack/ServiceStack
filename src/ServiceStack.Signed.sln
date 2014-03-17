@@ -2,18 +2,40 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Signed", "ServiceStack\ServiceStack.Signed.csproj", "{680A1709-25EB-4D52-A87F-EE03FFD94BAA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{579B3FDB-CDAD-44E1-8417-885C38E49A0E} = {579B3FDB-CDAD-44E1-8417-885C38E49A0E}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Client.Signed", "ServiceStack.Client\ServiceStack.Client.Signed.csproj", "{C43F583F-ABDE-4DD4-BBE3-66322817A6AD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{579B3FDB-CDAD-44E1-8417-885C38E49A0E} = {579B3FDB-CDAD-44E1-8417-885C38E49A0E}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common.Signed", "ServiceStack.Common\ServiceStack.Common.Signed.csproj", "{982416DB-C143-4028-A0C3-CF41892D18D3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{579B3FDB-CDAD-44E1-8417-885C38E49A0E} = {579B3FDB-CDAD-44E1-8417-885C38E49A0E}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Server.Signed", "ServiceStack.Server\ServiceStack.Server.Signed.csproj", "{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AF99F19B-4C04-4F58-81EF-B092F1FCC540} = {AF99F19B-4C04-4F58-81EF-B092F1FCC540}
+		{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C} = {96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}
+		{579B3FDB-CDAD-44E1-8417-885C38E49A0E} = {579B3FDB-CDAD-44E1-8417-885C38E49A0E}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Text.Signed", "..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.Signed.csproj", "{579B3FDB-CDAD-44E1-8417-885C38E49A0E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Redis.Signed", "..\..\ServiceStack.Redis\src\ServiceStack.Redis\ServiceStack.Redis.Signed.csproj", "{AF99F19B-4C04-4F58-81EF-B092F1FCC540}"
+	ProjectSection(ProjectDependencies) = postProject
+		{982416DB-C143-4028-A0C3-CF41892D18D3} = {982416DB-C143-4028-A0C3-CF41892D18D3}
+		{579B3FDB-CDAD-44E1-8417-885C38E49A0E} = {579B3FDB-CDAD-44E1-8417-885C38E49A0E}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.Signed", "..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.Signed.csproj", "{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{982416DB-C143-4028-A0C3-CF41892D18D3} = {982416DB-C143-4028-A0C3-CF41892D18D3}
+		{579B3FDB-CDAD-44E1-8417-885C38E49A0E} = {579B3FDB-CDAD-44E1-8417-885C38E49A0E}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.SqlServer.Signed", "..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.SqlServer\ServiceStack.OrmLite.SqlServer.Signed.csproj", "{1887DC99-9139-43E3-A7AA-6D74714B3A5D}"
 EndProject
