@@ -68,9 +68,14 @@ namespace ServiceStack.Support.Markdown
             "ServiceStack.Markdown"                                                                     
         };
 
-        //NOTE: This assumes that the assembly name will always be equal to the namespace
+        public static readonly Dictionary<string,string> NamespaceAssemblies = new Dictionary<string, string>();
+
+        //Use NamespaceAssemblies if assemblyName is not also its namespace
         public static void AddAssembly(string assemblyName)
         {
+            if (NamespaceAssemblies.ContainsKey(assemblyName))
+                assemblyName = NamespaceAssemblies[assemblyName];
+
             if (AssemblyNames.Contains(assemblyName)) return;
             AssemblyNames.Add(assemblyName);
 
