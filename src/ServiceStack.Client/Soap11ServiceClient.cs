@@ -387,7 +387,7 @@ namespace ServiceStack
 #endif
 
         public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName,
-                                                        object request)
+                                                        object request, string fieldName = "upload")
         {
             throw new NotImplementedException();
         }
