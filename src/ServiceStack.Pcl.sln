@@ -40,8 +40,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PclTest.Wpf", "..\tests\Pcl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PclTest.Ios", "..\tests\PclTest.Ios\PclTest.Ios.csproj", "{99D4E441-2BF2-4F4C-AA0C-25211A3FACC1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Text.PCL", "..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.PCL.csproj", "{579B3FDB-CDAD-44E1-8417-885C38E49A0E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Ad-Hoc|Any CPU = Ad-Hoc|Any CPU
@@ -598,42 +596,6 @@ Global
 		{99D4E441-2BF2-4F4C-AA0C-25211A3FACC1}.Release|Mixed Platforms.Build.0 = Release|iPhone
 		{99D4E441-2BF2-4F4C-AA0C-25211A3FACC1}.Release|x64.ActiveCfg = Release|iPhone
 		{99D4E441-2BF2-4F4C-AA0C-25211A3FACC1}.Release|x86.ActiveCfg = Release|iPhone
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Ad-Hoc|Any CPU.ActiveCfg = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Ad-Hoc|Any CPU.Build.0 = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Ad-Hoc|ARM.ActiveCfg = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Ad-Hoc|iPhone.ActiveCfg = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Ad-Hoc|iPhoneSimulator.ActiveCfg = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Ad-Hoc|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Ad-Hoc|Mixed Platforms.Build.0 = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Ad-Hoc|x64.ActiveCfg = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Ad-Hoc|x86.ActiveCfg = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.AppStore|Any CPU.ActiveCfg = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.AppStore|Any CPU.Build.0 = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.AppStore|ARM.ActiveCfg = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.AppStore|iPhone.ActiveCfg = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.AppStore|iPhoneSimulator.ActiveCfg = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.AppStore|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.AppStore|Mixed Platforms.Build.0 = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.AppStore|x64.ActiveCfg = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.AppStore|x86.ActiveCfg = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Debug|iPhone.ActiveCfg = Debug|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Release|ARM.ActiveCfg = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Release|iPhone.ActiveCfg = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Release|x64.ActiveCfg = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
