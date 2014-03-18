@@ -34,21 +34,21 @@ namespace ServiceStack.Server.Tests.Messaging
         }
     }
 
-    public class Hello
+    public class HelloIntro
     {
         public string Name { get; set; }
     }
 
-    public class HelloResponse
+    public class HelloIntroResponse
     {
         public string Result { get; set; }
     }
 
     public class HelloService : Service
     {
-        public object Any(Hello request)
+        public object Any(HelloIntro request)
         {
-            return new HelloResponse { Result = "Hello, {0}!".Fmt(request.Name) };
+            return new HelloIntroResponse { Result = "Hello, {0}!".Fmt(request.Name) };
         }
     }
 
@@ -68,7 +68,7 @@ namespace ServiceStack.Server.Tests.Messaging
 
             var mqServer = container.Resolve<IMessageService>();
 
-            mqServer.RegisterHandler<Hello>(ServiceController.ExecuteMessage);
+            mqServer.RegisterHandler<HelloIntro>(ServiceController.ExecuteMessage);
             mqServer.Start();
         }
     }
@@ -83,7 +83,7 @@ namespace ServiceStack.Server.Tests.Messaging
         {
             using (var mqServer = CreateMqServer())
             {
-                mqServer.RegisterHandler<Hello>(m =>
+                mqServer.RegisterHandler<HelloIntro>(m =>
                 {
                     "Hello, {0}!".Print(m.GetBody().Name);
                     return null;
@@ -92,9 +92,9 @@ namespace ServiceStack.Server.Tests.Messaging
 
                 using (var mqClient = mqServer.CreateMessageQueueClient())
                 {
-                    mqClient.Publish(new Hello { Name = "World" });
+                    mqClient.Publish(new HelloIntro { Name = "World" });
 
-                    IMessage<Hello> msgCopy = mqClient.Get<Hello>(QueueNames<Hello>.Out);
+                    IMessage<HelloIntro> msgCopy = mqClient.Get<HelloIntro>(QueueNames<HelloIntro>.Out);
                     mqClient.Ack(msgCopy);
                     Assert.That(msgCopy.GetBody().Name, Is.EqualTo("World"));
                 }
@@ -106,15 +106,15 @@ namespace ServiceStack.Server.Tests.Messaging
         {
             using (var mqServer = CreateMqServer())
             {
-                mqServer.RegisterHandler<Hello>(m =>
-                    new HelloResponse { Result = "Hello, {0}!".Fmt(m.GetBody().Name) });
+                mqServer.RegisterHandler<HelloIntro>(m =>
+                    new HelloIntroResponse { Result = "Hello, {0}!".Fmt(m.GetBody().Name) });
                 mqServer.Start();
 
                 using (var mqClient = mqServer.CreateMessageQueueClient())
                 {
-                    mqClient.Publish(new Hello { Name = "World" });
+                    mqClient.Publish(new HelloIntro { Name = "World" });
 
-                    IMessage<HelloResponse> responseMsg = mqClient.Get<HelloResponse>(QueueNames<HelloResponse>.In);
+                    IMessage<HelloIntroResponse> responseMsg = mqClient.Get<HelloIntroResponse>(QueueNames<HelloIntroResponse>.In);
                     mqClient.Ack(responseMsg);
                     Assert.That(responseMsg.GetBody().Result, Is.EqualTo("Hello, World!"));
                 }
@@ -127,7 +127,7 @@ namespace ServiceStack.Server.Tests.Messaging
             using (var mqServer = CreateMqServer(retryCount:1))
             {
                 var called = 0;
-                mqServer.RegisterHandler<Hello>(m =>
+                mqServer.RegisterHandler<HelloIntro>(m =>
                 {
                     called++;
                     throw new ArgumentException("Name");
@@ -136,9 +136,9 @@ namespace ServiceStack.Server.Tests.Messaging
 
                 using (var mqClient = mqServer.CreateMessageQueueClient())
                 {
-                    mqClient.Publish(new Hello { Name = "World" });
+                    mqClient.Publish(new HelloIntro { Name = "World" });
 
-                    IMessage<Hello> dlqMsg = mqClient.Get<Hello>(QueueNames<Hello>.Dlq);
+                    IMessage<HelloIntro> dlqMsg = mqClient.Get<HelloIntro>(QueueNames<HelloIntro>.Dlq);
                     mqClient.Ack(dlqMsg);
 
                     Assert.That(called, Is.EqualTo(2));
@@ -154,18 +154,18 @@ namespace ServiceStack.Server.Tests.Messaging
         {
             using (var mqServer = CreateMqServer())
             {
-                mqServer.RegisterHandler<Hello>(m =>
-                    new HelloResponse { Result = "Hello, {0}!".Fmt(m.GetBody().Name) });
+                mqServer.RegisterHandler<HelloIntro>(m =>
+                    new HelloIntroResponse { Result = "Hello, {0}!".Fmt(m.GetBody().Name) });
                 mqServer.Start();
 
                 using (var mqClient = mqServer.CreateMessageQueueClient())
                 {
                     const string replyToMq = "mq:Hello.replyto";
-                    mqClient.Publish(new Message<Hello>(new Hello { Name = "World" }) {
+                    mqClient.Publish(new Message<HelloIntro>(new HelloIntro { Name = "World" }) {
                         ReplyTo = replyToMq
                     });
 
-                    IMessage<HelloResponse> responseMsg = mqClient.Get<HelloResponse>(replyToMq);
+                    IMessage<HelloIntroResponse> responseMsg = mqClient.Get<HelloIntroResponse>(replyToMq);
                     mqClient.Ack(responseMsg);
                     Assert.That(responseMsg.GetBody().Result, Is.EqualTo("Hello, World!"));
                 }
@@ -179,9 +179,9 @@ namespace ServiceStack.Server.Tests.Messaging
             {
                 using (var mqClient = appHost.Resolve<IMessageService>().CreateMessageQueueClient())
                 {
-                    mqClient.Publish(new Hello { Name = "World" });
+                    mqClient.Publish(new HelloIntro { Name = "World" });
 
-                    IMessage<HelloResponse> responseMsg = mqClient.Get<HelloResponse>(QueueNames<HelloResponse>.In);
+                    IMessage<HelloIntroResponse> responseMsg = mqClient.Get<HelloIntroResponse>(QueueNames<HelloIntroResponse>.In);
                     mqClient.Ack(responseMsg);
                     Assert.That(responseMsg.GetBody().Result, Is.EqualTo("Hello, World!"));
                 }
@@ -199,16 +199,16 @@ namespace ServiceStack.Server.Tests.Messaging
 
                     var mqServer = host.Container.Resolve<IMessageService>();
 
-                    mqServer.RegisterHandler<Hello>(host.ServiceController.ExecuteMessage);
+                    mqServer.RegisterHandler<HelloIntro>(host.ServiceController.ExecuteMessage);
                     mqServer.Start();
                 }
             }.Init())
             {
                 using (var mqClient = appHost.Resolve<IMessageService>().CreateMessageQueueClient())
                 {
-                    mqClient.Publish(new Hello { Name = "World" });
+                    mqClient.Publish(new HelloIntro { Name = "World" });
 
-                    IMessage<HelloResponse> responseMsg = mqClient.Get<HelloResponse>(QueueNames<HelloResponse>.In);
+                    IMessage<HelloIntroResponse> responseMsg = mqClient.Get<HelloIntroResponse>(QueueNames<HelloIntroResponse>.In);
                     mqClient.Ack(responseMsg);
                     Assert.That(responseMsg.GetBody().Result, Is.EqualTo("Hello, World!"));
                 }
