@@ -1,4 +1,5 @@
 ﻿using System;
+using ServiceStack;
 
 namespace RazorRockstars.Web
 {
