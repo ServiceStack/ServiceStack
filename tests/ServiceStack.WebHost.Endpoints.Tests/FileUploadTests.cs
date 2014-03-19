@@ -278,11 +278,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     "upload.html",
                     request);
 
-                Assert.That(response.CreatedDate, Is.EqualTo(request.CreatedDate));
+                Assert.That(response.CreatedDate, Is.EqualTo(request.CreatedDate).Within(TimeSpan.FromMilliseconds(1)));
 
                 response = client.Put(request);
 
-                Assert.That(response.CreatedDate, Is.EqualTo(request.CreatedDate));
+                Assert.That(response.CreatedDate, Is.EqualTo(request.CreatedDate).Within(TimeSpan.FromMilliseconds(1)));
             }
         }
     }
