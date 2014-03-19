@@ -95,6 +95,8 @@
 
       <InterfacesFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/Release/ServiceStack.Interfaces.*"></InterfacesFiles>
       <InterfacesFilesSL5 Include="$(SrcDir)/ServiceStack.Interfaces.SL5/bin/$(Configuration)/ServiceStack.Interfaces.*"></InterfacesFilesSL5>
+
+      <ProtoBufFiles Include="$(SrcDir)/ServiceStack.ProtoBuf/bin/$(Configuration)/ServiceStack.ProtoBuf.*"></ProtoBufFiles>
     </ItemGroup>
 
     <!-- ServiceStack.Interfaces -->
@@ -173,6 +175,18 @@
     <Copy SourceFiles="%(RazorFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Razor.Signed/lib/net45" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Razor.Signed/servicestack.razor.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
+
+    <!-- ServiceStack.ProtoBuf -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.ProtoBuf/ServiceStack.ProtoBuf.Signed.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.ProtoBuf.Signed/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.ProtoBuf.Signed/lib/net40')" />
+    <Copy SourceFiles="%(ProtoBufFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.ProtoBuf.Signed/lib/net40" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.ProtoBuf.Signed/servicestack.protobuf.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
   </Target>
