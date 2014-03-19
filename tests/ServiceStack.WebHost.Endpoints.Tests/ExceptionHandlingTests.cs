@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Runtime.Serialization;
 using NUnit.Framework;
 using Funq;
 using ServiceStack.Text;
@@ -86,6 +87,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    [Route("/binding-error/{Id}")]
+    public class ExceptionWithRequestBinding
+    {
+        public int Id { get; set; }
+    }
+
+    public class ExceptionWithRequestBindingService : Service
+    {
+        public object Any(ExceptionWithRequestBinding request)
+        {
+            return request;
+        }
+    }
+
 
     [TestFixture]
     public class ExceptionHandlingTests
@@ -108,7 +123,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 //Custom global uncaught exception handling strategy
                 this.UncaughtExceptionHandlers.Add((req, res, operationName, ex) =>
                 {
-                    res.Write(string.Format("Exception {0}", ex.GetType().Name));
+                    res.Write(string.Format("UncaughtException {0}", ex.GetType().Name));
                     res.EndRequest(skipHeaders: true);
                 });
 
@@ -119,6 +134,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                     return null;
                 });
+            }
+
+            public override void OnExceptionTypeFilter(Exception ex, ResponseStatus responseStatus)
+            {
+                "In OnExceptionTypeFilter...".Print();
+                base.OnExceptionTypeFilter(ex, responseStatus);
+            }
+
+            public override void OnUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
+            {
+                "In OnUncaughtException...".Print();
+                base.OnUncaughtException(httpReq, httpRes, operationName, ex);
             }
         }
 
@@ -272,7 +299,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var req = (HttpWebRequest)WebRequest.Create(PredefinedJsonUrl<UncatchedException>());
             var res = req.GetResponse().ReadToEnd();
-            Assert.AreEqual("Exception ArgumentException", res);
+            Assert.AreEqual("UncaughtException ArgumentException", res);
+        }
+
+        [Test]
+        public void Request_binding_error_raises_UncaughtException()
+        {
+            var response = PredefinedJsonUrl<ExceptionWithRequestBinding>()
+                .AddQueryParam("Id", "NaN")
+                .GetStringFromUrl();
+
+            Assert.That(response, Is.EqualTo("UncaughtException SerializationException"));
         }
     }
 }
