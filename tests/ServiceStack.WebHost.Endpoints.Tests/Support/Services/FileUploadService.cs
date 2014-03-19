@@ -1,15 +1,13 @@
 using System;
 using System.IO;
 using System.Runtime.Serialization;
-using ServiceStack.Text;
-using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 {
 	[DataContract]
 	[Route("/fileuploads/{RelativePath*}")]
 	[Route("/fileuploads", HttpMethods.Post)]
-	public class FileUpload
+    public class FileUpload : IReturn<FileUploadResponse>
 	{
 		[DataMember]
 		public string RelativePath { get; set; }
@@ -19,7 +17,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 
         [DataMember]
         public int CustomerId { get; set; }
-	}
+
+        [DataMember]
+        public DateTime CreatedDate { get; set; }
+    }
 
 	[DataContract]
 	public class FileUploadResponse : IHasResponseStatus
@@ -44,7 +45,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 
         [DataMember]
         public int CustomerId { get; set; }
-	}
+
+        [DataMember]
+        public DateTime CreatedDate { get; set; }
+    }
 
 	public class FileUploadService : Service
 	{
@@ -77,8 +81,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 				ContentType = file.ContentType,
 				Contents = new StreamReader(file.InputStream).ReadToEnd(),
                 CustomerId = request.CustomerId,
-                CustomerName = request.CustomerName
+                CustomerName = request.CustomerName,
+                CreatedDate = request.CreatedDate
 			};
 		}
+
+        public object Put(FileUpload request)
+        {
+            return new FileUploadResponse
+            {
+                CustomerId = request.CustomerId,
+                CustomerName = request.CustomerName,
+                CreatedDate = request.CreatedDate
+            };
+        }
 	}
 }
