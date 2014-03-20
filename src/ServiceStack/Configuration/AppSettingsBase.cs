@@ -11,7 +11,7 @@ namespace ServiceStack.Configuration
     public class AppSettingsBase : IAppSettings
     {
         protected ISettings settings;
-        const string ErrorAppsettingNotFound = "Unable to find App Setting: {0}";
+        protected const string ErrorAppsettingNotFound = "Unable to find App Setting: {0}";
 
         public string Tier { get; set; }
 
@@ -47,7 +47,9 @@ namespace ServiceStack.Configuration
         public virtual IList<string> GetList(string key)
         {
             var value = GetString(key);
-            return ConfigUtils.GetListFromAppSettingValue(value);
+            return value == null 
+                ? new List<string>() 
+                : ConfigUtils.GetListFromAppSettingValue(value);
         }
 
         public virtual IDictionary<string, string> GetDictionary(string key)

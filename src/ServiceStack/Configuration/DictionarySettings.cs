@@ -17,5 +17,10 @@ namespace ServiceStack.Configuration
             string value;
             return map.TryGetValue(key, out value) ? value : null;
         }
+
+        public Dictionary<string, string> GetAll()
+        {
+            return map;
+        }
     }
 }

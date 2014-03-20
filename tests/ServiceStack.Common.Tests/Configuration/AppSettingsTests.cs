@@ -2,12 +2,95 @@
 using System.Configuration;
 using NUnit.Framework;
 using ServiceStack.Configuration;
+using ServiceStack.OrmLite;
 
 namespace ServiceStack.Common.Tests
 {
-    public class AppSettingsTest
+    public class OrmLiteAppSettingsTest : AppSettingsTest
     {
-        private static AppSettingsBase GetAppSettings(ParsingStrategyDelegate parsingStrategy=null)
+        private OrnLiteAppSettings settings;
+
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
+        {
+            settings = new OrnLiteAppSettings(
+                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
+
+            settings.InitSchema();
+        }
+
+        public override AppSettingsBase GetAppSettings()
+        {
+            var testConfig = (DictionarySettings)base.GetAppSettings();
+
+            using (var db = settings.DbFactory.Open())
+            {
+                db.DeleteAll<ConfigSetting>();
+
+                foreach (var config in testConfig.GetAll())
+                {
+                    settings.Set(config.Key, config.Value);
+                }
+            }
+
+            return settings;
+        }
+
+        [Test]
+        public void GetString_returns_null_On_Nonexistent_Key()
+        {
+            var appSettings = GetAppSettings();
+            var value = appSettings.GetString("GarbageKey");
+            Assert.IsNull(value);
+        }
+
+        [Test]
+        public void GetList_returns_emtpy_list_On_Null_Key()
+        {
+            var appSettings = GetAppSettings();
+
+            var result = appSettings.GetList("GarbageKey");
+
+            Assert.That(result.Count, Is.EqualTo(0));
+        }
+    }
+
+    public class DictionarySettingsTest : AppSettingsTest
+    {
+        [Test]
+        public void GetString_Throws_Exception_On_Nonexistent_Key()
+        {
+            var appSettings = GetAppSettings();
+            try
+            {
+                appSettings.GetString("GarbageKey");
+                Assert.Fail("GetString did not throw a ConfigurationErrorsException");
+            }
+            catch (ConfigurationErrorsException ex)
+            {
+                Assert.That(ex.Message.Contains("GarbageKey"));
+            }
+        }
+
+        [Test]
+        public void GetList_Throws_Exception_On_Null_Key()
+        {
+            var appSettings = GetAppSettings();
+            try
+            {
+                appSettings.GetList("GarbageKey");
+                Assert.Fail("GetList did not throw a ConfigurationErrorsException");
+            }
+            catch (ConfigurationErrorsException ex)
+            {
+                Assert.That(ex.Message.Contains("GarbageKey"));
+            }
+        }
+    }
+
+    public abstract class AppSettingsTest
+    {
+        public virtual AppSettingsBase GetAppSettings()
         {
             return new DictionarySettings(new Dictionary<string, string>
             {
@@ -22,7 +105,7 @@ namespace ServiceStack.Common.Tests
                 {"ObjectNoLineFeed", "{SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}"},
                 {"ObjectWithLineFeed", "{SomeSetting:Test,\r\nSomeOtherSetting:12,\r\nFinalSetting:Final}"},
             }) {
-                ParsingStrategy = parsingStrategy   
+                ParsingStrategy = null,   
             };
         }
 
@@ -79,22 +162,6 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
-        public void GetString_Throws_Exception_On_Nonexistent_Key()
-        {
-            var appSettings = GetAppSettings();
-            try
-            {
-                appSettings.GetString("GarbageKey");
-                Assert.Fail("GetString did not throw a ConfigurationErrorsException");
-            }
-            catch (ConfigurationErrorsException ex)
-            {
-                Assert.That(ex.Message.Contains("GarbageKey"));
-            }
-        }
-
-
-        [Test]
         public void GetList_Parses_List_From_Setting()
         {
             var appSettings = GetAppSettings();
@@ -102,21 +169,6 @@ namespace ServiceStack.Common.Tests
 
             Assert.That(value, Has.Count.EqualTo(5));
             Assert.That(value, Is.EqualTo(new List<string> { "A", "B", "C", "D", "E" }));
-        }
-
-        [Test]
-        public void GetList_Throws_Exception_On_Null_Key()
-        {
-            var appSettings = GetAppSettings();
-            try
-            {
-                appSettings.GetList("GarbageKey");
-                Assert.Fail("GetList did not throw a ConfigurationErrorsException");
-            }
-            catch (ConfigurationErrorsException ex)
-            {
-                Assert.That(ex.Message.Contains("GarbageKey"));
-            }
         }
 
         [Test]
@@ -165,7 +217,8 @@ namespace ServiceStack.Common.Tests
         [Test]
         public void Get_Returns_ObjectNoLineFeed()
         {
-            var appSettings = GetAppSettings(AppSettingsStrategy.CollapseNewLines);
+            var appSettings = GetAppSettings();
+            appSettings.ParsingStrategy = AppSettingsStrategy.CollapseNewLines;
             var value = appSettings.Get("ObjectNoLineFeed", new SimpleAppSettings());
             Assert.That(value, Is.Not.Null);
             Assert.That(value.FinalSetting, Is.EqualTo("Final"));
@@ -176,7 +229,8 @@ namespace ServiceStack.Common.Tests
         [Test]
         public void Get_Returns_ObjectWithLineFeed()
         {
-            var appSettings = GetAppSettings(AppSettingsStrategy.CollapseNewLines);
+            var appSettings = GetAppSettings();
+            appSettings.ParsingStrategy = AppSettingsStrategy.CollapseNewLines;
             var value = appSettings.Get("ObjectWithLineFeed", new SimpleAppSettings());
             Assert.That(value, Is.Not.Null);
             Assert.That(value.FinalSetting, Is.EqualTo("Final"));
