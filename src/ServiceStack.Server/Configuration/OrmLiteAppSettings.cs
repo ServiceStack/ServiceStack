@@ -11,7 +11,7 @@ namespace ServiceStack.Configuration
         public string Value { get; set; }
     }
 
-    public class OrnLiteAppSettings : AppSettingsBase, IRequiresSchema 
+    public class OrmLiteAppSettings : AppSettingsBase, IRequiresSchema 
     {
         private OrmLiteSettings DbSettings
         {
@@ -23,7 +23,7 @@ namespace ServiceStack.Configuration
             get { return DbSettings.DbFactory; }
         }
 
-        public OrnLiteAppSettings(IDbConnectionFactory dbFactory)
+        public OrmLiteAppSettings(IDbConnectionFactory dbFactory)
             : base(new OrmLiteSettings(dbFactory)) {}
 
         class OrmLiteSettings : ISettings

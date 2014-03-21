@@ -10,12 +10,12 @@ namespace ServiceStack.Common.Tests
 {
     public class OrmLiteAppSettingsTest : AppSettingsTest
     {
-        private OrnLiteAppSettings settings;
+        private OrmLiteAppSettings settings;
 
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
-            settings = new OrnLiteAppSettings(
+            settings = new OrmLiteAppSettings(
                 new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
 
             settings.InitSchema();
@@ -59,7 +59,7 @@ namespace ServiceStack.Common.Tests
         [Test]
         public void Does_GetOrCreate_New_Value()
         {
-            var appSettings = (OrnLiteAppSettings)GetAppSettings();
+            var appSettings = (OrmLiteAppSettings)GetAppSettings();
 
             var i = 0;
 
