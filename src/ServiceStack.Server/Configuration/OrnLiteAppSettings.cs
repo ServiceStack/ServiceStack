@@ -1,4 +1,5 @@
-﻿using ServiceStack.Auth;
+﻿using System;
+using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 
@@ -54,6 +55,26 @@ namespace ServiceStack.Configuration
                     db.Save(new ConfigSetting { Id = key, Value = textValue });
                 }
             }
+
+            public bool Exists(string key)
+            {
+                using (var db = DbFactory.Open())
+                {
+                    return db.Count<ConfigSetting>(q => q.Id == key) > 0;
+                }
+            }
+        }
+
+        public T GetOrCreate<T>(string key, Func<string, T> createFn)
+        {
+            if (!DbSettings.Exists(key))
+            {
+                var value = createFn(key);
+                DbSettings.Set(key, value);
+                return value;
+            }
+
+            return base.Get(key, default(T));
         }
 
         public override string GetString(string name)

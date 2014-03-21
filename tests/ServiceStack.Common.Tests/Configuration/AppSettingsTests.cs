@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
+using Funq;
 using NUnit.Framework;
 using ServiceStack.Configuration;
 using ServiceStack.OrmLite;
@@ -52,6 +54,20 @@ namespace ServiceStack.Common.Tests
             var result = appSettings.GetList("GarbageKey");
 
             Assert.That(result.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Does_GetOrCreate_New_Value()
+        {
+            var appSettings = (OrnLiteAppSettings)GetAppSettings();
+
+            var i = 0;
+
+            var result = appSettings.GetOrCreate("key", key => key + ++i);
+            Assert.That(result, Is.EqualTo("key1"));
+
+            result = appSettings.GetOrCreate("key", key => key + ++i);
+            Assert.That(result, Is.EqualTo("key1"));
         }
     }
 
