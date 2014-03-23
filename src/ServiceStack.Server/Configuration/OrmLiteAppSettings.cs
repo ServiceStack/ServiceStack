@@ -65,11 +65,11 @@ namespace ServiceStack.Configuration
             }
         }
 
-        public T GetOrCreate<T>(string key, Func<string, T> createFn)
+        public T GetOrCreate<T>(string key, Func<T> createFn)
         {
             if (!DbSettings.Exists(key))
             {
-                var value = createFn(key);
+                var value = createFn();
                 DbSettings.Set(key, value);
                 return value;
             }

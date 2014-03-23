@@ -63,10 +63,11 @@ namespace ServiceStack.Common.Tests
 
             var i = 0;
 
-            var result = appSettings.GetOrCreate("key", key => key + ++i);
+            var key = "key";
+            var result = appSettings.GetOrCreate(key, () => key + ++i);
             Assert.That(result, Is.EqualTo("key1"));
 
-            result = appSettings.GetOrCreate("key", key => key + ++i);
+            result = appSettings.GetOrCreate(key, () => key + ++i);
             Assert.That(result, Is.EqualTo("key1"));
         }
     }
