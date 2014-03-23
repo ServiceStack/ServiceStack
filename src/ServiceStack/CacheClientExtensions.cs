@@ -189,5 +189,30 @@ namespace ServiceStack
 
             canRemoveByPattern.RemoveByRegex(regex);
         }
+
+        public static T GetOrCreate<T>(this ICacheClient cache,
+            string key, Func<T> createFn)
+        {
+            var value = cache.Get<T>(key);
+            if (Equals(value, default(T)))
+            {
+                value = createFn();
+                cache.Set(key, value);
+            }
+            return value;
+        }
+
+        public static T GetOrCreate<T>(this ICacheClient cache,
+            string key, TimeSpan expiresIn, Func<T> createFn)
+        {
+            var value = cache.Get<T>(key);
+            if (Equals(value, default(T)))
+            {
+                value = createFn();
+                cache.Set(key, value, expiresIn);
+            }
+            return value;
+        }
+
     }
 }
