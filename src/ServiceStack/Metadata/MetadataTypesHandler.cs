@@ -182,7 +182,8 @@ namespace ServiceStack.Metadata
                 var value = pi.GetValue(instance, null);
                 if (value != pi.PropertyType.GetDefaultValue())
                 {
-                    property.Value = value.ToJson();
+                    var strValue = value as string;
+                    property.Value = strValue ?? value.ToJson();
                 }
             }
             return property;

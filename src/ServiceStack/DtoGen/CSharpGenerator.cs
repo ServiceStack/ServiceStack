@@ -269,7 +269,7 @@ namespace ServiceStack.DtoGen
 
             if (Config.AddResponseStatus
                 && (type.Properties == null
-                    || !type.Properties.Any(x => x.Name == "ResponseStatus")))
+                    || type.Properties.All(x => x.Name != "ResponseStatus")))
             {
                 if (wasAdded) sb.AppendLine();
                 wasAdded = true;
@@ -280,7 +280,7 @@ namespace ServiceStack.DtoGen
 
             if (makeExtensible
                 && (type.Properties == null
-                    || !type.Properties.Any(x => x.Name == "ExtensionData")))
+                    || type.Properties.All(x => x.Name != "ExtensionData")))
             {
                 if (wasAdded) sb.AppendLine();
                 wasAdded = true;
