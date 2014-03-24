@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
@@ -92,7 +93,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         public void Dispose() { DisposeCount++; }
     }
 
+    [Route("/ioc")]
     public class Ioc { }
+    [Route("/iocasync")]
+    public class IocAsync { }
 
     public class IocResponse : IHasResponseStatus
     {
@@ -109,7 +113,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 
 
     [Route("/action-attr")]
-    public class ActionAttr : IReturn<IocResponse> {}
+    public class ActionAttr : IReturn<IocResponse> { }
+
+    [Route("/action-attr-async")]
+    public class ActionAttrAsync : IReturn<IocResponse> { }
 
     public class ActionLevelAttribute : RequestFilterAttribute
     {
@@ -177,9 +184,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
             return response;
         }
 
+        public async Task<object> Any(IocAsync request)
+        {
+            await Task.Delay(10);
+            return Any(request.ConvertTo<Ioc>());
+        }
+
         [ActionLevel]
         public IocResponse Any(ActionAttr request)
         {
+            return Request.Items["action-attr"] as IocResponse;
+        }
+
+        [ActionLevel]
+        public async Task<IocResponse> Any(ActionAttrAsync request)
+        {
+            await Task.Delay(10);
             return Request.Items["action-attr"] as IocResponse;
         }
         
@@ -193,7 +213,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
     }
 
 
+    [Route("/iocscope")]
     public class IocScope
+    {
+        public bool Throw { get; set; }
+    }
+
+    [Route("/iocscopeasync")]
+    public class IocScopeAsync
     {
         public bool Throw { get; set; }
     }
@@ -214,6 +241,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
     [IocRequestFilter]
     public class IocScopeService : IService, IDisposable
     {
+        public static void Reset()
+        {
+            FunqRequestScope.Count = 0;
+            FunqNoneScope.Count = 0;
+            FunqRequestScopeDepDisposableProperty.DisposeCount = 0;
+            AltRequestScopeDepDisposableProperty.DisposeCount = 0;
+        }
+
         public FunqRequestScope FunqRequestScope { get; set; }
         public FunqSingletonScope FunqSingletonScope { get; set; }
         public FunqNoneScope FunqNoneScope { get; set; }
@@ -236,6 +271,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
             return response;
         }
 
+        public async Task<object> Any(IocScopeAsync request)
+        {
+            await Task.Delay(10);
+            return Any(request.ConvertTo<IocScope>());
+        }
+
         public static int DisposedCount = 0;
         public static bool ThrowErrors = false;
 
@@ -246,6 +287,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
     }
 
     public class IocDispose : IReturn<IocDisposeResponse>
+    {
+        public bool Throw { get; set; }
+    }
+
+    public class IocDisposeAsync : IReturn<IocDisposeResponse>
     {
         public bool Throw { get; set; }
     }
@@ -288,6 +334,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
             };
 
             return response;
+        }
+
+        public async Task<object> Any(IocDisposeAsync request)
+        {
+            await Task.Delay(10);
+            return Any(request.ConvertTo<IocDispose>());
         }
 
         public static int DisposeCount = 0;

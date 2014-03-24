@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using Funq;
-using ServiceStack.Common;
 using ServiceStack.Configuration;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
@@ -33,14 +31,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
             container.Register(c => new FunqSingletonScopeDisposable()).ReusedWithin(ReuseScope.Default);
             container.Register(c => new FunqRequestScopeDisposable()).ReusedWithin(ReuseScope.Request);
             container.Register(c => new FunqNoneScopeDisposable()).ReusedWithin(ReuseScope.None);
-
-            Routes.Add<Ioc>("/ioc");
-            Routes.Add<IocScope>("/iocscope");
 		}
 
         public override void Release(object instance)
         {
             iocAdapter.Release(instance);
+        }
+
+        public override void OnEndRequest()
+        {
+            base.OnEndRequest();
         }
 	}
 
