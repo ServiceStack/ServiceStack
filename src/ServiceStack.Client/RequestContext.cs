@@ -2,14 +2,17 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Runtime.Remoting.Messaging;
 
 namespace ServiceStack
 {
     public class RequestContext
     {
         public static readonly RequestContext Instance = new RequestContext();
-        
+
+#if SL5 || ANDROID || __IOS__ || PCL
+        [ThreadStatic] private static IDictionary _items;
+#endif
+
 		/// <summary>
 		/// Gets a list of items for this request. 
 		/// </summary>
@@ -38,12 +41,20 @@ namespace ServiceStack
 
         private IDictionary GetItems()
         {
-            return CallContext.LogicalGetData(_key) as IDictionary;
+#if !(SL5 || ANDROID || __IOS__ || PCL)
+            return System.Runtime.Remoting.Messaging.CallContext.LogicalGetData(_key) as IDictionary;
+#else
+            return items;
+#endif
         }
 
         private IDictionary CreateItems(IDictionary items=null)
         {
-            CallContext.LogicalSetData(_key, items ?? (items = new ConcurrentDictionary<object, object>()));
+#if !(SL5 || ANDROID || __IOS__ || PCL)
+            System.Runtime.Remoting.Messaging.CallContext.LogicalSetData(_key, items ?? (items = new ConcurrentDictionary<object, object>()));
+#else
+            _items = items ?? (items = new Dictionary<object, object>());
+#endif
             return items;
         }
 
@@ -57,7 +68,11 @@ namespace ServiceStack
 
         public void EndRequest()
         {
-            CallContext.FreeNamedDataSlot(_key);
+#if !(SL5 || ANDROID || __IOS__ || PCL)
+            System.Runtime.Remoting.Messaging.CallContext.FreeNamedDataSlot(_key);
+#else
+            _items = null;
+#endif
         }
 
         /// <summary>
