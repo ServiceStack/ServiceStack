@@ -16,7 +16,7 @@ namespace ServiceStack.Mvc.MiniProfiler
 
     	public MiniProfilerHandler MiniProfilerHandler { get; set; }
 
-    	public IHttpHandler GetHttpHandler(RequestContext requestContext)
+    	public IHttpHandler GetHttpHandler(System.Web.Routing.RequestContext requestContext)
     	{
     		return MiniProfilerHandler;
     	}

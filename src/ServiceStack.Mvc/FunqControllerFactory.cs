@@ -3,7 +3,6 @@ using System.Linq;
 using System.Reflection;
 using System.Web;
 using System.Web.Mvc;
-using System.Web.Routing;
 using Funq;
 using ServiceStack.Host;
 using System.Collections.Generic;
@@ -39,7 +38,7 @@ namespace ServiceStack.Mvc
 		}
 
 		protected override IController GetControllerInstance(
-			RequestContext requestContext, Type controllerType)
+            System.Web.Routing.RequestContext requestContext, Type controllerType)
 		{
 			try
 			{

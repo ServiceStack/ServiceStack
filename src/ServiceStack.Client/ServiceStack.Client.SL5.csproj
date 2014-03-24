@@ -90,7 +90,6 @@
     <Compile Include="Messaging\RedisMessageProducer.cs" />
     <Compile Include="Messaging\RedisMessageQueueClient.cs" />
     <Compile Include="Messaging\RedisMessageQueueClientFactory.cs" />
-    <Compile Include="RequestContext.cs" />
     <Compile Include="ResponseStatusUtils.cs" />
     <Compile Include="RouteMember.cs" />
     <Compile Include="Serialization\DataContractSerializer.Deserialize.cs" />

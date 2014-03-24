@@ -2,17 +2,14 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Runtime.Remoting.Messaging;
 
 namespace ServiceStack
 {
     public class RequestContext
     {
         public static readonly RequestContext Instance = new RequestContext();
-
-#if SL5 || ANDROID || __IOS__ || PCL
-        [ThreadStatic] private static IDictionary _items;
-#endif
-
+        
 		/// <summary>
 		/// Gets a list of items for this request. 
 		/// </summary>
@@ -23,13 +20,9 @@ namespace ServiceStack
         {
             get
             {
-#if !(SL5 || ANDROID || __IOS__ || PCL)
                 return GetItems() ?? (System.Web.HttpContext.Current != null
                     ? System.Web.HttpContext.Current.Items
                     : CreateItems());
-#else
-                return GetItems() ?? CreateItems();
-#endif
             }
             set
             {
@@ -41,20 +34,12 @@ namespace ServiceStack
 
         private IDictionary GetItems()
         {
-#if !(SL5 || ANDROID || __IOS__ || PCL)
-            return System.Runtime.Remoting.Messaging.CallContext.LogicalGetData(_key) as IDictionary;
-#else
-            return items;
-#endif
+            return CallContext.LogicalGetData(_key) as IDictionary;
         }
 
         private IDictionary CreateItems(IDictionary items=null)
         {
-#if !(SL5 || ANDROID || __IOS__ || PCL)
-            System.Runtime.Remoting.Messaging.CallContext.LogicalSetData(_key, items ?? (items = new ConcurrentDictionary<object, object>()));
-#else
-            _items = items ?? (items = new Dictionary<object, object>());
-#endif
+            CallContext.LogicalSetData(_key, items ?? (items = new ConcurrentDictionary<object, object>()));
             return items;
         }
 
@@ -68,11 +53,7 @@ namespace ServiceStack
 
         public void EndRequest()
         {
-#if !(SL5 || ANDROID || __IOS__ || PCL)
-            System.Runtime.Remoting.Messaging.CallContext.FreeNamedDataSlot(_key);
-#else
-            _items = null;
-#endif
+            CallContext.FreeNamedDataSlot(_key);
         }
 
         /// <summary>

@@ -28,7 +28,7 @@ namespace ServiceStack.Mvc
     public abstract class ServiceStackController : Controller
     {
         public static string DefaultAction = "Index";
-        public static Func<RequestContext, ServiceStackController> CatchAllController;
+        public static Func<System.Web.Routing.RequestContext, ServiceStackController> CatchAllController;
 
         /// <summary>
         /// Default redirct URL if [Authenticate] attribute doesn't permit access.
@@ -160,7 +160,7 @@ namespace ServiceStack.Mvc
             routeData.Values.Add("controller", controllerName);
             routeData.Values.Add("action", DefaultAction);
             routeData.Values.Add("url", httpContext.Request.Url.OriginalString);
-            controller.Execute(new RequestContext(httpContext, routeData));
+            controller.Execute(new System.Web.Routing.RequestContext(httpContext, routeData));
 
         }
     }
