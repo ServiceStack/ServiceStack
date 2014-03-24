@@ -14,7 +14,7 @@
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>ServiceStack Caching Windows Azure Cache CacheClient POCO Code-First</tags>
     <language>en-US</language> 
-    <copyright>ServiceStack 2013 and contributors</copyright>
+    <copyright>ServiceStack 2014 and contributors</copyright>
     <dependencies>
       <dependency id="ServiceStack.Common" version="4.0" />
       <dependency id="Microsoft.WindowsAzure.Caching" version="2.2.0.0" />
