@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
+using System.Net;
+using Check.ServiceInterface;
 using Funq;
 using ServiceStack;
 
@@ -8,10 +9,12 @@ namespace CheckHttpListener
 {
     public class AppHost : AppHostHttpListenerBase
     {
-        public AppHost() : base("Check HttpListener Tests", typeof(AppHost).Assembly) {}
+        public AppHost() : base("Check HttpListener Tests", typeof(ErrorsService).Assembly) {}
 
         public override void Configure(Container container)
         {
+            this.CustomErrorHttpHandlers[HttpStatusCode.NotFound] = null;
+
             Plugins.Add(new DtoGenFeature());
         }
     }
@@ -20,7 +23,7 @@ namespace CheckHttpListener
     {
         static void Main(string[] args)
         {
-            Licensing.RegisterLicenseFromFileIfExists(@"c:\src\appsettings.license.txt");
+            //Licensing.RegisterLicenseFromFileIfExists(@"c:\src\appsettings.license.txt");
 
             new AppHost()
                 .Init()

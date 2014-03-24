@@ -71,7 +71,6 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="MetadataDtoIssue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -102,6 +101,10 @@
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
       <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>
       <Name>ServiceStack</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Check.ServiceInterface\Check.ServiceInterface.csproj">
+      <Project>{9982317F-831C-478B-9CC3-57F888BCD97A}</Project>
+      <Name>Check.ServiceInterface</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

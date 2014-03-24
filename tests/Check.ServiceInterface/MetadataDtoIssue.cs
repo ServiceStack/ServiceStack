@@ -2,17 +2,13 @@
 using ServiceStack;
 using ServiceStack.DataAnnotations;
 
-namespace CheckHttpListener
+namespace Check.ServiceInterface
 {
     [Route("/api/acsprofiles", "POST,PUT,PATCH,DELETE")]
     [Route("/api/acsprofiles/{profileId}")]
     [Alias("ACSProfiles")]
     public class ACSProfile : IReturn<acsprofileResponse>
     {
-        public ACSProfile()
-        {
-        }
-
         [PrimaryKey]
         public string profileId { get; set; }
 

@@ -2,13 +2,13 @@
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using DtoGenTest.Operations;
-using DtoGenTest.Types;
+using Check.ServiceInterface.Operations;
+using Check.ServiceInterface.Types;
 using ServiceStack;
 
-namespace DtoGenTest.Service
+namespace Check.ServiceInterface
 {
-    public class DtoGetTestService : ServiceStack.Service
+    public class DtoGetTestService : Service
     {
         public object Any(Hello request)
         {
@@ -69,9 +69,8 @@ namespace DtoGenTest.Service
     }
 }
 
-namespace DtoGenTest.Operations
+namespace Check.ServiceInterface.Operations
 {
-
     public class Hello
     {
         public string Name { get; set; }
@@ -196,7 +195,7 @@ namespace DtoGenTest.Operations
     }
 }
 
-namespace DtoGenTest.Types
+namespace Check.ServiceInterface.Types
 {
     public class AllTypes
     {
