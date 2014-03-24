@@ -34,9 +34,9 @@ namespace ServiceStack
             : this((int)statusCode, errorCode, errorMessage){}
 
         public HttpError(int statusCode, string errorCode, string errorMessage)
-            : base(errorMessage ?? errorCode)
+            : base(errorMessage ?? errorCode ?? statusCode.ToString())
         {
-            this.ErrorCode = errorCode;
+            this.ErrorCode = errorCode ?? statusCode.ToString();
             this.Status = statusCode;
             this.Headers = new Dictionary<string, string>();
             this.StatusDescription = errorCode;
