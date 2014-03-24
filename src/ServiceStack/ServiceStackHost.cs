@@ -23,6 +23,7 @@ using ServiceStack.Messaging;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler.UI;
 using ServiceStack.Serialization;
+using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 using ServiceStack.Redis;
@@ -449,7 +450,8 @@ namespace ServiceStack
 
         public virtual void OnEndRequest()
         {
-            foreach (var item in RequestContext.Instance.Items.Values)
+            var disposables = RequestContext.Instance.Items.Values;
+            foreach (var item in disposables)
             {
                 Release(item);
             }
