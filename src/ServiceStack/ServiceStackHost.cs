@@ -69,7 +69,10 @@ namespace ServiceStack
                  MiniProfilerHandler.MatchesRequest,
             };
             CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
-            CustomErrorHttpHandlers = new Dictionary<HttpStatusCode, IServiceStackHandler>();
+            CustomErrorHttpHandlers = new Dictionary<HttpStatusCode, IServiceStackHandler> {
+                { HttpStatusCode.Forbidden, new ForbiddenHttpHandler() },
+                { HttpStatusCode.NotFound, new NotFoundHttpHandler() },
+            };
             StartUpErrors = new List<ResponseStatus>();
             PluginsLoaded = new List<string>();
             Plugins = new List<IPlugin> {

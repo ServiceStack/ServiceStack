@@ -265,14 +265,6 @@ namespace ServiceStack
                 CustomErrorHttpHandlers.TryGetValue(errorStatus, out httpHandler);
             }
 
-            switch (errorStatus)
-            {
-                case HttpStatusCode.Forbidden:
-                    return httpHandler ?? new ForbiddenHttpHandler();
-                case HttpStatusCode.NotFound:
-                    return httpHandler ?? new NotFoundHttpHandler();
-            }
-
             return httpHandler;
         }
 
