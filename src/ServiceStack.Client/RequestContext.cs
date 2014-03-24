@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Runtime.Remoting.Messaging;
 
 namespace ServiceStack
 {
     public class RequestContext
     {
         public static readonly RequestContext Instance = new RequestContext();
-
-        [ThreadStatic] 
-		private static IDictionary items; //Thread Specific
         
 		/// <summary>
 		/// Gets a list of items for this request. 
@@ -22,14 +21,30 @@ namespace ServiceStack
             get
             {
 #if !(SL5 || ANDROID || __IOS__ || PCL)
-                return items ?? (System.Web.HttpContext.Current != null
+                return GetItems() ?? (System.Web.HttpContext.Current != null
                     ? System.Web.HttpContext.Current.Items
-                    : items = new Dictionary<object, object>());
+                    : CreateItems());
 #else
-                return items ?? (items = new Dictionary<object, object>());
+                return GetItems() ?? CreateItems();
 #endif
             }
-            set { items = value; }
+            set
+            {
+                CreateItems(value);
+            }
+        }
+
+        private const string _key = "__Request.Items";
+
+        private IDictionary GetItems()
+        {
+            return CallContext.LogicalGetData(_key) as IDictionary;
+        }
+
+        private IDictionary CreateItems(IDictionary items=null)
+        {
+            CallContext.LogicalSetData(_key, items ?? (items = new ConcurrentDictionary<object, object>()));
+            return items;
         }
 
         public T GetOrCreate<T>(Func<T> createFn)
@@ -42,7 +57,7 @@ namespace ServiceStack
 
         public void EndRequest()
         {
-            items = null;
+            CallContext.FreeNamedDataSlot(_key);
         }
 
         /// <summary>
