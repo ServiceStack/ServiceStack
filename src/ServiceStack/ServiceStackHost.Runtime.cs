@@ -239,7 +239,7 @@ namespace ServiceStack
             httpRes.StatusDescription = errorStatusDescription;
 
             var handler = GetCustomErrorHandler(errorStatus)
-                ?? Config.GlobalHtmlErrorHttpHandler
+                ?? GlobalHtmlErrorHttpHandler
                 ?? GetNotFoundHandler();
 
             handler.ProcessRequest(httpReq, httpRes, httpReq.OperationName);

@@ -88,7 +88,6 @@ namespace ServiceStack
 					RouteNamingConvention.WithMatchingAttributes,
 					RouteNamingConvention.WithMatchingPropertyNames
                 },
-                GlobalHtmlErrorHttpHandler = null,
                 MapExceptionToStatusCode = new Dictionary<Type, int>(),
                 OnlySendSessionCookiesSecurely = false,
                 RestrictAllCookiesToDomain = null,
@@ -151,7 +150,6 @@ namespace ServiceStack
             this.AddMaxAgeForStaticMimeTypes = instance.AddMaxAgeForStaticMimeTypes;
             this.AppendUtf8CharsetOnContentTypes = instance.AppendUtf8CharsetOnContentTypes;
             this.RouteNamingConventions = instance.RouteNamingConventions;
-            this.GlobalHtmlErrorHttpHandler = instance.GlobalHtmlErrorHttpHandler;
             this.MapExceptionToStatusCode = instance.MapExceptionToStatusCode;
             this.OnlySendSessionCookiesSecurely = instance.OnlySendSessionCookiesSecurely;
             this.RestrictAllCookiesToDomain = instance.RestrictAllCookiesToDomain;
@@ -222,7 +220,6 @@ namespace ServiceStack
 
         public List<RouteNamingConventionDelegate> RouteNamingConventions { get; set; }
 
-        public IServiceStackHandler GlobalHtmlErrorHttpHandler { get; set; }
         public Dictionary<Type, int> MapExceptionToStatusCode { get; set; }
 
         public bool OnlySendSessionCookiesSecurely { get; set; }

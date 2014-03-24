@@ -98,6 +98,11 @@ namespace ServiceStack
         List<HttpHandlerResolverDelegate> CatchAllHandlers { get; }
 
         /// <summary>
+        /// Use a fall-back Error Handler for handling global errors
+        /// </summary>
+        IServiceStackHandler GlobalHtmlErrorHttpHandler { get; }
+
+        /// <summary>
         /// Use a Custom Error Handler for handling specific error HttpStatusCodes
         /// </summary>
         Dictionary<HttpStatusCode, IServiceStackHandler> CustomErrorHttpHandlers { get; }

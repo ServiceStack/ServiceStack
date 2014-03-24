@@ -185,6 +185,8 @@ namespace ServiceStack
 
         public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
 
+        public IServiceStackHandler GlobalHtmlErrorHttpHandler { get; set; }
+
         public Dictionary<HttpStatusCode, IServiceStackHandler> CustomErrorHttpHandlers { get; set; }
 
         public List<ResponseStatus> StartUpErrors { get; set; }
