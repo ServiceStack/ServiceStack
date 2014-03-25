@@ -90,6 +90,25 @@
       <IosFiles Include="$(SrcDir)/ServiceStack.Pcl.iOS/bin/iPhone/$(Configuration)/ServiceStack.Pcl.iOS.*"></IosFiles>
     </ItemGroup>
 
+    <!-- ServiceStack.Interfaces -->
+
+    <MSBuild Projects="../src/ServiceStack.Interfaces/ServiceStack.Interfaces.Pcl.csproj" Properties="Configuration=$(Configuration);DefineConstants=PCL"/>
+    <Copy SourceFiles="%(InterfacesFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/lib/portable-wp80+sl5+net45+win8+monotouch+monoandroid" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/lib/portable-wp80+sl5+net45+win8+monotouch+monoandroid')" />
+    <Copy SourceFiles="%(InterfacesFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/lib/portable-wp80+sl5+net45+win8+monotouch+monoandroid" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/servicestack.interfaces.pcl.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
+
+    <!-- ServiceStack.Client -->
+
+    <MSBuild Projects="../src/ServiceStack.Client/ServiceStack.Client.Pcl.csproj" Properties="Configuration=$(Configuration);DefineConstants=PCL"/>
+    <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/portable-net45+win8+monotouch+monoandroid" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/portable-net45+win8+monotouch+monoandroid')" />
+    <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/portable-net45+win8+monotouch+monoandroid" />
+
     <!-- NET 4.5 pcl provider -->
 
     <MSBuild Projects="../src/ServiceStack.Pcl.Net45/ServiceStack.Pcl.Net45.csproj" Properties="Configuration=$(Configuration);OutputPath=bin/$(Configuration)"/>
@@ -113,34 +132,6 @@
     <MSBuild Projects="../src/ServiceStack.Pcl.iOS/ServiceStack.Pcl.iOS.csproj" Properties="Configuration=$(Configuration);DefineConstants=__IOS__;OutputPath=bin/iPhone/$(Configuration)" />
     <Copy SourceFiles="%(IosFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
     <Copy SourceFiles="%(IosFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/MonoTouch" />
-
-
-    <!-- ServiceStack.Interfaces -->
-
-    <MSBuild Projects="../src/ServiceStack.Interfaces/ServiceStack.Interfaces.Pcl.csproj" Properties="Configuration=$(Configuration);DefineConstants=PCL"/>
-    <Copy SourceFiles="%(InterfacesFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
-
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/lib/portable-wp80+sl5+net45+win8+monotouch+monoandroid" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/lib/portable-wp80+sl5+net45+win8+monotouch+monoandroid')" />
-    <Copy SourceFiles="%(InterfacesFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/lib/portable-wp80+sl5+net45+win8+monotouch+monoandroid" />
-
-    <!-- Silverlight -->
-    <!--<MSBuild Projects="$(SrcDir)/ServiceStack.Interfaces/ServiceStack.Interfaces.SL5.csproj"
-               Targets="Build"
-               Properties="Version=$(PackageVersion);Configuration=$(Configuration);DefineConstants=SL5;Platform=x86;PlatformTarget=x86;OutputPath=bin/SL5" />
-
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/lib/sl5" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/lib/sl5')" />
-    <Copy SourceFiles="%(InterfacesFilesSL5.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/lib/sl5" />-->
-
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/servicestack.interfaces.pcl.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
-            LogStandardErrorAsError="true" />
-
-    <!-- ServiceStack.Client -->
-
-    <MSBuild Projects="../src/ServiceStack.Client/ServiceStack.Client.Pcl.csproj" Properties="Configuration=$(Configuration);DefineConstants=PCL"/>
-    <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
-
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/portable-net45+win8+monotouch+monoandroid" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/portable-net45+win8+monotouch+monoandroid')" />
-    <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/portable-net45+win8+monotouch+monoandroid" />
 
     <!-- Silverlight -->
     <MSBuild Projects="$(SrcDir)/ServiceStack.Client/ServiceStack.Client.SL5.csproj"
