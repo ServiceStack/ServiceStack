@@ -200,6 +200,7 @@
   <ItemGroup>
     <Compile Include="Services\AsyncTaskServices.cs" />
     <Compile Include="Services\CookiesService.cs" />
+    <Compile Include="Shared\IocService.cs" />
     <Compile Include="Tests\AsyncProgressTests.cs" />
     <Compile Include="PageBase.cs">
       <SubType>ASPXCodeBehind</SubType>

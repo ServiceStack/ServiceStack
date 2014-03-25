@@ -1,11 +1,68 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Funq;
+using ServiceStack.Configuration;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
-namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
+namespace ServiceStack.Shared.Tests
 {
+    public static class IocShared
+    {
+		public static void Configure(ServiceStackHost appHost)
+		{
+		    var container = appHost.Container;
+
+            container.Adapter = new IocAdapter();
+            container.Register(c => new FunqDepCtor());
+            container.Register(c => new FunqDepProperty());
+            container.Register(c => new FunqDepDisposableProperty());
+
+            container.Register(c => new FunqSingletonScope()).ReusedWithin(ReuseScope.Default);
+            container.Register(c => new FunqRequestScope()).ReusedWithin(ReuseScope.Request);
+            container.Register(c => new FunqNoneScope()).ReusedWithin(ReuseScope.None);
+            container.Register(c => new FunqRequestScopeDepDisposableProperty()).ReusedWithin(ReuseScope.Request);
+
+            container.Register(c => new FunqSingletonScopeDisposable()).ReusedWithin(ReuseScope.Default);
+            container.Register(c => new FunqRequestScopeDisposable()).ReusedWithin(ReuseScope.Request);
+            container.Register(c => new FunqNoneScopeDisposable()).ReusedWithin(ReuseScope.None);
+        }
+    }
+
+    public class IocAdapter : IContainerAdapter, IRelease
+    {
+        public T TryResolve<T>()
+        {
+            if (typeof(T) == typeof(IRequest))
+                throw new ArgumentException("should not ask for IRequestContext");
+
+            if (typeof(T) == typeof(AltDepProperty))
+                return (T)(object)new AltDepProperty();
+            if (typeof(T) == typeof(AltDepDisposableProperty))
+                return (T)(object)new AltDepDisposableProperty();
+            if (typeof(T) == typeof(AltRequestScopeDepDisposableProperty))
+                return (T)(object)RequestContext.Instance.GetOrCreate(() => new AltRequestScopeDepDisposableProperty());
+
+            return default(T);
+        }
+
+        public T Resolve<T>()
+        {
+            if (typeof(T) == typeof(AltDepCtor))
+                return (T)(object)new AltDepCtor();
+
+            return default(T);
+        }
+
+        public void Release(object instance)
+        {
+            var disposable = instance as IDisposable;
+            if (disposable != null)
+                disposable.Dispose();
+        }
+    }
+
+
     public class FunqRequestScope
     {
         public static int Count = 0;
@@ -145,6 +202,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         }
     }
 
+    public class ResetIoc
+    {
+        public bool ThrowErrors { get; set; }
+    }
+
+    public class IocResetService : IService
+    {
+        public void Any(ResetIoc request)
+        {
+            FunqNoneScope.Count =
+            FunqRequestScope.Count =
+            IocService.DisposedCount =
+            IocDisposableService.DisposeCount =
+            FunqSingletonScopeDisposable.DisposeCount =
+            FunqRequestScopeDisposable.DisposeCount =
+            FunqNoneScopeDisposable.DisposeCount =
+            FunqRequestScopeDepDisposableProperty.DisposeCount =
+            AltRequestScopeDepDisposableProperty.DisposeCount =
+                0;
+
+            IocService.ThrowErrors = request.ThrowErrors;
+        }
+    }
 
     public class IocService : IService, IDisposable, IRequiresRequest
     {
@@ -212,7 +292,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         }
     }
 
-
     [Route("/iocscope")]
     public class IocScope
     {
@@ -238,17 +317,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+    public class IocRequestFilterAttribute : AttributeBase, IHasRequestFilter
+    {
+        public FunqSingletonScope FunqSingletonScope { get; set; }
+        public FunqRequestScope FunqRequestScope { get; set; }
+        public FunqNoneScope FunqNoneScope { get; set; }
+        public FunqRequestScopeDepDisposableProperty FunqRequestScopeDepDisposableProperty { get; set; }
+        public AltRequestScopeDepDisposableProperty AltRequestScopeDepDisposableProperty { get; set; }
+
+        public int Priority { get; set; }
+
+        public void RequestFilter(IRequest req, IResponse res, object requestDto)
+        {
+        }
+
+        public IHasRequestFilter Copy()
+        {
+            return (IHasRequestFilter)this.MemberwiseClone();
+        }
+    }
+
     [IocRequestFilter]
     public class IocScopeService : IService, IDisposable
     {
-        public static void Reset()
-        {
-            FunqRequestScope.Count = 0;
-            FunqNoneScope.Count = 0;
-            FunqRequestScopeDepDisposableProperty.DisposeCount = 0;
-            AltRequestScopeDepDisposableProperty.DisposeCount = 0;
-        }
-
         public FunqRequestScope FunqRequestScope { get; set; }
         public FunqSingletonScope FunqSingletonScope { get; set; }
         public FunqNoneScope FunqNoneScope { get; set; }

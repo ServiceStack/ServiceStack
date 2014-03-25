@@ -206,8 +206,7 @@
     <Compile Include="UnitTestExample.cs" />
     <Compile Include="UserServiceValidationTests.cs" />
     <Compile Include="JsonpTests.cs" />
-    <Compile Include="Support\Host\IocAppHost.cs" />
-    <Compile Include="Support\Services\IocService.cs" />
+    <Compile Include="Shared\IocService.cs" />
     <Compile Include="CustomRequestDataTests.cs" />
     <Compile Include="HttpResultTests.cs" />
     <Compile Include="IntegrationTests\ResetMovies.cs" />
