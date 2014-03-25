@@ -1,10 +1,5 @@
 SET BUILD=Signed
 
-COPY ..\src\ServiceStack.Interfaces\bin\Release\ServiceStack.Interfaces.dll ..\lib
-COPY ..\src\ServiceStack.Interfaces\bin\Release\ServiceStack.Interfaces.dll ..\..\ServiceStack.Text\lib
-COPY ..\src\ServiceStack.Interfaces\bin\Release\ServiceStack.Interfaces.dll ..\..\ServiceStack.Redis\lib
-COPY ..\src\ServiceStack.Interfaces\bin\Release\ServiceStack.Interfaces.dll ..\..\ServiceStack.OrmLite\lib
-
 COPY ..\src\ServiceStack.Common\bin\%BUILD%\ServiceStack.Common.dll ..\lib\signed
 COPY ..\src\ServiceStack.Common\bin\%BUILD%\ServiceStack.Common.dll ..\..\ServiceStack.Redis\lib\signed
 COPY ..\src\ServiceStack.Common\bin\%BUILD%\ServiceStack.Common.dll ..\..\ServiceStack.OrmLite\lib\signed
