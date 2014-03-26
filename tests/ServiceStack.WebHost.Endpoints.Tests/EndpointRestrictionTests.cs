@@ -92,12 +92,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			ShouldDenyAccessForOtherNetworkAccessScenarios<InternalRestriction>(RequestAttributes.Localhost, RequestAttributes.LocalSubnet);
 		}
 
-		[Test]
-		public void LocalhostRestriction_allows_calls_from_localhost()
-		{
-			ShouldAllowAccessWhen<LocalhostRestriction>(RequestAttributes.Localhost);
-			ShouldDenyAccessForOtherNetworkAccessScenarios<LocalhostRestriction>(RequestAttributes.Localhost);
-		}
+        [Test]
+        public void LocalhostRestriction_allows_calls_from_localhost()
+        {
+            ShouldAllowAccessWhen<LocalhostRestriction>(RequestAttributes.Localhost);
+            ShouldAllowAccessWhen<LocalhostRestrictionOnService>(RequestAttributes.Localhost);
+            ShouldDenyAccessForOtherNetworkAccessScenarios<LocalhostRestriction>(RequestAttributes.Localhost);
+            ShouldDenyAccessForOtherNetworkAccessScenarios<LocalhostRestrictionOnService>(RequestAttributes.Localhost);
+        }
 
 		[Test]
 		public void LocalSubnetRestriction_allows_calls_from_LocalSubnet()

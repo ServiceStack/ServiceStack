@@ -378,10 +378,16 @@ namespace ServiceStack.Host
 
             requestExecMap.Add(requestType, handlerFn);
 
+            var serviceAttrs = serviceType.AllAttributes<RestrictAttribute>();
+            if (serviceAttrs.Length > 0)
+            {
+                requestServiceAttrs[requestType] = serviceAttrs[0];
+            }
+
             var requestAttrs = requestType.AllAttributes<RestrictAttribute>();
             if (requestAttrs.Length > 0)
             {
-                requestServiceAttrs.Add(requestType, requestAttrs[0]);
+                requestServiceAttrs[requestType] = requestAttrs[0];
             }
         }
 
