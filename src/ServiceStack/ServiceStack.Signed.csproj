@@ -98,6 +98,7 @@
   <ItemGroup>
     <Compile Include="AddHeaderAttribute.cs" />
     <Compile Include="AppSelfHostBase.cs" />
+    <Compile Include="AsyncExtensions.cs" />
     <Compile Include="Auth\UserAuthRepositoryExtensions.cs" />
     <Compile Include="CompressedFileResult.cs" />
     <Compile Include="CompressedResult.cs" />
