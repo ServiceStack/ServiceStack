@@ -35,9 +35,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    public class AppSelfHost : AppSelfHostBase
+    public class AppHostSmartPool : AppHostHttpListenerSmartPoolBase
     {
-        public AppSelfHost() : base("SmartPool Test", typeof(PerfServices).Assembly) { }
+        public AppHostSmartPool() : base("SmartPool Test", typeof(PerfServices).Assembly) { }
 
         public override void Configure(Container container)
         {
@@ -47,11 +47,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class AppSelfHostTests
     {
-        private ServiceStackHost appHost;
+        private readonly ServiceStackHost appHost;
 
         public AppSelfHostTests()
         {
-            appHost = new AppSelfHost()
+            appHost = new AppHostSmartPool()
                 .Init()
                 .Start(Config.ListeningOn);
         }

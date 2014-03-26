@@ -8,24 +8,24 @@ using ServiceStack.Logging;
 
 namespace ServiceStack
 {
-    public abstract class AppSelfHostBase
+    public abstract class AppHostHttpListenerSmartPoolBase
         : AppHostHttpListenerBase
     {
-        private readonly ILog log = LogManager.GetLogger(typeof(AppSelfHostBase));
+        private readonly ILog log = LogManager.GetLogger(typeof(AppHostHttpListenerSmartPoolBase));
         private readonly AutoResetEvent listenForNextRequest = new AutoResetEvent(false);
         private readonly SmartThreadPool threadPoolManager;
         private const int IdleTimeout = 300;
 
-        protected AppSelfHostBase(string serviceName, params Assembly[] assembliesWithServices)
+        protected AppHostHttpListenerSmartPoolBase(string serviceName, params Assembly[] assembliesWithServices)
             : this(serviceName, 500, assembliesWithServices) { }
 
-        protected AppSelfHostBase(string serviceName, int poolSize, params Assembly[] assembliesWithServices)
+        protected AppHostHttpListenerSmartPoolBase(string serviceName, int poolSize, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices) { threadPoolManager = new SmartThreadPool(IdleTimeout, poolSize); }
 
-        protected AppSelfHostBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
+        protected AppHostHttpListenerSmartPoolBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
             : this(serviceName, handlerPath, 500, assembliesWithServices) { }
 
-        protected AppSelfHostBase(string serviceName, string handlerPath, int poolSize, params Assembly[] assembliesWithServices)
+        protected AppHostHttpListenerSmartPoolBase(string serviceName, string handlerPath, int poolSize, params Assembly[] assembliesWithServices)
             : base(serviceName, handlerPath, assembliesWithServices) { threadPoolManager = new SmartThreadPool(IdleTimeout, poolSize); }
 
         private bool disposed = false;
