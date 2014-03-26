@@ -207,13 +207,29 @@ namespace ServiceStack.Shared.Tests
         public bool ThrowErrors { get; set; }
     }
 
+    public class IocStats : IReturn<IocStatsResponse> { }
+    public class IocStatsResponse
+    {
+        public int FunqNoneScope_Count { get; set; }
+        public int FunqRequestScope_Count { get; set; }
+        public int IocService_DisposeCount { get; set; }
+        public int IocDisposableService_DisposeCount { get; set; }
+        public int FunqSingletonScopeDisposable_DisposeCount { get; set; }
+        public int FunqRequestScopeDisposable_DisposeCount { get; set; }
+        public int FunqNoneScopeDisposable_DisposeCount { get; set; }
+        public int FunqRequestScopeDepDisposableProperty_DisposeCount { get; set; }
+        public int AltRequestScopeDepDisposableProperty_DisposeCount { get; set; }
+        public int Container_disposablesCount { get; set; }
+    }
+
+
     public class IocResetService : IService
     {
         public void Any(ResetIoc request)
         {
             FunqNoneScope.Count =
             FunqRequestScope.Count =
-            IocService.DisposedCount =
+            IocService.DisposeCount =
             IocDisposableService.DisposeCount =
             FunqSingletonScopeDisposable.DisposeCount =
             FunqRequestScopeDisposable.DisposeCount =
@@ -223,6 +239,23 @@ namespace ServiceStack.Shared.Tests
                 0;
 
             IocService.ThrowErrors = request.ThrowErrors;
+        }
+
+        public object Any(IocStats request)
+        {
+            return new IocStatsResponse
+            {
+                FunqNoneScope_Count = FunqNoneScope.Count,
+                FunqRequestScope_Count = FunqRequestScope.Count,
+                IocService_DisposeCount = IocService.DisposeCount,
+                IocDisposableService_DisposeCount = IocDisposableService.DisposeCount,
+                FunqSingletonScopeDisposable_DisposeCount = FunqSingletonScopeDisposable.DisposeCount,
+                FunqRequestScopeDisposable_DisposeCount = FunqRequestScopeDisposable.DisposeCount,
+                FunqNoneScopeDisposable_DisposeCount = FunqNoneScopeDisposable.DisposeCount,
+                FunqRequestScopeDepDisposableProperty_DisposeCount = FunqRequestScopeDepDisposableProperty.DisposeCount,
+                AltRequestScopeDepDisposableProperty_DisposeCount = AltRequestScopeDepDisposableProperty.DisposeCount,
+                Container_disposablesCount = HostContext.Container.disposablesCount,
+            };
         }
     }
 
@@ -283,12 +316,12 @@ namespace ServiceStack.Shared.Tests
             return Request.Items["action-attr"] as IocResponse;
         }
         
-        public static int DisposedCount = 0;
+        public static int DisposeCount = 0;
         public static bool ThrowErrors = false;
 
         public void Dispose()
         {
-            DisposedCount++;
+            DisposeCount++;
         }
     }
 

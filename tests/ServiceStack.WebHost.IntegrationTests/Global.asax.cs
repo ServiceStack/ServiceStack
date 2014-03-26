@@ -13,6 +13,7 @@ using ServiceStack.OrmLite;
 using ServiceStack.ProtoBuf;
 using ServiceStack.Redis;
 using ServiceStack.Api.Swagger;
+using ServiceStack.Shared.Tests;
 using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.WebHost.IntegrationTests.Services;
@@ -32,6 +33,8 @@ namespace ServiceStack.WebHost.IntegrationTests
 
             public override void Configure(Container container)
             {
+                IocShared.Configure(this);
+
                 JsConfig.EmitCamelCaseNames = true;
 
 				this.PreRequestFilters.Add((req, res) => {
@@ -98,12 +101,6 @@ namespace ServiceStack.WebHost.IntegrationTests
                 Plugins.Add(new RequestLogsFeature());
 
                 container.RegisterValidators(typeof(CustomersValidator).Assembly);
-
-
-                container.Register(c => new FunqSingletonScope()).ReusedWithin(ReuseScope.Default);
-                container.Register(c => new FunqRequestScope()).ReusedWithin(ReuseScope.Request);
-                container.Register(c => new FunqNoneScope()).ReusedWithin(ReuseScope.None);
-                Routes.Add<IocScope>("/iocscope");
 
 
                 //var onlyEnableFeatures = Feature.All.Remove(Feature.Jsv | Feature.Soap);

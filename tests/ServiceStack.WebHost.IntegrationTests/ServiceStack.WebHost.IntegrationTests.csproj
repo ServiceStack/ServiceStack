@@ -147,16 +147,10 @@
     <Content Include="Content\img\ui-icons_454545_256x240.png" />
     <Content Include="Content\img\ui-icons_888888_256x240.png" />
     <Content Include="Content\img\ui-icons_cd0a0a_256x240.png" />
-    <Content Include="Content\js\app.js" />
     <Content Include="Content\js\backbone.min.js" />
-    <Content Include="Content\js\base.js" />
     <Content Include="Content\js\jquery-1.7.1.min.js" />
     <Content Include="Content\js\jsonreport.js" />
-    <Content Include="Content\js\login.js" />
-    <Content Include="Content\js\register.js" />
-    <Content Include="Content\js\ss-validation.js" />
     <Content Include="Content\js\underscore.min.js" />
-    <Content Include="Content\js\userprofile.js" />
     <Content Include="Content\js\_blank.js" />
     <Content Include="Content\static-sub.txt" />
     <EmbeddedResource Include="static-root-embedded.txt" />
@@ -217,7 +211,6 @@
     <Compile Include="Services\CustomHeadersService.cs" />
     <Compile Include="Services\EndpointAccessService.cs" />
     <Compile Include="Services\HelloImage.cs" />
-    <Compile Include="Services\IocServiceTests.cs" />
     <Compile Include="Services\RequestItemsService.cs" />
     <Compile Include="Services\SwaggerTestService.cs" />
     <Compile Include="Services\TestProgressService.cs" />

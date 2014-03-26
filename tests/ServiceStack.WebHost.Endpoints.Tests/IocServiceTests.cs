@@ -30,6 +30,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class IocServiceAspNetTests : IocServiceTests
+    {
+        public override IServiceClient CreateClient(ResetIoc request = null)
+        {
+            var client = new JsonServiceClient(Config.AspNetServiceStackBaseUri);
+            client.Post(request ?? new ResetIoc());
+            return client;
+        }
+    }
+
     public class IocServiceHttpListenerTests : IocServiceTests
     {
         private const string ListeningOn = "http://localhost:1082/";
@@ -124,7 +134,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var client = CreateClient();
             client.Get<IocResponse>("ioc");
 
-            Assert.That(IocService.DisposedCount, Is.EqualTo(1));
+            var stats = client.Get(new IocStats());
+            Assert.That(stats.IocService_DisposeCount, Is.EqualTo(1));
         }
 
         [Test]
@@ -133,7 +144,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var client = CreateClient();
             client.Get<IocResponse>("iocasync");
 
-            Assert.That(IocService.DisposedCount, Is.EqualTo(1));
+            var stats = client.Get(new IocStats());
+            Assert.That(stats.IocService_DisposeCount, Is.EqualTo(1));
         }
 
         [Test]
@@ -142,7 +154,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var client = CreateClient(new ResetIoc { ThrowErrors = true });
             Assert.Throws<WebServiceException>(() => client.Get<IocResponse>("ioc"));
 
-            Assert.That(IocService.DisposedCount, Is.EqualTo(1));
+            var stats = client.Get(new IocStats());
+            Assert.That(stats.IocService_DisposeCount, Is.EqualTo(1));
         }
 
         [Test]
@@ -151,7 +164,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var client = CreateClient(new ResetIoc { ThrowErrors = true });
             Assert.Throws<WebServiceException>(() => client.Get<IocResponse>("iocasync"));
 
-            Assert.That(IocService.DisposedCount, Is.EqualTo(1));
+            var stats = client.Get(new IocStats());
+            Assert.That(stats.IocService_DisposeCount, Is.EqualTo(1));
         }
 
         [Test]
@@ -169,8 +183,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Thread.Sleep(WaitForRequestCleanup);
 
-            Assert.That(FunqRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
-            Assert.That(AltRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
+            var stats = client.Get(new IocStats());
+            Assert.That(stats.FunqRequestScopeDepDisposableProperty_DisposeCount, Is.EqualTo(2));
+            Assert.That(stats.AltRequestScopeDepDisposableProperty_DisposeCount, Is.EqualTo(2));
         }
 
         [Test]
@@ -189,8 +204,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Thread.Sleep(WaitForRequestCleanup);
 
-            Assert.That(FunqRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
-            Assert.That(AltRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
+            var stats = client.Get(new IocStats());
+            Assert.That(stats.FunqRequestScopeDepDisposableProperty_DisposeCount, Is.EqualTo(2));
+            Assert.That(stats.AltRequestScopeDepDisposableProperty_DisposeCount, Is.EqualTo(2));
         }
 
         [Test]
@@ -210,8 +226,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Thread.Sleep(WaitForRequestCleanup);
 
-            Assert.That(FunqRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
-            Assert.That(AltRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
+            var stats = client.Get(new IocStats());
+            Assert.That(stats.FunqRequestScopeDepDisposableProperty_DisposeCount, Is.EqualTo(2));
+            Assert.That(stats.AltRequestScopeDepDisposableProperty_DisposeCount, Is.EqualTo(2));
         }
 
         [Test]
@@ -231,8 +248,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Thread.Sleep(WaitForRequestCleanup);
 
-            Assert.That(FunqRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
-            Assert.That(AltRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
+            var stats = client.Get(new IocStats());
+            Assert.That(stats.FunqRequestScopeDepDisposableProperty_DisposeCount, Is.EqualTo(2));
+            Assert.That(stats.AltRequestScopeDepDisposableProperty_DisposeCount, Is.EqualTo(2));
         }
 
         [Test]
@@ -298,14 +316,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = client.Get(new IocDispose());
             Thread.Sleep(WaitForRequestCleanup);
 
-            Assert.That(HostContext.Container.disposablesCount, Is.EqualTo(0));
-            Assert.That(FunqSingletonScopeDisposable.DisposeCount, Is.EqualTo(0));
+            var stats = client.Get(new IocStats());
+            Assert.That(stats.Container_disposablesCount, Is.EqualTo(0));
+            Assert.That(stats.FunqSingletonScopeDisposable_DisposeCount, Is.EqualTo(0));
 
-            Assert.That(IocDisposableService.DisposeCount, Is.EqualTo(2));
-            Assert.That(FunqRequestScopeDisposable.DisposeCount, Is.EqualTo(2));
-            Assert.That(FunqNoneScopeDisposable.DisposeCount, Is.EqualTo(2));
-            Assert.That(FunqRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
-            Assert.That(AltRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
+            Assert.That(stats.IocDisposableService_DisposeCount, Is.EqualTo(2));
+            Assert.That(stats.FunqRequestScopeDisposable_DisposeCount, Is.EqualTo(2));
+            Assert.That(stats.FunqNoneScopeDisposable_DisposeCount, Is.EqualTo(2));
+            Assert.That(stats.FunqRequestScopeDepDisposableProperty_DisposeCount, Is.EqualTo(2));
+            Assert.That(stats.AltRequestScopeDepDisposableProperty_DisposeCount, Is.EqualTo(2));
         }
 
         [Test]
@@ -317,14 +336,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = client.Get(new IocDisposeAsync());
             Thread.Sleep(WaitForRequestCleanup);
 
-            Assert.That(HostContext.Container.disposablesCount, Is.EqualTo(0));
-            Assert.That(FunqSingletonScopeDisposable.DisposeCount, Is.EqualTo(0));
+            var stats = client.Get(new IocStats());
+            Assert.That(stats.Container_disposablesCount, Is.EqualTo(0));
+            Assert.That(stats.FunqSingletonScopeDisposable_DisposeCount, Is.EqualTo(0));
 
-            Assert.That(IocDisposableService.DisposeCount, Is.EqualTo(2));
-            Assert.That(FunqRequestScopeDisposable.DisposeCount, Is.EqualTo(2));
-            Assert.That(FunqNoneScopeDisposable.DisposeCount, Is.EqualTo(2));
-            Assert.That(FunqRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
-            Assert.That(AltRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
+            Assert.That(stats.IocDisposableService_DisposeCount, Is.EqualTo(2));
+            Assert.That(stats.FunqRequestScopeDisposable_DisposeCount, Is.EqualTo(2));
+            Assert.That(stats.FunqNoneScopeDisposable_DisposeCount, Is.EqualTo(2));
+            Assert.That(stats.FunqRequestScopeDepDisposableProperty_DisposeCount, Is.EqualTo(2));
+            Assert.That(stats.AltRequestScopeDepDisposableProperty_DisposeCount, Is.EqualTo(2));
         }
 
     }
