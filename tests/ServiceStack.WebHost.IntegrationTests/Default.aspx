@@ -15,13 +15,13 @@
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="Content/bootstrap.css" rel="stylesheet" />    <link href="Content/default.css" rel="stylesheet" />    <script src="Content/js/jquery-1.7.1.min.js" type="text/javascript"></script>    <script src="Content/js/underscore.min.js" type="text/javascript"></script>    <script src="Content/js/backbone.min.js" type="text/javascript"></script>    <script src="Content/js/jsonreport.js" type="text/javascript"></script>    <script src="Content/js/ss-validation.js" type="text/javascript"></script>    <script src="Content/js/base.js" type="text/javascript"></script>
-    <style type="text/css">
+    <link href="Content/bootstrap.css" rel="stylesheet" />    <link href="Content/default.css" rel="stylesheet" />
+    <%=ServiceStack.MiniProfiler.Profiler.RenderIncludes().AsRaw() %>
+    <script src="Content/js/jquery-1.7.1.min.js" type="text/javascript"></script>    <script src="Content/js/underscore.min.js" type="text/javascript"></script>    <script src="Content/js/backbone.min.js" type="text/javascript"></script>    <script src="Content/js/jsonreport.js" type="text/javascript"></script>    <script src="api/js/ss-utils.js" type="text/javascript"></script>    <style type="text/css">
       body {
         padding-top: 60px;
       }
     </style>
-    <%=ServiceStack.MiniProfiler.Profiler.RenderIncludes(null, null, null, null, false, null).AsRaw() %>
   </head>
 
   <body>
@@ -45,7 +45,7 @@
 					
                     <p>
 						<button class="btn" type="submit">Sign In</button><b data-ajax="loading"></b>
-						or <a href="#" data-cmd="toggle:register,signin">register</a>
+						or <a href="#" data-click="toggle:register,signin">register</a>
 					</p>
                     
 					<div id="facebook-signin">
@@ -63,7 +63,7 @@
 			    nonummy nibh euismod tincidunt ut 
 			    laoreet dolore magna aliquam erat volutpat.
 		    </p>
-		    <button class="btn large primary" data-cmd="toggle:register,signin">Register Now</button>
+		    <button class="btn large primary" data-click="toggle:register,signin">Register Now</button>
 	    </div>
 
     </div>
@@ -88,7 +88,7 @@
 
                     <p>
                         <button class="btn" type="submit">Sign Up</button><b data-ajax="loading"></b>
-                        or <a href="#" data-cmd="toggle:signin,register">sign in</a>
+                        or <a href="#" data-click="toggle:signin,register">sign in</a>
                     </p>
                 </fieldset>
             </div>
@@ -117,7 +117,7 @@
 <div id="oAuthProviders"></div>
 
 <script type="text/javascript">
-    $.getJSON("api/userauths", function(r) {
+    $.getJSON("api/userauths", function (r) {
         $("#userauths").html(_.jsonreport(r.results));
         $("#oAuthProviders").html(_.jsonreport(r.oAuthProviders));
     });
@@ -126,61 +126,49 @@
 
 <script type="text/javascript">
 
-    _.each({
-            UserName: 'as@if.com',
-            DisplayName: 'mythz',
-            Email: 'as@if.com',
-            Password: 'test',
-            ConfirmPassword: 'test'
-        }, function (val, name) {
-            $("[name=" + name + "]").val(val);
-        });
-
-    var clear = function () {
-        $(".success, .error-summary").hide();
-        $(".error").removeClass("error");
-        $(".help-inline").html("");
-    };
-
-    $("FORM").submit(function (e) {
-        e.preventDefault();
-        clear();
-
-        var $form = $(this),
-            $config = $form.find("#ConfirmPassword");
-
-        if ($config.length) {
-            if ($config.val() != $form.find("#Password").val()) {
-                _.setFieldError($config, "passwords do not match");
-                return;
-            }
-        }
-
-        _.post({
-            form: $form,
-            url: $form.attr("action"),
-            data: _.formData($form),
-            success: function (r) {
-                var msg = r.userName
-                    ? "<strong>Welcome " + r.userName + "!</strong> your sessionId is <b>" + r.sessionId + "</b>."
-                    : r.userId
-                        ? "<strong>Welcome</strong> you are user #" + r.userId
-                            + "! You should now <a href='#' data-cmd='toggle:signin,register'>sign in</a>."
-                        : "";
-                if (msg) {
-                    $(".success P").html(msg);
-                    $(".success").fadeIn();
-
-                    if (r.userId)
-                        $("#signin #UserName").val($("#register #Email").val());
-                }
-            }
-        });
+    $(document).applyValues({
+        UserName: 'as@if.com',
+        DisplayName: 'mythz',
+        Email: 'as@if.com',
+        Password: 'test',
+        ConfirmPassword: 'test'
     });
 
-    _.cmdHandler({
+    function success(r) {
+        var msg = r.userName
+                ? "<strong>Welcome " + r.userName + "!</strong> your sessionId is <b>" + r.sessionId + "</b>."
+                : r.userId
+                    ? "<strong>Welcome</strong> you are user #" + r.userId
+                        + "! You should now <a href='#' data-click='toggle:signin,register'>sign in</a>."
+                    : "";
+        if (msg) {
+            $(".success P").html(msg);
+            $(".success").fadeIn();
+        }
+    }
+
+    $("#signin FORM").bindForm({
+        success: success
+    });
+    
+    $("#register FORM").bindForm({
+        validate: function () {
+            console.log("validate", $(this).serializeMap());
+            var formData = $(this).serializeMap();
+
+            if (formData["ConfirmPassword"] != formData["Password"]) {
+                $(this).setFieldError("Password", "passwords do not match");
+                return false;
+            }
+        },
+        success: function(r) {
+            $("#signin #UserName").val($("#register #Email").val());
+            success(r);
+        }
+    });
+
+    $(document).bindHandlers({
         toggle: function (show, hide) {
-            clear();
             $("#" + hide).hide();
             $("#" + show).fadeIn();
         }
