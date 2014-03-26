@@ -47,6 +47,23 @@
         return to;
     }
 
+    $.fn.setFieldError = function(name, msg) {
+        $(this).applyErrors({
+            errors: [{
+                fieldName: name,
+                message: msg
+            }]
+        });
+    };
+
+    $.fn.serializeMap = function() {
+        var o = {};
+        $.each($(this).serializeArray(), function(i, e) {
+            o[e.name] = e.value;
+        });
+        return o;
+    };
+
     $.fn.applyErrors = function (status, opt) {
         this.clearErrors();
         if (!status) return this;
@@ -132,6 +149,8 @@
             f.submit(function (e) {
                 e.preventDefault();
                 f.clearErrors();
+                if (orig.validate && orig.validate.call(f) === false)
+                    return false;
                 f.addClass("loading");
                 var $disable = $(orig.onSubmitDisable || $.ss.onSubmitDisable, f);
                 $disable.attr("disabled", "disabled");
@@ -199,15 +218,21 @@
         var $el = $(e.target);
         var attr = $el.data(e.type) || $el.closest("[data-" + e.type + "]").data(e.type);
         if (!attr) return;
-        var pos = attr.indexOf(':');
+
+        var pos = attr.indexOf(':'), fn;
         if (pos >= 0) {
             var cmd = attr.substring(0, pos);
             var data = attr.substring(pos + 1);
             if (cmd == 'trigger') {
                 $el.trigger(data, [e.target]);
+            } else {
+                fn = $.ss.handlers[cmd];
+                if (fn) {
+                    fn.apply(e.target, data.split(','));
+                }
             }
         } else {
-            var fn = $.ss.handlers[attr];
+            fn = $.ss.handlers[attr];
             if (fn) {
                 fn.apply(e.target, [].splice(arguments));
             }
