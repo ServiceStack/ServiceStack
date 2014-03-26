@@ -57,7 +57,7 @@ namespace ServiceStack.Host.Handlers
                     }
 
                     return taskResponse
-                        .ContinueWith(task =>
+                        .Continue(task =>
                         {
                             if (task.IsFaulted)
                                 return errorCallback(task.Exception.UnwrapIfSingleException());
