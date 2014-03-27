@@ -12,16 +12,15 @@ namespace ServiceStack
             return request.GetSession() as AuthUserSession;
         }
 
-        public static string GetCompressionType(this IRequest request)
-        {
-            if (request.RequestPreferences.AcceptsDeflate)
-                return CompressionTypes.Deflate;
-
-            if (request.RequestPreferences.AcceptsGzip)
-                return CompressionTypes.GZip;
-
-            return null;
-        }
+		public static string GetCompressionType(this IRequest request)
+		{
+			var encoding = request.GetHeader("accept-encoding");
+			if(encoding != null) {
+				encoding = encoding.ToLowerInvariant();
+				return encoding.Contains("deflate") ? CompressionTypes.Deflate : (encoding.Contains("gzip") ? CompressionTypes.GZip : null);
+			}
+			return null;
+		}
 
         public static string GetHeader(this IRequest request, string headerName)
         {
