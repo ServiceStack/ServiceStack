@@ -8,7 +8,7 @@ namespace ServiceStack.Messaging.Rcon
     /// Processing client used to interface with ServiceStack and allow a message to be processed.
     /// Not an actual client.
     /// </summary>
-    internal class ProcessingClient : IMessageQueueClient
+    internal class ProcessingClient : IMessageQueueClient, IOneWayClient
     {
         Packet thePacket;
         Socket theClient;
@@ -33,6 +33,16 @@ namespace ServiceStack.Messaging.Rcon
         public void Publish<T>(IMessage<T> message)
         {
             Publish(message.ToInQueueName(), message);
+        }
+
+        public void SendOneWay(object requestDto)
+        {
+            Publish(MessageFactory.Create(requestDto));
+        }
+
+        public void SendOneWay(string queueName, object requestDto)
+        {
+            Publish(queueName, MessageFactory.Create(requestDto));
         }
 
         /// <summary>

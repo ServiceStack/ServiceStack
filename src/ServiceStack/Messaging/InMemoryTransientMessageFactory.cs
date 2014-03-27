@@ -41,7 +41,7 @@ namespace ServiceStack.Messaging
         }
 
         internal class InMemoryMessageProducer
-            : IMessageProducer
+            : IMessageProducer, IOneWayClient
         {
             private readonly InMemoryTransientMessageFactory parent;
 
@@ -72,6 +72,16 @@ namespace ServiceStack.Messaging
             {
                 this.parent.transientMessageService.MessageQueueFactory
                     .PublishMessage(queueName, message.ToBytes());
+            }
+
+            public void SendOneWay(object requestDto)
+            {
+                Publish(MessageFactory.Create(requestDto));
+            }
+
+            public void SendOneWay(string queueName, object requestDto)
+            {
+                Publish(queueName, MessageFactory.Create(requestDto));
             }
 
             public void Dispose()

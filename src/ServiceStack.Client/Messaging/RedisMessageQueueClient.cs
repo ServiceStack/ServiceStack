@@ -7,7 +7,7 @@ using ServiceStack.Redis;
 namespace ServiceStack.Messaging
 {
     public class RedisMessageQueueClient
-        : IMessageQueueClient
+        : IMessageQueueClient, IOneWayClient
     {
         private readonly Action onPublishedCallback;
         private readonly IRedisClientsManager clientsManager;
@@ -67,6 +67,16 @@ namespace ServiceStack.Messaging
         public void Publish<T>(IMessage<T> message)
         {
             Publish(message.ToInQueueName(), message);
+        }
+
+        public void SendOneWay(object requestDto)
+        {
+            Publish(MessageFactory.Create(requestDto));
+        }
+
+        public void SendOneWay(string queueName, object requestDto)
+        {
+            Publish(queueName, MessageFactory.Create(requestDto));
         }
 
         public void Publish(string queueName, IMessage message)

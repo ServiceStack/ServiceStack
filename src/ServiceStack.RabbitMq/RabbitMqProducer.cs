@@ -7,7 +7,7 @@ using ServiceStack.Messaging;
 
 namespace ServiceStack.RabbitMq
 {
-    public class RabbitMqProducer : IMessageProducer
+    public class RabbitMqProducer : IMessageProducer, IOneWayClient
     {
         public static ILog Log = LogManager.GetLogger(typeof(RabbitMqProducer));
         protected readonly RabbitMqMessageFactory msgFactory;
@@ -69,6 +69,16 @@ namespace ServiceStack.RabbitMq
         public void Publish(string queueName, IMessage message)
         {
             Publish(queueName, message, QueueNames.Exchange);
+        }
+
+        public void SendOneWay(object requestDto)
+        {
+            Publish(MessageFactory.Create(requestDto));
+        }
+
+        public void SendOneWay(string queueName, object requestDto)
+        {
+            Publish(queueName, MessageFactory.Create(requestDto));
         }
 
         public void Publish(string queueName, IMessage message, string exchange)

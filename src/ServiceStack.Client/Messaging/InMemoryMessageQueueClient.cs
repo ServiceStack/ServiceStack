@@ -6,7 +6,7 @@ using System;
 namespace ServiceStack.Messaging
 {
     public class InMemoryMessageQueueClient
-        : IMessageQueueClient
+        : IMessageQueueClient, IOneWayClient
     {
         private readonly MessageQueueClientFactory factory;
 
@@ -37,6 +37,16 @@ namespace ServiceStack.Messaging
         {
             var messageBytes = message.ToBytes();
             factory.PublishMessage(queueName, messageBytes);
+        }
+
+        public void SendOneWay(object requestDto)
+        {
+            Publish(MessageFactory.Create(requestDto));
+        }
+
+        public void SendOneWay(string queueName, object requestDto)
+        {
+            Publish(queueName, MessageFactory.Create(requestDto));
         }
 
         public void Notify(string queueName, IMessage message)

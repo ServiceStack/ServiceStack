@@ -26,9 +26,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             ServiceController.Execute(requestDto);
         }
 
-        public void SendOneWay(string relativeOrAbsoluteUrl, object request)
+        public void SendOneWay(string relativeOrAbsoluteUri, object requestDto)
         {
-            ServiceController.Execute(request);
+            ServiceController.Execute(requestDto);
         }
 
         private bool ApplyRequestFilters<TResponse>(object request)

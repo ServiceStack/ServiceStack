@@ -8,7 +8,7 @@ using ServiceStack.Text;
 namespace ServiceStack.Messaging
 {
 	public class RedisMessageProducer
-		: IMessageProducer 
+		: IMessageProducer, IOneWayClient 
 	{
 		private readonly IRedisClientsManager clientsManager;
 		private readonly Action onPublishedCallback;
@@ -51,6 +51,16 @@ namespace ServiceStack.Messaging
         public void Publish<T>(IMessage<T> message)
         {
             Publish(message.ToInQueueName(), message);
+        }
+
+        public void SendOneWay(object requestDto)
+        {
+            Publish(MessageFactory.Create(requestDto));
+        }
+
+        public void SendOneWay(string queueName, object requestDto)
+        {
+            Publish(queueName, MessageFactory.Create(requestDto));
         }
 
         public void Publish(string queueName, IMessage message)

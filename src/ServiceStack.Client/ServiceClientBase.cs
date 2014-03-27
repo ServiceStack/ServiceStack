@@ -10,6 +10,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Reflection;
 using ServiceStack.Logging;
+using ServiceStack.Messaging;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -29,7 +30,7 @@ namespace ServiceStack
      * Need to provide async request options
      * http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
      */
-    public abstract class ServiceClientBase : IServiceClient
+    public abstract class ServiceClientBase : IServiceClient, IMessageProducer
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(ServiceClientBase));
 
@@ -728,6 +729,31 @@ namespace ServiceStack
                 using (var stream = response.GetResponseStream())
                     return stream.ReadFully();
             }
+        }
+
+        public void Publish<T>(T requestDto)
+        {
+            Post(requestDto);
+        }
+
+        public void Publish<T>(IMessage<T> message)
+        {
+            var requestDto = message.GetBody();
+
+            if (message.CreatedDate != default(DateTime))
+                Headers.Set("X-CreatedDate", message.CreatedDate.ToJsv());
+            if (message.Priority != default(int))
+                Headers.Set("X-Priority", message.Priority.ToString());
+            if (message.RetryAttempts != default(int))
+                Headers.Set("X-RetryAttempts", message.RetryAttempts.ToString());
+            if (message.ReplyId != null)
+                Headers.Set("X-ReplyId", message.ReplyId.Value.ToString());
+            if (message.ReplyTo != null)
+                Headers.Set("X-ReplyTo", message.ReplyTo);
+            if (message.Tag != null)
+                Headers.Set("X-Tag", message.Tag);
+
+            Post(requestDto);
         }
 
         public virtual void SendOneWay(object requestDto)

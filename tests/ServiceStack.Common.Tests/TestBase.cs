@@ -106,9 +106,9 @@ namespace ServiceStack.Common.Tests
                 ServiceManager.Execute(requestDto);
             }
 
-            public void SendOneWay(string relativeOrAbsoluteUrl, object request)
+            public void SendOneWay(string relativeOrAbsoluteUri, object requestDto)
             {
-                ServiceManager.Execute(request);
+                ServiceManager.Execute(requestDto);
             }
 
             public TResponse Send<TResponse>(object request)
