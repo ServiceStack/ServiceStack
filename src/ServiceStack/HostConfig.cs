@@ -37,6 +37,7 @@ namespace ServiceStack
             {
                 MetadataTypesConfig = new MetadataTypesConfig(addDefaultXmlNamespace: "http://schemas.servicestack.net/types"),
                 WsdlServiceNamespace = "http://schemas.servicestack.net/types",
+                ApiVersion = "1.0",
                 EmbeddedResourceSources = new[] { HostContext.AppHost.GetType().Assembly, typeof(Service).Assembly }.ToList(),
                 LogFactory = new NullLogFactory(),
                 EnableAccessRestrictions = true,
@@ -122,6 +123,7 @@ namespace ServiceStack
             //Get a copy of the singleton already partially configured
             this.MetadataTypesConfig = instance.MetadataTypesConfig;
             this.WsdlServiceNamespace = instance.WsdlServiceNamespace;
+            this.ApiVersion = instance.ApiVersion;
             this.EmbeddedResourceSources = instance.EmbeddedResourceSources;
             this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
             this.ServiceEndpointsMetadataConfig = instance.ServiceEndpointsMetadataConfig;
@@ -169,6 +171,7 @@ namespace ServiceStack
 
         public MetadataTypesConfig MetadataTypesConfig { get; set; }
         public string WsdlServiceNamespace { get; set; }
+        public string ApiVersion { get; set; }
 
         private RequestAttributes metadataVisibility;
         public RequestAttributes MetadataVisibility

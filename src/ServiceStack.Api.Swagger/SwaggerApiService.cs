@@ -179,6 +179,7 @@ namespace ServiceStack.Api.Swagger
 
             return new ResourceResponse
             {
+                ApiVersion = HostContext.Config.ApiVersion,
                 ResourcePath = path,
                 BasePath = basePath,
                 Apis = new List<MethodDescription>(paths.Select(p => FormateMethodDescription(p, models)).ToArray().OrderBy(md => md.Path)),
