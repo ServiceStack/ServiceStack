@@ -302,15 +302,30 @@ namespace ServiceStack
             if (config.EnableFeatures != Feature.All)
             {
                 if ((Feature.Xml & config.EnableFeatures) != Feature.Xml)
+                {
                     config.IgnoreFormatsInMetadata.Add("xml");
+                    Config.PreferredContentTypes.Remove(MimeTypes.Xml);
+                }
                 if ((Feature.Json & config.EnableFeatures) != Feature.Json)
+                {
                     config.IgnoreFormatsInMetadata.Add("json");
+                    Config.PreferredContentTypes.Remove(MimeTypes.Json);
+                }
                 if ((Feature.Jsv & config.EnableFeatures) != Feature.Jsv)
+                {
                     config.IgnoreFormatsInMetadata.Add("jsv");
+                    Config.PreferredContentTypes.Remove(MimeTypes.Jsv);
+                }
                 if ((Feature.Csv & config.EnableFeatures) != Feature.Csv)
+                {
                     config.IgnoreFormatsInMetadata.Add("csv");
+                    Config.PreferredContentTypes.Remove(MimeTypes.Csv);
+                }
                 if ((Feature.Html & config.EnableFeatures) != Feature.Html)
+                {
                     config.IgnoreFormatsInMetadata.Add("html");
+                    Config.PreferredContentTypes.Remove(MimeTypes.Html);
+                }
                 if ((Feature.Soap11 & config.EnableFeatures) != Feature.Soap11)
                     config.IgnoreFormatsInMetadata.Add("soap11");
                 if ((Feature.Soap12 & config.EnableFeatures) != Feature.Soap12)
@@ -409,6 +424,11 @@ namespace ServiceStack
                 config.DefaultContentType = specifiedContentType;
             else if (String.IsNullOrEmpty(config.DefaultContentType))
                 config.DefaultContentType = MimeTypes.Json;
+
+            Config.PreferredContentTypes.Remove(Config.DefaultContentType);
+            Config.PreferredContentTypes.Insert(0, Config.DefaultContentType);
+
+            HttpRequestExtensions.PreferredContentTypes = Config.PreferredContentTypes.ToArray();
 
             ServiceController.AfterInit();
         }

@@ -45,6 +45,9 @@ namespace ServiceStack
                 HandlerFactoryPath = ServiceStackPath,
                 MetadataRedirectPath = null,
                 DefaultContentType = null,
+                PreferredContentTypes = new List<string> {
+                    MimeTypes.Html, MimeTypes.Json, MimeTypes.Xml, MimeTypes.Jsv
+                },
                 AllowJsonpRequests = true,
                 AllowRouteContentTypeExtensions = true,
                 AllowNonHttpOnlyCookies = false,
@@ -135,6 +138,7 @@ namespace ServiceStack
             this.MetadataRedirectPath = instance.MetadataRedirectPath;
             this.HandlerFactoryPath = instance.HandlerFactoryPath;
             this.DefaultContentType = instance.DefaultContentType;
+            this.PreferredContentTypes = instance.PreferredContentTypes;
             this.AllowJsonpRequests = instance.AllowJsonpRequests;
             this.AllowRouteContentTypeExtensions = instance.AllowRouteContentTypeExtensions;
             this.DebugMode = instance.DebugMode;
@@ -184,6 +188,7 @@ namespace ServiceStack
 
         public string SoapServiceName { get; set; }
         public string DefaultContentType { get; set; }
+        public List<string> PreferredContentTypes { get; set; }
         public bool AllowJsonpRequests { get; set; }
         public bool AllowRouteContentTypeExtensions { get; set; }
         public bool DebugMode { get; set; }

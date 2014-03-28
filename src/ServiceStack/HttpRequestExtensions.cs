@@ -554,9 +554,7 @@ namespace ServiceStack
             return contentType;
         }
 
-        public static string[] PreferredContentTypes = new[] {
-			MimeTypes.Html, MimeTypes.Json, MimeTypes.Xml, MimeTypes.Jsv
-		};
+        public static string[] PreferredContentTypes = new string[] { }; //set by AppHost.AfterPluginsLoaded
 
         /// <summary>
         /// Use this to treat Request.Items[] as a cache by returning pre-computed items to save 
@@ -596,7 +594,7 @@ namespace ServiceStack
                 var hasPreferredContentTypes = new bool[PreferredContentTypes.Length];
                 foreach (var contentType in acceptContentTypes)
                 {
-                    acceptsAnything = acceptsAnything || contentType == "*/*";
+                    acceptsAnything = acceptsAnything || contentType.SplitOnFirst(";")[0] == "*/*";
 
                     for (var i = 0; i < PreferredContentTypes.Length; i++)
                     {
