@@ -44,22 +44,22 @@ namespace ServiceStack
 
         public static string ToGetUrl(this object requestDto)
         {
-            return requestDto.ToUrl(HttpMethods.Get);
+            return requestDto.ToUrl(HttpMethods.Get, formatFallbackToPredefinedRoute:"json");
         }
 
         public static string ToPostUrl(this object requestDto)
         {
-            return requestDto.ToUrl(HttpMethods.Post);
+            return requestDto.ToUrl(HttpMethods.Post, formatFallbackToPredefinedRoute: "json");
         }
 
         public static string ToPutUrl(this object requestDto)
         {
-            return requestDto.ToUrl(HttpMethods.Put);
+            return requestDto.ToUrl(HttpMethods.Put, formatFallbackToPredefinedRoute: "json");
         }
 
         public static string ToDeleteUrl(this object requestDto)
         {
-            return requestDto.ToUrl(HttpMethods.Delete);
+            return requestDto.ToUrl(HttpMethods.Delete, formatFallbackToPredefinedRoute:"json");
         }
 
         public static string ToOneWayUrl(this object requestDto, string format = "json")
