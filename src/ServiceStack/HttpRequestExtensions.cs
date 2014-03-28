@@ -592,9 +592,10 @@ namespace ServiceStack
             if (acceptContentTypes != null)
             {
                 var hasPreferredContentTypes = new bool[PreferredContentTypes.Length];
-                foreach (var contentType in acceptContentTypes)
+                foreach (var acceptsType in acceptContentTypes)
                 {
-                    acceptsAnything = acceptsAnything || contentType.SplitOnFirst(";")[0] == "*/*";
+                    var contentType = acceptsType.SplitOnFirst(";")[0];
+                    acceptsAnything = acceptsAnything || contentType == "*/*";
 
                     for (var i = 0; i < PreferredContentTypes.Length; i++)
                     {
