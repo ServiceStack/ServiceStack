@@ -22,6 +22,10 @@
         $(this).prev(".help-inline,.help-block").removeClass("error").html("");
         $(this).next(".help-inline,.help-block").removeClass("error").html("");
     };
+    $.ss.toDate = function(s) { return new Date(parseFloat(/Date\(([^)]+)\)/.exec(s)[1])); };
+    $.ss.pad = function(d) { return d < 10 ? '0' + d : d; };
+    $.ss.dmft = function(d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()); };
+    $.ss.dmfthm = function(d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ":" + pad(d.getMinutes()); };
 
     function splitCase(t) {
         return typeof t != 'string' ? t : t.replace( /([A-Z]|[0-9]+)/g , ' $1').replace( /_/g , ' ');
@@ -149,8 +153,10 @@
             f.submit(function (e) {
                 e.preventDefault();
                 f.clearErrors();
-                if (orig.validate && orig.validate.call(f) === false)
-                    return false;
+                try {
+                    if (orig.validate && orig.validate.call(f) === false)
+                        return false;
+                } catch (e) { return false; }
                 f.addClass("loading");
                 var $disable = $(orig.onSubmitDisable || $.ss.onSubmitDisable, f);
                 $disable.attr("disabled", "disabled");
