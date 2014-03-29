@@ -24,8 +24,8 @@
     };
     $.ss.toDate = function(s) { return new Date(parseFloat(/Date\(([^)]+)\)/.exec(s)[1])); };
     $.ss.pad = function(d) { return d < 10 ? '0' + d : d; };
-    $.ss.dmft = function(d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()); };
-    $.ss.dmfthm = function(d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ":" + pad(d.getMinutes()); };
+    $.ss.dfmt = function(d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()); };
+    $.ss.dfmthm = function (d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ":" + pad(d.getMinutes()); };
 
     function splitCase(t) {
         return typeof t != 'string' ? t : t.replace( /([A-Z]|[0-9]+)/g , ' $1').replace( /_/g , ' ');
