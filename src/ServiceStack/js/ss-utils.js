@@ -22,9 +22,10 @@
         $(this).prev(".help-inline,.help-block").removeClass("error").html("");
         $(this).next(".help-inline,.help-block").removeClass("error").html("");
     };
-    $.ss.toDate = function(s) { return new Date(parseFloat(/Date\(([^)]+)\)/.exec(s)[1])); };
-    $.ss.pad = function(d) { return d < 10 ? '0' + d : d; };
-    $.ss.dfmt = function(d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()); };
+    $.ss.todate = function(s) { return new Date(parseFloat(/Date\(([^)]+)\)/.exec(s)[1])); };
+    $.ss.todfmt = function (s) { return $.ss.dfmt($.ss.todate(s)); };
+    function pad(d) { return d < 10 ? '0' + d : d; };
+    $.ss.dfmt = function (d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()); };
     $.ss.dfmthm = function (d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ":" + pad(d.getMinutes()); };
 
     function splitCase(t) {
