@@ -302,6 +302,7 @@
  - [et1975](https://github.com/et1975) (Eugene Tolmachev)
  - [barambani](https://github.com/barambani)
  - [nhalm](https://github.com/et1975)
+ - [scottmcarthur](https://github.com/scottmcarthur) (Scott McArthur)
 
 
 
