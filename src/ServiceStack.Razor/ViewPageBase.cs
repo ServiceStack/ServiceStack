@@ -57,7 +57,7 @@ namespace ServiceStack.Razor
 
         public IResponse Response { get; set; }
 
-        public StreamWriter Output { get; set; }
+        public virtual StreamWriter Output { get; set; }
 
         public dynamic ViewBag { get; set; }
 

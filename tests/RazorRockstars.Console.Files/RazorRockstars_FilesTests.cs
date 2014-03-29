@@ -356,6 +356,16 @@ namespace RazorRockstars.Console.Files
                 "<p>ResponseStatus: ArgumentException</p>",
                 "<p>ResponseStatus: Custom_Error_Message_Only</p>");
         }
+
+        [Test]
+        public void Does_render_partials_inside_sections()
+        {
+            Assert200(Host + "/Pages/",
+                View_Pages_Default, 
+                "<h3>Inside SectionHead</h3>",
+                "<h3>Inside PartialChildModel</h3>",
+                "<!--view:PartialChildModel.cshtml-->");
+        }
     }
 }
 

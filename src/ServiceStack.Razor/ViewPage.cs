@@ -47,6 +47,18 @@ namespace ServiceStack.Razor
             get { return Html; }
         }
 
+        public override StreamWriter Output
+        {
+            get
+            {
+                return base.Output;
+            }
+            set
+            {
+                base.Output = Html.Writer = value;
+            }
+        }
+
         public void Init(IViewEngine viewEngine, IRequest httpReq, IResponse httpRes)
         {
             base.Request = httpReq;
