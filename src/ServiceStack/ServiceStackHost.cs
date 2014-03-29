@@ -428,7 +428,7 @@ namespace ServiceStack
             Config.PreferredContentTypes.Remove(Config.DefaultContentType);
             Config.PreferredContentTypes.Insert(0, Config.DefaultContentType);
 
-            HttpRequestExtensions.PreferredContentTypes = Config.PreferredContentTypes.ToArray();
+            Config.PreferredContentTypesArray = Config.PreferredContentTypes.ToArray();
 
             ServiceController.AfterInit();
         }

@@ -554,8 +554,6 @@ namespace ServiceStack
             return contentType;
         }
 
-        public static string[] PreferredContentTypes = new string[] { }; //set by AppHost.AfterPluginsLoaded
-
         /// <summary>
         /// Use this to treat Request.Items[] as a cache by returning pre-computed items to save 
         /// calculating them multiple times.
@@ -586,21 +584,22 @@ namespace ServiceStack
             }
 
             var customContentTypes = HostContext.ContentTypes.ContentTypeFormats.Values;
+            var preferredContentTypes = HostContext.Config.PreferredContentTypesArray;
 
             var acceptsAnything = false;
             var hasDefaultContentType = !String.IsNullOrEmpty(defaultContentType);
             if (acceptContentTypes != null)
             {
-                var hasPreferredContentTypes = new bool[PreferredContentTypes.Length];
+                var hasPreferredContentTypes = new bool[preferredContentTypes.Length];
                 foreach (var acceptsType in acceptContentTypes)
                 {
                     var contentType = acceptsType.SplitOnFirst(";")[0];
                     acceptsAnything = acceptsAnything || contentType == "*/*";
 
-                    for (var i = 0; i < PreferredContentTypes.Length; i++)
+                    for (var i = 0; i < preferredContentTypes.Length; i++)
                     {
                         if (hasPreferredContentTypes[i]) continue;
-                        var preferredContentType = PreferredContentTypes[i];
+                        var preferredContentType = preferredContentTypes[i];
                         hasPreferredContentTypes[i] = contentType.StartsWith(preferredContentType);
 
                         //Prefer Request.ContentType if it is also a preferredContentType
@@ -608,9 +607,9 @@ namespace ServiceStack
                             return preferredContentType;
                     }
                 }
-                for (var i = 0; i < PreferredContentTypes.Length; i++)
+                for (var i = 0; i < preferredContentTypes.Length; i++)
                 {
-                    if (hasPreferredContentTypes[i]) return PreferredContentTypes[i];
+                    if (hasPreferredContentTypes[i]) return preferredContentTypes[i];
                 }
                 if (acceptsAnything && hasDefaultContentType) return defaultContentType;
 
