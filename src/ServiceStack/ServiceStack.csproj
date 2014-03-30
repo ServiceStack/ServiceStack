@@ -93,6 +93,7 @@
     <Compile Include="AddHeaderAttribute.cs" />
     <Compile Include="AppHostHttpListenerSmartPoolBase.cs" />
     <Compile Include="AsyncExtensions.cs" />
+    <Compile Include="Auth\SocialExtensions.cs" />
     <Compile Include="Auth\UserAuthRepositoryExtensions.cs" />
     <Compile Include="CompressedFileResult.cs" />
     <Compile Include="CompressedResult.cs" />
