@@ -292,6 +292,9 @@ namespace ServiceStack.Pcl
                 m_ItemsArray = null;
             }
 
+            if (equality_comparer == null)
+                equality_comparer = StringComparer.OrdinalIgnoreCase;
+
             m_ItemsContainer = new Hashtable(m_defCapacity, new StringEqualityComparer(equality_comparer));
             m_ItemsArray = new ArrayList();
             m_NullKeyItem = null;
@@ -440,7 +443,7 @@ namespace ServiceStack.Pcl
                     m_NullKeyItem = newitem;
             }
             else
-                if (m_ItemsContainer[name] == null)
+                if (!HasItem(name))
                 {
                     m_ItemsContainer.Add(name, newitem);
                 }
@@ -621,16 +624,25 @@ namespace ServiceStack.Pcl
                 BaseAdd(name, value);
         }
 
+        private bool HasItem(string name)
+        {
+            return FindFirstMatchedItem(name) != m_NullKeyItem;
+        }
+
         //[MonoTODO]
         private _Item FindFirstMatchedItem(string name)
         {
             if (name != null)
-                return (_Item)m_ItemsContainer[name];
-            else
             {
-                //TODO: consider null key case
+                object value;
+                if (m_ItemsContainer.TryGetValue(name, out value))
+                    return (value as _Item) ?? m_NullKeyItem;
+
                 return m_NullKeyItem;
             }
+            
+            //TODO: consider null key case
+            return m_NullKeyItem;
         }
 
         internal bool Equals(string s1, string s2)
