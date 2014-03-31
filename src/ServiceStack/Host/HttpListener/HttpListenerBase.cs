@@ -88,11 +88,10 @@ namespace ServiceStack.Host.HttpListener
 
             Listener.Prefixes.Add(listeningAtUrlBase);
 
-            IsStarted = true;
-
             try
             {
                 Listener.Start();
+                IsStarted = true;
             }
             catch (HttpListenerException ex)
             {
