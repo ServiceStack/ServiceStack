@@ -607,11 +607,19 @@ namespace ServiceStack
                             return preferredContentType;
                     }
                 }
+                
                 for (var i = 0; i < preferredContentTypes.Length; i++)
                 {
                     if (hasPreferredContentTypes[i]) return preferredContentTypes[i];
                 }
-                if (acceptsAnything && hasDefaultContentType) return defaultContentType;
+
+                if (acceptsAnything)
+                {
+                    if (hasDefaultContentType)
+                        return defaultContentType;
+                    if (HostContext.Config.DefaultContentType != null)
+                        return HostContext.Config.DefaultContentType;
+                }
 
                 foreach (var contentType in acceptContentTypes)
                 {
