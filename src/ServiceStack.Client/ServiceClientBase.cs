@@ -1172,16 +1172,16 @@ namespace ServiceStack
         }
 
 #if !PCL
-        public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request, string fieldName = "upload")
+        public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request, ProgressDelegate uploadProgress, string fieldName = "upload")
         {
             using (FileStream fileStream = fileToUpload.OpenRead())
             {
-                return PostFileWithRequest<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, request, fieldName);
+                return PostFileWithRequest<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, request, fieldName, uploadProgress);
             }
         }
 #endif
 
-        public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request, string fieldName = "upload")
+        public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request, ProgressDelegate uploadProgress, string fieldName = "upload")
         {
             var requestUri = GetUrl(relativeOrAbsoluteUrl);
             var currentStreamPosition = fileToUpload.Position;
@@ -1214,6 +1214,7 @@ namespace ServiceStack
                     while ((byteCount = fileToUpload.Read(buffer, 0, 4096)) > 0)
                     {
                         outputStream.Write(buffer, 0, byteCount);
+                        uploadProgress(fileToUpload.Position, fileToUpload.Length);
                     }
                     outputStream.Write(newLine);
                     outputStream.Write(boundary + "--");
