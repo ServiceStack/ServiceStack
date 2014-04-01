@@ -101,6 +101,8 @@ namespace ServiceStack
 
         public ProgressDelegate OnDownloadProgress { get; set; }
 
+        public ProgressDelegate OnUploadProgress { get; set; }
+
         public bool ShareCookiesWithBrowser { get; set; }
 
         internal Action CancelAsyncFn;

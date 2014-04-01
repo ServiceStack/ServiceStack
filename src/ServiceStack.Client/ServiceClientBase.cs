@@ -270,6 +270,12 @@ namespace ServiceStack
             set { asyncClient.OnDownloadProgress = value; }
         }
 
+        public ProgressDelegate OnUploadProgress
+        {
+            get { return asyncClient.OnUploadProgress; }
+            set { asyncClient.OnUploadProgress = value; }
+        }
+
         private bool shareCookiesWithBrowser;
         public bool ShareCookiesWithBrowser
         {
@@ -1211,9 +1217,16 @@ namespace ServiceStack
                     outputStream.Write("Content-Disposition: form-data;name=\"{0}\";filename=\"{1}\"{2}{3}".FormatWith(fieldName, fileName, newLine, newLine));
                     var buffer = new byte[4096];
                     int byteCount;
+                    int bytesWritten = 0;
                     while ((byteCount = fileToUpload.Read(buffer, 0, 4096)) > 0)
                     {
                         outputStream.Write(buffer, 0, byteCount);
+
+                        if (OnUploadProgress != null)
+                        {
+                            bytesWritten += byteCount;
+                            OnUploadProgress(bytesWritten, fileToUpload.Length);
+                        }
                     }
                     outputStream.Write(newLine);
                     outputStream.Write(boundary + "--");
