@@ -219,6 +219,12 @@
             $el.find("[data-val]").each(function () {
                 $(this).val(map[$(this).data("val")] || "");
             });
+            $el.find("[data-src]").each(function () {
+                $(this).attr("src", map[$(this).data("src")] || "");
+            });
+            $el.find("[data-href]").each(function () {
+                $(this).attr("href", map[$(this).data("href")] || "");
+            });
         });
     };
     $.ss.__call = $.ss.__call || function (e) {
