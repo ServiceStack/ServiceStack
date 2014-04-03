@@ -156,6 +156,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public override RouteAttribute[] GetRouteAttributes(System.Type requestType)
         {
             var routes = base.GetRouteAttributes(requestType);
+            if (requestType != typeof (CustomRoute)) return routes;
+
             routes.Each(x => x.Path = "/api" + x.Path);
             return routes;
         }
