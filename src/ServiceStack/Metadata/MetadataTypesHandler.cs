@@ -72,7 +72,7 @@ namespace ServiceStack.Metadata
                 }
             }
 
-            var routeAttrs = type.AllAttributes<RouteAttribute>().ToList();
+            var routeAttrs = HostContext.AppHost.GetRouteAttributes(type).ToList();
             if (routeAttrs.Count > 0)
             {
                 metaType.Routes = routeAttrs.ConvertAll(x =>

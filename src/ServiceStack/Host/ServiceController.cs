@@ -179,7 +179,7 @@ namespace ServiceStack.Host
 
         public void RegisterRestPaths(Type requestType)
         {
-            var attrs = requestType.AllAttributes<RouteAttribute>();
+            var attrs = appHost.GetRouteAttributes(requestType);
             foreach (RouteAttribute attr in attrs)
             {
                 var restPath = new RestPath(requestType, attr.Path, attr.Verbs, attr.Summary, attr.Notes);

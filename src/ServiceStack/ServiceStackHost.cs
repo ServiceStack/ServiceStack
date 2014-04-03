@@ -582,6 +582,11 @@ namespace ServiceStack
             }
         }
 
+        public virtual RouteAttribute[] GetRouteAttributes(Type requestType)
+        {
+            return requestType.AllAttributes<RouteAttribute>();
+        }
+
         public virtual void Dispose()
         {
             if (Container != null)
