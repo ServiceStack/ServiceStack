@@ -144,7 +144,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             try
             {
-                var notFound = Config.AbsoluteBaseUri.CombineWith("/custom/foo.csv")
+                var notFound = Config.AbsoluteBaseUri.CombineWith("/modified/foo.csv")
                     .GetStringFromUrl();
                 Assert.Fail("Existing route should be modified");
             }
@@ -153,7 +153,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.NotFound));
             }
 
-            var response = Config.AbsoluteBaseUri.CombineWith("/api/custom/foo.csv")
+            var response = Config.AbsoluteBaseUri.CombineWith("/api/modified/foo.csv")
                 .GetStringFromUrl();
 
             Assert.That(response, Is.EqualTo("Data\r\nfoo\r\n"));
