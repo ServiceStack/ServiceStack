@@ -105,6 +105,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    [Route("/custom")]
+    [Route("/custom/{Data}")]
+    public class CustomRoute : IReturn<CustomRoute>
+    {
+        public string Data { get; set; }
+    }
+
+    public class CustomRouteService : IService
+    {
+        public object Any(CustomRoute request)
+        {
+            return request;
+        }
+    }
+
     [TestFixture]
     public class ModifiedRouteTests
     {
@@ -156,23 +171,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public override RouteAttribute[] GetRouteAttributes(System.Type requestType)
         {
             var routes = base.GetRouteAttributes(requestType);
-            if (requestType != typeof (CustomRoute)) return routes;
+            if (requestType != typeof(ModifiedRoute)) return routes;
 
             routes.Each(x => x.Path = "/api" + x.Path);
             return routes;
         }
     }
 
-    [Route("/custom")]
-    [Route("/custom/{Data}")]
-    public class CustomRoute : IReturn<CustomRoute>
+    [Route("/modified")]
+    [Route("/modified/{Data}")]
+    public class ModifiedRoute : IReturn<ModifiedRoute>
     {
         public string Data { get; set; }
     }
 
-    public class CustomRouteService : IService
+    public class ModifiedRouteService : IService
     {
-        public object Any(CustomRoute request)
+        public object Any(ModifiedRoute request)
         {
             return request;
         }
