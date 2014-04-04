@@ -11,6 +11,13 @@ namespace ServiceStack.Common.Tests
         public long Id { get; set; }
     }
 
+    [FallbackRoute("/route/{Id}")]
+    public class FallbackJustId : IReturn
+    {
+        public long Id { get; set; }
+        public string Name { get; set; }
+    }
+
     [Route("/route/{Id}")]
 	public class FieldId : IReturn
 	{
@@ -96,7 +103,17 @@ namespace ServiceStack.Common.Tests
             Assert.That(url, Is.EqualTo("/route/1"));
         }
 
-		[Test]
+        [Test]
+        public void Can_create_url_with_FallbackJustId()
+        {
+            var url = new FallbackJustId { Id = 1 }.ToGetUrl();
+            Assert.That(url, Is.EqualTo("/route/1"));
+
+            url = new FallbackJustId { Id = 1, Name = "foo" }.ToGetUrl();
+            Assert.That(url, Is.EqualTo("/route/1?name=foo"));
+        }
+
+        [Test]
 		public void Can_create_url_with_FieldId()
 		{
 			using (JsConfig.BeginScope())
@@ -107,7 +124,6 @@ namespace ServiceStack.Common.Tests
 
 			}
 		}
-
 
         [Test]
         public void Can_create_url_with_ArrayIds()
