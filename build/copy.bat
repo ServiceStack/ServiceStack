@@ -75,4 +75,4 @@ COPY ..\lib\ServiceStack.Interfaces.dll ..\..\ServiceStack.Text\lib
 COPY ..\lib\ServiceStack.Interfaces.dll ..\..\ServiceStack.Redis\lib
 COPY ..\lib\ServiceStack.Interfaces.dll ..\..\ServiceStack.OrmLite\lib
 
-COPY ..\src\ServiceStack.DtoGen\*.cs  ..\src\ServiceStack\DtoGen
+REM COPY ..\src\ServiceStack.DtoGen\*.cs  ..\src\ServiceStack\DtoGen
