@@ -63,7 +63,10 @@ namespace ServiceStack
 					"default.aspx",
 					"default.ashx",
 				},
-                GlobalResponseHeaders = new Dictionary<string, string> { { "X-Powered-By", Env.ServerUserAgent } },
+                GlobalResponseHeaders = new Dictionary<string, string> {
+                    { "Vary", "Accept" },
+                    { "X-Powered-By", Env.ServerUserAgent },
+                },
                 IgnoreFormatsInMetadata = new HashSet<string>(StringComparer.OrdinalIgnoreCase),
                 AllowFileExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
 				{
