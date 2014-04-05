@@ -104,6 +104,7 @@
     <Compile Include="DataAnnotations\IgnoreAttribute.cs" />
     <Compile Include="DataAnnotations\PrimaryKeyAttribute.cs" />
     <Compile Include="DataAnnotations\RequiredAttribute.cs" />
+    <Compile Include="DataAnnotations\RowVersionAttribute.cs" />
     <Compile Include="DataAnnotations\SchemaAttribute.cs" />
     <Compile Include="DataAnnotations\SequenceAttribute.cs" />
     <Compile Include="DataAnnotations\StringLengthAttribute.cs" />
