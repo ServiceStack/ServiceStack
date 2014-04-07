@@ -17,13 +17,13 @@ namespace ServiceStack
         private const int IdleTimeout = 300;
 
         protected AppHostHttpListenerSmartPoolBase(string serviceName, params Assembly[] assembliesWithServices)
-            : this(serviceName, 500, assembliesWithServices) { }
+            : this(serviceName, CalculatePoolSize(), assembliesWithServices) { }
 
         protected AppHostHttpListenerSmartPoolBase(string serviceName, int poolSize, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices) { threadPoolManager = new SmartThreadPool(IdleTimeout, poolSize); }
 
         protected AppHostHttpListenerSmartPoolBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
-            : this(serviceName, handlerPath, 500, assembliesWithServices) { }
+            : this(serviceName, handlerPath, CalculatePoolSize(), assembliesWithServices) { }
 
         protected AppHostHttpListenerSmartPoolBase(string serviceName, string handlerPath, int poolSize, params Assembly[] assembliesWithServices)
             : base(serviceName, handlerPath, assembliesWithServices) { threadPoolManager = new SmartThreadPool(IdleTimeout, poolSize); }

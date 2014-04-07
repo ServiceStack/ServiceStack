@@ -18,6 +18,13 @@ namespace ServiceStack
     public abstract class AppHostHttpListenerBase
         : HttpListenerBase
     {
+        public static int ThreadsPerProcessor = 2;
+
+        public static int CalculatePoolSize()
+        {
+            return Environment.ProcessorCount * ThreadsPerProcessor;
+        }
+
         public string HandlerPath { get; set; }
 
         protected AppHostHttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)

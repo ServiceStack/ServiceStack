@@ -70,13 +70,13 @@ namespace ServiceStack
         private readonly ILog log = LogManager.GetLogger(typeof(HttpListenerBase));
 
         protected AppHostHttpListenerPoolBase(string serviceName, params Assembly[] assembliesWithServices)
-            : this(serviceName, 500, assembliesWithServices) { }
+            : this(serviceName, CalculatePoolSize(), assembliesWithServices) { }
 
         protected AppHostHttpListenerPoolBase(string serviceName, int poolSize, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices) { threadPoolManager = new ThreadPoolManager(poolSize); }
 
         protected AppHostHttpListenerPoolBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
-            : this(serviceName, handlerPath, 500, assembliesWithServices) { }
+            : this(serviceName, handlerPath, CalculatePoolSize(), assembliesWithServices) { }
 
         protected AppHostHttpListenerPoolBase(string serviceName, string handlerPath, int poolSize, params Assembly[] assembliesWithServices)
             : base(serviceName, handlerPath, assembliesWithServices) { threadPoolManager = new ThreadPoolManager(poolSize); }
