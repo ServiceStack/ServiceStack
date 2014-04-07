@@ -85,7 +85,13 @@ namespace ServiceStack.Support.Markdown
                     Assemblies.Add(assembly);
             } catch (System.IO.FileNotFoundException) {
                 //Possibly the assembly name differs from the namespace name
-                FindNamespaceInLoadedAssemblies(assemblyName);
+                try
+                {
+                    FindNamespaceInLoadedAssemblies(assemblyName);
+                }
+                catch (Exception ex) {
+                    Log.Error("Can't load assembly: " + assemblyName, ex);
+                }
             } catch (Exception ex) {
                 Log.Error("Can't load assembly: " + assemblyName, ex);
             }

@@ -44,6 +44,22 @@
             Combines the first expression with the second using the specified merge function.
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.SqlExpression``1(System.Data.IDbConnection)">
+            <summary>
+            Create a new SqlExpression builder allowing typed LINQ-like queries.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.From``1(System.Data.IDbConnection)">
+            <summary>
+            Creates a new SqlExpression builder allowing typed LINQ-like queries.
+            Alias for SqlExpression.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.From``1(System.Data.IDbConnection,System.String)">
+            <summary>
+            Creates a new SqlExpression builder for the specified type using a user-defined FROM sql expression.
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.OpenTransaction(System.Data.IDbConnection)">
             <summary>
             Open a Transaction in OrmLite
@@ -57,11 +73,6 @@
         <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.GetDialectProvider(System.Data.IDbConnection)">
             <summary>
             Return the IOrmLiteDialectProvider on this connection.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.SqlExpression``1">
-            <summary>
-            Create a new SqlExpression builder allowing typed LINQ-like queries.
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.Select``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
@@ -271,6 +282,12 @@
             <para>db.SingleWhere&lt;Person&gt;("Age", 42)</para>
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Scalar``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression)">
+            <summary>
+            Returns a single scalar value using an SqlExpression. E.g:
+            <para>db.Column&lt;int&gt;(db.From&lt;Persion&gt;().Select(x => Sql.Count("*")).Where(q => q.Age > 40))</para>
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Scalar``1(System.Data.IDbConnection,System.String,System.Object)">
             <summary>
             Returns a single scalar value using a parameterized query. E.g:
@@ -281,6 +298,12 @@
             <summary>
             Returns a single scalar value using an SqlFormat query. E.g:
             <para>db.ScalarFmt&lt;int&gt;("SELECT COUNT(*) FROM Person WHERE Age &gt; {0}", 40)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Column``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression)">
+            <summary>
+            Returns the distinct first column values in a HashSet using an SqlExpression. E.g:
+            <para>db.Column&lt;int&gt;(db.From&lt;Persion&gt;().Select(x => x.LastName).Where(q => q.Age == 27))</para>
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Column``1(System.Data.IDbConnection,System.String,System.Object)">
@@ -295,6 +318,7 @@
             <para>db.ColumnFmt&lt;string&gt;("SELECT LastName FROM Person WHERE Age = {0}", 27)</para>
             </summary>
         </member>
+        <!-- Badly formed XML comment ignored for member "M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.ColumnDistinct``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression)" -->
         <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.ColumnDistinct``1(System.Data.IDbConnection,System.String,System.Object)">
             <summary>
             Returns the distinct first column values in a HashSet using an SqlFormat query. E.g:
@@ -307,6 +331,7 @@
             <para>db.ColumnDistinctFmt&lt;int&gt;("SELECT Age FROM Person WHERE Age &lt; {0}", 50)</para>
             </summary>
         </member>
+        <!-- Badly formed XML comment ignored for member "M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Lookup``2(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression)" -->
         <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Lookup``2(System.Data.IDbConnection,System.String,System.Object)">
             <summary>
             Returns an Dictionary&lt;K, List&lt;V&gt;&gt; grouping made from the first two columns using an parameterized query. E.g:
@@ -319,6 +344,7 @@
             <para>db.LookupFmt&lt;int, string&gt;("SELECT Age, LastName FROM Person WHERE Age &lt; {0}", 50)</para>
             </summary>
         </member>
+        <!-- Badly formed XML comment ignored for member "M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Dictionary``2(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression)" -->
         <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Dictionary``2(System.Data.IDbConnection,System.String,System.Object)">
             <summary>
             Returns a Dictionary from the first 2 columns: Column 1 (Keys), Column 2 (Values) using sql. E.g:
@@ -329,6 +355,24 @@
             <summary>
             Returns a Dictionary from the first 2 columns: Column 1 (Keys), Column 2 (Values) using an SqlFormat query. E.g:
             <para>db.DictionaryFmt&lt;int, string&gt;("SELECT Id, LastName FROM Person WHERE Age &lt; {0}", 50)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Exists``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Returns true if the Query returns any records that match the LINQ expression, E.g:
+            <para>db.Exists&lt;Person&gt;(x =&gt; x.Age &lt; 50)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Exists``1(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}})">
+            <summary>
+            Returns true if the Query returns any records that match the SqlExpression lambda, E.g:
+            <para>db.Exists&lt;Person&gt;(q =&gt; q.Where(x =&gt; x.Age &lt; 50))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Exists``1(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``0})">
+            <summary>
+            Returns true if the Query returns any records that match the supplied SqlExpression, E.g:
+            <para>db.Exists(db.From&lt;Person&gt;().Where(x =&gt; x.Age &lt; 50))</para>
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Exists``1(System.Data.IDbConnection,System.Object)">
@@ -351,6 +395,12 @@
             <para>db.ExistsFmt&lt;Person&gt;("SELECT * FROM Person WHERE Age = {0}", 50)</para>
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SqlList``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression)">
+            <summary>
+            Returns results from an arbitrary SqlExpression. E.g:
+            <para>db.SqlList&lt;Person&gt;(db.From&lt;Person&gt;().Select("*").Where(q => q.Age &lt; 50))</para>
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SqlList``1(System.Data.IDbConnection,System.String,System.Object)">
             <summary>
             Returns results from an arbitrary parameterized raw sql query. E.g:
@@ -363,6 +413,7 @@
             <para>db.SqlList&lt;Person&gt;("EXEC GetRockstarsAged @age", new Dictionary&lt;string, object&gt; { { "age", 42 } })</para>
             </summary>
         </member>
+        <!-- Badly formed XML comment ignored for member "M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SqlColumn``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression)" -->
         <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SqlColumn``1(System.Data.IDbConnection,System.String,System.Object)">
             <summary>
             Returns the first column in a List using a parameterized query. E.g:
@@ -373,6 +424,12 @@
             <summary>
             Returns the first column in a List using a parameterized query. E.g:
             <para>db.SqlColumn&lt;string&gt;("SELECT LastName FROM Person WHERE Age &lt; @age", new Dictionary&lt;string, object&gt; { { "age", 50 } })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SqlScalar``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression)">
+            <summary>
+            Returns a single Scalar value using an SqlExpression. E.g:
+            <para>db.SqlScalar&lt;int&gt;(db.From&lt;Person&gt;().Select(Sql.Count("*")).Where(q => q.Age &lt; 50))</para>
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SqlScalar``1(System.Data.IDbConnection,System.String,System.Object)">
@@ -779,9 +836,30 @@
             objectWithProperties
             </typeparam>
         </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Skip(System.Nullable{System.Int32})">
+            <summary>
+            Offset of the first row to return. The offset of the initial row is 0
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Take(System.Nullable{System.Int32})">
+            <summary>
+            Number of rows returned by a SELECT statement
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.SqlExpression`1.Limit(System.Int32,System.Int32)">
             <summary>
             Set the specified offset and rows for SQL Limit clause.
+            </summary>
+            <param name='skip'>
+            Offset of the first row to return. The offset of the initial row is 0
+            </param>
+            <param name='rows'>
+            Number of rows returned by a SELECT statement
+            </param>	
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Limit(System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Set the specified offset and rows for SQL Limit clause where they exist.
             </summary>
             <param name='skip'>
             Offset of the first row to return. The offset of the initial row is 0
@@ -802,6 +880,12 @@
             <summary>
             Clear Sql Limit clause
             </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.ClearLimits">
+            <summary>
+            Clear Offset and Limit clauses. Alias for Limit()
+            </summary>
+            <returns></returns>
         </member>
         <!-- Badly formed XML comment ignored for member "M:ServiceStack.OrmLite.SqlExpression`1.Update(System.Collections.Generic.IList{System.String})" -->
         <member name="M:ServiceStack.OrmLite.SqlExpression`1.Update``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
