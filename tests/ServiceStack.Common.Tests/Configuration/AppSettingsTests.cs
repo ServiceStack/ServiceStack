@@ -103,6 +103,40 @@ namespace ServiceStack.Common.Tests
                 Assert.That(ex.Message.Contains("GarbageKey"));
             }
         }
+
+        [Test]
+        public void Does_work_with_ParseKeyValueText()
+        {
+            var textFile = @"
+EmptyKey: 
+RealKey: This is a real value
+ListKey: A,B,C,D,E
+IntKey: 42
+DictionaryKey: A:1,B:2,C:3,D:4,E:5
+ObjectKey: {SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}";
+
+            var settings = textFile.ParseKeyValueText();
+            var appSettings = new DictionarySettings(settings);
+
+            Assert.That(appSettings.Get("EmptyKey"), Is.EqualTo(""));
+            Assert.That(appSettings.Get("RealKey"), Is.EqualTo("This is a real value"));
+
+            var list = appSettings.GetList("ListKey");
+            Assert.That(list, Has.Count.EqualTo(5));
+            Assert.That(list, Is.EqualTo(new List<string> { "A", "B", "C", "D", "E" }));
+
+            var map = appSettings.GetDictionary("DictionaryKey");
+
+            Assert.That(map, Has.Count.EqualTo(5));
+            Assert.That(map.Keys, Is.EqualTo(new List<string> { "A", "B", "C", "D", "E" }));
+            Assert.That(map.Values, Is.EqualTo(new List<string> { "1", "2", "3", "4", "5" }));
+
+            var value = appSettings.Get("ObjectKey", new SimpleAppSettings());
+            Assert.That(value, Is.Not.Null);
+            Assert.That(value.FinalSetting, Is.EqualTo("Final"));
+            Assert.That(value.SomeOtherSetting, Is.EqualTo(12));
+            Assert.That(value.SomeSetting, Is.EqualTo("Test"));
+        }
     }
 
     public abstract class AppSettingsTest
