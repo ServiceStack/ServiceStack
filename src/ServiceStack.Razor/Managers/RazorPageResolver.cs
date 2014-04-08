@@ -6,6 +6,7 @@ using System.Text;
 using System.Web;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Html;
+using ServiceStack.Logging;
 using ServiceStack.Web;
 
 namespace ServiceStack.Razor.Managers
@@ -17,6 +18,8 @@ namespace ServiceStack.Razor.Managers
     /// </summary>
     public class RazorPageResolver : ServiceStackHandlerBase, IViewEngine
     {
+        public static ILog Log = LogManager.GetLogger(typeof(RazorPageResolver));
+
         public const string ViewKey = "View";
         public const string LayoutKey = "Template";
         public const string QueryStringFormatKey = "format";
@@ -193,6 +196,17 @@ namespace ServiceStack.Razor.Managers
             //don't proceed any further, the background compiler found there was a problem compiling the page, so throw instead
             if (razorPage.CompileException != null)
             {
+                if (Text.Env.IsMono)
+                {
+                    //Additional debug info Working around not displaying default exception in IHttpAsyncHandler
+                    var errors = razorPage.CompileException.Results.Errors;
+                    for (var i = 0; i < errors.Count; i++)
+                    {
+                        var error = errors[i];
+                        Log.Debug("{0} Line: {1}:{2}:".Fmt(error.FileName, error.Line, error.Column));
+                        Log.Debug("{0}: {1}".Fmt(error.ErrorNumber, error.ErrorText));
+                    }
+                } 
                 throw razorPage.CompileException;
             }
 
