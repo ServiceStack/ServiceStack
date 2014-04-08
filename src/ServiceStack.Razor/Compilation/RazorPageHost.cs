@@ -180,11 +180,30 @@ namespace ServiceStack.Razor.Compilation
 
             var assemblies = CompilerServices
                 .GetLoadedAssemblies()
-                .Where(a => !a.IsDynamic)
-                .Select(a => a.Location)
-                .ToArray();
+                .Where(a => !a.IsDynamic);
 
-            @params.ReferencedAssemblies.AddRange(assemblies);
+            if (Env.IsMono)
+            {
+                //workaround mono not handling duplicate dll references (i.e. in GAC)
+                var uniqueNames = new HashSet<string>();
+                assemblies = assemblies.Where(x =>
+                {
+                    var id = x.GetName().Name;
+                    if (string.IsNullOrEmpty(id))
+                        return true;
+                    if (uniqueNames.Contains(id))
+                        return false;
+                    if (!id.Contains("<"))
+                        uniqueNames.Add(x.GetName().Name);
+                    return true;
+                });
+            }
+
+            var assemblyNames = assemblies
+                .Select(a => a.Location)
+                .ToArray(); 
+            
+            @params.ReferencedAssemblies.AddRange(assemblyNames);
 
             //Compile the code
             var results = _codeDomProvider.CompileAssemblyFromDom(@params, razorResults.GeneratedCode);
