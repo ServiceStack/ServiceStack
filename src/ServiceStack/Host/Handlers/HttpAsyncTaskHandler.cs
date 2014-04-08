@@ -9,6 +9,7 @@ using System.Web;
 using ServiceStack.Host.AspNet;
 using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
@@ -67,7 +68,23 @@ namespace ServiceStack.Host.Handlers
             return new Task(() => {
                 Thread.CurrentThread.CurrentCulture = currentCulture;
                 Thread.CurrentThread.CurrentUICulture = currentUiCulture;
-                ProcessRequest(httpReq, httpRes, operationName);
+
+                if (!Env.IsMono)
+                {
+                    ProcessRequest(httpReq, httpRes, operationName);
+                }
+                else
+                {
+                    //Mono doesn't display exceptions in IHttpAsyncHandler.EndProcessRequest
+                    try
+                    {
+                        ProcessRequest(httpReq, httpRes, operationName);
+                    }
+                    catch (Exception ex)
+                    {
+                        HttpListenerBase.WriteUnhandledErrorResponse(httpReq, ex);
+                    }
+                }
             });
         }
 
@@ -76,11 +93,11 @@ namespace ServiceStack.Host.Handlers
             if (HostContext.DebugMode)
             {
                 RequestInfoHandler.LastRequestInfo = new RequestHandlerInfo
-                    {
-                        HandlerType = GetType().Name,
-                        OperationName = operationName,
-                        PathInfo = pathInfo,
-                    };
+                {
+                    HandlerType = GetType().Name,
+                    OperationName = operationName,
+                    PathInfo = pathInfo,
+                };
             }
         }
 

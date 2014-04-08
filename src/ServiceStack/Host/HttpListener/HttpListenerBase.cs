@@ -213,45 +213,10 @@ namespace ServiceStack.Host.HttpListener
         {
             try
             {
+                var httpReq = CreateHttpRequest(context);
                 Log.Error("Error this.ProcessRequest(context): [{0}]: {1}".Fmt(ex.GetType().GetOperationName(), ex.Message), ex);
 
-                var errorResponse = new ErrorResponse
-                {
-                    ResponseStatus = new ResponseStatus
-                    {
-                        ErrorCode = ex.GetType().GetOperationName(),
-                        Message = ex.Message,
-                        StackTrace = ex.StackTrace,
-                    }
-                };
-
-                var httpReq = CreateHttpRequest(context);
-                var httpRes = httpReq.Response;
-                var contentType = httpReq.ResponseContentType;
-
-                var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
-                if (serializer == null)
-                {
-                    contentType = HostContext.Config.DefaultContentType;
-                    serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
-                }
-
-                var httpError = ex as IHttpError;
-                if (httpError != null)
-                {
-                    httpRes.StatusCode = httpError.Status;
-                    httpRes.StatusDescription = httpError.StatusDescription;
-                }
-                else
-                {
-                    httpRes.StatusCode = 500;
-                }
-
-                httpRes.ContentType = contentType;
-
-                serializer(httpReq, errorResponse, httpRes);
-
-                httpRes.Close();
+                WriteUnhandledErrorResponse(httpReq, ex);
             }
             catch (Exception errorEx)
             {
@@ -259,6 +224,46 @@ namespace ServiceStack.Host.HttpListener
                             .Fmt(errorEx.GetType().GetOperationName(), errorEx.Message);
                 Log.Error(error, errorEx);
             }
+        }
+
+        public static void WriteUnhandledErrorResponse(IRequest httpReq, Exception ex)
+        {
+            var errorResponse = new ErrorResponse
+            {
+                ResponseStatus = new ResponseStatus
+                {
+                    ErrorCode = ex.GetType().GetOperationName(),
+                    Message = ex.Message,
+                    StackTrace = ex.StackTrace,
+                }
+            };
+
+            var httpRes = httpReq.Response;
+            var contentType = httpReq.ResponseContentType;
+
+            var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
+            if (serializer == null)
+            {
+                contentType = HostContext.Config.DefaultContentType;
+                serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
+            }
+
+            var httpError = ex as IHttpError;
+            if (httpError != null)
+            {
+                httpRes.StatusCode = httpError.Status;
+                httpRes.StatusDescription = httpError.StatusDescription;
+            }
+            else
+            {
+                httpRes.StatusCode = 500;
+            }
+
+            httpRes.ContentType = contentType;
+
+            serializer(httpReq, errorResponse, httpRes);
+
+            httpRes.Close();
         }
 
         private static IHttpRequest CreateHttpRequest(HttpListenerContext context)
