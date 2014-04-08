@@ -103,12 +103,6 @@ namespace ServiceStack
             }
         }
 
-        public override ServiceStackHost Start(string listeningAtUrlBase)
-        {
-            Start(listeningAtUrlBase, Listen);
-            return this;
-        }
-
         private bool IsListening
         {
             get { return this.IsStarted && this.Listener != null && this.Listener.IsListening; }

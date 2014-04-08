@@ -48,25 +48,6 @@ namespace ServiceStack
             }
         }
 
-        public override ServiceStackHost Start(string urlBase)
-        {
-            // *** Already running - just leave it in place
-            if (IsStarted)
-                return this;
-
-            if (Listener == null)
-                Listener = new HttpListener();
-
-            Listener.Prefixes.Add(urlBase);
-
-            IsStarted = true;
-            Listener.Start();
-
-            ThreadPool.QueueUserWorkItem(Listen);
-
-            return this;
-        }
-
         private bool IsListening
         {
             get { return this.IsStarted && this.Listener != null && this.Listener.IsListening; }

@@ -142,7 +142,7 @@ namespace ServiceStack
             return this;
         }
 
-        public virtual ServiceStackHost Start(string listeningAtUrlBase)
+        public virtual ServiceStackHost Start(string urlBase)
         {
             throw new NotImplementedException("Start(listeningAtUrlBase) is not supported by this AppHost");
         }
