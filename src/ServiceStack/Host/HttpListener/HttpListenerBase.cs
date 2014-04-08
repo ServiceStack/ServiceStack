@@ -186,31 +186,27 @@ namespace ServiceStack.Host.HttpListener
 
             RaiseReceiveWebRequest(context);
 
+            InitTask(context);
+
+            //System.Diagnostics.Debug.WriteLine("End: " + requestNumber + " at " + DateTime.UtcNow);
+        }
+
+        public virtual void InitTask(HttpListenerContext context)
+        {
             try
             {
                 var task = this.ProcessRequestAsync(context);
-                task.ContinueWith(x => 
-                {
-                    if (x.IsFaulted)
-                        HandleError(x.Exception, context);
-                });
+                task.ContinueWith(x => HandleError(x.Exception, context), TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.AttachedToParent);
 
                 if (task.Status == TaskStatus.Created)
                 {
                     task.RunSynchronously();
                 }
-                //TODO: benchmark which is better
-                //else
-                //{
-                //    task.Wait();
-                //}
             }
             catch (Exception ex)
             {
                 HandleError(ex, context);
             }
-
-            //System.Diagnostics.Debug.WriteLine("End: " + requestNumber + " at " + DateTime.UtcNow);
         }
 
         public static void HandleError(Exception ex, HttpListenerContext context)
@@ -229,8 +225,7 @@ namespace ServiceStack.Host.HttpListener
                     }
                 };
 
-                var operationName = context.Request.GetOperationName();
-                var httpReq = context.ToRequest(operationName);
+                var httpReq = CreateHttpRequest(context);
                 var httpRes = httpReq.Response;
                 var contentType = httpReq.ResponseContentType;
 
@@ -264,6 +259,13 @@ namespace ServiceStack.Host.HttpListener
                             .Fmt(errorEx.GetType().GetOperationName(), errorEx.Message);
                 Log.Error(error, errorEx);
             }
+        }
+
+        private static IHttpRequest CreateHttpRequest(HttpListenerContext context)
+        {
+            var operationName = context.Request.GetOperationName();
+            var httpReq = context.ToRequest(operationName);
+            return httpReq;
         }
 
         protected void RaiseReceiveWebRequest(HttpListenerContext context)

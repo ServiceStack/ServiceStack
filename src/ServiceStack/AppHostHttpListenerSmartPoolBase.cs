@@ -136,31 +136,7 @@ namespace ServiceStack
 
             RaiseReceiveWebRequest(context);
 
-            threadPoolManager.QueueWorkItem(() =>
-            {
-                try
-                {
-                    var task = this.ProcessRequestAsync(context);
-                    task.ContinueWith(x =>
-                    {
-                        if (x.IsFaulted)
-                            HandleError(x.Exception, context);
-                    });
-
-                    if (task.Status == TaskStatus.Created)
-                    {
-                        task.RunSynchronously();
-                    }
-                    //else
-                    //{
-                    //    task.Wait();
-                    //}
-                }
-                catch (Exception ex)
-                {
-                    HandleError(ex, context);
-                }
-            });
+            threadPoolManager.QueueWorkItem(() => InitTask(context));
         }
     }
 }

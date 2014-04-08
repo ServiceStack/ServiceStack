@@ -57,7 +57,8 @@ namespace ServiceStack
                 }
 
                 var task = serviceStackHandler.ProcessRequestAsync(httpReq, httpRes, operationName);                
-                task.ContinueWith(x => httpRes.Close());
+                task.ContinueWith(x => httpRes.Close(), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
+                //Matches Exceptions handled in HttpListenerBase.InitTask()
 
                 return task;
             }
