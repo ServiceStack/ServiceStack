@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using ServiceStack.CacheAccess;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
@@ -42,6 +43,7 @@ namespace ServiceStack.Razor
         public List<Predicate<string>> Deny { get; set; }
         public bool PrecompilePages { get; set; }
         public bool WaitForPrecompilationOnStartup { get; set; }
+        public ICacheClient CompilerCache { get; set; }
         public IVirtualPathProvider VirtualPathProvider { get; set; }
         public ILiveReload LiveReload { get; set; }
         public Func<RazorViewManager, ILiveReload> LiveReloadFactory { get; set; }
@@ -137,6 +139,8 @@ namespace ServiceStack.Razor
 
         public virtual RazorViewManager CreateViewManager()
         {
+            if (CompilerCache != null)
+                return new CachedRazorViewManager(this, VirtualPathProvider, CompilerCache);
             return new RazorViewManager(this, VirtualPathProvider);
         }
 
