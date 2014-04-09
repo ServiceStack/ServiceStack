@@ -18,7 +18,7 @@ namespace ServiceStack
     public abstract class AppHostHttpListenerBase
         : HttpListenerBase
     {
-        public static int ThreadsPerProcessor = 2;
+        public static int ThreadsPerProcessor = 16;
 
         public static int CalculatePoolSize()
         {
