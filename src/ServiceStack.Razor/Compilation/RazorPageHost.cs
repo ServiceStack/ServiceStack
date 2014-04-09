@@ -159,7 +159,13 @@ namespace ServiceStack.Razor.Compilation
 
         public Dictionary<string, string> DebugSourceFiles = new Dictionary<string, string>();
 
-        public Type Compile()
+        public virtual Type Compile()
+        {
+            byte[] bytes = null;
+            return CompileAssembly(false, ref bytes);
+        }
+
+        protected Type CompileAssembly( bool loadBytes, ref byte[] assemblyBytes)
         {
             Type forceLoadOfRuntimeBinder = typeof(Microsoft.CSharp.RuntimeBinder.Binder);
             if (forceLoadOfRuntimeBinder == null)
@@ -171,7 +177,7 @@ namespace ServiceStack.Razor.Compilation
 
             var @params = new CompilerParameters
                 {
-                    GenerateInMemory = true,
+                    GenerateInMemory = !loadBytes,
                     GenerateExecutable = false,
                     IncludeDebugInformation = false,
                     CompilerOptions = "/target:library /optimize",
@@ -224,6 +230,13 @@ namespace ServiceStack.Razor.Compilation
                     throw new HttpCompileException(results, sourceCode);
                 }
 
+                if (loadBytes)
+                    assemblyBytes = System.IO.File.ReadAllBytes(results.PathToAssembly);
+
+                // Ensures the assembly is loaded into memory now, as it will be deleted from the temp directory
+                // when not compiling into memory once this using statement exits.
+                var compiledTypes = results.CompiledAssembly.GetTypes();
+
 #if DEBUG
                 foreach (string tempFile in @params.TempFiles)
                 {
@@ -235,7 +248,7 @@ namespace ServiceStack.Razor.Compilation
                 }
 #endif
 
-                return results.CompiledAssembly.GetTypes().First();
+                return compiledTypes.First();
             }
         }
 

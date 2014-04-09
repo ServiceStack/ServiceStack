@@ -101,7 +101,7 @@ namespace ServiceStack.Razor.Managers
             //create a RazorPage
             var page = new RazorPage
             {
-                PageHost = new RazorPageHost(PathProvider, file, transformer, new CSharpCodeProvider(), new Dictionary<string, string>()),
+                PageHost = CreatePageHost(file, transformer),
                 IsValid = false,
                 File = file
             };
@@ -113,6 +113,11 @@ namespace ServiceStack.Razor.Managers
                 PrecompilePage(page);
             
             return page;
+        }
+
+        public virtual RazorPageHost CreatePageHost(IVirtualFile file, RazorViewPageTransformer transformer)
+        {
+            return new RazorPageHost(PathProvider, file, transformer, new CSharpCodeProvider(), new Dictionary<string, string>());
         }
 
         protected virtual RazorPage AddPage(RazorPage page)

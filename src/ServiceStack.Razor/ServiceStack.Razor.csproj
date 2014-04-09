@@ -47,6 +47,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Compilation\CachedRazorPageHost.cs" />
     <Compile Include="CSharpRazorBuildProvider.cs" />
     <Compile Include="json\DynamicJson.cs" />
     <Compile Include="Compilation\CompilerServices.cs" />
@@ -62,6 +63,7 @@
     <Compile Include="Compilation\CodeTransformers\RewriteLinePragmas.cs" />
     <Compile Include="Compilation\CodeTransformers\SetTypeNamespace.cs" />
     <Compile Include="Compilation\CodeTransformers\SetTypeVisibility.cs" />
+    <Compile Include="Managers\CachedRazorViewManager.cs" />
     <Compile Include="Managers\FileSystemWatcherLiveReload.cs" />
     <Compile Include="Managers\RazorGen\MvcHelperTransformer.cs" />
     <Compile Include="Managers\RazorGen\MvcViewTransformer.cs" />
