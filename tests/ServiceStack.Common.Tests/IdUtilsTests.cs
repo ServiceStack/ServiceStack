@@ -97,6 +97,12 @@ namespace ServiceStack.Common.Tests
             }
         }
 
+        public class World
+        {
+            public int id { get; set; }
+            public int randomNumber { get; set; }
+        }
+
         [Test]
         public void Can_get_if_HasIntId()
         {
@@ -153,6 +159,12 @@ namespace ServiceStack.Common.Tests
         public void Can_get_if_id_is_non_conventional()
         {
             Assert.That(new HasNonConventionalId().GetId(), Is.EqualTo(IntValue));
+        }
+
+        [Test]
+        public void Can_get_if_Has_lowercase_Id()
+        {
+            Assert.That(new World { id = 1 }.GetId(), Is.EqualTo(1));
         }
     }
 }

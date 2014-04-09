@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using ServiceStack.Model;
 using ServiceStack.Reflection;
 using ServiceStack.Text;
@@ -34,7 +35,7 @@ namespace ServiceStack
                     return;
                 }
 
-                var piId = typeof(T).GetPropertyInfo(IdUtils.IdField);
+                var piId = typeof(T).GetIdProperty();
                 if (piId != null
                     && piId.GetMethodInfo() != null)
                 {
@@ -46,7 +47,7 @@ namespace ServiceStack
             if (typeof(T) == typeof(object))
             {
                 CanGetId = x => {
-                    var piId = x.GetType().GetPropertyInfo(IdUtils.IdField);
+                    var piId = x.GetType().GetIdProperty();
                     if (piId != null && piId.GetMethodInfo() != null)
                         return x.GetObjectId();
 
@@ -70,7 +71,7 @@ namespace ServiceStack
 
         static HasPropertyId()
         {
-            var pi = typeof(TEntity).GetPropertyInfo(IdUtils.IdField);
+            var pi = typeof(TEntity).GetIdProperty();
             GetIdFn = StaticAccessors<TEntity>.ValueUnTypedGetPropertyTypeFn(pi);
         }
 
@@ -133,7 +134,7 @@ namespace ServiceStack
 
         public static object GetObjectId(this object entity)
         {
-            return entity.GetType().GetPropertyInfo(IdField).GetMethodInfo().Invoke(entity, new object[0]);
+            return entity.GetType().GetIdProperty().GetMethodInfo().Invoke(entity, new object[0]);
         }
 
         public static object ToId<T>(this T entity)
@@ -193,6 +194,18 @@ namespace ServiceStack
                 rootDir, dir1, dir2, idValue);
 
             return path;
+        }
+
+        public static PropertyInfo GetIdProperty(this Type type)
+        {
+            foreach (var pi in type.GetPropertyInfos())
+            {
+                if (string.Equals(IdField, pi.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return pi;
+                }
+            }
+            return null;
         }
 
     }
