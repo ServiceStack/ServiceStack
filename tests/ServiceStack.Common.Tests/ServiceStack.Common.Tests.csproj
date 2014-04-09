@@ -186,6 +186,7 @@
     <Compile Include="OAuth\MockAuthHttpGateway.cs" />
     <Compile Include="OAuth\OAuthUserSessionWithoutTestSourceTests.cs" />
     <Compile Include="OAuth\RequiredRolesTests.cs" />
+    <Compile Include="PerfUtilsTests.cs" />
     <Compile Include="Perf\DateTimePerf.cs" />
     <Compile Include="Perf\IdUtilsPerf.cs" />
     <Compile Include="Perf\PropertyAccessorPerf.cs" />
