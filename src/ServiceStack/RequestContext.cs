@@ -62,6 +62,7 @@ namespace ServiceStack
         /// <param name="instance"></param>
         public void TrackDisposable(IDisposable instance)
         {
+            if (ServiceStackHost.Instance == null || ServiceStackHost.Instance.ReadyAt == null) return;
             if (instance == null) return;
             if (instance is IService) return; //IService's are already disposed right after they've been executed
 
@@ -74,6 +75,7 @@ namespace ServiceStack
         }
     }
 
+    [Serializable]
     public class DispsableTracker : IDisposable
     {
         public const string HashId = "__disposables";
