@@ -371,25 +371,22 @@ namespace ServiceStack
 
             AfterPluginsLoaded(specifiedContentType);
 
-            var registeredCacheClient = TryResolve<ICacheClient>();
-            using (registeredCacheClient)
+            if (!Container.Exists<ICacheClient>())
             {
-                if (registeredCacheClient == null)
-                {
-                    var redisClientsManager = Container.TryResolve<IRedisClientsManager>();
-                    Container.Register<ICacheClient>(redisClientsManager != null ? redisClientsManager.GetCacheClient() : new MemoryCacheClient());
-                }
+                if (Container.Exists<IRedisClientsManager>())
+                    Container.Register(c => c.Resolve<IRedisClientsManager>().GetCacheClient());
+                else
+                    Container.Register<ICacheClient>(new MemoryCacheClient());
             }
 
-            var registeredMqService = TryResolve<IMessageService>();
-            var registeredMqFactory = TryResolve<IMessageFactory>();
-            if (registeredMqService != null && registeredMqFactory == null)
+            if (Container.Exists<IMessageService>() 
+                && !Container.Exists<IMessageFactory>())
             {
-                Container.Register(c => registeredMqService.MessageFactory);
+                Container.Register(c => c.Resolve<IMessageService>().MessageFactory);
             }
 
-            if (Container.TryResolve<IUserAuthRepository>() != null
-                && Container.TryResolve<IAuthRepository>() == null)
+            if (Container.Exists<IUserAuthRepository>()
+                && !Container.Exists<IAuthRepository>())
             {
                 Container.Register<IAuthRepository>(c => c.Resolve<IUserAuthRepository>());
             }
