@@ -55,6 +55,11 @@ namespace Funq
 			AutoWire(this, instance);
 		}
 
+        public bool Exists<TService>()
+        {
+            var entry = GetEntry<TService, Func<Container, TService>>(null, throwIfMissing:false);
+            return entry != null;
+        }
 
         private Dictionary<Type, Action<object>[]> autoWireCache = new Dictionary<Type, Action<object>[]>();
 
