@@ -121,6 +121,8 @@ ObjectKey: {SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}";
             Assert.That(appSettings.Get("EmptyKey"), Is.EqualTo(""));
             Assert.That(appSettings.Get("RealKey"), Is.EqualTo("This is a real value"));
 
+            Assert.That(appSettings.Get("IntKey", defaultValue:1), Is.EqualTo(42));
+
             var list = appSettings.GetList("ListKey");
             Assert.That(list, Has.Count.EqualTo(5));
             Assert.That(list, Is.EqualTo(new List<string> { "A", "B", "C", "D", "E" }));
