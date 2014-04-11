@@ -35,13 +35,7 @@ namespace ServiceStack.Configuration
 
         public virtual string GetString(string name)
         {
-            var value = GetNullableString(name);
-            if (value == null)
-            {
-                throw new ConfigurationErrorsException(String.Format(ErrorAppsettingNotFound, name));
-            }
-
-            return value;
+            return GetNullableString(name);
         }
 
         public virtual IList<string> GetList(string key)
