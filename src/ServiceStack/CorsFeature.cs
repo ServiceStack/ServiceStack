@@ -17,6 +17,8 @@ namespace ServiceStack
         private readonly string allowedOrigins;
         private readonly string allowedMethods;
         private readonly string allowedHeaders;
+        private readonly string exposeHeaders;
+        private readonly int? maxAge;
 
         private readonly bool allowCredentials;
 
@@ -27,22 +29,28 @@ namespace ServiceStack
         /// <summary>
         /// Represents a default constructor with Allow Origin equals to "*", Allowed GET, POST, PUT, DELETE, OPTIONS request and allowed "Content-Type" header.
         /// </summary>
-        public CorsFeature(string allowedOrigins = "*", string allowedMethods = DefaultMethods, string allowedHeaders = DefaultHeaders, bool allowCredentials = false)
+        public CorsFeature(string allowedOrigins = "*", string allowedMethods = DefaultMethods, string allowedHeaders = DefaultHeaders, bool allowCredentials = false, 
+            string exposeHeaders = null, int? maxAge = null)
         {
             this.allowedOrigins = allowedOrigins;
             this.allowedMethods = allowedMethods;
             this.allowedHeaders = allowedHeaders;
             this.allowCredentials = allowCredentials;
             this.AutoHandleOptionsRequests = true;
+            this.exposeHeaders = exposeHeaders;
+            this.maxAge = maxAge;
         }
 
-        public CorsFeature(ICollection<string> allowOriginWhitelist, string allowedMethods = DefaultMethods, string allowedHeaders = DefaultHeaders, bool allowCredentials = false)
+        public CorsFeature(ICollection<string> allowOriginWhitelist, string allowedMethods = DefaultMethods, string allowedHeaders = DefaultHeaders, bool allowCredentials = false,
+            string exposeHeaders = null, int? maxAge = null)
         {
             this.allowedMethods = allowedMethods;
             this.allowedHeaders = allowedHeaders;
             this.allowCredentials = allowCredentials;
             this.allowOriginWhitelist = allowOriginWhitelist;
             this.AutoHandleOptionsRequests = true;
+            this.exposeHeaders = exposeHeaders;
+            this.maxAge = maxAge;
         }
 
         public void Register(IAppHost appHost)
@@ -58,13 +66,17 @@ namespace ServiceStack
                 appHost.Config.GlobalResponseHeaders.Add(HttpHeaders.AllowHeaders, allowedHeaders);
             if (allowCredentials)
                 appHost.Config.GlobalResponseHeaders.Add(HttpHeaders.AllowCredentials, "true");
+            if (exposeHeaders != null)
+                appHost.Config.GlobalResponseHeaders.Add(HttpHeaders.ExposeHeaders, exposeHeaders);
+            if (maxAge != null)
+                appHost.Config.GlobalResponseHeaders.Add(HttpHeaders.AccessControlMaxAge, maxAge.Value.ToString());
 
             Action<IRequest, IResponse> allowOriginFilter = null;
 
             if (allowOriginWhitelist != null)
             {
                 allowOriginFilter = (httpReq, httpRes) => {
-                    var origin = httpReq.Headers.Get("Origin");
+                    var origin = httpReq.Headers.Get(HttpHeaders.Origin);
                     if (allowOriginWhitelist.Contains(origin))
                     {
                         httpRes.AddHeader(HttpHeaders.AllowOrigin, origin);
