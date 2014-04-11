@@ -42,6 +42,9 @@ namespace ServiceStack.Host.Handlers
         public string ResolvedPathInfo { get; set; }
 
         [DataMember]
+        public bool StripApplicationVirtualPath { get; set; }
+
+        [DataMember]
         public string GetLeftPath { get; set; }
 
         [DataMember]
@@ -220,6 +223,7 @@ namespace ServiceStack.Host.Handlers
                 HttpMethod = httpReq.Verb,
                 AbsoluteUri = httpReq.AbsoluteUri,
                 ResolveAbsoluteUrl = HostContext.AppHost.ResolveAbsoluteUrl("~/resolve", httpReq),
+                StripApplicationVirtualPath = HostContext.Config.StripApplicationVirtualPath,
                 RawUrl = httpReq.RawUrl,
                 ResolvedPathInfo = httpReq.PathInfo,
                 ContentType = httpReq.ContentType,
