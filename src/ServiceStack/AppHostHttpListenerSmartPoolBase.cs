@@ -54,7 +54,7 @@ namespace ServiceStack
         }
 
         // Loop here to begin processing of new requests.
-        private void Listen(object state)
+        protected override void Listen(object state)
         {
             while (IsListening)
             {

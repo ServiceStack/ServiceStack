@@ -118,7 +118,7 @@ namespace ServiceStack.Host.HttpListener
         }
 
         // Loop here to begin processing of new requests.
-        private void Listen(object state)
+        protected virtual void Listen(object state)
         {
             while (IsListening)
             {
