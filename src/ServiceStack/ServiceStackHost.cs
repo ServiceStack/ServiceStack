@@ -91,8 +91,7 @@ namespace ServiceStack
         {
             return new ServiceController(this, assembliesWithServices);
             //Alternative way to inject Service Resolver strategy
-            //return new ServiceManager(this, 
-            //    new ServiceController(() => assembliesWithServices.ToList().SelectMany(x => x.GetTypes())));
+            //return new ServiceController(this, () => assembliesWithServices.ToList().SelectMany(x => x.GetTypes()));
         }
 
         public virtual void SetConfig(HostConfig config)
