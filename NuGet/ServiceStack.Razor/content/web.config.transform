@@ -11,9 +11,6 @@
   </appSettings>
   <system.web>
     <compilation debug="true">
-      <assemblies>
-        <add assembly="System.Web.WebPages.Razor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31BF3856AD364E35" />
-      </assemblies>
       <buildProviders>
         <add extension=".cshtml" type="ServiceStack.Razor.CSharpRazorBuildProvider, ServiceStack.Razor" />
       </buildProviders>
