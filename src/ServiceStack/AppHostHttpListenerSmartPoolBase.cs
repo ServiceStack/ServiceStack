@@ -14,10 +14,23 @@ namespace ServiceStack
         private readonly ILog log = LogManager.GetLogger(typeof(AppHostHttpListenerSmartPoolBase));
         private readonly AutoResetEvent listenForNextRequest = new AutoResetEvent(false);
         private readonly SmartThreadPool threadPoolManager;
+
+        public int MinThreads
+        {
+            get { return threadPoolManager.MinThreads; }
+            set { threadPoolManager.MinThreads = value; }
+        }
+
+        public int MaxThreads
+        {
+            get { return threadPoolManager.MaxThreads; }
+            set { threadPoolManager.MaxThreads = value; }
+        }
+
         private const int IdleTimeout = 300;
 
         protected AppHostHttpListenerSmartPoolBase(string serviceName, params Assembly[] assembliesWithServices)
-            : this(serviceName, CalculatePoolSize(), assembliesWithServices) { }
+            : base(serviceName, assembliesWithServices) { threadPoolManager = new SmartThreadPool(IdleTimeout); }
 
         protected AppHostHttpListenerSmartPoolBase(string serviceName, int poolSize, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices) { threadPoolManager = new SmartThreadPool(IdleTimeout, poolSize); }
