@@ -334,6 +334,7 @@
     <Compile Include="Redis\RedisKeyType.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Redis\ScanResult.cs" />
     <Compile Include="Redis\SortOptions.cs">
       <SubType>Code</SubType>
     </Compile>

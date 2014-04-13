@@ -87,6 +87,12 @@ namespace ServiceStack.Redis
         //Store entities without registering entity ids
         void WriteAll<TEntity>(IEnumerable<TEntity> entities);
 
+        //Scan APIs
+        IEnumerable<string> ScanAllKeys(string pattern = null, int pageSize = 1000);
+        IEnumerable<string> ScanAllSetItems(string setId, string pattern = null, int pageSize = 1000);
+        IEnumerable<KeyValuePair<string, double>> ScanAllSortedSetItems(string setId, string pattern = null, int pageSize = 1000);
+        IEnumerable<KeyValuePair<string, string>> ScanAllHashEntries(string hashId, string pattern = null, int pageSize = 1000);
+
         /// <summary>
         /// Returns a high-level typed client API
         /// </summary>

@@ -85,6 +85,12 @@ namespace ServiceStack.Redis
 		long Ttl(string key);
 		long PTtl(string key);
 
+        //Scan APIs
+	    ScanResult Scan(ulong cursor, int count = 10, string match = null);
+	    ScanResult SScan(string setId, ulong cursor, int count = 10, string match = null);
+	    ScanResult ZScan(string setId, ulong cursor, int count = 10, string match = null);
+	    ScanResult HScan(string hashId, ulong cursor, int count = 10, string match = null);
+
 		//Redis Sort operation (works on lists, sets or hashes)
 		byte[][] Sort(string listOrSetId, SortOptions sortOptions);
 
@@ -158,6 +164,8 @@ namespace ServiceStack.Redis
 		double ZScore(string setId, byte[] value);
 		long ZUnionStore(string intoSetId, params string[] setIds);
 		long ZInterStore(string intoSetId, params string[] setIds);
+
+
 
 		//Redis Hash operations
 		long HSet(string hashId, byte[] key, byte[] value);
