@@ -5,6 +5,6 @@ namespace ServiceStack.Redis
     public class ScanResult
     {
         public ulong Cursor { get; set; }
-        public List<string> Results { get; set; }
+        public List<byte[]> Results { get; set; }
     }
 }

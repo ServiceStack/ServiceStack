@@ -93,6 +93,11 @@ namespace ServiceStack.Redis
         IEnumerable<KeyValuePair<string, double>> ScanAllSortedSetItems(string setId, string pattern = null, int pageSize = 1000);
         IEnumerable<KeyValuePair<string, string>> ScanAllHashEntries(string hashId, string pattern = null, int pageSize = 1000);
 
+        //Hyperlog APIs
+        bool AddToHyperLog(string key, params string[] elements);
+        long CountHyperLog(string key);
+        void MergeHyperLogs(string toKey, params string[] fromKeys);
+
         /// <summary>
         /// Returns a high-level typed client API
         /// </summary>

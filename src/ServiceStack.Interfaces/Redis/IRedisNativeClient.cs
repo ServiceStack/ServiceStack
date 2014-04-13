@@ -91,6 +91,11 @@ namespace ServiceStack.Redis
 	    ScanResult ZScan(string setId, ulong cursor, int count = 10, string match = null);
 	    ScanResult HScan(string hashId, ulong cursor, int count = 10, string match = null);
 
+        //Hyperlog
+	    bool PfAdd(string key, params byte[][] elements);
+        long PfCount(string key);
+	    void PfMerge(string toKeyId, params string[] fromKeys);
+
 		//Redis Sort operation (works on lists, sets or hashes)
 		byte[][] Sort(string listOrSetId, SortOptions sortOptions);
 
