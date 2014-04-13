@@ -7,6 +7,7 @@ using System.Web;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Html;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Razor.Managers
@@ -148,6 +149,9 @@ namespace ServiceStack.Razor.Managers
                     ?? page.Layout
                     ?? DefaultLayoutName);
 
+                if (httpRes.IsClosed)
+                    return result != null ? result.Item1 : null;
+
                 using (var writer = new StreamWriter(httpRes.OutputStream, UTF8EncodingWithoutBom))
                 {
                     writer.Write(result.Item2);
@@ -169,11 +173,19 @@ namespace ServiceStack.Razor.Managers
                 using (var childWriter = new StreamWriter(ms, UTF8EncodingWithoutBom))
                 {
                     //child page needs to execute before master template to populate ViewBags, sections, etc
-                    page.WriteTo(childWriter);
+                    try
+                    {
+                        page.WriteTo(childWriter);
+                    }
+                    catch (StopExecutionException ignore) {}
+
+                    if (httpRes.IsClosed)
+                        return null;
+
                     var childBody = ms.ToArray().FromUtf8Bytes();
 
                     var layoutName = layout();
-                    if (!String.IsNullOrEmpty(layoutName))
+                    if (!string.IsNullOrEmpty(layoutName))
                     {
                         var layoutPage = this.viewManager.GetPageByName(layoutName, httpReq, model);
                         if (layoutPage != null)

@@ -142,6 +142,7 @@
     <Compile Include="SmartThreadPool\WorkItemsGroup.cs" />
     <Compile Include="SmartThreadPool\WorkItemsGroupBase.cs" />
     <Compile Include="SmartThreadPool\WorkItemsQueue.cs" />
+    <Compile Include="StopExecutionException.cs" />
     <Compile Include="TaskExtensions.cs" />
     <Compile Include="Host\HttpResponseStreamWrapper.cs" />
     <Compile Include="HttpError.cs" />

@@ -168,6 +168,8 @@ namespace RazorRockstars.Console.Files
         static string View_Pages_Default = "<!--view:Pages/default.cshtml-->";
         static string View_Pages_Dir_Default = "<!--view:Pages/Dir/default.cshtml-->";
         static string ViewM_Pages_Dir2_Default = "<!--view:Pages/Dir2/default.md-->";
+        static string View_RequestFilters = "<!--view:RequestFilters.cshtml-->";
+        static string View_RequestFiltersPage = "<!--view:RequestFiltersPage.cshtml-->";
 
         static string Template_Layout = "<!--template:_Layout.cshtml-->";
         static string Template_Pages_Layout = "<!--template:Pages/_Layout.cshtml-->";
@@ -365,6 +367,30 @@ namespace RazorRockstars.Console.Files
                 "<h3>Inside SectionHead</h3>",
                 "<h3>Inside PartialChildModel</h3>",
                 "<!--view:PartialChildModel.cshtml-->");
+        }
+
+        [Test]
+        public void Does_shortcircuit_RequestFilters()
+        {
+            Assert200(Host + "/RequestFilters",
+                View_RequestFilters,
+                "<h3>QueryStrings:0</h3>");
+
+            Assert200(Host + "/RequestFilters?a=querystring",
+                View_RequestFilters,
+                "<h3>QueryStrings:0</h3>");
+        }
+
+        [Test]
+        public void Does_shortcircuit_RequestFiltersPage_testing_Layout()
+        {
+            Assert200(Host + "/RequestFiltersPage",
+                View_RequestFiltersPage,
+                "<h3>QueryStrings:0</h3>");
+
+            Assert200(Host + "/RequestFiltersPage?a=querystring",
+                View_RequestFiltersPage,
+                "<h3>QueryStrings:0</h3>");
         }
     }
 }

@@ -8,6 +8,7 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.Razor;
 using ServiceStack.Validation;
+using ServiceStack.Web;
 
 //The entire C# code for the stand-alone RazorRockstars demo.
 namespace RazorRockstars.Console.Files
@@ -209,5 +210,24 @@ namespace RazorRockstars.Console.Files
                 })
             };
         }
+
+        public void Any(RedirectWithoutQueryString request) {}
+    }
+
+    public class RedirectWithoutQueryStringFilterAttribute : RequestFilterAttribute
+    {
+        public override void Execute(IRequest req, IResponse res, object requestDto)
+        {
+            if (req.QueryString.Count > 0)
+            {
+                res.RedirectToUrl(req.PathInfo);
+            }
+        }
+    }
+
+    [RedirectWithoutQueryStringFilter]
+    public class RedirectWithoutQueryString
+    {
+        public int Id { get; set; }
     }
 }

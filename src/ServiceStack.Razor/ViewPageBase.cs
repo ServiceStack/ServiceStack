@@ -519,5 +519,33 @@ namespace ServiceStack.Razor
         {
             return MvcHtmlString.Create(AppHost.ResolveAbsoluteUrl(virtualPath, Request));
         }
+
+        public void ApplyRequestFilters(object requestDto)
+        {
+            HostContext.ApplyRequestFilters(base.Request, base.Response, requestDto);
+            if (base.Response.IsClosed)
+                throw new StopExecutionException();
+        }
+
+        public void RedirectIfNotAuthenticated(string redirectUrl=null)
+        {
+            if (IsAuthenticated) return;
+            
+            if (redirectUrl != null)
+            {
+                Response.RedirectToUrl(redirectUrl);
+            }
+            else
+            {
+                var authFeature = AppHost.GetPlugin<AuthFeature>();
+                var virtualPath = authFeature != null && authFeature.HtmlRedirect != null
+                    ? authFeature.HtmlRedirect
+                    : HostContext.Config.DefaultRedirectPath ?? HostContext.Config.WebHostUrl ?? "/";
+
+                var url = AppHost.ResolveAbsoluteUrl(virtualPath, base.Request);
+                Response.RedirectToUrl(url);
+            }
+            throw new StopExecutionException();
+        }
     }
 }
