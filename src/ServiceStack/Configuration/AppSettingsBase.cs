@@ -38,6 +38,17 @@ namespace ServiceStack.Configuration
             return GetNullableString(name);
         }
 
+        public virtual string GetRequiredString(string name)
+        {
+            var value = GetNullableString(name);
+            if (value == null)
+            {
+                throw new ConfigurationErrorsException(String.Format(ErrorAppsettingNotFound, name));
+            }
+
+            return value;
+        }
+
         public virtual IList<string> GetList(string key)
         {
             var value = GetString(key);
