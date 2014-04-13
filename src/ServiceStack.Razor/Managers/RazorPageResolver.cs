@@ -9,6 +9,7 @@ using ServiceStack.Common.Web;
 using ServiceStack.Html;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 
@@ -85,7 +86,8 @@ namespace ServiceStack.Razor.Managers
         {
             httpRes.ContentType = ContentType.Html;
 
-            ResolveAndExecuteRazorPage(httpReq, httpRes, null);
+            ResolveAndExecuteRazorPage(httpReq, httpRes, null, null,
+                (page, model) => EndpointHost.ApplyRequestFilters(httpReq, httpRes, model));
             httpRes.EndRequest(skipHeaders: true);
         }
 
@@ -126,7 +128,7 @@ namespace ServiceStack.Razor.Managers
             return razorPage;
         }
 
-        public IRazorView ResolveAndExecuteRazorPage(IHttpRequest httpReq, IHttpResponse httpRes, object model, RazorPage razorPage=null)
+        public IRazorView ResolveAndExecuteRazorPage(IHttpRequest httpReq, IHttpResponse httpRes, object model, RazorPage razorPage=null, Action<IRazorView,object> preExecutePage=null)
         {
             razorPage = razorPage ?? FindRazorPage(httpReq, model);
 
@@ -136,7 +138,8 @@ namespace ServiceStack.Razor.Managers
                 return null;
             }
 
-            var page = CreateRazorPageInstance(httpReq, httpRes, model, razorPage);
+            var page = CreateRazorPageInstance(httpReq, httpRes, ref model, razorPage);
+            if (preExecutePage != null) preExecutePage(page, model);
 
             var includeLayout = !(httpReq.GetParam(QueryStringFormatKey) ?? "").Contains(NoTemplateFormatValue);
             if (includeLayout)
@@ -176,7 +179,7 @@ namespace ServiceStack.Razor.Managers
                         var layoutPage = this.viewManager.GetPageByName(layoutName, httpReq, model);
                         if (layoutPage != null)
                         {
-                            var layoutView = CreateRazorPageInstance(httpReq, httpRes, model, layoutPage);
+                            var layoutView = CreateRazorPageInstance(httpReq, httpRes, ref model, layoutPage);
                             layoutView.SetChildPage(page, childBody);
                             return ExecuteRazorPageWithLayout(httpReq, httpRes, model, layoutView, () => layoutView.Layout);
                         }
@@ -187,7 +190,7 @@ namespace ServiceStack.Razor.Managers
             }
         }
 
-        private IRazorView CreateRazorPageInstance(IHttpRequest httpReq, IHttpResponse httpRes, object dto, RazorPage razorPage)
+        private IRazorView CreateRazorPageInstance(IHttpRequest httpReq, IHttpResponse httpRes, ref object dto, RazorPage razorPage)
         {
             viewManager.EnsureCompiled(razorPage);
 
@@ -203,12 +206,12 @@ namespace ServiceStack.Razor.Managers
             page.Init(viewEngine: this, httpReq: httpReq, httpRes: httpRes);
 
             //deserialize the model.
-            PrepareAndSetModel(page, httpReq, dto);
+            PrepareAndSetModel(page, httpReq, ref dto);
         
             return page;
         }
 
-        private void PrepareAndSetModel(IRazorView page, IHttpRequest httpReq, object dto)
+        private void PrepareAndSetModel(IRazorView page, IHttpRequest httpReq, ref object dto)
         {
             var hasModel = page as IHasModel;
             if (hasModel == null) return;
@@ -224,6 +227,7 @@ namespace ServiceStack.Razor.Managers
             }
 
             hasModel.SetModel(model);
+            dto = model;
         }
 
         public override object CreateRequest(IHttpRequest request, string operationName)
@@ -247,7 +251,7 @@ namespace ServiceStack.Razor.Managers
             var razorPage = this.viewManager.GetPageByName(pageName, httpReq, model);
             if (razorPage != null)
             {
-                var page = CreateRazorPageInstance(httpReq, htmlHelper.HttpResponse, model, razorPage);
+                var page = CreateRazorPageInstance(httpReq, htmlHelper.HttpResponse, ref model, razorPage);
                 page.ParentPage = htmlHelper.RazorPage;
                 page.WriteTo(writer);
             }

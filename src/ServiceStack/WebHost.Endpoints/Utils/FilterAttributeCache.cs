@@ -42,8 +42,8 @@ namespace ServiceStack.WebHost.Endpoints.Utils
 				(IHasRequestFilter[])requestDtoType.GetCustomAttributes(typeof(IHasRequestFilter), true));
 
             var serviceType = EndpointHost.Metadata.GetServiceTypeByRequest(requestDtoType);
-			attributes.AddRange(
-				(IHasRequestFilter[])serviceType.GetCustomAttributes(typeof(IHasRequestFilter), true));
+            if ( serviceType != null )
+			    attributes.AddRange((IHasRequestFilter[])serviceType.GetCustomAttributes(typeof(IHasRequestFilter), true));
 
 			attributes.Sort((x,y) => x.Priority - y.Priority);
 			attrs = attributes.ToArray();
