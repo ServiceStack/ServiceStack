@@ -20,6 +20,7 @@
     <host factoryType="System.Web.Mvc.MvcWebRazorHostFactory, System.Web.Mvc" />
     <pages pageBaseType="ServiceStack.Razor.ViewPage">
       <namespaces>
+        <add namespace="System" />
         <add namespace="ServiceStack" />
         <add namespace="ServiceStack.Html" />
         <add namespace="ServiceStack.Razor" />
