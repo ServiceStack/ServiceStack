@@ -178,7 +178,8 @@ namespace ServiceStack.Host.HttpListener
 
             if (context == null) return;
 
-            Log.DebugFormat("{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
+            if (Config.DebugMode)
+                Log.DebugFormat("{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
 
             //System.Diagnostics.Debug.WriteLine("Start: " + requestNumber + " at " + DateTime.UtcNow);
             //var request = context.Request;

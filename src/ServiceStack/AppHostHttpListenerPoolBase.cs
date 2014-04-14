@@ -168,10 +168,10 @@ namespace ServiceStack
                 listenForNextRequest.Set();
             }
 
-            log.DebugFormat("{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
+            if (Config.DebugMode)
+                log.DebugFormat("{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
 
             RaiseReceiveWebRequest(context);
-
 
             threadPoolManager.Peek(() =>
             {

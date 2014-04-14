@@ -10,7 +10,7 @@ namespace ServiceStack
     public abstract class AppSelfHostBase
         : AppHostHttpListenerBase
     {
-        private readonly ILog log = LogManager.GetLogger(typeof(AppHostHttpListenerSmartPoolBase));
+        private readonly ILog log = LogManager.GetLogger(typeof(AppSelfHostBase));
         private readonly AutoResetEvent listenForNextRequest = new AutoResetEvent(false);
         private readonly SmartThreadPool threadPoolManager;
 
@@ -115,7 +115,8 @@ namespace ServiceStack
                 listenForNextRequest.Set();
             }
 
-            log.DebugFormat("{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
+            if (Config.DebugMode)
+                log.DebugFormat("{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
 
             RaiseReceiveWebRequest(context);
 
