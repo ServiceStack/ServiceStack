@@ -530,21 +530,13 @@ namespace ServiceStack.Razor
         public void RedirectIfNotAuthenticated(string redirectUrl=null)
         {
             if (IsAuthenticated) return;
-            
-            if (redirectUrl != null)
-            {
-                Response.RedirectToUrl(redirectUrl);
-            }
-            else
-            {
-                var authFeature = AppHost.GetPlugin<AuthFeature>();
-                var virtualPath = authFeature != null && authFeature.HtmlRedirect != null
-                    ? authFeature.HtmlRedirect
-                    : HostContext.Config.DefaultRedirectPath ?? HostContext.Config.WebHostUrl ?? "/";
 
-                var url = AppHost.ResolveAbsoluteUrl(virtualPath, base.Request);
-                Response.RedirectToUrl(url);
-            }
+            redirectUrl = redirectUrl
+                ?? AuthenticateService.HtmlRedirect
+                ?? HostContext.Config.DefaultRedirectPath
+                ?? HostContext.Config.WebHostUrl
+                ?? "/";
+            AuthenticateAttribute.DoHtmlRedirect(redirectUrl, Request, Response, includeRedirectParam: true);
             throw new StopExecutionException();
         }
     }

@@ -88,18 +88,22 @@ namespace ServiceStack
             var htmlRedirect = this.HtmlRedirect ?? AuthenticateService.HtmlRedirect;
             if (htmlRedirect != null && req.ResponseContentType.MatchesContentType(MimeTypes.Html))
             {
-                var url = req.ResolveAbsoluteUrl(htmlRedirect);
-                if (includeRedirectParam)
-                {
-                    var absoluteRequestPath = req.ResolveAbsoluteUrl("~" + req.PathInfo + ToQueryString(req.QueryString));
-                    url = url.AddQueryParam(HostContext.ResolveLocalizedString(LocalizedStrings.Redirect), absoluteRequestPath);
-                }
-
-                res.RedirectToUrl(url);
+                DoHtmlRedirect(htmlRedirect, req, res, includeRedirectParam);
                 return true;
             }
-
             return false;
+        }
+
+        public static void DoHtmlRedirect(string redirectUrl, IRequest req, IResponse res, bool includeRedirectParam)
+        {
+            var url = req.ResolveAbsoluteUrl(redirectUrl);
+            if (includeRedirectParam)
+            {
+                var absoluteRequestPath = req.ResolveAbsoluteUrl("~" + req.PathInfo + ToQueryString(req.QueryString));
+                url = url.AddQueryParam(HostContext.ResolveLocalizedString(LocalizedStrings.Redirect), absoluteRequestPath);
+            }
+
+            res.RedirectToUrl(url);
         }
 
         public static void AuthenticateIfBasicAuth(IRequest req, IResponse res)
