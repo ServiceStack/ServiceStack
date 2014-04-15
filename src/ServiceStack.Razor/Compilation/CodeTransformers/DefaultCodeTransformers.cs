@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Web.Razor.Generator;
-using ServiceStack.Text;
 
 namespace ServiceStack.Razor.Compilation.CodeTransformers
 {
@@ -92,10 +91,10 @@ namespace ServiceStack.Razor.Compilation.CodeTransformers
         private readonly bool isGenericType;
 
         private readonly string _typeName;
-        public SetBaseType(string typeName, bool isGenericType=true)
+        public SetBaseType(string typeName, bool? isGenericType = null)
         {
             _typeName = typeName.SplitOnLast("`")[0]; //get clean generic name without 'GenericType`1' n args suffix
-            this.isGenericType = isGenericType;
+            this.isGenericType = isGenericType ?? typeName.Contains("`");
         }
 
         public SetBaseType(Type type)

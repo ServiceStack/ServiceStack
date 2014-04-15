@@ -11,6 +11,8 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Razor
 {
+    using System.Reflection;
+
     public class RazorFormat : IPlugin, IRazorPlugin, IRazorConfig
     {
         public const string TemplatePlaceHolder = "@RenderBody()";
@@ -36,6 +38,7 @@ namespace ServiceStack.Razor
         public string DefaultPageName { get; set; }
         public string WebHostUrl { get; set; }
         public string ScanRootPath { get; set; }
+        public Assembly[] ScanAssemblies { get; set; }
         public List<Predicate<string>> Deny { get; set; }
         public bool? EnableLiveReload { get; set; }
         public bool? PrecompilePages { get; set; }
@@ -239,6 +242,7 @@ namespace ServiceStack.Razor
         Type PageBaseType { get; }
         string DefaultPageName { get; }
         string ScanRootPath { get; }
+        Assembly[] ScanAssemblies { get; }
         string WebHostUrl { get; }
         List<Predicate<string>> Deny { get; }
         bool? PrecompilePages { get; set; }
