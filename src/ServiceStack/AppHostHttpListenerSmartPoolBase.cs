@@ -15,6 +15,11 @@ namespace ServiceStack
         private readonly AutoResetEvent listenForNextRequest = new AutoResetEvent(false);
         private readonly SmartThreadPool threadPoolManager;
 
+        public SmartThreadPool ThreadPoolManager
+        {
+            get { return threadPoolManager; }
+        }
+
         public int MinThreads
         {
             get { return threadPoolManager.MinThreads; }
