@@ -1,0 +1,156 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E6150672-5EA1-4E87-A66A-1884259F1319}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ServiceStack.Razor.BuildTask</RootNamespace>
+    <AssemblyName>ServiceStack.Razor.BuildTask</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.Build.Utilities.v4.0" />
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Text">
+      <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=e06fbc6124f57c43, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\System.Web.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\ServiceStack.Common\XLinqExtensions.cs">
+      <Link>Support\XLinqExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Razor\Compilation\CodeTransformers\AddPageVirtualPathAttribute.cs">
+      <Link>Compilation\CodeTransformers\AddPageVirtualPathAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Razor\Compilation\CodeTransformers\AggregateCodeTransformer.cs">
+      <Link>Compilation\CodeTransformers\AggregateCodeTransformer.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Razor\Compilation\CodeTransformers\DefaultCodeTransformers.cs">
+      <Link>Compilation\CodeTransformers\DefaultCodeTransformers.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Razor\Compilation\CodeTransformers\DirectivesBasedTransformers.cs">
+      <Link>Compilation\CodeTransformers\DirectivesBasedTransformers.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Razor\Compilation\CodeTransformers\ExcludeFromCodeCoverageTransformer.cs">
+      <Link>Compilation\CodeTransformers\ExcludeFromCodeCoverageTransformer.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Razor\Compilation\CodeTransformers\MakeTypePartial.cs">
+      <Link>Compilation\CodeTransformers\MakeTypePartial.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Razor\Compilation\CodeTransformers\MvcWebConfigTransformer.cs">
+      <Link>Compilation\CodeTransformers\MvcWebConfigTransformer.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Razor\Compilation\CodeTransformers\RazorCodeTransformerBase.cs">
+      <Link>Compilation\CodeTransformers\RazorCodeTransformerBase.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Razor\Compilation\CodeTransformers\RemoveLineHiddenPragmas.cs">
+      <Link>Compilation\CodeTransformers\RemoveLineHiddenPragmas.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Razor\Compilation\CodeTransformers\RewriteLinePragmas.cs">
+      <Link>Compilation\CodeTransformers\RewriteLinePragmas.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Razor\Compilation\CodeTransformers\SetTypeNamespace.cs">
+      <Link>Compilation\CodeTransformers\SetTypeNamespace.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Razor\Compilation\CodeTransformers\SetTypeVisibility.cs">
+      <Link>Compilation\CodeTransformers\SetTypeVisibility.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Razor\Compilation\CodeTransformers\SuffixFileNameTransformer.cs">
+      <Link>Compilation\CodeTransformers\SuffixFileNameTransformer.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Razor\Compilation\CodeTransformers\WebConfigTransformer.cs">
+      <Link>Compilation\CodeTransformers\WebConfigTransformer.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Razor\Compilation\CompilerServices.cs">
+      <Link>Compilation\CompilerServices.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Razor\Compilation\DirectivesParser.cs">
+      <Link>Compilation\DirectivesParser.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Razor\Compilation\EventArgs.cs">
+      <Link>Compilation\EventArgs.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Razor\Compilation\IRazorCodeTransformer.cs">
+      <Link>Compilation\IRazorCodeTransformer.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Razor\Compilation\IRazorHost.cs">
+      <Link>Compilation\IRazorHost.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Razor\Compilation\RazorPageHost.cs">
+      <Link>Compilation\RazorPageHost.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack\Html\MvcResources.cs">
+      <Link>Support\MvcResources.cs</Link>
+    </Compile>
+    <Compile Include="AppConfigScope.cs" />
+    <Compile Include="Support\HelperResult.cs" />
+    <Compile Include="Support\HostContext.cs" />
+    <Compile Include="Support\Extensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Managers\RazorGen\RazorViewPageTransformer.cs" />
+    <Compile Include="RazorGeneratorBuildTask.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Support\RazorBuildPathProvider.cs" />
+    <Compile Include="Support\RazorBuildTaskFile.cs" />
+    <Compile Include="Support\ViewPage.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ServiceStack.Razor.BuildTask.targets">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
