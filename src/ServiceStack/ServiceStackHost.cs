@@ -586,6 +586,8 @@ namespace ServiceStack
         {
             var wsdl = wsdlTemplate.ToString();
 
+            wsdl = wsdl.Replace("http://schemas.datacontract.org/2004/07/ServiceStack", Config.WsdlServiceNamespace);
+
             if (Config.WsdlServiceNamespace != HostConfig.DefaultWsdlNamespace)
             {
                 wsdl = wsdl.Replace(HostConfig.DefaultWsdlNamespace, Config.WsdlServiceNamespace);
