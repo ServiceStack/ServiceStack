@@ -18,6 +18,7 @@ namespace ServiceStack
 {
     public class HostConfig
     {
+        public const string DefaultWsdlNamespace = "http://schemas.servicestack.net/types";
         public static string ServiceStackPath = null;
 
         private static HostConfig instance;
@@ -35,8 +36,8 @@ namespace ServiceStack
         {
             var config = new HostConfig
             {
-                MetadataTypesConfig = new MetadataTypesConfig(addDefaultXmlNamespace: "http://schemas.servicestack.net/types"),
-                WsdlServiceNamespace = "http://schemas.servicestack.net/types",
+                MetadataTypesConfig = new MetadataTypesConfig(addDefaultXmlNamespace: DefaultWsdlNamespace),
+                WsdlServiceNamespace = DefaultWsdlNamespace,
                 ApiVersion = "1.0",
                 EmbeddedResourceSources = new[] { HostContext.AppHost.GetType().Assembly, typeof(Service).Assembly }.ToList(),
                 LogFactory = new NullLogFactory(),

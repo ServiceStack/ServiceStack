@@ -52,7 +52,8 @@ namespace ServiceStack.Metadata
             try
             {
                 var wsdlTemplate = GetWsdlTemplate(operations, baseUri, optimizeForFlash, httpReq.ResolveBaseUrl(), HostContext.Config.SoapServiceName);
-                httpRes.Write(wsdlTemplate.ToString());
+                var wsdl = HostContext.AppHost.GenerateWsdl(wsdlTemplate);
+                httpRes.Write(wsdl);
             }
             catch (Exception ex)
             {

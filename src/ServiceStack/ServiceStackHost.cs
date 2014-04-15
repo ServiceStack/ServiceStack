@@ -23,7 +23,6 @@ using ServiceStack.Messaging;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler.UI;
 using ServiceStack.Serialization;
-using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 using ServiceStack.Redis;
@@ -581,6 +580,18 @@ namespace ServiceStack
         public virtual RouteAttribute[] GetRouteAttributes(Type requestType)
         {
             return requestType.AllAttributes<RouteAttribute>();
+        }
+
+        public virtual string GenerateWsdl(WsdlTemplateBase wsdlTemplate)
+        {
+            var wsdl = wsdlTemplate.ToString();
+
+            if (Config.WsdlServiceNamespace != HostConfig.DefaultWsdlNamespace)
+            {
+                wsdl = wsdl.Replace(HostConfig.DefaultWsdlNamespace, Config.WsdlServiceNamespace);
+            }
+
+            return wsdl;
         }
 
         public virtual void Dispose()
