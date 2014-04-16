@@ -1,6 +1,8 @@
 using System;
+using System.Web;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
+using ServiceStack.Host;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -108,5 +110,10 @@ namespace ServiceStack
 	        httpReq.Items.TryGetValue(key, out value);
 	        return value;
 	    }
-	}
+
+        public static RequestBaseWrapper ToHttpRequestBase(this IRequest httpReq)
+        {
+            return new RequestBaseWrapper((IHttpRequest) httpReq);
+        }
+    }
 }

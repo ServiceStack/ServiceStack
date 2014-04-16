@@ -53,8 +53,9 @@ namespace ServiceStack.Authentication.OAuth2
         public virtual IAuthorizationState ProcessUserAuthorization(
             WebServerClient authClient, AuthorizationServerDescription authServer, IServiceBase authService)
         {
-            var authState = authClient.ProcessUserAuthorization();
-            return authState;
+            return HostContext.Config.StripApplicationVirtualPath
+                ? authClient.ProcessUserAuthorization(authService.Request.ToHttpRequestBase())
+                : authClient.ProcessUserAuthorization();
         }
 
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
