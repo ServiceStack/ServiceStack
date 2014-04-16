@@ -1,0 +1,116 @@
+﻿@inherits ViewPage<RockstarsResponse>
+
+@{
+    Layout = "HtmlReport";
+    ViewBag.Title = "Rocking with AngularJS";
+}
+
+<script src="/js/angular.min.js"></script>
+<script src="/js/jquip.events.css.ajax.min.js"></script>
+<script type="text/javascript">
+    function RockstarsCtrl($scope) {
+        var response = @Model.AsRawJson();
+       
+        $scope.rockstars = response.Results;
+        
+        $scope.noOfStars = function () {
+            return $scope.rockstars.length;
+        }
+        
+        $scope.addRockstar = function() {
+            var nextId = Math.max.apply(null, $.map($scope.rockstars, function(r) { return r.Id })) + 1;
+            $scope.rockstars.push({
+                Id: nextId,
+                FirstName:$scope.FirstName,
+                LastName:$scope.LastName,
+                Age:$scope.Age,
+                Alive:$scope.Alive,
+                Url:"/stars/" + ($scope.Alive ? "alive" : "dead") + "/" + $scope.LastName.toLowerCase()
+            });
+            $scope.FirstName = $scope.LastName = $scope.Age = "";               
+            $scope.Alive = false;
+        };
+        
+        $scope.removeRockstar = function(id) {
+            $scope.rockstars = $._filter($scope.rockstars, function(rockstar) {
+                return rockstar.Id != id;
+            });
+        };
+        
+        //default values
+        $scope.FirstName = "Amy";
+        $scope.LastName = "Winehouse";
+        $scope.Age = 27;
+        $scope.Alive = false;
+    }
+</script>
+
+<div ng-app ng-controller="RockstarsCtrl">
+    <div style="float: right; margin: 0 0 20px 0;">
+        <strong>View this page in: </strong>
+        <a href="?format=json">json</a>,
+        <a href="?format=xml">xml</a>,
+        <a href="?format=jsv">jsv</a>,
+        <a href="?format=csv">csv</a>
+        <div id="swap-templates">
+            <a href="?View=Rockstars">View = Rockstars</a>
+            <a href="?Template=SimpleLayout">Template = SimpleLayout</a>
+            <a href="?View=Rockstars&amp;Template=SimpleLayout">Rockstars &amp; SimpleLayout</a>
+        </div>
+    </div>
+    
+    <div id="app">
+        <img src="/img/AngularJS-large.png" width="383" height="108" />
+    
+        <h3>We have {{noOfStars()}} Rockstars</h3>
+    
+        <table>
+            <thead> 
+                <tr>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th></th> 
+                </tr>
+            </thead>
+            <tfoot>
+                <tr>
+                    <td colspan="3">
+                        <form ng-submit="addRockstar()">
+                            <div><b><label>FirstName</label></b> 
+                                <input ng-model="FirstName" type="text" name="FirstName" value="" /></div>
+                            <div><b><label>LastName</label></b> 
+                                <input ng-model="LastName" type="text" name="LastName" value="" /></div>
+                            <div><b><label>Age</label></b> 
+                                <input ng-model="Age" type="text" name="Age" value="" /></div>
+                            <div><b><label>Alive</label></b>
+                                <input ng-model="Alive" type="checkbox" name="Alive" value="true" /></div>
+                            <p><button type="submit" ng-disabled="!FirstName || !LastName || !Age">Add new Rockstar</button></p>
+                        </form>
+                    </td>
+                </tr>
+            </tfoot>
+            <tbody>
+                <tr ng-repeat="rockstar in rockstars">
+                    <td class="alive-{{rockstar.Alive}}"><a href="{{rockstar.Url}}">{{rockstar.FirstName}} {{rockstar.LastName}}</a></td>
+                    <td class="alive-{{rockstar.Alive}}">{{rockstar.Age}}</td>     
+                    <td class="alive-{{rockstar.Alive}}">
+                        <a ng-click="removeRockstar(rockstar.Id)">remove</a>
+                    </td>       
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="preview">
+    <h1>Implementation</h1>
+
+    <h3><b>Controller</b> <a href="https://github.com/ServiceStack/RazorRockstars/blob/master/src/RazorRockstars.WebHost/RockstarsService.cs">/RockstarsService.cs</a></h3>
+    <script src="https://gist.github.com/3616766.js"></script>
+
+    <h3><b>View</b> <a href="https://github.com/ServiceStack/RazorRockstars/blob/master/src/RazorRockstars.WebHost/Views/AngularJS.cshtml">/Views/AngularJS.cshtml</a></h3>
+    <script src="https://gist.github.com/3664196.js"></script>
+
+    <h3><b>Layout</b> <a href="https://github.com/ServiceStack/RazorRockstars/blob/master/src/RazorRockstars.WebHost/Views/Shared/HtmlReport.cshtml">/Views/Shared/HtmlReport.cshtml</a></h3>
+    <script src="https://gist.github.com/3616883.js"></script>
+</div>
