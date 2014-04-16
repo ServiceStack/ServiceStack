@@ -50,6 +50,13 @@ namespace ServiceStack.Authentication.OAuth2
 
         protected string[] Scopes { get; set; }
 
+        public virtual IAuthorizationState ProcessUserAuthorization(
+            WebServerClient authClient, AuthorizationServerDescription authServer, IServiceBase authService)
+        {
+            var authState = authClient.ProcessUserAuthorization();
+            return authState;
+        }
+
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
             var tokens = this.Init(authService, ref session, request);
@@ -59,7 +66,7 @@ namespace ServiceStack.Authentication.OAuth2
                 ClientCredentialApplicator = ClientCredentialApplicator.PostParameter(this.ConsumerSecret),
             };
 
-            var authState = authClient.ProcessUserAuthorization();
+            var authState = ProcessUserAuthorization(authClient, authServer, authService);
             if (authState == null)
             {
                 try
