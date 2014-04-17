@@ -1,6 +1,4 @@
 using System;
-using System.Web;
-using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Host;
 using ServiceStack.Web;
@@ -45,7 +43,9 @@ namespace ServiceStack
 				return (object)serializedDto;
 
             byte[] compressedBytes = serializedDto.Compress(compressionType);
-            return new CompressedResult(compressedBytes, compressionType, request.ResponseContentType);
+            return new CompressedResult(compressedBytes, compressionType, request.ResponseContentType) {
+                Status = request.Response.StatusCode
+            };
 		}
 
 		/// <summary>

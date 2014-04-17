@@ -110,7 +110,9 @@ namespace ServiceStack
                     cacheClient.Set(cacheKeySerializedZip, compressedSerializedDto, expireCacheIn);
 
                     return (compressedSerializedDto != null)
-                        ? new CompressedResult(compressedSerializedDto, compressionType, request.ResponseContentType)
+                        ? new CompressedResult(compressedSerializedDto, compressionType, request.ResponseContentType) {
+                                Status = request.Response.StatusCode
+                            }
                         : null;
                 }
 
