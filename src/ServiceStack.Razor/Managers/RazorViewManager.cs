@@ -68,6 +68,9 @@ namespace ServiceStack.Razor.Managers
 
         private void ScanAssemblies()
         {
+            if (this.Config.ScanAssemblies == null) 
+                return;
+
             foreach (var assembly in this.Config.ScanAssemblies)
             {
                 foreach (var type in assembly.GetTypes()
