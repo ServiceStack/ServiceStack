@@ -106,6 +106,8 @@
 
       <RazorFilesV4 Include="$(SrcDir)/ServiceStack.RazorV4/bin/$(Configuration)/ServiceStack.Razor.*"></RazorFilesV4>
       <RazorFilesV4 Include="$(BuildSolutionDir)/lib/net40/System.Web.Razor.Unofficial.dll"></RazorFilesV4>
+	  
+      <RazorBuildTaskFiles Include="$(SrcDir)/ServiceStack.Razor.BuildTask/bin/$(Configuration)/*.dll;$(SrcDir)/ServiceStack.Razor.BuildTask/bin/$(Configuration)/*.targets"></RazorBuildTaskFiles>
 
       <ClientFiles Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/ServiceStack.Client.*"></ClientFiles>
 
@@ -380,6 +382,17 @@
     <Copy SourceFiles="%(RazorFilesV4.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Razor/lib/net40" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Razor/servicestack.razor.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
+			
+    <!-- ServiceStack.Razor.BuildTask -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Razor.BuildTask/ServiceStack.Razor.BuildTask.csproj"
+            Targets="Build"
+            Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+			 
+    <Copy SourceFiles="%(RazorBuildTaskFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Razor.BuildTask/tools" />
+	
+	<Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Razor.BuildTask/servicestack.razor.buildtask.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Interfaces -->

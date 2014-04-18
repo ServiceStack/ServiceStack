@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using Microsoft.CSharp;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Razor.Compilation;
+using ServiceStack.Razor.Compilation.CodeTransformers;
 using ServiceStack.Razor.Managers.RazorGen;
 using ServiceStack.Web;
 
@@ -50,13 +52,32 @@ namespace ServiceStack.Razor.Managers
 
         private void ScanForRazorPages()
         {
+            ScanAssemblies();
+            ScanPaths();
+        }
+
+        private void ScanPaths()
+        {
             var pattern = Path.ChangeExtension("*", this.Config.RazorFileExtension);
 
-            var files = this.PathProvider.GetAllMatchingFiles(pattern)
-                            .Where(IsWatchedFile);
+            var files = this.PathProvider.GetAllMatchingFiles(pattern).Where(IsWatchedFile);
 
             // you can override IsWatchedFile to filter
-            files.Each(x => TrackPage(x));
+            files.Each(x => AddPage(x));
+        }
+
+        private void ScanAssemblies()
+        {
+            foreach (var assembly in this.Config.ScanAssemblies)
+            {
+                foreach (var type in assembly.GetTypes()
+                    .Where(w => w.FirstAttribute<GeneratedCodeAttribute>() != null 
+                        && w.FirstAttribute<GeneratedCodeAttribute>().Tool == "RazorGenerator"
+                        && w.FirstAttribute<VirtualPathAttribute>() != null))
+                {
+                    AddPage(type);
+                }
+            }
         }
 
         public virtual RazorPage AddPage(string filePath)
@@ -81,13 +102,32 @@ namespace ServiceStack.Razor.Managers
 
         public virtual RazorPage AddPage(IVirtualFile file)
         {
-            return IsWatchedFile(file)
-                ? TrackPage(file)
-                : null;
+            if (!IsWatchedFile(file)) 
+                return null;
+
+            RazorPage page;
+            if (this.Pages.TryGetValue(GetDictionaryPagePath(file), out page))
+                return page;
+            
+            return TrackPage(file);
+        }
+
+        public virtual RazorPage AddPage(Type pageType)
+        {
+            var virtualPathAttr = pageType.FirstAttribute<VirtualPathAttribute>();
+            if (virtualPathAttr == null || !this.IsWatchedFile(virtualPathAttr.VirtualPath))
+                return null;
+
+            var pagePath = virtualPathAttr.VirtualPath.TrimStart('~');
+            RazorPage page;
+            if (this.Pages.TryGetValue(GetDictionaryPagePath(pagePath), out page)) 
+                return page;
+
+            return TrackPage(pageType);
         }
 
         public virtual RazorPage TrackPage(IVirtualFile file)
-        {
+        {           
             //get the base type.
             var pageBaseType = this.Config.PageBaseType;
 
@@ -110,9 +150,20 @@ namespace ServiceStack.Razor.Managers
             return page;
         }
 
-        protected virtual RazorPage AddPage(RazorPage page)
+        public virtual RazorPage TrackPage(Type pageType)
         {
-            var pagePath = GetDictionaryPagePath(page.PageHost.File);
+            var pagePath = pageType.FirstAttribute<VirtualPathAttribute>().VirtualPath.TrimStart('~');
+            var page = new RazorPage { PageType = pageType, IsValid = true };
+            
+            AddPage(page, pagePath);
+            return page;
+        }
+
+        protected virtual RazorPage AddPage(RazorPage page, string pagePath = null)
+        {
+            pagePath = pagePath != null 
+                ? GetDictionaryPagePath(pagePath) 
+                : GetDictionaryPagePath(page.PageHost.File);
 
             this.Pages[pagePath] = page;
 
@@ -237,6 +288,11 @@ namespace ServiceStack.Razor.Managers
         public virtual bool IsWatchedFile(IVirtualFile file)
         {
             return this.Config.RazorFileExtension.EndsWithIgnoreCase(file.Extension);
+        }
+
+        public virtual bool IsWatchedFile(string fileName)
+        {
+            return this.Config.RazorFileExtension.EndsWithIgnoreCase(Path.GetExtension(fileName));
         }
 
         public virtual string GetDictionaryPagePath(string relativePath)
