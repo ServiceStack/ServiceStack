@@ -29,7 +29,7 @@ COPY ..\src\ServiceStack.ProtoBuf\bin\%BUILD%\ServiceStack.ProtoBuf.* ..\NuGet\S
 COPY ..\lib\MsgPack.dll ..\NuGet\ServiceStack.MsgPack\lib\net40
 COPY ..\src\ServiceStack.MsgPack\bin\%BUILD%\ServiceStack.MsgPack.* ..\NuGet\ServiceStack.MsgPack\lib\net40
 
-IF EXIST ..\..\swagger-ui\dist (    
+IF EXIST ..\..\swagger-ui\dist-remove (    
     RMDIR ..\tests\ServiceStack.WebHost.IntegrationTests\swagger-ui /s /q
     MD ..\tests\ServiceStack.WebHost.IntegrationTests\swagger-ui
 
@@ -74,5 +74,7 @@ COPY ..\src\ServiceStack.Interfaces\bin\%BUILD%\ServiceStack.Interfaces.dll ..\l
 COPY ..\lib\ServiceStack.Interfaces.dll ..\..\ServiceStack.Text\lib
 COPY ..\lib\ServiceStack.Interfaces.dll ..\..\ServiceStack.Redis\lib
 COPY ..\lib\ServiceStack.Interfaces.dll ..\..\ServiceStack.OrmLite\lib
+
+COPY ..\src\ServiceStack.Razor.BuildTask\bin\%BUILD%\ServiceStack.Razor.BuildTask.dll ..\lib
 
 REM COPY ..\src\ServiceStack.DtoGen\*.cs  ..\src\ServiceStack\DtoGen
