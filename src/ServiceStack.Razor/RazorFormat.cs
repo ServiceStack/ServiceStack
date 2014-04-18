@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using ServiceStack.Host;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
@@ -148,19 +149,18 @@ namespace ServiceStack.Razor
             return new FileSystemWatcherLiveReload(viewManager);
         }
 
-        public RazorPage FindByPathInfo(string pathInfo)
-        {
-            return ViewManager.GetPageByPathInfo(pathInfo);
-        }
-
         public void ProcessRazorPage(IRequest httpReq, RazorPage contentPage, object model, IResponse httpRes)
         {
-            PageResolver.ResolveAndExecuteRazorPage(httpReq, httpRes, model, contentPage);
+            PageResolver.ExecuteRazorPage(httpReq, httpRes, model, contentPage);
         }
 
         public void ProcessRequest(IRequest httpReq, IResponse httpRes, object dto)
         {
             PageResolver.ProcessRequest(httpReq, httpRes, dto);
+        }
+        public void ProcessContentPageRequest(IRequest httpReq, IResponse httpRes)
+        {
+            ((IServiceStackHandler)PageResolver).ProcessRequest(httpReq, httpRes, httpReq.OperationName);
         }
 
         public RazorPage AddPage(string filePath)
@@ -168,14 +168,14 @@ namespace ServiceStack.Razor
             return ViewManager.AddPage(filePath);
         }
 
-        public RazorPage GetPageByName(string pageName)
+        public RazorPage GetViewPage(string pageName)
         {
-            return ViewManager.GetPageByName(pageName);
+            return ViewManager.GetViewPage(pageName);
         }
 
-        public RazorPage GetPageByPathInfo(string pathInfo)
+        public RazorPage GetContentPage(string pathInfo)
         {
-            return ViewManager.GetPageByPathInfo(pathInfo);
+            return ViewManager.GetContentPage(pathInfo);
         }
 
         public RazorPage CreatePage(string razorContents)
@@ -225,11 +225,7 @@ namespace ServiceStack.Razor
                 httpReq.Items[RazorPageResolver.LayoutKey] = layout;
             }
 
-            razorView = PageResolver.ResolveAndExecuteRazorPage(
-                httpReq: httpReq,
-                httpRes: httpReq.Response,
-                model: model,
-                razorPage: razorPage);
+            razorView = PageResolver.ExecuteRazorPage(httpReq, httpReq.Response, model, razorPage);
 
             var ms = (MemoryStream)httpReq.Response.OutputStream;
             return ms.ToArray().FromUtf8Bytes();

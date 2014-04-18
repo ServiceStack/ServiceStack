@@ -149,6 +149,7 @@
     <Compile Include="Formats\MarkdownTestBase.cs" />
     <Compile Include="Formats_Razor\PrecompiledRazorEngineTests.cs" />
     <Compile Include="Formats_Razor\RazorEngineTests.cs" />
+    <Compile Include="Formats_Razor\RazorLayoutResolutionTests.cs" />
     <Compile Include="Formats_Razor\StandAloneExampleTests.cs" />
     <Compile Include="Formats_Razor\TemplateTests.cs" />
     <Compile Include="Formats\IntroductionExampleTests.cs" />

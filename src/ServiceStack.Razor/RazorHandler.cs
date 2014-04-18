@@ -27,7 +27,7 @@ namespace ServiceStack.Razor
             if (RazorFormat == null)
                 RazorFormat = RazorFormat.Instance;
 
-            var contentPage = RazorPage ?? RazorFormat.FindByPathInfo(PathInfo);
+            var contentPage = RazorPage ?? RazorFormat.GetContentPage(PathInfo);
             if (contentPage == null)
             {
                 httpRes.StatusCode = (int)HttpStatusCode.NotFound;

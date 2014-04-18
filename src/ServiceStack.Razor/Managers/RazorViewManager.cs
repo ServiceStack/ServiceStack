@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.CSharp;
+using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Razor.Compilation;
@@ -21,6 +22,8 @@ namespace ServiceStack.Razor.Managers
     /// </summary>
     public class RazorViewManager
     {
+        const string DefaultLayoutFile = RazorPageResolver.DefaultLayoutName + ".cshtml";
+
         public static ILog Log = LogManager.GetLogger(typeof(RazorViewManager));
 
         public Dictionary<string, RazorPage> Pages = new Dictionary<string, RazorPage>(StringComparer.OrdinalIgnoreCase);
@@ -182,10 +185,10 @@ namespace ServiceStack.Razor.Managers
                 ? GetDictionaryPagePath(pagePath)
                 : GetDictionaryPagePath(page.PageHost.File);
 
-            this.Pages[pagePath] = page;
+            Pages[pagePath] = page;
 
             //Views should be uniquely named and stored in any deep folder structure
-            if (pagePath.StartsWithIgnoreCase("/views/"))
+            if (pagePath.StartsWithIgnoreCase("/views/") && !pagePath.EndsWithIgnoreCase(DefaultLayoutFile))
             {
                 var viewName = pagePath.SplitOnLast('.').First().SplitOnLast('/').Last();
                 ViewNamesMap[viewName] = pagePath;
@@ -197,34 +200,8 @@ namespace ServiceStack.Razor.Managers
         public virtual RazorPage GetPage(string absolutePath)
         {
             RazorPage page;
-            this.Pages.TryGetValue(absolutePath, out page);
+            Pages.TryGetValue(absolutePath.ToLowerInvariant(), out page);
             return page;
-        }
-
-        public virtual RazorPage GetPageByPathInfo(string pathInfo)
-        {
-            RazorPage page;
-            if (this.Pages.TryGetValue(pathInfo, out page))
-                return page;
-
-            if (this.Pages.TryGetValue(Path.ChangeExtension(pathInfo, Config.RazorFileExtension), out page))
-                return page;
-
-            if (this.Pages.TryGetValue(CombinePaths(pathInfo, Config.DefaultPageName), out page))
-                return page;
-
-            return null;
-        }
-
-        public virtual RazorPage GetPage(IRequest request, object dto)
-        {
-            var normalizePath = NormalizePath(request, dto);
-            return GetPage(normalizePath);
-        }
-
-        public virtual RazorPage GetPageByName(string pageName)
-        {
-            return GetPageByName(pageName, null, null);
         }
 
         private static string CombinePaths(params string[] paths)
@@ -235,71 +212,48 @@ namespace ServiceStack.Razor.Managers
             return combinedPath;
         }
 
-        public virtual RazorPage GetPageByName(string pageName, IRequest request, object dto)
+        public virtual RazorPage GetViewPage(string pageName)
         {
-            RazorPage page = null;
-            var htmlPageName = Path.ChangeExtension(pageName, Config.RazorFileExtension);
-
-            if (request != null)
-            {
-                var contextRelativePath = NormalizePath(request, dto) ?? "/views/";
-
-                string contextParentDir = contextRelativePath;
-                do
-                {
-                    contextParentDir = (contextParentDir ?? "").SplitOnLast('/').First();
-
-                    var relativePath = CombinePaths(contextParentDir, htmlPageName);
-                    if (this.Pages.TryGetValue(relativePath, out page))
-                        return page;
-
-                } while (!string.IsNullOrEmpty(contextParentDir));
-            }
-
-            //var sharedPath = "/view/shared/{0}".Fmt(htmlPageName);
-            //if (this.Pages.TryGetValue(sharedPath, out page))
-            //    return page;
-
             string viewPath;
-            if (ViewNamesMap.TryGetValue(pageName, out viewPath))
-                this.Pages.TryGetValue(viewPath, out page);
-
-            return page ?? GetPageByPathInfo("/" + htmlPageName);
+            if (ViewNamesMap.TryGetValue(pageName.ToLowerInvariant(), out viewPath))
+                return GetPage(viewPath);
+            return null;
         }
 
-        static char[] InvalidFileChars = new[] { '<', '>', '`' }; //Anonymous or Generic type names
-        private string NormalizePath(IRequest request, object dto)
+        public virtual RazorPage GetContentPage(string pathInfo)
         {
-            if (dto != null && !(dto is DynamicRequestObject)) // this is for a view inside /views
+            return GetPage(pathInfo)
+                   ?? GetPage(Path.ChangeExtension(pathInfo, Config.RazorFileExtension))
+                   ?? GetPage(CombinePaths(pathInfo, Config.DefaultPageName));
+        }
+
+        public virtual RazorPage GetLayoutPage(string layoutName, RazorPage page, IRequest request, object dto)
+        {
+            var layoutFile = Path.ChangeExtension(layoutName, Config.RazorFileExtension);
+
+            if (layoutFile != DefaultLayoutFile)
+                return GetViewPage(Path.GetFileNameWithoutExtension(layoutFile));
+
+            var contextRelativePath = page.File.VirtualPath;
+            string contextParentDir = contextRelativePath;
+            do
             {
-                //if we have a view name, use it.
-                var viewName = request.GetView();
+                contextParentDir = (contextParentDir ?? "").SplitOnLast('/').First();
 
-                if (string.IsNullOrWhiteSpace(viewName))
-                {
-                    //use the response DTO name
-                    viewName = dto.GetType().Name;
-                }
-                if (string.IsNullOrWhiteSpace(viewName))
-                {
-                    //the request use the request DTO name.
-                    viewName = request.OperationName;
-                }
+                var path = CombinePaths(contextParentDir, layoutFile);
+                var layoutPage = GetPage(path);
+                if (layoutPage != null)
+                    return layoutPage;
 
-                var isInvalidName = viewName.IndexOfAny(InvalidFileChars) >= 0;
-                if (!isInvalidName)
-                {
-                    return CombinePaths("views", Path.ChangeExtension(viewName, Config.RazorFileExtension));
-                }
-            }
+            } while (!string.IsNullOrEmpty(contextParentDir));
 
-            // path/to/dir/default.cshtml
-            var path = request.PathInfo;
-            var defaultIndex = CombinePaths(path, Config.DefaultPageName);
-            if (Pages.ContainsKey(defaultIndex))
-                return defaultIndex;
+            return GetPage(CombinePaths("/views/shared/", layoutFile));
+        }
 
-            return Path.ChangeExtension(path, Config.RazorFileExtension);
+        public virtual RazorPage GetPartialPage(string partialName)
+        {
+            // Same resolution as view pages.
+            return GetViewPage(partialName);
         }
 
         public virtual bool IsWatchedFile(IVirtualFile file)
@@ -314,16 +268,7 @@ namespace ServiceStack.Razor.Managers
 
         public virtual string GetDictionaryPagePath(string relativePath)
         {
-            if (relativePath.ToLowerInvariant().StartsWith("/views/"))
-            {
-                //re-write the /views path
-                //so we can uniquely get views by
-                //ResponseDTO/RequestDTO type.
-                //PageResolver:NormalizePath()
-                //knows how to resolve DTO views.
-                return "/views/" + Path.GetFileName(relativePath);
-            }
-            return relativePath;
+            return relativePath.ToLowerInvariant();
         }
 
         public virtual string GetDictionaryPagePath(IVirtualFile file)
