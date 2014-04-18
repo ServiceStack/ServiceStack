@@ -91,6 +91,10 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\..\lib\sqlite3.dll">
+      <Link>sqlite3.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Global.asax" />
     <Content Include="img\AngularJS-large.png" />
     <Content Include="img\architecture-htmlformat.png" />
@@ -115,9 +119,6 @@
     <Content Include="img\title-bg.png" />
     <Content Include="js\angular.min.js" />
     <Content Include="js\jquip.events.css.ajax.min.js" />
-    <Content Include="sqlite3.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="sqlite\x86\sqlite3.dll" />
     <Content Include="stars\alive\grohl.jpg" />
     <Content Include="stars\alive\Love\splash.jpg" />
@@ -198,7 +199,7 @@
         <WebProjectProperties>
           <UseIIS>False</UseIIS>
           <AutoAssignPort>False</AutoAssignPort>
-          <DevelopmentServerPort>2000</DevelopmentServerPort>
+          <DevelopmentServerPort>2002</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>
           </IISUrl>
