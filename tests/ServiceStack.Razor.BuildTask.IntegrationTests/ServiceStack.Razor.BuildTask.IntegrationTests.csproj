@@ -145,6 +145,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+    <Content Include="default.cshtml" />
     <None Include="stars\alive\GrohlContent.md" />
     <None Include="stars\alive\Love\Content.md" />
     <None Include="stars\alive\Springsteen\Content.md" />
@@ -156,6 +157,7 @@
     <None Include="stars\dead\Jackson\Content.md" />
     <None Include="stars\dead\Joplin\Content.md" />
     <None Include="stars\dead\Presley\Content.md" />
+    <Content Include="Views\_Layout.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Views\Shared\" />

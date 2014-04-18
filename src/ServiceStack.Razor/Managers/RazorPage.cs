@@ -23,6 +23,7 @@ namespace ServiceStack.Razor.Managers
         public bool IsValid { get; set; }
 
         public IVirtualFile File { get; set; }
+        public string VirtualPath { get; set; }
 
         public Type PageType { get; set; }
         public Type ModelType { get; set; }

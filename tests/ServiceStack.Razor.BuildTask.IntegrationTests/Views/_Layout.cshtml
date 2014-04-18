@@ -1,0 +1,21 @@
+﻿<!doctype html>
+<html lang="en-us">
+<head>
+    <title>Razor Rockstars</title>
+    <link href="/stars/style.css" rel="stylesheet"/>
+    <style type="text/css">
+        body {
+            background: #E6E6E6;
+        }
+    </style>  
+</head>
+    <body>
+        <h3 style="color: red; position: absolute; right: 5px">/Views/Shared/_Layout.cshtml</h3>
+
+        @RenderBody()
+        
+        <h6 style="font-size:12px; color: #999; position: fixed; bottom: -25px; right: 10px; text-shadow: 0px 2px 3px #fff;">
+            @Env.ServerUserAgent
+        </h6>
+    </body>
+</html>

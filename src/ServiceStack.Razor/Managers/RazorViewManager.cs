@@ -66,15 +66,16 @@ namespace ServiceStack.Razor.Managers
             files.Each(x => AddPage(x));
         }
 
+
         private void ScanAssemblies()
         {
-            if (this.Config.ScanAssemblies == null) 
+            if (this.Config.ScanAssemblies == null)
                 return;
 
             foreach (var assembly in this.Config.ScanAssemblies)
             {
                 foreach (var type in assembly.GetTypes()
-                    .Where(w => w.FirstAttribute<GeneratedCodeAttribute>() != null 
+                    .Where(w => w.FirstAttribute<GeneratedCodeAttribute>() != null
                         && w.FirstAttribute<GeneratedCodeAttribute>().Tool == "RazorGenerator"
                         && w.FirstAttribute<VirtualPathAttribute>() != null))
                 {
@@ -105,13 +106,13 @@ namespace ServiceStack.Razor.Managers
 
         public virtual RazorPage AddPage(IVirtualFile file)
         {
-            if (!IsWatchedFile(file)) 
+            if (!IsWatchedFile(file))
                 return null;
 
             RazorPage page;
             if (this.Pages.TryGetValue(GetDictionaryPagePath(file), out page))
                 return page;
-            
+
             return TrackPage(file);
         }
 
@@ -123,14 +124,14 @@ namespace ServiceStack.Razor.Managers
 
             var pagePath = virtualPathAttr.VirtualPath.TrimStart('~');
             RazorPage page;
-            if (this.Pages.TryGetValue(GetDictionaryPagePath(pagePath), out page)) 
+            if (this.Pages.TryGetValue(GetDictionaryPagePath(pagePath), out page))
                 return page;
 
             return TrackPage(pageType);
         }
 
         public virtual RazorPage TrackPage(IVirtualFile file)
-        {           
+        {
             //get the base type.
             var pageBaseType = this.Config.PageBaseType;
 
@@ -141,7 +142,8 @@ namespace ServiceStack.Razor.Managers
             {
                 PageHost = new RazorPageHost(PathProvider, file, transformer, new CSharpCodeProvider(), new Dictionary<string, string>()),
                 IsValid = false,
-                File = file
+                File = file,
+                VirtualPath = file.VirtualPath,
             };
 
             //add it to our pages dictionary.
@@ -155,17 +157,29 @@ namespace ServiceStack.Razor.Managers
 
         public virtual RazorPage TrackPage(Type pageType)
         {
+            var pageBaseType = this.Config.PageBaseType;
+            var transformer = new RazorViewPageTransformer(pageBaseType);
+
             var pagePath = pageType.FirstAttribute<VirtualPathAttribute>().VirtualPath.TrimStart('~');
-            var page = new RazorPage { PageType = pageType, IsValid = true };
+            var file = GetVirutalFile(pagePath);
             
+            var page = new RazorPage
+            {
+                PageHost = file != null ? new RazorPageHost(PathProvider, file, transformer, new CSharpCodeProvider(), new Dictionary<string, string>()) : null,
+                PageType = pageType,
+                IsValid = true,
+                File = file,
+                VirtualPath = pagePath,
+            };
+
             AddPage(page, pagePath);
             return page;
         }
 
         protected virtual RazorPage AddPage(RazorPage page, string pagePath = null)
         {
-            pagePath = pagePath != null 
-                ? GetDictionaryPagePath(pagePath) 
+            pagePath = pagePath != null
+                ? GetDictionaryPagePath(pagePath)
                 : GetDictionaryPagePath(page.PageHost.File);
 
             this.Pages[pagePath] = page;
@@ -349,6 +363,11 @@ namespace ServiceStack.Razor.Managers
         {
             if (page == null) return;
             if (page.IsValid) return;
+            if (page.PageHost == null)
+            {
+                Log.WarnFormat("Could not find virtualPath for compiled Razor page '{0}'.", page.VirtualPath);
+                return;
+            }
 
             lock (page.SyncRoot)
             {

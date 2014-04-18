@@ -20,7 +20,10 @@ namespace RazorRockstars.WebHost
         {
             LogManager.LogFactory = new ConsoleLogFactory();
 
-            Plugins.Add(new RazorFormat { ScanAssemblies = new[] { typeof(Rockstar).Assembly } });
+            Plugins.Add(new RazorFormat {
+                ScanAssemblies = new[] { typeof(Rockstar).Assembly },
+                EnableLiveReload = true,
+            });
 
             container.Register<IDbConnectionFactory>(
                 new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
