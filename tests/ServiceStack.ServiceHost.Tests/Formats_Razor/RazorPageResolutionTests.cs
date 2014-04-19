@@ -55,7 +55,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         private void SetupRootContentLayout() { RazorFormat.AddFileAndPage("/content/_Layout.cshtml", RootContentLayout); }
         private void SetupChildContentLayout() { RazorFormat.AddFileAndPage("/content/child/_Layout.cshtml", ChildContentLayout ); }
 
-        private void SetupAllLayoutFiles()
+        private void SetupAllDefaultLayoutFiles()
         {
             SetupSharedLayout();
             SetupRootViewLayout();
@@ -108,38 +108,68 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         }
 
         [Test]
+        public void View_page_can_resolve_sibling_explicit_layout()
+        {
+            SetupAllDefaultLayoutFiles();
+
+            const string layout = "CustomViewLayout: @RenderBody()";
+            RazorFormat.AddFileAndPage("/Views/_CustomLayout.cshtml", layout);
+
+            const string viewBody = "@{Layout = \"_CustomLayout\";}ViewPage";
+            RazorFormat.AddFileAndPage("/Views/RootView.cshtml", viewBody);
+
+            var result = ExecuteViewPage<RootView>();
+            Assert.That(result, Is.EqualTo("CustomViewLayout: ViewPage"));
+        }
+
+        [Test]
+        public void Content_page_can_resolve_shared_explicit_layout()
+        {
+            SetupAllDefaultLayoutFiles();
+
+            const string layout = "CustomContentLayout: @RenderBody()";
+            RazorFormat.AddFileAndPage("/Views/Shared/_CustomLayout.cshtml", layout);
+
+            const string contentBody = "@{Layout = \"_CustomLayout\";}ContentPage";
+            RazorFormat.AddFileAndPage("/content/page.cshtml", contentBody);
+
+            var result = ExecuteContentPage("/content/page");
+            Assert.That(result, Is.EqualTo("CustomContentLayout: ContentPage"));
+        }
+
+        [Test]
         public void Root_view_page_can_resolve_sibling_default_layout()
         {
-            SetupAllLayoutFiles();
+            SetupAllDefaultLayoutFiles();
 
             const string viewBody = "RootViewPage";
             RazorFormat.AddFileAndPage("/Views/RootView.cshtml", viewBody);
 
-            var result = ExecuteViewPage<RootViewResponse>();
+            var result = ExecuteViewPage<RootView>();
             Assert.That(result, Is.EqualTo(RootViewLayout.Replace("@RenderBody()", viewBody)));
         }
 
         [Test]
         public void Child_view_page_can_resolve_sibling_default_layout()
         {
-            SetupAllLayoutFiles();
+            SetupAllDefaultLayoutFiles();
 
             const string viewBody = "ChildViewPage";
             RazorFormat.AddFileAndPage("/Views/Child/ChildView.cshtml", viewBody);
 
-            var result = ExecuteViewPage<ChildViewResponse>();
+            var result = ExecuteViewPage<ChildView>();
             Assert.That(result, Is.EqualTo(ChildViewLayout.Replace("@RenderBody()", viewBody)));
         }
 
         [Test]
         public void Child_view_page_without_sibling_default_layout_can_resolve_parent_default_layout()
         {
-            SetupAllLayoutFiles();
+            SetupAllDefaultLayoutFiles();
 
             const string viewBody = "ChildViewWithoutSiblingLayoutPage";
             RazorFormat.AddFileAndPage("/Views/ChildWithoutLayout/ChildViewWithoutSiblingLayout.cshtml", viewBody);
 
-            var result = ExecuteViewPage<ChildViewWithoutSiblingLayoutResponse>();
+            var result = ExecuteViewPage<ChildViewWithoutSiblingLayout>();
             Assert.That(result, Is.EqualTo(RootViewLayout.Replace("@RenderBody()", viewBody)));
         }
 
@@ -152,14 +182,14 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
             const string viewBody = "ChildViewWithoutSiblingLayoutPage";
             RazorFormat.AddFileAndPage("/Views/ChildWithoutLayout/ChildViewWithoutSiblingLayout.cshtml", viewBody);
 
-            var result = ExecuteViewPage<ChildViewWithoutSiblingLayoutResponse>();
+            var result = ExecuteViewPage<ChildViewWithoutSiblingLayout>();
             Assert.That(result, Is.EqualTo(SharedLayout.Replace("@RenderBody()", viewBody)));
         }
 
         [Test]
         public void Root_content_page_can_resolve_sibling_default_layout()
         {
-            SetupAllLayoutFiles();
+            SetupAllDefaultLayoutFiles();
 
             const string contentBody = "RootContentPage";
             RazorFormat.AddFileAndPage("/content/root-content.cshtml", contentBody);
@@ -171,7 +201,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         [Test]
         public void Child_content_page_can_resolve_sibling_default_layout()
         {
-            SetupAllLayoutFiles();
+            SetupAllDefaultLayoutFiles();
 
             const string contentBody = "ChildContentPage";
             RazorFormat.AddFileAndPage("/content/child/child-content.cshtml", contentBody);
@@ -183,7 +213,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         [Test]
         public void Child_content_page_without_sibling_default_layout_can_resolve_parent_default_layout()
         {
-            SetupAllLayoutFiles();
+            SetupAllDefaultLayoutFiles();
 
             const string contentBody = "ChildContentWithoutSiblingLayoutPage";
             RazorFormat.AddFileAndPage("/content/child-without-layout/child-content.cshtml", contentBody);
@@ -208,7 +238,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         [Test]
         public void Default_content_page_can_resolve_sibling_default_layout()
         {
-            SetupAllLayoutFiles();
+            SetupAllDefaultLayoutFiles();
 
             const string contentBody = "RootDefaultContentPage";
             RazorFormat.AddFileAndPage("/content/" + RazorFormat.DefaultPageName, contentBody);
@@ -229,12 +259,13 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
             Assert.That(result, Is.EqualTo(contentBody));
         }
 
-        private string ExecuteViewPage<T>() where T : new()
+        private string ExecuteViewPage<TRequest>() where TRequest : new()
         {
-            var mockReq = new MockHttpRequest { OperationName = typeof(T).Name.Replace("Response","") };
-            var mockRes = new MockHttpResponse();
-            var dto = new T();
-            RazorFormat.ProcessRequest(mockReq, mockRes, dto);
+            var responseDtoType = typeof(TRequest).Assembly.GetType(typeof(TRequest).FullName + "Response");
+            var responseDto = Activator.CreateInstance(responseDtoType);
+            var mockReq = new MockHttpRequest { OperationName = typeof(TRequest).Name, Dto = new TRequest()};
+            var mockRes = new MockHttpResponse { Dto = responseDto };
+            RazorFormat.ProcessRequest(mockReq, mockRes, responseDto);
             return mockRes.ReadAsString();
         }
 
