@@ -74,7 +74,7 @@ namespace ServiceStack.Razor.Managers
         {
             try
             {
-                var file = views.GetVirutalFile(e.FullPath);
+                var file = views.GetVirtualFile(e.FullPath);
                 if (file == null || !views.IsWatchedFile(file)) return;
 
                 var pathPage = views.GetDictionaryPagePath(file);
@@ -103,7 +103,7 @@ namespace ServiceStack.Razor.Managers
         {
             try
             {
-                var file = views.GetVirutalFile(e.FullPath);
+                var file = views.GetVirtualFile(e.FullPath);
                 if (file == null || !views.IsWatchedFile(file)) return;
 
                 RazorPage page = views.GetPage(file);

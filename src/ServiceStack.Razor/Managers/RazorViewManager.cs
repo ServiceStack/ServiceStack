@@ -87,7 +87,7 @@ namespace ServiceStack.Razor.Managers
 
         public virtual RazorPage AddPage(string filePath)
         {
-            var newFile = GetVirutalFile(filePath);
+            var newFile = GetVirtualFile(filePath);
             return AddPage(newFile);
         }
 
@@ -162,7 +162,7 @@ namespace ServiceStack.Razor.Managers
             var transformer = new RazorViewPageTransformer(pageBaseType);
 
             var pagePath = pageType.FirstAttribute<VirtualPathAttribute>().VirtualPath.TrimStart('~');
-            var file = GetVirutalFile(pagePath);
+            var file = GetVirtualFile(pagePath);
             
             var page = new RazorPage
             {
@@ -360,7 +360,7 @@ namespace ServiceStack.Razor.Managers
             return relative;
         }
 
-        public virtual IVirtualFile GetVirutalFile(string ospath)
+        public virtual IVirtualFile GetVirtualFile(string ospath)
         {
             var relative = GetRelativePath(ospath);
             return this.PathProvider.GetFile(relative);
