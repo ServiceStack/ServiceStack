@@ -106,10 +106,8 @@ namespace ServiceStack.Razor.Managers
                 var file = views.GetVirutalFile(e.FullPath);
                 if (file == null || !views.IsWatchedFile(file)) return;
 
-                var pagePath = views.GetDictionaryPagePath(file);
-
-                RazorPage page;
-                if (views.Pages.TryGetValue(pagePath, out page))
+                RazorPage page = views.GetPage(file);
+                if (page != null)
                     views.InvalidatePage(page);
             }
             catch (Exception ex)

@@ -63,9 +63,7 @@ namespace ServiceStack.Razor.Managers
         {
             var pattern = Path.ChangeExtension("*", this.Config.RazorFileExtension);
 
-            var files = this.PathProvider.GetAllMatchingFiles(pattern).Where(IsWatchedFile);
-
-            // you can override IsWatchedFile to filter
+            var files = PathProvider.GetAllMatchingFiles(pattern);
             files.Each(x => AddPage(x));
         }
 
@@ -112,8 +110,8 @@ namespace ServiceStack.Razor.Managers
             if (!IsWatchedFile(file))
                 return null;
 
-            RazorPage page;
-            if (this.Pages.TryGetValue(GetDictionaryPagePath(file), out page))
+            var page = GetPage(file);
+            if (page != null)
                 return page;
 
             return TrackPage(file);
@@ -126,8 +124,8 @@ namespace ServiceStack.Razor.Managers
                 return null;
 
             var pagePath = virtualPathAttr.VirtualPath.TrimStart('~');
-            RazorPage page;
-            if (this.Pages.TryGetValue(GetDictionaryPagePath(pagePath), out page))
+            var page = GetPage(pagePath);
+            if (page != null)
                 return page;
 
             return TrackPage(pageType);
@@ -200,8 +198,13 @@ namespace ServiceStack.Razor.Managers
         public virtual RazorPage GetPage(string absolutePath)
         {
             RazorPage page;
-            Pages.TryGetValue(absolutePath.ToLowerInvariant(), out page);
+            Pages.TryGetValue(GetDictionaryPagePath(absolutePath), out page);
             return page;
+        }
+
+        public RazorPage GetPage(IVirtualFile file)
+        {
+            return GetPage(file.VirtualPath);
         }
 
         private static string CombinePaths(params string[] paths)
@@ -222,8 +225,7 @@ namespace ServiceStack.Razor.Managers
 
         public virtual RazorPage GetContentPage(string pathInfo)
         {
-            return GetPage(pathInfo)
-                   ?? GetPage(Path.ChangeExtension(pathInfo, Config.RazorFileExtension))
+            return GetPage(Path.ChangeExtension(pathInfo, Config.RazorFileExtension))
                    ?? GetPage(CombinePaths(pathInfo, Config.DefaultPageName));
         }
 
