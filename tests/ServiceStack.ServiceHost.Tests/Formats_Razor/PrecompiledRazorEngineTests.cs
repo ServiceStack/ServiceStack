@@ -26,7 +26,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         [Test]
         public void Pages_begin_compilation_on_startup()
         {
-            foreach (var page in new[] { "v1", "v2", "v3" }.Select(name => RazorFormat.GetPageByName(name)))
+            foreach (var page in new[] { "v1", "v2", "v3" }.Select(name => RazorFormat.GetViewPage(name)))
             {
                 Assert.That(page.MarkedForCompilation || page.IsCompiling || page.IsValid);
             }
@@ -38,7 +38,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
             const string template = "This is my sample template, Hello @Model.Name!";
             RazorFormat.AddFileAndPage("/simple.cshtml", template);
 
-            var page = RazorFormat.GetPageByPathInfo("/simple.cshtml");
+            var page = RazorFormat.GetContentPage("/simple.cshtml");
             FuncUtils.WaitWhile(() => page.MarkedForCompilation || page.IsCompiling, millisecondTimeout: 5000);
             Assert.That(page.IsValid);
         }
@@ -49,7 +49,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
             const string template = "This is a bad template, Hello @SomeInvalidMember.Name!";
             RazorFormat.AddFileAndPage("/simple.cshtml", template);
 
-            var page = RazorFormat.GetPageByPathInfo("/simple.cshtml");
+            var page = RazorFormat.GetContentPage("/simple.cshtml");
             FuncUtils.WaitWhile(() => page.MarkedForCompilation || page.IsCompiling, millisecondTimeout: 5000);
             Assert.That(page.CompileException, Is.Not.Null);
         }
@@ -74,7 +74,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         [Test]
         public void Precompilation_finishes_before_returning_from_init()
         {
-            foreach (var page in new[] { "v1", "v2", "v3" }.Select(name => RazorFormat.GetPageByName(name)))
+            foreach (var page in new[] { "v1", "v2", "v3" }.Select(name => RazorFormat.GetViewPage(name)))
             {
                 Assert.That(page.IsValid);
             }

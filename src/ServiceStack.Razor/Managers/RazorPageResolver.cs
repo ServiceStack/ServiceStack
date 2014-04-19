@@ -49,7 +49,7 @@ namespace ServiceStack.Razor.Managers
                 return null;
 
             //pathInfo on dir doesn't match existing razor page
-            if (string.IsNullOrEmpty(ext) && viewManager.GetPageByPathInfo(pathInfo) == null)
+            if (string.IsNullOrEmpty(ext) && viewManager.GetContentPage(pathInfo) == null)
                 return null;
 
             //if there is any denied predicates for the path, return nothing
@@ -88,7 +88,8 @@ namespace ServiceStack.Razor.Managers
 
             httpRes.ContentType = MimeTypes.Html;
 
-            ResolveAndExecuteRazorPage(httpReq, httpRes, null);
+            var contentPage = ResolveContentPage(httpReq);
+            ExecuteRazorPage(httpReq, httpRes, null, contentPage);
             httpRes.EndRequest(skipHeaders: true);
         }
 
@@ -105,34 +106,33 @@ namespace ServiceStack.Razor.Managers
             if (httpResult != null)
                 dto = httpResult.Response;
 
-            var existingRazorPage = FindRazorPage(httpReq, dto);
+            var existingRazorPage = ResolveViewPage(httpReq, dto);
             if (existingRazorPage == null)
-            {
                 return false;
-            }
 
-            ResolveAndExecuteRazorPage(httpReq, httpRes, dto, existingRazorPage);
+            ExecuteRazorPage(httpReq, httpRes, dto, existingRazorPage);
 
             httpRes.EndRequest();
             return true;
         }
 
-        public RazorPage FindRazorPage(IRequest httpReq, object model)
+        public RazorPage ResolveContentPage(IRequest httpReq)
+        {
+            return viewManager.GetContentPage(httpReq.PathInfo);
+        }
+
+        public RazorPage ResolveViewPage(IRequest httpReq, object model)
         {
             var viewName = httpReq.GetItem(ViewKey) as string;
             if (viewName != null)
-            {
-                return this.viewManager.GetPageByName(viewName, httpReq, model);
-            }
-            var razorPage = this.viewManager.GetPageByName(httpReq.OperationName) //Request DTO
-                         ?? this.viewManager.GetPage(httpReq, model); // Response DTO
-            return razorPage;
+                return viewManager.GetViewPage(viewName);
+
+            return viewManager.GetViewPage(httpReq.OperationName) // Request DTO
+                   ?? viewManager.GetViewPage(model.GetType().Name); // Response DTO
         }
 
-        public IRazorView ResolveAndExecuteRazorPage(IRequest httpReq, IResponse httpRes, object model, RazorPage razorPage = null)
+        public IRazorView ExecuteRazorPage(IRequest httpReq, IResponse httpRes, object model, RazorPage razorPage)
         {
-            razorPage = razorPage ?? FindRazorPage(httpReq, model);
-
             if (razorPage == null)
             {
                 httpRes.StatusCode = (int)HttpStatusCode.NotFound;
@@ -144,7 +144,7 @@ namespace ServiceStack.Razor.Managers
             var includeLayout = !(httpReq.GetParam(QueryStringFormatKey) ?? "").Contains(NoTemplateFormatValue);
             if (includeLayout)
             {
-                var result = ExecuteRazorPageWithLayout(httpReq, httpRes, model, page, () =>
+                var result = ExecuteRazorPageWithLayout(razorPage, httpReq, httpRes, model, page, () =>
                     httpReq.GetItem(LayoutKey) as string
                     ?? page.Layout
                     ?? DefaultLayoutName);
@@ -166,7 +166,7 @@ namespace ServiceStack.Razor.Managers
             return page;
         }
 
-        private Tuple<IRazorView, string> ExecuteRazorPageWithLayout(IRequest httpReq, IResponse httpRes, object model, IRazorView page, Func<string> layout)
+        private Tuple<IRazorView, string> ExecuteRazorPageWithLayout(RazorPage razorPage, IRequest httpReq, IResponse httpRes, object model, IRazorView pageInstance, Func<string> layout)
         {
             using (var ms = new MemoryStream())
             {
@@ -175,7 +175,7 @@ namespace ServiceStack.Razor.Managers
                     //child page needs to execute before master template to populate ViewBags, sections, etc
                     try
                     {
-                        page.WriteTo(childWriter);
+                        pageInstance.WriteTo(childWriter);
                     }
                     catch (StopExecutionException ignore) {}
 
@@ -187,16 +187,16 @@ namespace ServiceStack.Razor.Managers
                     var layoutName = layout();
                     if (!string.IsNullOrEmpty(layoutName))
                     {
-                        var layoutPage = this.viewManager.GetPageByName(layoutName, httpReq, model);
+                        var layoutPage = viewManager.GetLayoutPage(layoutName, razorPage, httpReq, model);
                         if (layoutPage != null)
                         {
                             var layoutView = CreateRazorPageInstance(httpReq, httpRes, model, layoutPage);
-                            layoutView.SetChildPage(page, childBody);
-                            return ExecuteRazorPageWithLayout(httpReq, httpRes, model, layoutView, () => layoutView.Layout);
+                            layoutView.SetChildPage(pageInstance, childBody);
+                            return ExecuteRazorPageWithLayout(layoutPage, httpReq, httpRes, model, layoutView, () => layoutView.Layout);
                         }
                     }
 
-                    return Tuple.Create(page, childBody);
+                    return Tuple.Create(pageInstance, childBody);
                 }
             }
         }
@@ -269,7 +269,7 @@ namespace ServiceStack.Razor.Managers
         public virtual string RenderPartial(string pageName, object model, bool renderHtml, StreamWriter writer, HtmlHelper htmlHelper)
         {
             var httpReq = htmlHelper.HttpRequest;
-            var razorPage = this.viewManager.GetPageByName(pageName, httpReq, model);
+            var razorPage = viewManager.GetPartialPage(pageName);
             if (razorPage != null)
             {
                 var page = CreateRazorPageInstance(httpReq, htmlHelper.HttpResponse, model, razorPage);
