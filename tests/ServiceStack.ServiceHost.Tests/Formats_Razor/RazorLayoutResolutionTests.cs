@@ -174,6 +174,18 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
             Assert.That(result, Is.EqualTo(RootContentLayout.Replace("@RenderBody()", viewPage)));
         }
 
+        [Test]
+        public void Content_page_does_not_resolve_root_view_folder_default_layout()
+        {
+            SetupRootViewLayout();
+
+            const string viewPage = "ArbitraryContentPage";
+            RazorFormat.AddFileAndPage("/content/arbitrary-content.cshtml", viewPage);
+
+            var result = ExecuteContentPage("/content/arbitrary-content");
+            Assert.That(result, Is.EqualTo(viewPage));
+        }
+
         private string ExecuteViewPage<T>() where T : new()
         {
             var mockReq = new MockHttpRequest { OperationName = typeof(T).Name.Replace("Response","") };
