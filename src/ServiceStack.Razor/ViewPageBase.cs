@@ -539,5 +539,26 @@ namespace ServiceStack.Razor
             AuthenticateAttribute.DoHtmlRedirect(redirectUrl, Request, Response, includeRedirectParam: true);
             throw new StopExecutionException();
         }
+
+        public bool RenderErrorIfAny()
+        {
+            if (!IsError) return false;
+
+            var responseStatus = GetErrorStatus();
+            var stackTrace = responseStatus.StackTrace != null
+                ? "<pre>" + responseStatus.StackTrace + "</pre>"
+                : "";
+
+            WriteLiteral(@"
+            <div id=""error-response"" class=""alert alert-danger"">
+                <h4>" + 
+                    responseStatus.ErrorCode + ": " + 
+                    responseStatus.Message + @"
+                </h4>" + 
+                stackTrace + 
+            "</div>");
+
+            return true;
+        }
     }
 }
