@@ -78,10 +78,13 @@ namespace ServiceStack.Configuration
         {
             var stringValue = GetNullableString(name);
 
-            T deserializedValue;
+            T ret = defaultValue;
             try
             {
-                deserializedValue = TypeSerializer.DeserializeFromString<T>(stringValue);
+                if (stringValue != null)
+                {
+                    ret = TypeSerializer.DeserializeFromString<T>(stringValue);
+                }
             }
             catch (Exception ex)
             {
@@ -92,9 +95,7 @@ namespace ServiceStack.Configuration
                 throw new ConfigurationErrorsException(message, ex);
             }
 
-            return stringValue != null
-                       ? deserializedValue
-                       : defaultValue;
+            return ret;
         }
     }
 
