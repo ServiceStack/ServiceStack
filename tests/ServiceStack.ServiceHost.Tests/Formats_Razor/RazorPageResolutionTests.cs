@@ -123,6 +123,36 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         }
 
         [Test]
+        public void Content_page_can_resolve_sibling_explicit_layout()
+        {
+            SetupAllDefaultLayoutFiles();
+
+            const string layout = "CustomContentLayout: @RenderBody()";
+            RazorFormat.AddFileAndPage("/content/_CustomLayout.cshtml", layout);
+
+            const string contentBody = "@{Layout = \"_CustomLayout\";}ContentPage";
+            RazorFormat.AddFileAndPage("/content/page.cshtml", contentBody);
+
+            var result = ExecuteContentPage("/content/page");
+            Assert.That(result, Is.EqualTo("CustomContentLayout: ContentPage"));
+        }
+
+        [Test]
+        public void Content_page_can_resolve_parent_explicit_layout()
+        {
+            SetupAllDefaultLayoutFiles();
+
+            const string layout = "CustomParentContentLayout: @RenderBody()";
+            RazorFormat.AddFileAndPage("/content/_CustomParentLayout.cshtml", layout);
+
+            const string contentBody = "@{Layout = \"_CustomParentLayout\";}ChildContentPage";
+            RazorFormat.AddFileAndPage("/content/child/page.cshtml", contentBody);
+
+            var result = ExecuteContentPage("/content/child/page");
+            Assert.That(result, Is.EqualTo("CustomParentContentLayout: ChildContentPage"));
+        }
+
+        [Test]
         public void Content_page_can_resolve_shared_explicit_layout()
         {
             SetupAllDefaultLayoutFiles();
@@ -248,6 +278,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         }
 
         [Test]
+        [Ignore("Backwards compatibility requirement")]
         public void Content_page_does_not_resolve_root_view_folder_default_layout()
         {
             SetupRootViewLayout();
@@ -257,6 +288,18 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
             var result = ExecuteContentPage("/content/arbitrary-content");
             Assert.That(result, Is.EqualTo(contentBody));
+        }
+
+        [Test]
+        public void Content_page_without_sibling_or_parent_or_shared_default_layout_can_resolve_root_view_default_layout_for_backwards_compatability()
+        {
+            SetupRootViewLayout();
+
+            const string contentBody = "ChildContentWithoutSiblingLayoutPage";
+            RazorFormat.AddFileAndPage("/content/child-without-layout/child-content.cshtml", contentBody);
+
+            var result = ExecuteContentPage("/content/child-without-layout/child-content");
+            Assert.That(result, Is.EqualTo(RootViewLayout.Replace("@RenderBody()", contentBody)));
         }
 
         private string ExecuteViewPage<TRequest>() where TRequest : new()
