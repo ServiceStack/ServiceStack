@@ -232,9 +232,8 @@ namespace ServiceStack.Razor.Managers
         public virtual RazorPage GetLayoutPage(string layoutName, RazorPage page, IRequest request, object dto)
         {
             var layoutFile = Path.ChangeExtension(layoutName, Config.RazorFileExtension);
-
-            if (layoutFile != DefaultLayoutFile)
-                return GetViewPage(Path.GetFileNameWithoutExtension(layoutFile));
+            // layoutName may or may not contain the .cshtml extension, the below forces it not to.
+            layoutName = Path.GetFileNameWithoutExtension(layoutFile);
 
             var contextRelativePath = page.File.VirtualPath;
             string contextParentDir = contextRelativePath;
@@ -249,7 +248,11 @@ namespace ServiceStack.Razor.Managers
 
             } while (!string.IsNullOrEmpty(contextParentDir));
 
-            return GetPage(CombinePaths("/views/shared/", layoutFile));
+            if (layoutName != RazorPageResolver.DefaultLayoutName)
+                return GetViewPage(layoutName);
+
+            return GetPage(CombinePaths("/views/shared/", layoutFile))
+                   ?? GetPage(CombinePaths("/views/", layoutFile)); //backwards compatibility fallback
         }
 
         public virtual RazorPage GetPartialPage(string partialName)
