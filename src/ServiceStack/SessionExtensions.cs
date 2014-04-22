@@ -193,6 +193,25 @@ namespace ServiceStack
             return unAuthorizedSession;
         }
 
+        public static IAuthSession GetUntypedSession(this ICacheClient cache,
+            IRequest httpReq = null, IResponse httpRes = null)
+        {
+            var sessionKey = GetSessionKey(httpReq);
+
+            if (sessionKey != null)
+            {
+                var userSession = cache.Get<IAuthSession>(sessionKey);
+                if (!Equals(userSession, default(AuthUserSession)))
+                    return userSession;
+            }
+
+            if (sessionKey == null)
+                SessionFeature.CreateSessionIds(httpReq, httpRes);
+
+            var unAuthorizedSession = (IAuthSession)typeof(AuthUserSession).CreateInstance();
+            return unAuthorizedSession;
+        }
+
         public static void ClearSession(this ICacheClient cache, IRequest httpReq = null)
         {
             cache.Remove(GetSessionKey(httpReq));

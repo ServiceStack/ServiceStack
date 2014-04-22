@@ -106,7 +106,7 @@ namespace ServiceStack.Mvc
 
         public virtual IAuthSession AuthSession
         {
-            get { return (IAuthSession)userSession; }
+            get { return (IAuthSession) (userSession ?? (userSession = Cache.GetUntypedSession())); }
         }
 
         protected override JsonResult Json(object data, string contentType, Encoding contentEncoding, JsonRequestBehavior behavior)

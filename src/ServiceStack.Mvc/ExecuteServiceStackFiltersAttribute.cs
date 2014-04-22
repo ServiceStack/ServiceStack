@@ -15,7 +15,7 @@ namespace ServiceStack.Mvc
 			if (ssController == null) return;
 
 			var authAttrs = GetActionAndControllerAttributes<AuthenticateAttribute>(filterContext);
-			if (authAttrs.Count > 0 && ( ssController.AuthSession==null || !ssController.AuthSession.IsAuthenticated))
+			if (authAttrs.Count > 0 && (ssController.AuthSession==null || !ssController.AuthSession.IsAuthenticated))
 			{
 				filterContext.Result = ssController.AuthenticationErrorResult;
 				return;
