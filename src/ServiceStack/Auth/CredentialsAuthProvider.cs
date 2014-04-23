@@ -88,6 +88,8 @@ namespace ServiceStack.Auth
 
             if (TryAuthenticate(authService, userName, password))
             {
+                session.IsAuthenticated = true;
+
                 if (session.UserAuthName == null)
                 {
                     session.UserAuthName = userName;
