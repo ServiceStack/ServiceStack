@@ -90,7 +90,13 @@
         <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.Select``1(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``0})">
             <summary>
             Returns results from using an SqlExpression lambda. E.g:
-            <para>db.Select(db.SqlExpression&lt;Person&gt;().Where(x =&gt; x.Age &gt; 40))</para>
+            <para>db.Select(db.From&lt;Person&gt;().Where(x =&gt; x.Age &gt; 40))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.Select``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression)">
+            <summary>
+            Returns results from using an SqlExpression lambda. E.g:
+            <para>db.Select(db.From&lt;Person&gt;().Where(x =&gt; x.Age &gt; 40))</para>
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.Single``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
@@ -138,7 +144,7 @@
         <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.Count``1(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``0})">
             <summary>
             Returns the count of rows that match the supplied SqlExpression, E.g:
-            <para>db.Count(db.SqlExpression&lt;Person&gt;().Where(x =&gt; x.Age &lt; 50))</para>
+            <para>db.Count(db.From&lt;Person&gt;().Where(x =&gt; x.Age &lt; 50))</para>
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.WriteConnectionExtensions.InsertOnly``1(System.Data.IDbConnection,``0,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}})">
