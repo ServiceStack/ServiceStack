@@ -2,8 +2,8 @@ using System;
 
 namespace ServiceStack.DataAnnotations
 {
-	[AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Property)]
     public class ReferenceAttribute : AttributeBase
-	{
-	}
+    {
+    }
 }

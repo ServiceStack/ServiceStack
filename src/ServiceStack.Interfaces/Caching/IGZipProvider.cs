@@ -1,9 +1,9 @@
 namespace ServiceStack.Caching
 {
-	public interface IGZipProvider
-	{
-		byte[] GZip(string text);
+    public interface IGZipProvider
+    {
+        byte[] GZip(string text);
 
-		string GUnzip(byte[] gzBuffer);
-	}
+        string GUnzip(byte[] gzBuffer);
+    }
 }

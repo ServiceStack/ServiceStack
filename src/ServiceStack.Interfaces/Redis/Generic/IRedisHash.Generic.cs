@@ -1,5 +1,5 @@
 //
-// https://github.com/mythz/ServiceStack.Redis
+// https://github.com/ServiceStack/ServiceStack.Redis
 // ServiceStack.Redis: ECMA CLI Binding to the Redis key-value storage system
 //
 // Authors:
@@ -15,9 +15,9 @@ using ServiceStack.Model;
 
 namespace ServiceStack.Redis.Generic
 {
-	public interface IRedisHash<TKey, TValue> : IDictionary<TKey, TValue>, IHasStringId
-	{
-		Dictionary<TKey, TValue> GetAll();
-	}
+    public interface IRedisHash<TKey, TValue> : IDictionary<TKey, TValue>, IHasStringId
+    {
+        Dictionary<TKey, TValue> GetAll();
+    }
 
 }

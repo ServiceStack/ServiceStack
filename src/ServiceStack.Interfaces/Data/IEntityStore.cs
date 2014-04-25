@@ -7,22 +7,22 @@ using System.Collections.Generic;
 
 namespace ServiceStack.Data
 {
-	public interface IEntityStore : IDisposable
-	{
-		T GetById<T>(object id);
-	
-		IList<T> GetByIds<T>(ICollection ids);
+    public interface IEntityStore : IDisposable
+    {
+        T GetById<T>(object id);
 
-		T Store<T>(T entity);
+        IList<T> GetByIds<T>(ICollection ids);
 
-		void StoreAll<TEntity>(IEnumerable<TEntity> entities);
+        T Store<T>(T entity);
 
-		void Delete<T>(T entity);
+        void StoreAll<TEntity>(IEnumerable<TEntity> entities);
 
-		void DeleteById<T>(object id);
+        void Delete<T>(T entity);
 
-		void DeleteByIds<T>(ICollection ids);
+        void DeleteById<T>(object id);
 
-		void DeleteAll<TEntity>();
-	}
+        void DeleteByIds<T>(ICollection ids);
+
+        void DeleteAll<TEntity>();
+    }
 }

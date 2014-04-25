@@ -6,7 +6,7 @@ namespace ServiceStack.DataAnnotations
 {
     public class StringLengthAttribute : AttributeBase
     {
-        public const int MaxText = int.MaxValue; 
+        public const int MaxText = int.MaxValue;
         public int MinimumLength { get; set; }
         public int MaximumLength { get; private set; }
 
