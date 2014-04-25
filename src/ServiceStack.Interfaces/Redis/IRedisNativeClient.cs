@@ -169,8 +169,9 @@ namespace ServiceStack.Redis
 		double ZScore(string setId, byte[] value);
 		long ZUnionStore(string intoSetId, params string[] setIds);
 		long ZInterStore(string intoSetId, params string[] setIds);
-
-
+	    byte[][] ZRangeByLex(string setId, string min, string max, int? skip = null, int? take = null);
+	    long ZLexCount(string setId, string min, string max);
+	    long ZRemRangeByLex(string setId, string min, string max);
 
 		//Redis Hash operations
 		long HSet(string hashId, byte[] key, byte[] value);
