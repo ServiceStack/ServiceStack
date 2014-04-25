@@ -72,7 +72,10 @@ COPY ..\src\ServiceStack\bin\%BUILD%\ServiceStack.Client.dll ..\..\ServiceStack.
 COPY ..\src\ServiceStack\bin\%BUILD%\ServiceStack.Client.pdb ..\..\ServiceStack.OrmLite\lib
 COPY ..\tests\ServiceStack.Common.Tests\bin\%BUILD%\ServiceStack.Common.Tests.* ..\..\ServiceStack.OrmLite\lib\tests
 
-COPY ..\src\ServiceStack.Interfaces\bin\%BUILD%\ServiceStack.Interfaces.dll ..\lib
+COPY ..\src\ServiceStack.Interfaces\bin\%BUILD%\ServiceStack.Interfaces.* ..\lib
+COPY ..\src\ServiceStack.Common\bin\%BUILD%\ServiceStack.Common.* ..\lib
+COPY ..\src\ServiceStack.Client\bin\%BUILD%\ServiceStack.Client.* ..\lib
+
 COPY ..\lib\ServiceStack.Interfaces.dll ..\..\ServiceStack.Text\lib
 COPY ..\lib\ServiceStack.Interfaces.dll ..\..\ServiceStack.Redis\lib
 COPY ..\lib\ServiceStack.Interfaces.dll ..\..\ServiceStack.OrmLite\lib
