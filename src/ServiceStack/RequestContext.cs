@@ -34,12 +34,28 @@ namespace ServiceStack
 
         private IDictionary GetItems()
         {
-            return CallContext.LogicalGetData(_key) as IDictionary;
+            try
+            {
+                return CallContext.LogicalGetData(_key) as IDictionary;
+            }
+            catch (NotImplementedException)
+            {
+                //Fixed in Mono master: https://github.com/mono/mono/pull/817
+                return CallContext.GetData(_key) as IDictionary;
+            }
         }
 
-        private IDictionary CreateItems(IDictionary items=null)
+        private IDictionary CreateItems(IDictionary items = null)
         {
-            CallContext.LogicalSetData(_key, items ?? (items = new ConcurrentDictionary<object, object>()));
+            try
+            {
+                CallContext.LogicalSetData(_key, items ?? (items = new ConcurrentDictionary<object, object>()));
+            }
+            catch (NotImplementedException)
+            {
+                //Fixed in Mono master: https://github.com/mono/mono/pull/817
+                CallContext.SetData(_key, items ?? (items = new ConcurrentDictionary<object, object>()));
+            }
             return items;
         }
 
