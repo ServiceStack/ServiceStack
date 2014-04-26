@@ -8,7 +8,9 @@
     <owners>Service Stack</owners>
     <summary>MSBuild Task to generate and compile Service Stack Razor Views as a build-step, ready for instant use at run-time</summary>
     <description>
-		TBD
+      ServiceStack Razor Documentation: http://razor.servicestack.net
+
+      Compile Razor Views into a compiled .dll you can use in ServiceStack hosts to eliminate Razor View compilation at runtime for instant start-up times.
     </description>
     <projectUrl>http://razor.servicestack.net</projectUrl>
     <licenseUrl>https://servicestack.net/terms</licenseUrl>
@@ -23,7 +25,9 @@
     </dependencies>
   </metadata>
   <files>
-	<file src="tools\**\*.*" target="tools" />
-	<file src="..\..\src\ServiceStack.Razor.BuildTask\**\*.cs" target="src" />
+    <file src="lib\**\*.*" target="lib" />
+    <file src="content\**\*.*" target="content" />
+    <file src="tools\**\*.*" target="tools" />
+    <file src="..\..\src\ServiceStack.Razor.BuildTask\**\*.cs" target="src" />
   </files>
 </package>
