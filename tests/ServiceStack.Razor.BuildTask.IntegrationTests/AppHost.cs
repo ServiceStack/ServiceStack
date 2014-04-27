@@ -21,7 +21,7 @@ namespace RazorRockstars.WebHost
             LogManager.LogFactory = new ConsoleLogFactory();
 
             Plugins.Add(new RazorFormat {
-                LoadCompiledViews = new[] { typeof(Rockstar).Assembly },
+                LoadCompiledViews = { typeof(Rockstar).Assembly },
                 EnableLiveReload = true,
             });
 

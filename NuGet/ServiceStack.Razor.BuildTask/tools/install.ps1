@@ -24,3 +24,26 @@ $msbuild.Xml.Imports | Where-Object {$_.Project.ToLowerInvariant().EndsWith($tar
 $import = $msbuild.Xml.AddImport($relativePath)
 $import.set_Condition( "Exists('$relativePath')" ) | Out-Null
 [string]::Format("Added import of '{0}'.", $relativePath )
+
+# Set BuildAction of Razor Views to Compile and Embed Content Files
+function EmbedEachItem($projectItems) {
+    $projectItems | %{      
+        $x = $_.Name.ToLower()
+        if ($x -like "*.cshtml") {
+            $_.Properties.Item("BuildAction").Value = [int]2 # Compile Razor Views
+        }                
+        elseif ($x -like "*.md" -or $x -like "*.js" -or $x -like "*.css") {         
+            $_.Properties.Item("BuildAction").Value = [int]3 # Embed Content Files
+        }
+        elseif ($x -like "*.png" -or $x -like "*.gif" -or $x -like "*.jpg" -or $x -like "*.jpeg") {
+            $_.Properties.Item("BuildAction").Value = [int]3 # Embed Content Files
+        }
+
+        # Recursively
+        if ($_.ProjectItems) {
+            EmbedEachItem $_.ProjectItems
+        }
+    }
+}
+
+EmbedEachItem $project.ProjectItems

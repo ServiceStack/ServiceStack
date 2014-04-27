@@ -67,12 +67,8 @@ namespace ServiceStack.Razor.Managers
             files.Each(x => AddPage(x));
         }
 
-
         private void ScanAssemblies()
         {
-            if (this.Config.LoadCompiledViews == null)
-                return;
-
             foreach (var assembly in this.Config.LoadCompiledViews)
             {
                 foreach (var type in assembly.GetTypes()

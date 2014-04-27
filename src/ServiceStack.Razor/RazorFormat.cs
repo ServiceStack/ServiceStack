@@ -31,6 +31,8 @@ namespace ServiceStack.Razor
             Deny = new List<Predicate<string>> {
                 DenyPathsWithLeading_,
             };
+
+            LoadCompiledViews = new List<Assembly>();
         }
 
         //configs
@@ -39,7 +41,7 @@ namespace ServiceStack.Razor
         public string DefaultPageName { get; set; }
         public string WebHostUrl { get; set; }
         public string ScanRootPath { get; set; }
-        public Assembly[] LoadCompiledViews { get; set; }
+        public List<Assembly> LoadCompiledViews { get; set; }
         public List<Predicate<string>> Deny { get; set; }
         public bool? EnableLiveReload { get; set; }
         public bool? PrecompilePages { get; set; }
@@ -72,6 +74,8 @@ namespace ServiceStack.Razor
             this.EnableLiveReload = this.EnableLiveReload ?? appHost.Config.DebugMode;
             this.PrecompilePages = this.PrecompilePages ?? !this.EnableLiveReload;
             this.WaitForPrecompilationOnStartup = this.WaitForPrecompilationOnStartup ?? !this.EnableLiveReload;
+
+            LoadCompiledViews.Each(appHost.Config.EmbeddedResourceSources.Add);
 
             try
             {
@@ -238,7 +242,7 @@ namespace ServiceStack.Razor
         Type PageBaseType { get; }
         string DefaultPageName { get; }
         string ScanRootPath { get; }
-        Assembly[] LoadCompiledViews { get; }
+        List<Assembly> LoadCompiledViews { get; }
         string WebHostUrl { get; }
         List<Predicate<string>> Deny { get; }
         bool? PrecompilePages { get; set; }
