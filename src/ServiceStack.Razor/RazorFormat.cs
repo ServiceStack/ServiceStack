@@ -75,7 +75,7 @@ namespace ServiceStack.Razor
             this.PrecompilePages = this.PrecompilePages ?? !this.EnableLiveReload;
             this.WaitForPrecompilationOnStartup = this.WaitForPrecompilationOnStartup ?? !this.EnableLiveReload;
 
-            LoadCompiledViews.Each(appHost.Config.EmbeddedResourceSources.Add);
+            LoadCompiledViews.Each(appHost.Config.EmbeddedResourceSources.AddIfNotExists);
 
             try
             {
