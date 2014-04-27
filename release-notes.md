@@ -1,5 +1,4 @@
 # Release Notes
---------
 
 # New HTTP Benchmarks example project
 
