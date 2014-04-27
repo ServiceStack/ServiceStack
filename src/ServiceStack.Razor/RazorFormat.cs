@@ -39,7 +39,7 @@ namespace ServiceStack.Razor
         public string DefaultPageName { get; set; }
         public string WebHostUrl { get; set; }
         public string ScanRootPath { get; set; }
-        public Assembly[] ScanAssemblies { get; set; }
+        public Assembly[] LoadCompiledViews { get; set; }
         public List<Predicate<string>> Deny { get; set; }
         public bool? EnableLiveReload { get; set; }
         public bool? PrecompilePages { get; set; }
@@ -238,7 +238,7 @@ namespace ServiceStack.Razor
         Type PageBaseType { get; }
         string DefaultPageName { get; }
         string ScanRootPath { get; }
-        Assembly[] ScanAssemblies { get; }
+        Assembly[] LoadCompiledViews { get; }
         string WebHostUrl { get; }
         List<Predicate<string>> Deny { get; }
         bool? PrecompilePages { get; set; }
