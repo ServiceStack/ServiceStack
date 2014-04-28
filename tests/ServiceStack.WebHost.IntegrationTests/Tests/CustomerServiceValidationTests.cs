@@ -100,6 +100,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
                 var errorFields = response.ResponseStatus.Errors;
                 Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
+                Assert.That(ex.StatusDescription, Is.EqualTo("NotEqual"));
                 Assert.That(errorFields.Count, Is.EqualTo(1));
                 Assert.That(errorFields[0].ErrorCode, Is.EqualTo("NotEqual"));
                 Assert.That(errorFields[0].FieldName, Is.EqualTo("Id"));
