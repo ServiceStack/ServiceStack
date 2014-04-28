@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.FluentValidation;
+using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
 
@@ -311,26 +312,27 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 			}
 		}
 
-		[Test, TestCaseSource(typeof(CustomerServiceValidationTests), "ServiceClients")]
-		public void Get_empty_request_throws_validation_exception(Func<IServiceClient> factory)
-		{
-			try
-			{
-				var client = (IRestClient)factory();
-				var response = client.Get<CustomersResponse>("Customers");
-				Assert.Fail("Should throw Validation Exception");
-			}
-			catch (WebServiceException ex)
-			{
-				var response = (CustomersResponse)ex.ResponseDto;
+        [Test, TestCaseSource(typeof(CustomerServiceValidationTests), "ServiceClients")]
+        public void Get_empty_request_throws_validation_exception(Func<IServiceClient> factory)
+        {
+            try
+            {
+	            var client = (IRestClient)factory();
+	            var response = client.Get<CustomersResponse>("Customers");
+	            Assert.Fail("Should throw Validation Exception");
+            }
+            catch (WebServiceException ex)
+            {
+                var response = (CustomersResponse)ex.ResponseDto;
 
-				var errorFields = response.ResponseStatus.Errors;
-				Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
-				Assert.That(errorFields.Count, Is.EqualTo(1));
-				Assert.That(errorFields[0].ErrorCode, Is.EqualTo("NotEqual"));
-				Assert.That(errorFields[0].FieldName, Is.EqualTo("Id"));
-			}
-		}
+                var errorFields = response.ResponseStatus.Errors;
+                Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
+                Assert.That(errorFields.Count, Is.EqualTo(1));
+                Assert.That(errorFields[0].ErrorCode, Is.EqualTo("NotEqual"));
+                Assert.That(errorFields[0].FieldName, Is.EqualTo("Id"));
+                Assert.That(errorFields[0].Message, Is.EqualTo("'Id' should not be equal to '0'."));
+            }
+        }
 
 		[Test, TestCaseSource(typeof(CustomerServiceValidationTests), "ServiceClients")]
 		public void Post_ValidRequest_succeeds(Func<IServiceClient> factory)
