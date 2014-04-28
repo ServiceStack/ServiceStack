@@ -153,8 +153,7 @@
         [Test]
         public void Can_GetPageBaseTypeName()
         {
-            var result = RazorGeneratorBuildTask.GetPageBaseTypeName();
-
+            var result = new RazorGeneratorBuildTask().GetPageBaseTypeName();
             Assert.That(result, Is.EqualTo("ServiceStack.Razor.ViewPage"));
         }
     }
