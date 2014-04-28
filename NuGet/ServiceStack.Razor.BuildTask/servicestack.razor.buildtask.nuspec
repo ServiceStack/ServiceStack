@@ -20,13 +20,9 @@
     <language>en-US</language>
     <copyright>Copyright 2013 Service Stack</copyright>
     <dependencies>
-      <dependency id="ServiceStack.Interfaces" version="4.0" />
-      <dependency id="ServiceStack.Text" version="4.0" />
     </dependencies>
   </metadata>
   <files>
-    <file src="lib\**\*.*" target="lib" />
-    <file src="content\**\*.*" target="content" />
     <file src="tools\**\*.*" target="tools" />
     <file src="..\..\src\ServiceStack.Razor.BuildTask\**\*.cs" target="src" />
   </files>

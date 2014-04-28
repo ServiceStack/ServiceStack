@@ -1,4 +1,7 @@
-﻿namespace ServiceStack.Razor.BuildTask
+﻿using System.Xml.Linq;
+using ServiceStack.Razor.Compilation.CodeTransformers;
+
+namespace ServiceStack.Razor.BuildTask
 {
     using System;
     using System.Collections.Generic;
@@ -15,18 +18,29 @@
     using ServiceStack.Razor.Managers.RazorGen;
 
     public class RazorGeneratorBuildTask : Task
-    {       
+    {
+        public static RazorGeneratorBuildTask Instance;
+
         public override bool Execute()
         {
-            if (!this.InputFiles.Any()) 
+            if (!this.InputFiles.Any())
                 return true;
-            
-            HostContext.ProjectDir = this.ProjectDir;
-            HostContext.ProjectTargetPath = this.ProjectTargetPath;
-            HostContext.AppConfigPath = this.AppConfigPath;
-            
+
+            Instance = new RazorGeneratorBuildTask();
+
+            if (AppConfigPath == null)
+            {
+                var configNames = new[] {
+                    PathUtils.CombinePaths(ProjectDir, "Web.config"),
+                    PathUtils.CombinePaths(ProjectDir, "App.config"),
+                    PathUtils.CombinePaths(ProjectDir, "web.config"), //unix
+                    PathUtils.CombinePaths(ProjectDir, "app.config"),
+                };
+                AppConfigPath = configNames.FirstOrDefault(File.Exists);
+            }
+
             // Use the task's parent project's web/app configuration file
-            using (AppConfigScope.Change(HostContext.AppConfigPath))
+            using (AppConfigScope.Change(AppConfigPath))
             {
                 var allowedConfigs = ConfigurationManager.AppSettings[ConfigurationAppKeyName] ?? this.AllowedConfigurations;
 
@@ -42,9 +56,9 @@
                 {
                     var file = new RazorBuildTaskFile(this.InputFiles[i].ItemSpec, pathProvider);
                     var pageHost = new RazorPageHost(pathProvider, file, transformer, new CSharpCodeProvider(), new Dictionary<string, string>())
-                                       {
-                                           RootNamespace = this.ProjectRootNamespace
-                                       };
+                    {
+                        RootNamespace = this.ProjectRootNamespace
+                    };
 
                     var fileName = this.OutputFiles[i].ItemSpec = ToUniqueFilePath(this.OutputFiles[i].ItemSpec, pageHost.DefaultNamespace);
                     var sourceCode = pageHost.GenerateSourceCode();
@@ -71,7 +85,7 @@
         /// </returns>
         public static string ToUniqueFilePath(string filePath, string @namespace)
         {
-            if (!String.IsNullOrEmpty(@namespace)) 
+            if (!String.IsNullOrEmpty(@namespace))
                 @namespace += ".";
 
             return String.Format(
@@ -88,12 +102,46 @@
         /// <returns>
         /// The PageBaseType name.
         /// </returns>
-        public static string GetPageBaseTypeName()
+        public string GetPageBaseTypeName()
         {
-            dynamic section = ConfigurationManager.GetSection(RazorWebPagesSectionName);
-            return section != null ? section.PageBaseType : null;
+            if (AppConfigPath != null)
+            {
+                var xml = AppConfigPath.ReadAllText();
+                var doc = XElement.Parse(xml);
+                var pageBaseType = doc.AnyElement("system.web.webPages.razor")
+                    .AnyElement("pages")
+                        .AnyAttribute("pageBaseType");
+
+                var razorNamespaces = new HashSet<string>();
+                doc.AnyElement("system.web.webPages.razor")
+                    .AnyElement("pages")
+                        .AnyElement("namespaces")
+                            .AllElements("add").ToList()
+                                .ForEach(x => razorNamespaces.Add(x.AnyAttribute("namespace").Value));
+
+                WebConfigTransformer.RazorNamespaces = razorNamespaces;
+
+                if (pageBaseType != null && !string.IsNullOrEmpty(pageBaseType.Value))
+                {
+                    return pageBaseType.Value;
+                }
+            }
+
+            try
+            {
+                //Throws runtime exception if can't load correct Microsoft.AspNet.WebPages
+                dynamic section = ConfigurationManager.GetSection(RazorWebPagesSectionName);
+                if (section != null && section.PageBaseType != null)
+                    return section.PageBaseType;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error loading config in GetPageBaseTypeName():\n" + ex);
+            }
+
+            return typeof(ViewPage).Namespace + "." + typeof(ViewPage).Name;
         }
-        
+
         /// <summary>
         /// Compares if the current MSBuild configuration is in the list of configurations specified by the Host Project.
         /// Returns true if configuration matches or Host Project does not specify a configuration.
@@ -106,7 +154,7 @@
         /// </param>
         public static bool ConfigurationMatches(string currentConfiguration, string allowedConfigurations)
         {
-            if (currentConfiguration.IsNullOrEmpty() && !allowedConfigurations.IsNullOrEmpty()) 
+            if (currentConfiguration.IsNullOrEmpty() && !allowedConfigurations.IsNullOrEmpty())
                 return false;
 
             return allowedConfigurations.IsNullOrEmpty()
@@ -160,7 +208,7 @@
         /// </summary>
         [Required]
         public ITaskItem[] InputFiles { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the file paths to the Razor View source code to be built into the Host Project's assembly.
         /// file paths should be relative to ProjectDir of the Build Task's Host Project
