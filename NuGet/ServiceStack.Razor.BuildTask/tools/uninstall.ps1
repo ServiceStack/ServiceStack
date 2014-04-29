@@ -1,5 +1,6 @@
 ﻿param($installPath, $toolsPath, $package, $project)
 
+<#
 $targetsFileName = 'ServiceStack.Razor.BuildTask.targets';
 
 # Need to load MSBuild assembly if it's not loaded yet.
@@ -13,3 +14,4 @@ $msbuild.Xml.Imports | Where-Object {$_.Project.ToLowerInvariant().EndsWith($tar
 	$_.Parent.RemoveChild( $_ ) 
 	[string]::Format( "Removed import of '{0}'" , $_.Project )
 }
+#>

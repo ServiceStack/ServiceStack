@@ -1,5 +1,6 @@
 ﻿param($installPath, $toolsPath, $package, $project)
 
+<#
 $targetsFileName = 'ServiceStack.Razor.BuildTask.targets';
 $targetsPath = [System.IO.Path]::Combine($toolsPath, $targetsFileName)
 
@@ -24,6 +25,7 @@ $msbuild.Xml.Imports | Where-Object {$_.Project.ToLowerInvariant().EndsWith($tar
 $import = $msbuild.Xml.AddImport($relativePath)
 $import.set_Condition( "Exists('$relativePath')" ) | Out-Null
 [string]::Format("Added import of '{0}'.", $relativePath )
+#>
 
 # Set BuildAction of Razor Views to Compile and Embed Content Files
 function EmbedEachItem($projectItems) {
