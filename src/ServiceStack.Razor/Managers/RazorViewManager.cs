@@ -231,7 +231,7 @@ namespace ServiceStack.Razor.Managers
             // layoutName may or may not contain the .cshtml extension, the below forces it not to.
             layoutName = Path.GetFileNameWithoutExtension(layoutFile);
 
-            var contextRelativePath = page.File.VirtualPath;
+            var contextRelativePath = page.VirtualPath;
             string contextParentDir = contextRelativePath;
             do
             {
