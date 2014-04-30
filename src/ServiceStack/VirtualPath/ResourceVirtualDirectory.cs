@@ -134,7 +134,7 @@ namespace ServiceStack.VirtualPath
 
         protected override IVirtualFile GetFileFromBackingDirectoryOrDefault(string fileName)
         {
-            return Files.FirstOrDefault(f => f.Name == fileName);
+            return Files.FirstOrDefault(f => f.Name.EqualsIgnoreCase(fileName));
         }
 
         protected override IEnumerable<IVirtualFile> GetMatchingFilesInDir(String globPattern)
@@ -144,7 +144,7 @@ namespace ServiceStack.VirtualPath
 
         protected override IVirtualDirectory GetDirectoryFromBackingDirectoryOrDefault(string directoryName)
         {
-            return Directories.FirstOrDefault(d => d.Name == directoryName);
+            return Directories.FirstOrDefault(d => d.Name.EqualsIgnoreCase(directoryName));
         }
 
         protected override string GetRealPathToRoot()
