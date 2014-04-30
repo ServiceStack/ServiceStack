@@ -841,7 +841,7 @@ namespace ServiceStack
 
         public static IHttpRequest ToRequest(this HttpListenerContext httpCtxReq, string operationName = null)
         {
-            return new ListenerRequest(httpCtxReq, operationName);
+            return ((HttpListenerBase)ServiceStackHost.Instance).CreateRequest(httpCtxReq, operationName);   
         }
 
         public static IHttpResponse ToResponse(this HttpRequestBase httpCtx)

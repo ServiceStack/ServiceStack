@@ -19,12 +19,6 @@ namespace ServiceStack.Host.HttpListener
         private readonly HttpListenerRequest request;
         private readonly IHttpResponse response;
 
-        public ListenerRequest(HttpListenerContext httpContext, string operationName = null)
-            : this(httpContext, operationName, RequestAttributes.None)
-        {
-            this.RequestAttributes = this.GetAttributes();
-        }
-
         public ListenerRequest(HttpListenerContext httpContext, string operationName, RequestAttributes requestAttributes)
         {
             this.OperationName = operationName;
@@ -283,9 +277,11 @@ namespace ServiceStack.Host.HttpListener
             get { return request.ContentType; }
         }
 
+        public Encoding contentEncoding;
         public Encoding ContentEncoding
         {
-            get { return request.ContentEncoding; }
+            get { return contentEncoding ?? request.ContentEncoding; }
+            set { contentEncoding = value; }
         }
 
         public Uri UrlReferrer

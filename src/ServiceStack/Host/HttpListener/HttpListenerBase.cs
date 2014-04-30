@@ -66,6 +66,13 @@ namespace ServiceStack.Host.HttpListener
             return this;
         }
 
+        public virtual ListenerRequest CreateRequest(HttpListenerContext httpContext, string operationName)
+        {
+            var req = new ListenerRequest(httpContext, operationName, RequestAttributes.None);
+            req.RequestAttributes = req.GetAttributes();
+            return req;
+        }
+
         /// <summary>
         /// Starts the Web Service
         /// </summary>

@@ -119,7 +119,7 @@ namespace ServiceStack.Host.Handlers
 
             if (DefaultHandledRequest(context)) return;
 
-            var httpReq = new ListenerRequest(context, operationName);
+            var httpReq = ((HttpListenerBase)ServiceStackHost.Instance).CreateRequest(context, operationName);   
 
             ProcessRequest(httpReq, httpReq.Response, operationName);
         }
