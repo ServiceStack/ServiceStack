@@ -222,6 +222,7 @@ namespace ServiceStack.Host.HttpListener
         {
             try
             {
+                ex = ex.UnwrapIfSingleException();
                 var httpReq = CreateHttpRequest(context);
                 Log.Error("Error this.ProcessRequest(context): [{0}]: {1}".Fmt(ex.GetType().GetOperationName(), ex.Message), ex);
 
