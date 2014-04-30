@@ -119,6 +119,8 @@ namespace ServiceStack
             ServiceController.Init();
             Configure(Container);
 
+            ConfigurePlugins();
+
             if (VirtualPathProvider == null)
             {
                 var pathProviders = new List<IVirtualPathProvider> {
@@ -361,8 +363,6 @@ namespace ServiceStack
                 config.HandlerFactoryPath = config.HandlerFactoryPath.TrimStart('/');
 
             var specifiedContentType = config.DefaultContentType; //Before plugins loaded
-
-            ConfigurePlugins();
 
             LoadPlugin(Plugins.ToArray());
             pluginsLoaded = true;

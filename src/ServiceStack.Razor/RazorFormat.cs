@@ -14,7 +14,7 @@ namespace ServiceStack.Razor
 {
     using System.Reflection;
 
-    public class RazorFormat : IPlugin, IRazorPlugin, IRazorConfig
+    public class RazorFormat : IPlugin, IRazorPlugin, IRazorConfig, IPreInitPlugin
     {
         public const string TemplatePlaceHolder = "@RenderBody()";
 
@@ -66,6 +66,11 @@ namespace ServiceStack.Razor
         protected RazorViewManager ViewManager;
         protected RazorPageResolver PageResolver;
 
+        public void Configure(IAppHost appHost)
+        {
+            LoadCompiledViews.Each(appHost.Config.EmbeddedResourceSources.AddIfNotExists);
+        }
+
         public void Register(IAppHost appHost)
         {
             this.ScanRootPath = this.ScanRootPath ?? appHost.Config.WebHostPhysicalPath;
@@ -74,8 +79,6 @@ namespace ServiceStack.Razor
             this.EnableLiveReload = this.EnableLiveReload ?? appHost.Config.DebugMode;
             this.PrecompilePages = this.PrecompilePages ?? !this.EnableLiveReload;
             this.WaitForPrecompilationOnStartup = this.WaitForPrecompilationOnStartup ?? !this.EnableLiveReload;
-
-            LoadCompiledViews.Each(appHost.Config.EmbeddedResourceSources.AddIfNotExists);
 
             try
             {
