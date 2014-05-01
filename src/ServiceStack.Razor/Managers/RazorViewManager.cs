@@ -69,7 +69,7 @@ namespace ServiceStack.Razor.Managers
 
         private void ScanAssemblies()
         {
-            foreach (var assembly in this.Config.LoadCompiledViews)
+            foreach (var assembly in this.Config.LoadFromAssemblies)
             {
                 foreach (var type in assembly.GetTypes()
                     .Where(w => w.FirstAttribute<GeneratedCodeAttribute>() != null
