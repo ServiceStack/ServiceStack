@@ -147,5 +147,5 @@
       <Link>sqlite3.dll</Link>
     </Content>
   </ItemGroup>
-  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
 </Project>
