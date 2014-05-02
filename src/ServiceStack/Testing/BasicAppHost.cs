@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Funq;
 using ServiceStack.Host;
@@ -8,8 +9,11 @@ namespace ServiceStack.Testing
     public class BasicAppHost : ServiceStackHost
     {
         public BasicAppHost(params Assembly[] serviceAssemblies)
-            : base(typeof(BasicAppHost).GetOperationName(),
-                   serviceAssemblies.Length > 0 ? serviceAssemblies : new[] { Assembly.GetExecutingAssembly() }) {}
+            : base(typeof (BasicAppHost).GetOperationName(),
+                   serviceAssemblies.Length > 0 ? serviceAssemblies : new[] {Assembly.GetExecutingAssembly()})
+        {
+            this.ExcludeAutoRegisteringServiceTypes = new HashSet<Type>();
+        }
 
         public override void Configure(Container container)
         {
