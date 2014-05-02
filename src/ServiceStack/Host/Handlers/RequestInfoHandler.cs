@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
 using System.Web.Hosting;
@@ -139,6 +140,9 @@ namespace ServiceStack.Host.Handlers
 
         [DataMember]
         public Dictionary<string, string> Stats { get; set; }
+
+        [DataMember]
+        public List<string> VirtualPathProviderFiles { get; set; }
     }
 
     public class RequestHandlerInfo
@@ -237,6 +241,7 @@ namespace ServiceStack.Host.Handlers
                 PluginsLoaded = HostContext.AppHost.PluginsLoaded,
                 StartUpErrors = HostContext.AppHost.StartUpErrors,
                 LastRequestInfo = LastRequestInfo,
+                VirtualPathProviderFiles = HostContext.AppHost.VirtualPathProvider.GetAllMatchingFiles("*").Take(1000).Map(x => x.RealPath),
                 Stats = new Dictionary<string, string> {
                     {"RawHttpHandlers", HostContext.AppHost.RawHttpHandlers.Count.ToString() },
                     {"PreRequestFilters", HostContext.AppHost.PreRequestFilters.Count.ToString() },
@@ -252,7 +257,8 @@ namespace ServiceStack.Host.Handlers
                     {"RestPaths", HostContext.AppHost.RestPaths.Count.ToString() },
                     {"ContentTypes", HostContext.AppHost.ContentTypes.ContentTypeFormats.Count.ToString() },
                     {"EnableFeatures", HostContext.Config.EnableFeatures.ToString() },
-                }
+                    {"VirtualPathProvider", HostContext.AppHost.VirtualPathProvider.ToString() }
+                },
             };
             return response;
         }

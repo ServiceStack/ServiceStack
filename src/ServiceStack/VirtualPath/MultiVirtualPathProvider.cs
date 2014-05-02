@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using ServiceStack.IO;
 
 namespace ServiceStack.VirtualPath
@@ -71,6 +72,14 @@ namespace ServiceStack.VirtualPath
         public override bool IsViewFile(IVirtualFile virtualFile)
         {
             return virtualFile.VirtualPathProvider.IsViewFile(virtualFile);
+        }
+
+        public override string ToString()
+        {
+            var sb = new List<string>();
+            ChildProviders.Each(x => sb.Add(x.ToString()));
+
+            return string.Join(", ", sb.ToArray());
         }
     }
 }
