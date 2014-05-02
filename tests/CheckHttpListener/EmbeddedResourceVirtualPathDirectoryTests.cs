@@ -14,7 +14,7 @@ namespace CheckHttpListener
         public void WithAnEmbeddedResource_ShouldBeAbleToFindItInVirtualDirectoryWalk()
         {
             var appHost = new BasicAppHost(GetType().Assembly);
-            var directory = new ResourceVirtualDirectory(new InMemoryVirtualPathProvider(appHost), null, GetType().Assembly);
+            var directory = new ResourceVirtualDirectory(new InMemoryVirtualPathProvider(appHost), null, GetType().Assembly, GetType().Assembly.GetName().Name);
 
             var resourceFiles = WalkForFiles(directory).ToList();
             Assert.IsNotEmpty(resourceFiles);
