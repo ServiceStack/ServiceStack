@@ -14,7 +14,7 @@ namespace ServiceStack.Razor
 {
     using System.Reflection;
 
-    public class RazorFormat : IPlugin, IRazorPlugin, IRazorConfig, IPreInitPlugin
+    public class RazorFormat : IPlugin, IRazorPlugin, IRazorConfig
     {
         public const string TemplatePlaceHolder = "@RenderBody()";
 
@@ -65,11 +65,6 @@ namespace ServiceStack.Razor
         //managers
         protected RazorViewManager ViewManager;
         protected RazorPageResolver PageResolver;
-
-        public void Configure(IAppHost appHost)
-        {
-            LoadFromAssemblies.Each(appHost.Config.EmbeddedResourceSources.AddIfNotExists);
-        }
 
         public void Register(IAppHost appHost)
         {
