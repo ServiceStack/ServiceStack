@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Web.Configuration;
 using System.Xml.Linq;
 using MarkdownSharp;
+using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
@@ -39,7 +40,8 @@ namespace ServiceStack
                 MetadataTypesConfig = new MetadataTypesConfig(addDefaultXmlNamespace: DefaultWsdlNamespace),
                 WsdlServiceNamespace = DefaultWsdlNamespace,
                 ApiVersion = "1.0",
-                EmbeddedResourceSources = new[] { HostContext.AppHost.GetType().Assembly, typeof(Service).Assembly }.ToList(),
+                EmbeddedResourceSources = new List<Assembly>(),
+                EmbeddedResourceBaseTypes = new[] { HostContext.AppHost.GetType(), typeof(Service) }.ToList(),
                 LogFactory = new NullLogFactory(),
                 EnableAccessRestrictions = true,
                 WebHostPhysicalPath = "~".MapServerPath(),
@@ -132,6 +134,7 @@ namespace ServiceStack
             this.WsdlServiceNamespace = instance.WsdlServiceNamespace;
             this.ApiVersion = instance.ApiVersion;
             this.EmbeddedResourceSources = instance.EmbeddedResourceSources;
+            this.EmbeddedResourceBaseTypes = instance.EmbeddedResourceBaseTypes;
             this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
             this.ServiceEndpointsMetadataConfig = instance.ServiceEndpointsMetadataConfig;
             this.LogFactory = instance.LogFactory;
@@ -188,6 +191,7 @@ namespace ServiceStack
             set { metadataVisibility = value.ToAllowedFlagsSet(); }
         }
 
+        public List<Type> EmbeddedResourceBaseTypes { get; set; }
         public List<Assembly> EmbeddedResourceSources { get; set; }
 
         public string SoapServiceName { get; set; }
