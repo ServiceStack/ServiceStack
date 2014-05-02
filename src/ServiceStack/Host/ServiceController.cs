@@ -506,6 +506,28 @@ namespace ServiceStack.Host
             return handlerFn(request, requestDto);
         }
 
+        public Task<object> ExecuteAsync(object requestDto, IRequest request)
+        {
+            var requestType = requestDto.GetType();
+
+            if (appHost.Config.EnableAccessRestrictions)
+            {
+                AssertServiceRestrictions(requestType,
+                    request != null ? request.RequestAttributes : RequestAttributes.None);
+            }
+
+            ServiceExecFn handlerFn = GetService(requestType);
+            var response = handlerFn(request, requestDto);
+
+            var taskResponse = response as Task;
+            if (taskResponse != null)
+            {
+                return taskResponse.ContinueWith(x => x.GetResult());
+            }
+
+            return response.AsTaskResult();
+        }
+
         public ServiceExecFn GetService(Type requestType)
         {
             ServiceExecFn handlerFn;
