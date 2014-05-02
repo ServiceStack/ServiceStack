@@ -82,6 +82,13 @@ namespace ServiceStack
                 new PredefinedRoutesFeature(),
                 new MetadataFeature(),
             };
+            ExcludeAutoRegisteringServiceTypes = new HashSet<Type> {
+                typeof(AuthenticateService),
+                typeof(RegisterService),
+                typeof(AssignRolesService),
+                typeof(UnAssignRolesService),
+                typeof(DtoGenService),
+            };
         }
 
         public abstract void Configure(Container container);
@@ -126,7 +133,11 @@ namespace ServiceStack
                 var pathProviders = new List<IVirtualPathProvider> {
                     new FileSystemVirtualPathProvider(this, Config.WebHostPhysicalPath)
                 };
-                pathProviders.AddRange(Config.EmbeddedResourceSources.Map(x =>
+
+                pathProviders.AddRange(Config.EmbeddedResourceBaseTypes.Distinct().Map(x =>
+                    new ResourceVirtualPathProvider(this, x)));
+                
+                pathProviders.AddRange(Config.EmbeddedResourceSources.Distinct().Map(x =>
                     new ResourceVirtualPathProvider(this, x)));
 
                 VirtualPathProvider = pathProviders.Count > 1
@@ -147,11 +158,36 @@ namespace ServiceStack
             throw new NotImplementedException("Start(listeningAtUrlBase) is not supported by this AppHost");
         }
 
+        /// <summary>
+        /// Retain the same behavior as ASP.NET and redirect requests to directores 
+        /// without a trailing '/'
+        /// </summary>
+        public IHttpHandler RedirectDirectory(IHttpRequest request)
+        {
+            var dir = request.GetVirtualNode() as IVirtualDirectory;
+            if (dir != null)
+            {
+                if (!request.PathInfo.EndsWith("/"))
+                {
+                    return new RedirectHttpHandler
+                    {
+                        RelativeUrl = request.PathInfo + "/",
+                    };
+                }
+            }
+            return null;
+        }
+
         public string ServiceName { get; set; }
 
         public ServiceMetadata Metadata { get; set; }
 
         public ServiceController ServiceController { get; set; }
+
+        // Rare for a user to auto register all avaialable services in ServiceStack.dll
+        // But happens when ILMerged, so exclude autoregistering SS services by default 
+        // and let them register them manually
+        public HashSet<Type> ExcludeAutoRegisteringServiceTypes { get; set; }
 
         /// <summary>
         /// The AppHost.Container. Note: it is not thread safe to register dependencies after AppStart.
@@ -200,6 +236,7 @@ namespace ServiceStack
         public List<IPlugin> Plugins { get; set; }
 
         public IVirtualPathProvider VirtualPathProvider { get; set; }
+
 
         /// <summary>
         /// Executed immediately before a Service is executed. Use return to change the request DTO used, must be of the same type.

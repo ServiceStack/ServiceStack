@@ -7,9 +7,6 @@ using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
-using ServiceStack.Host.Handlers;
-using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Web;
 
@@ -71,27 +68,6 @@ namespace ServiceStack.Host.HttpListener
             Start(urlBase, Listen);
             return this;
         }
-
-        /// <summary>
-        /// Retain the same behavior as ASP.NET and redirect requests to directores 
-        /// without a trailing '/'
-        /// </summary>
-        public IHttpHandler RedirectDirectory(IHttpRequest request)
-        {
-            var dir = request.GetVirtualNode() as IVirtualDirectory;
-            if (dir != null)
-            {
-                if (!request.PathInfo.EndsWith("/"))
-                {
-                    return new RedirectHttpHandler
-                    {
-                        RelativeUrl = request.PathInfo + "/",
-                    };
-                }
-            }
-            return null;
-        }
-
 
         public virtual ListenerRequest CreateRequest(HttpListenerContext httpContext, string operationName)
         {
