@@ -93,6 +93,9 @@ namespace ServiceStack.Host
                     assemblyName = assembly.FullName;
                     foreach (var type in assembly.GetTypes())
                     {
+                        if (appHost.ExcludeAutoRegisteringServiceTypes.Contains(type))
+                            continue;
+
                         typeName = type.GetOperationName();
                         results.Add(type);
                     }

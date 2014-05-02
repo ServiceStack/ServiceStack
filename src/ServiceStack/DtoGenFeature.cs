@@ -10,7 +10,7 @@ namespace ServiceStack
     {
         public void Register(IAppHost appHost)
         {
-            appHost.RegisterService<DtoGetService>();
+            appHost.RegisterService<DtoGenService>();
         }
 
         public static MetadataTypes GetMetadataTypes(MetadataTypesConfig config, IRequest httpReq)
@@ -93,7 +93,7 @@ namespace ServiceStack
     [Route("/dtogen/csharp")]
     public class DtoGenCSharp {} 
 
-    public class DtoGetService : Service
+    public class DtoGenService : Service
     {
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(DtoGenCSharp request)
