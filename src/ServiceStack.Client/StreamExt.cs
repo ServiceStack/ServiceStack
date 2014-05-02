@@ -12,7 +12,7 @@ using System.Security.Cryptography;
 
 namespace ServiceStack
 {
-    public static class StreamExtensions
+    public static class StreamExt
     {
 		#if !(SL5 || XBOX || ANDROID || __IOS__)
         /// <summary>

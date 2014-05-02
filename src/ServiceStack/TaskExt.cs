@@ -4,7 +4,7 @@ using ServiceStack.Text.FastMember;
 
 namespace ServiceStack
 {
-    public static class TaskExtensions
+    public static class TaskExt
     {
         public static Task<object> AsTaskException(this Exception ex)
         {

@@ -110,7 +110,7 @@
     <Compile Include="ServiceClientBase.cs" />
     <Compile Include="Soap11ServiceClient.cs" />
     <Compile Include="Soap12ServiceClient.cs" />
-    <Compile Include="StreamExtensions.cs" />
+    <Compile Include="StreamExt.cs" />
     <Compile Include="Support\NetDeflateProvider.cs" />
     <Compile Include="Support\NetGZipProvider.cs" />
     <Compile Include="UrlExtensions.cs" />
