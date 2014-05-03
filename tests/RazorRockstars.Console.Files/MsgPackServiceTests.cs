@@ -68,7 +68,7 @@ namespace RazorRockstars.Console.Files
     [TestFixture]
     public class MsgPackServiceTests
     {
-        protected const string ListeningOn = "http://localhost:85/";
+        protected const string ListeningOn = "http://localhost:1337/";
 
         AppHost appHost;
 
