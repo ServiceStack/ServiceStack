@@ -4,12 +4,15 @@ using System.Linq;
 using System.Text;
 using ServiceStack.Host;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {
     public class PostmanFeature : IPlugin
     {
         public string AtRestPath { get; set; }
+        public bool? EnableSessionExport { get; set; }
+        public string Headers { get; set; }
 
         /// <summary>
         /// Only generate specified Verb entries for "ANY" routes
@@ -19,18 +22,29 @@ namespace ServiceStack
         public PostmanFeature()
         {
             this.AtRestPath = "/postman";
+            this.Headers = "Accept: " + MimeTypes.Json;
             this.DefaultVerbsForAny = new List<string> { HttpMethods.Get };
         }
 
         public void Register(IAppHost appHost)
         {
             appHost.RegisterService<PostmanService>(AtRestPath);
+
+            appHost.GetPlugin<MetadataFeature>()
+                   .AddPluginLink(AtRestPath.TrimStart('/'), "Postman Metadata");
+
+            if (EnableSessionExport == null)
+                EnableSessionExport = appHost.Config.DebugMode;
         }
     }
 
     public class Postman
     {
         public List<string> Label { get; set; }
+        public bool ExportSession { get; set; }
+        public string SSId { get; set; }
+        public string SSPId { get; set; }
+        public string SSOpt { get; set; }
     }
 
     public class PostmanCollection
@@ -71,6 +85,22 @@ namespace ServiceStack
         [AddHeader(ContentType = MimeTypes.Json)]
         public object Any(Postman request)
         {
+            var feature = HostContext.GetPlugin<PostmanFeature>();
+
+            if (request.ExportSession)
+            {
+                if (feature.EnableSessionExport != true)
+                    throw new ArgumentException("PostmanFeature.EnableSessionExport is not enabled");
+
+                var url = Request.ResolveBaseUrl()
+                    .CombineWith(Request.PathInfo)
+                    .AddQueryParam("ssopt", Request.GetItemOrCookie(SessionFeature.SessionOptionsKey))
+                    .AddQueryParam("sspid", Request.GetPermanentSessionId())
+                    .AddQueryParam("ssid", Request.GetTemporarySessionId());
+
+                return HttpResult.Redirect(url);
+            }
+
             var id = SessionExtensions.CreateRandomSessionId();
             var ret = new PostmanCollection
             {
@@ -90,6 +120,36 @@ namespace ServiceStack
 
             var ret = new List<PostmanRequest>();
             var feature = HostContext.GetPlugin<PostmanFeature>();
+
+            var headers = feature.Headers ?? ("Accept: " + MimeTypes.Json);
+
+            var httpRes = Response as IHttpResponse;
+            if (httpRes != null)
+            {
+                if (request.SSOpt != null
+                    || request.SSPId != null
+                    || request.SSId != null)
+                {
+                    if (feature.EnableSessionExport != true)
+                    {
+                        throw new ArgumentException("PostmanFeature.EnableSessionExport is not enabled");
+                    }
+                }
+
+                if (request.SSOpt != null)
+                {
+                    Request.AddSessionOptions(request.SSOpt);
+                }
+                if (request.SSPId != null)
+                {
+                    httpRes.Cookies.AddPermanentCookie(SessionFeature.PermanentSessionId, request.SSPId);
+                }
+                if (request.SSId != null)
+                {
+                    httpRes.Cookies.AddSessionCookie(SessionFeature.SessionId, request.SSId,
+                        (HostContext.Config.OnlySendSessionCookiesSecurely && Request.IsSecureConnection));
+                }
+            }
 
             foreach (var op in operations)
             {
@@ -115,6 +175,13 @@ namespace ServiceStack
                     {
                         allVerbs.Remove(verb); //exclude handled routes
 
+                        var routeData = restRoute.QueryStringVariables
+                            .Map(x => new PostmanData {
+                                key = x, 
+                                value = "", 
+                                type = "text",
+                            });
+
                         ret.Add(new PostmanRequest
                         {
                             collectionId = parentId,
@@ -123,16 +190,15 @@ namespace ServiceStack
                             url = Request.GetBaseUrl().CombineWith(restRoute.Path.ToPostmanPathVariables()),
                             name = GetName(request, op.RequestType, restRoute.Path),
                             description = op.RequestType.GetDescription(),
-                            pathVariables = restRoute.Variables.ToDictionary(x => x),
-                            data = restRoute.QueryStringVariables
-                                .Map(x => new PostmanData
-                                {
-                                    key = x,
-                                    value = "",
-                                    type = "text",
-                                }),
+                            pathVariables = !verb.HasRequestBody()
+                                ? restRoute.Variables.Concat(routeData.Select(x => x.key))
+                                    .ToDictionary(x => x)
+                                : null,
+                            data = verb.HasRequestBody()
+                                ? routeData
+                                : null,
                             dataMode = "params",
-                            headers = "Accept: " + MimeTypes.Json,
+                            headers = headers,
                             version = (int)version,
                             time = DateTime.UtcNow.ToUnixTimeMs(),
                         });
@@ -141,6 +207,13 @@ namespace ServiceStack
 
                 var emptyRequest = op.RequestType.CreateInstance();
                 var virtualPath = emptyRequest.ToReplyUrlOnly();
+
+                var requestParams = AutoMappingUtils.PopulateWith(emptyRequest)
+                    .ToStringDictionary()
+                    .Map(a => new PostmanData {
+                        key = a.Key, value = a.Value, type = "text",
+                    });
+
                 ret.AddRange(allVerbs.Select(verb =>
                     new PostmanRequest
                     {
@@ -148,18 +221,16 @@ namespace ServiceStack
                         id = SessionExtensions.CreateRandomSessionId(),
                         method = verb,
                         url = Request.GetBaseUrl().CombineWith(virtualPath),
+                        pathVariables = !verb.HasRequestBody() 
+                            ? requestParams.Select(x => x.key).ToDictionary(x => x)
+                            : null,
                         name = GetName(request, op.RequestType, virtualPath),
                         description = op.RequestType.GetDescription(),
-                        data = AutoMappingUtils.PopulateWith(emptyRequest)
-                            .ToStringDictionary()
-                            .Map(a => new PostmanData
-                            {
-                                key = a.Key,
-                                value = a.Value,
-                                type = "text",
-                            }),
+                        data = verb.HasRequestBody() 
+                            ? requestParams 
+                            : null,
                         dataMode = "params",
-                        headers = "Accept: " + MimeTypes.Json,
+                        headers = headers,
                         version = (int)version,
                         time = DateTime.UtcNow.ToUnixTimeMs(),
                     }));
