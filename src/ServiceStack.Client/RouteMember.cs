@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
+using System;
 using System.Reflection;
 
 namespace ServiceStack
@@ -10,6 +11,8 @@ namespace ServiceStack
         public bool IgnoreInQueryString { get; set; }
 
         public abstract object GetValue(object target, bool excludeDefault = false);
+
+        public abstract Type GetMemberType();
     }
 
     internal class FieldRouteMember : RouteMember
@@ -27,6 +30,11 @@ namespace ServiceStack
             if (excludeDefault && Equals(v, field.FieldType.GetDefaultValue())) return null;
             return v;
         }
+
+        public override Type GetMemberType()
+        {
+            return field.FieldType;
+        }
     }
 
     internal class PropertyRouteMember : RouteMember
@@ -43,6 +51,11 @@ namespace ServiceStack
             var v = property.GetValue(target, null);
             if (excludeDefault && Equals(v, property.PropertyType.GetDefaultValue())) return null;
             return v;
+        }
+
+        public override Type GetMemberType()
+        {
+            return property.PropertyType;
         }
     }
 }
