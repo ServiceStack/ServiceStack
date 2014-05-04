@@ -97,8 +97,10 @@ namespace ServiceStack.WebHost.IntegrationTests
                 Plugins.Add(new ValidationFeature());
                 Plugins.Add(new SessionFeature());
                 Plugins.Add(new ProtoBufFormat());
-                Plugins.Add(new SwaggerFeature());
                 Plugins.Add(new RequestLogsFeature());
+                Plugins.Add(new SwaggerFeature());
+                Plugins.Add(new PostmanFeature());
+                Plugins.Add(new CorsFeature());
 
                 container.RegisterValidators(typeof(CustomersValidator).Assembly);
 
