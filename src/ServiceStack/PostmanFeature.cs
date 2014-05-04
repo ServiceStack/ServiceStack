@@ -14,6 +14,17 @@ namespace ServiceStack
         public bool? EnableSessionExport { get; set; }
         public string Headers { get; set; }
 
+        public Dictionary<string, string> FriendlyTypeNames = new Dictionary<string, string>
+        {
+            {"Int32", "int"},
+            {"Int64", "long"},
+            {"Boolean", "bool"},
+            {"String", "string"},
+            {"Double", "double"},
+            {"Single", "float"},
+        };
+
+
         /// <summary>
         /// Only generate specified Verb entries for "ANY" routes
         /// </summary>
@@ -160,6 +171,12 @@ namespace ServiceStack
                         : new List<string> { x })
                     .ToHashSet();
 
+                var propertyTypes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                op.RequestType.GetSerializableFields()
+                    .Each(x => propertyTypes[x.Name] = x.FieldType.AsFriendlyName(feature));
+                op.RequestType.GetSerializableProperties()
+                    .Each(x => propertyTypes[x.Name] = x.PropertyType.AsFriendlyName(feature));
+
                 foreach (var route in op.Routes)
                 {
                     var routeVerbs = route.Verbs.Contains(ActionContext.AnyAction)
@@ -170,14 +187,16 @@ namespace ServiceStack
 
                     foreach (var verb in routeVerbs)
                     {
-                        allVerbs.Remove(verb); //exclude handled routes
+                        allVerbs.Remove(verb); //exclude handled verbs
 
                         var routeData = restRoute.QueryStringVariables
-                            .Map(x => new PostmanData {
-                                key = x, 
-                                value = "", 
+                            .Map(x => new PostmanData
+                            {
+                                key = x,
+                                value = "",
                                 type = "text",
-                            });
+                            })
+                            .ApplyPropertyTypes(propertyTypes);
 
                         ret.Add(new PostmanRequest
                         {
@@ -189,7 +208,7 @@ namespace ServiceStack
                             description = op.RequestType.GetDescription(),
                             pathVariables = !verb.HasRequestBody()
                                 ? restRoute.Variables.Concat(routeData.Select(x => x.key))
-                                    .ToDictionary(x => x)
+                                    .ApplyPropertyTypes(propertyTypes)
                                 : null,
                             data = verb.HasRequestBody()
                                 ? routeData
@@ -205,10 +224,12 @@ namespace ServiceStack
                 var emptyRequest = op.RequestType.CreateInstance();
                 var virtualPath = emptyRequest.ToReplyUrlOnly();
 
-                var requestParams = AutoMappingUtils.PopulateWith(emptyRequest)
-                    .ToStringDictionary()
-                    .Map(a => new PostmanData {
-                        key = a.Key, value = a.Value, type = "text",
+                var requestParams = propertyTypes
+                    .Map(x => new PostmanData
+                    {
+                        key = x.Key,
+                        value = x.Value,
+                        type = "text",
                     });
 
                 ret.AddRange(allVerbs.Select(verb =>
@@ -218,13 +239,14 @@ namespace ServiceStack
                         id = SessionExtensions.CreateRandomSessionId(),
                         method = verb,
                         url = Request.GetBaseUrl().CombineWith(virtualPath),
-                        pathVariables = !verb.HasRequestBody() 
-                            ? requestParams.Select(x => x.key).ToDictionary(x => x)
+                        pathVariables = !verb.HasRequestBody()
+                            ? requestParams.Select(x => x.key)
+                                .ApplyPropertyTypes(propertyTypes)
                             : null,
                         name = GetName(request, op.RequestType, virtualPath),
                         description = op.RequestType.GetDescription(),
-                        data = verb.HasRequestBody() 
-                            ? requestParams 
+                        data = verb.HasRequestBody()
+                            ? requestParams
                             : null,
                         dataMode = "params",
                         headers = headers,
@@ -244,7 +266,7 @@ namespace ServiceStack
             {
                 var parts = fragment.ToLower().Split(':');
                 var asEnglish = parts.Length > 1 && parts[1] == "english";
-                
+
                 if (parts[0] == "type")
                 {
                     sb.Append(asEnglish ? requestType.Name.ToEnglish() : requestType.Name);
@@ -267,6 +289,53 @@ namespace ServiceStack
         public static string ToPostmanPathVariables(this string path)
         {
             return path.Replace("{", ":").Replace("}", "").TrimEnd('*');
+        }
+
+        public static string AsFriendlyName(this Type type, PostmanFeature feature)
+        {
+            var parts = type.Name.SplitOnFirst('`');
+            var typeName = parts[0].SplitOnFirst('[')[0];
+            var suffix = "";
+
+            var nullableType = Nullable.GetUnderlyingType(type);
+            if (nullableType != null)
+            {
+                typeName = nullableType.Name;
+                suffix = "?";
+            }
+            else if (type.IsArray)
+            {
+                suffix = "[]";
+            }
+            else if (type.IsGenericType())
+            {
+                var args = type.GetGenericArguments().Map(x => 
+                    x.AsFriendlyName(feature));
+                suffix = "<{0}>".Fmt(string.Join(",", args.ToArray()));
+            }
+
+            string frindlyName;
+            return feature.FriendlyTypeNames.TryGetValue(typeName, out frindlyName)
+                ? frindlyName + suffix
+                : typeName + suffix;
+        }
+
+        public static List<PostmanData> ApplyPropertyTypes(this List<PostmanData> data,
+            Dictionary<string, string> typeMap, string defaultValue = "")
+        {
+            string typeName;
+            data.Each(x => x.value = typeMap.TryGetValue(x.key, out typeName) ? typeName : x.value ?? defaultValue);
+            return data;
+        }
+
+        public static Dictionary<string, string> ApplyPropertyTypes(this IEnumerable<string> names,
+            Dictionary<string, string> typeMap,
+            string defaultValue = "")
+        {
+            var to = new Dictionary<string, string>();
+            string typeName;
+            names.Each(x => to[x] = typeMap.TryGetValue(x, out typeName) ? typeName : defaultValue);
+            return to;
         }
     }
 }
