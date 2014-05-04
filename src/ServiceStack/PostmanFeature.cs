@@ -53,9 +53,9 @@ namespace ServiceStack
     {
         public List<string> Label { get; set; }
         public bool ExportSession { get; set; }
-        public string SSId { get; set; }
-        public string SSPId { get; set; }
-        public string SSOpt { get; set; }
+        public string ssid { get; set; }
+        public string sspid { get; set; }
+        public string ssopt { get; set; }
     }
 
     public class PostmanCollection
@@ -134,9 +134,9 @@ namespace ServiceStack
             var httpRes = Response as IHttpResponse;
             if (httpRes != null)
             {
-                if (request.SSOpt != null
-                    || request.SSPId != null
-                    || request.SSId != null)
+                if (request.ssopt != null
+                    || request.sspid != null
+                    || request.ssid != null)
                 {
                     if (feature.EnableSessionExport != true)
                     {
@@ -144,17 +144,17 @@ namespace ServiceStack
                     }
                 }
 
-                if (request.SSOpt != null)
+                if (request.ssopt != null)
                 {
-                    Request.AddSessionOptions(request.SSOpt);
+                    Request.AddSessionOptions(request.ssopt);
                 }
-                if (request.SSPId != null)
+                if (request.sspid != null)
                 {
-                    httpRes.Cookies.AddPermanentCookie(SessionFeature.PermanentSessionId, request.SSPId);
+                    httpRes.Cookies.AddPermanentCookie(SessionFeature.PermanentSessionId, request.sspid);
                 }
-                if (request.SSId != null)
+                if (request.ssid != null)
                 {
-                    httpRes.Cookies.AddSessionCookie(SessionFeature.SessionId, request.SSId,
+                    httpRes.Cookies.AddSessionCookie(SessionFeature.SessionId, request.ssid,
                         (HostContext.Config.OnlySendSessionCookiesSecurely && Request.IsSecureConnection));
                 }
             }
