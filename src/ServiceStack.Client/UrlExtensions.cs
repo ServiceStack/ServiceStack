@@ -62,14 +62,28 @@ namespace ServiceStack
             return requestDto.ToUrl(HttpMethods.Delete, formatFallbackToPredefinedRoute:"json");
         }
 
+        public static string ToOneWayUrlOnly(this object requestDto, string format = "json")
+        {
+            var requestType = requestDto.GetType();
+            return "/{0}/oneway/{1}".Fmt(format, requestType.GetOperationName());
+        }
+
         public static string ToOneWayUrl(this object requestDto, string format = "json")
         {
             var requestType = requestDto.GetType();
             var predefinedRoute = "/{0}/oneway/{1}".Fmt(format, requestType.GetOperationName());
             var queryProperties = RestRoute.GetQueryProperties(requestDto.GetType());
-            predefinedRoute += "?" + RestRoute.GetQueryString(requestDto, queryProperties);
+            var queryString = RestRoute.GetQueryString(requestDto, queryProperties);
+            if (!string.IsNullOrEmpty(queryString))
+                predefinedRoute += "?" + queryString;
 
             return predefinedRoute;
+        }
+
+        public static string ToReplyUrlOnly(this object requestDto, string format = "json")
+        {
+            var requestType = requestDto.GetType();
+            return "/{0}/reply/{1}".Fmt(format, requestType.GetOperationName());
         }
 
         public static string ToReplyUrl(this object requestDto, string format = "json")
@@ -77,7 +91,9 @@ namespace ServiceStack
             var requestType = requestDto.GetType();
             var predefinedRoute = "/{0}/reply/{1}".Fmt(format, requestType.GetOperationName());
             var queryProperties = RestRoute.GetQueryProperties(requestDto.GetType());
-            predefinedRoute += "?" + RestRoute.GetQueryString(requestDto, queryProperties);
+            var queryString = RestRoute.GetQueryString(requestDto, queryProperties);
+            if (!string.IsNullOrEmpty(queryString))
+                predefinedRoute += "?" + queryString;
 
             return predefinedRoute;
         }
@@ -230,6 +246,17 @@ namespace ServiceStack
         {
             return string.IsNullOrEmpty(absoluteUrl) ? null : absoluteUrl.ReplaceFirst("http://", "https://");
         }
+
+        public static Dictionary<string, Type> GetQueryPropertyTypes(this Type requestType)
+        {
+            var map = RestRoute.GetQueryProperties(requestType);
+            var to = new Dictionary<string, Type>();
+            foreach (var entry in map)
+            {
+                to[entry.Key] = entry.Value.GetMemberType();
+            }
+            return to;
+        }
     }
 
     public class RestRoute
@@ -269,7 +296,7 @@ namespace ServiceStack
         private const string VariablePostfix = "}";
         private const char VariablePostfixChar = '}';
 
-        private readonly IDictionary<string, RouteMember> queryProperties;
+        private readonly IDictionary<string, RouteMember> queryProperties = new Dictionary<string, RouteMember>();
         private readonly IDictionary<string, RouteMember> variablesMap = new Dictionary<string, RouteMember>(PclExport.Instance.InvariantComparerIgnoreCase);
 
         public RestRoute(Type type, string path, string verbs, int priority)
@@ -314,6 +341,11 @@ namespace ServiceStack
         public ICollection<string> Variables
         {
             get { return this.variablesMap.Keys; }
+        }
+
+        public List<string> QueryStringVariables
+        {
+            get { return this.queryProperties.Where(x => !x.Value.IgnoreInQueryString).Select(x => x.Key).ToList(); }
         }
 
         public RouteResolutionResult Apply(object request, string httpMethod)
