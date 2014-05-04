@@ -48,7 +48,15 @@ namespace ServiceStack.Host
         /// </summary>
         public int TotalComponentsCount { get; set; }
 
-        public string[] Verbs = new string[0];
+        public string[] Verbs
+        {
+            get 
+            { 
+                return allowsAllVerbs 
+                    ? new[] { ActionContext.AnyAction } 
+                    : AllowedVerbs.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries); 
+            }
+        }
 
         public Type RequestType { get; private set; }
 
@@ -96,6 +104,11 @@ namespace ServiceStack.Host
                     yield return hashPrefix + subPart;
                 }
             }
+        }
+
+        public RestRoute ToRestRoute()
+        {
+            return new RestRoute(RequestType, restPath, allowedVerbs, 0);
         }
 
         public RestPath(Type requestType, string path) : this(requestType, path, null) { }
