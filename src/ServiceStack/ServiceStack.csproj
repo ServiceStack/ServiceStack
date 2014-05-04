@@ -118,6 +118,7 @@
     <Compile Include="Messaging\WorkerStatus.cs" />
     <Compile Include="MqExtensions.cs" />
     <Compile Include="ILogic.cs" />
+    <Compile Include="PostmanFeature.cs" />
     <Compile Include="RequestContext.cs" />
     <Compile Include="SmartThreadPool\CallerThreadContext.cs" />
     <Compile Include="SmartThreadPool\CanceledWorkItemsGroup.cs" />
