@@ -88,6 +88,7 @@ namespace ServiceStack
                 typeof(AssignRolesService),
                 typeof(UnAssignRolesService),
                 typeof(DtoGenService),
+                typeof(PostmanService),
             };
         }
 
