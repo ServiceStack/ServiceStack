@@ -115,9 +115,6 @@ namespace ServiceStack
 
         public List<PostmanRequest> GetRequests(Postman request, string parentId, IEnumerable<Operation> operations)
         {
-            decimal version;
-            decimal.TryParse(HostContext.Config.ApiVersion.TrimStart('v'), out version);
-
             var ret = new List<PostmanRequest>();
             var feature = HostContext.GetPlugin<PostmanFeature>();
 
@@ -199,7 +196,7 @@ namespace ServiceStack
                                 : null,
                             dataMode = "params",
                             headers = headers,
-                            version = (int)version,
+                            version = 2,
                             time = DateTime.UtcNow.ToUnixTimeMs(),
                         });
                     }
@@ -231,7 +228,7 @@ namespace ServiceStack
                             : null,
                         dataMode = "params",
                         headers = headers,
-                        version = (int)version,
+                        version = 2,
                         time = DateTime.UtcNow.ToUnixTimeMs(),
                     }));
             }
