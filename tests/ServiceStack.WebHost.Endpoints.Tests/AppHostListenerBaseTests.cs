@@ -15,7 +15,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class AppHostListenerBaseTests
     {
-        private const string ListeningOn = "http://localhost:82/";
+        private const string ListeningOn = "http://localhost:1338/";
         ServiceStackHost appHost;
 
         static AppHostListenerBaseTests()
