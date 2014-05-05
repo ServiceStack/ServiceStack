@@ -103,7 +103,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
     [TestFixture]
     public class CustomerServiceValidationTests
     {
-        private const string ListeningOn = "http://localhost:82/";
+        private const string ListeningOn = "http://localhost:1337/";
 
         public class ValidationAppHostHttpListener
             : AppHostHttpListenerBase
