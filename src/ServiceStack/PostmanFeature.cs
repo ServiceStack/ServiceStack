@@ -13,6 +13,7 @@ namespace ServiceStack
         public string AtRestPath { get; set; }
         public bool? EnableSessionExport { get; set; }
         public string Headers { get; set; }
+        public List<string> DefaultLabelFmt { get; set; }
 
         public Dictionary<string, string> FriendlyTypeNames = new Dictionary<string, string>
         {
@@ -35,6 +36,7 @@ namespace ServiceStack
             this.AtRestPath = "/postman";
             this.Headers = "Accept: " + MimeTypes.Json;
             this.DefaultVerbsForAny = new List<string> { HttpMethods.Get };
+            this.DefaultLabelFmt = new List<string> { "type" };
         }
 
         public void Register(IAppHost appHost)
@@ -204,7 +206,7 @@ namespace ServiceStack
                             id = SessionExtensions.CreateRandomSessionId(),
                             method = verb,
                             url = Request.GetBaseUrl().CombineWith(restRoute.Path.ToPostmanPathVariables()),
-                            name = GetName(request, op.RequestType, restRoute.Path),
+                            name = GetName(feature, request, op.RequestType, restRoute.Path),
                             description = op.RequestType.GetDescription(),
                             pathVariables = !verb.HasRequestBody()
                                 ? restRoute.Variables.Concat(routeData.Select(x => x.key))
@@ -243,7 +245,7 @@ namespace ServiceStack
                             ? requestParams.Select(x => x.key)
                                 .ApplyPropertyTypes(propertyTypes)
                             : null,
-                        name = GetName(request, op.RequestType, virtualPath),
+                        name = GetName(feature, request, op.RequestType, virtualPath),
                         description = op.RequestType.GetDescription(),
                         data = verb.HasRequestBody()
                             ? requestParams
@@ -258,9 +260,9 @@ namespace ServiceStack
             return ret;
         }
 
-        public string GetName(Postman request, Type requestType, string virtualPath)
+        public string GetName(PostmanFeature feature, Postman request, Type requestType, string virtualPath)
         {
-            var fragments = request.Label ?? new List<string> { "type" };
+            var fragments = request.Label ?? feature.DefaultLabelFmt;
             var sb = new StringBuilder();
             foreach (var fragment in fragments)
             {
