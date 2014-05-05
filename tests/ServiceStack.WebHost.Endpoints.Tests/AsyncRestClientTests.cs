@@ -8,7 +8,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
     public abstract class AsyncRestClientTests
     {
-        private const string ListeningOn = "http://localhost:82/";
+        private const string ListeningOn = "http://localhost:1337/";
 
         ServiceStackHost appHost;
 
