@@ -13,7 +13,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
     public class AsyncProgressTests
     {
-        private const string ListeningOn = "http://localhost:82/";
+        private const string ListeningOn = "http://localhost:1337/";
 
         ExampleAppHostHttpListener appHost;
 
