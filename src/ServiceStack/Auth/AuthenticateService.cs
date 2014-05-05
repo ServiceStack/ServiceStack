@@ -87,7 +87,7 @@ namespace ServiceStack.Auth
 
             if (ValidateFn != null)
             {
-                var validationResponse = ValidateFn(this, HttpMethods.Get, request);
+                var validationResponse = ValidateFn(this, Request.Verb, request);
                 if (validationResponse != null) return validationResponse;
             }
 
