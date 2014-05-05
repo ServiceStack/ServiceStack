@@ -259,7 +259,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class AuthTests
     {
         protected virtual string VirtualDirectory { get { return ""; } }
-        protected virtual string ListeningOn { get { return "http://localhost:82/"; } }
+        protected virtual string ListeningOn { get { return "http://localhost:1337/"; } }
         protected virtual string WebHostUrl { get { return "http://mydomain.com"; } }
 
 
@@ -1079,14 +1079,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class AuthTestsWithinVirtualDirectory : AuthTests
     {
         protected override string VirtualDirectory { get { return "somevirtualdirectory"; } }
-        protected override string ListeningOn { get { return "http://localhost:82/" + VirtualDirectory + "/"; } }
+        protected override string ListeningOn { get { return "http://localhost:1337/" + VirtualDirectory + "/"; } }
         protected override string WebHostUrl { get { return "http://mydomain.com/" + VirtualDirectory; } }
     }
 
     public class AuthTestsWithinOrmLiteCache : AuthTests
     {
         protected override string VirtualDirectory { get { return "somevirtualdirectory"; } }
-        protected override string ListeningOn { get { return "http://localhost:82/" + VirtualDirectory + "/"; } }
+        protected override string ListeningOn { get { return "http://localhost:1337/" + VirtualDirectory + "/"; } }
         protected override string WebHostUrl { get { return "http://mydomain.com/" + VirtualDirectory; } }
 
         public override void Configure(Container container)
