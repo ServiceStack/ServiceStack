@@ -7,7 +7,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	[TestFixture]
 	public class AppHostConfigTests
 	{
-		protected const string ListeningOn = "http://localhost:85/";
+		protected const string ListeningOn = "http://localhost:1337/";
 
 		ServiceStackHost appHost;
 
