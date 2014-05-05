@@ -14,7 +14,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	[TestFixture]
 	public class CustomRequestDataTests
 	{
-		private const string ListeningOn = "http://localhost:82/";
+		private const string ListeningOn = "http://localhost:1337/";
 
 		ExampleAppHostHttpListener appHost;
 		readonly JsonServiceClient client = new JsonServiceClient(ListeningOn);
