@@ -86,8 +86,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     httpRes.ContentType.Print();
                     Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Csv));
                 });
-
-            Assert.That(response, Is.EqualTo("Data\r\nfoo\r\n"));
+            
+            var lf = System.Environment.NewLine;
+			Assert.That(response, Is.EqualTo("Data{0}foo{0}".Fmt(lf)));
         }
     }
 
@@ -155,8 +156,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var response = Config.AbsoluteBaseUri.CombineWith("/api/modified/foo.csv")
                 .GetStringFromUrl();
+            
+            var lf = System.Environment.NewLine;
+			Assert.That(response, Is.EqualTo("Data{0}foo{0}".Fmt(lf)));
 
-            Assert.That(response, Is.EqualTo("Data\r\nfoo\r\n"));
         }
     }
 

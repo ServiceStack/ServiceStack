@@ -12,7 +12,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {
 	public class IntegrationTestBase
 	{
-		protected const string BaseUrl = "http://localhost:82/";
+		protected const string BaseUrl = "http://localhost:1337/";
 
         private readonly IntegrationTestAppHost appHost;
 	    public IntegrationTestBase()

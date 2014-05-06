@@ -162,7 +162,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public abstract class WebServicesTests
         //: TestBase
     {
-        public const string ListeningOn = "http://localhost:82/";
+        public const string ListeningOn = "http://localhost:1337/";
         private const string TestString = "ServiceStack";
 
         private ServiceStackHost appHost;
