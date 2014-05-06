@@ -48,7 +48,7 @@ As the only differences when using the embedded .dll is that it embeds all img/j
   - [CompiledViews in SelfHost](https://github.com/ServiceStack/RazorRockstars/tree/master/src/RazorRockstars.CompiledViews.SelfHost)
   - [CompiledViews in ASP.NET Web Host](https://github.com/ServiceStack/RazorRockstars/tree/master/src/RazorRockstars.CompiledViews.WebHost)
 
-Benefits of Web Hosts referencing embedded dlls include easier updates by being able to update a websites core functionality by copying over a single **.dll* as well as improved performance for Razor views by eliminating Razor compile times.
+Benefits of Web Hosts referencing embedded dlls include easier updates by being able to update a websites core functionality by copying over a single **.dll** as well as improved performance for Razor views by eliminating Razor compile times.
 
 ### ILMerging
 
@@ -73,7 +73,7 @@ The other limitation is not being able to merge unmanaged .dll's, which is what'
 public static void ExportWindowsSqliteDll()
 {
     if (Env.IsMono)
-        return; //Uses system sqlite3.so or sqlite3.dylib or Linux/OSX
+        return; //Uses system sqlite3.so or sqlite3.dylib on Linux/OSX
 
     var resPath = "{0}.sqlite3.dll".Fmt(typeof(AppHost).Namespace);
 
@@ -96,9 +96,9 @@ This isn't required for Mono as it's able to make use of the preinstalled versio
 
 Support for Compiled Razor Views has landed in ServiceStack thanks to the efforts of [Carl Healy](https://github.com/Tyst).
 
-The primary benefits of compiled views is improved performance by eliminating compile times of Razor views. They also provide static compilation benefits by highlighting compile errors during development and also save you from deploying multiple `*.cshtml` files with your app since they all end up pre-compiled in your app. 
+The primary benefits of compiled views is improved performance by eliminating compile times of Razor views. They also provide static compilation benefits by highlighting compile errors during development and also save you from deploying multiple `*.cshtml` files with your app since they all end up pre-compiled in your Assembly. 
 
-Enabling compiled views is fairly transparent where you only need to install the new [Razor.BuildTask NuGet Package](https://www.nuget.org/packages/ServiceStack.Razor.BuildTask/) to the project containing your `.cshtml` Razor Views:
+Enabling compiled views is fairly transparent where you only need to install the new [Razor.BuildTask NuGet Package](https://www.nuget.org/packages/ServiceStack.Razor.BuildTask/) to the project containing your `.cshtml` Razor Views you want to compile:
 
     PM> Install-Package ServiceStack.Razor.BuildTask
 
