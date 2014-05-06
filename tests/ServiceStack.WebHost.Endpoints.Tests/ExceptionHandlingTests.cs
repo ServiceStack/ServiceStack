@@ -105,7 +105,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class ExceptionHandlingTests
     {
-        private const string ListeningOn = "http://localhost:82/";
+        private const string ListeningOn = "http://localhost:1337/";
 
         public class ExceptionHandlingAppHostHttpListener
             : AppHostHttpListenerBase
