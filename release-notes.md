@@ -29,13 +29,13 @@ The examples below merges Razor Rockstars and ServiceStack into a Single, cross-
 
 You can also achieve a [PhoneGap-like experience](http://phonegap.com/) by hosting ServiceStack inside native .NET Desktop App shells for OSX and Windows:
 
-[![OSX Cocoa App](https://raw.githubusercontent.com/ServiceStack/RazorRockstars/master/src/img/osx-host.png)](https://github.com/ServiceStack/RazorRockstars/raw/master/build/RazorRockstars.MacHost.app.zip)
-
 > [RazorRockstars.MacHost.app](https://github.com/ServiceStack/RazorRockstars/raw/master/build/RazorRockstars.MacHost.app.zip) - Running inside a Desktop Cocoa OSX app using [Xamarin.Mac](https://xamarin.com/mac)
 
-[![WPF App](https://raw.githubusercontent.com/ServiceStack/RazorRockstars/master/src/img/wpf-host.png)](https://github.com/ServiceStack/RazorRockstars/raw/master/build/RazorRockstars.MacHost.app.zip)
+[![OSX Cocoa App](https://raw.githubusercontent.com/ServiceStack/RazorRockstars/master/src/img/osx-host.png)](https://github.com/ServiceStack/RazorRockstars/raw/master/build/RazorRockstars.MacHost.app.zip)
 
-  - [WpfHost.zip](https://github.com/ServiceStack/RazorRockstars/raw/master/build/WpfHost.zip) - Running inside a WPF Desktop app
+> [WpfHost.zip](https://github.com/ServiceStack/RazorRockstars/raw/master/build/WpfHost.zip) - Running inside a WPF Desktop app
+
+[![WPF App](https://raw.githubusercontent.com/ServiceStack/RazorRockstars/master/src/img/wpf-host.png)](https://github.com/ServiceStack/RazorRockstars/raw/master/build/RazorRockstars.MacHost.app.zip)
 
 Surprisingly .NET Desktop apps built with [Xamarin.Mac on OSX](https://xamarin.com/mac) using Cocoa's WebKit-based WebView widget provides a superior experience over WPF's built-in WebBrowser widget which renders in an old behind-the-times version of IE. To improve the experience on Windows we're exploring better experiences on Windows by researching options around the [Chromium Embedded Framework](https://code.google.com/p/chromiumembedded/) and the existing managed .NET wrappers: [CefGlue](http://xilium.bitbucket.org/cefglue/) and [CefSharp](https://github.com/cefsharp/CefSharp).
 
