@@ -11,7 +11,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class HttpErrorAsyncTests
     {
-        private const string ListeningOn = "http://localhost:82/";
+        private const string ListeningOn = "http://localhost:1337/";
 
         ExampleAppHostHttpListener appHost;
 
