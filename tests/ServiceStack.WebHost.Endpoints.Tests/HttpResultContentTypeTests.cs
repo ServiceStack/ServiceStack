@@ -60,7 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 #endregion
 
 
-		private const string ListeningOn = "http://localhost:82/";
+		private const string ListeningOn = "http://localhost:1337/";
 		SimpleAppHostHttpListener appHost;
 
         public HttpResultContentTypeTests()
