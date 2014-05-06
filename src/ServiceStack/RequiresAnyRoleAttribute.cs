@@ -44,7 +44,7 @@ namespace ServiceStack
             res.EndRequest();
         }
 
-        public bool HasAnyRoles(IRequest req, IAuthSession session, IAuthRepository userAuthRepo = null)
+        public virtual bool HasAnyRoles(IRequest req, IAuthSession session, IAuthRepository userAuthRepo = null)
         {
             if (HasAnyRoles(session)) return true;
 
@@ -58,7 +58,7 @@ namespace ServiceStack
             return false;
         }
 
-        public bool HasAnyRoles(IAuthSession session)
+        public virtual bool HasAnyRoles(IAuthSession session)
         {
             return this.RequiredRoles
                 .Any(requiredRole => session != null
