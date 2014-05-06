@@ -7,7 +7,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class NestedServiceTests
     {
-        protected const string ListeningOn = "http://localhost:82/";
+        protected const string ListeningOn = "http://localhost:1337/";
 
         ExampleAppHostHttpListener appHost;
 
