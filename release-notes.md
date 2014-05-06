@@ -1,5 +1,326 @@
 # Release Notes
 
+# v4.0.19 Release Notes
+
+## Embedded ServiceStack
+
+This release has put all the final touches together to open up interesting new use-cases for deploying ServiceStack solutions into a single self-contained, cross-platform, xcopy-able executable.
+
+By leveraging ServiceStack's support for [self-hosting](https://github.com/ServiceStack/ServiceStack/wiki/Self-hosting), the [Virtual File System](https://github.com/ServiceStack/ServiceStack/wiki/Virtual-file-system) support for Embedded Resources and the new support for [Compiled Razor Views](#compiled-razor-views), we can embed all images/js/css Razor views and Markdown Razor assets into a single dll that can be ILMerged with the preferred ServiceStack dependencies (inc. OrmLite.Sqlite) into a single cross-platform .NET exe:
+
+### Razor Rockstars - Embedded Edition
+
+To showcase its potential we've compiled the entire [Razor Rockstars](http://razor.servicestack.net/) website into a [single dll](https://github.com/ServiceStack/RazorRockstars/tree/master/src/RazorRockstars.CompiledViews) that's referenced them in the multiple use-case scenarios below:
+
+> Note: all demo apps are unsigned so will require ignoring security warnings to run.
+
+### As a Single Self-Hosted .exe
+
+The examples below merges Razor Rockstars and ServiceStack into a Single, cross-platform, self-hosting Console App, that opens up Razor Rockstars homepage in the users default web browser when launched:
+
+[![SelfHost](https://raw.githubusercontent.com/ServiceStack/RazorRockstars/master/src/img/self-host.png)](https://github.com/ServiceStack/RazorRockstars/raw/master/build/RazorRockstars.exe)
+
+  - [RazorRockstars.exe](https://github.com/ServiceStack/RazorRockstars/raw/master/build/RazorRockstars.exe) - Self-Host running in a Console App
+  - [WindowlessRockstars.exe](https://github.com/ServiceStack/RazorRockstars/raw/master/build/WindowlessRockstars.exe) - Headless Self-Hosted Console App running in the background
+
+> The total size for the entire  uncompressed **RazorRockstars.exe** ServiceStack website comes down to just **4.8MB** (lighter than the 5MB footprint of EntityFramework.dll) that includes **1.5MB** for RazorRockstars html/img/js/css website assets and **630kb** for native Windows sqlite3.dll.
+
+### Running inside Windows and OSX Native Desktop Apps
+
+You can also achieve a [PhoneGap-like experience](http://phonegap.com/) by hosting ServiceStack inside native .NET Desktop App shells for OSX and Windows:
+
+[![OSX Cocoa App](https://raw.githubusercontent.com/ServiceStack/RazorRockstars/master/src/img/osx-host.png)](https://github.com/ServiceStack/RazorRockstars/raw/master/build/RazorRockstars.MacHost.app.zip)
+
+> [RazorRockstars.MacHost.app](https://github.com/ServiceStack/RazorRockstars/raw/master/build/RazorRockstars.MacHost.app.zip) - Running inside a Desktop Cocoa OSX app using [Xamarin.Mac](https://xamarin.com/mac)
+
+[![WPF App](https://raw.githubusercontent.com/ServiceStack/RazorRockstars/master/src/img/wpf-host.png)](https://github.com/ServiceStack/RazorRockstars/raw/master/build/RazorRockstars.MacHost.app.zip)
+
+  - [WpfHost.zip](https://github.com/ServiceStack/RazorRockstars/raw/master/build/WpfHost.zip) - Running inside a WPF Desktop app
+
+Surprisingly .NET Desktop apps built with [Xamarin.Mac on OSX](https://xamarin.com/mac) using Cocoa's WebKit-based WebView widget provides a superior experience over WPF's built-in WebBrowser widget which renders in an old behind-the-times version of IE. To improve the experience on Windows we're exploring better experiences on Windows by researching options around the [Chromium Embedded Framework](https://code.google.com/p/chromiumembedded/) and the existing managed .NET wrappers: [CefGlue](http://xilium.bitbucket.org/cefglue/) and [CefSharp](https://github.com/cefsharp/CefSharp).
+
+**Xamarin.Mac** can deliver an even better end-user experience by bundling the Mono runtime with the app avoiding the need for users to have Mono runtime installed. Incidentally this is the same approach used to deploy .NET OSX apps to the [Mac AppStore](http://www.apple.com/osx/apps/app-store.html).
+
+### Standard Web Hosts
+
+As the only differences when using the embedded .dll is that it embeds all img/js/css/etc assets as embedded resources and makes use of compiled razor views, it can also be used in standard web hosts configurations which are effectively just lightweight wrappers containing the App configuration and references to external dependencies:
+
+  - [CompiledViews in SelfHost](https://github.com/ServiceStack/RazorRockstars/tree/master/src/RazorRockstars.CompiledViews.SelfHost)
+  - [CompiledViews in ASP.NET Web Host](https://github.com/ServiceStack/RazorRockstars/tree/master/src/RazorRockstars.CompiledViews.WebHost)
+
+Benefits of Web Hosts referencing embedded dlls include easier updates by being able to update a websites core functionality by copying over a single **.dll* as well as improved performance for Razor views by eliminating Razor compile times.
+
+### ILMerging
+
+Creating the single **RazorRockstars.exe** is simply a matter of [ILMerging all the self-host project dlls](https://github.com/ServiceStack/RazorRockstars/blob/master/build/ilmerge.bat) into a single executable. 
+
+There are only a couple of issues that need to be addressed when running in a single ILMerged .exe:
+
+Assembly names are merged together so all registration of assemblies in `Config.EmbeddedResourceSources` end up referencing the same assembly which results in only serving embedded resources in the host assembly namespace. To workaround this behavior we've added a more specific way to reference assemblies in `Config.EmbeddedResourceBaseTypes`, e.g:
+
+ ```csharp
+ SetConfig(new HostConfig {
+    DebugMode = true,
+    EmbeddedResourceBaseTypes = { GetType(), typeof(BaseTypeMarker) },
+});
+```
+
+Where `BaseTypeMarker` is just a dummy class that sits on the base namespace of the class library that's used to preserve the Assembly namespace.
+
+The other limitation is not being able to merge unmanaged .dll's, which is what's needed for RazorRockstars as it makes use of the native `sqlite3.dll`. An easy workaround for this is to make `sqlite3.dll` an embedded resource then simply write it out to the current directory where OrmLite.Sqlite can find it when it first makes an sqlite connection, e.g:
+
+ ```csharp
+public static void ExportWindowsSqliteDll()
+{
+    if (Env.IsMono)
+        return; //Uses system sqlite3.so or sqlite3.dylib or Linux/OSX
+
+    var resPath = "{0}.sqlite3.dll".Fmt(typeof(AppHost).Namespace);
+
+    var resInfo = typeof(AppHost).Assembly.GetManifestResourceInfo(resPath);
+    if (resInfo == null)
+        throw new Exception("Couldn't load sqlite3.dll");
+
+    var dllBytes = typeof(AppHost).Assembly.GetManifestResourceStream(resPath).ReadFully();
+    var dirPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+    var filePath = Path.Combine(dirPath, "sqlite3.dll");
+
+    File.WriteAllBytes(filePath, dllBytes);
+}
+```
+
+This isn't required for Mono as it's able to make use of the preinstalled version of sqlite on OSX and Linux platforms.
+
+### Compiled Razor Views
+
+Support for Compiled Razor Views has landed in ServiceStack thanks to the efforts of [Carl Healy](https://github.com/Tyst).
+
+The primary benefits of compiled views is improved performance by eliminating compile times of Razor views. They also provide static compilation benefits by highlighting compile errors during development and also save you from deploying multiple `*.cshtml` files with your app since they all end up pre-compiled in your app. 
+
+Enabling compiled views is fairly transparent where you only need to install the new [Razor.BuildTask NuGet Package](https://www.nuget.org/packages/ServiceStack.Razor.BuildTask/) to the project containing your `.cshtml` Razor Views:
+
+    PM> Install-Package ServiceStack.Razor.BuildTask
+
+This doesn't add any additional dlls to your project, instead it just sets the **BuildAction** to all `*.cshtml` pages to `Content` and adds an MSBuild task to your project file to pre-compile razor views on every build.
+
+Then to register assemblies containing compiled razor views with Razor Format you just need to add it to `RazorFormat.LoadFromAssemblies`, e.g:
+
+```csharp
+Plugins.Add(new RazorFormat {
+    LoadFromAssemblies = { typeof(RockstarsService).Assembly }
+});
+```
+
+The Compiled Views support continues to keep a great development experience in [DebugMode](https://github.com/ServiceStack/ServiceStack/wiki/Debugging#debugmode) where all Razor Views are initially loaded from the Assembly but then continues to monitor the file system for modified views, automatically compiling and loading them on the fly.
+
+## [Postman Support](http://www.getpostman.com/)
+
+We've added great support for the very popular [Postman Rest Client](http://www.getpostman.com/) in this release which is easily enabled by just registering the plugins below:
+
+```csharp
+Plugins.Add(new PostmanFeature());
+Plugins.Add(new CorsFeature());
+```
+
+> As it makes cross-site requests, Postman also requires CORS support. 
+
+Once enabled, a link with appear in your metadata page:
+
+![Postman Metadata link](https://raw.githubusercontent.com/ServiceStack/RazorRockstars/master/src/img/postman-metadata.png)
+
+Which by default is a link to `/postman` route that returns a JSON postman collection that can be imported into postman by clicking on **import collections** icon at the top:
+
+![Postman Screenshot](https://raw.githubusercontent.com/ServiceStack/RazorRockstars/master/src/img/postman.png)
+
+Once imported it will populate a list of available routes which you can select and easily call from the Postman UI. Just like the [Swagger Support](https://github.com/ServiceStack/ServiceStack/wiki/Swagger-API) the list of operations returned respects the [Restriction Attributes](https://github.com/ServiceStack/ServiceStack/wiki/Restricting-Services) and only shows the operations each user is allowed to see.
+
+The above screenshot shows how to call the `SearchRockstars` Route `/rockstars/{Id}` which returns the rockstar with the matching id.
+
+The screenshot above also illustrates some of the customization that's available with the [Email Contacts](https://github.com/ServiceStack/EmailContacts/) metadata imported with the default settings and the Razor Rockstars metadata imported with a customized label: 
+
+  - /postman?label=type,+,route
+
+The `label` param accepts a collection of string tokens that controls how the label is formatted.The `type` and `route` are special tokens that get replaced by the **Request DTO name** and **Route** respectively. Here are some examples using the example definition below:
+
+```csharp
+[Route("/contacts/{Id}")]
+public class GetContact { ... }
+```
+
+<table>
+<tr>
+    <td><b>/postman?label=type</b></td>
+    <td>GetContact</td>
+</tr>
+<tr>
+    <td><b>/postman?label=route</b></td>
+    <td>/contacts/{Id}</td>
+</tr>
+<tr>
+    <td><b>/postman?label=type:english</b></td>
+    <td>Get contact</td>
+</tr>
+<tr>
+    <td><b>/postman?label=type:english,+(,route,)</b></td>
+    <td>Get contact (/contacts/{Id})</td>
+</tr>
+</table>
+
+The default label format can also be configured when registering the Postman plugin, e.g:
+
+```csharp
+Plugins.Add(new PostmanFeature { 
+    DefaultLabelFmt = new List<string> { "type:english", " ", "route" }
+});
+```
+
+### Support for authenticated requests
+
+We've also made it easy to call authentication-only services with the `/postman?exportSession=true` parameter which will redirect to a url that captures your session cookies into a deep-linkable url like `/postman?ssopt=temp&ssid={key}&sspid={key}` that can be copied into Postman.
+
+This lets you replace your session cookies with the session ids on the url, effectively allowing you to take over someone elses session, in this case telling Postman to make requests on your behalf using your authenticated session cookies. 
+
+As this functionality is potentially dangerous it's only enabled by default in **DebugMode** but can be overridden with:
+
+```csharp
+Plugins.Add(new PostmanFeature { 
+    EnableSessionExport = true
+});
+```
+
+### Other Customizations
+
+Other options include hosting postman on an alternate path, adding custom HTTP Headers for each Postman request and providing friendly aliases for Request DTO Property Types that you want to appear to external users, in this case we can show `DateTime` types as `Date` in Postmans UI:
+
+```csharp
+Plugins.Add(new PostmanFeature { 
+    AtRestPath = "/alt-postman-link",
+    Headers = "X-Custom-Header: Value\nXCustom2: Value2",
+    FriendlyTypeNames = { {"DateTime", "Date"} },
+});
+```
+
+## [Cascading layout templates](http://razor.servicestack.net/#no-ceremony)
+
+Support for [Cascading layout templates](http://razor.servicestack.net/#no-ceremony) for Razor ViewPages inside `/Views` were added in this release by [@Its-Tyson](https://github.com/Its-Tyson). 
+
+This works the same intuitive way it does for external Razor Content pages where the `_Layout.cshtml` nearest to the selected View will be used by default, e.g: 
+
+    /Views/_Layout.cshtml
+    /Views/Public.cshtml
+    /Views/Admin/_Layout.cshtml
+    /Views/Admin/Dashboard.cshtml
+
+Where `/Views/Admin/Dashboard.cshtml` by default uses the `/Views/Admin/_Layout.cshtml` template.
+
+## Async APIs added to HTTP Utils 
+
+The following Async versions of [HTTP Utils](https://github.com/ServiceStack/ServiceStack/wiki/Http-Utils) have been added to ServiceStack.Text by [Kyle Gobel](https://github.com/KyleGobel):
+
+```csharp
+Task<string> GetStringFromUrlAsync(...)
+Task<string> PostStringToUrlAsync(...)
+Task<string> PostToUrlAsync(...)
+Task<string> PostJsonToUrlAsync(...)
+Task<string> PostXmlToUrlAsync(...)
+Task<string> PutStringToUrlAsync(...)
+Task<string> PutToUrlAsync(...)
+Task<string> PutJsonToUrlAsync(...)
+Task<string> PutXmlToUrlAsync(...)
+Task<string> DeleteFromUrlAsync(...)
+Task<string> OptionsFromUrlAsync(...)
+Task<string> HeadFromUrlAsync(...)
+Task<string> SendStringToUrlAsync(...)
+```
+
+## Redis
+
+The latest [stable release of redis-server](http://download.redis.io/redis-stable/00-RELEASENOTES) includes support for the new [ZRANGEBYLEX](http://redis.io/commands/zrangebylex) sorted set operations allowing you to query a sorted set lexically. A good showcase for this is available on [autocomplete.redis.io](http://autocomplete.redis.io/) that shows a demo querying all 8 millions of unique lines of the Linux kernel source code in a fraction of a second.
+
+These new operations are available as a 1:1 mapping with redis-server on IRedisNativeClient:
+
+```csharp
+public interface IRedisNativeClient
+{
+    ...
+    byte[][] ZRangeByLex(string setId, string min, string max, int? skip = null, int? take = null);
+    long ZLexCount(string setId, string min, string max);
+    long ZRemRangeByLex(string setId, string min, string max);
+}
+```
+
+As well as under more user-friendly APIs under IRedisClient:
+
+```csharp
+public interface IRedisClient
+{
+    ...
+    List<string> SearchSortedSet(string setId, string start=null, string end=null, int? skip=null, int? take=null);
+    long SearchSortedSetCount(string setId, string start=null, string end=null);
+    long RemoveRangeFromSortedSetBySearch(string setId, string start=null, string end=null);
+}
+```
+
+Just like NuGet version matchers, Redis uses `[` char to express inclusiveness and `(` char for exclusiveness.
+Since the `IRedisClient` APIs defaults to inclusive searches, these two APIs are the same:
+
+```csharp
+Redis.SearchSortedSetCount("zset", "a", "c")
+Redis.SearchSortedSetCount("zset", "[a", "[c")
+```
+
+Alternatively you can specify one or both bounds to be exclusive by using the `(` prefix, e.g:
+
+```csharp
+Redis.SearchSortedSetCount("zset", "a", "(c")
+Redis.SearchSortedSetCount("zset", "(a", "(c")
+```
+
+More API examples are available in [LexTests.cs](https://github.com/ServiceStack/ServiceStack.Redis/blob/master/tests/ServiceStack.Redis.Tests/LexTests.cs).
+
+### Twemproxy support
+
+This release also includes better support for [twemproxy](https://github.com/twitter/twemproxy), working around missing server commands sent upon connection.
+
+## OrmLite
+
+New support for StringFilter allowing you apply custom filter on string values, e.g [remove trailing whitespace](http://stackoverflow.com/a/23261868/85785):
+
+```csharp
+OrmLiteConfig.StringFilter = s => s.TrimEnd();
+
+db.Insert(new Poco { Name = "Value with trailing   " });
+Assert.That(db.Select<Poco>().First().Name, Is.EqualTo("Value with trailing"));
+```
+
+Added implicit support for [escaping wildcards in typed expressions](http://stackoverflow.com/a/23435975/85785) that make use of LIKE, namely `StartsWith`, `EndsWith` and `Contains`, e.g:
+
+```csharp
+db.Insert(new Poco { Name = "ab" });
+db.Insert(new Poco { Name = "a%" });
+db.Insert(new Poco { Name = "a%b" });
+
+db.Count<Poco>(q => q.Name.StartsWith("a_")); //0
+db.Count<Poco>(q => q.Name.StartsWith("a%")); //2
+```
+
+OrmLite also underwent some internal refactoring to remove duplicate code and re-use existing code-paths.
+
+### Other Features
+
+ - Allow overriding of `HttpListenerBase.CreateRequest()` for controlling creation of Self-Hosting requests allowing you to force a [Character encoding to override the built-in heuristics](http://stackoverflow.com/a/23381383/85785) for detecting non UTF-8 character encodings
+ - Support for retrieving untyped `base.UserSession` when inheriting from an untyped MVC `ServiceStackController` 
+ - Added `@Html.RenderErrorIfAny()` to render a pretty bootstrap-styled exception response in a razor view
+ - The generated WSDL output now replaces all occurances of `http://schemas.servicestack.net/types` with `Config.WsdlServiceNamespace` 
+ - Initialize the CompressedResult Status code with the current HTTP ResponseStatus code
+ - Plugins implementing `IPreInitPlugin` are now configured immediately after `AppHost.Configure()`
+ - HttpListeners now unwrap async Aggregate exceptions containing only a Single Exception for better error reporting
+ - HttpListeners now shares the same behavior as IIS for [redirecting requests for directories without a trailing slash](https://github.com/ServiceStack/ServiceStack/commit/a0a2857721656c7161fcd83eb07609ae4239ea2a)
+ - [Debug Request Info](https://github.com/ServiceStack/ServiceStack/wiki/Debugging#request-info) now shows file listing of the configured VirtualPathProvider
+ - Resource Virtual Directories are no longer case-sensitive 
+ - Added new `Config.ExcludeAutoRegisteringServiceTypes` option to exclude services from being implicitly auto registered from assembly scanning. All built-in services in ServiceStack.dll now excluded by default which removes unintentional registration of services from ILMerging.
+
 # New HTTP Benchmarks example project
 
 [![HTTP Benchmarks](https://raw.githubusercontent.com/ServiceStack/HttpBenchmarks/master/src/ResultsView/Content/img/AdminUI.png)](https://benchmarks.servicestack.net/)
