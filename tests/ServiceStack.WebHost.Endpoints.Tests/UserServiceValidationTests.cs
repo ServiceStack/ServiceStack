@@ -62,7 +62,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class UserServiceValidationTests
     {
-        private const string ListeningOn = "http://localhost:82/";
+        private const string ListeningOn = "http://localhost:1337/";
 
         public class UserAppHostHttpListener
             : AppHostHttpListenerBase
