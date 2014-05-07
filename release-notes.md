@@ -18,10 +18,11 @@ To showcase its potential we've compiled the entire [Razor Rockstars](http://raz
 
 The examples below merges Razor Rockstars and ServiceStack into a Single, cross-platform, self-hosting Console App, that opens up Razor Rockstars homepage in the users default web browser when launched:
 
-[![SelfHost](https://raw.githubusercontent.com/ServiceStack/RazorRockstars/master/src/img/self-host.png)](https://github.com/ServiceStack/RazorRockstars/raw/master/build/RazorRockstars.exe)
+> [RazorRockstars.exe](https://github.com/ServiceStack/RazorRockstars/raw/master/build/RazorRockstars.exe) - Self-Host running in a Console App
 
-  - [RazorRockstars.exe](https://github.com/ServiceStack/RazorRockstars/raw/master/build/RazorRockstars.exe) - Self-Host running in a Console App
-  - [WindowlessRockstars.exe](https://github.com/ServiceStack/RazorRockstars/raw/master/build/WindowlessRockstars.exe) - Headless Self-Hosted Console App running in the background
+> [WindowlessRockstars.exe](https://github.com/ServiceStack/RazorRockstars/raw/master/build/WindowlessRockstars.exe) - Headless Self-Hosted Console App running in the background
+
+[![SelfHost](https://raw.githubusercontent.com/ServiceStack/RazorRockstars/master/src/img/self-host.png)](https://github.com/ServiceStack/RazorRockstars/raw/master/build/RazorRockstars.exe)
 
 > The total size for the entire  uncompressed **RazorRockstars.exe** ServiceStack website comes down to just **4.8MB** (lighter than the 5MB footprint of EntityFramework.dll) that includes **1.5MB** for RazorRockstars html/img/js/css website assets and **630kb** for native Windows sqlite3.dll.
 
@@ -35,7 +36,7 @@ You can also achieve a [PhoneGap-like experience](http://phonegap.com/) by hosti
 
 > [WpfHost.zip](https://github.com/ServiceStack/RazorRockstars/raw/master/build/WpfHost.zip) - Running inside a WPF Desktop app
 
-[![WPF App](https://raw.githubusercontent.com/ServiceStack/RazorRockstars/master/src/img/wpf-host.png)](https://github.com/ServiceStack/RazorRockstars/raw/master/build/RazorRockstars.MacHost.app.zip)
+[![WPF App](https://raw.githubusercontent.com/ServiceStack/RazorRockstars/master/src/img/wpf-host.png)](https://github.com/ServiceStack/RazorRockstars/raw/master/build/WpfHost.zip)
 
 Surprisingly .NET Desktop apps built with [Xamarin.Mac on OSX](https://xamarin.com/mac) using Cocoa's WebKit-based WebView widget provides a superior experience over WPF's built-in WebBrowser widget which renders in an old behind-the-times version of IE. To improve the experience on Windows we're exploring better experiences on Windows by researching options around the [Chromium Embedded Framework](https://code.google.com/p/chromiumembedded/) and the existing managed .NET wrappers: [CefGlue](http://xilium.bitbucket.org/cefglue/) and [CefSharp](https://github.com/cefsharp/CefSharp).
 
@@ -139,9 +140,11 @@ The above screenshot shows how to call the `SearchRockstars` Route `/rockstars/{
 
 The screenshot above also illustrates some of the customization that's available with the [Email Contacts](https://github.com/ServiceStack/EmailContacts/) metadata imported with the default settings and the Razor Rockstars metadata imported with a customized label: 
 
-  - /postman?label=type,+,route
+    /postman?label=type,+,route
 
-The `label` param accepts a collection of string tokens that controls how the label is formatted.The `type` and `route` are special tokens that get replaced by the **Request DTO name** and **Route** respectively. Here are some examples using the example definition below:
+The `label` param accepts a collection of string tokens that controls how the label is formatted.The `type` and `route` are special tokens that get replaced by the **Request DTO name** and **Route** respectively. Everything else are just added string literals including the `+` character which is just a url-encoded version of ` ` space character.
+
+Here are some examples using the example definition below:
 
 ```csharp
 [Route("/contacts/{Id}")]
