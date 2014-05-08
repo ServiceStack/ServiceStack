@@ -149,6 +149,15 @@
 			line-height: 20px;
 			color: #444;
 		}
+        table {
+            min-width: 500px;
+        }
+        #filter td {
+            text-align: right;
+        }
+        #filter div {
+            margin: -35px 0 0 0;
+        }
     </style>
 </head>
 <body>
@@ -159,8 +168,8 @@
         <p>
             The following operations are supported. For a formal definition, please review the Service <a href="?xsd={1}">XSD</a>.
         </p>
-
-	    {2}
+        
+        {2}
 
         <br /><h3><a href="https://github.com/ServiceStack/ServiceStack/wiki/Clients-overview">Clients Overview</a></h3>  
     
@@ -174,6 +183,32 @@
     </div>
     
     <p>&nbsp;</p>
+    
+    <script type="text/javascript">
+        if (document.querySelectorAll) {
+            var table = document.querySelectorAll("table")[0];
+            if (table) {
+                var cols = table.querySelectorAll("tr:first-child td").length + 1; //th
+                table.insertAdjacentHTML("afterbegin",
+                    '<thead id="filter"><tr><td colspan="' +
+                        cols +
+                        '"><div><input type="text" placeholder="filter" /></div></td></tr></thead>');
+
+                var input = document.querySelectorAll("#filter input")[0];
+                if (input) {
+                    input.onkeyup = function () {
+                        var rows = document.querySelectorAll("tbody tr");
+                        for (var i = 0; i < rows.length; i++) {
+                            rows[i].style.display = rows[i].innerHTML.toLowerCase()
+                                    .indexOf(input.value.toLowerCase()) >= 0
+                                ? 'block'
+                                : 'none';
+                        }
+                    };
+                }
+            }
+        }
+    </script>
 
 </body>
 </html>
