@@ -15,7 +15,7 @@ This example is also available as a [stand-alone integration test](https://githu
 
 ```csharp
 //Web Service Host Configuration
-public class AppHost : AppHostHttpListenerBase
+public class AppHost : AppSelfHostBase
 {
     public AppHost() : base("TODOs Tests", typeof(Todo).Assembly) {}
 
@@ -75,7 +75,7 @@ public class TodosService : Service
 }
 ```
 
-### Calling the above TODO REST service from any C#/.NET Client
+### [Calling the above TODO REST service from any C#/.NET Client](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client)
 
 ```csharp
 //no code-gen required, can re-use above DTO's
