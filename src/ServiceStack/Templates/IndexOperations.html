@@ -199,7 +199,7 @@
                     input.onkeyup = function () {
                         var rows = document.querySelectorAll("tbody tr");
                         for (var i = 0; i < rows.length; i++) {
-                            rows[i].style.display = rows[i].innerHTML.toLowerCase()
+                            rows[i].style.display = rows[i].firstChild.innerHTML.toLowerCase()
                                     .indexOf(input.value.toLowerCase()) >= 0
                                 ? 'block'
                                 : 'none';
