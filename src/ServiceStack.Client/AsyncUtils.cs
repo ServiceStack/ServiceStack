@@ -61,7 +61,9 @@ namespace ServiceStack
 
         internal static HttpWebRequest CreateHttpWebRequest(this AsyncServiceClient client, string requestUri)
         {
-            var webRequest = PclExport.Instance.CreateWebRequest(requestUri);
+            var webRequest = PclExport.Instance.CreateWebRequest(requestUri, 
+                emulateHttpViaPost:client.EmulateHttpViaPost);
+
             PclExport.Instance.Config(webRequest);
             client.CancelAsyncFn = webRequest.Abort;
 
