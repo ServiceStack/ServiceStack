@@ -22,7 +22,7 @@ The examples below merges Razor Rockstars and ServiceStack into a Single, cross-
 
 > [WindowlessRockstars.exe](https://github.com/ServiceStack/RazorRockstars/raw/master/build/WindowlessRockstars.exe) - Headless Self-Hosted Console App running in the background
 
-[![SelfHost](https://raw.githubusercontent.com/ServiceStack/RazorRockstars/master/src/img/self-host.png)](https://github.com/ServiceStack/RazorRockstars/raw/master/build/RazorRockstars.exe)
+[![SelfHost](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/self-host.png)](https://github.com/ServiceStack/RazorRockstars/raw/master/build/RazorRockstars.exe)
 
 > The total size for the entire  uncompressed **RazorRockstars.exe** ServiceStack website comes down to just **4.8MB** (lighter than the 5MB footprint of EntityFramework.dll) that includes **1.5MB** for RazorRockstars html/img/js/css website assets and **630kb** for native Windows sqlite3.dll.
 
@@ -32,11 +32,11 @@ You can also achieve a [PhoneGap-like experience](http://phonegap.com/) by hosti
 
 > [RazorRockstars.MacHost.app](https://github.com/ServiceStack/RazorRockstars/raw/master/build/RazorRockstars.MacHost.app.zip) - Running inside a Desktop Cocoa OSX app using [Xamarin.Mac](https://xamarin.com/mac)
 
-[![OSX Cocoa App](https://raw.githubusercontent.com/ServiceStack/RazorRockstars/master/src/img/osx-host.png)](https://github.com/ServiceStack/RazorRockstars/raw/master/build/RazorRockstars.MacHost.app.zip)
+[![OSX Cocoa App](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/osx-host.png)](https://github.com/ServiceStack/RazorRockstars/raw/master/build/RazorRockstars.MacHost.app.zip)
 
 > [WpfHost.zip](https://github.com/ServiceStack/RazorRockstars/raw/master/build/WpfHost.zip) - Running inside a WPF Desktop app
 
-[![WPF App](https://raw.githubusercontent.com/ServiceStack/RazorRockstars/master/src/img/wpf-host.png)](https://github.com/ServiceStack/RazorRockstars/raw/master/build/WpfHost.zip)
+[![WPF App](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/wpf-host.png)](https://github.com/ServiceStack/RazorRockstars/raw/master/build/WpfHost.zip)
 
 Surprisingly .NET Desktop apps built with [Xamarin.Mac on OSX](https://xamarin.com/mac) using Cocoa's WebKit-based WebView widget provides a superior experience over WPF's built-in WebBrowser widget which renders in an old behind-the-times version of IE. To improve the experience on Windows we're exploring better experiences on Windows by researching options around the [Chromium Embedded Framework](https://code.google.com/p/chromiumembedded/) and the existing managed .NET wrappers: [CefGlue](http://xilium.bitbucket.org/cefglue/) and [CefSharp](https://github.com/cefsharp/CefSharp).
 
@@ -128,11 +128,11 @@ Plugins.Add(new CorsFeature());
 
 Once enabled, a link with appear in your metadata page:
 
-![Postman Metadata link](https://raw.githubusercontent.com/ServiceStack/RazorRockstars/master/src/img/postman-metadata.png)
+![Postman Metadata link](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/postman-metadata.png)
 
 Which by default is a link to `/postman` route that returns a JSON postman collection that can be imported into postman by clicking on **import collections** icon at the top:
 
-![Postman Screenshot](https://raw.githubusercontent.com/ServiceStack/RazorRockstars/master/src/img/postman.png)
+![Postman Screenshot](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/postman.png)
 
 Once imported it will populate a list of available routes which you can select and easily call from the Postman UI. Just like the [Swagger Support](https://github.com/ServiceStack/ServiceStack/wiki/Swagger-API) the list of operations returned respects the [Restriction Attributes](https://github.com/ServiceStack/ServiceStack/wiki/Restricting-Services) and only shows the operations each user is allowed to see.
 
@@ -326,7 +326,7 @@ OrmLite also underwent some internal refactoring to remove duplicate code and re
 
 # New HTTP Benchmarks example project
 
-[![HTTP Benchmarks](https://raw.githubusercontent.com/ServiceStack/HttpBenchmarks/master/src/ResultsView/Content/img/AdminUI.png)](https://benchmarks.servicestack.net/)
+[![HTTP Benchmarks](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/benchmarks-admin-ui.png)](https://benchmarks.servicestack.net/)
 
 Following the release of the [Email Contacts](https://github.com/ServiceStack/EmailContacts/) solution, a new documented ServiceStack example project allowing you to uploaded Apache HTTP Benchmarks to visualize and analyze their results has been released at: [github.com/ServiceStack/HttpBenchmarks](https://github.com/ServiceStack/HttpBenchmarks) and is hosted at [benchmarks.servicestack.net](https://benchmarks.servicestack.net/).
 
@@ -982,7 +982,7 @@ using (var db = OpenDbConnection())
 A new ServiceStack guidance is available detailing the recommended setup and physical layout structure of typical medium-sized ServiceStack projects.
 It includes the complete documentation going through how to create the solution from scratch, and explains all the ServiceStack hidden features it makes use of along the way.
 
-[![EmailContacts Screenshot](https://raw.github.com/ServiceStack/EmailContacts/master/src/EmailContacts/Content/splash.png)](https://github.com/ServiceStack/EmailContacts/)
+[![EmailContacts Screenshot](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/email-contacts.png)](https://github.com/ServiceStack/EmailContacts/)
 
 [EmailContacts](https://github.com/ServiceStack/EmailContacts/) is a Single Page App built using just ServiceStack, 
 jQuery and Bootstrap that showcases some of ServiceStack's built-in features, useful in the reducing the effort for 
@@ -1328,7 +1328,7 @@ QueueNames<Hello>.In  //= SITE.hello.INQ
 
 To provide better visibility to the hidden functionality in ServiceStack we've added **Debug Info** links section to the `/metadata` page which add links to any Plugins with Web UI's, e.g:
 
-![Debug Info Links](http://i.imgur.com/2Hf3P9L.png)
+![Debug Info Links](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/debug-links.png)
 
 The Debug Links section is only available in **DebugMode** (recap: set by default in Debug builds or explicitly with `Config.DebugMode = true`). In addition, users with the **Admin** role (or if `Config.AdminAuthSecret` is enabled) can also view the debug Plugins UI's in production.
 
@@ -1487,7 +1487,7 @@ New in this release:
 
 The biggest feature of this release is the release of the new Portable Client NuGet packages:
 
-[![Portable Class Library Support](https://raw2.github.com/ServiceStack/Hello/master/screenshots/portable-splash-900.png)](https://github.com/ServiceStack/Hello)
+[![Portable Class Library Support](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/hello-pcl.png)](https://github.com/ServiceStack/Hello)
 
   - ServiceStack.Interfaces.Pcl
     - PCL Profiles: iOS, Android, Windows8, .NET 4.5, Silverlight5, WP8
