@@ -200,15 +200,7 @@ namespace ServiceStack
                 if (webRequest.Method.HasRequestBody())
                 {
                     webRequest.ContentType = ContentType;
-                    if (request != null)
-                    {
-                        webRequest.BeginGetRequestStream(RequestCallback<TResponse>, state);
-                    }
-                    else
-                    {
-                        webRequest.ContentLength = 0;
-                        state.WebRequest.BeginGetResponse(ResponseCallback<TResponse>, state);
-                    }
+                    webRequest.BeginGetRequestStream(RequestCallback<TResponse>, state);
                 }
                 else
                 {
@@ -230,7 +222,11 @@ namespace ServiceStack
                 var req = requestState.WebRequest;
 
                 var stream = req.EndGetRequestStream(asyncResult);
-                StreamSerializer(null, requestState.Request, stream);
+
+                if (requestState.Request != null)
+                {
+                    StreamSerializer(null, requestState.Request, stream);
+                }
 
                 stream.EndWriteStream();
 
