@@ -175,9 +175,7 @@ namespace ServiceStack
         {
             webRequest.Accept = string.Format("{0}, */*", ContentType);
 
-            //Methods others than GET and POST are only supported by Client request creator, see
-            //http://msdn.microsoft.com/en-us/library/cc838250(v=vs.95).aspx
-            if (this.EmulateHttpViaPost || (httpMethod != "GET" && httpMethod != "POST"))
+            if (this.EmulateHttpViaPost)
             {
                 webRequest.Method = "POST";
                 webRequest.Headers[HttpHeaders.XHttpMethodOverride] = httpMethod;
@@ -189,6 +187,7 @@ namespace ServiceStack
 
             PclExportClient.Instance.AddHeader(webRequest, Headers);
 
+            //EmulateHttpViaPost is also forced for SL5 clients sending non GET/POST requests
             PclExport.Instance.Config(webRequest, userAgent: UserAgent);
 
             if (this.Credentials != null) webRequest.Credentials = this.Credentials;
@@ -198,10 +197,18 @@ namespace ServiceStack
 
             try
             {
-                if (httpMethod.HasRequestBody() && request != null)
+                if (webRequest.Method.HasRequestBody())
                 {
                     webRequest.ContentType = ContentType;
-                    webRequest.BeginGetRequestStream(RequestCallback<TResponse>, state);
+                    if (request != null)
+                    {
+                        webRequest.BeginGetRequestStream(RequestCallback<TResponse>, state);
+                    }
+                    else
+                    {
+                        webRequest.ContentLength = 0;
+                        state.WebRequest.BeginGetResponse(ResponseCallback<TResponse>, state);
+                    }
                 }
                 else
                 {
