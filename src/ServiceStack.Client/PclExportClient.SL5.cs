@@ -50,7 +50,7 @@ namespace ServiceStack
                 }
             }
 
-            //webRequest.CookieContainer = client.CookieContainer;
+            //webRequest.CookieContainer = client.CookieContainer; //throws NotImplementedException
         }
 
         public override void SetCookieContainer(HttpWebRequest webRequest, AsyncServiceClient client)
@@ -65,7 +65,7 @@ namespace ServiceStack
                 }
             }
 
-            webRequest.CookieContainer = client.CookieContainer;
+            //webRequest.CookieContainer = client.CookieContainer; //throws NotImplementedException
         }
 
         public override void SynchronizeCookies(AsyncServiceClient client)
