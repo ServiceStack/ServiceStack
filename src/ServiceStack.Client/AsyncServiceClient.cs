@@ -177,7 +177,7 @@ namespace ServiceStack
 
             //Methods others than GET and POST are only supported by Client request creator, see
             //http://msdn.microsoft.com/en-us/library/cc838250(v=vs.95).aspx
-            if (this.EmulateHttpViaPost && httpMethod != "GET" && httpMethod != "POST")
+            if (this.EmulateHttpViaPost || (httpMethod != "GET" && httpMethod != "POST"))
             {
                 webRequest.Method = "POST";
                 webRequest.Headers[HttpHeaders.XHttpMethodOverride] = httpMethod;
