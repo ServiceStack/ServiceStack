@@ -157,6 +157,11 @@
             Creates a new instance of the Redis Client from NewFactoryFn. 
             </summary>
         </member>
+        <member name="M:ServiceStack.Redis.RedisClient.GetEntry(System.String)">
+            <summary>
+            Alias for GetValue
+            </summary>
+        </member>
         <member name="M:ServiceStack.Redis.RedisClient.UrnKey``1(``0)">
             <summary>
             Returns key with automatic object id detection in provided value with <typeparam name="T">generic type</typeparam>.
@@ -322,6 +327,23 @@
             </summary>
             <param name="key"> </param>
             <returns> </returns>
+        </member>
+        <member name="T:ServiceStack.Redis.Support.Diagnostic.InvokeEventArgs">
+            <summary>
+            Provides access to the method reflection data as part of the before/after event
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Support.Diagnostic.TrackingFrame">
+            <summary>
+            Stores details about the context in which an IRedisClient is allocated. 
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "T:ServiceStack.Redis.Support.Diagnostic.TrackingRedisClientProxy" -->
+        <member name="T:ServiceStack.Redis.Support.Diagnostic.TrackingRedisClientsManager">
+            <summary>
+            Tracks each IRedisClient instance allocated from the IRedisClientsManager logging when they are allocated and disposed. 
+            Periodically writes the allocated instances to the log for diagnostic purposes.
+            </summary>
         </member>
         <member name="T:ServiceStack.Redis.Support.Locking.IDistributedLock">
             <summary>
