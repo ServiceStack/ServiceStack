@@ -1178,6 +1178,11 @@ namespace ServiceStack
         }
 
 #if !PCL
+        public virtual TResponse PostFileWithRequest<TResponse>(FileInfo fileToUpload, object request, string fieldName = "upload")
+        {
+            return PostFileWithRequest<TResponse>(request.ToPostUrl(), fileToUpload, request, fieldName);
+        }
+
         public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request, string fieldName = "upload")
         {
             using (FileStream fileStream = fileToUpload.OpenRead())
@@ -1186,6 +1191,11 @@ namespace ServiceStack
             }
         }
 #endif
+
+        public virtual TResponse PostFileWithRequest<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload")
+        {
+            return PostFileWithRequest<TResponse>(request.ToPostUrl(), fileToUpload, fileName, request, fieldName);
+        }
 
         public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request, string fieldName = "upload")
         {
