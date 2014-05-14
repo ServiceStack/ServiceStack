@@ -132,14 +132,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
 
-            var request = new FileUpload { CustomerId = 123, CustomerName = "Foo" };
+            var request = new FileUpload { CustomerId = 123, CustomerName = "Foo,Bar" };
             var response = client.PostFileWithRequest<FileUploadResponse>(ListeningOn + "/fileuploads", uploadFile, request);
 
             var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
             Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
             Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
             Assert.That(response.Contents, Is.EqualTo(expectedContents));
-            Assert.That(response.CustomerName, Is.EqualTo("Foo"));
+            Assert.That(response.CustomerName, Is.EqualTo("Foo,Bar"));
             Assert.That(response.CustomerId, Is.EqualTo(123));
         }
 
