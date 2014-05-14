@@ -18,7 +18,7 @@ namespace ServiceStack
 
         public static PclExportClient Configure()
         {
-            Configure(Provider);
+            Configure(Provider ?? (Provider = new Sl5PclExportClient())); 
             Sl5PclExport.Configure();
             return Provider;
         }
