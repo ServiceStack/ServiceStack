@@ -18,7 +18,7 @@
     <language>en-US</language>
     <copyright>Copyright 2013 Service Stack</copyright>
     <dependencies>
-      <dependency id="log4net" version="1.2.10" />
+      <dependency id="log4net" version="2.0.3" />
       <dependency id="ServiceStack.Common" version="4.0" />
     </dependencies>
   </metadata>

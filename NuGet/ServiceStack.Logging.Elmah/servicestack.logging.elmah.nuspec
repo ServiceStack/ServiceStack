@@ -18,7 +18,7 @@
     <language>en-US</language>
     <copyright>Copyright 2013 Service Stack</copyright>
     <dependencies>
-      <dependency id="elmah.corelibrary" />
+      <dependency id="elmah.corelibrary" version="1.2.2" />
       <dependency id="ServiceStack.Common" version="4.0" />
     </dependencies>
   </metadata>
