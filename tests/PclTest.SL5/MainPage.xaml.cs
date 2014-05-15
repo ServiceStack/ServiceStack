@@ -56,8 +56,17 @@ namespace PclTest.SL5
         {
             try
             {
-                var response = await client.GetAsync(new Hello { Name = txtName.Text });
-                lblResults.Content = response.Result;
+                var httpReq = (HttpWebRequest)System.Net.Browser.WebRequestCreator.BrowserHttp.Create(new Uri("http://localhost:81/"));
+                //var httpReq = (HttpWebRequest)System.Net.Browser.WebRequestCreator.ClientHttp.Create(new Uri("http://localhost:81/"));
+
+                //httpReq.AllowAutoRedirect = true;
+                //lblResults.Content += "AllowAutoRedirect Works";
+
+                //httpReq.UserAgent = "Custom UserAgent";
+                //lblResults.Content += "UserAgent Works";
+
+                //var response = await client.GetAsync(new Hello { Name = txtName.Text });
+                //lblResults.Content = response.Result;
             }
             catch (Exception ex)
             {

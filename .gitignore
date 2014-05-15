@@ -60,3 +60,4 @@ build/
 src/ServiceStack/Properties/Resources.resources
 
 src/ServiceStack.userprefs
+*.xap
