@@ -33,14 +33,14 @@ namespace ServiceStack.Auth
             var tokens = Init(authService, ref session, request);
             var httpRequest = authService.Request;
 
-            var error = httpRequest.QueryString["error"];
+            var error = httpRequest.QueryString["error_code"];
             var hasError = !error.IsNullOrEmpty();
             if (hasError)
             {
                 Log.Error("Facebook error callback. {0}".Fmt(httpRequest.QueryString));
                 return authService.Redirect(session.ReferrerUrl);
-            } 
-            
+            }             
+        
             var code = httpRequest.QueryString["code"];
             var isPreAuthCallback = !code.IsNullOrEmpty();
             if (!isPreAuthCallback)
