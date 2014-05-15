@@ -6,12 +6,13 @@
     <version>4.0.0</version>
     <authors>Service Stack</authors>
     <owners>Service Stack</owners>
-    <summary>MSBuild Tasks to compile Razor Views and Embed Resources</summary>
+    <summary>Tools to help create embedded versions of ServiceStack</summary>
     <description>
-      Tools to assist in creating embedded versions of ServiceStack, e.g.
-        - Embed Resources
-        - Compile Razor Views
-        - Includes ILMerge.exe 
+      MSBuild Tasks to help creating self-contained embedded versions of ServiceStack that can be ILMerged into a single cross-platform .exe accessed by the users perferred browser or hosted inside a Native Desktop App shell containing a Web Browser widget.
+
+      Once added to a project the install.ps1 script will set the BuildAction to all Razor *.cshtml pages to 'Content' so they get pre-compiled and change all html/img/css assets to Embedded Resources so they get bundled inside the dll. 
+
+      This package also includes a copy of ILMerge.exe under \tools that can be used to merge all ServiceStack .dlls into a single exe. See the https://github.com/ServiceStack/ServiceStack.Gap project for more info.
     </description>
     <projectUrl>https://github.com/ServiceStack/ServiceStack.Gap</projectUrl>
     <licenseUrl>https://servicestack.net/terms</licenseUrl>
