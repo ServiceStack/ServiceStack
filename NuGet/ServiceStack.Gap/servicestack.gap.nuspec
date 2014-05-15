@@ -24,7 +24,7 @@
     </dependencies>
   </metadata>
   <files>
+    <file src="build\**\*.*" target="build" />
     <file src="tools\**\*.*" target="tools" />
-    <file src="..\..\src\ServiceStack.Razor.BuildTask\**\*.cs" target="src" />
   </files>
 </package>
