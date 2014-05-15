@@ -3,7 +3,6 @@ using System.Net;
 using System.Web;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
-using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {

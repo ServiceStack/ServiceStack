@@ -326,14 +326,14 @@ OrmLite also underwent some internal refactoring to remove duplicate code and re
 
 # New HTTP Benchmarks example project
 
-[![HTTP Benchmarks](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/benchmarks-admin-ui.png)](https://benchmarks.servicestack.net/)
+[![HTTP Benchmarks](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/benchmarks-admin-ui.png)](https://httpbenchmarks.servicestack.net/)
 
-Following the release of the [Email Contacts](https://github.com/ServiceStack/EmailContacts/) solution, a new documented ServiceStack example project allowing you to uploaded Apache HTTP Benchmarks to visualize and analyze their results has been released at: [github.com/ServiceStack/HttpBenchmarks](https://github.com/ServiceStack/HttpBenchmarks) and is hosted at [benchmarks.servicestack.net](https://benchmarks.servicestack.net/).
+Following the release of the [Email Contacts](https://github.com/ServiceStack/EmailContacts/) solution, a new documented ServiceStack example project allowing you to uploaded Apache HTTP Benchmarks to visualize and analyze their results has been released at: [github.com/ServiceStack/HttpBenchmarks](https://github.com/ServiceStack/HttpBenchmarks) and is hosted at [httpbenchmarks.servicestack.net](https://httpbenchmarks.servicestack.net/).
 
 ### Example Results
 
-  - [Performance of different RDBMS in an ASP.NET Host](https://benchmarks.servicestack.net/databases-in-asp-net)
-  - [Performance of different ServiceStack Hosts](https://benchmarks.servicestack.net/servicestack-hosts)
+  - [Performance of different RDBMS in an ASP.NET Host](https://httpbenchmarks.servicestack.net/databases-in-asp-net)
+  - [Performance of different ServiceStack Hosts](https://httpbenchmarks.servicestack.net/servicestack-hosts)
 
 The documentation includes a development guide that walks through the projects different features:
 
