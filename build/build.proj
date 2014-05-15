@@ -383,7 +383,7 @@
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Razor/servicestack.razor.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
-			
+
     <!-- ServiceStack.Razor.BuildTask -->
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.Razor.BuildTask/ServiceStack.Razor.BuildTask.csproj"
@@ -394,6 +394,14 @@
     <Copy SourceFiles="%(RazorBuildTaskFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Razor.BuildTask/tools" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Razor.BuildTask/servicestack.razor.buildtask.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
+
+    <!-- ServiceStack.Gap -->
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Gap/tools" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Gap/tools')" />
+    <Copy SourceFiles="%(RazorBuildTaskFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Gap/tools" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Gap/servicestack.gap.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Interfaces -->
