@@ -17,13 +17,14 @@ namespace ServiceStack
         [DataMember(Order = 6)] public string Password { get; set; }
         [DataMember(Order = 7)] public bool? RememberMe { get; set; }
         [DataMember(Order = 8)] public string Continue { get; set; }
-        // Thise are used for digest auth
+        // These are used for digest auth
         [DataMember(Order = 9)] public string nonce { get; set; }
         [DataMember(Order = 10)] public string uri { get; set; }
         [DataMember(Order = 11)] public string response { get; set; }
         [DataMember(Order = 12)] public string qop { get; set; }
         [DataMember(Order = 13)] public string nc { get; set; }
         [DataMember(Order = 14)] public string cnonce { get; set; }
+        [DataMember(Order = 15)] public string Info { get; set; }
     }
 
     [DataContract]
