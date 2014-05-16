@@ -93,6 +93,11 @@ namespace ServiceStack.Razor
         }
 
         //With HTML encoding
+        public virtual void WriteTo(TextWriter writer, object obj)
+        {
+            writer.Write(HtmlEncode(obj));
+        }
+
         public virtual void WriteTo(TextWriter writer, HelperResult value)
         {
             if (value != null)

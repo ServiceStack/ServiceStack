@@ -1,0 +1,37 @@
+@using System.Text
+@inherits ServiceStack.Razor.ViewPage
+
+@{
+    Layout = "SimpleLayout";
+    ViewBag.Title = "Helper example";
+}
+
+@helper TestHelper(string[] names)
+{
+    foreach (var name in names)
+    {
+        <li>@name</li>
+    }
+}
+
+@functions {
+
+    public static MvcHtmlString TestFunctions(string[] names)
+    {
+        var sb = new StringBuilder();
+        foreach (var name in names)
+        {
+            var listItem = new TagBuilder("li");
+            listItem.SetInnerText(name);
+            sb.AppendLine(listItem.ToString(TagRenderMode.Normal));
+        }
+        return new MvcHtmlString(sb.ToString());   
+    }
+}
+
+<ul>
+    @TestHelper(new[]{"A","B","C"})
+    @TestFunctions(new[]{"D","E","F"})
+</ul>
+
+<!--view:Helper.cshtml-->

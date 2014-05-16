@@ -102,6 +102,7 @@
     <Content Include="ExpectationFailed.cshtml" />
     <Content Include="PageState.cshtml" />
     <Content Include="CompileError.cshtml" />
+    <Content Include="Helper.cshtml" />
     <None Include="MRootPage.md" />
     <Content Include="Global.asax" />
     <Content Include="NoModelNoController.cshtml" />

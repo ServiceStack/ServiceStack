@@ -9,7 +9,7 @@ namespace ServiceStack.MiniProfiler
 		string ToHtmlString();
 	}
 
-	public class HtmlString : IHtmlString
+    public class HtmlString : IHtmlString, System.Web.IHtmlString
 	{
 		private string value;
 
@@ -29,7 +29,7 @@ namespace ServiceStack.MiniProfiler
 		}
 	}
 
-	public class HelperResult : IHtmlString
+	public class HelperResult : IHtmlString, System.Web.IHtmlString
 	{
 		private readonly Action<TextWriter> action;
 

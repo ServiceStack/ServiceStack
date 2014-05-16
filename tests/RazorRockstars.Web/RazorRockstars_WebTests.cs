@@ -104,7 +104,8 @@ namespace RazorRockstars.Web
         static string ViewRockstars3 = "<!--view:Rockstars3.cshtml-->";
 		static string ViewRockstarsMark = "<!--view:RockstarsMark.md-->";
 		static string ViewNoModelNoController = "<!--view:NoModelNoController.cshtml-->";
-		static string ViewTypedModelNoController = "<!--view:TypedModelNoController.cshtml-->";
+        static string ViewTypedModelNoController = "<!--view:TypedModelNoController.cshtml-->";
+        static string ViewHelper = "<!--view:Helper.cshtml-->";
         static string ViewPage1 = "<!--view:Page1.cshtml-->";
         static string ViewPage2 = "<!--view:Page2.cshtml-->";
         static string ViewPage3 = "<!--view:Page3.cshtml-->";
@@ -180,6 +181,8 @@ namespace RazorRockstars.Web
                 ViewPage3, Template_Pages_Layout, ViewRazorPartial, ViewMarkdownPartial);
             Assert200(Host + "/pages/dir2/Page4",
                 ViewPage4, Template_HtmlReport, ViewRazorPartial, ViewMarkdownPartial);
+            Assert200(Host + "/helper",
+                ViewHelper, Template_SimpleLayout, "<li>C</li>", "<li>D</li>");
         }
 
         [Test]
