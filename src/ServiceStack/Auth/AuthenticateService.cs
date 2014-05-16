@@ -78,6 +78,14 @@ namespace ServiceStack.Auth
 
         public object Get(Authenticate request)
         {
+            if (!request.Info.IsNullOrEmpty())
+            {
+                //handle authentication status request
+                if(request.Info.ToLowerInvariant() == "currentsession")
+                {
+                    return GetSessionInfo(request);
+                }
+            }
             return Post(request);
         }
 
@@ -232,6 +240,61 @@ namespace ServiceStack.Auth
             this.RemoveSession();
 
             return new AuthenticateResponse();
+        }
+
+        private object GetSessionInfo(Authenticate request)
+        {
+            AssertAuthProviders();
+
+            if (ValidateFn != null)
+            {
+                var validationResponse = ValidateFn(this, Request.Verb, request);
+                if (validationResponse != null) return validationResponse;
+            }
+
+            var isHtml = base.Request.ResponseContentType.MatchesContentType(MimeTypes.Html);
+
+            try
+            {
+
+                var session = this.GetSession(true);
+
+                var referrerUrl = request.Continue
+                                  ?? session.ReferrerUrl
+                                  ?? this.Request.GetHeader("Referer");
+
+                var response = new AuthenticateResponse
+                {
+                    UserId = session.UserAuthId,
+                    UserName = session.UserAuthName,
+                    SessionId = session.Id,
+                    ReferrerUrl = referrerUrl,
+                };
+
+                if (isHtml)
+                {
+                    if (!(response is IHttpResult) && !String.IsNullOrEmpty(referrerUrl))
+                    {
+                        return new HttpResult(response)
+                        {
+                            Location = referrerUrl
+                        };
+                    }
+                }
+
+                return response;
+            }
+            catch (HttpError ex)
+            {
+                var errorReferrerUrl = this.Request.GetHeader("Referer");
+                if (isHtml && errorReferrerUrl != null)
+                {
+                    errorReferrerUrl = errorReferrerUrl.SetQueryParam("error", ex.Message);
+                    return HttpResult.Redirect(errorReferrerUrl);
+                }
+
+                throw;
+            }
         }
     }
 
