@@ -135,7 +135,7 @@ namespace ServiceStack.Auth
                     ReferrerUrl = referrerUrl,
                 };
 
-                if (isHtml)
+                if (isHtml && request.provider != null)
                 {
                     if (alreadyAuthenticated)
                         return this.Redirect(referrerUrl.AddHashParam("s", "0"));
@@ -213,6 +213,9 @@ namespace ServiceStack.Auth
         /// </summary>
         private object Authenticate(Authenticate request, string provider, IAuthSession session, IAuthProvider oAuthConfig)
         {
+            if (request.provider == null && request.UserName == null)
+                return null; //Just return sessionInfo if no provider or username is given
+
             object response = null;
             if (!oAuthConfig.IsAuthorized(session, session.GetOAuthTokens(provider), request))
             {
