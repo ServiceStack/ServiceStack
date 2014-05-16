@@ -33,7 +33,11 @@ namespace ServiceStack.Auth
             var tokens = Init(authService, ref session, request);
             var httpRequest = authService.Request;
 
-            var error = httpRequest.QueryString["error_code"];
+            var error = httpRequest.QueryString["error_reason"]
+                ?? httpRequest.QueryString["error"]
+                ?? httpRequest.QueryString["error_code"]
+                ?? httpRequest.QueryString["error_description"];
+
             var hasError = !error.IsNullOrEmpty();
             if (hasError)
             {
