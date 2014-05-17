@@ -58,9 +58,13 @@ namespace ServiceStack
             Metadata = new ServiceMetadata(RestPaths);
             PreRequestFilters = new List<Action<IRequest, IResponse>>();
             GlobalRequestFilters = new List<Action<IRequest, IResponse, object>>();
+            GlobalTypedRequestFilters = new Dictionary<Type, ITypedFilter>();
             GlobalResponseFilters = new List<Action<IRequest, IResponse, object>>();
+            GlobalTypedResponseFilters = new Dictionary<Type, ITypedFilter>();
             GlobalMessageRequestFilters = new List<Action<IRequest, IResponse, object>>();
+            GlobalTypedMessageRequestFilters = new Dictionary<Type, ITypedFilter>();
             GlobalMessageResponseFilters = new List<Action<IRequest, IResponse, object>>();
+            GlobalTypedMessageResponseFilters = new Dictionary<Type, ITypedFilter>();
             ViewEngines = new List<IViewEngine>();
             ServiceExceptionHandlers = new List<HandleServiceExceptionDelegate>();
             UncaughtExceptionHandlers = new List<HandleUncaughtExceptionDelegate>();
@@ -210,11 +214,19 @@ namespace ServiceStack
 
         public List<Action<IRequest, IResponse, object>> GlobalRequestFilters { get; set; }
 
+        public Dictionary<Type, ITypedFilter> GlobalTypedRequestFilters { get; set; }
+
         public List<Action<IRequest, IResponse, object>> GlobalResponseFilters { get; set; }
+
+        public Dictionary<Type, ITypedFilter> GlobalTypedResponseFilters { get; set; }
 
         public List<Action<IRequest, IResponse, object>> GlobalMessageRequestFilters { get; private set; }
 
+        public Dictionary<Type, ITypedFilter> GlobalTypedMessageRequestFilters { get; set; }
+
         public List<Action<IRequest, IResponse, object>> GlobalMessageResponseFilters { get; private set; }
+
+        public Dictionary<Type, ITypedFilter> GlobalTypedMessageResponseFilters { get; set; }
 
         public List<IViewEngine> ViewEngines { get; set; }
 
@@ -632,6 +644,26 @@ namespace ServiceStack
             }
 
             return wsdl;
+        }
+
+        public void RegisterTypedRequestFilter<T>(Action<IRequest, IResponse, T> filterFn)
+        {
+            GlobalTypedRequestFilters[typeof(T)] = new TypedFilter<T>(filterFn);
+        }
+
+        public void RegisterTypedResponseFilter<T>(Action<IRequest, IResponse, T> filterFn)
+        {
+            GlobalTypedResponseFilters[typeof(T)] = new TypedFilter<T>(filterFn);
+        }
+
+        public void RegisterTypedMessageRequestFilter<T>(Action<IRequest, IResponse, T> filterFn)
+        {
+            GlobalTypedMessageRequestFilters[typeof(T)] = new TypedFilter<T>(filterFn);
+        }
+
+        public void RegisterTypedMessageResponseFilter<T>(Action<IRequest, IResponse, T> filterFn)
+        {
+            GlobalTypedMessageResponseFilters[typeof(T)] = new TypedFilter<T>(filterFn);
         }
 
         public virtual void Dispose()

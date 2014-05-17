@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using ServiceStack.FluentValidation;
+using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler;
@@ -65,6 +66,14 @@ namespace ServiceStack
                     if (httpRes.IsClosed) return httpRes.IsClosed;
                 }
 
+                ITypedFilter typedFilter;
+                GlobalTypedRequestFilters.TryGetValue(requestDto.GetType(), out typedFilter);
+                if (typedFilter != null)
+                {
+                    requestDto = typedFilter.Invoke(httpReq, httpRes, requestDto) ?? requestDto;
+                    if (httpRes.IsClosed) return httpRes.IsClosed;
+                }
+
                 //Exec global filters
                 foreach (var requestFilter in GlobalRequestFilters)
                 {
@@ -117,6 +126,14 @@ namespace ServiceStack
                     }
                 }
 
+                ITypedFilter typedFilter;
+                GlobalTypedResponseFilters.TryGetValue(response.GetType(), out typedFilter);
+                if (typedFilter != null)
+                {
+                    response = typedFilter.Invoke(httpReq, httpRes, response) ?? response;
+                    if (httpRes.IsClosed) return httpRes.IsClosed;
+                }
+
                 //Exec global filters
                 foreach (var responseFilter in GlobalResponseFilters)
                 {
@@ -143,6 +160,14 @@ namespace ServiceStack
 
         public virtual bool ApplyMessageRequestFilters(IRequest req, IResponse res, object requestDto)
         {
+            ITypedFilter typedFilter;
+            GlobalTypedMessageRequestFilters.TryGetValue(requestDto.GetType(), out typedFilter);
+            if (typedFilter != null)
+            {
+                requestDto = typedFilter.Invoke(req, res, requestDto) ?? requestDto;
+                if (res.IsClosed) return res.IsClosed;
+            }
+
             //Exec global filters
             foreach (var requestFilter in GlobalMessageRequestFilters)
             {
@@ -155,6 +180,14 @@ namespace ServiceStack
 
         public virtual bool ApplyMessageResponseFilters(IRequest req, IResponse res, object response)
         {
+            ITypedFilter typedFilter;
+            GlobalTypedMessageResponseFilters.TryGetValue(response.GetType(), out typedFilter);
+            if (typedFilter != null)
+            {
+                response = typedFilter.Invoke(req, res, response) ?? response;
+                if (res.IsClosed) return res.IsClosed;
+            }
+
             //Exec global filters
             foreach (var responseFilter in GlobalMessageResponseFilters)
             {

@@ -168,6 +168,7 @@
     <Compile Include="CorsFeaturePluginTests.cs" />
     <Compile Include="CustomServiceRunnerTests.cs" />
     <Compile Include="LicenseUsageTests.cs" />
+    <Compile Include="RequestTypedFilterTests.cs" />
     <Compile Include="RoutePriorityTests.cs" />
     <Compile Include="RouteTests.cs" />
     <Compile Include="CustomValidationErrorTests.cs" />
