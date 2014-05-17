@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Web;
 using System.Web.Hosting;
+using ServiceStack.Host;
 using ServiceStack.Host.AspNet;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Host.HttpListener;
@@ -876,6 +877,18 @@ namespace ServiceStack
         public static System.ServiceModel.Channels.Message GetSoapMessage(this IRequest httpReq)
         {
             return httpReq.Items["SoapMessage"] as System.ServiceModel.Channels.Message;
+        }
+
+        public static void SetRoute(this IRequest req, RestPath route)
+        {
+            req.Items["__route"] = route;
+        }
+
+        public static RestPath GetRoute(this IRequest req)
+        {
+            object route;
+            req.Items.TryGetValue("__route", out route);
+            return route as RestPath;
         }
     }
 }

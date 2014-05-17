@@ -78,6 +78,7 @@ namespace ServiceStack.Host
                     return new NotSupportedException("No RestPath found for: " + httpReq.Verb + " " + httpReq.PathInfo)
                         .AsTaskException();
                 }
+                httpReq.SetRoute(restPath as RestPath);
 
                 operationName = restPath.RequestType.GetOperationName();
 
