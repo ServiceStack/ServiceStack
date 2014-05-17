@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Logging;
 using ServiceStack.Text;
@@ -31,6 +32,15 @@ namespace ServiceStack.Host
             appHost.RestPaths.Add(new RestPath(typeof(TRequest), restPath, verbs));
             return this;
         }
+
+        public IServiceRoutes Add<TRequest>(string restPath, string verbs, IDictionary<string, object> variableBindings)
+        {
+            if (HasExistingRoute(typeof(TRequest), restPath)) return this;
+
+            appHost.RestPaths.Add(new RestPath(typeof(TRequest), restPath, verbs, variableBindings: variableBindings));
+            return this;
+        }
+
 
         public IServiceRoutes Add(Type requestType, string restPath, string verbs)
         {

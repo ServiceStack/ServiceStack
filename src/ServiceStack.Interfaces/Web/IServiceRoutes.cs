@@ -1,3 +1,6 @@
+using System.Collections;
+using System.Collections.Generic;
+
 namespace ServiceStack.Web
 {
 	/// <summary>
@@ -35,7 +38,31 @@ namespace ServiceStack.Web
 		///		never <see langword="null"/>.</returns>
 		IServiceRoutes Add<TRequest>(string restPath, string verbs);
 
-		/// <summary>
+	    ///  <summary>
+	    /// 		Maps the specified REST path to the specified request DTO, binds
+	    ///      the given properties to URL variables, and  specifies the HTTP 
+	    ///      verbs supported by the path.
+	    ///  </summary>
+	    ///  <typeparam name="TRequest">The type of request DTO to map 
+	    /// 		the path to.</typeparam>
+	    ///  <param name="restPath">The path to map the request DTO to.
+	    /// 		See <see cref="RouteAttribute.Path">RouteAttribute.Path</see>
+	    /// 		for details on the correct format.</param>
+	    ///  <param name="verbs">
+	    /// 		The comma-delimited list of HTTP verbs supported by the path, 
+	    /// 		such as "GET,PUT,DELETE".  Specify empty or <see langword="null"/>
+	    /// 		to indicate that all verbs are supported.
+	    ///  </param>
+	    /// <param name="variableBindings">
+	    ///         Specifies constant values that are to be bound with the request. 
+	    ///         This is for cases where the DTO type has variables that should
+	    ///         be filled out but are not included in the request path itself.
+	    /// </param>
+	    /// <returns>The same <see cref="IServiceRoutes"/> instance;
+	    /// 		never <see langword="null"/>.</returns>
+	    IServiceRoutes Add<TRequest>(string restPath, string verbs, IDictionary<string, object> variableBindings);
+        
+        /// <summary>
 		///		Maps the specified REST path to the specified request DTO, 
 		///		specifies the HTTP verbs supported by the path, and indicates
 		///		the default MIME type of the returned response.

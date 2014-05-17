@@ -119,6 +119,44 @@ namespace ServiceStack.ServiceHost.Tests
             }
         }
 
+        [Test]
+        public void Can_include_StaticValuesForVariables_request()
+        {
+            using (JsConfig.With(includePublicFields: true))
+            {
+                var variableBindings = new Dictionary<string, object>
+                {
+                    {"Id", 5},
+                    {"Name", "Is Alive"}
+                };
+                var restPath = new RestPath(typeof (ComplexTypeWithFields),
+                    "/Complex/Unique/{UniqueId}", null, null, null, variableBindings);
+                var request = restPath.CreateRequest(
+                    "/complex/unique/4583B364-BBDC-427F-A289-C2923DEBD547") as ComplexTypeWithFields;
+
+                Assert.That(request, Is.Not.Null);
+                Assert.That(request.Id, Is.EqualTo(5));
+                Assert.That(request.Name, Is.EqualTo("Is Alive"));
+                Assert.That(request.UniqueId, Is.EqualTo(new Guid("4583B364-BBDC-427F-A289-C2923DEBD547")));
+            }
+        }
+
+        [Test]
+        [ExpectedException(typeof(ArgumentException))]
+        public void Cannot_include_invalidStaticValuesForVariables_request()
+        {
+            using (JsConfig.With(includePublicFields: true))
+            {
+                var variableBindings = new Dictionary<string, object>
+                {
+                    {"IdX", 5},
+                    {"Name", "Is Alive"}
+                };
+                var restPath = new RestPath(typeof (ComplexTypeWithFields),
+                    "/Complex/Unique/{UniqueId}", null, null, null, variableBindings);
+            }
+        }
+
 
         public class BbcMusicRequest
         {

@@ -27,6 +27,8 @@ namespace ServiceStack.Host
         private readonly bool allowsAllVerbs;
         public bool IsWildCardPath { get; private set; }
 
+        private readonly IDictionary<string, object> variableBindings = new Dictionary<string, object>(); 
+
         private readonly string[] literalsToMatch = new string[0];
 
         private readonly string[] variablesNames = new string[0];
@@ -113,7 +115,7 @@ namespace ServiceStack.Host
 
         public RestPath(Type requestType, string path) : this(requestType, path, null) { }
 
-        public RestPath(Type requestType, string path, string verbs, string summary = null, string notes = null)
+        public RestPath(Type requestType, string path, string verbs, string summary = null, string notes = null, IDictionary<string, object> variableBindings = null)
         {
             this.RequestType = requestType;
             this.Summary = summary;
@@ -207,6 +209,11 @@ namespace ServiceStack.Host
 
             this.typeDeserializer = new StringMapTypeDeserializer(this.RequestType);
             RegisterCaseInsenstivePropertyNameMappings();
+
+            if (null != variableBindings)
+            {
+                AddVariableBindings(variableBindings);
+            }
         }
 
         private void RegisterCaseInsenstivePropertyNameMappings()
@@ -234,6 +241,31 @@ namespace ServiceStack.Host
                     + this.RequestType.GetOperationName() + "." + propertyName);
             }
         }
+
+        private void AddVariableBindings(IEnumerable<KeyValuePair<string, object>> bindings)
+        {
+            var validPropertyNames = this.RequestType.GetSerializableProperties().Select(p => p.Name).ToList();
+            if (JsConfig.IncludePublicFields)
+            {
+                validPropertyNames.AddRange(this.RequestType.GetSerializableFields().Select(f => f.Name));
+            }
+
+            // Convert our list to a dictionary to prevent O(N*N) below...
+            var validPropertyNamesLookup = validPropertyNames.ToDictionary(n => n, n => true);
+            
+            foreach (var binding in bindings)
+            {
+                // Validate that the specified binding exists as a property or field for our requestType
+                bool propertyExists;
+                if (!validPropertyNamesLookup.TryGetValue(binding.Key, out propertyExists))
+                {
+                    throw new ArgumentException(string.Format("Variable binding name {0} does not exist on request type {1}", binding.Key, this.RequestType.Name));
+                }
+                
+                this.variableBindings.Add(binding);
+            }
+        }
+        
 
         public bool IsValid { get; set; }
 
@@ -393,7 +425,9 @@ namespace ServiceStack.Host
                         pathInfo, this.restPath));
             }
 
-            var requestKeyValuesMap = new Dictionary<string, string>();
+            var requestKeyValuesMap = this.variableBindings
+                .ToDictionary(variableBinding => variableBinding.Key, variableBinding => variableBinding.Value.ToString());
+
             var pathIx = 0;
             for (var i = 0; i < this.TotalComponentsCount; i++)
             {
