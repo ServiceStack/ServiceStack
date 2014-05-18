@@ -82,6 +82,7 @@ namespace ServiceStack.AuthWeb.Tests
                     new OpenIdOAuthProvider(appSettings),       //Sign-in with Custom OpenId
                     new GoogleOAuth2Provider(appSettings),      //Sign-in with Google OAuth2 Provider
                     new LinkedInOAuth2Provider(appSettings),    //Sign-in with LinkedIn OAuth2 Provider
+                    new GithubAuthProvider(appSettings),        //Sign-in with GitHub OAuth2 Provider
                 }));
 
 #if HTTP_LISTENER
