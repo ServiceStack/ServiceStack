@@ -1177,21 +1177,6 @@ namespace ServiceStack
             return Send<HttpWebResponse>(HttpMethods.Head, relativeOrAbsoluteUrl, null);
         }
 
-#if !PCL
-        public virtual TResponse PostFileWithRequest<TResponse>(FileInfo fileToUpload, object request, string fieldName = "upload")
-        {
-            return PostFileWithRequest<TResponse>(request.ToPostUrl(), fileToUpload, request, fieldName);
-        }
-
-        public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request, string fieldName = "upload")
-        {
-            using (FileStream fileStream = fileToUpload.OpenRead())
-            {
-                return PostFileWithRequest<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, request, fieldName);
-            }
-        }
-#endif
-
         public virtual TResponse PostFileWithRequest<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload")
         {
             return PostFileWithRequest<TResponse>(request.ToPostUrl(), fileToUpload, fileName, request, fieldName);
@@ -1270,16 +1255,6 @@ namespace ServiceStack
             }
         }
 
-#if !PCL
-        public virtual TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
-        {
-            using (FileStream fileStream = fileToUpload.OpenRead())
-            {
-                return PostFile<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, mimeType);
-            }
-        }
-#endif
-
         public virtual TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
         {
             var currentStreamPosition = fileToUpload.Position;
@@ -1354,5 +1329,35 @@ namespace ServiceStack
         }
 
         public void Dispose() { }
+    }
+
+    public static class ServiceClientExtensions
+    {
+#if !(NETFX_CORE || SL5 || PCL)
+        public static TResponse PostFile<TResponse>(this IRestClient client,
+            string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType) 
+        {
+            using (FileStream fileStream = fileToUpload.OpenRead())
+            {
+                return client.PostFile<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, mimeType);
+            }
+        }
+
+        public static TResponse PostFileWithRequest<TResponse>(this IRestClient client, 
+            FileInfo fileToUpload, object request, string fieldName = "upload")
+        {
+            return client.PostFileWithRequest<TResponse>(request.ToPostUrl(), fileToUpload, request, fieldName);
+        }
+
+        public static TResponse PostFileWithRequest<TResponse>(this IRestClient client,
+            string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request, string fieldName = "upload")
+        {
+            using (FileStream fileStream = fileToUpload.OpenRead())
+            {
+                return client.PostFileWithRequest<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, request, fieldName);
+            }            
+        }
+#endif
+        
     }
 }
