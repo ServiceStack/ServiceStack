@@ -507,6 +507,12 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
+        public TResponse PostFileWithRequest<TResponse>(
+            Stream fileToUpload, string fileName, object request, string fieldName = "upload")
+        {
+            throw new NotImplementedException();
+        }
+
         public void SendOneWay(object requestDto)
         {
             SendOneWay(requestDto, requestDto.GetType().Name);

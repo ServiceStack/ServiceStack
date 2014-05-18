@@ -104,11 +104,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        TResponse IRestClient.PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
-        {
-            throw new NotImplementedException();
-        }
-
         public HttpWebResponse CustomMethod(string httpVerb, IReturnVoid requestDto)
         {
             throw new NotImplementedException();
@@ -150,6 +145,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
         }
 
         public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse PostFileWithRequest<TResponse>(
+            Stream fileToUpload, string fileName, object request, string fieldName = "upload")
         {
             throw new NotImplementedException();
         }

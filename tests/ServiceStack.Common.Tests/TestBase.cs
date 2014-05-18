@@ -341,6 +341,12 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
+            public TResponse PostFileWithRequest<TResponse>(
+                Stream fileToUpload, string fileName, object request, string fieldName = "upload")
+            {
+                throw new NotImplementedException();
+            }
+
             public Task<TResponse> SendAsync<TResponse>(object requestDto)
             {
                 var tcs = new TaskCompletionSource<TResponse>();
