@@ -3,6 +3,7 @@
 
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web;
@@ -66,13 +67,8 @@ namespace ServiceStack
                     if (httpRes.IsClosed) return httpRes.IsClosed;
                 }
 
-                ITypedFilter typedFilter;
-                GlobalTypedRequestFilters.TryGetValue(requestDto.GetType(), out typedFilter);
-                if (typedFilter != null)
-                {
-                    requestDto = typedFilter.Invoke(httpReq, httpRes, requestDto) ?? requestDto;
-                    if (httpRes.IsClosed) return httpRes.IsClosed;
-                }
+                ExecTypedFilters(GlobalTypedRequestFilters, httpReq, httpRes, requestDto);
+                if (httpRes.IsClosed) return httpRes.IsClosed;
 
                 //Exec global filters
                 foreach (var requestFilter in GlobalRequestFilters)
@@ -126,13 +122,8 @@ namespace ServiceStack
                     }
                 }
 
-                ITypedFilter typedFilter;
-                GlobalTypedResponseFilters.TryGetValue(response.GetType(), out typedFilter);
-                if (typedFilter != null)
-                {
-                    response = typedFilter.Invoke(httpReq, httpRes, response) ?? response;
-                    if (httpRes.IsClosed) return httpRes.IsClosed;
-                }
+                ExecTypedFilters(GlobalTypedResponseFilters, httpReq, httpRes, response);
+                if (httpRes.IsClosed) return httpRes.IsClosed;
 
                 //Exec global filters
                 foreach (var responseFilter in GlobalResponseFilters)
@@ -160,13 +151,8 @@ namespace ServiceStack
 
         public virtual bool ApplyMessageRequestFilters(IRequest req, IResponse res, object requestDto)
         {
-            ITypedFilter typedFilter;
-            GlobalTypedMessageRequestFilters.TryGetValue(requestDto.GetType(), out typedFilter);
-            if (typedFilter != null)
-            {
-                requestDto = typedFilter.Invoke(req, res, requestDto) ?? requestDto;
-                if (res.IsClosed) return res.IsClosed;
-            }
+            ExecTypedFilters(GlobalTypedMessageRequestFilters, req, res, requestDto);
+            if (res.IsClosed) return res.IsClosed;
 
             //Exec global filters
             foreach (var requestFilter in GlobalMessageRequestFilters)
@@ -180,13 +166,8 @@ namespace ServiceStack
 
         public virtual bool ApplyMessageResponseFilters(IRequest req, IResponse res, object response)
         {
-            ITypedFilter typedFilter;
-            GlobalTypedMessageResponseFilters.TryGetValue(response.GetType(), out typedFilter);
-            if (typedFilter != null)
-            {
-                response = typedFilter.Invoke(req, res, response) ?? response;
-                if (res.IsClosed) return res.IsClosed;
-            }
+            ExecTypedFilters(GlobalTypedMessageResponseFilters, req, res, response);
+            if (res.IsClosed) return res.IsClosed;
 
             //Exec global filters
             foreach (var responseFilter in GlobalMessageResponseFilters)
@@ -196,6 +177,32 @@ namespace ServiceStack
             }
 
             return res.IsClosed;
+        }
+
+        public virtual void ExecTypedFilters(Dictionary<Type, ITypedFilter> typedFilters,
+            IRequest req, IResponse res, object dto)
+        {
+            if (typedFilters.Count == 0) return;
+
+            ITypedFilter typedFilter;
+            var dtoType = dto.GetType();
+            typedFilters.TryGetValue(dtoType, out typedFilter);
+            if (typedFilter != null)
+            {
+                typedFilter.Invoke(req, res, dto);
+                if (res.IsClosed) return;
+            }
+
+            var dtoInterfaces = dtoType.GetInterfaces();
+            foreach (var dtoInterface in dtoInterfaces)
+            {
+                typedFilters.TryGetValue(dtoInterface, out typedFilter);
+                if (typedFilter != null)
+                {
+                    typedFilter.Invoke(req, res, dto);
+                    if (res.IsClosed) return;
+                }
+            }
         }
 
         public MetadataPagesConfig MetadataPagesConfig

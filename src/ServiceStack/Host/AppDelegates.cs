@@ -17,7 +17,7 @@ namespace ServiceStack.Host
 
     public interface ITypedFilter
     {
-        object Invoke(IRequest req, IResponse res, object requestDto);
+        void Invoke(IRequest req, IResponse res, object dto);
     }
 
     public class TypedFilter<T> : ITypedFilter
@@ -28,10 +28,9 @@ namespace ServiceStack.Host
             this.action = action;
         }
 
-        public object Invoke(IRequest req, IResponse res, object requestDto)
+        public void Invoke(IRequest req, IResponse res, object dto)
         {
-            action(req, res, (T)requestDto);
-            return null;
+            action(req, res, (T)dto);
         }
     }
 }

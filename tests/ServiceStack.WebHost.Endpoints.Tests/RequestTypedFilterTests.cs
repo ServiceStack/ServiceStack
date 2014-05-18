@@ -3,24 +3,33 @@ using NUnit.Framework;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
+    public interface IHasSharedProperty
+    {
+        string SharedProperty { get; set; } 
+    }
+
     [Route("/tenant/{TenantName}/resourceType1")]
-    public class ResourceType1 : IReturn<ResourceType1>
+    public class ResourceType1 : IReturn<ResourceType1>, IHasSharedProperty
     {
         public string TenantName { get; set; }
 
         public string SubResourceName { get; set; }
 
         public string Arg1 { get; set; }
+
+        public string SharedProperty { get; set; }
     }
 
     [Route("/tenant/{TenantName}/resourceType2")]
-    public class ResourceType2 : IReturn<ResourceType2>
+    public class ResourceType2 : IReturn<ResourceType2>, IHasSharedProperty
     {
         public string TenantName { get; set; }
 
         public string SubResourceName { get; set; }
 
         public string Arg1 { get; set; }
+
+        public string SharedProperty { get; set; }
     }
 
     public class TypedFilterService : Service
@@ -56,6 +65,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         dto.SubResourceName = "CustomResource";
                     }
                 });
+                RegisterTypedRequestFilter<IHasSharedProperty>((req, res, dtoInterface) => {
+                    dtoInterface.SharedProperty = "Is Shared";    
+                });
             }
         }
 
@@ -88,6 +100,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Arg1, Is.EqualTo("arg1"));
             Assert.That(response.TenantName, Is.EqualTo("tennant"));
             Assert.That(response.SubResourceName, Is.EqualTo("CustomResource"));
+        }
+
+        [Test]
+        public void Does_execute_requestDto_interfaces_typedfilters()
+        {
+            var client = new JsonServiceClient(Config.ListeningOn);
+
+            var response1 = client.Get(new ResourceType1 { TenantName = "tennant" });
+            Assert.That(response1.SharedProperty, Is.EqualTo("Is Shared"));
+
+            var response2 = client.Get(new ResourceType2 { TenantName = "tennant" });
+            Assert.That(response2.SharedProperty, Is.EqualTo("Is Shared"));
         }
     }
 }
