@@ -48,10 +48,10 @@ namespace ServiceStack
         /// and no more processing should be done.
         /// </summary>
         /// <returns></returns>
-        public virtual bool ApplyRequestFilters(IRequest httpReq, IResponse httpRes, object requestDto)
+        public virtual bool ApplyRequestFilters(IRequest req, IResponse res, object requestDto)
         {
-            httpReq.ThrowIfNull("httpReq");
-            httpRes.ThrowIfNull("httpRes");
+            req.ThrowIfNull("req");
+            res.ThrowIfNull("res");
 
             using (Profiler.Current.Step("Executing Request Filters"))
             {
@@ -62,19 +62,19 @@ namespace ServiceStack
                 {
                     var attribute = attributes[i];
                     Container.AutoWire(attribute);
-                    attribute.RequestFilter(httpReq, httpRes, requestDto);
+                    attribute.RequestFilter(req, res, requestDto);
                     Release(attribute);
-                    if (httpRes.IsClosed) return httpRes.IsClosed;
+                    if (res.IsClosed) return res.IsClosed;
                 }
 
-                ExecTypedFilters(GlobalTypedRequestFilters, httpReq, httpRes, requestDto);
-                if (httpRes.IsClosed) return httpRes.IsClosed;
+                ExecTypedFilters(GlobalTypedRequestFilters, req, res, requestDto);
+                if (res.IsClosed) return res.IsClosed;
 
                 //Exec global filters
                 foreach (var requestFilter in GlobalRequestFilters)
                 {
-                    requestFilter(httpReq, httpRes, requestDto);
-                    if (httpRes.IsClosed) return httpRes.IsClosed;
+                    requestFilter(req, res, requestDto);
+                    if (res.IsClosed) return res.IsClosed;
                 }
 
                 //Exec remaining RequestFilter attributes with Priority >= 0
@@ -82,12 +82,12 @@ namespace ServiceStack
                 {
                     var attribute = attributes[i];
                     Container.AutoWire(attribute);
-                    attribute.RequestFilter(httpReq, httpRes, requestDto);
+                    attribute.RequestFilter(req, res, requestDto);
                     Release(attribute);
-                    if (httpRes.IsClosed) return httpRes.IsClosed;
+                    if (res.IsClosed) return res.IsClosed;
                 }
 
-                return httpRes.IsClosed;
+                return res.IsClosed;
             }
         }
 
@@ -96,10 +96,10 @@ namespace ServiceStack
         /// and no more processing should be done.
         /// </summary>
         /// <returns></returns>
-        public virtual bool ApplyResponseFilters(IRequest httpReq, IResponse httpRes, object response)
+        public virtual bool ApplyResponseFilters(IRequest req, IResponse res, object response)
         {
-            httpReq.ThrowIfNull("httpReq");
-            httpRes.ThrowIfNull("httpRes");
+            req.ThrowIfNull("req");
+            res.ThrowIfNull("res");
 
             using (Profiler.Current.Step("Executing Response Filters"))
             {
@@ -116,20 +116,20 @@ namespace ServiceStack
                     {
                         var attribute = attributes[i];
                         Container.AutoWire(attribute);
-                        attribute.ResponseFilter(httpReq, httpRes, response);
+                        attribute.ResponseFilter(req, res, response);
                         Release(attribute);
-                        if (httpRes.IsClosed) return httpRes.IsClosed;
+                        if (res.IsClosed) return res.IsClosed;
                     }
                 }
 
-                ExecTypedFilters(GlobalTypedResponseFilters, httpReq, httpRes, response);
-                if (httpRes.IsClosed) return httpRes.IsClosed;
+                ExecTypedFilters(GlobalTypedResponseFilters, req, res, response);
+                if (res.IsClosed) return res.IsClosed;
 
                 //Exec global filters
                 foreach (var responseFilter in GlobalResponseFilters)
                 {
-                    responseFilter(httpReq, httpRes, response);
-                    if (httpRes.IsClosed) return httpRes.IsClosed;
+                    responseFilter(req, res, response);
+                    if (res.IsClosed) return res.IsClosed;
                 }
 
                 //Exec remaining RequestFilter attributes with Priority >= 0
@@ -139,13 +139,13 @@ namespace ServiceStack
                     {
                         var attribute = attributes[i];
                         Container.AutoWire(attribute);
-                        attribute.ResponseFilter(httpReq, httpRes, response);
+                        attribute.ResponseFilter(req, res, response);
                         Release(attribute);
-                        if (httpRes.IsClosed) return httpRes.IsClosed;
+                        if (res.IsClosed) return res.IsClosed;
                     }
                 }
 
-                return httpRes.IsClosed;
+                return res.IsClosed;
             }
         }
 
