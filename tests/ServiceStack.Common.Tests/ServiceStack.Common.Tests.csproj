@@ -231,6 +231,7 @@
     <Compile Include="Text\AdhocJsTests.cs" />
     <Compile Include="OAuth\OAuthUserSessionTestsBase.cs" />
     <Compile Include="UrlExtensionTests.cs" />
+    <Compile Include="ValidationTests.cs" />
     <Compile Include="Xlinq\XlinqExtensionsTests.cs" />
   </ItemGroup>
   <ItemGroup>
