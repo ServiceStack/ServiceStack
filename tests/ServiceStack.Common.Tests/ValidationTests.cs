@@ -8,12 +8,13 @@ namespace ServiceStack.Common.Tests
 {
     internal class DtoARequestValidator : AbstractValidator<DtoA>
     {
-        public IDtoBValidator DtoBValidator { get; set; }
+        internal readonly IDtoBValidator dtoBValidator;
 
-        public DtoARequestValidator()
+        public DtoARequestValidator(IDtoBValidator dtoBValidator)
         {
+            this.dtoBValidator = dtoBValidator;
             RuleFor(dto => dto.FieldA).NotEmpty();
-            RuleFor(dto => dto.Items).SetCollectionValidator(new DtoBValidator());
+            RuleFor(dto => dto.Items).SetCollectionValidator(dtoBValidator);
         }
     }
 
@@ -46,38 +47,23 @@ namespace ServiceStack.Common.Tests
     public class ValidationTests
     {
         [Test]
-        public void Does_ignore_registering_IDtoBValidator()
-        {
-            using (var appHost = new BasicAppHost
-            {
-                ConfigureContainer = c =>
-                    c.RegisterValidators(typeof(DtoARequestValidator).Assembly)
-            }.Init())
-            {
-                var c = appHost.Container;
-                Assert.That(c.TryResolve<IValidator<DtoA>>(), Is.Not.Null);
-                Assert.That(c.TryResolve<IValidator<DtoB>>(), Is.Not.Null);
-                Assert.That(c.TryResolve<IDtoBValidator>(), Is.Null);
-            }
-        }
-
-        [Test]
         public void Can_register_IDtoBValidator_separately()
         {
             using (var appHost = new BasicAppHost
             {
                 ConfigureContainer = c => {
-                    c.RegisterValidators(typeof(DtoARequestValidator).Assembly);
                     c.RegisterAs<DtoBValidator, IDtoBValidator>();
+                    c.RegisterValidators(typeof(DtoARequestValidator).Assembly);
                 }
             }.Init())
             {
                 var c = appHost.Container;
-                Assert.That(c.TryResolve<IValidator<DtoA>>(), Is.Not.Null);
+                var dtoAValidator = (DtoARequestValidator)c.TryResolve<IValidator<DtoA>>();
+                Assert.That(dtoAValidator, Is.Not.Null);
+                Assert.That(dtoAValidator.dtoBValidator, Is.Not.Null);
                 Assert.That(c.TryResolve<IValidator<DtoB>>(), Is.Not.Null);
                 Assert.That(c.TryResolve<IDtoBValidator>(), Is.Not.Null);
             }
         }
-
     }
 }
