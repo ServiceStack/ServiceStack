@@ -97,7 +97,7 @@ namespace ServiceStack
                         try
                         {
                             var filename = file.Name.Substring(0, file.Name.Length - file.FileType.Length);
-                            AssemblyName name = new AssemblyName() { Name = filename };
+                            var name = new AssemblyName { Name = filename };
                             Assembly asm = Assembly.Load(name);
                             assemblies.Add(asm);
                         }
