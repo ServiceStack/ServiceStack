@@ -18,11 +18,10 @@ function CompileRazorViews($projectItems) {
 # Embed Resource Files
 function EmbedResources($projectItems) {
     $projectItems | %{      
-        $x = $_.Name.ToLower()
-        if ($x -like "*.md" -or $x -like "*.js" -or $x -like "*.css") {         
-            $_.Properties.Item("BuildAction").Value = [int]3 # Embed
-        }
-        elseif ($x -like "*.png" -or $x -like "*.gif" -or $x -like "*.jpg" -or $x -like "*.jpeg") {
+        $ext = [System.IO.Path]::GetExtension($_.Name.ToLower())
+        $embedExts = ".js",".css",".md",".html",".htm",".png",".gif",".jpg",".jpeg",".bmp",".ico",".svg",".tiff",".webp",".webm",".xap",".flv",".xml",".csv",".pdf",".mp3",".wav",".mpg",".ttf",".woff",".eot" 
+
+        if ($embedExts -contains $ext) {         
             $_.Properties.Item("BuildAction").Value = [int]3 # Embed
         }
 
