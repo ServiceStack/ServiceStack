@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
@@ -176,16 +176,16 @@ namespace ServiceStack.Auth
   Subject: =?KOI8-R?B?T2Rub2tsYXNzbmlraS5ydTog98HbxSDQ0g==?=
    =?KOI8-R?B?yczP1sXOycUg2sHSxcfJ09TSydLP18HOzw==?=
    
-  Ваше приложение ServiceStack Test Login успешно зарегистрировано на Odnoklassniki.ru.
+  Р’Р°С€Рµ РїСЂРёР»РѕР¶РµРЅРёРµ ServiceStack Test Login СѓСЃРїРµС€РЅРѕ Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅРѕ РЅР° Odnoklassniki.ru.
 
   Application ID: 1089990656.
-  Публичный ключ приложения: CBABPIPBEBABABABA.
-  Секретный ключ приложения:  B268138DF0BE3919FB1BBED8.
-  Ссылка на приложение: http://www.odnoklassniki.ru/games/servicestacktestlogin
-  Этот ключ необходим для изменения настроек приложения и для подписи/верификации запросов от Вашего приложения. Более подробная информация содержится в документации к програмному интерфейсу сайта Odnoklassniki.ru.
+  РџСѓР±Р»РёС‡РЅС‹Р№ РєР»СЋС‡ РїСЂРёР»РѕР¶РµРЅРёСЏ: CBABPIPBEBABABABA.
+  РЎРµРєСЂРµС‚РЅС‹Р№ РєР»СЋС‡ РїСЂРёР»РѕР¶РµРЅРёСЏ:  B268138DF0BE3919FB1BBED8.
+  РЎСЃС‹Р»РєР° РЅР° РїСЂРёР»РѕР¶РµРЅРёРµ: http://www.odnoklassniki.ru/games/servicestacktestlogin
+  Р­С‚РѕС‚ РєР»СЋС‡ РЅРµРѕР±С…РѕРґРёРј РґР»СЏ РёР·РјРµРЅРµРЅРёСЏ РЅР°СЃС‚СЂРѕРµРє РїСЂРёР»РѕР¶РµРЅРёСЏ Рё РґР»СЏ РїРѕРґРїРёСЃРё/РІРµСЂРёС„РёРєР°С†РёРё Р·Р°РїСЂРѕСЃРѕРІ РѕС‚ Р’Р°С€РµРіРѕ РїСЂРёР»РѕР¶РµРЅРёСЏ. Р‘РѕР»РµРµ РїРѕРґСЂРѕР±РЅР°СЏ РёРЅС„РѕСЂРјР°С†РёСЏ СЃРѕРґРµСЂР¶РёС‚СЃСЏ РІ РґРѕРєСѓРјРµРЅС‚Р°С†РёРё Рє РїСЂРѕРіСЂР°РјРЅРѕРјСѓ РёРЅС‚РµСЂС„РµР№СЃСѓ СЃР°Р№С‚Р° Odnoklassniki.ru.
   --
-  С уважением,
-  Служба поддержки Odnoklassniki.ru
+  РЎ СѓРІР°Р¶РµРЅРёРµРј,
+  РЎР»СѓР¶Р±Р° РїРѕРґРґРµСЂР¶РєРё Odnoklassniki.ru
  
 */
   #endregion
