@@ -412,11 +412,12 @@ namespace ServiceStack.Api.Swagger
         {
             return requestType
                 .AllAttributes<IApiResponseDescription>()
-                .Select(x => new ErrorResponseStatus
-                {
+                .Select(x => new ErrorResponseStatus {
                     StatusCode = x.StatusCode,
                     Reason = x.Description
-                }).ToList();
+                })
+                .OrderBy(x => x.StatusCode)
+                .ToList();
         }
 
         private MethodDescription FormateMethodDescription(RestPath restPath, Dictionary<string, SwaggerModel> models)
