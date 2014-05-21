@@ -44,16 +44,18 @@ namespace ServiceStack.Auth
       IAuthTokens tokens = Init(authService, ref session, request);
       IRequest httpRequest = authService.Request;
 
-
       string error = httpRequest.QueryString["error"]
-                     ?? httpRequest.QueryString["error_uri"]
+                     ?? httpRequest.QueryString["error_reason"]
                      ?? httpRequest.QueryString["error_description"];
 
       bool hasError = !error.IsNullOrEmpty();
       if (hasError)
       {
         Log.Error("VK error callback. {0}".Fmt(httpRequest.QueryString));
-        return authService.Redirect(session.ReferrerUrl);
+        return authService.Redirect(session.ReferrerUrl.AddHashParam("f",
+          (httpRequest.QueryString["error_reason"]
+            ?? httpRequest.QueryString["error_description"]
+            ?? "Unknown").UrlEncode()));
       }
 
       string code = httpRequest.QueryString["code"];
