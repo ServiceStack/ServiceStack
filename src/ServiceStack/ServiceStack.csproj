@@ -94,6 +94,7 @@
     <Compile Include="AppHostHttpListenerSmartPoolBase.cs" />
     <Compile Include="AppSelfHostBase.cs" />
     <Compile Include="AsyncExtensions.cs" />
+    <Compile Include="Auth\OdnoklassnikiAuthProvider.cs" />
     <Compile Include="Auth\VkAuthProvider.cs" />
     <Compile Include="Auth\YandexAuthProvider.cs" />
     <Compile Include="Auth\GithubAuthProvider.cs" />
