@@ -137,7 +137,9 @@ namespace ServiceStack.Auth
                     Meta = new Dictionary<string, string>
                     {
                       {
-                        "DisplayName", session.DisplayName ?? "{0} {1}".Fmt(session.FirstName, session.LastName).Trim()
+                        "DisplayName", session.DisplayName 
+                                ?? session.UserName 
+                                ?? "{0} {1}".Fmt(session.FirstName, session.LastName).Trim()
                       }
                     }
                 };
