@@ -40,8 +40,8 @@ namespace ServiceStack
         [DataMember(Order = 4)] public string DisplayName { get; set; }
         [DataMember(Order = 5)] public string ReferrerUrl { get; set; }
 
-        [DataMember(Order = 5)] public ResponseStatus ResponseStatus { get; set; }
-        [DataMember(Order = 6)] public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 6)] public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order = 7)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
