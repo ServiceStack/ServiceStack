@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Text;
@@ -136,6 +137,14 @@ namespace ServiceStack.Auth
                         ?? "{0} {1}".Fmt(session.FirstName, session.LastName).Trim(),
                     SessionId = session.Id,
                     ReferrerUrl = referrerUrl,
+                    Meta = new Dictionary<string, string>
+                    {
+                      {
+                        "DisplayName", session.DisplayName 
+                                ?? session.UserName 
+                                ?? "{0} {1}".Fmt(session.FirstName, session.LastName).Trim()
+                      }
+                    }
                 };
 
                 if (isHtml && request.provider != null)
