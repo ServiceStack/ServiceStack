@@ -63,9 +63,31 @@ namespace ServiceStack.Host.AspNet
             response.Redirect(url);
         }
 
+        private MemoryStream bufferedStream;
         public Stream OutputStream
         {
-            get { return response.OutputStream; }
+            get { return bufferedStream ?? response.OutputStream; }
+        }
+
+        public bool UseBufferedStream
+        {
+            get { return bufferedStream != null; }
+            set
+            {
+                bufferedStream = value
+                    ? bufferedStream ?? new MemoryStream()
+                    : null;
+            }
+        }
+
+        private void FlushBufferIfAny()
+        {
+            if (bufferedStream == null)
+                return;
+
+            var bytes = bufferedStream.ToArray();
+            response.OutputStream.Write(bytes, 0, bytes.Length);
+            bufferedStream.Position = 0;
         }
 
         public object Dto { get; set; }
@@ -78,6 +100,9 @@ namespace ServiceStack.Host.AspNet
         public void Close()
         {
             this.IsClosed = true;
+
+            FlushBufferIfAny();
+
             response.CloseOutputStream();
         }
 
@@ -86,6 +111,8 @@ namespace ServiceStack.Host.AspNet
             this.IsClosed = true;
             try
             {
+                FlushBufferIfAny();
+
                 response.ClearContent();
                 response.End();
             }
@@ -94,6 +121,8 @@ namespace ServiceStack.Host.AspNet
 
         public void Flush()
         {
+            FlushBufferIfAny();
+
             response.Flush();
         }
 

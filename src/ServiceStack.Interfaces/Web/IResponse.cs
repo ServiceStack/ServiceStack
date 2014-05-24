@@ -35,6 +35,11 @@ namespace ServiceStack.Web
         void Write(string text);
 
         /// <summary>
+        /// Buffer the Response OutputStream so it can be written in 1 batch
+        /// </summary>
+        bool UseBufferedStream { get; set; }
+
+        /// <summary>
         /// Signal that this response has been handled and no more processing should be done.
         /// When used in a request or response filter, no more filters or processing is done on this request.
         /// </summary>

@@ -176,6 +176,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
                 MemoryStream.Write(bytes, 0, bytes.Length);
             }
 
+            public bool UseBufferedStream { get; set; }
+
             public string Contents { get; set; }
 
             public void Close()

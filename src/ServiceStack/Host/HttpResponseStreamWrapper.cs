@@ -50,6 +50,8 @@ namespace ServiceStack.Host
             OutputStream.Write(bytes, 0, bytes.Length);
         }
 
+        public bool UseBufferedStream { get; set; }
+
         public void Close()
         {
             if (KeepOpen) return;

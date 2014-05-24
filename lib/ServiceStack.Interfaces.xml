@@ -1222,6 +1222,11 @@
             The Response DTO
             </summary>
         </member>
+        <member name="P:ServiceStack.Web.IResponse.UseBufferedStream">
+            <summary>
+            Buffer the Response OutputStream so it can be written in 1 batch
+            </summary>
+        </member>
         <member name="P:ServiceStack.Web.IResponse.IsClosed">
             <summary>
             Gets a value indicating whether this instance is closed.
