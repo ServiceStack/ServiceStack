@@ -37,7 +37,8 @@ namespace ServiceStack
         [DataMember(Order = 1)] public string UserId { get; set; }
         [DataMember(Order = 2)] public string SessionId { get; set; }
         [DataMember(Order = 3)] public string UserName { get; set; }
-        [DataMember(Order = 4)] public string ReferrerUrl { get; set; }
+        [DataMember(Order = 4)] public string DisplayName { get; set; }
+        [DataMember(Order = 5)] public string ReferrerUrl { get; set; }
 
         [DataMember(Order = 5)] public ResponseStatus ResponseStatus { get; set; }
         [DataMember(Order = 6)] public Dictionary<string, string> Meta { get; set; }

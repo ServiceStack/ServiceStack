@@ -131,6 +131,9 @@ namespace ServiceStack.Auth
                 response = response ?? new AuthenticateResponse {
                     UserId = session.UserAuthId,
                     UserName = session.UserAuthName,
+                    DisplayName = session.DisplayName 
+                        ?? session.UserName 
+                        ?? "{0} {1}".Fmt(session.FirstName, session.LastName).Trim(),
                     SessionId = session.Id,
                     ReferrerUrl = referrerUrl,
                 };
