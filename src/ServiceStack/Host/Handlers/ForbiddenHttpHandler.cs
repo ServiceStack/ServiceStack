@@ -19,7 +19,7 @@ namespace ServiceStack.Host.Handlers
             response.ContentType = "text/plain";
             response.StatusCode = 403;
 
-		    response.EndHttpHandlerRequest(skipClose: true, afterBody: r => {
+		    response.EndHttpHandlerRequest(skipClose: true, afterHeaders: r => {
                 r.Write("Forbidden\n\n");
 
                 r.Write("\nRequest.HttpMethod: " + request.Verb);
@@ -56,7 +56,7 @@ namespace ServiceStack.Host.Handlers
             response.ContentType = "text/plain";
             response.StatusCode = 403;
 
-            response.EndHttpHandlerRequest(skipClose:true, afterBody: r=> {
+            response.EndHttpHandlerRequest(skipClose:true, afterHeaders: r=> {
                 r.Write("Forbidden\n\n");
 
                 r.Write("\nRequest.HttpMethod: " + request.HttpMethod);

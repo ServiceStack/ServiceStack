@@ -53,10 +53,10 @@ namespace ServiceStack
         /// <summary>
         /// End a HttpHandler Request
         /// </summary>
-        public static void EndHttpHandlerRequest(this HttpResponseBase httpRes, bool skipHeaders = false, bool skipClose = false, bool closeOutputStream = false, Action<HttpResponseBase> afterBody = null)
+        public static void EndHttpHandlerRequest(this HttpResponseBase httpRes, bool skipHeaders = false, bool skipClose = false, bool closeOutputStream = false, Action<HttpResponseBase> afterHeaders = null)
         {
             if (!skipHeaders) httpRes.ApplyGlobalResponseHeaders();
-            if (afterBody != null) afterBody(httpRes);
+            if (afterHeaders != null) afterHeaders(httpRes);
             if (closeOutputStream) httpRes.CloseOutputStream();
             else if (!skipClose) httpRes.Close();
 
@@ -68,10 +68,10 @@ namespace ServiceStack
         /// <summary>
         /// End a HttpHandler Request
         /// </summary>
-        public static void EndHttpHandlerRequest(this IResponse httpRes, bool skipHeaders = false, bool skipClose = false, Action<IResponse> afterBody = null)
+        public static void EndHttpHandlerRequest(this IResponse httpRes, bool skipHeaders = false, bool skipClose = false, Action<IResponse> afterHeaders = null)
         {
             if (!skipHeaders) httpRes.ApplyGlobalResponseHeaders();
-            if (afterBody != null) afterBody(httpRes);
+            if (afterHeaders != null) afterHeaders(httpRes);
             if (!skipClose) httpRes.Close();
 
             //skipHeaders used when Apache+mod_mono doesn't like:
