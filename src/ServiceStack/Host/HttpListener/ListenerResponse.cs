@@ -80,7 +80,7 @@ namespace ServiceStack.Host.HttpListener
 
             var bytes = bufferedStream.ToArray();
             response.OutputStream.Write(bytes, 0, bytes.Length);
-            bufferedStream.Position = 0;
+            bufferedStream = new MemoryStream();
         }
 
         public object Dto { get; set; }
