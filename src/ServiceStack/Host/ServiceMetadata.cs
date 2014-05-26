@@ -272,8 +272,8 @@ namespace ServiceStack.Host
 				return RequestType.GetOperationName(); 
 			}
     	}
-		//public string Name { get { return RequestType.Name; } }
-		public Type RequestType { get; set; }
+
+        public Type RequestType { get; set; }
         public Type ServiceType { get; set; }
         public Type ResponseType { get; set; }
         public RestrictAttribute RestrictTo { get; set; }

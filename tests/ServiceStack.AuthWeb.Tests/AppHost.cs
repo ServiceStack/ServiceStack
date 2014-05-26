@@ -78,6 +78,7 @@ namespace ServiceStack.AuthWeb.Tests
             Plugins.Add(new AuthFeature(
                 () => new CustomUserSession(), //Use your own typed Custom UserSession type
                 new IAuthProvider[] {
+                    new AspNetWindowsAuthProvider(this) { AllowAllWindowsAuthUsers = true }, 
                     new CredentialsAuthProvider(),              //HTML Form post of UserName/Password credentials
                     new TwitterAuthProvider(appSettings),       //Sign-in with Twitter
                     new FacebookAuthProvider(appSettings),      //Sign-in with Facebook
