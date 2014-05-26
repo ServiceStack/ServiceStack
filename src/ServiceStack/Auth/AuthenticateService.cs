@@ -23,6 +23,7 @@ namespace ServiceStack.Auth
     {
         public const string BasicProvider = "basic";
         public const string CredentialsProvider = "credentials";
+        public const string WindowsAuthProvider = "windowsauth";
         public const string CredentialsAliasProvider = "login";
         public const string LogoutAction = "logout";
         public const string DigestProvider = "digest";

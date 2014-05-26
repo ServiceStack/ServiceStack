@@ -167,7 +167,7 @@ namespace ServiceStack.Auth
 
         protected static bool LoginMatchesSession(IAuthSession session, string userName)
         {
-            if (userName == null) return false;
+            if (session == null || userName == null) return false;
             var isEmail = userName.Contains("@");
             if (isEmail)
             {
