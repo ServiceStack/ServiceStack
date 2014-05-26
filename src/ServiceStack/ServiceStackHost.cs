@@ -68,6 +68,7 @@ namespace ServiceStack
             ViewEngines = new List<IViewEngine>();
             ServiceExceptionHandlers = new List<HandleServiceExceptionDelegate>();
             UncaughtExceptionHandlers = new List<HandleUncaughtExceptionDelegate>();
+            AfterInitCallbacks = new List<Action<IAppHost>>();
             RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>> {
                  HttpHandlerFactory.ReturnRequestInfo,
                  MiniProfilerHandler.MatchesRequest,
@@ -234,6 +235,8 @@ namespace ServiceStack
 
         public List<HandleUncaughtExceptionDelegate> UncaughtExceptionHandlers { get; set; }
 
+        public List<Action<IAppHost>> AfterInitCallbacks { get; set; }
+
         public List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers { get; set; }
 
         public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
@@ -249,7 +252,6 @@ namespace ServiceStack
         public List<IPlugin> Plugins { get; set; }
 
         public IVirtualPathProvider VirtualPathProvider { get; set; }
-
 
         /// <summary>
         /// Executed immediately before a Service is executed. Use return to change the request DTO used, must be of the same type.
@@ -437,6 +439,18 @@ namespace ServiceStack
                 && !Container.Exists<IAuthRepository>())
             {
                 Container.Register<IAuthRepository>(c => c.Resolve<IUserAuthRepository>());
+            }
+
+            foreach (var callback in AfterInitCallbacks)
+            {
+                try
+                {
+                    callback(this);
+                }
+                catch (Exception ex)
+                {
+                    OnStartupException(ex);
+                }
             }
 
             ReadyAt = DateTime.UtcNow;

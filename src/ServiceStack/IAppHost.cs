@@ -43,6 +43,11 @@ namespace ServiceStack
         IServiceRoutes Routes { get; }
 
         /// <summary>
+        /// Inferred Metadata available from existing services 
+        /// </summary>
+        ServiceMetadata Metadata { get; }
+
+        /// <summary>
         /// Register custom ContentType serializers
         /// </summary>
         IContentTypes ContentTypes { get; }
@@ -86,6 +91,11 @@ namespace ServiceStack
         /// Provide an exception handler for un-caught exceptions
         /// </summary>
         List<HandleUncaughtExceptionDelegate> UncaughtExceptionHandlers { get; }
+
+        /// <summary>
+        /// Provide callbacks to be fired after the AppHost has finished initializing
+        /// </summary>
+        List<Action<IAppHost>> AfterInitCallbacks { get; set; }
 
         /// <summary>
         /// Skip the ServiceStack Request Pipeline and process the returned IHttpHandler instead
