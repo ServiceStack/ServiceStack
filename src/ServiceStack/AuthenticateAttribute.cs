@@ -2,8 +2,6 @@
 using System.Collections.Specialized;
 using System.Linq;
 using ServiceStack.Auth;
-using ServiceStack.Configuration;
-using ServiceStack.Host;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -68,11 +66,8 @@ namespace ServiceStack
                 return;
             }
 
-            if (matchingOAuthConfigs.Any(x => x.Provider == DigestAuthProvider.Name))
-                AuthenticateIfDigestAuth(req, res);
-
-            if (matchingOAuthConfigs.Any(x => x.Provider == BasicAuthProvider.Name))
-                AuthenticateIfBasicAuth(req, res);
+            matchingOAuthConfigs.OfType<IAuthWithRequest>()
+                .Each(x => x.PreAuthenticate(req, res));
 
             var session = req.GetSession();
             if (session == null || !matchingOAuthConfigs.Any(x => session.IsAuthorized(x.Provider)))
@@ -106,49 +101,6 @@ namespace ServiceStack
             res.RedirectToUrl(url);
         }
 
-        public static void AuthenticateIfBasicAuth(IRequest req, IResponse res)
-        {
-            //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
-            SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
-
-            var userPass = req.GetBasicAuthUserAndPassword();
-            if (userPass != null)
-            {
-                var authService = ((IResolver) req).TryResolve<AuthenticateService>();
-                authService.Request = req;
-                var response = authService.Post(new Authenticate
-                {
-                    provider = BasicAuthProvider.Name,
-                    UserName = userPass.Value.Key,
-                    Password = userPass.Value.Value
-                });
-            }
-        }
-
-        public static void AuthenticateIfDigestAuth(IRequest req, IResponse res)
-        {
-            //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
-            SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
-
-            var digestAuth = req.GetDigestAuth();
-            if (digestAuth != null)
-            {
-                var authService = ((IResolver) req).TryResolve<AuthenticateService>();
-                authService.Request = req;
-                var response = authService.Post(new Authenticate
-                {
-                    provider = DigestAuthProvider.Name,
-                    nonce = digestAuth["nonce"],
-                    uri = digestAuth["uri"],
-                    response = digestAuth["response"],
-                    qop = digestAuth["qop"],
-                    nc = digestAuth["nc"],
-                    cnonce = digestAuth["cnonce"],
-                    UserName = digestAuth["username"]
-                });
-            }
-        }
-
         private static string ToQueryString(INameValueCollection queryStringCollection)
         {
             return ToQueryString((NameValueCollection)queryStringCollection.Original);
@@ -161,6 +113,5 @@ namespace ServiceStack
 
             return "?" + queryStringCollection.ToFormUrlEncoded();
         }
-
     }
 }

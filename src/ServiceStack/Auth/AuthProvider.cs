@@ -4,7 +4,6 @@ using System.Configuration;
 using System.Net;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth

@@ -4,22 +4,12 @@ using System.Globalization;
 using System.Net;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
-    public class DigestAuthProvider : AuthProvider
+    public class DigestAuthProvider : AuthProvider, IAuthWithRequest
     {
-        //private class DigestAuthValidator : AbstractValidator<Authenticate>
-        //{
-        //    public DigestAuthValidator()
-        //    {
-        //        RuleFor(x => x.UserName).NotEmpty();
-        //        RuleFor(x => x.Password).NotEmpty();
-        //    }
-        //}
-
         public static string Name = AuthenticateService.DigestProvider;
         public static string Realm = "/auth/" + AuthenticateService.DigestProvider;
         public static int NonceTimeOut = 600;
@@ -147,6 +137,30 @@ namespace ServiceStack.Auth
                 HttpHeaders.WwwAuthenticate,
                 "{0} realm=\"{1}\", nonce=\"{2}\", qop=\"auth\"".Fmt(Provider, AuthRealm, digestHelper.GetNonce(httpReq.UserHostAddress, PrivateKey)));
             httpRes.EndRequest();
+        }
+
+        public void PreAuthenticate(IRequest req, IResponse res)
+        {
+            //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
+            SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
+
+            var digestAuth = req.GetDigestAuth();
+            if (digestAuth != null)
+            {
+                var authService = req.TryResolve<AuthenticateService>();
+                authService.Request = req;
+                var response = authService.Post(new Authenticate
+                {
+                    provider = Name,
+                    nonce = digestAuth["nonce"],
+                    uri = digestAuth["uri"],
+                    response = digestAuth["response"],
+                    qop = digestAuth["qop"],
+                    nc = digestAuth["nc"],
+                    cnonce = digestAuth["cnonce"],
+                    UserName = digestAuth["username"]
+                });
+            }
         }
     }
 }
