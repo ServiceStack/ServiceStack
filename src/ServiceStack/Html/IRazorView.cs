@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using ServiceStack.Web;
 
 namespace ServiceStack.Html
@@ -8,7 +9,7 @@ namespace ServiceStack.Html
         bool TryGetItem(string name, out object result);
     }
 
-    public interface IRazorView
+    public interface IRazorView : IDisposable
     {
         IViewBag TypedViewBag { get; }
         string Layout { get; set; }
