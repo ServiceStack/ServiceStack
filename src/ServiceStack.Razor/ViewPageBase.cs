@@ -467,6 +467,12 @@ namespace ServiceStack.Razor
         {
             try
             {
+                if (this.ChildPage != null) this.ChildPage.Dispose();
+                this.ChildPage = null;
+            }
+            catch { }
+            try
+            {
                 if (cache != null) cache.Dispose();
                 cache = null;
             }

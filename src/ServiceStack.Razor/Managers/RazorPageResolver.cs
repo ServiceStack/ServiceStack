@@ -89,8 +89,10 @@ namespace ServiceStack.Razor.Managers
             httpRes.ContentType = MimeTypes.Html;
 
             var contentPage = ResolveContentPage(httpReq);
-            ExecuteRazorPage(httpReq, httpRes, null, contentPage);
-            httpRes.EndRequest(skipHeaders: true);
+            using (ExecuteRazorPage(httpReq, httpRes, null, contentPage)) 
+            { 
+                httpRes.EndRequest(skipHeaders: true);
+            }
         }
 
         /// <summary>
@@ -110,10 +112,11 @@ namespace ServiceStack.Razor.Managers
             if (existingRazorPage == null)
                 return false;
 
-            ExecuteRazorPage(httpReq, httpRes, dto, existingRazorPage);
-
-            httpRes.EndRequest();
-            return true;
+            using (ExecuteRazorPage(httpReq, httpRes, dto, existingRazorPage))
+            {
+                httpRes.EndRequest();
+                return true;    
+            }
         }
 
         public RazorPage ResolveContentPage(IRequest httpReq)

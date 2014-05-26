@@ -213,7 +213,11 @@ namespace ServiceStack.Razor
         public string RenderToHtml(RazorPage razorPage, object model = null, string layout = null)
         {
             IRazorView razorView;
-            return RenderToHtml(razorPage, out razorView, model: model, layout: layout);
+            var result = RenderToHtml(razorPage, out razorView, model: model, layout: layout);
+            using (razorView) 
+            { 
+                return result;
+            }
         }
 
         public string RenderToHtml(RazorPage razorPage, out IRazorView razorView, object model = null, string layout = null)
