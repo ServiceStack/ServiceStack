@@ -48,7 +48,7 @@ namespace ServiceStack.Logging
 		{
 		}
 
-		public bool IsDebugEnabled { get { return true; } }
+        public bool IsDebugEnabled { get; set; }
 
     	public void Debug(object message)
 		{

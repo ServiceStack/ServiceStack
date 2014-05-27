@@ -8,16 +8,23 @@ namespace ServiceStack.Logging
     /// 
     /// Made public so its testable
     /// </summary>
-	public class ConsoleLogFactory : ILogFactory
+    public class ConsoleLogFactory : ILogFactory
     {
+        private readonly bool debugEnabled;
+
+        public ConsoleLogFactory(bool debugEnabled = true)
+        {
+            this.debugEnabled = debugEnabled;
+        }
+
         public ILog GetLogger(Type type)
         {
-            return new ConsoleLogger(type);
+            return new ConsoleLogger(type) { IsDebugEnabled = debugEnabled };
         }
 
         public ILog GetLogger(string typeName)
         {
-			return new ConsoleLogger(typeName);
+            return new ConsoleLogger(typeName) { IsDebugEnabled = debugEnabled };
         }
     }
 }

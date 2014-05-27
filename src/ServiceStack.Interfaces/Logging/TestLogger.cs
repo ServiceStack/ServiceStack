@@ -36,7 +36,7 @@ namespace ServiceStack.Logging
 
         static public IList<KeyValuePair<Levels, string>> GetLogs() { return _logs; }
 
-        public bool IsDebugEnabled { get { return true; } }
+        public bool IsDebugEnabled { get; set; }
 
         /// <summary>
         /// Logs the specified message.

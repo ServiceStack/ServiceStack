@@ -30,7 +30,7 @@ namespace ServiceStack.Logging
         {
         }
 
-		public bool IsDebugEnabled { get { return true; } }
+        public bool IsDebugEnabled { get; set; }
 		
 		/// <summary>
         /// Logs the specified message.
