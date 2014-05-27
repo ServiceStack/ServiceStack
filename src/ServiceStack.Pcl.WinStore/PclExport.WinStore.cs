@@ -16,7 +16,7 @@ namespace ServiceStack
 
         public WinStorePclExport()
         {
-            this.PlatformName = "WindowsStore";
+            this.PlatformName = Platforms.WindowsStore;
         }
 
         public static PclExport Configure()
@@ -97,7 +97,7 @@ namespace ServiceStack
                         try
                         {
                             var filename = file.Name.Substring(0, file.Name.Length - file.FileType.Length);
-                            var name = new AssemblyName { Name = filename };
+                            AssemblyName name = new AssemblyName() { Name = filename };
                             Assembly asm = Assembly.Load(name);
                             assemblies.Add(asm);
                         }

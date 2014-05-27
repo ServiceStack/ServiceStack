@@ -8,6 +8,7 @@ using System.Net;
 using System.Threading;
 using System.Web;
 using ServiceStack.Pcl;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -50,7 +51,11 @@ namespace ServiceStack
                 }
             }
 
-            //webRequest.CookieContainer = client.CookieContainer; //throws NotImplementedException
+            try
+            {
+                webRequest.CookieContainer = client.CookieContainer;
+            }
+            catch (NotImplementedException) {}
         }
 
         public override void SetCookieContainer(HttpWebRequest webRequest, AsyncServiceClient client)
@@ -65,7 +70,11 @@ namespace ServiceStack
                 }
             }
 
-            //webRequest.CookieContainer = client.CookieContainer; //throws NotImplementedException
+            try
+            {
+                webRequest.CookieContainer = client.CookieContainer;
+            }
+            catch (NotImplementedException) {}
         }
 
         public override void SynchronizeCookies(AsyncServiceClient client)

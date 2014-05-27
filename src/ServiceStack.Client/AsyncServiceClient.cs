@@ -190,8 +190,10 @@ namespace ServiceStack
             //EmulateHttpViaPost is also forced for SL5 clients sending non GET/POST requests
             PclExport.Instance.Config(webRequest, userAgent: UserAgent);
 
-            if (this.Credentials != null) webRequest.Credentials = this.Credentials;
-            if (this.AlwaysSendBasicAuthHeader) webRequest.AddBasicAuth(this.UserName, this.Password);
+            if (this.Credentials != null) 
+                webRequest.Credentials = this.Credentials;
+            if (this.AlwaysSendBasicAuthHeader) 
+                webRequest.AddBasicAuth(this.UserName, this.Password);
 
             ApplyWebRequestFilters(webRequest);
 
