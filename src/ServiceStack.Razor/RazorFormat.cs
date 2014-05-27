@@ -30,6 +30,7 @@ namespace ServiceStack.Razor
 
             Deny = new List<Predicate<string>> {
                 DenyPathsWithLeading_,
+                DenyDirectAccessToViews
             };
 
             LoadFromAssemblies = new List<Assembly>();
@@ -54,6 +55,11 @@ namespace ServiceStack.Razor
         static bool DenyPathsWithLeading_(string path)
         {
             return Path.GetFileName(path).StartsWith("_");
+        }
+
+        static bool DenyDirectAccessToViews(string path)
+        {
+            return path.StartsWithIgnoreCase("/views");
         }
 
         public bool WatchForModifiedPages

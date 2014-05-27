@@ -392,6 +392,12 @@ namespace RazorRockstars.Console.Files
                 View_RequestFiltersPage,
                 "<h3>QueryStrings:0</h3>");
         }
+
+        [Test]
+        public void Does_not_allow_direct_access_to_ViewPages()
+        {
+            AssertStatus(Host + "/Views/SimpleView", HttpStatusCode.NotFound);
+        }
     }
 }
 
