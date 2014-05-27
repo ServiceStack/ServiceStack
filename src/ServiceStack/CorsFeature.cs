@@ -24,6 +24,11 @@ namespace ServiceStack
 
         private readonly ICollection<string> allowOriginWhitelist;
 
+        public ICollection<string> AllowOriginWhitelist
+        {
+            get { return allowOriginWhitelist; }
+        }
+
         public bool AutoHandleOptionsRequests { get; set; }
 
         /// <summary>
