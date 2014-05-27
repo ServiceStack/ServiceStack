@@ -2,6 +2,7 @@
 
 namespace PclTest.ServiceModel
 {
+    [Route("/hello")]
     public class Hello : IReturn<HelloResponse>
     {
         public string Name { get; set; }
@@ -12,5 +13,11 @@ namespace PclTest.ServiceModel
         public string Result { get; set; }
 
         public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [Route("/helloauth")]
+    public class HelloAuth : IReturn<HelloResponse>
+    {
+        public string Name { get; set; }
     }
 }
