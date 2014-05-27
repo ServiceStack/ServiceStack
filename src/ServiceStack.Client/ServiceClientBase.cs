@@ -419,6 +419,15 @@ namespace ServiceStack
             }
         }
 
+        protected T Deserialize<T>(string text)
+        {
+            using (__requestAccess())
+            using (var ms = new MemoryStream(text.ToUtf8Bytes()))
+            {
+                return DeserializeFromStream<T>(ms);
+            }
+        }
+
         public virtual TResponse Send<TResponse>(IReturn<TResponse> request)
         {
             return Send<TResponse>((object)request);
@@ -713,7 +722,7 @@ namespace ServiceStack
                 GlobalRequestFilter(client);
         }
 
-        private IDisposable __requestAccess()
+        protected IDisposable __requestAccess()
         {
             return LicenseUtils.RequestAccess(AccessToken.__accessToken, LicenseFeature.Client, LicenseFeature.Text);
         }
