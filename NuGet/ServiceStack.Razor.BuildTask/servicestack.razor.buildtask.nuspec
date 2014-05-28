@@ -20,6 +20,7 @@
     <language>en-US</language>
     <copyright>Copyright 2013 Service Stack</copyright>
     <dependencies>
+      <dependency id="ServiceStack.Razor" version="4.0" />
     </dependencies>
   </metadata>
   <files>
