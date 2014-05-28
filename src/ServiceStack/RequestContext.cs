@@ -12,7 +12,7 @@ namespace ServiceStack
 
         /// <summary>
         /// Tell ServiceStack to use ThreadStatic Items Collection for RequestScoped items.
-        /// Warning: ThreadStatic Items aren't pinned when using async services.
+        /// Warning: ThreadStatic Items aren't pinned to the same request in async services which callback on different threads.
         /// </summary>
         public static bool UseThreadStatic;
 
@@ -61,13 +61,13 @@ namespace ServiceStack
         {
             try
             {
-                if (!UseThreadStatic)
+                if (UseThreadStatic)
                 {
-                    CallContext.LogicalSetData(_key, items ?? (items = new ConcurrentDictionary<object, object>()));
+                    RequestItems = items ?? (items = new Dictionary<object, object>());
                 }
                 else
                 {
-                    RequestItems = items ?? (items = new Dictionary<object, object>());
+                    CallContext.LogicalSetData(_key, items ?? (items = new ConcurrentDictionary<object, object>()));
                 }
             }
             catch (NotImplementedException)
@@ -88,10 +88,10 @@ namespace ServiceStack
 
         public void EndRequest()
         {
-            if (!UseThreadStatic)
-                CallContext.FreeNamedDataSlot(_key);
-            else
+            if (UseThreadStatic)
                 Items = null;
+            else
+                CallContext.FreeNamedDataSlot(_key);
         }
 
         /// <summary>
