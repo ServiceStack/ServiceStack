@@ -228,7 +228,7 @@ var CUSTOM_PROJS = [{
         var replaceTexts = {
             '<MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>': '<MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>',
             '<TargetFrameworkVersion>v4.5</TargetFrameworkVersion>': '<TargetFrameworkVersion>v4.0</TargetFrameworkVersion>',
-            '<TargetFrameworkProfile>Profile7</TargetFrameworkProfile>': '<TargetFrameworkProfile>Profile158</TargetFrameworkProfile>'
+            '<TargetFrameworkProfile>Profile7</TargetFrameworkProfile>': '<TargetFrameworkProfile>Profile136</TargetFrameworkProfile>'
         };
         if (code == 'PCL') {
             for (var needle in replaceTexts) {

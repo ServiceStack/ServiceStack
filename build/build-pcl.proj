@@ -95,8 +95,8 @@
     <MSBuild Projects="../src/ServiceStack.Interfaces/ServiceStack.Interfaces.Pcl.csproj" Properties="Configuration=$(Configuration);DefineConstants=PCL"/>
     <Copy SourceFiles="%(InterfacesFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/lib/portable-wp80+sl5+net45+win8+monotouch+monoandroid" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/lib/portable-wp80+sl5+net45+win8+monotouch+monoandroid')" />
-    <Copy SourceFiles="%(InterfacesFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/lib/portable-wp80+sl5+net45+win8+monotouch+monoandroid" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/lib/portable-wp80+sl5+net40+win8+monotouch+monoandroid" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/lib/portable-wp80+sl5+net40+win8+monotouch+monoandroid')" />
+    <Copy SourceFiles="%(InterfacesFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/lib/portable-wp80+sl5+net40+win8+monotouch+monoandroid" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/servicestack.interfaces.pcl.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
