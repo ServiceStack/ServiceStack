@@ -9,7 +9,16 @@ namespace ServiceStack
     public class RequestContext
     {
         public static readonly RequestContext Instance = new RequestContext();
-        
+
+        /// <summary>
+        /// Tell ServiceStack to use ThreadStatic Items Collection for RequestScoped items.
+        /// Warning: ThreadStatic Items aren't pinned when using async services.
+        /// </summary>
+        public static bool UseThreadStatic;
+
+        [ThreadStatic] 
+        public static IDictionary RequestItems;
+ 
 		/// <summary>
 		/// Gets a list of items for this request. 
 		/// </summary>
@@ -36,6 +45,9 @@ namespace ServiceStack
         {
             try
             {
+                if (UseThreadStatic)
+                    return RequestItems;
+
                 return CallContext.LogicalGetData(_key) as IDictionary;
             }
             catch (NotImplementedException)
@@ -49,7 +61,14 @@ namespace ServiceStack
         {
             try
             {
-                CallContext.LogicalSetData(_key, items ?? (items = new ConcurrentDictionary<object, object>()));
+                if (!UseThreadStatic)
+                {
+                    CallContext.LogicalSetData(_key, items ?? (items = new ConcurrentDictionary<object, object>()));
+                }
+                else
+                {
+                    RequestItems = items ?? (items = new Dictionary<object, object>());
+                }
             }
             catch (NotImplementedException)
             {
@@ -69,7 +88,10 @@ namespace ServiceStack
 
         public void EndRequest()
         {
-            CallContext.FreeNamedDataSlot(_key);
+            if (!UseThreadStatic)
+                CallContext.FreeNamedDataSlot(_key);
+            else
+                Items = null;
         }
 
         /// <summary>
