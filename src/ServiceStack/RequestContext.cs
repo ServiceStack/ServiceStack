@@ -16,16 +16,16 @@ namespace ServiceStack
         /// </summary>
         public static bool UseThreadStatic;
 
-        [ThreadStatic] 
+        [ThreadStatic]
         public static IDictionary RequestItems;
- 
-		/// <summary>
-		/// Gets a list of items for this request. 
-		/// </summary>
-		/// <remarks>This list will be cleared on every request and is specific to the original thread that is handling the request.
-		/// If a handler uses additional threads, this data will not be available on those threads.
-		/// </remarks>
-		public virtual IDictionary Items
+
+        /// <summary>
+        /// Gets a list of items for this request. 
+        /// </summary>
+        /// <remarks>This list will be cleared on every request and is specific to the original thread that is handling the request.
+        /// If a handler uses additional threads, this data will not be available on those threads.
+        /// </remarks>
+        public virtual IDictionary Items
         {
             get
             {
@@ -83,7 +83,7 @@ namespace ServiceStack
             if (Items.Contains(typeof(T).Name))
                 return (T)Items[typeof(T).Name];
 
-            return (T) (Items[typeof(T).Name] = createFn());
+            return (T)(Items[typeof(T).Name] = createFn());
         }
 
         public void EndRequest()
@@ -108,7 +108,7 @@ namespace ServiceStack
             if (!Items.Contains(DispsableTracker.HashId))
                 Items[DispsableTracker.HashId] = dispsableTracker = new DispsableTracker();
             if (dispsableTracker == null)
-                dispsableTracker = (DispsableTracker) Items[DispsableTracker.HashId];
+                dispsableTracker = (DispsableTracker)Items[DispsableTracker.HashId];
             dispsableTracker.Add(instance);
         }
     }

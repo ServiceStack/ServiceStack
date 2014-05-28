@@ -142,7 +142,7 @@ namespace ServiceStack
 
                 pathProviders.AddRange(Config.EmbeddedResourceBaseTypes.Distinct().Map(x =>
                     new ResourceVirtualPathProvider(this, x)));
-                
+
                 pathProviders.AddRange(Config.EmbeddedResourceSources.Distinct().Map(x =>
                     new ResourceVirtualPathProvider(this, x)));
 
@@ -429,7 +429,7 @@ namespace ServiceStack
                     Container.Register<ICacheClient>(new MemoryCacheClient());
             }
 
-            if (Container.Exists<IMessageService>() 
+            if (Container.Exists<IMessageService>()
                 && !Container.Exists<IMessageFactory>())
             {
                 Container.Register(c => c.Resolve<IMessageService>().MessageFactory);

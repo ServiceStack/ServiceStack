@@ -177,7 +177,7 @@ namespace ServiceStack
             }
 
             if (mode != null && pathInfo.EndsWith(mode))
-            { 
+            {
                 var requestPath = context.Request.Path.ToLower();
                 if (requestPath == "/" + mode
                     || requestPath == mode
@@ -259,7 +259,7 @@ namespace ServiceStack
 
                 if (mode == null)
                     return DefaultHttpHandler;
-                 
+
                 if (DefaultRootFileName != null)
                     return StaticFileHandler;
 
@@ -293,7 +293,7 @@ namespace ServiceStack
 
         internal static IHttpHandler ReturnRequestInfo(IHttpRequest httpReq)
         {
-            if ((HostContext.DebugMode 
+            if ((HostContext.DebugMode
                 || HostContext.Config.AdminAuthSecret != null)
                 && httpReq.QueryString["debug"] == RequestInfoHandler.RestPath)
             {
@@ -330,7 +330,7 @@ namespace ServiceStack
 
             string contentType;
             var restPath = RestHandler.FindMatchingRestPath(httpMethod, pathInfo, out contentType);
-            if (restPath != null) 
+            if (restPath != null)
                 return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
 
             var existingFile = pathParts[0].ToLower();
@@ -355,20 +355,20 @@ namespace ServiceStack
                         }
                     }
                 }
-                
+
                 //e.g. CatchAllHandler to Process Markdown files
                 var catchAllHandler = GetCatchAllHandlerIfAny(httpMethod, pathInfo, filePath);
                 if (catchAllHandler != null) return catchAllHandler;
 
                 if (!isFileRequest)
                 {
-                    return appHost.VirtualPathProvider.DirectoryExists(pathInfo) 
-                        ? StaticFileHandler 
+                    return appHost.VirtualPathProvider.DirectoryExists(pathInfo)
+                        ? StaticFileHandler
                         : NotFoundHttpHandler;
                 }
 
-                return ShouldAllow(requestPath) 
-                    ? StaticFileHandler 
+                return ShouldAllow(requestPath)
+                    ? StaticFileHandler
                     : ForbiddenHttpHandler;
             }
 

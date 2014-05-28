@@ -48,7 +48,7 @@ namespace ServiceStack
 
             var appHostDll = new FileInfo(ProjectTargetPath).Name;
             configPath = ProjectDir + "{0}.config".Fmt(appHostDll);
-            if (!File.Exists(configPath)) 
+            if (!File.Exists(configPath))
                 return null;
 
             appConfigPath = configPath;
@@ -73,7 +73,7 @@ namespace ServiceStack
                     return razorNamespaces;
 
                 razorNamespaces = new HashSet<string>();
-                
+
                 //Infer from <system.web.webPages.razor> - what VS.NET's intell-sense uses
                 var configPath = HostContext.AppConfigPath;
                 if (configPath != null)
@@ -97,7 +97,7 @@ namespace ServiceStack
                 return razorNamespaces;
             }
         }
-        
+
         private HashSet<string> razorNamespaces;
         private const string NamespacesAppSettingsKey = "servicestack.razor.namespaces";
     }

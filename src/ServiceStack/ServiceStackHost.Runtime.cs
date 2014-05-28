@@ -224,8 +224,8 @@ namespace ServiceStack
                 return authFeature.GetDefaultSessionExpiry();
 
             var sessionFeature = this.GetPlugin<SessionFeature>();
-            return sessionFeature != null 
-                ? sessionFeature.SessionExpiry 
+            return sessionFeature != null
+                ? sessionFeature.SessionExpiry
                 : SessionFeature.DefaultSessionExpiry;
         }
 
@@ -340,7 +340,7 @@ namespace ServiceStack
         }
 
         public virtual void OnExceptionTypeFilter(Exception ex, ResponseStatus responseStatus)
-        { 
+        {
             var argEx = ex as ArgumentException;
             var isValidationSummaryEx = argEx is ValidationException;
             if (argEx != null && !isValidationSummaryEx && argEx.ParamName != null)
@@ -350,7 +350,8 @@ namespace ServiceStack
                     ? argEx.Message.Substring(0, paramMsgIndex)
                     : argEx.Message;
 
-                responseStatus.Errors.Add(new ResponseError {
+                responseStatus.Errors.Add(new ResponseError
+                {
                     ErrorCode = ex.GetType().Name,
                     FieldName = argEx.ParamName,
                     Message = errorMsg,
