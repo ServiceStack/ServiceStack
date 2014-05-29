@@ -36,4 +36,18 @@
             return request;
         }
     }
+
+    public class RequiresAuth : IReturn<RequiresAuth>
+    {
+        public string Name { get; set; }        
+    }
+
+    [Authenticate]
+    public class AuthService : Service
+    {
+        public object Any(RequiresAuth request)
+        {
+            return request;
+        }
+    }
 }
