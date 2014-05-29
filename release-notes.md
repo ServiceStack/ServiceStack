@@ -4,9 +4,9 @@
 
 ## Authentication
 
-### Windows Auth Provider
+### Windows Auth Provider for ASP.NET
 
-A new ASP.NET WindowsAuth Provider preview is available. This is essentially a wrapper around the existing Windows Auth support baked into ASP.NET and an adapter for [ServiceStack's Multi-Provider Auth model](https://github.com/ServiceStack/ServiceStack/wiki/Authentication-and-authorization).
+An ASP.NET WindowsAuth Provider preview is available. This essentially wraps the existing Windows Auth support baked into ASP.NET and adds an adapter for [ServiceStack's Multi-Provider Authentication model](https://github.com/ServiceStack/ServiceStack/wiki/Authentication-and-authorization).
 
 It can be registered just like any other Auth Provider, i.e. in the AuthFeature plugin:
 
@@ -21,7 +21,7 @@ Plugins.Add(new AuthFeature(
 
 By default it only allows access to users in `AspNetWindowsAuthProvider.LimitAccessToRoles`, but can be overridden with `AllowAllWindowsAuthUsers=true` to allow access to all Windows Auth users as seen in the example above. 
 
-Credentials can be attached to ServiceStack's Service Clients the same way [as normal WebRequest's](http://stackoverflow.com/a/3563033/85785) by assingning it to the `Credentials` property, e.g:
+Credentials can be attached to ServiceStack's Service Clients the same way [as .NET WebRequest's](http://stackoverflow.com/a/3563033/85785) by assingning the `Credentials` property, e.g:
 
 ```csharp
 var client = new JsonServiceClient(BaseUri) {
@@ -31,11 +31,11 @@ var client = new JsonServiceClient(BaseUri) {
 var response = client.Get(new RequiresAuth { Name = "Haz Access!" });
 ```
 
-To help with debugging, [?debug=requestinfo](https://github.com/ServiceStack/ServiceStack/wiki/Debugging#request-info) has been extended to include the Request's current Logon Windows Auth info:
+To help with debugging, [?debug=requestinfo](https://github.com/ServiceStack/ServiceStack/wiki/Debugging#request-info) has been extended to include the Request's current Logon User info:
 
 ![WindowsAuth DebugInfo](https://github.com/ServiceStack/Assets/raw/master/img/release-notes/debuginfo-windowsauth.png)
 
-> We're interested in hearing more use-cases we can support, feedback on this and future integration with Windows Auth are welcomed on [the Active Directory Integration feature request](http://servicestack.uservoice.com/forums/176786-feature-requests/suggestions/4725924-built-in-active-directory-authentication-suport).
+> We're interested in hearing future use-cases this can support, feedback on this and future integration with Windows Auth are welcomed on [the Active Directory Integration feature request](http://servicestack.uservoice.com/forums/176786-feature-requests/suggestions/4725924-built-in-active-directory-authentication-suport).
 
 ### New GitHub and other OAuth Providers available
 
@@ -94,7 +94,7 @@ By default `BenchmarksAnalyzer.exe` will scan the directory where it's run from,
 
 > Note: It can also be specified as a command-line argument, e.g: "BenchmarksAnalyzer.exe path\to\outputs"
 
-### ServiceStack.Gap Developer Guides
+### ServiceStack.Gap Developer Guide
 
 The guides on how each application was created is on [ServiceStack.Gap](https://github.com/ServiceStack/ServiceStack.Gap) site, i.e:
 
@@ -128,7 +128,7 @@ public override void Configure(Container container)
 }
 ```
 
-Typed Filters can also be used to apply custom behavior on Request DTO's that share the same interface, e.g:
+Typed Filters can also be used to apply custom behavior on Request DTO's sharing a common interface, e.g:
 
 ```csharp
 public override void Configure(Container container)
@@ -158,7 +158,7 @@ You can register callbacks to add custom logic straight after the AppHost has fi
 ```csharp
 appHost.AfterInitCallbacks.Add(host =>
 {
-    var allRoles = host.Metadata.OperationsMap
+    var allRoleNames = host.Metadata.OperationsMap
         .SelectMany(x => x.Key.AllAttributes<RequiredRoleAttribute>()
             .Concat(x.Value.ServiceType.AllAttributes<RequiredRoleAttribute>()))
         .SelectMany(x => x.RequiredRoles);
@@ -189,13 +189,13 @@ Detailed command logging is now enabled in OrmLite and Redis when `debugEnabled=
 
 ### Razor
 
- - Enabled support for Razor `@helpers` and `@funtions` in Razor Views
+ - Enabled support for Razor `@helpers` and `@functions` in Razor Views
  - Direct access to Razor Views in `/Views` is now denied by default
 
 ### Service Clients
 
  - Change Silverlight to auto emulate HTTP Verbs for non GET or POST requests
- - Shorter aliases added on PostFileWithRequest which uses auto-generated urls on Request DTOs
+ - Shorter aliases added on `PostFileWithRequest` which uses the Request DTO's auto-generated url
  - The [PCL version of ServiceStack.Interfaces](https://github.com/ServiceStack/Hello) now supports a min version of .NET 4.0
 
 ## OrmLite
@@ -246,7 +246,7 @@ OrmLiteConfig.DialectProvider.ExecFilter = execFilter;
 
 ### OrmLite's custom SqlBuilders now implement ISqlExpression
 
-OrmLite provides good support in integrating with any Custom SQL builders that implement OrmLite's simple `ISqlExpression` interface which can be passed directly to `db.Select()` API. This has now been added to OrmLite's other built-in SQL Builders, e.g:
+OrmLite provides good support in integrating with external or custom SQL builders that implement OrmLite's simple `ISqlExpression` interface which can be passed directly to `db.Select()` API. This has now been added to OrmLite's other built-in SQL Builders, e.g:
 
 #### Using JoinSqlBuilder
 
