@@ -1,5 +1,279 @@
 # Release Notes
 
+# v4.0.21 Release Notes
+
+## Authentication
+
+### Windows Auth Provider
+
+A new ASP.NET WindowsAuth Provider preview is available. This is essentially a wrapper around the existing Windows Auth support baked into ASP.NET and an adapter for [ServiceStack's Multi-Provider Auth model](https://github.com/ServiceStack/ServiceStack/wiki/Authentication-and-authorization).
+
+It can be registered just like any other Auth Provider, i.e. in the AuthFeature plugin:
+
+```csharp
+Plugins.Add(new AuthFeature(
+    () => new CustomUserSession(), 
+    new IAuthProvider[] {
+        new AspNetWindowsAuthProvider(this) { AllowAllWindowsAuthUsers = true }, 
+    }
+));
+```
+
+By default it only allows access to users in `AspNetWindowsAuthProvider.LimitAccessToRoles`, but can be overridden with `AllowAllWindowsAuthUsers=true` to allow access to all Windows Auth users as seen in the example above. 
+
+Credentials can be attached to ServiceStack's Service Clients the same way [as normal WebRequest's](http://stackoverflow.com/a/3563033/85785) by assingning it to the `Credentials` property, e.g:
+
+```csharp
+var client = new JsonServiceClient(BaseUri) {
+    Credentials = CredentialCache.DefaultCredentials,
+};
+
+var response = client.Get(new RequiresAuth { Name = "Haz Access!" });
+```
+
+To help with debugging, [?debug=requestinfo](https://github.com/ServiceStack/ServiceStack/wiki/Debugging#request-info) has been extended to include the Request's current Logon Windows Auth info:
+
+![WindowsAuth DebugInfo](https://github.com/ServiceStack/Assets/raw/master/img/release-notes/debuginfo-windowsauth.png)
+
+> Feedback on this feature and future integration with Windows Auth are welcomed on [the Active Directory feature request](http://servicestack.uservoice.com/forums/176786-feature-requests/suggestions/4725924-built-in-active-directory-authentication-suport).
+
+### New GitHub and other OAuth Providers available
+
+Thanks to [Rouslan Grabar](https://github.com/iamruss) we now have a number of new OAuth providers built into ServiceStack, including authentication with GitHub, Russia's most popular search engine [Yandex](http://www.yandex.ru/) and Europe's largest Social Networks after Facebook, [VK](http://vk.com) and [Odnoklassniki](http://odnoklassniki.ru/):
+
+```csharp
+Plugins.Add(new AuthFeature(
+    () => new CustomUserSession(), 
+    new IAuthProvider[] {
+        new GithubAuthProvider(appSettings), 
+        new YandexAuthProvider(appSettings), 
+        new VkAuthProvider(appSettings), 
+        new OdnoklassnikiAuthProvider(appSettings), 
+    }
+));
+```
+
+### Extended Auth DTO's
+
+You can test whether a user is authenticated by calling the Auth Service without any parameters, e.g. `/auth` which will return summary auth info of the currently authenticated user or a 401 if the user is not authenticated.
+
+A `DisplayName` property was added to `AuthenticateResponse` to return a friendly name of the currently authenticated user.
+
+## Portable ServiceStack
+
+A new [ServiceStack.Gap](https://github.com/ServiceStack/ServiceStack.Gap) Repository and NuGet package was added to help with creating embedded ServiceStack-powered Desktop applications.
+
+ServiceStack has a number of features that's particularly suited for these kind of apps:
+
+ - It allows your services to be self-hosted using .NET's HTTP Listener
+ - It supports pre-compiled Razor Views
+ - It supports Embedded resources
+ - It supports an embedded database in Sqlite and OrmLite
+ - It can be ILMerged into a single .exe
+
+Combined together this allows you to encapsulate your ServiceStack application into a single cross-platform .exe that can run on Windows or OSX.
+
+To illustrate the potential of embedded ServiceStack solutions, a portable version [httpbenchmarks.servicestack.net](https://httpbenchmarks.servicestack.net) was created targetting a number of platforms below:
+
+> **[BenchmarksAnalyzer.zip](https://github.com/ServiceStack/ServiceStack.Gap/raw/master/deploy/BenchmarksAnalyzer.zip)** - Single .exe that opens the BenchmarksAnalyzer app in the users browser
+
+[![Partial Console Screenshot](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/gap/partial-exe.png)](https://github.com/ServiceStack/ServiceStack.Gap/raw/master/deploy/BenchmarksAnalyzer.zip)
+
+> **[BenchmarksAnalyzer.Mac.zip](https://github.com/ServiceStack/ServiceStack.Gap/raw/master/deploy/BenchmarksAnalyzer.Mac.zip)** - Self-hosted app running inside a OSX Cocoa App Web Browser
+
+[![Partial OSX Screenshot](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/gap/partial-osx.png)](https://github.com/ServiceStack/ServiceStack.Gap/raw/master/deploy/BenchmarksAnalyzer.Mac.zip)
+
+> **[BenchmarksAnalyzer.Windows.zip](https://github.com/ServiceStack/ServiceStack.Gap/raw/master/deploy/BenchmarksAnalyzer.Windows.zip)** - Self-hosted app running inside a Native WinForms app inside [CEF](https://code.google.com/p/chromiumembedded/)
+
+[![Partial Windows Screenshot](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/gap/partial-win.png)](https://github.com/ServiceStack/ServiceStack.Gap/raw/master/deploy/BenchmarksAnalyzer.Windows.zip)
+
+The guides on how each application was created is on [ServiceStack.Gap](https://github.com/ServiceStack/ServiceStack.Gap) site, i.e:
+
+ - [Self-Hosting Console App](https://github.com/ServiceStack/ServiceStack.Gap#self-hosting-console-app)
+ - [Windows Forms App with Chromium Embedded Framework and CefSharp](https://github.com/ServiceStack/ServiceStack.Gap#winforms-with-chromium-embedded-framework)
+ - [Mac OSX Cocoa App with Xmarain.Mac](https://github.com/ServiceStack/ServiceStack.Gap#mac-osx-cocoa-app-with-xmarainmac)
+
+## Other ServiceStack Framework Features
+
+### Filtering support added to Metadata pages
+
+You can now filter services on ServiceStack's `/metadata` page:
+
+![Metadata Filter](https://github.com/ServiceStack/Assets/raw/master/img/release-notes/metadata-filter.png)
+
+### Typed Request Filters
+
+A more typed API to register Global Request and Response filters per Request DTO Type are available under the `RegisterTyped*` API's in AppHost. These can be used to provide more flexibility in multi-tenant solutions by attaching custom data on incoming requests, e.g:
+
+```csharp
+public override void Configure(Container container)
+{
+    RegisterTypedRequestFilter<Resource>((req, res, dto) =>
+    {
+        var route = req.GetRoute();
+        if (route != null && route.Path == "/tenant/{TenantName}/resource")
+        {
+            dto.SubResourceName = "CustomResource";
+        }
+    });
+}
+```
+
+Typed Filters can also be used to apply custom behavior on Request DTO's that share the same interface, e.g:
+
+```csharp
+public override void Configure(Container container)
+{
+    RegisterTypedRequestFilter<IHasSharedProperty>((req, res, dtoInterface) => {
+        dtoInterface.SharedProperty = "Is Shared";    
+    });
+}
+```
+
+### Buffered Stream option has now added to Response 
+
+Response streams can be buffered in the same way as you can buffer Request streams by setting `UseBufferedStream=true`, e.g:
+
+```csharp
+appHost.PreRequestFilters.Add((httpReq, httpRes) => {
+    httpReq.UseBufferedStream = true;
+    httpRes.UseBufferedStream = true;    
+});
+
+```
+
+### AfterInitCallbacks added to AppHost
+
+You can register callbacks to add custom logic straight after the AppHost has finished initializing. E.g. you can find all Roles specified in `[RequiredRole]` attributes with:
+
+```csharp
+appHost.AfterInitCallbacks.Add(host =>
+{
+    var allRoles = host.Metadata.OperationsMap
+        .SelectMany(x => x.Key.AllAttributes<RequiredRoleAttribute>()
+            .Concat(x.Value.ServiceType.AllAttributes<RequiredRoleAttribute>()))
+        .SelectMany(x => x.RequiredRoles);
+});
+```
+
+### Request Scopes can be configured to use ThreadStatic
+
+Request Scoped dependencies are stored in `HttpRequest.Items` for ASP.NET hosts and uses Remoting's `CallContext.LogicalData` API's in self-hosts. Using the Remoting API's can be problematic in old versions of Mono or when executed in test runners.
+
+If this is an issue the RequestContext can be configured to use ThreadStatic with:
+
+```csharp
+RequestContext.UseThreadStatic = true;
+```
+
+### Logging
+
+Updated Logging providers to allow debugEnabled in LogFactory constructor, e.g:
+
+  - LogFactory.LogManager = new NullLogFactory(debugEnabled:false);
+  - LogFactory.LogManager = new ConsoleLogFactory(debugEnabled:true);
+  - LogFactory.LogManager = new DebugLogFactory(debugEnabled:true);
+
+Detailed command logging is now available in OrmLite and Redis when `debugEnabled=true`;
+
+The external Logging provider NuGet packages have also been updated.
+
+### Razor
+
+ - Enabled support for Razor @helpers and @funtions in Razor Views
+ - Direct access to Razor Views in `/Views` is now denied by default
+
+### Service Clients
+
+ - Change Silverlight to auto emulate HTTP Verbs for non GET or POST requests
+ - Shorter aliases added on PostFileWithRequest which uses auto-generated urls on Request DTOs
+ - The [PCL version of ServiceStack.Interfaces](https://github.com/ServiceStack/Hello) now supports a min version of .NET 4.0
+
+
+## OrmLite
+
+### Exec and Result Filters
+
+A new `CaptureSqlFilter` Results Filter has been added which shows some of the power of OrmLite's Result filters by being able to capture SQL Statements without running them, e.g:
+
+```csharp
+public class CaptureSqlFilter : OrmLiteResultsFilter
+{
+    public CaptureSqlFilter()
+    {
+        SqlFilter = CaptureSql;
+        SqlStatements = new List<string>();
+    }
+
+    private void CaptureSql(string sql)
+    {
+        SqlStatements.Add(sql);
+    }
+
+    public List<string> SqlStatements { get; set; }
+}
+```
+
+This can then be wrapped around existing database calls to capture and print the generated SQL, e.g:
+
+```csharp
+using (var captured = new CaptureSqlFilter())
+using (var db = OpenDbConnection())
+{
+    db.CreateTable<Person>();
+    db.Count<Person>(x => x.Age < 50);
+    db.Insert(new Person { Id = 1, FirstName = "Jimi", LastName = "Hendrix" });
+    db.Delete<Person>(new { FirstName = "Jimi", Age = 27 });
+
+    var sql = string.Join(";\n", captured.SqlStatements.ToArray());
+    sql.Print();
+}
+```
+
+#### Exec filters can be limited to specific Dialect Providers
+
+```csharp
+OrmLiteConfig.DialectProvider.ExecFilter = execFilter;
+```
+
+### OrmLite's custom SqlBuilders now implement ISqlExpression
+
+OrmLite provides good support in integrating with any Custom SQL builders that implement OrmLite's simple `ISqlExpression` interface which can be passed directly to `db.Select()` API. This has now been added to OrmLite's other built-in SQL Builders, e.g:
+
+Using JoinSqlBuilder
+
+```csharp
+var joinQuery = new JoinSqlBuilder<User, User>()
+    .LeftJoin<User, Address>(x => x.Id, x => x.UserId, 
+        sourceWhere: x => x.Age > 18, 
+        destinationWhere: x => x.Country == "Italy");
+
+var results = db.Select<User>(joinQuery);
+```
+
+Using SqlBuilder
+
+```csharp
+var tmpl = sb.AddTemplate(
+    "SELECT * FROM User u INNER JOIN Address a on a.UserId = u.Id /**where**/");
+sb.Where("Age > @age", new { age = 18 });
+sb.Where("Countryalias = @country", new { country = "Italy" });
+
+var results = db.Select<User>(tmpl, tmpl.Parameters);
+```
+
+### Other Changes
+
+ - OrmLite can create tables with any numeric type in all providers. Fallbacks were added on ADO.NET providers that don't support the numeric type natively
+ - Load/Save Reference property conventions can be [inferred on either aliases or C# property names](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/tests/ServiceStack.OrmLite.Tests/LoadReferencesTests.cs#L207)
+ - OrmLite can create tables from types with Indexers
+ - Can use `OrmLiteConfig.StripUpperInLike=true` to [remove use of upper() in Sql Expressions](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/tests/ServiceStack.OrmLite.Tests/Expression/SelectExpressionTests.cs#L205)
+
+
+## Redis
+
+A new `TrackingRedisClientsManager` client manager has been added by [Thomas James](https://github.com/tvjames) to help diagnose Apps that are leaking redis connections. 
+
 # v4.0.19 Release Notes
 
 ## Embedded ServiceStack
