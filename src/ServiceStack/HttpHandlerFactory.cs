@@ -176,7 +176,7 @@ namespace ServiceStack
                 return NonRootModeDefaultHttpHandler;
             }
 
-            if (mode != null && pathInfo.EndsWith(mode))
+            if (mode != null && pathInfo.EndsWith("/" + mode))
             {
                 var requestPath = context.Request.Path.ToLower();
                 if (requestPath == "/" + mode
@@ -266,7 +266,7 @@ namespace ServiceStack
                 return NonRootModeDefaultHttpHandler;
             }
 
-            if (mode != null && pathInfo.EndsWith(mode))
+            if (mode != null && pathInfo.EndsWith("/" + mode))
             {
                 var requestPath = pathInfo;
                 if (requestPath == "/" + mode

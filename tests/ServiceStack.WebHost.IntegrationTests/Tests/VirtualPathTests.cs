@@ -73,5 +73,12 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             var contents = "{0}/hello".Fmt(ServiceStackBaseUri).GetStringFromUrl();
             Assert.That(contents, Is.StringContaining("(Embedded Resource)"));
         }
+
+        [Test]
+        public void Can_get_service_matching_api_prefix()
+        {
+            var contents = "{0}/gettestapi".Fmt(ServiceStackBaseUri).GetStringFromUrl();
+            Assert.That(contents, Is.StringContaining("GetTestapi"));            
+        }
     }
 }
