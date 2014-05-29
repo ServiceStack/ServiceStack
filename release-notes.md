@@ -35,7 +35,7 @@ To help with debugging, [?debug=requestinfo](https://github.com/ServiceStack/Ser
 
 ![WindowsAuth DebugInfo](https://github.com/ServiceStack/Assets/raw/master/img/release-notes/debuginfo-windowsauth.png)
 
-> Feedback on this feature and future integration with Windows Auth are welcomed on [the Active Directory feature request](http://servicestack.uservoice.com/forums/176786-feature-requests/suggestions/4725924-built-in-active-directory-authentication-suport).
+> We're interested in hearing more use-cases we can support, feedback on this and future integration with Windows Auth are welcomed on [the Active Directory Integration feature request](http://servicestack.uservoice.com/forums/176786-feature-requests/suggestions/4725924-built-in-active-directory-authentication-suport).
 
 ### New GitHub and other OAuth Providers available
 
@@ -55,15 +55,13 @@ Plugins.Add(new AuthFeature(
 
 ### Extended Auth DTO's
 
-You can test whether a user is authenticated by calling the Auth Service without any parameters, e.g. `/auth` which will return summary auth info of the currently authenticated user or a 401 if the user is not authenticated.
+You can now test whether a user is authenticated by calling the Auth Service without any parameters, e.g. `/auth` which will return summary auth info of the currently authenticated user or a `401` if the user is not authenticated. A `DisplayName` property was added to `AuthenticateResponse` to return a friendly name of the currently authenticated user.
 
-A `DisplayName` property was added to `AuthenticateResponse` to return a friendly name of the currently authenticated user.
+## [Portable ServiceStack](https://github.com/ServiceStack/ServiceStack.Gap)
 
-## Portable ServiceStack
+A new [ServiceStack.Gap](https://github.com/ServiceStack/ServiceStack.Gap) Repository and NuGet package was added to help with creating ServiceStack-powered Desktop applications.
 
-A new [ServiceStack.Gap](https://github.com/ServiceStack/ServiceStack.Gap) Repository and NuGet package was added to help with creating embedded ServiceStack-powered Desktop applications.
-
-ServiceStack has a number of features that's particularly suited for these kind of apps:
+ServiceStack has a number of features that's particularly well-suited for these kind of apps:
 
  - It allows your services to be self-hosted using .NET's HTTP Listener
  - It supports pre-compiled Razor Views
@@ -87,13 +85,24 @@ To illustrate the potential of embedded ServiceStack solutions, a portable versi
 
 [![Partial Windows Screenshot](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/gap/partial-win.png)](https://github.com/ServiceStack/ServiceStack.Gap/raw/master/deploy/BenchmarksAnalyzer.Windows.zip)
 
+### Usage
+
+By default `BenchmarksAnalyzer.exe` will scan the directory where it's run from, it also supports being called with the path to `.txt` or `.zip` files to view or even a directory where output files are located. Given this there are a few popular ways to use Benchmarks Analyzer:
+
+ - Drop `BenchmarksAnalyzer.exe` into a directory of benchmark outputs before running it
+ - Drop a `.zip` or folder onto the `BenchmarksAnalyzer.exe` to view those results
+
+> Note: It can also be specified as a command-line argument, e.g: "BenchmarksAnalyzer.exe path\to\outputs"
+
+### ServiceStack.Gap Developer Guides
+
 The guides on how each application was created is on [ServiceStack.Gap](https://github.com/ServiceStack/ServiceStack.Gap) site, i.e:
 
  - [Self-Hosting Console App](https://github.com/ServiceStack/ServiceStack.Gap#self-hosting-console-app)
  - [Windows Forms App with Chromium Embedded Framework and CefSharp](https://github.com/ServiceStack/ServiceStack.Gap#winforms-with-chromium-embedded-framework)
  - [Mac OSX Cocoa App with Xmarain.Mac](https://github.com/ServiceStack/ServiceStack.Gap#mac-osx-cocoa-app-with-xmarainmac)
 
-## Other ServiceStack Framework Features
+## Other Framework Features
 
 ### Filtering support added to Metadata pages
 
