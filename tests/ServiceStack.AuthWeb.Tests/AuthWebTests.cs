@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Net;
+using NUnit.Framework;
 
 namespace ServiceStack.AuthWeb.Tests
 {
@@ -16,5 +17,20 @@ namespace ServiceStack.AuthWeb.Tests
 
             Assert.That(response.Name, Is.EqualTo("Haz Access!"));
         }
+
+        [Test]
+        public void Can_authenticate_with_DefaultCredentials()
+        {
+            var client = new JsonServiceClient(BaseUri)
+            {
+                Credentials = CredentialCache.DefaultCredentials,
+                //Credentials = new NetworkCredential("mythz", "invalid", "macbook")
+            };
+
+            var response = client.Get(new RequiresAuth { Name = "Haz Access!" });
+
+            Assert.That(response.Name, Is.EqualTo("Haz Access!"));
+        }
+
     }
 }
