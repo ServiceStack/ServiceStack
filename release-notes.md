@@ -177,19 +177,19 @@ RequestContext.UseThreadStatic = true;
 
 ### Logging
 
-Updated Logging providers to allow debugEnabled in LogFactory constructor, e.g:
+Updated Logging providers to allow `debugEnabled` in their LogFactory constructor, e.g:
 
-  - LogFactory.LogManager = new NullLogFactory(debugEnabled:false);
-  - LogFactory.LogManager = new ConsoleLogFactory(debugEnabled:true);
-  - LogFactory.LogManager = new DebugLogFactory(debugEnabled:true);
+```csharp
+LogFactory.LogManager = new NullLogFactory(debugEnabled:false);
+LogFactory.LogManager = new ConsoleLogFactory(debugEnabled:true);
+LogFactory.LogManager = new DebugLogFactory(debugEnabled:true);
+```
 
-Detailed command logging is now available in OrmLite and Redis when `debugEnabled=true`;
-
-The external Logging provider NuGet packages have also been updated.
+Detailed command logging is now enabled in OrmLite and Redis when `debugEnabled=true`. The external Logging provider NuGet packages have also been updated to use their latest version.
 
 ### Razor
 
- - Enabled support for Razor @helpers and @funtions in Razor Views
+ - Enabled support for Razor `@helpers` and `@funtions` in Razor Views
  - Direct access to Razor Views in `/Views` is now denied by default
 
 ### Service Clients
@@ -197,7 +197,6 @@ The external Logging provider NuGet packages have also been updated.
  - Change Silverlight to auto emulate HTTP Verbs for non GET or POST requests
  - Shorter aliases added on PostFileWithRequest which uses auto-generated urls on Request DTOs
  - The [PCL version of ServiceStack.Interfaces](https://github.com/ServiceStack/Hello) now supports a min version of .NET 4.0
-
 
 ## OrmLite
 
@@ -249,7 +248,7 @@ OrmLiteConfig.DialectProvider.ExecFilter = execFilter;
 
 OrmLite provides good support in integrating with any Custom SQL builders that implement OrmLite's simple `ISqlExpression` interface which can be passed directly to `db.Select()` API. This has now been added to OrmLite's other built-in SQL Builders, e.g:
 
-Using JoinSqlBuilder
+#### Using JoinSqlBuilder
 
 ```csharp
 var joinQuery = new JoinSqlBuilder<User, User>()
@@ -260,7 +259,7 @@ var joinQuery = new JoinSqlBuilder<User, User>()
 var results = db.Select<User>(joinQuery);
 ```
 
-Using SqlBuilder
+#### Using SqlBuilder
 
 ```csharp
 var tmpl = sb.AddTemplate(
@@ -277,7 +276,6 @@ var results = db.Select<User>(tmpl, tmpl.Parameters);
  - Load/Save Reference property conventions can be [inferred on either aliases or C# property names](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/tests/ServiceStack.OrmLite.Tests/LoadReferencesTests.cs#L207)
  - OrmLite can create tables from types with Indexers
  - Can use `OrmLiteConfig.StripUpperInLike=true` to [remove use of upper() in Sql Expressions](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/tests/ServiceStack.OrmLite.Tests/Expression/SelectExpressionTests.cs#L205)
-
 
 ## Redis
 
