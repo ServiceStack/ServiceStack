@@ -178,7 +178,7 @@ namespace ServiceStack.WebHost.Endpoints
                 return ServeDefaultHandler ? DefaultHttpHandler : NonRootModeDefaultHttpHandler;
             }
 
-            if (mode != null && pathInfo.EndsWith(mode))
+            if (mode != null && (pathInfo.EndsWith("/" + mode) || pathInfo.EndsWith(mode+"/")))
             {
                 var requestPath = context.Request.Path.ToLower();
                 if (requestPath == "/" + mode
