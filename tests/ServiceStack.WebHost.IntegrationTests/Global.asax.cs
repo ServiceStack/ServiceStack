@@ -107,11 +107,6 @@ namespace ServiceStack.WebHost.IntegrationTests
 
                 //var onlyEnableFeatures = Feature.All.Remove(Feature.Jsv | Feature.Soap);
                 SetConfig(new HostConfig {
-                    GlobalResponseHeaders = {
-                        { "Access-Control-Allow-Origin", "*" },
-                        { "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS" },
-                        { "Access-Control-Allow-Headers", "Content-Type, X-Requested-With" },
-                    },
                     AdminAuthSecret = AuthTestsBase.AuthSecret,
                     //EnableFeatures = onlyEnableFeatures,
                     DebugMode = true, //Show StackTraces for easier debugging
