@@ -94,6 +94,8 @@ By default `BenchmarksAnalyzer.exe` will scan the directory where it's run from,
 
 > Note: It can also be specified as a command-line argument, e.g: "BenchmarksAnalyzer.exe path\to\outputs"
 
+![Benchmarks Analyzer Usage](https://github.com/ServiceStack/Assets/raw/master/img/gap/benchmarksanalyzer-usage.gif)
+
 ### ServiceStack.Gap Developer Guide
 
 The guides on how each application was created is on [ServiceStack.Gap](https://github.com/ServiceStack/ServiceStack.Gap) site, i.e:
