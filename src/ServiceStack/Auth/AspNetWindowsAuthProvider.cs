@@ -27,6 +27,7 @@ namespace ServiceStack.Auth
                     "AspNetWindowsAuthProvider is only supported on ASP.NET hosts");
             }
 
+            //Add all pre-defined Roles used to in App to 'AllRoles'
             appHost.AfterInitCallbacks.Add(host =>
             {
                 var requiredRoles = host.Metadata.OperationsMap
@@ -66,7 +67,7 @@ namespace ServiceStack.Auth
             {
                 if (!user.Identity.IsAuthenticated)
                     return false;
-                if (LimitAccessToRoles == null)
+                if (AllowAllWindowsAuthUsers)
                     return true;
                 if (LimitAccessToRoles.Any(user.IsInRole))
                     return true;
