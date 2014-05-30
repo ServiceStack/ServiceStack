@@ -178,23 +178,7 @@ namespace ServiceStack
 
             if (mode != null && pathInfo.EndsWith("/" + mode))
             {
-                var requestPath = context.Request.Path.ToLower();
-                if (requestPath == "/" + mode
-                    || requestPath == mode
-                    || requestPath == mode + "/")
-                {
-                    var pathProvider = appHost.VirtualPathProvider;
-
-                    var defaultDoc = pathProvider.CombineVirtualPath(context.Request.PhysicalPath, DefaultRootFileName ?? "");
-                    if (context.Request.PhysicalPath != WebHostPhysicalPath
-                        || !pathProvider.FileExists(defaultDoc))
-                    {
-                        return new IndexPageHttpHandler();
-                    }
-                }
-
-                var okToServe = ShouldAllow(context.Request.FilePath);
-                return okToServe ? DefaultHttpHandler : ForbiddenHttpHandler;
+                return ReturnDefaultHandler(httpReq);
             }
 
             return GetHandlerForPathInfo(
@@ -268,27 +252,26 @@ namespace ServiceStack
 
             if (mode != null && pathInfo.EndsWith("/" + mode))
             {
-                var requestPath = pathInfo;
-                if (requestPath == "/" + mode
-                    || requestPath == mode
-                    || requestPath == mode + "/")
-                {
-                    var pathProvider = HostContext.VirtualPathProvider;
-
-                    var defaultDoc = pathProvider.GetFile(DefaultRootFileName ?? "");
-                    if (httpReq.GetPhysicalPath() != WebHostPhysicalPath
-                        || defaultDoc == null)
-                    {
-                        return new IndexPageHttpHandler();
-                    }
-                }
-
-                var okToServe = ShouldAllow(httpReq.GetPhysicalPath());
-                return okToServe ? DefaultHttpHandler : ForbiddenHttpHandler;
+                return ReturnDefaultHandler(httpReq);
             }
 
             return GetHandlerForPathInfo(httpReq.HttpMethod, pathInfo, pathInfo, httpReq.GetPhysicalPath())
                    ?? NotFoundHttpHandler;
+        }
+
+        private static IHttpHandler ReturnDefaultHandler(IHttpRequest httpReq)
+        {
+            var pathProvider = HostContext.VirtualPathProvider;
+
+            var defaultDoc = pathProvider.GetFile(DefaultRootFileName ?? "");
+            if (httpReq.GetPhysicalPath() != WebHostPhysicalPath
+                || defaultDoc == null)
+            {
+                return new IndexPageHttpHandler();
+            }
+
+            var okToServe = ShouldAllow(httpReq.GetPhysicalPath());
+            return okToServe ? DefaultHttpHandler : ForbiddenHttpHandler;
         }
 
         internal static IHttpHandler ReturnRequestInfo(IHttpRequest httpReq)
