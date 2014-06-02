@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Web;
 using System.Web.Hosting;
+using ServiceStack.Data;
 using ServiceStack.Host;
 using ServiceStack.Host.AspNet;
 using ServiceStack.Host.Handlers;
@@ -280,6 +281,7 @@ namespace ServiceStack
             if (ex is ArgumentException || ex is SerializationException) return (int)HttpStatusCode.BadRequest;
             if (ex is AuthenticationException) return (int) HttpStatusCode.Unauthorized;
             if (ex is UnauthorizedAccessException) return (int) HttpStatusCode.Forbidden;
+            if (ex is OptimisticConcurrencyException) return (int) HttpStatusCode.Conflict;
             return (int)HttpStatusCode.InternalServerError;
 	    }
         
