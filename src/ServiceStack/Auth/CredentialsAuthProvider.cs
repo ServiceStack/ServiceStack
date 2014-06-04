@@ -42,7 +42,9 @@ namespace ServiceStack.Auth
             {
                 AssertNotLocked(userAuth);
 
-                session.PopulateWith(userAuth);
+                var holdSessionId = session.Id;
+                session.PopulateWith(userAuth); //overwrites session.Id
+                session.Id = holdSessionId;
                 session.IsAuthenticated = true;
                 session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
                 session.ProviderOAuthAccess = authRepo.GetUserAuthDetails(session.UserAuthId)
