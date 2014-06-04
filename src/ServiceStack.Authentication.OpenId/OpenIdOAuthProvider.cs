@@ -105,11 +105,9 @@ namespace ServiceStack.Authentication.OpenId
                                 // Use FormsAuthentication to tell ASP.NET that the user is now logged in,
                                 // with the OpenID Claimed Identifier as their username.
                                 session.IsAuthenticated = true;
-                                authService.SaveSession(session, SessionExpiry);
-                                OnAuthenticated(authService, session, tokens, authInfo);
 
-                                //Haz access!
-                                return authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
+                                return OnAuthenticated(authService, session, tokens, authInfo)
+                                    ?? authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1")); //Haz access!
 
                             case AuthenticationStatus.Canceled:
                                 return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "ProviderCancelled"));

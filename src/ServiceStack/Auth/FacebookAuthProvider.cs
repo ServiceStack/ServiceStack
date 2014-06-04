@@ -64,12 +64,11 @@ namespace ServiceStack.Auth
                 var contents = accessTokenUrl.GetStringFromUrl();
                 var authInfo = HttpUtility.ParseQueryString(contents);
                 tokens.AccessTokenSecret = authInfo["access_token"];
-                session.IsAuthenticated = true;
-                authService.SaveSession(session, SessionExpiry);
-                OnAuthenticated(authService, session, tokens, authInfo.ToDictionary());
 
-                //Haz access!
-                return authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
+                session.IsAuthenticated = true;
+                
+                return OnAuthenticated(authService, session, tokens, authInfo.ToDictionary())
+                    ?? authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1")); //Haz access!
             }
             catch (WebException we)
             {

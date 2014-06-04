@@ -108,10 +108,13 @@ namespace ServiceStack.Authentication.OAuth2
                     tokens.AccessToken = accessToken;
                     tokens.RefreshToken = authState.RefreshToken;
                     tokens.RefreshTokenExpiry = authState.AccessTokenExpirationUtc;
-                    session.IsAuthenticated = true;
+
                     var authInfo = this.CreateAuthInfo(accessToken);
-                    this.OnAuthenticated(authService, session, tokens, authInfo);
-                    return authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
+
+                    session.IsAuthenticated = true;
+                    
+                    return OnAuthenticated(authService, session, tokens, authInfo)
+                        ?? authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
                 }
                 catch (WebException we)
                 {

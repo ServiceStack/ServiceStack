@@ -83,11 +83,11 @@ namespace ServiceStack.Auth
                     return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "AccessTokenFailed"));
                 }
                 tokens.AccessTokenSecret = authInfo["access_token"];
-                session.IsAuthenticated = true;
-                authService.SaveSession(session, SessionExpiry);
-                OnAuthenticated(authService, session, tokens, authInfo.ToDictionary());
 
-                return authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
+                session.IsAuthenticated = true;
+                
+                return OnAuthenticated(authService, session, tokens, authInfo.ToDictionary())
+                    ?? authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1")); //Haz Access!
             }
             catch (WebException webException)
             {

@@ -77,12 +77,16 @@ namespace ServiceStack.Auth
                 session = authService.GetSession();
             }
 
-            if (TryAuthenticate(authService, userName, password)) {
-                if (session.UserAuthName == null) {
-                    session.UserAuthName = userName;
-                }
+            if (TryAuthenticate(authService, userName, password))
+            {
+                session.IsAuthenticated = true;
 
-                OnAuthenticated(authService, session, null, null);
+                if (session.UserAuthName == null) 
+                    session.UserAuthName = userName;
+
+                var response = OnAuthenticated(authService, session, null, null);
+                if (response != null)
+                    return response;
 
                 return new AuthenticateResponse {
                     UserName = userName,
@@ -93,7 +97,7 @@ namespace ServiceStack.Auth
             throw HttpError.Unauthorized("Invalid UserName or Password");
         }
 
-        public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
+        public override IHttpResult OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
             var userSession = session as AuthUserSession;
             if (userSession != null) {
@@ -117,6 +121,10 @@ namespace ServiceStack.Auth
                         userAuthProvider.LoadUserOAuthProvider(session, oAuthToken);
                     }
                 }
+
+                var failed = ValidateAccount(authService, authRepo, session, tokens);
+                if (failed != null)
+                    return failed;
             }
 
             try
@@ -127,6 +135,8 @@ namespace ServiceStack.Auth
             {
                 authService.SaveSession(session, SessionExpiry);
             }
+
+            return null;
         }
 
         public override void OnFailedAuthentication(IAuthSession session, IRequest httpReq, IResponse httpRes)

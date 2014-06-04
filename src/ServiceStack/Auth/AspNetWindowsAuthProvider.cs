@@ -122,7 +122,11 @@ namespace ServiceStack.Auth
                         session.Roles.AddIfNotExists(role);
                 }
 
-                OnAuthenticated(authService, session, tokens, new Dictionary<string, string>());
+                session.ReferrerUrl = GetReferrerUrl(authService, session, request);
+
+                var response = OnAuthenticated(authService, session, tokens, new Dictionary<string, string>());
+                if (response != null)
+                    return response;
 
                 return new AuthenticateResponse
                 {

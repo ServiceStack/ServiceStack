@@ -113,7 +113,7 @@ namespace ServiceStack.Auth
 
         public virtual void OnSaveUserAuth(IServiceBase authService, IAuthSession session) { }
 
-        public virtual void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
+        public virtual IHttpResult OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
             var userSession = session as AuthUserSession;
             if (userSession != null)
@@ -124,12 +124,20 @@ namespace ServiceStack.Auth
             var authRepo = authService.TryResolve<IAuthRepository>();
             if (authRepo != null)
             {
-                if (tokens != null)
+                var hasTokens = tokens != null;
+                if (hasTokens)
                 {
                     authInfo.ForEach((x, y) => tokens.Items[x] = y);
+                }
+
+                var failed = ValidateAccount(authService, authRepo, session, tokens);
+                if (failed != null)
+                    return failed;
+
+                if (hasTokens)
+                {
                     session.UserAuthId = authRepo.CreateOrMergeAuthSession(session, tokens);
                 }
-                //SaveUserAuth(authService, userSession, authRepo, tokens);
 
                 authRepo.LoadUserAuth(session, tokens);
 
@@ -149,7 +157,6 @@ namespace ServiceStack.Auth
                 {
                     httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
                 }
-
             }
 
             try
@@ -161,6 +168,8 @@ namespace ServiceStack.Auth
             {
                 authService.SaveSession(session, SessionExpiry);
             }
+
+            return null;
         }
 
         protected virtual void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo) { }
@@ -208,6 +217,44 @@ namespace ServiceStack.Auth
                 .Fmt(authProvider.Provider, authProvider.AuthRealm));
 
             httpRes.EndRequest();
+        }
+
+        protected virtual void AssertNotLocked(IUserAuth userAuth)
+        {
+            if (userAuth.LockedDate != null)
+                throw new AuthenticationException("This account has been locked");
+        }
+
+        protected virtual IHttpResult ValidateAccount(IServiceBase authService, IAuthRepository authRepo, IAuthSession session, IAuthTokens tokens)
+        {
+            var userAuth = authRepo.GetUserAuth(session, tokens);
+            var isLocked = userAuth != null && userAuth.LockedDate != null;
+
+            if (isLocked)
+            {
+                session.IsAuthenticated = false;
+                authService.SaveSession(session, SessionExpiry);
+                return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "AccountLocked"));
+            }
+
+            return null;
+        }
+
+        protected virtual string GetReferrerUrl(IServiceBase authService, IAuthSession session, Authenticate request = null)
+        {
+            var requestUri = authService.Request.AbsoluteUri;
+            var referrerUrl = session.ReferrerUrl;
+            if (referrerUrl.IsNullOrEmpty())
+                referrerUrl = (request != null ? request.Continue : null)
+                    ?? authService.Request.GetHeader("Referer");
+
+            if (referrerUrl.IsNullOrEmpty()
+                || referrerUrl.IndexOf("/auth", StringComparison.OrdinalIgnoreCase) >= 0)
+                return this.RedirectUrl
+                    ?? HttpHandlerFactory.GetBaseUrl()
+                    ?? requestUri.Substring(0, requestUri.IndexOf("/", "https://".Length + 1, StringComparison.Ordinal));
+
+            return referrerUrl;
         }
     }
 

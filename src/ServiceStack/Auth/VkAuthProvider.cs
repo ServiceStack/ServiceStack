@@ -90,11 +90,11 @@ namespace ServiceStack.Auth
         }
         tokens.AccessTokenSecret = authInfo.Get("access_token");
         tokens.UserId = authInfo.Get("user_id");
-        session.IsAuthenticated = true;
-        authService.SaveSession(session, SessionExpiry);
-        OnAuthenticated(authService, session, tokens, authInfo.ToDictionary());
 
-        return authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
+        session.IsAuthenticated = true;
+
+        return OnAuthenticated(authService, session, tokens, authInfo.ToDictionary())
+            ?? authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
       }
       catch (WebException webException)
       {

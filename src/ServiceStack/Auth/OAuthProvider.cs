@@ -72,14 +72,12 @@ namespace ServiceStack.Auth
 
                 if (OAuthUtils.AcquireAccessToken())
                 {
+                    session.IsAuthenticated = true;
                     tokens.AccessToken = OAuthUtils.AccessToken;
                     tokens.AccessTokenSecret = OAuthUtils.AccessTokenSecret;
-                    session.IsAuthenticated = true;
-                    OnAuthenticated(authService, session, tokens, OAuthUtils.AuthInfo);
-                    authService.SaveSession(session, SessionExpiry);
 
-                    //Haz access!
-                    return authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
+                    return OnAuthenticated(authService, session, tokens, OAuthUtils.AuthInfo)
+                        ?? authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1")); //Haz Access
                 }
 
                 //No Joy :(
@@ -112,25 +110,10 @@ namespace ServiceStack.Auth
         /// <returns></returns>
         protected IAuthTokens Init(IServiceBase authService, ref IAuthSession session, Authenticate request)
         {
-            if (request != null && !LoginMatchesSession(session, request.UserName))
-            {
-                //authService.RemoveSession();
-                //session = authService.GetSession();
-            }
-
-            var requestUri = authService.Request.AbsoluteUri;
             if (this.CallbackUrl.IsNullOrEmpty())
-                this.CallbackUrl = requestUri;
+                this.CallbackUrl = authService.Request.AbsoluteUri;
 
-            if (session.ReferrerUrl.IsNullOrEmpty())
-                session.ReferrerUrl = (request != null ? request.Continue : null)
-                    ?? authService.Request.GetHeader("Referer");
-
-            if (session.ReferrerUrl.IsNullOrEmpty() 
-                || session.ReferrerUrl.IndexOf("/auth", StringComparison.OrdinalIgnoreCase) >= 0)
-                session.ReferrerUrl = this.RedirectUrl 
-                    ?? HttpHandlerFactory.GetBaseUrl()
-                    ?? requestUri.Substring(0, requestUri.IndexOf("/", "https://".Length + 1, StringComparison.Ordinal));
+            session.ReferrerUrl = GetReferrerUrl(authService, session, request);
 
             var tokens = session.ProviderOAuthAccess.FirstOrDefault(x => x.Provider == Provider);
             if (tokens == null)

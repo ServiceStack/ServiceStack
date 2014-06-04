@@ -13,7 +13,7 @@ namespace ServiceStack.Auth
   /// </summary>
   public class YandexAuthProvider : OAuthProvider
   {
-    public const string Name = "Yandex";
+    public const string Name = "yandex";
     public static string Realm = "https://oauth.yandex.ru/";
     public static string PreAuthUrl = "https://oauth.yandex.ru/authorize";
     public static string TokenUrl = "https://oauth.yandex.ru/token";
@@ -78,11 +78,11 @@ namespace ServiceStack.Auth
           return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "AccessTokenFailed"));
         }
         tokens.AccessTokenSecret = authInfo.Get("access_token");
-        session.IsAuthenticated = true;
-        authService.SaveSession(session, SessionExpiry);
-        OnAuthenticated(authService, session, tokens, authInfo.ToDictionary());
 
-        return authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
+        session.IsAuthenticated = true;
+
+        return OnAuthenticated(authService, session, tokens, authInfo.ToDictionary())
+            ?? authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
       }
       catch (WebException webException)
       {

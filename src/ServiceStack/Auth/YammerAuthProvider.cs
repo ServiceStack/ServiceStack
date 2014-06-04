@@ -151,12 +151,14 @@ namespace ServiceStack.Auth
                 session.Email = tokens.Email;
                 session.FirstName = tokens.FirstName;
                 session.LastName = tokens.LastName;
+
                 session.IsAuthenticated = true;
 
-                authService.SaveSession(session, this.SessionExpiry);
-
                 // Pass along
-                this.OnAuthenticated(authService, session, tokens, authInfo.ToDictionary());
+                var response = this.OnAuthenticated(authService, session, tokens, authInfo.ToDictionary());
+                if (response != null)
+                    return response;
+
                 this.LoadUserAuthInfo((AuthUserSession)session, tokens, authInfo.ToDictionary());
 
                 // Has access!
