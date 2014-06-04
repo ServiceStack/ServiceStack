@@ -123,6 +123,7 @@
     <Compile Include="Commands\ICommand.Generic.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Data\OptimisticConcurrencyException.cs" />
     <Compile Include="IO\IEndpoint.cs" />
     <Compile Include="IRestGateway.cs" />
     <Compile Include="Logging\DebugLogFactory.cs" />
