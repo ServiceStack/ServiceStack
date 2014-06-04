@@ -92,7 +92,7 @@ namespace ServiceStack.AuthWeb.Tests
                     new GithubAuthProvider(appSettings),        //Sign-in with GitHub OAuth Provider
                     new YandexAuthProvider(appSettings),        //Sign-in with Yandex OAuth Provider        
                     new VkAuthProvider(appSettings),            //Sign-in with VK.com OAuth Provider 
-                    new OdnoklassnikiAuthProvider(appSettings), 
+                    new OdnoklassnikiAuthProvider(appSettings), //Sign-in with Odnoklassniki OAuth Provider 
                 }));
 
 #if HTTP_LISTENER

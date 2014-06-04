@@ -1,4 +1,6 @@
 ﻿//#define HTTP_LISTENER
+
+using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ServiceStack.Auth;
@@ -29,6 +31,20 @@ namespace ServiceStack.AuthWeb.Tests
     {
         public UserProfile Result { get; set; }
         public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [Route("/lockallusers")]
+    public class LockAllUsers {}
+    public class LockServices : Service
+    {
+        public object Any(LockAllUsers request)
+        {
+            Db.UpdateOnly(new UserAuth { LockedDate = DateTime.UtcNow },
+                onlyFields: x => new { x.LockedDate },
+                where: x => x.LockedDate == null);
+
+            return HttpResult.Redirect("/");
+        }
     }
 
     [Authenticate]
