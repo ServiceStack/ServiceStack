@@ -609,5 +609,28 @@ namespace ServiceStack.Messaging.Redis
         {
             return workers.ToList().ConvertAll(x => x.GetStatus());
         }
+
+        public long ExpireTemporaryQueues(int afterMs = 10*60*1000)
+        {
+            using (var redis = clientsManager.GetClient())
+            {
+                var tmpWildCard = QueueNames.TempMqPrefix + "*";
+                var itemsExpired = redis.ExecLuaAsInt(@"
+                        local count = 0
+                        local pattern = KEYS[1]
+                        local timeMs = tonumber(ARGV[1])
+                        local keys = redis.call('KEYS',pattern)
+                        for i,k in pairs(keys) do
+                            count = count + 1
+                            redis.call('PEXPIRE', k, timeMs)
+                        end
+                        return count
+                    ",
+                    keys: new[] { tmpWildCard },
+                    args: new[] { afterMs.ToString() });
+
+                return itemsExpired;
+            }
+        }
     }
 }

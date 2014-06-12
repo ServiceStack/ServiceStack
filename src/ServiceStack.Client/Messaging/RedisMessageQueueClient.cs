@@ -146,6 +146,11 @@ namespace ServiceStack.Messaging
             return (IMessage<T>)mqResponse;
         }
 
+        public string GetTempQueueName()
+        {
+            return QueueNames.GetTempQueueName();
+        }
+
         private class AccessToken
         {
             private string token;

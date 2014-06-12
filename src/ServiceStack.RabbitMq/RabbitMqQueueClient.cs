@@ -93,5 +93,17 @@ namespace ServiceStack.RabbitMq
                 return (IMessage<T>)mqResponse;
             }
         }
+
+        public string GetTempQueueName()
+        {
+            var anonMq = Channel.QueueDeclare(
+                queue: QueueNames.GetTempQueueName(),
+                durable:false,
+                exclusive:true,
+                autoDelete:true,
+                arguments:null);
+
+            return anonMq.QueueName;
+        }
     }
 }

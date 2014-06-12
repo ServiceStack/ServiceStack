@@ -52,7 +52,7 @@ namespace ServiceStack.Server.Tests.Messaging
         }
     }
 
-    public class AppHost : AppHostHttpListenerBase
+    public class AppHost : AppSelfHostBase
     {
         private readonly Func<IMessageService> createMqServerFn;
 

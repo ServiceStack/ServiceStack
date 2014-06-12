@@ -2,6 +2,7 @@
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
+using System.Diagnostics;
 
 namespace ServiceStack.Messaging
 {
@@ -57,7 +58,16 @@ namespace ServiceStack.Messaging
 
         public IMessage<T> Get<T>(string queueName, TimeSpan? timeOut = null)
         {
-            return GetAsync<T>(queueName);
+            var sw = Stopwatch.StartNew();
+            var timeOutMs = timeOut == null ? -1 : (long)timeOut.Value.TotalMilliseconds;
+            while (timeOutMs == -1 || timeOutMs >= sw.ElapsedMilliseconds)
+            {
+                var msg = GetAsync<T>(queueName);
+                if (msg != null)
+                    return msg;
+            }
+
+            throw new TimeoutException("Exceeded elapsed time of {0}ms".Fmt(timeOutMs));
         }
 
         public IMessage<T> GetAsync<T>(string queueName)
@@ -82,6 +92,12 @@ namespace ServiceStack.Messaging
         public IMessage<T> CreateMessage<T>(object mqResponse)
         {
             return (IMessage<T>) mqResponse;
+        }
+
+
+        public string GetTempQueueName()
+        {
+            return QueueNames.GetTempQueueName();
         }
 
         public void Dispose()

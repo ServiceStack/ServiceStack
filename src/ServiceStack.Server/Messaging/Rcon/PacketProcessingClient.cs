@@ -109,6 +109,11 @@ namespace ServiceStack.Messaging.Rcon
             return (IMessage<T>)mqResponse;
         }
 
+        public string GetTempQueueName()
+        {
+            return QueueNames.GetTempQueueName();
+        }
+
         public void Nak(IMessage message)
         {
         }
