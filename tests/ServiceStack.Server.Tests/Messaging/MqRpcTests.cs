@@ -100,8 +100,8 @@ namespace ServiceStack.Server.Tests.Messaging
         [Test]
         public void Can_handle_multiple_rpc_clients()
         {
-            int NoOfClients = 20;
-            int TimeMs = 10000;
+            int NoOfClients = 10;
+            int TimeMs = 5000;
 
             var errors = new ConcurrentDictionary<long, string>();
             using (var mqServer = CreateMqServer())

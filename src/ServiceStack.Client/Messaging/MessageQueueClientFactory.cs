@@ -2,7 +2,6 @@
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace ServiceStack.Messaging
@@ -25,8 +24,8 @@ namespace ServiceStack.Messaging
             if (received != null) received(this, e);
         }
 
-        private readonly ConcurrentDictionary<string, Queue<byte[]>> queueMessageBytesMap
-            = new ConcurrentDictionary<string, Queue<byte[]>>();
+        private readonly Dictionary<string, Queue<byte[]>> queueMessageBytesMap
+            = new Dictionary<string, Queue<byte[]>>();
 
         public void PublishMessage<T>(string queueName, IMessage<T> message)
         {
