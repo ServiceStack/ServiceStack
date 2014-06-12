@@ -2,8 +2,6 @@
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
-using System.Diagnostics;
-using System.Threading;
 
 namespace ServiceStack.Messaging
 {
@@ -66,8 +64,6 @@ namespace ServiceStack.Messaging
                 var msg = GetAsync<T>(queueName);
                 if (msg != null)
                     return msg;
-
-                Thread.Sleep(10); // add CPU breather
             }
 
             throw new TimeoutException("Exceeded elapsed time of {0}ms".Fmt(timeOutMs));
