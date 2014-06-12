@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ServiceStack.Text;
 
 namespace ServiceStack.Messaging
 {
@@ -93,14 +94,20 @@ namespace ServiceStack.Messaging
         {
             isRunning = true;
 
-            this.messageHandlers = this.handlerMap.Values.ToList().ConvertAll(
-                x => x.CreateMessageHandler()).ToArray();
-
-            using (var mqClient = MessageFactory.CreateMessageQueueClient())
+            lock (handlerMap)
             {
-                foreach (var handler in messageHandlers)
+                if (messageHandlers == null)
                 {
-                    handler.Process(mqClient);
+                    messageHandlers = this.handlerMap.Values.ToList().ConvertAll(
+                        x => x.CreateMessageHandler()).ToArray();
+                }
+
+                using (var mqClient = MessageFactory.CreateMessageQueueClient())
+                {
+                    foreach (var handler in messageHandlers)
+                    {
+                        handler.Process(mqClient);
+                    }
                 }
             }
 
@@ -110,7 +117,10 @@ namespace ServiceStack.Messaging
         public virtual void Stop()
         {
             isRunning = false;
-            messageHandlers = null;
+            lock (handlerMap)
+            {
+                messageHandlers = null;
+            }
         }
 
         public virtual void Dispose()
@@ -120,7 +130,7 @@ namespace ServiceStack.Messaging
 
         public virtual void DisposeMessageHandler(IMessageHandler messageHandler)
         {
-            lock (messageHandlers)
+            lock (handlerMap)
             {
                 if (!isRunning) return;
 

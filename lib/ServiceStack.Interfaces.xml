@@ -667,6 +667,12 @@
             Create a typed message from a raw MQ Response artefact
             </summary>
         </member>
+        <member name="M:ServiceStack.Messaging.IMessageQueueClient.GetTempQueueName">
+            <summary>
+            Create a temporary Queue for Request / Reply
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:ServiceStack.Messaging.IMessageService">
             <summary>
             Simple definition of an MQ Host
