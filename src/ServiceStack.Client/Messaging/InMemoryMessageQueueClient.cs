@@ -58,9 +58,9 @@ namespace ServiceStack.Messaging
 
         public IMessage<T> Get<T>(string queueName, TimeSpan? timeOut = null)
         {
-            var sw = Stopwatch.StartNew();
+            var startedAt = DateTime.UtcNow.Ticks; //No Stopwatch in Silverlight
             var timeOutMs = timeOut == null ? -1 : (long)timeOut.Value.TotalMilliseconds;
-            while (timeOutMs == -1 || timeOutMs >= sw.ElapsedMilliseconds)
+            while (timeOutMs == -1 || timeOutMs >= new TimeSpan(DateTime.UtcNow.Ticks - startedAt).TotalMilliseconds)
             {
                 var msg = GetAsync<T>(queueName);
                 if (msg != null)
