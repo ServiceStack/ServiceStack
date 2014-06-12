@@ -189,11 +189,22 @@
             var table = document.querySelectorAll("table")[0];
             if (table) {
                 var cols = table.querySelectorAll("tr:first-child td").length + 1; //th
-                table.insertAdjacentHTML("afterbegin",
-                    '<thead id="filter"><tr><td colspan="' +
-                        cols +
-                        '"><div><input type="text" placeholder="filter" /></div></td></tr></thead>');
-
+                var isIE9 = document.documentMode <= 9;
+                var html = '<div><input type="text" placeholder="filter" /></div>';
+                if (!isIE9) {
+                    table.insertAdjacentHTML("afterbegin",
+                        '<thead id="filter"><tr><td colspan="' + cols + '">' + html + '</td></tr></thead>');
+                } else {
+                    var thead = document.createElement('thead');
+                    var tr = document.createElement("tr");
+                    var td = document.createElement("td");
+                    thead.id = "filter";
+                    td.innerHTML = html;
+                    td.setAttribute("colspan", cols);
+                    tr.appendChild(td);
+                    thead.appendChild(tr);
+                    table.insertBefore(thead, table.firstChild);
+                }
                 var input = document.querySelectorAll("#filter input")[0];
                 if (input) {
                     input.onkeyup = function () {
