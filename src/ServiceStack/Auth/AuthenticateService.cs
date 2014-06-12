@@ -123,6 +123,9 @@ namespace ServiceStack.Auth
                 // to refresh the current session reference.
                 session = this.GetSession();
 
+                if (request.provider == null && !session.IsAuthenticated)
+                    throw HttpError.Unauthorized("Not Authenticated");
+
                 var referrerUrl = request.Continue
                     ?? session.ReferrerUrl
                     ?? this.Request.GetHeader("Referer")
