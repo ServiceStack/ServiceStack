@@ -39,5 +39,11 @@ namespace ServiceStack.Messaging
         /// Create a typed message from a raw MQ Response artefact
         /// </summary>
         IMessage<T> CreateMessage<T>(object mqResponse);
+
+        /// <summary>
+        /// Create a temporary Queue for Request / Reply
+        /// </summary>
+        /// <returns></returns>
+        string GetTempQueueName();
     }
 }

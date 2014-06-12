@@ -61,6 +61,7 @@ namespace ServiceStack.Messaging
         public static string MqPrefix = "mq:";
         public static string QueuePrefix = "";
 
+        public static string TempMqPrefix = MqPrefix + "tmp:";
         public static string TopicIn = MqPrefix + "topic:in";
         public static string TopicOut = MqPrefix + "topic:out";
 
@@ -76,6 +77,7 @@ namespace ServiceStack.Messaging
             TopicIn = prefix + MqPrefix + "topic:in";
             TopicOut = prefix + MqPrefix + "topic:out";
             QueuePrefix = prefix;
+            TempMqPrefix = prefix + MqPrefix + "tmp:";
         }
 
         private readonly Type messageType;
@@ -103,6 +105,11 @@ namespace ServiceStack.Messaging
         public string Dlq
         {
             get { return ResolveQueueNameFn(messageType.Name, ".dlq"); }
+        }
+
+        public static string GetTempQueueName()
+        {
+            return TempMqPrefix + Guid.NewGuid().ToString("n");
         }
     }
 
