@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -9,6 +12,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using PclTest.ServiceModel;
 using ServiceStack;
 
@@ -27,15 +31,44 @@ namespace PclTest.SL5
 
         private void btnSync_Click(object sender, RoutedEventArgs e)
         {
-            try
+
+            //var url = "http://localhost:81/hello?Name={0}".Fmt(txtName.Text);
+            //ThreadPool.QueueUserWorkItem(_ =>
+            //{
+            //    //var creator = System.Net.Browser.WebRequestCreator.BrowserHttp;
+            //    var creator = System.Net.Browser.WebRequestCreator.ClientHttp;
+            //    var client = (HttpWebRequest)creator.Create(new Uri(url));
+            //    client.Accept = MimeTypes.Json;
+            //    Task<WebResponse> task = client.GetResponseAsync();
+            //    task.Wait();
+            //    var json = task.Result.GetResponseStream().ReadFully().FromUtf8Bytes();
+            //    var response = json.FromJson<HelloResponse>();
+
+            //    Deployment.Current.Dispatcher.BeginInvoke(() =>
+            //    {
+            //        lblResults.Content = response.Result;
+            //    });
+            //});
+
+            var name = txtName.Text;
+            ThreadPool.QueueUserWorkItem(_ =>
             {
-                var response = client.Get(new Hello { Name = txtName.Text });
-                lblResults.Content = response.Result;
-            }
-            catch (Exception ex)
-            {
-                lblResults.Content = ex.ToString();
-            }
+                try
+                {
+                    var client = new JsonServiceClient("http://localhost:81/") {
+                        ShareCookiesWithBrowser = false
+                    };
+                    var response = client.Get(new Hello { Name = name });
+                    Deployment.Current.Dispatcher.BeginInvoke(() =>
+                    {
+                        lblResults.Content = response.Result;
+                    });
+                }
+                catch (Exception ex)
+                {
+                    lblResults.Content = ex.ToString();
+                }
+            });
         }
 
         private void btnAsync_Click(object sender, RoutedEventArgs e)
@@ -89,6 +122,32 @@ namespace PclTest.SL5
             {
                 lblResults.Content = ex.ToString();
             }
+        }
+
+        private void btnTest_Click(object sender, RoutedEventArgs e)
+        {
+            var name = txtName.Text;
+            ThreadPool.QueueUserWorkItem(_ => {
+                try
+                {
+                    client.ShareCookiesWithBrowser = false;
+                    var fileStream = new MemoryStream("content body".ToUtf8Bytes());
+                    var response = client.PostFileWithRequest<UploadFileResponse>(
+                        fileStream, "file.txt", new UploadFile { Name = name });
+
+                    Deployment.Current.Dispatcher.BeginInvoke(() =>
+                    {
+                        lblResults.Content = "File Size: {0} bytes".Fmt(response.FileSize);
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Deployment.Current.Dispatcher.BeginInvoke(() =>
+                    {
+                        lblResults.Content = ex.ToString();
+                    });
+                }
+            });
         }
     }
 }

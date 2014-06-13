@@ -63,6 +63,9 @@
     <Compile Include="..\PclTest.ServiceModel\Todos.cs">
       <Link>Todos.cs</Link>
     </Compile>
+    <Compile Include="..\PclTest.ServiceModel\UploadFile.cs">
+      <Link>UploadFile.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
