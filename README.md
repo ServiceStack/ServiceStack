@@ -80,23 +80,23 @@ public class TodosService : Service
 ```csharp
 //no code-gen required, can re-use above DTO's
 
-var restClient = new JsonServiceClient(BaseUri);
-List<Todo> all = restClient.Get(new Todos());     		// Count = 0
+var client = new JsonServiceClient(BaseUri);
+List<Todo> all = client.Get(new Todos());     		// Count = 0
 
-var todo = restClient.Post(
-    new Todo { Content = "New TODO", Order = 1 }); 	    // todo.Id = 1
-all = restClient.Get(new Todos());						// Count = 1
+var todo = client.Post(
+    new Todo { Content = "New TODO", Order = 1 }); 	// todo.Id = 1
+all = client.Get(new Todos());						// Count = 1
 
 todo.Content = "Updated TODO";
-todo = restClient.Put(todo);							// todo.Content = Updated TODO
+todo = client.Put(todo);							// todo.Content = Updated TODO
 
-restClient.Delete(new Todos(todo.Id));
-all = restClient.Get(new Todos());						// Count = 0
+client.Delete(new Todos(todo.Id));
+all = client.Get(new Todos());						// Count = 0
 ```
 
 ### Calling the TODO REST service from jQuery
 
-    $.getJSON(baseUri, function(todos) {
+    $.getJSON(baseUri + "/todos", function(todos) {
     	alert(todos.length == 1);
     });
 
@@ -104,7 +104,7 @@ all = restClient.Get(new Todos());						// Count = 0
 
     var client = new JsonClient(baseUri);
     client.todos()
-    	.then((todos) => alert(todos.length == 1) ); 
+    	.then((todos) => alert(todos.length == 1)); 
 
 That's all the application code required to create a simple REST web service.
 
@@ -118,7 +118,9 @@ That's all the application code required to create a simple REST web service.
 
 ## Download
 
-If you have [NuGet](http://nuget.org) installed, the easiest way to get started is to [install ServiceStack via NuGet](https://servicestack.net/download).
+If you have [NuGet](http://nuget.org) installed, the easiest way to get started is to: 
+
+### [Install ServiceStack via NuGet](https://servicestack.net/download).
 
 _Latest v4+ on NuGet is a commercial release with [free quotas](https://servicestack.net/download#free-quotas)._
 
