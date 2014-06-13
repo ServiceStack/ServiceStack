@@ -646,7 +646,8 @@ namespace ServiceStack
                 }
             }
 
-            var client = (HttpWebRequest)WebRequest.Create(requestUri);
+            var client = PclExport.Instance.CreateWebRequest(requestUri,
+                emulateHttpViaPost: EmulateHttpViaPost);
 
             try
             {
