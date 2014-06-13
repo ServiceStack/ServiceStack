@@ -19,7 +19,7 @@
     <copyright>Copyright 2013 Service Stack</copyright>
     <dependencies>
       <dependency id="NLog" version="2.1.0" />
-      <dependency id="ServiceStack.Common" version="4.0" />
+      <dependency id="ServiceStack.Interfaces" version="4.0" />
     </dependencies>
   </metadata>
   <files>
