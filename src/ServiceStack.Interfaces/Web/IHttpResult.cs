@@ -47,5 +47,10 @@ namespace ServiceStack.Web
 		/// Holds the request call context
 		/// </summary>
 		IRequest RequestContext { get; set; }
+
+        /// <summary>
+        /// The padding length written with the body, to be added to ContentLength of body
+        /// </summary>
+        int PaddingLength { get; set; }
 	}
 }

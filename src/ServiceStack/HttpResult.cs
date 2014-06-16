@@ -201,32 +201,56 @@ namespace ServiceStack
 
         public string Template { get; set; }
 
+        public int PaddingLength { get; set; }
+
         public void WriteTo(Stream responseStream)
         {
+            WriteTo(responseStream, PaddingLength);
+
+            responseStream.Flush();
+            DisposeStream();
+        }
+
+        private void WriteTo(Stream responseStream, int paddingLength)
+        {
+            var response = RequestContext != null ? RequestContext.Response : null;
             if (this.FileInfo != null)
             {
+                if (response != null)
+                    response.SetContentLength(FileInfo.Length + paddingLength);
+
                 using (var fs = this.FileInfo.OpenRead())
                 {
                     fs.WriteTo(responseStream);
-                    responseStream.Flush();
+                    return;
                 }
-                return;
             }
 
             if (this.ResponseStream != null)
             {
-                this.ResponseStream.WriteTo(responseStream);
-                responseStream.Flush();
-                DisposeStream();
+                if (response != null)
+                {
+                    var ms = ResponseStream as MemoryStream;
+                    if (ms != null)
+                    {
+                        var bytes = ms.ToArray();
+                        response.SetContentLength(bytes.LongLength + paddingLength);
 
-                return;
+                        responseStream.Write(bytes, 0, bytes.Length);
+                        return;
+                    }
+                }
+
+                this.ResponseStream.WriteTo(responseStream);
             }
 
             if (this.ResponseText != null)
             {
-                var bytes = System.Text.Encoding.UTF8.GetBytes(this.ResponseText);
+                var bytes = Encoding.UTF8.GetBytes(this.ResponseText);
+                if (response != null)
+                    response.SetContentLength(bytes.LongLength + paddingLength);
+
                 responseStream.Write(bytes, 0, bytes.Length);
-                responseStream.Flush();
                 return;
             }
 
@@ -238,6 +262,9 @@ namespace ServiceStack
             var bytesResponse = this.Response as byte[];
             if (bytesResponse != null)
             {
+                if (response != null)
+                    response.SetContentLength(bytesResponse.LongLength + paddingLength);
+
                 responseStream.Write(bytesResponse, 0, bytesResponse.Length);
                 return;
             }
@@ -359,7 +386,7 @@ namespace ServiceStack
             };
         }
 
-        public void DisposeStream()
+        private void DisposeStream()
         {
             try
             {

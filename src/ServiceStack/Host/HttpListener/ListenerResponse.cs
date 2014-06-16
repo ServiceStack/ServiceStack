@@ -79,6 +79,10 @@ namespace ServiceStack.Host.HttpListener
                 return;
 
             var bytes = bufferedStream.ToArray();
+            try {
+                SetContentLength(bytes.LongLength); //safe to set Length in Buffered Response
+            } catch {}
+
             response.OutputStream.Write(bytes, 0, bytes.Length);
             bufferedStream = new MemoryStream();
         }

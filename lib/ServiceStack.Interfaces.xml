@@ -1070,6 +1070,11 @@
             Holds the request call context
             </summary>
         </member>
+        <member name="P:ServiceStack.Web.IHttpResult.PaddingLength">
+            <summary>
+            The padding length written with the body, to be added to ContentLength of body
+            </summary>
+        </member>
         <member name="T:ServiceStack.Web.IHttpRequest">
             <summary>
             A thin wrapper around ASP.NET or HttpListener's HttpRequest

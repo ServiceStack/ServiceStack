@@ -60,7 +60,13 @@ namespace ServiceStack
             var bytes = result as byte[];
             if (bytes != null)
             {
+                var bodyPadding = bodyPrefix != null ? bodyPrefix.Length : 0;
+                if (bodySuffix != null)
+                    bodyPadding += bodySuffix.Length;
+
                 response.ContentType = MimeTypes.Binary;
+                response.SetContentLength(bytes.LongLength + bodyPadding);
+
                 if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
                 response.OutputStream.Write(bytes, 0, bytes.Length);
                 if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
@@ -144,6 +150,12 @@ namespace ServiceStack
                         {
                             httpResult.RequestContext = request;
                         }
+
+                        var paddingLength = bodyPrefix != null ? bodyPrefix.Length : 0;
+                        if (bodySuffix != null)
+                            paddingLength += bodySuffix.Length;
+
+                        httpResult.PaddingLength = paddingLength;
 
                         var httpError = httpResult as IHttpError;
                         if (httpError != null)

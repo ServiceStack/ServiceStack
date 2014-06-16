@@ -79,6 +79,8 @@ namespace ServiceStack
         
         public IRequest RequestContext { get; set; }
 
+        public int PaddingLength { get; set; }
+
         public IDictionary<string, string> Options
         {
             get { return this.Headers; }
