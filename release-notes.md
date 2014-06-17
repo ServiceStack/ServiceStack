@@ -1,5 +1,259 @@
 # Release Notes
 
+# v4.0.22 Release Notes
+
+## OrmLite
+
+This was primarily an OrmLite-focused release with the introduction of major new features:
+
+### Typed SQL Expressions now support Joins!
+
+Another [highly requested feature](http://servicestack.uservoice.com/forums/176786-feature-requests/suggestions/4459040-enhance-ormlite-with-common-data-usage-patterns) has been realized in this release with OrmLite's typed SqlExpressions extended to add support for Joins. 
+
+The new JOIN support follows OrmLite's traditional approach of a providing a DRY, typed RDBMS-agnostic wrapper that retains a high affinity with SQL, providing an intuitive API that generates predictable SQL and a light-weight mapping to clean POCO's.
+
+### Basic Example
+
+Starting with the most basic example you can simply specify the table you want to join with:
+
+```csharp
+var dbCustomers = db.Select<Customer>(q => q.Join<CustomerAddress>());
+```
+
+This query rougly maps to the following SQL:
+
+```sql
+SELECT Customer.* 
+  FROM Customer 
+       INNER JOIN 
+       CustomerAddress ON (Customer.Id == CustomerAddress.Id)
+```
+
+Just like before `q` is an instance of `SqlExpression<Customer>` which is bounded to the base `Customer` type (and what any subsequent implicit API's apply to). 
+
+To better illustrate the above query, lets expand it to the equivalent explicit query:
+
+```csharp
+SqlExpression<Customer> q = db.From<Customer>();
+q.Join<Customer,CustomerAddress>();
+
+List<Customer> dbCustomers = db.Select(q);
+```
+
+### Reference Conventions
+
+The above query joins together the `Customer` and `CustomerAddress` POCO's using the same relationship convention used in [OrmLite's support for References](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/tests/ServiceStack.OrmLite.Tests/LoadReferencesTests.cs), i.e. using the referenced table `{ParentType}Id` property convention.
+
+An example of what this looks like can be seen the POCO's below:
+
+```csharp
+class Customer {
+    public Id { get; set; }
+    ...
+}
+class CustomerAddress {
+    public Id { get; set; }
+    public CustomerId { get; set; }  // Reference based on Property name convention
+}
+```
+
+References based on matching alias names is also supported, e.g:
+
+```csharp
+[Alias("LegacyCustomer")]
+class Customer {
+    public Id { get; set; }
+    ...
+}
+class CustomerAddress {
+    public Id { get; set; }
+
+    [Alias("LegacyCustomerId")]             // Matches `LegacyCustomer` Alias
+    public RenamedCustomerId { get; set; }  // Reference based on Alias Convention
+}
+```
+
+Either convention lets you save a POCO and all its entity references with `db.Save()`, e.g:
+
+```csharp
+var customer =  new Customer {
+    Name = "Customer 1",
+    PrimaryAddress = new CustomerAddress {
+        AddressLine1 = "1 Australia Street",
+        Country = "Australia"
+    },
+};
+db.Save(customer, references:true);
+```
+
+Going back to the above example: 
+
+```csharp
+q.Join<CustomerAddress>();
+```
+
+Uses the implicit join in the above reference convention to expand into the equivalent explicit API: 
+
+```csharp
+q.Join<Customer,CustomerAddress>((customer,address) => customer.Id == address.CustomerId);
+```
+
+### Selecting multiple columns across joined tables
+
+Another behaviour implicit when selecting from a typed SqlExpression is that results are mapped to the `Customer` POCO. To change this default we just need to explicitly specify what POCO it should map to instead:
+
+```csharp
+List<FullCustomerInfo> customers = db.Select<FullCustomerInfo>(
+    db.From<Customer>().Join<CustomerAddress>());
+```
+
+Where `FullCustomerInfo` is any POCO that contains a combination of properties matching any of the joined tables in the query. 
+
+The above example is also equivalent to the shorthand `db.Select<Into,From>()` API:
+
+```csharp
+var customers = db.Select<FullCustomerInfo,Customer>(q => q.Join<CustomerAddress>());
+```
+
+Rules for how results are mapped is simply each property on `FullCustomerInfo` is mapped to the first matching property in any of the tables in the order they were added to the SqlExpression.
+
+As most OrmLite tables have a primary key property named `Id`, the auto-mapping includes a fallback for mapping to a full namespaced Id property in the same `{Type}Id` format. This allows you to auto-populate `CustomerId`, `CustomerAddressId` and `OrderId` columns even though they aren't a match to any of the fields in any of the joined tables.
+
+### Advanced Example
+
+Seeing how the SqlExpression is constructed, joined and mapped, we can take a look at a more advanced example to showcase more of the new API's available:
+
+```csharp
+List<FullCustomerInfo> rows = db.Select<FullCustomerInfo>( // Map results to FullCustomerInfo POCO
+  db.From<Customer>()                                      // Create typed Customer SqlExpression
+    .LeftJoin<CustomerAddress>()                           // Implict left join with base table
+    .Join<Customer, Order>((c,o) => c.Id == o.CustomerId)  // Explicit join and condition
+    .Where(c => c.Name == "Customer 1")                    // Implicit condition on base table
+    .And<Order>(o => o.Cost < 2)                           // Explicit condition on joined Table
+    .Or<Customer,Order>((c,o) => c.Name == o.LineItem));   // Explicit condition with joined Tables
+```
+
+The comments next to each line document each Type of API used. Some of the new API's introduced in this example include:
+
+  - Usage of `LeftJoin` for LEFT JOIN'S, `RightJoin` and `FullJoin` also available
+  - Usage of `And<Table>()`, to specify a condition on a Joined table 
+  - Usage of `Or<Table1,Table2>`, to specify a condition against 2 joined tables
+
+More code examples of References and Joined tables are available in:
+
+  - [LoadReferencesTests.cs](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/tests/ServiceStack.OrmLite.Tests/LoadReferencesTests.cs)
+  - [LoadReferencesJoinTests.cs](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/tests/ServiceStack.OrmLite.Tests/LoadReferencesJoinTests.cs)
+
+## Optimistic Concurrency
+
+Another major feature added to OrmLite is support for optimistic concurrency which can be added to any table by adding a `ulong RowVersion { get; set; }` property, e.g:
+
+```csharp
+public class Poco
+{
+    ...
+    public ulong RowVersion { get; set; }
+}
+```
+
+RowVersion is implemented efficiently in all major RDBMS's, i.e:
+
+ - Uses `rowversion` datatype in SqlServer 
+ - Uses PostgreSql's `xmin` system column (no column on table required)
+ - Uses UPDATE triggers on MySql, Sqlite and Oracle whose lifetime is attached to Create/Drop tables APIs
+
+Despite their differing implementations each provider works the same way where the `RowVersion` property is populated when the record is selected and only updates the record if the RowVersion matches with what's in the database, e.g:
+
+```csharp
+var rowId = db.Insert(new Poco { Text = "Text" }, selectIdentity:true);
+
+var row = db.SingleById<Poco>(rowId);
+row.Text += " Updated";
+db.Update(row); //success!
+
+row.Text += "Attempting to update stale record";
+
+//Can't update stale record
+Assert.Throws<OptimisticConcurrencyException>(() =>
+    db.Update(row));
+
+//Can update latest version
+var updatedRow = db.SingleById<Poco>(rowId);  // fresh version
+updatedRow.Text += "Update Success!";
+db.Update(updatedRow);
+
+updatedRow = db.SingleById<Poco>(rowId);
+db.Delete(updatedRow);                        // can delete fresh version
+```
+
+Optimistic concurrency is only verified on API's that update or delete an entire entity, i.e. it's not enforced in partial updates. There's also an Alternative API available for DELETE's:
+
+```csharp
+db.DeleteById<Poco>(id:updatedRow.Id, rowversion:updatedRow.RowVersion)
+```
+
+### Other OrmLite features
+
+  - New [Limit API's added to JoinSqlBuilder](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/tests/ServiceStack.OrmLite.Tests/Expression/SqlExpressionTests.cs#L126-L168)
+  - SqlExpression's are now tied to the dialect provider at time of creation
+
+## ServiceStack.Text
+
+A new `JsConfig.ReuseStringBuffer` performance config option is available to JSON and JSV Text Serializers which lets you re-use ThreadStatic StringBuilder when serializing to a string. In initial benchmarks (both synchronous and parallel) it shows around a **~%30 increase in performance** for small POCO's. It can be enabled with:
+
+```csharp
+JsConfig.ReuseStringBuffer = true;
+```
+
+Default enum values can be excluded from being serialized with:
+
+```csharp
+JsConfig.IncludeDefaultEnums = false;
+```
+
+## ServiceStack
+
+### [Messaging](https://github.com/ServiceStack/ServiceStack/wiki/Messaging)
+
+Improved support for the MQ Request/Reply pattern with the new `GetTempQueueName()` API now available in all MQ Clients which returns a temporary queue (prefixed with `mq:tmp:`) suitable for use as the ReplyTo queue in Request/Reply scenarios:
+
+```csharp
+mqServer.RegisterHandler<Hello>(m =>
+    new HelloResponse { Result = "Hello, {0}!".Fmt(m.GetBody().Name) });
+mqServer.Start();
+
+using (var mqClient = mqServer.CreateMessageQueueClient())
+{
+    var replyToMq = mqClient.GetTempQueueName();
+    mqClient.Publish(new Message<Hello>(new Hello { Name = "World" }) {
+        ReplyTo = replyToMq
+    });
+
+    IMessage<HelloResponse> responseMsg = mqClient.Get<HelloResponse>(replyToMq);
+    mqClient.Ack(responseMsg);
+    var responseDto = responseMsg.GetBody(); 
+}
+```
+
+On [Rabbit MQ](https://github.com/ServiceStack/ServiceStack/wiki/Rabbit-MQ) it creates an exclusive non-durable queue. 
+
+In [Redis MQ](https://github.com/ServiceStack/ServiceStack/wiki/Messaging-and-Redis) there's a new `RedisMqServer.ExpireTemporaryQueues()` API which can be used on StartUp to expire temporary queues after a given period.
+
+Synchronous and Parallel tests for this feature is available in [MqRequestReplyTests.cs](https://github.com/ServiceStack/ServiceStack/blob/master/tests/ServiceStack.Server.Tests/Messaging/MqRequestReplyTests.cs).
+
+## New NuGet packages
+
+  - [ServiceStack.Authentication.LightSpeed](https://www.nuget.org/packages/ServiceStack.Authentication.LightSpeed/) is a new User Auth Repository created by [Herdy Handoko](https://plus.google.com/u/0/+HerdyHandoko/posts) providing a new persistence option for User Authentication backed by [Mindscape's LightSpeed ORM](http://www.mindscapehq.com/products/lightspeed). Checkout the [GitHub Project](https://github.com/hhandoko/ServiceStack.Authentication.LightSpeed) for more info.
+
+### Other Framework Features
+
+ - Added support for locking users in all AuthProviders by populating `UserAuth.LockedDate`, effective from next login attempt
+ - Reduced dependencies on all Logging providers, now only depends on `ServiceStack.Interfaces`
+ - ContentLength is written where possible allowing [Async Progress callbacks on new payloads](https://github.com/ServiceStack/ServiceStack/blob/master/tests/ServiceStack.WebHost.Endpoints.Tests/AsyncProgressTests.cs)
+ - Non authenticated requests to `/auth` throw a 401 (otherwise returns basic session info)
+ - Metadata filter now supports IE8/IE9
+ - `CopyTo` and `WriteTo` Stream extensions now return bytes transferred 
+
 # v4.0.21 Release Notes
 
 ## Authentication
