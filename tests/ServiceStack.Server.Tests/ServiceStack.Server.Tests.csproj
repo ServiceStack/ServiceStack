@@ -80,7 +80,7 @@
     <Compile Include="Benchmarks\RedisMqServerBenchmarks.cs" />
     <Compile Include="Benchmarks\RedisMqServerServerBenchmarks.cs" />
     <Compile Include="Messaging\MqNameTests.cs" />
-    <Compile Include="Messaging\MqRpcTests.cs" />
+    <Compile Include="Messaging\MqRequestReplyTests.cs" />
     <Compile Include="Messaging\MqServerIntroTests.cs" />
     <Compile Include="Messaging\RabbitMqServerTests.cs" />
     <Compile Include="Messaging\InMemoryTransientMessagingHostTests.cs" />

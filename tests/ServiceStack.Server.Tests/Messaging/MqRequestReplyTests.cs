@@ -12,7 +12,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Server.Tests.Messaging
 {
-    public class RabbitMqRpcTests : MqRpcTests
+    public class RabbitMqRequestReplyTests : MqRequestReplyTests
     {
         public override IMessageService CreateMqServer(int retryCount = 1)
         {
@@ -20,7 +20,7 @@ namespace ServiceStack.Server.Tests.Messaging
         }
     }
 
-    public class RedisMqRpcTests : MqRpcTests
+    public class RedisMqRequestReplyTests : MqRequestReplyTests
     {
         public override IMessageService CreateMqServer(int retryCount = 1)
         {
@@ -49,7 +49,7 @@ namespace ServiceStack.Server.Tests.Messaging
         }
     }
 
-    public class InMemoryMqRpcTests : MqRpcTests
+    public class InMemoryMqRequestReplyTests : MqRequestReplyTests
     {
         public override IMessageService CreateMqServer(int retryCount = 1)
         {
@@ -59,7 +59,7 @@ namespace ServiceStack.Server.Tests.Messaging
 
     [Explicit("Integration Tests")]
     [TestFixture]
-    public abstract class MqRpcTests
+    public abstract class MqRequestReplyTests
     {
         public abstract IMessageService CreateMqServer(int retryCount = 1);
 
