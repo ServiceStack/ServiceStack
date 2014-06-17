@@ -4,6 +4,122 @@
         <name>ServiceStack.OrmLite</name>
     </assembly>
     <members>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Select">
+            <summary>
+            Clear select expression. All properties will be selected.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Select(System.String)">
+            <summary>
+            set the specified selectExpression.
+            </summary>
+            <param name='selectExpression'>
+            raw Select expression: "Select SomeField1, SomeField2 from SomeTable"
+            </param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Select``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+            Fields to be selected.
+            </summary>
+            <param name='fields'>
+            x=> x.SomeProperty1 or x=> new{ x.SomeProperty1, x.SomeProperty2}
+            </param>
+            <typeparam name='TKey'>
+            objectWithProperties
+            </typeparam>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Skip(System.Nullable{System.Int32})">
+            <summary>
+            Offset of the first row to return. The offset of the initial row is 0
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Take(System.Nullable{System.Int32})">
+            <summary>
+            Number of rows returned by a SELECT statement
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Limit(System.Int32,System.Int32)">
+            <summary>
+            Set the specified offset and rows for SQL Limit clause.
+            </summary>
+            <param name='skip'>
+            Offset of the first row to return. The offset of the initial row is 0
+            </param>
+            <param name='rows'>
+            Number of rows returned by a SELECT statement
+            </param>	
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Limit(System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Set the specified offset and rows for SQL Limit clause where they exist.
+            </summary>
+            <param name='skip'>
+            Offset of the first row to return. The offset of the initial row is 0
+            </param>
+            <param name='rows'>
+            Number of rows returned by a SELECT statement
+            </param>	
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Limit(System.Int32)">
+            <summary>
+            Set the specified rows for Sql Limit clause.
+            </summary>
+            <param name='rows'>
+            Number of rows returned by a SELECT statement
+            </param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Limit">
+            <summary>
+            Clear Sql Limit clause
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.ClearLimits">
+            <summary>
+            Clear Offset and Limit clauses. Alias for Limit()
+            </summary>
+            <returns></returns>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:ServiceStack.OrmLite.SqlExpression`1.Update(System.Collections.Generic.IList{System.String})" -->
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Update``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+            Fields to be updated.
+            </summary>
+            <param name='fields'>
+            x=> x.SomeProperty1 or x=> new{ x.SomeProperty1, x.SomeProperty2}
+            </param>
+            <typeparam name='TKey'>
+            objectWithProperties
+            </typeparam>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Update">
+            <summary>
+            Clear UpdateFields list ( all fields will be updated)
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Insert``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+            Fields to be inserted.
+            </summary>
+            <param name='fields'>
+            x=> x.SomeProperty1 or x=> new{ x.SomeProperty1, x.SomeProperty2}
+            </param>
+            <typeparam name='TKey'>
+            objectWithProperties
+            </typeparam>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Insert(System.Collections.Generic.IList{System.String})">
+            <summary>
+            fields to be inserted.
+            </summary>
+            <param name='insertFields'>
+            IList&lt;string&gt; containing Names of properties to be inserted
+            </param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Insert">
+            <summary>
+            Clear InsertFields list ( all fields will be inserted)
+            </summary>
+        </member>
         <member name="T:ServiceStack.OrmLite.PredicateBuilder">
             <summary>
             Enables the efficient, dynamic composition of query predicates.
@@ -93,7 +209,12 @@
             <para>db.Select(db.From&lt;Person&gt;().Where(x =&gt; x.Age &gt; 40))</para>
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.Select``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression)">
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.Select``2(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``1},ServiceStack.OrmLite.SqlExpression{``1}})">
+            <summary>
+            Project results from a number of joined tables into a different model
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.Select``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression,System.Object)">
             <summary>
             Returns results from using an SqlExpression lambda. E.g:
             <para>db.Select(db.From&lt;Person&gt;().Where(x =&gt; x.Age &gt; 40))</para>
@@ -151,6 +272,51 @@
             <summary>
             Insert only fields in POCO specified by the SqlExpression lambda. E.g:
             <para>db.InsertOnly(new Person { FirstName = "Amy", Age = 27 }, ev =&gt; ev.Insert(p =&gt; new { p.FirstName, p.Age }))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.JoinSqlBuilder`2.Skip(System.Nullable{System.Int32})">
+            <summary>
+            Offset of the first row to return. The offset of the initial row is 0
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.JoinSqlBuilder`2.Take(System.Nullable{System.Int32})">
+            <summary>
+            Number of rows returned by a SELECT statement
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.JoinSqlBuilder`2.Limit(System.Int32,System.Int32)">
+            <summary>
+            Set the specified offset and rows for SQL Limit clause.
+            </summary>
+            <param name='skip'>
+            Offset of the first row to return. The offset of the initial row is 0
+            </param>
+            <param name='rows'>
+            Number of rows returned by a SELECT statement
+            </param>	
+        </member>
+        <member name="M:ServiceStack.OrmLite.JoinSqlBuilder`2.Limit(System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Set the specified offset and rows for SQL Limit clause where they exist.
+            </summary>
+            <param name='skip'>
+            Offset of the first row to return. The offset of the initial row is 0
+            </param>
+            <param name='rows'>
+            Number of rows returned by a SELECT statement
+            </param>	
+        </member>
+        <member name="M:ServiceStack.OrmLite.JoinSqlBuilder`2.Limit(System.Int32)">
+            <summary>
+            Set the specified rows for Sql Limit clause.
+            </summary>
+            <param name='rows'>
+            Number of rows returned by a SELECT statement
+            </param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.JoinSqlBuilder`2.Limit">
+            <summary>
+            Clear Sql Limit clause
             </summary>
         </member>
         <member name="T:ServiceStack.OrmLite.OrmLiteConnectionWrapper">
@@ -703,6 +869,14 @@
             </summary>
             <returns>number of rows deleted</returns>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.DeleteById``1(System.Data.IDbConnection,System.Object,System.UInt64)">
+            <summary>
+            Delete 1 row by the PrimaryKey where the rowVersion matches the optimistic concurrency field. 
+            Will throw <exception cref="!:RowModifiedException">RowModefiedExeption</exception> if the 
+            row does not exist or has a different row version.
+            E.g: <para>db.DeleteById&lt;Person&gt;(1)</para>
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.DeleteByIds``1(System.Data.IDbConnection,System.Collections.IEnumerable)">
             <summary>
             Delete all rows identified by the PrimaryKeys. E.g:
@@ -816,122 +990,6 @@
             Nice SqlBuilder class by @samsaffron from Dapper.Contrib:
             http://samsaffron.com/archive/2011/09/05/Digging+ourselves+out+of+the+mess+Linq-2-SQL+created
             Modified to work in .NET 3.5
-            </summary>
-        </member>
-        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Select">
-            <summary>
-            Clear select expression. All properties will be selected.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Select(System.String)">
-            <summary>
-            set the specified selectExpression.
-            </summary>
-            <param name='selectExpression'>
-            raw Select expression: "Select SomeField1, SomeField2 from SomeTable"
-            </param>
-        </member>
-        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Select``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
-            <summary>
-            Fields to be selected.
-            </summary>
-            <param name='fields'>
-            x=> x.SomeProperty1 or x=> new{ x.SomeProperty1, x.SomeProperty2}
-            </param>
-            <typeparam name='TKey'>
-            objectWithProperties
-            </typeparam>
-        </member>
-        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Skip(System.Nullable{System.Int32})">
-            <summary>
-            Offset of the first row to return. The offset of the initial row is 0
-            </summary>
-        </member>
-        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Take(System.Nullable{System.Int32})">
-            <summary>
-            Number of rows returned by a SELECT statement
-            </summary>
-        </member>
-        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Limit(System.Int32,System.Int32)">
-            <summary>
-            Set the specified offset and rows for SQL Limit clause.
-            </summary>
-            <param name='skip'>
-            Offset of the first row to return. The offset of the initial row is 0
-            </param>
-            <param name='rows'>
-            Number of rows returned by a SELECT statement
-            </param>	
-        </member>
-        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Limit(System.Nullable{System.Int32},System.Nullable{System.Int32})">
-            <summary>
-            Set the specified offset and rows for SQL Limit clause where they exist.
-            </summary>
-            <param name='skip'>
-            Offset of the first row to return. The offset of the initial row is 0
-            </param>
-            <param name='rows'>
-            Number of rows returned by a SELECT statement
-            </param>	
-        </member>
-        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Limit(System.Int32)">
-            <summary>
-            Set the specified rows for Sql Limit clause.
-            </summary>
-            <param name='rows'>
-            Number of rows returned by a SELECT statement
-            </param>
-        </member>
-        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Limit">
-            <summary>
-            Clear Sql Limit clause
-            </summary>
-        </member>
-        <member name="M:ServiceStack.OrmLite.SqlExpression`1.ClearLimits">
-            <summary>
-            Clear Offset and Limit clauses. Alias for Limit()
-            </summary>
-            <returns></returns>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:ServiceStack.OrmLite.SqlExpression`1.Update(System.Collections.Generic.IList{System.String})" -->
-        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Update``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
-            <summary>
-            Fields to be updated.
-            </summary>
-            <param name='fields'>
-            x=> x.SomeProperty1 or x=> new{ x.SomeProperty1, x.SomeProperty2}
-            </param>
-            <typeparam name='TKey'>
-            objectWithProperties
-            </typeparam>
-        </member>
-        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Update">
-            <summary>
-            Clear UpdateFields list ( all fields will be updated)
-            </summary>
-        </member>
-        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Insert``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
-            <summary>
-            Fields to be inserted.
-            </summary>
-            <param name='fields'>
-            x=> x.SomeProperty1 or x=> new{ x.SomeProperty1, x.SomeProperty2}
-            </param>
-            <typeparam name='TKey'>
-            objectWithProperties
-            </typeparam>
-        </member>
-        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Insert(System.Collections.Generic.IList{System.String})">
-            <summary>
-            fields to be inserted.
-            </summary>
-            <param name='insertFields'>
-            IList&lt;string&gt; containing Names of properties to be inserted
-            </param>
-        </member>
-        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Insert">
-            <summary>
-            Clear InsertFields list ( all fields will be inserted)
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.WriteExtensions.UpdateOnly``1(System.Data.IDbCommand,``0,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}})">
