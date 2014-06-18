@@ -165,7 +165,7 @@ namespace ServiceStack.Auth
         }
 
         /// <summary>
-        ///     Logic to update UserAuth from Registration info, not enabled on OnPut because of security.
+        /// Logic to update UserAuth from Registration info, not enabled on PUT because of security.
         /// </summary>
         public object UpdateUserAuth(Register request)
         {
@@ -190,7 +190,7 @@ namespace ServiceStack.Auth
                 throw HttpError.NotFound("User does not exist");
 
             var newUserAuth = ToUserAuth(request);
-            userAuthRepo.UpdateUserAuth(newUserAuth, existingUser, request.Password);
+            userAuthRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);
 
             return new RegisterResponse
             {
