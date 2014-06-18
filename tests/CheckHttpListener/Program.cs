@@ -9,11 +9,15 @@ namespace CheckHttpListener
 {
     public class AppHost : AppHostHttpListenerBase
     {
-        public AppHost() : base("Check HttpListener Tests", typeof(ErrorsService).Assembly) {}
+        public AppHost() : base("Check HttpListener Tests", typeof(ErrorsService).Assembly) { }
 
         public override void Configure(Container container)
         {
             this.CustomErrorHttpHandlers[HttpStatusCode.NotFound] = null;
+
+            SetConfig(new HostConfig {
+                DebugMode = true
+            });
 
             Plugins.Add(new DtoGenFeature());
         }

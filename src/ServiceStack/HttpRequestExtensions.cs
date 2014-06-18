@@ -90,11 +90,20 @@ namespace ServiceStack
 
         public static string GetPathUrl(this IRequest httpReq)
 		{
-			var resolvedPathInfo = httpReq.PathInfo;
+			var resolvedPathInfo = httpReq.PathInfo.TrimEnd('/');
 
-			var pos = resolvedPathInfo == String.Empty
-				? httpReq.AbsoluteUri.Length
-				: httpReq.AbsoluteUri.IndexOf(resolvedPathInfo, StringComparison.OrdinalIgnoreCase);
+            int pos;
+
+            if (resolvedPathInfo == string.Empty)
+            {
+                pos = httpReq.AbsoluteUri.IndexOf('?');
+                if (pos == -1)
+                    pos = httpReq.AbsoluteUri.Length;
+            }
+            else
+            {
+                pos = httpReq.AbsoluteUri.IndexOf(resolvedPathInfo, StringComparison.OrdinalIgnoreCase);
+            }
 
 			if (pos == -1)
 				throw new ArgumentException(
