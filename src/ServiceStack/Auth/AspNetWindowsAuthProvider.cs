@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.DirectoryServices.AccountManagement;
 using System.Linq;
 using System.Security.Principal;
 using System.Web;
@@ -167,6 +168,37 @@ namespace ServiceStack.Auth
                     provider = Name,
                     UserName = user.GetUserName(),
                 });
+            }
+        }
+
+        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
+        {
+            if (userSession == null)
+                return;
+
+            try
+            {
+                using (PrincipalContext pc = new PrincipalContext(ContextType.Domain))
+                {
+                    var user = UserPrincipal.FindByIdentity(pc, userSession.UserAuthName);
+
+                    tokens.DisplayName = user.DisplayName;
+                    tokens.Email = user.EmailAddress;
+                    tokens.FirstName = user.GivenName;
+                    tokens.LastName = user.Surname;
+                    tokens.FullName = (String.IsNullOrWhiteSpace(user.MiddleName))
+                        ? "{0} {1}".Fmt(user.GivenName, user.Surname)
+                        : "{0} {1} {2}".Fmt(user.GivenName, user.MiddleName, user.Surname);
+                    tokens.PhoneNumber = user.VoiceTelephoneNumber;
+                }
+            }
+            catch (MultipleMatchesException mmex)
+            {
+                Log.Error("Multiple windows user info for '{0}'".Fmt(userSession.UserAuthName), mmex);
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Could not retrieve windows user info for '{0}'".Fmt(tokens.DisplayName), ex);
             }
         }
     }
