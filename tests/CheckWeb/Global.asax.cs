@@ -7,6 +7,7 @@ using Check.ServiceInterface;
 using Funq;
 using ServiceStack;
 using ServiceStack.Api.Swagger;
+using ServiceStack.MiniProfiler;
 using ServiceStack.Razor;
 using ServiceStack.Text;
 using ServiceStack.Validation;
@@ -36,7 +37,7 @@ namespace CheckWeb
 
                 // Set to return JSON if no request content type is defined
                 // e.g. text/html or application/json
-                DefaultContentType = MimeTypes.Json,
+                //DefaultContentType = MimeTypes.Json,
 #if !DEBUG
                 // Show StackTraces in service responses during development
                 DebugMode = true,
@@ -134,6 +135,17 @@ namespace CheckWeb
         protected void Application_Start(object sender, EventArgs e)
         {
             new AppHost().Init();
+        }
+
+        protected void Application_BeginRequest(object src, EventArgs e)
+        {
+            if (Request.IsLocal)
+                Profiler.Start();
+        }
+
+        protected void Application_EndRequest(object src, EventArgs e)
+        {
+            Profiler.Stop();
         }
     }
 }
