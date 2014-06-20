@@ -18,6 +18,8 @@ namespace ServiceStack.Auth
         public string CallbackUrl { get; set; }
         public string RedirectUrl { get; set; }
 
+        public Action<AuthUserSession, IAuthTokens, Dictionary<string, string>> LoadUserAuthFilter { get; set; } 
+
         protected AuthProvider()
         {
             this.SessionExpiry = SessionFeature.DefaultSessionExpiry;
@@ -119,6 +121,11 @@ namespace ServiceStack.Auth
             if (userSession != null)
             {
                 LoadUserAuthInfo(userSession, tokens, authInfo);
+
+                if (LoadUserAuthFilter != null)
+                {
+                    LoadUserAuthFilter(userSession, tokens, authInfo);
+                }
             }
 
             var authRepo = authService.TryResolve<IAuthRepository>();

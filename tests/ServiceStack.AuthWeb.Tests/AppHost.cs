@@ -1,4 +1,8 @@
 ﻿//#define HTTP_LISTENER
+
+using System;
+using System.Collections.Generic;
+using System.DirectoryServices.AccountManagement;
 using Funq;
 using ServiceStack.Admin;
 using ServiceStack.Auth;
@@ -8,6 +12,7 @@ using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.FluentValidation;
+using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.MiniProfiler.Data;
 using ServiceStack.OrmLite;
@@ -26,6 +31,8 @@ namespace ServiceStack.AuthWeb.Tests
     public class AppHost : AppHostBase
 #endif
     {
+        public static ILog Log = LogManager.GetLogger(typeof(AppHost));
+
         public AppHost()
             : base("Test Auth", typeof(AppHost).Assembly) { }
 
@@ -78,7 +85,10 @@ namespace ServiceStack.AuthWeb.Tests
             Plugins.Add(new AuthFeature(
                 () => new CustomUserSession(), //Use your own typed Custom UserSession type
                 new IAuthProvider[] {
-                    new AspNetWindowsAuthProvider(this) { AllowAllWindowsAuthUsers = true }, 
+                    new AspNetWindowsAuthProvider(this) {
+                        LoadUserAuthFilter = LoadUserAuthInfo,
+                        AllowAllWindowsAuthUsers = true
+                    }, 
                     new CredentialsAuthProvider(),              //HTML Form post of UserName/Password credentials
                     new TwitterAuthProvider(appSettings),       //Sign-in with Twitter
                     new FacebookAuthProvider(appSettings),      //Sign-in with Facebook
@@ -118,6 +128,38 @@ namespace ServiceStack.AuthWeb.Tests
 
             Plugins.Add(new RequestLogsFeature());
         }
+
+        public void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
+        {
+            if (userSession == null)
+                return;
+
+            try
+            {
+                using (PrincipalContext pc = new PrincipalContext(ContextType.Domain))
+                {
+                    var user = UserPrincipal.FindByIdentity(pc, userSession.UserAuthName);
+
+                    tokens.DisplayName = user.DisplayName;
+                    tokens.Email = user.EmailAddress;
+                    tokens.FirstName = user.GivenName;
+                    tokens.LastName = user.Surname;
+                    tokens.FullName = (String.IsNullOrWhiteSpace(user.MiddleName))
+                        ? "{0} {1}".Fmt(user.GivenName, user.Surname)
+                        : "{0} {1} {2}".Fmt(user.GivenName, user.MiddleName, user.Surname);
+                    tokens.PhoneNumber = user.VoiceTelephoneNumber;
+                }
+            }
+            catch (MultipleMatchesException mmex)
+            {
+                Log.Error("Multiple windows user info for '{0}'".Fmt(userSession.UserAuthName), mmex);
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Could not retrieve windows user info for '{0}'".Fmt(tokens.DisplayName), ex);
+            }
+        }
+
     }
 
     //Provide extra validation for the registration process
@@ -150,4 +192,6 @@ namespace ServiceStack.AuthWeb.Tests
         public int Id { get; set; }
         public string CustomField { get; set; }
     }
+
+
 }
