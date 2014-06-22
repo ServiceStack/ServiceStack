@@ -209,6 +209,11 @@
             <para>db.Select(db.From&lt;Person&gt;().Where(x =&gt; x.Age &gt; 40))</para>
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.Select``2(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``1})">
+            <summary>
+            Project results from a number of joined tables into a different model
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.Select``2(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``1},ServiceStack.OrmLite.SqlExpression{``1}})">
             <summary>
             Project results from a number of joined tables into a different model

@@ -333,6 +333,11 @@
             Decorate any type or property with adhoc info
             </summary>
         </member>
+        <member name="T:ServiceStack.IHasResponseStatus">
+            <summary>
+            Contract indication that the Response DTO has a ResponseStatus
+            </summary>
+        </member>
         <member name="T:ServiceStack.Logging.DebugLogFactory">
             <summary>
             Creates a Debug Logger, that logs all messages to: System.Diagnostics.Debug
@@ -604,11 +609,6 @@
             Logs the specified message.
             </summary>
             <param name="message">The message.</param>
-        </member>
-        <member name="T:ServiceStack.IHasResponseStatus">
-            <summary>
-            Contract indication that the Response DTO has a ResponseStatus
-            </summary>
         </member>
         <member name="T:ServiceStack.Logging.LogManager">
             <summary>
