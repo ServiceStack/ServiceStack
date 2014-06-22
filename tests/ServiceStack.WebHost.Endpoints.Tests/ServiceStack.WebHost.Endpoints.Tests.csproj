@@ -157,6 +157,7 @@
     <Compile Include="AsyncTaskTests.cs" />
     <Compile Include="AttributeFiltersTest.cs" />
     <Compile Include="AuthTests.cs" />
+    <Compile Include="AutoQueryTests.cs" />
     <Compile Include="BufferedRequestTests.cs" />
     <Compile Include="CachedServiceTests.cs" />
     <Compile Include="CompressionTests.cs" />
