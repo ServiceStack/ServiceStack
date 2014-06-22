@@ -16,11 +16,6 @@ namespace ServiceStack.Reflection
     {
         public static Func<object, object> GetValueGetter(Type type, PropertyInfo propertyInfo)
         {
-            if (type != propertyInfo.DeclaringType)
-            {
-                throw new ArgumentException();
-            }
-
             var instance = Expression.Parameter(typeof(object), "i");
             var convertInstance = Expression.TypeAs(instance, propertyInfo.DeclaringType);
             var property = Expression.Property(convertInstance, propertyInfo);
@@ -30,11 +25,6 @@ namespace ServiceStack.Reflection
 
         public static Func<T, object> GetValueGetter<T>(this PropertyInfo propertyInfo)
         {
-            if (typeof(T) != propertyInfo.DeclaringType)
-            {
-                throw new ArgumentException();
-            }
-
             var instance = Expression.Parameter(propertyInfo.DeclaringType, "i");
             var property = Expression.Property(instance, propertyInfo);
             var convert = Expression.TypeAs(property, typeof(object));
