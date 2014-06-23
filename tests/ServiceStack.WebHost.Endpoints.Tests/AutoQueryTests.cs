@@ -97,7 +97,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class QueryFieldRockstars : QueryBase<Rockstar>
     {
-        public string FirstName { get; set; } //default to '='
+        public string FirstName { get; set; } //default to 'AND FirstName = {Value}'
 
         [QueryField(Format = "UPPER({Field}) LIKE UPPER({Value})", Field = "FirstName")]
         public string FirstNameCaseInsensitive { get; set; }
@@ -108,7 +108,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [QueryField(Format = "{Field} LIKE {Value}", Field = "LastName", ValueFormat = "%{0}")]
         public string LastNameEndsWith { get; set; }
 
-        [QueryField(Or = true, Format = "UPPER({Field}) LIKE UPPER({Value})", Field = "LastName")]
+        [QueryField(Type = QueryType.Or, Format = "UPPER({Field}) LIKE UPPER({Value})", Field = "LastName")]
         public string OrLastName { get; set; }
 
         [QueryField(Operand = ">=")]
@@ -125,7 +125,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int? Age { get; set; }
     }
 
-    public class QueryCustomRockstarsFilter : QueryBase<Rockstar,CustomRockstar>
+    public class QueryCustomRockstarsFilter : QueryBase<Rockstar, CustomRockstar>
     {
         public int? Age { get; set; }
     }
@@ -136,6 +136,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int? Age { get; set; }
     }
 
+    [Query(QueryType.Or)]
+    [Route("/OrRockstars")]
+    public class QueryOrRockstars : QueryBase<Rockstar>
+    {
+        public int? Age { get; set; }
+        public string FirstName { get; set; }
+    }
 
     public class RockstarAlbum
     {
@@ -424,6 +431,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             response = client.Get(new QueryRockstarsIFilter { Age = 27 });
             Assert.That(response.Results.Count, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Can_execute_OR_QueryFilters()
+        {
+            var response = client.Get(new QueryOrRockstars { Age = 42, FirstName = "Jim" });
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+
+            response = Config.ListeningOn.CombineWith("OrRockstars")
+                .AddQueryParam("Age", "27")
+                .AddQueryParam("FirstName", "Kurt")
+                .AddQueryParam("LastName", "Hendrix")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Rockstar>>();
+            Assert.That(response.Results.Count, Is.EqualTo(3));
         }
     }
 }

@@ -18,11 +18,35 @@ namespace ServiceStack
     public class AutoQueryFeature : IPlugin
     {
         public HashSet<string> IgnoreProperties { get; set; }
-        public int? MaxLimit { get; set; } 
+        public int? MaxLimit { get; set; }
         public string UseNamedConnection { get; set; }
         public bool? EnableSqlFilters { get; set; }
         public Type AutoQueryServiceBaseType { get; set; }
-        public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; } 
+        public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
+        public Dictionary<string, string> OperandConventions = new Dictionary<string, string> {
+            {"Before%","<"},
+            {"OnOrBefore%","=<"},
+            {"Below%","<"},
+            {"To%","<="},
+            {"Until%","<="},
+            {"Less%","<"},
+            {"LessOrEqual%","<="},
+            {"%Lower%","<"},
+            {"%<","<="},
+            {"<%","<"},
+
+            {"After%",">"},
+            {"OnOrAfter%",">="},
+            {"Above%",">"},
+            {"From%",">="},
+            {"Since%",">="},
+            {"Beyond%",">"},
+            {"Greater%",">"},
+            {"GreaterOrEqual%",">="},
+            {"%Higher%",">="},
+            {"%>",">"},
+            {">%",">="},
+        };
 
         public AutoQueryFeature()
         {
@@ -33,12 +57,13 @@ namespace ServiceStack
 
         public void Register(IAppHost appHost)
         {
-            appHost.GetContainer().Register<IAutoQuery>(c => 
-                new AutoAutoQuery {
+            appHost.GetContainer().Register<IAutoQuery>(c =>
+                new AutoAutoQuery
+                {
                     IgnoreProperties = IgnoreProperties,
                     MaxLimit = MaxLimit,
                     QueryFilters = QueryFilters,
-                    Db = UseNamedConnection != null 
+                    Db = UseNamedConnection != null
                         ? c.Resolve<IDbConnectionFactory>().OpenDbConnection(UseNamedConnection)
                         : c.Resolve<IDbConnectionFactory>().OpenDbConnection(),
                 })
@@ -49,7 +74,7 @@ namespace ServiceStack
 
         void OnAfterLoad(IAppHost appHost)
         {
-            var ssHost = (ServiceStackHost) appHost;
+            var ssHost = (ServiceStackHost)appHost;
             var scannedTypes = ssHost.ServiceController.ResolveServicesFn();
             var misingRequestTypes = scannedTypes
                 .Where(x => x.HasInterface(typeof(IQuery)))
@@ -69,8 +94,8 @@ namespace ServiceStack
             var typeBuilder =
                 Thread.GetDomain().DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run)
                 .DefineDynamicModule("tmpModule")
-                .DefineType("__AutoQueryServices", 
-                    TypeAttributes.Public | TypeAttributes.Class, 
+                .DefineType("__AutoQueryServices",
+                    TypeAttributes.Public | TypeAttributes.Class,
                     AutoQueryServiceBaseType);
 
             var emptyCtor = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, Type.EmptyTypes);
@@ -87,8 +112,8 @@ namespace ServiceStack
             {
                 var method = typeBuilder.DefineMethod("Any", MethodAttributes.Public | MethodAttributes.Virtual,
                     CallingConventions.Standard,
-                    returnType: typeof(object), 
-                    parameterTypes: new[]{ requestType });
+                    returnType: typeof(object),
+                    parameterTypes: new[] { requestType });
 
                 var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQuery<,>));
                 var hasExplicitInto = genericDef != null;
@@ -148,7 +173,7 @@ namespace ServiceStack
             return AutoQuery.Execute(dto, q);
         }
 
-        public virtual object Exec<From, Into>(IQuery<From,Into> dto)
+        public virtual object Exec<From, Into>(IQuery<From, Into> dto)
         {
             var q = AutoQuery.CreateQuery(dto, Request.GetRequestParams());
             return AutoQuery.Execute(dto, q);
@@ -159,11 +184,11 @@ namespace ServiceStack
     {
         public HashSet<string> IgnoreProperties { get; set; }
 
-        public int? MaxLimit { get; set; } 
+        public int? MaxLimit { get; set; }
 
         public virtual IDbConnection Db { get; set; }
 
-        public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; } 
+        public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
 
         public virtual void Dispose()
         {
@@ -180,7 +205,7 @@ namespace ServiceStack
 
             var genericType = typeof(TypedQuery<,>).MakeGenericType(dtoType, fromType);
             defaultValue = genericType.CreateInstance<ITypedQuery>();
-            
+
             Dictionary<Type, ITypedQuery> snapshot, newCache;
             do
             {
@@ -217,7 +242,7 @@ namespace ServiceStack
 
         public SqlExpression<From> CreateQuery<From>(IQuery<From> model, Dictionary<string, string> dynamicParams, IRequest request = null)
         {
-            var typedQuery = GetTypedQuery(model.GetType(), typeof (From));
+            var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
             return Filter<From>(request, typedQuery.CreateQuery(Db, model, dynamicParams, IgnoreProperties, MaxLimit), model);
         }
 
@@ -233,7 +258,7 @@ namespace ServiceStack
             return Filter<From>(request, typedQuery.CreateQuery(Db, model, dynamicParams, IgnoreProperties, MaxLimit), model);
         }
 
-        public QueryResponse<Into> Execute<From, Into>(IQuery<From, Into> model, SqlExpression<From> query) 
+        public QueryResponse<Into> Execute<From, Into>(IQuery<From, Into> model, SqlExpression<From> query)
         {
             var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
             return typedQuery.Execute<Into>(Db, query);
@@ -250,13 +275,13 @@ namespace ServiceStack
             int? maxLimit = null);
 
         QueryResponse<Into> Execute<Into>(
-            IDbConnection db, 
+            IDbConnection db,
             ISqlExpression query);
     }
 
     public class TypedQuery<QueryModel, From> : ITypedQuery
     {
-        static readonly Dictionary<string, Func<object,object>> PropertyGetters = 
+        static readonly Dictionary<string, Func<object, object>> PropertyGetters =
             new Dictionary<string, Func<object, object>>();
 
         static readonly Dictionary<string, QueryFieldAttribute> QueryFieldMap =
@@ -279,7 +304,7 @@ namespace ServiceStack
             IDbConnection db,
             IQuery model,
             Dictionary<string, string> dynamicParams,
-            HashSet<string> ignoreProperties=null,
+            HashSet<string> ignoreProperties = null,
             int? maxLimit = null)
         {
             var q = db.From<From>();
@@ -313,7 +338,8 @@ namespace ServiceStack
                 take = maxLimit;
             q.Limit(model.Skip, take);
 
-            var m = typeof(From).GetModelMetadata();
+            var dtoAttr = model.GetType().FirstAttribute<QueryAttribute>();
+            var condition = dtoAttr != null && dtoAttr.DefaultType == QueryType.Or ? "OR" : "AND";
             foreach (var entry in PropertyGetters)
             {
                 var name = entry.Key;
@@ -335,25 +361,25 @@ namespace ServiceStack
                 if (value == null)
                     continue;
 
+                var format = quotedColumn + " = {0}";
                 if (queryAttr != null)
                 {
                     var operand = queryAttr.Operand ?? "=";
-                    var condition = queryAttr.Or ? "OR" : "AND";
-                    var format = quotedColumn + " " + operand + " {0}";
+                    if (queryAttr.Type == QueryType.Or)
+                        condition = "OR";
+
+                    format = quotedColumn + " " + operand + " {0}";
                     if (queryAttr.Format != null)
                     {
                         format = queryAttr.Format.Replace("{Field}", quotedColumn)
-                            .Replace("{Value}","{0}");
+                            .Replace("{Value}", "{0}");
 
                         if (queryAttr.ValueFormat != null)
                             value = string.Format(queryAttr.ValueFormat, value);
                     }
-                    q.AddCondition(condition, format, value);
                 }
-                else
-                {
-                    q.Where(quotedColumn + " = {0}", value);
-                }
+
+                q.AddCondition(condition, format, value);
             }
 
             foreach (var entry in dynamicParams)
@@ -373,7 +399,7 @@ namespace ServiceStack
                     ? strValue
                     : Convert.ChangeType(strValue, matchingField.FieldType);
 
-                q.Where(quotedColumn + " = {0}", value);
+                q.AddCondition(condition, quotedColumn + " = {0}", value);
             }
 
             return q;
@@ -381,7 +407,7 @@ namespace ServiceStack
 
         public QueryResponse<Into> Execute<Into>(IDbConnection db, ISqlExpression query)
         {
-            var q = (SqlExpression<From>) query;
+            var q = (SqlExpression<From>)query;
             var response = new QueryResponse<Into>
             {
                 Offset = q.Offset.GetValueOrDefault(0),

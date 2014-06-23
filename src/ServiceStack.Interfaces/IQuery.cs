@@ -25,10 +25,30 @@ namespace ServiceStack
     public interface ILeftJoin<Source, Join1, Join2, Join3> : IJoin { }
     public interface ILeftJoin<Source, Join1, Join2, Join3, Join4> : IJoin { }
 
+    public enum QueryType
+    {
+        Default = 0,
+        And = 1,
+        Or = 2,
+    }
+
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+    public class QueryAttribute : AttributeBase
+    {
+        public QueryAttribute() {}
+
+        public QueryAttribute(QueryType defaultType)
+        {
+            DefaultType = defaultType;
+        }
+
+        public QueryType DefaultType { get; set; }
+    }
+
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class QueryFieldAttribute : AttributeBase
     {
-        public bool Or { get; set; }
+        public QueryType Type { get; set; }
         public string Operand { get; set; }
         public string Format { get; set; }
         public string Field { get; set; }
