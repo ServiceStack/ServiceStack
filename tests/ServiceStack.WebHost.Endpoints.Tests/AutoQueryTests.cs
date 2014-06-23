@@ -52,7 +52,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public static RockstarAlbum[] SeedDataAlbum = new[] {
             new RockstarAlbum { RockstarId = 1, Name = "Electric Ladyland" },    
-            new RockstarAlbum { RockstarId = 3, Name = "Never Mind" },    
+            new RockstarAlbum { RockstarId = 3, Name = "Nevermind" },    
             new RockstarAlbum { RockstarId = 5, Name = "Foo Fighters" },    
             new RockstarAlbum { RockstarId = 6, Name = "Into the Wild" },    
         };
@@ -71,7 +71,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class QueryRockstarAlbums : QueryBase<Rockstar, CustomRockstar>, IJoin<Rockstar, RockstarAlbum>
     {
         public int? Age { get; set; }
-        public string AlbumName { get; set; }
+        public string RockstarAlbumName { get; set; }
+    }
+
+    public class QueryRockstarAlbumsImplicit : QueryBase<Rockstar, CustomRockstar>, IJoin<Rockstar, RockstarAlbum>
+    {
     }
 
     public class QueryRockstarAlbumsLeftJoin : QueryBase<Rockstar, CustomRockstar>, ILeftJoin<Rockstar, RockstarAlbum>
@@ -276,13 +280,50 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_execute_query_with_JOIN_on_RockstarAlbums()
         {
             var response = client.Get(new QueryRockstarAlbums());
-            response.PrintDump();
             Assert.That(response.Total, Is.EqualTo(TotalAlbums));
             Assert.That(response.Results.Count, Is.EqualTo(TotalAlbums));
             var albumNames = response.Results.Select(x => x.RockstarAlbumName);
             Assert.That(albumNames, Is.EquivalentTo(new[] {
-                "Electric Ladyland", "Never Mind", "Foo Fighters", "Into the Wild"
+                "Electric Ladyland", "Nevermind", "Foo Fighters", "Into the Wild"
             }));
+
+            response = client.Get(new QueryRockstarAlbums { Age = 27 });
+            Assert.That(response.Total, Is.EqualTo(2));
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+            albumNames = response.Results.Select(x => x.RockstarAlbumName);
+            Assert.That(albumNames, Is.EquivalentTo(new[] {
+                "Electric Ladyland", "Nevermind"
+            }));
+
+            response = client.Get(new QueryRockstarAlbums { RockstarAlbumName = "Nevermind" });
+            Assert.That(response.Total, Is.EqualTo(1));
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            albumNames = response.Results.Select(x => x.RockstarAlbumName);
+            Assert.That(albumNames, Is.EquivalentTo(new[] { "Nevermind" }));
+        }
+
+        [Test]
+        public void Can_execute_IMPLICIT_query_with_JOIN_on_RockstarAlbums()
+        {
+            var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstarAlbumsImplicit")
+                .AddQueryParam("Age", "27")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<CustomRockstar>>();
+            Assert.That(response.Total, Is.EqualTo(2));
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+            var albumNames = response.Results.Select(x => x.RockstarAlbumName);
+            Assert.That(albumNames, Is.EquivalentTo(new[] {
+                "Electric Ladyland", "Nevermind"
+            }));
+
+            response = Config.ListeningOn.CombineWith("json/reply/QueryRockstarAlbumsImplicit")
+                .AddQueryParam("RockstarAlbumName", "Nevermind")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<CustomRockstar>>();
+            Assert.That(response.Total, Is.EqualTo(1));
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            albumNames = response.Results.Select(x => x.RockstarAlbumName);
+            Assert.That(albumNames, Is.EquivalentTo(new[] { "Nevermind" }));
         }
 
         [Test]
@@ -294,7 +335,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars));
             var albumNames = response.Results.Where(x => x.RockstarAlbumName != null).Select(x => x.RockstarAlbumName);
             Assert.That(albumNames, Is.EquivalentTo(new[] {
-                "Electric Ladyland", "Never Mind", "Foo Fighters", "Into the Wild"
+                "Electric Ladyland", "Nevermind", "Foo Fighters", "Into the Wild"
             }));
         }
 

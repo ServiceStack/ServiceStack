@@ -323,17 +323,17 @@ namespace ServiceStack
                 if (queryAttr != null && queryAttr.Field != null)
                     name = queryAttr.Field;
 
-                var matchingField = ignoreProperties == null || !ignoreProperties.Contains(name)
-                    ? m.FieldDefinitions.FirstOrDefault(x => x.Name == name)
+                var match = ignoreProperties == null || !ignoreProperties.Contains(name)
+                    ? q.FirstMatchingField(name)
                     : null;
-                if (matchingField == null)
+                if (match == null)
                     continue;
+
+                var quotedColumn = q.DialectProvider.GetQuotedColumnName(match.Item1, match.Item2);
 
                 var value = entry.Value(model);
                 if (value == null)
                     continue;
-
-                var quotedColumn = q.DialectProvider.GetQuotedColumnName(m, matchingField);
 
                 if (queryAttr != null)
                 {
@@ -359,14 +359,15 @@ namespace ServiceStack
             foreach (var entry in dynamicParams)
             {
                 var name = entry.Key;
-                var matchingField = ignoreProperties == null || !ignoreProperties.Contains(name)
-                    ? m.FieldDefinitions.FirstOrDefault(x => x.Name == name)
+                var match = ignoreProperties == null || !ignoreProperties.Contains(name)
+                    ? q.FirstMatchingField(name)
                     : null;
-                if (matchingField == null)
+                if (match == null)
                     continue;
 
-                var quotedColumn = q.DialectProvider.GetQuotedColumnName(m, matchingField);
+                var quotedColumn = q.DialectProvider.GetQuotedColumnName(match.Item1, match.Item2);
 
+                var matchingField = match.Item2;
                 var strValue = entry.Value;
                 var value = matchingField.FieldType == typeof(string)
                     ? strValue
