@@ -2,6 +2,7 @@
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Data;
+using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 
@@ -10,7 +11,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class AutoQueryAppHost : AppSelfHostBase
     {
         public AutoQueryAppHost()
-            : base("AutoQuery", typeof(AutoQueryService).Assembly) {}
+            : base("AutoQuery", typeof(AutoQueryService).Assembly) { }
 
         public override void Configure(Container container)
         {
@@ -22,10 +23,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 db.DropAndCreateTable<Rockstar>();
                 db.DropAndCreateTable<RockstarAlbum>();
                 db.InsertAll(SeedData);
-                db.InsertAll(SeedDataAlbum);                
+                db.InsertAll(SeedDataAlbum);
             }
 
-            Plugins.Add(new AutoQueryFeature { MaxLimit = 100 });
+            var autoQuery = new AutoQueryFeature { MaxLimit = 100 }
+                .RegisterQueryFilter<QueryRockstarsFilter, Rockstar>((req, q, dto) =>
+                    q.And(x => x.LastName.EndsWith("son"))
+                )
+                .RegisterQueryFilter<QueryCustomRockstarsFilter, Rockstar>((req, q, dto) =>
+                    q.And(x => x.LastName.EndsWith("son"))
+                )
+                .RegisterQueryFilter<IFilterRockstars, Rockstar>((req, q, dto) =>
+                    q.And(x => x.LastName.EndsWith("son"))
+                );
+
+            Plugins.Add(autoQuery);
         }
 
         public static Rockstar[] SeedData = new[] {
@@ -39,10 +51,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         };
 
         public static RockstarAlbum[] SeedDataAlbum = new[] {
-            new RockstarAlbum { Id = 1, RockstarId = 1, AlbumName = "Electric Ladyland" },    
-            new RockstarAlbum { Id = 3, RockstarId = 3, AlbumName = "Never Mind" },    
-            new RockstarAlbum { Id = 5, RockstarId = 5, AlbumName = "Foo Fighters" },    
-            new RockstarAlbum { Id = 6, RockstarId = 6, AlbumName = "Into the Wild" },    
+            new RockstarAlbum { RockstarId = 1, Name = "Electric Ladyland" },    
+            new RockstarAlbum { RockstarId = 3, Name = "Never Mind" },    
+            new RockstarAlbum { RockstarId = 5, Name = "Foo Fighters" },    
+            new RockstarAlbum { RockstarId = 6, Name = "Into the Wild" },    
         };
     }
 
@@ -79,11 +91,54 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int? Age { get; set; }
     }
 
+    public class QueryFieldRockstars : QueryBase<Rockstar>
+    {
+        public string FirstName { get; set; } //default to '='
+
+        [QueryField(Format = "UPPER({Field}) LIKE UPPER({Value})", Field = "FirstName")]
+        public string FirstNameCaseInsensitive { get; set; }
+
+        [QueryField(Format = "{Field} LIKE {Value}", Field = "FirstName", ValueFormat = "{0}%")]
+        public string FirstNameStartsWith { get; set; }
+
+        [QueryField(Format = "{Field} LIKE {Value}", Field = "LastName", ValueFormat = "%{0}")]
+        public string LastNameEndsWith { get; set; }
+
+        [QueryField(Or = true, Format = "UPPER({Field}) LIKE UPPER({Value})", Field = "LastName")]
+        public string OrLastName { get; set; }
+
+        [QueryField(Operand = ">=")]
+        public int? Age { get; set; }
+    }
+
+    public class QueryFieldRockstarsDynamic : QueryBase<Rockstar>
+    {
+        public int? Age { get; set; }
+    }
+
+    public class QueryRockstarsFilter : QueryBase<Rockstar>
+    {
+        public int? Age { get; set; }
+    }
+
+    public class QueryCustomRockstarsFilter : QueryBase<Rockstar,CustomRockstar>
+    {
+        public int? Age { get; set; }
+    }
+
+    public interface IFilterRockstars { }
+    public class QueryRockstarsIFilter : QueryBase<Rockstar>, IFilterRockstars
+    {
+        public int? Age { get; set; }
+    }
+
+
     public class RockstarAlbum
     {
+        [AutoIncrement]
         public int Id { get; set; }
         public int RockstarId { get; set; }
-        public string AlbumName { get; set; }
+        public string Name { get; set; }
     }
 
     public class CustomRockstar
@@ -91,7 +146,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public int? Age { get; set; }
-        public string AlbumName { get; set; }
+        public string RockstarAlbumName { get; set; }
     }
 
     public class AutoQueryService : Service
@@ -224,7 +279,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response.PrintDump();
             Assert.That(response.Total, Is.EqualTo(TotalAlbums));
             Assert.That(response.Results.Count, Is.EqualTo(TotalAlbums));
-            var albumNames = response.Results.Select(x => x.AlbumName);
+            var albumNames = response.Results.Select(x => x.RockstarAlbumName);
             Assert.That(albumNames, Is.EquivalentTo(new[] {
                 "Electric Ladyland", "Never Mind", "Foo Fighters", "Into the Wild"
             }));
@@ -237,10 +292,97 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response.PrintDump();
             Assert.That(response.Total, Is.EqualTo(TotalRockstars));
             Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars));
-            var albumNames = response.Results.Where(x => x.AlbumName != null).Select(x => x.AlbumName);
+            var albumNames = response.Results.Where(x => x.RockstarAlbumName != null).Select(x => x.RockstarAlbumName);
             Assert.That(albumNames, Is.EquivalentTo(new[] {
                 "Electric Ladyland", "Never Mind", "Foo Fighters", "Into the Wild"
             }));
+        }
+
+        [Test]
+        public void Can_execute_custom_QueryFields()
+        {
+            QueryResponse<Rockstar> response;
+            response = client.Get(new QueryFieldRockstars { FirstName = "Jim" });
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+
+            response = client.Get(new QueryFieldRockstars { FirstName = "jim" });
+            Assert.That(response.Results.Count, Is.EqualTo(0));
+
+            response = client.Get(new QueryFieldRockstars { FirstNameCaseInsensitive = "jim" });
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+
+            response = client.Get(new QueryFieldRockstars { FirstNameStartsWith = "Jim" });
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+
+            response = client.Get(new QueryFieldRockstars { LastNameEndsWith = "son" });
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+
+            response = client.Get(new QueryFieldRockstars
+            {
+                LastNameEndsWith = "son",
+                OrLastName = "Hendrix"
+            });
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+
+            response = client.Get(new QueryFieldRockstars { Age = 42 });
+            Assert.That(response.Results.Count, Is.EqualTo(4));
+        }
+
+        [Test]
+        public void Can_execute_combination_of_QueryFields()
+        {
+            QueryResponse<Rockstar> response;
+
+            response = client.Get(new QueryFieldRockstars
+            {
+                FirstNameStartsWith = "Jim",
+                LastNameEndsWith = "son",
+            });
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+
+            response = client.Get(new QueryFieldRockstars
+            {
+                FirstNameStartsWith = "Jim",
+                OrLastName = "Cobain",
+            });
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Does_escape_values()
+        {
+            QueryResponse<Rockstar> response;
+
+            response = client.Get(new QueryFieldRockstars
+            {
+                FirstNameStartsWith = "Jim'\"",
+            });
+            Assert.That(response.Results.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Does_allow_adding_attributes_dynamically()
+        {
+            typeof(QueryFieldRockstarsDynamic)
+                .GetProperty("Age")
+                .AddAttributes(new QueryFieldAttribute { Operand = ">=" });
+
+            var response = client.Get(new QueryFieldRockstars { Age = 42 });
+            Assert.That(response.Results.Count, Is.EqualTo(4));
+        }
+
+        [Test]
+        public void Does_execute_typed_QueryFilters()
+        {
+            // QueryFilter appends additional: x => x.LastName.EndsWith("son")
+            var response = client.Get(new QueryRockstarsFilter { Age = 27 });
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+
+            var custom = client.Get(new QueryCustomRockstarsFilter { Age = 27 });
+            Assert.That(custom.Results.Count, Is.EqualTo(1));
+
+            response = client.Get(new QueryRockstarsIFilter { Age = 27 });
+            Assert.That(response.Results.Count, Is.EqualTo(1));
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace ServiceStack
@@ -23,6 +24,16 @@ namespace ServiceStack
     public interface ILeftJoin<Source, Join1, Join2> : IJoin { }
     public interface ILeftJoin<Source, Join1, Join2, Join3> : IJoin { }
     public interface ILeftJoin<Source, Join1, Join2, Join3, Join4> : IJoin { }
+
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    public class QueryFieldAttribute : AttributeBase
+    {
+        public bool Or { get; set; }
+        public string Operand { get; set; }
+        public string Format { get; set; }
+        public string Field { get; set; }
+        public string ValueFormat { get; set; }
+    }
 
     public abstract class QueryBase : IQuery
     {

@@ -9,9 +9,12 @@ using Funq;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.Reflection;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {
+    public delegate ISqlExpression QueryFilterDelegate(IRequest request, ISqlExpression sqlExpression, IQuery model);
+
     public class AutoQueryFeature : IPlugin
     {
         public HashSet<string> IgnoreProperties { get; set; }
@@ -19,11 +22,13 @@ namespace ServiceStack
         public string UseNamedConnection { get; set; }
         public bool? EnableSqlFilters { get; set; }
         public Type AutoQueryServiceBaseType { get; set; }
+        public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; } 
 
         public AutoQueryFeature()
         {
             IgnoreProperties = new[] { "Skip", "Take" }.ToHashSet();
             AutoQueryServiceBaseType = typeof(AutoQueryServiceBase);
+            QueryFilters = new Dictionary<Type, QueryFilterDelegate>();
         }
 
         public void Register(IAppHost appHost)
@@ -32,6 +37,7 @@ namespace ServiceStack
                 new AutoAutoQuery {
                     IgnoreProperties = IgnoreProperties,
                     MaxLimit = MaxLimit,
+                    QueryFilters = QueryFilters,
                     Db = UseNamedConnection != null 
                         ? c.Resolve<IDbConnectionFactory>().OpenDbConnection(UseNamedConnection)
                         : c.Resolve<IDbConnectionFactory>().OpenDbConnection(),
@@ -80,15 +86,14 @@ namespace ServiceStack
             foreach (var requestType in misingRequestTypes)
             {
                 var method = typeBuilder.DefineMethod("Any", MethodAttributes.Public | MethodAttributes.Virtual,
-                    CallingConventions.Standard);
+                    CallingConventions.Standard,
+                    returnType: typeof(object), 
+                    parameterTypes: new[]{ requestType });
 
                 var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQuery<,>));
                 var hasExplicitInto = genericDef != null;
                 if (genericDef == null)
                     genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQuery<>));
-
-                method.SetParameters(requestType);
-                method.SetReturnType(typeof(object));
 
                 var il = method.GetILGenerator();
 
@@ -112,15 +117,23 @@ namespace ServiceStack
             var servicesType = typeBuilder.CreateType();
             return servicesType;
         }
+
+        public AutoQueryFeature RegisterQueryFilter<Request, From>(Func<IRequest, SqlExpression<From>, Request, SqlExpression<From>> filterFn)
+        {
+            QueryFilters[typeof(Request)] = (req, expression, model) =>
+                filterFn(req, (SqlExpression<From>)expression, (Request)model);
+
+            return this;
+        }
     }
 
     public interface IAutoQuery
     {
-        SqlExpression<From> CreateQuery<From>(IQuery<From> model, Dictionary<string, string> dynamicParams);
+        SqlExpression<From> CreateQuery<From>(IQuery<From> model, Dictionary<string, string> dynamicParams, IRequest request = null);
 
         QueryResponse<From> Execute<From>(IQuery<From> model, SqlExpression<From> query);
 
-        SqlExpression<From> CreateQuery<From, Into>(IQuery<From, Into> model, Dictionary<string, string> dynamicParams);
+        SqlExpression<From> CreateQuery<From, Into>(IQuery<From, Into> model, Dictionary<string, string> dynamicParams, IRequest request = null);
 
         QueryResponse<Into> Execute<From, Into>(IQuery<From, Into> model, SqlExpression<From> query);
     }
@@ -149,6 +162,8 @@ namespace ServiceStack
         public int? MaxLimit { get; set; } 
 
         public virtual IDbConnection Db { get; set; }
+
+        public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; } 
 
         public virtual void Dispose()
         {
@@ -179,10 +194,31 @@ namespace ServiceStack
             return defaultValue;
         }
 
-        public SqlExpression<From> CreateQuery<From>(IQuery<From> model, Dictionary<string, string> dynamicParams)
+        public SqlExpression<From> Filter<From>(IRequest request, ISqlExpression expr, IQuery model)
+        {
+            if (QueryFilters == null)
+                return (SqlExpression<From>)expr;
+
+            QueryFilterDelegate filterFn = null;
+            if (!QueryFilters.TryGetValue(model.GetType(), out filterFn))
+            {
+                foreach (var type in model.GetType().GetInterfaces())
+                {
+                    if (QueryFilters.TryGetValue(type, out filterFn))
+                        break;
+                }
+            }
+
+            if (filterFn != null)
+                return (SqlExpression<From>)(filterFn(request, expr, model) ?? expr);
+
+            return (SqlExpression<From>)expr;
+        }
+
+        public SqlExpression<From> CreateQuery<From>(IQuery<From> model, Dictionary<string, string> dynamicParams, IRequest request = null)
         {
             var typedQuery = GetTypedQuery(model.GetType(), typeof (From));
-            return (SqlExpression<From>) typedQuery.CreateQuery(Db, model, dynamicParams, IgnoreProperties, MaxLimit);
+            return Filter<From>(request, typedQuery.CreateQuery(Db, model, dynamicParams, IgnoreProperties, MaxLimit), model);
         }
 
         public QueryResponse<From> Execute<From>(IQuery<From> model, SqlExpression<From> query)
@@ -191,10 +227,10 @@ namespace ServiceStack
             return typedQuery.Execute<From>(Db, query);
         }
 
-        public SqlExpression<From> CreateQuery<From, Into>(IQuery<From, Into> model, Dictionary<string, string> dynamicParams)
+        public SqlExpression<From> CreateQuery<From, Into>(IQuery<From, Into> model, Dictionary<string, string> dynamicParams, IRequest request = null)
         {
             var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
-            return (SqlExpression<From>)typedQuery.CreateQuery(Db, model, dynamicParams, IgnoreProperties, MaxLimit);
+            return Filter<From>(request, typedQuery.CreateQuery(Db, model, dynamicParams, IgnoreProperties, MaxLimit), model);
         }
 
         public QueryResponse<Into> Execute<From, Into>(IQuery<From, Into> model, SqlExpression<From> query) 
@@ -223,12 +259,19 @@ namespace ServiceStack
         static readonly Dictionary<string, Func<object,object>> PropertyGetters = 
             new Dictionary<string, Func<object, object>>();
 
+        static readonly Dictionary<string, QueryFieldAttribute> QueryFieldMap =
+            new Dictionary<string, QueryFieldAttribute>();
+
         static TypedQuery()
         {
             foreach (var pi in typeof(QueryModel).GetPublicProperties())
             {
                 var fn = StaticAccessors.GetValueGetter(typeof(QueryModel), pi);
                 PropertyGetters[pi.Name] = fn;
+
+                var queryAttr = pi.FirstAttribute<QueryFieldAttribute>();
+                if (queryAttr != null)
+                    QueryFieldMap[pi.Name] = queryAttr;
             }
         }
 
@@ -274,19 +317,43 @@ namespace ServiceStack
             foreach (var entry in PropertyGetters)
             {
                 var name = entry.Key;
+
+                QueryFieldAttribute queryAttr;
+                QueryFieldMap.TryGetValue(name, out queryAttr);
+                if (queryAttr != null && queryAttr.Field != null)
+                    name = queryAttr.Field;
+
                 var matchingField = ignoreProperties == null || !ignoreProperties.Contains(name)
                     ? m.FieldDefinitions.FirstOrDefault(x => x.Name == name)
                     : null;
                 if (matchingField == null)
                     continue;
 
-                var quotedColumn = q.DialectProvider.GetQuotedColumnName(m, matchingField);
-
                 var value = entry.Value(model);
                 if (value == null)
                     continue;
 
-                q.Where(quotedColumn + " = {0}", value);
+                var quotedColumn = q.DialectProvider.GetQuotedColumnName(m, matchingField);
+
+                if (queryAttr != null)
+                {
+                    var operand = queryAttr.Operand ?? "=";
+                    var condition = queryAttr.Or ? "OR" : "AND";
+                    var format = quotedColumn + " " + operand + " {0}";
+                    if (queryAttr.Format != null)
+                    {
+                        format = queryAttr.Format.Replace("{Field}", quotedColumn)
+                            .Replace("{Value}","{0}");
+
+                        if (queryAttr.ValueFormat != null)
+                            value = string.Format(queryAttr.ValueFormat, value);
+                    }
+                    q.AddCondition(condition, format, value);
+                }
+                else
+                {
+                    q.Where(quotedColumn + " = {0}", value);
+                }
             }
 
             foreach (var entry in dynamicParams)
