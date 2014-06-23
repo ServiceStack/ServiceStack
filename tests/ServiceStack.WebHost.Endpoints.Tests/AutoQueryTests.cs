@@ -447,5 +447,63 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .FromJson<QueryResponse<Rockstar>>();
             Assert.That(response.Results.Count, Is.EqualTo(3));
         }
+
+        [Test]
+        public void Can_execute_implicit_conventions()
+        {
+            var baseUrl = Config.ListeningOn.CombineWith("json/reply/QueryRockstars");
+
+            var response = baseUrl.AddQueryParam("AgeOlderThan", 42).AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+
+            response = baseUrl.AddQueryParam("AgeGreaterThanOrEqualTo", 42).AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(4));
+
+            response = baseUrl.AddQueryParam("AgeGreaterThan", 42).AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+            response = baseUrl.AddQueryParam("GreaterThanAge", 42).AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+
+            response = baseUrl.AddQueryParam(">Age", 42).AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(4));
+            response = baseUrl.AddQueryParam("Age>", 42).AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+            response = baseUrl.AddQueryParam("<Age", 42).AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+            response = baseUrl.AddQueryParam("Age<", 42).AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(4));
+
+            response = baseUrl.AddQueryParam("FirstNameStartsWith", "jim").AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+            response = baseUrl.AddQueryParam("LastNameEndsWith", "son").AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+            response = baseUrl.AddQueryParam("LastNameContains", "e").AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Can_execute_implicit_conventions_on_JOIN()
+        {
+            var baseUrl = Config.ListeningOn.CombineWith("json/reply/QueryRockstarAlbums");
+
+            var response = baseUrl.AddQueryParam("RockstarAlbumNameContains", "n").AsJsonInto<CustomRockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+
+            response = baseUrl.AddQueryParam(">RockstarId", "3").AsJsonInto<CustomRockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+            response = baseUrl.AddQueryParam("RockstarId>", "3").AsJsonInto<CustomRockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+        }
+
+    }
+
+    public static class AutoQueryExtensions
+    {
+        public static QueryResponse<T> AsJsonInto<T>(this string url)
+        {
+            return url.GetJsonFromUrl()
+                .FromJson<QueryResponse<T>>();
+        }
     }
 }
+
