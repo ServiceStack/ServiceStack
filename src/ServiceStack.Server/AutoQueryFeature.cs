@@ -21,8 +21,8 @@ namespace ServiceStack
         public HashSet<string> IgnoreProperties { get; set; }
         public int? MaxLimit { get; set; }
         public string UseNamedConnection { get; set; }
-        public bool? EnableImplicitQuerying { get; set; }
-        public bool? EnableSqlFilters { get; set; }
+        public bool EnableUntypedQueries { get; set; }
+        public bool EnableSqlFilters { get; set; }
         public Type AutoQueryServiceBaseType { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
 
@@ -84,7 +84,7 @@ namespace ServiceStack
             IgnoreProperties = new[] { "Skip", "Take" }.ToHashSet();
             AutoQueryServiceBaseType = typeof(AutoQueryServiceBase);
             QueryFilters = new Dictionary<Type, QueryFilterDelegate>();
-            EnableImplicitQuerying = true;
+            EnableUntypedQueries = true;
         }
 
         public void Register(IAppHost appHost)
@@ -104,6 +104,8 @@ namespace ServiceStack
                 {
                     IgnoreProperties = IgnoreProperties,
                     MaxLimit = MaxLimit,
+                    EnableUntypedQueries = EnableUntypedQueries,
+                    EnableSqlFilters = EnableSqlFilters,
                     QueryFilters = QueryFilters,
                     StartsWithConventions = StartsWithConventions,
                     EndsWithConventions = EndsWithConventions,
@@ -227,6 +229,8 @@ namespace ServiceStack
     public interface IAutoQueryOptions
     {
         int? MaxLimit { get; set; }
+        bool EnableUntypedQueries { get; set; }
+        bool EnableSqlFilters { get; set; }
         HashSet<string> IgnoreProperties { get; set; }
         Dictionary<string, QueryFieldAttribute> StartsWithConventions { get; set; }
         Dictionary<string, QueryFieldAttribute> EndsWithConventions { get; set; }
@@ -234,17 +238,15 @@ namespace ServiceStack
 
     public class AutoAutoQuery : IAutoQuery, IAutoQueryOptions, IDisposable
     {
-        public HashSet<string> IgnoreProperties { get; set; }
-
         public int? MaxLimit { get; set; }
+        public bool EnableUntypedQueries { get; set; }
+        public bool EnableSqlFilters { get; set; }
+        public HashSet<string> IgnoreProperties { get; set; }
+        public Dictionary<string, QueryFieldAttribute> StartsWithConventions { get; set; }
+        public Dictionary<string, QueryFieldAttribute> EndsWithConventions { get; set; }
 
         public virtual IDbConnection Db { get; set; }
-
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
-
-        public Dictionary<string, QueryFieldAttribute> StartsWithConventions { get; set; }
-
-        public Dictionary<string, QueryFieldAttribute> EndsWithConventions { get; set; }
 
         public virtual void Dispose()
         {
@@ -371,9 +373,12 @@ namespace ServiceStack
             var dtoAttr = model.GetType().FirstAttribute<QueryAttribute>();
             var defaultType = dtoAttr != null && dtoAttr.DefaultType == QueryType.Or ? "OR" : "AND";
 
-            AppendExplicitQueries(q, model, defaultType, options);
+            AppendTypedQueries(q, model, defaultType, options);
 
-            AppendImplicitQueries(q, dynamicParams, defaultType, options);
+            if (options != null && options.EnableUntypedQueries)
+            {
+                AppendUntypedQueries(q, dynamicParams, defaultType, options);
+            }
 
             return q;
         }
@@ -394,16 +399,16 @@ namespace ServiceStack
                 bool leftJoin = false;
                 var dtoInterfaces = model.GetType().GetInterfaces();
                 var join = dtoInterfaces.FirstOrDefault(x => x.Name.StartsWith("IJoin`"));
-                if (@join == null)
+                if (join == null)
                 {
-                    @join = dtoInterfaces.FirstOrDefault(x => x.Name.StartsWith("ILeftJoin`"));
-                    if (@join == null)
+                    join = dtoInterfaces.FirstOrDefault(x => x.Name.StartsWith("ILeftJoin`"));
+                    if (join == null)
                         throw new ArgumentException("No IJoin<T1,T2,..> interface found");
 
                     leftJoin = true;
                 }
 
-                var joinTypes = @join.GetGenericArguments();
+                var joinTypes = join.GetGenericArguments();
                 for (var i = 1; i < joinTypes.Length; i++)
                 {
                     if (!leftJoin)
@@ -414,47 +419,47 @@ namespace ServiceStack
             }
         }
 
-        private static void AppendExplicitQueries(SqlExpression<From> q, IQuery model, string defaultType, IAutoQueryOptions options)
+        private static void AppendTypedQueries(SqlExpression<From> q, IQuery model, string defaultType, IAutoQueryOptions options)
         {
-            var ignoreProperties = options != null ? options.IgnoreProperties : null;
             foreach (var entry in PropertyGetters)
             {
                 var name = entry.Key;
 
-                QueryFieldAttribute queryAttr;
-                QueryFieldMap.TryGetValue(name, out queryAttr);
-                if (queryAttr != null && queryAttr.Field != null)
-                    name = queryAttr.Field;
+                QueryFieldAttribute implicitQuery;
+                QueryFieldMap.TryGetValue(name, out implicitQuery);
 
-                var match = ignoreProperties == null || !ignoreProperties.Contains(name)
-                    ? q.FirstMatchingField(name)
-                    : null;
+                if (implicitQuery != null && implicitQuery.Field != null)
+                    name = implicitQuery.Field;
+
+                var match = GetQueryMatch(q, name, options);
                 if (match == null)
                     continue;
 
-                var quotedColumn = q.DialectProvider.GetQuotedColumnName(match.Item1, match.Item2);
+                if (implicitQuery == null)
+                    implicitQuery = match.ImplicitQuery;
+                var quotedColumn = q.DialectProvider.GetQuotedColumnName(match.ModelDef, match.FieldDef);
 
                 var value = entry.Value(model);
                 if (value == null)
                     continue;
 
                 var format = quotedColumn + " = {0}";
-                if (queryAttr != null)
+                if (implicitQuery != null)
                 {
-                    var operand = queryAttr.Operand ?? "=";
-                    if (queryAttr.Type == QueryType.Or)
+                    var operand = implicitQuery.Operand ?? "=";
+                    if (implicitQuery.Type == QueryType.Or)
                         defaultType = "OR";
-                    else if (queryAttr.Type == QueryType.And)
+                    else if (implicitQuery.Type == QueryType.And)
                         defaultType = "AND";
 
                     format = quotedColumn + " " + operand + " {0}";
-                    if (queryAttr.Format != null)
+                    if (implicitQuery.Format != null)
                     {
-                        format = queryAttr.Format.Replace("{Field}", quotedColumn)
+                        format = implicitQuery.Format.Replace("{Field}", quotedColumn)
                                           .Replace("{Value}", "{0}");
 
-                        if (queryAttr.ValueFormat != null)
-                            value = string.Format(queryAttr.ValueFormat, value);
+                        if (implicitQuery.ValueFormat != null)
+                            value = string.Format(implicitQuery.ValueFormat, value);
                     }
                 }
 
@@ -462,84 +467,96 @@ namespace ServiceStack
             }
         }
 
-        private static void AppendImplicitQueries(SqlExpression<From> q, Dictionary<string, string> dynamicParams, string condition, IAutoQueryOptions options)
+        private static void AppendUntypedQueries(SqlExpression<From> q, Dictionary<string, string> dynamicParams, string condition, IAutoQueryOptions options)
         {
-            var ignoreProperties = options != null ? options.IgnoreProperties : null;
             foreach (var entry in dynamicParams)
             {
                 var name = entry.Key;
-                var match = ignoreProperties == null || !ignoreProperties.Contains(name)
-                    ? q.FirstMatchingField(name)
-                    : null;
 
-                QueryFieldAttribute queryAttr = null;
-                if (options != null)
-                {
-                    if (match == null)
-                    {
-                        foreach (var startsWith in options.StartsWithConventions)
-                        {
-                            if (name.Length <= startsWith.Key.Length || !name.StartsWith(startsWith.Key)) continue;
-
-                            var field = name.Substring(startsWith.Key.Length);
-                            match = q.FirstMatchingField(field);
-                            if (match != null)
-                            {
-                                queryAttr = startsWith.Value;
-                                break;
-                            }
-                        }
-                    }
-                    if (match == null)
-                    {
-                        foreach (var endsWith in options.EndsWithConventions)
-                        {
-                            if (name.Length <= endsWith.Key.Length || !name.EndsWith(endsWith.Key)) continue;
-
-                            var field = name.Substring(0, name.Length - endsWith.Key.Length);
-                            match = q.FirstMatchingField(field);
-                            if (match != null)
-                            {
-                                queryAttr = endsWith.Value;
-                                break;
-                            }
-                        }
-                    }
-                }
-
+                var match = GetQueryMatch(q, name, options);
                 if (match == null)
                     continue;
 
-                var quotedColumn = q.DialectProvider.GetQuotedColumnName(match.Item1, match.Item2);
+                var implicitQuery = match.ImplicitQuery;
+                var quotedColumn = q.DialectProvider.GetQuotedColumnName(match.ModelDef, match.FieldDef);
 
-                var matchingField = match.Item2;
                 var strValue = entry.Value;
-                var value = matchingField.FieldType == typeof(string)
+                var value = match.FieldDef.FieldType == typeof(string)
                     ? strValue
-                    : Convert.ChangeType(strValue, matchingField.FieldType);
+                    : Convert.ChangeType(strValue, match.FieldDef.FieldType);
 
                 var format = quotedColumn + " = {0}";
-                if (queryAttr != null)
+                if (implicitQuery != null)
                 {
-                    var operand = queryAttr.Operand ?? "=";
-                    if (queryAttr.Type == QueryType.Or)
+                    var operand = implicitQuery.Operand ?? "=";
+                    if (implicitQuery.Type == QueryType.Or)
                         condition = "OR";
-                    else if (queryAttr.Type == QueryType.And)
+                    else if (implicitQuery.Type == QueryType.And)
                         condition = "AND";
 
                     format = quotedColumn + " " + operand + " {0}";
-                    if (queryAttr.Format != null)
+                    if (implicitQuery.Format != null)
                     {
-                        format = queryAttr.Format.Replace("{Field}", quotedColumn)
+                        format = implicitQuery.Format.Replace("{Field}", quotedColumn)
                             .Replace("{Value}", "{0}");
 
-                        if (queryAttr.ValueFormat != null)
-                            value = string.Format(queryAttr.ValueFormat, value);
+                        if (implicitQuery.ValueFormat != null)
+                            value = string.Format(implicitQuery.ValueFormat, value);
                     }
                 }
-
                 q.AddCondition(condition, format, value);
             }
+        }
+
+        class MatchQuery
+        {
+            public MatchQuery(Tuple<ModelDefinition,FieldDefinition> match, QueryFieldAttribute implicitQuery)
+            {
+                ModelDef = match.Item1;
+                FieldDef = match.Item2;
+                ImplicitQuery = implicitQuery;
+            }
+            public readonly ModelDefinition ModelDef;
+            public readonly FieldDefinition FieldDef;
+            public readonly QueryFieldAttribute ImplicitQuery;
+        }
+
+        private static MatchQuery GetQueryMatch(SqlExpression<From> q, string name, IAutoQueryOptions options)
+        {
+            if (options == null) return null;
+
+            var match = options.IgnoreProperties == null || !options.IgnoreProperties.Contains(name)
+                ? q.FirstMatchingField(name)
+                : null;
+
+            if (match == null)
+            {
+                foreach (var startsWith in options.StartsWithConventions)
+                {
+                    if (name.Length <= startsWith.Key.Length || !name.StartsWith(startsWith.Key)) continue;
+
+                    var field = name.Substring(startsWith.Key.Length);
+                    match = q.FirstMatchingField(field);
+                    if (match != null)
+                        return new MatchQuery(match, startsWith.Value);
+                }
+            }
+            if (match == null)
+            {
+                foreach (var endsWith in options.EndsWithConventions)
+                {
+                    if (name.Length <= endsWith.Key.Length || !name.EndsWith(endsWith.Key)) continue;
+
+                    var field = name.Substring(0, name.Length - endsWith.Key.Length);
+                    match = q.FirstMatchingField(field);
+                    if (match != null)
+                        return new MatchQuery(match, endsWith.Value);
+                }
+            }
+
+            return match != null 
+                ? new MatchQuery(match, null) 
+                : null;
         }
 
         public QueryResponse<Into> Execute<Into>(IDbConnection db, ISqlExpression query)

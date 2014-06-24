@@ -63,6 +63,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int? Age { get; set; }
     }
 
+    public class QueryRockstarsConventions : QueryBase<Rockstar>
+    {
+        public int? AgeOlderThan { get; set; }
+        public int? AgeGreaterThanOrEqualTo { get; set; }
+        public int? AgeGreaterThan { get; set; }
+        public int? GreaterThanAge { get; set; }
+        public string FirstNameStartsWith { get; set; }
+        public string LastNameEndsWith { get; set; }
+        public string LastNameContains { get; set; }
+        public string RockstarAlbumNameContains { get; set; }
+        public int? RockstarIdAfter { get; set; }
+        public int? RockstarIdOnOrAfter { get; set; }
+    }
+
     public class QueryCustomRockstars : QueryBase<Rockstar, CustomRockstar>
     {
         public int? Age { get; set; }
@@ -493,6 +507,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Results.Count, Is.EqualTo(3));
             response = baseUrl.AddQueryParam("RockstarId>", "3").AsJsonInto<CustomRockstar>();
             Assert.That(response.Results.Count, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void Can_execute_Explicit_conventions()
+        {
+            var response = client.Get(new QueryRockstarsConventions { AgeOlderThan = 42 });
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+
+            response = client.Get(new QueryRockstarsConventions { AgeGreaterThanOrEqualTo = 42 });
+            Assert.That(response.Results.Count, Is.EqualTo(4));
+
+            response = client.Get(new QueryRockstarsConventions { AgeGreaterThan = 42 });
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+            response = client.Get(new QueryRockstarsConventions { GreaterThanAge = 42 });
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+
+            response = client.Get(new QueryRockstarsConventions { FirstNameStartsWith = "Jim" });
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+            response = client.Get(new QueryRockstarsConventions { LastNameEndsWith = "son" });
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+            response = client.Get(new QueryRockstarsConventions { LastNameContains = "e" });
+            Assert.That(response.Results.Count, Is.EqualTo(3));
         }
 
     }
