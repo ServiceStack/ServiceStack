@@ -19,6 +19,7 @@ namespace ServiceStack
     public class AutoQueryFeature : IPlugin
     {
         public HashSet<string> IgnoreProperties { get; set; }
+        public HashSet<string> IllegalSqlFragmentTokens { get; set; } 
         public int? MaxLimit { get; set; }
         public string UseNamedConnection { get; set; }
         public bool EnableUntypedQueries { get; set; }
@@ -81,7 +82,9 @@ namespace ServiceStack
 
         public AutoQueryFeature()
         {
-            IgnoreProperties = new[] { "Skip", "Take" }.ToHashSet();
+            IgnoreProperties = new HashSet<string>(new[] { "Skip", "Take", "_select", "_from", "_join", "_where" }, 
+                StringComparer.OrdinalIgnoreCase);
+            IllegalSqlFragmentTokens = new HashSet<string>();
             AutoQueryServiceBaseType = typeof(AutoQueryServiceBase);
             QueryFilters = new Dictionary<Type, QueryFilterDelegate>();
             EnableUntypedQueries = true;
@@ -102,7 +105,8 @@ namespace ServiceStack
             appHost.GetContainer().Register<IAutoQuery>(c =>
                 new AutoAutoQuery
                 {
-                    IgnoreProperties = IgnoreProperties,
+                    IgnoreProperties = IgnoreProperties,                    
+                    IllegalSqlFragmentTokens = IllegalSqlFragmentTokens,
                     MaxLimit = MaxLimit,
                     EnableUntypedQueries = EnableUntypedQueries,
                     EnableSqlFilters = EnableSqlFilters,
@@ -232,6 +236,7 @@ namespace ServiceStack
         bool EnableUntypedQueries { get; set; }
         bool EnableSqlFilters { get; set; }
         HashSet<string> IgnoreProperties { get; set; }
+        HashSet<string> IllegalSqlFragmentTokens { get; set; }
         Dictionary<string, QueryFieldAttribute> StartsWithConventions { get; set; }
         Dictionary<string, QueryFieldAttribute> EndsWithConventions { get; set; }
     }
@@ -242,6 +247,7 @@ namespace ServiceStack
         public bool EnableUntypedQueries { get; set; }
         public bool EnableSqlFilters { get; set; }
         public HashSet<string> IgnoreProperties { get; set; }
+        public HashSet<string> IllegalSqlFragmentTokens { get; set; }
         public Dictionary<string, QueryFieldAttribute> StartsWithConventions { get; set; }
         public Dictionary<string, QueryFieldAttribute> EndsWithConventions { get; set; }
 
@@ -366,6 +372,11 @@ namespace ServiceStack
 
             var q = db.From<From>();
 
+            if (options != null && options.EnableSqlFilters)
+            {
+                AppendSqlFilters(q, model, dynamicParams, options);
+            }
+
             AppendJoins(q, model);
 
             AppendLimits(q, model, options);
@@ -381,6 +392,32 @@ namespace ServiceStack
             }
 
             return q;
+        }
+
+        private void AppendSqlFilters(SqlExpression<From> q, IQuery model, Dictionary<string, string> dynamicParams, IAutoQueryOptions options)
+        {
+            string select, from, where;
+
+            dynamicParams.TryGetValue("_select", out select);
+            if (select != null)
+            {
+                select.SqlVerifyFragment(options.IllegalSqlFragmentTokens);
+                q.Select(select);
+            }
+
+            dynamicParams.TryGetValue("_from", out from);
+            if (from != null)
+            {
+                from.SqlVerifyFragment(options.IllegalSqlFragmentTokens);
+                q.From(from);
+            }
+
+            dynamicParams.TryGetValue("_where", out where);
+            if (where != null)
+            {
+                where.SqlVerifyFragment(options.IllegalSqlFragmentTokens);
+                q.Where(where);
+            }
         }
 
         private static void AppendLimits(SqlExpression<From> q, IQuery model, IAutoQueryOptions options)

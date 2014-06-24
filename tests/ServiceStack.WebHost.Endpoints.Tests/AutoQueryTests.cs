@@ -26,7 +26,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 db.InsertAll(SeedDataAlbum);
             }
 
-            var autoQuery = new AutoQueryFeature { MaxLimit = 100 }
+            var autoQuery = new AutoQueryFeature {
+                    MaxLimit = 100,
+                    EnableSqlFilters = true,
+                }
                 .RegisterQueryFilter<QueryRockstarsFilter, Rockstar>((req, q, dto) =>
                     q.And(x => x.LastName.EndsWith("son"))
                 )
@@ -531,6 +534,39 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Results.Count, Is.EqualTo(3));
         }
 
+        [Test]
+        public void Can_execute_where_SqlFilter()
+        {
+            var baseUrl = Config.ListeningOn.CombineWith("json/reply/QueryRockstars");
+
+            var response = baseUrl.AddQueryParam("_where", "Age > 42").AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+            response = baseUrl.AddQueryParam("_where", "Age >= 42").AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(4));
+
+            response = baseUrl.AddQueryParam("_where", "FirstName LIKE 'jim%'").AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+            response = baseUrl.AddQueryParam("_where", "LastName LIKE '%son'").AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+            response = baseUrl.AddQueryParam("_where", "LastName LIKE '%e%'").AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+
+            response = baseUrl
+                .AddQueryParam("_select","r.*")
+                .AddQueryParam("_from", "Rockstar r INNER JOIN RockstarAlbum a ON r.Id = a.RockstarId")
+                .AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(TotalAlbums));
+
+            response = baseUrl
+                .AddQueryParam("_select", "FirstName")
+                .AddQueryParam("_where", "LastName = 'Cobain'")
+                .AsJsonInto<Rockstar>();
+            var row = response.Results[0];
+            Assert.That(row.Id, Is.EqualTo(default(int)));
+            Assert.That(row.FirstName, Is.EqualTo("Kurt"));
+            Assert.That(row.LastName, Is.Null);
+            Assert.That(row.Age, Is.Null);
+        }
     }
 
     public static class AutoQueryExtensions
