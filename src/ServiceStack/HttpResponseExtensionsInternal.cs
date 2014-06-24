@@ -193,6 +193,11 @@ namespace ServiceStack
                         foreach (var responseHeaders in responseOptions.Options)
                         {
                             if (responseHeaders.Key.Contains(reservedOptions)) continue;
+                            if (responseHeaders.Key == HttpHeaders.ContentLength)
+                            {
+                                response.SetContentLength(int.Parse(responseHeaders.Value));
+                                continue;
+                            }
 
                             Log.DebugFormat("Setting Custom HTTP Header: {0}: {1}", responseHeaders.Key, responseHeaders.Value);
                             response.AddHeader(responseHeaders.Key, responseHeaders.Value);
