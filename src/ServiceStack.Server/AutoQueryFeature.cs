@@ -5,11 +5,12 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading;
+
 using Funq;
+using ServiceStack.Web;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.Reflection;
-using ServiceStack.Web;
 
 namespace ServiceStack
 {
@@ -20,6 +21,7 @@ namespace ServiceStack
         public HashSet<string> IgnoreProperties { get; set; }
         public int? MaxLimit { get; set; }
         public string UseNamedConnection { get; set; }
+        public bool? EnableImplicitQuerying { get; set; }
         public bool? EnableSqlFilters { get; set; }
         public Type AutoQueryServiceBaseType { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
@@ -82,6 +84,7 @@ namespace ServiceStack
             IgnoreProperties = new[] { "Skip", "Take" }.ToHashSet();
             AutoQueryServiceBaseType = typeof(AutoQueryServiceBase);
             QueryFilters = new Dictionary<Type, QueryFilterDelegate>();
+            EnableImplicitQuerying = true;
         }
 
         public void Register(IAppHost appHost)
@@ -359,25 +362,48 @@ namespace ServiceStack
             IAutoQueryOptions options=null)
         {
 
-            var ignoreProperties = options != null ? options.IgnoreProperties : null;
-            var maxLimit = options != null ? options.MaxLimit : null;
             var q = db.From<From>();
 
+            AppendJoins(q, model);
+
+            AppendLimits(q, model, options);
+
+            var dtoAttr = model.GetType().FirstAttribute<QueryAttribute>();
+            var defaultType = dtoAttr != null && dtoAttr.DefaultType == QueryType.Or ? "OR" : "AND";
+
+            AppendExplicitQueries(q, model, defaultType, options);
+
+            AppendImplicitQueries(q, dynamicParams, defaultType, options);
+
+            return q;
+        }
+
+        private static void AppendLimits(SqlExpression<From> q, IQuery model, IAutoQueryOptions options)
+        {
+            var maxLimit = options != null ? options.MaxLimit : null;
+            var take = model.Take ?? maxLimit;
+            if (take > maxLimit)
+                take = maxLimit;
+            q.Limit(model.Skip, take);
+        }
+
+        private static void AppendJoins(SqlExpression<From> q, IQuery model)
+        {
             if (model is IJoin)
             {
                 bool leftJoin = false;
                 var dtoInterfaces = model.GetType().GetInterfaces();
                 var join = dtoInterfaces.FirstOrDefault(x => x.Name.StartsWith("IJoin`"));
-                if (join == null)
+                if (@join == null)
                 {
-                    join = dtoInterfaces.FirstOrDefault(x => x.Name.StartsWith("ILeftJoin`"));
-                    if (join == null)
+                    @join = dtoInterfaces.FirstOrDefault(x => x.Name.StartsWith("ILeftJoin`"));
+                    if (@join == null)
                         throw new ArgumentException("No IJoin<T1,T2,..> interface found");
 
                     leftJoin = true;
                 }
 
-                var joinTypes = join.GetGenericArguments();
+                var joinTypes = @join.GetGenericArguments();
                 for (var i = 1; i < joinTypes.Length; i++)
                 {
                     if (!leftJoin)
@@ -386,14 +412,11 @@ namespace ServiceStack
                         q.LeftJoin(joinTypes[i - 1], joinTypes[i]);
                 }
             }
+        }
 
-            var take = model.Take ?? maxLimit;
-            if (take > maxLimit)
-                take = maxLimit;
-            q.Limit(model.Skip, take);
-
-            var dtoAttr = model.GetType().FirstAttribute<QueryAttribute>();
-            var condition = dtoAttr != null && dtoAttr.DefaultType == QueryType.Or ? "OR" : "AND";
+        private static void AppendExplicitQueries(SqlExpression<From> q, IQuery model, string defaultType, IAutoQueryOptions options)
+        {
+            var ignoreProperties = options != null ? options.IgnoreProperties : null;
             foreach (var entry in PropertyGetters)
             {
                 var name = entry.Key;
@@ -420,24 +443,28 @@ namespace ServiceStack
                 {
                     var operand = queryAttr.Operand ?? "=";
                     if (queryAttr.Type == QueryType.Or)
-                        condition = "OR";
+                        defaultType = "OR";
                     else if (queryAttr.Type == QueryType.And)
-                        condition = "AND";
+                        defaultType = "AND";
 
                     format = quotedColumn + " " + operand + " {0}";
                     if (queryAttr.Format != null)
                     {
                         format = queryAttr.Format.Replace("{Field}", quotedColumn)
-                            .Replace("{Value}", "{0}");
+                                          .Replace("{Value}", "{0}");
 
                         if (queryAttr.ValueFormat != null)
                             value = string.Format(queryAttr.ValueFormat, value);
                     }
                 }
 
-                q.AddCondition(condition, format, value);
+                q.AddCondition(defaultType, format, value);
             }
+        }
 
+        private static void AppendImplicitQueries(SqlExpression<From> q, Dictionary<string, string> dynamicParams, string condition, IAutoQueryOptions options)
+        {
+            var ignoreProperties = options != null ? options.IgnoreProperties : null;
             foreach (var entry in dynamicParams)
             {
                 var name = entry.Key;
@@ -446,7 +473,6 @@ namespace ServiceStack
                     : null;
 
                 QueryFieldAttribute queryAttr = null;
-
                 if (options != null)
                 {
                     if (match == null)
@@ -454,7 +480,7 @@ namespace ServiceStack
                         foreach (var startsWith in options.StartsWithConventions)
                         {
                             if (name.Length <= startsWith.Key.Length || !name.StartsWith(startsWith.Key)) continue;
-                            
+
                             var field = name.Substring(startsWith.Key.Length);
                             match = q.FirstMatchingField(field);
                             if (match != null)
@@ -469,7 +495,7 @@ namespace ServiceStack
                         foreach (var endsWith in options.EndsWithConventions)
                         {
                             if (name.Length <= endsWith.Key.Length || !name.EndsWith(endsWith.Key)) continue;
-                            
+
                             var field = name.Substring(0, name.Length - endsWith.Key.Length);
                             match = q.FirstMatchingField(field);
                             if (match != null)
@@ -514,8 +540,6 @@ namespace ServiceStack
 
                 q.AddCondition(condition, format, value);
             }
-
-            return q;
         }
 
         public QueryResponse<Into> Execute<Into>(IDbConnection db, ISqlExpression query)
