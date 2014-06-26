@@ -7,10 +7,10 @@ using System.Reflection.Emit;
 using System.Threading;
 
 using Funq;
+using ServiceStack.Reflection;
 using ServiceStack.Web;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
-using ServiceStack.Reflection;
 
 namespace ServiceStack
 {
@@ -354,7 +354,7 @@ namespace ServiceStack
         {
             foreach (var pi in typeof(QueryModel).GetPublicProperties())
             {
-                var fn = StaticAccessors.GetValueGetter(typeof(QueryModel), pi);
+                var fn = pi.GetValueGetter(typeof(QueryModel));
                 PropertyGetters[pi.Name] = fn;
 
                 var queryAttr = pi.FirstAttribute<QueryFieldAttribute>();
