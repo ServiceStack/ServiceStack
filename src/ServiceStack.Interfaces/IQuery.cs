@@ -31,6 +31,12 @@ namespace ServiceStack
         And = 1,
         Or = 2,
     }
+    public enum ValueStyle
+    {
+        Single = 0,
+        Multiple = 1,
+        List = 2,
+    }
 
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class QueryAttribute : AttributeBase
@@ -53,6 +59,8 @@ namespace ServiceStack
         public string Format { get; set; }
         public string Field { get; set; }
         public string ValueFormat { get; set; }
+        public ValueStyle ValueStyle { get; set; }
+        public int ValueArity { get; set; }
     }
 
     public abstract class QueryBase : IQuery
