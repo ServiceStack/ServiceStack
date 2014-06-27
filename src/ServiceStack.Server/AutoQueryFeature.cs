@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -8,6 +9,7 @@ using System.Threading;
 
 using Funq;
 using ServiceStack.Reflection;
+using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
@@ -67,7 +69,9 @@ namespace ServiceStack
             {"%<",              LessThanOrEqualFormat},
             {"<%",              LessThanFormat},
 
-            {"Like%",        "UPPER({Field}) LIKE UPPER({Value})"},
+            {"Like%",           "UPPER({Field}) LIKE UPPER({Value})"},
+            {"%In",             "{Field} IN ({Values})"},
+            {"%Between%",       "{Field} BETWEEN {Value1} AND {Value2}"},
         };
 
         public Dictionary<string, QueryFieldAttribute> StartsWithConventions =
@@ -96,10 +100,11 @@ namespace ServiceStack
             {
                 var key = entry.Key.Trim('%');
                 var fmt = entry.Value;
+                var query = new QueryFieldAttribute { Format = fmt }.Init();
                 if (entry.Key.EndsWith("%"))
-                    StartsWithConventions[key] = new QueryFieldAttribute { Format = fmt };
+                    StartsWithConventions[key] = query;
                 if (entry.Key.StartsWith("%"))
-                    EndsWithConventions[key] = new QueryFieldAttribute { Format = fmt };
+                    EndsWithConventions[key] = query;
             }
 
             appHost.GetContainer().Register<IAutoQuery>(c =>
@@ -359,7 +364,7 @@ namespace ServiceStack
 
                 var queryAttr = pi.FirstAttribute<QueryFieldAttribute>();
                 if (queryAttr != null)
-                    QueryFieldMap[pi.Name] = queryAttr;
+                    QueryFieldMap[pi.Name] = queryAttr.Init();
             }
         }
 
@@ -369,7 +374,7 @@ namespace ServiceStack
             Dictionary<string, string> dynamicParams,
             IAutoQueryOptions options=null)
         {
-
+            dynamicParams = new Dictionary<string, string>(dynamicParams, StringComparer.OrdinalIgnoreCase);
             var q = db.From<From>();
 
             if (options != null && options.EnableSqlFilters)
@@ -384,7 +389,7 @@ namespace ServiceStack
             var dtoAttr = model.GetType().FirstAttribute<QueryAttribute>();
             var defaultType = dtoAttr != null && dtoAttr.DefaultType == QueryType.Or ? "OR" : "AND";
 
-            AppendTypedQueries(q, model, defaultType, options);
+            AppendTypedQueries(q, model, dynamicParams, defaultType, options);
 
             if (options != null && options.EnableUntypedQueries)
             {
@@ -401,6 +406,7 @@ namespace ServiceStack
             dynamicParams.TryGetValue("_select", out select);
             if (select != null)
             {
+                dynamicParams.Remove("_select");
                 select.SqlVerifyFragment(options.IllegalSqlFragmentTokens);
                 q.Select(select);
             }
@@ -408,6 +414,7 @@ namespace ServiceStack
             dynamicParams.TryGetValue("_from", out from);
             if (from != null)
             {
+                dynamicParams.Remove("_from");
                 from.SqlVerifyFragment(options.IllegalSqlFragmentTokens);
                 q.From(from);
             }
@@ -415,6 +422,7 @@ namespace ServiceStack
             dynamicParams.TryGetValue("_where", out where);
             if (where != null)
             {
+                dynamicParams.Remove("_where");
                 where.SqlVerifyFragment(options.IllegalSqlFragmentTokens);
                 q.Where(where);
             }
@@ -456,7 +464,8 @@ namespace ServiceStack
             }
         }
 
-        private static void AppendTypedQueries(SqlExpression<From> q, IQuery model, string defaultType, IAutoQueryOptions options)
+        private static void AppendTypedQueries(SqlExpression<From> q, IQuery model,
+            Dictionary<string, string> dynamicParams, string defaultType, IAutoQueryOptions options)
         {
             foreach (var entry in PropertyGetters)
             {
@@ -480,31 +489,80 @@ namespace ServiceStack
                 if (value == null)
                     continue;
 
-                var format = quotedColumn + " = {0}";
-                if (implicitQuery != null)
-                {
-                    var operand = implicitQuery.Operand ?? "=";
-                    if (implicitQuery.Type == QueryType.Or)
-                        defaultType = "OR";
-                    else if (implicitQuery.Type == QueryType.And)
-                        defaultType = "AND";
+                dynamicParams.Remove(entry.Key);
 
-                    format = quotedColumn + " " + operand + " {0}";
-                    if (implicitQuery.Format != null)
-                    {
-                        format = implicitQuery.Format.Replace("{Field}", quotedColumn)
-                                          .Replace("{Value}", "{0}");
-
-                        if (implicitQuery.ValueFormat != null)
-                            value = string.Format(implicitQuery.ValueFormat, value);
-                    }
-                }
-
-                q.AddCondition(defaultType, format, value);
+                AddCondition(q, defaultType, quotedColumn, value, implicitQuery);
             }
         }
 
-        private static void AppendUntypedQueries(SqlExpression<From> q, Dictionary<string, string> dynamicParams, string condition, IAutoQueryOptions options)
+        private static void AddCondition(SqlExpression<From> q, string defaultType, string quotedColumn, object value, QueryFieldAttribute implicitQuery)
+        {
+            var seq = value as IEnumerable;
+            if (value is string)
+                seq = null;
+            var format = seq == null 
+                ? quotedColumn + " = {0}"
+                : quotedColumn + " IN ({0})";
+            if (implicitQuery != null)
+            {
+                var operand = implicitQuery.Operand ?? "=";
+                if (implicitQuery.Type == QueryType.Or)
+                    defaultType = "OR";
+                else if (implicitQuery.Type == QueryType.And)
+                    defaultType = "AND";
+
+                format = quotedColumn + " " + operand + " {0}";
+                if (implicitQuery.Format != null)
+                {
+                    format = implicitQuery.Format.Replace("{Field}", quotedColumn);
+
+                    if (implicitQuery.ValueStyle == ValueStyle.Multiple)
+                    {
+                        if (seq == null)
+                            throw new ArgumentException("{0} requires {1} values"
+                                .Fmt(implicitQuery.Field, implicitQuery.ValueArity));
+
+                        var args = new object[implicitQuery.ValueArity];
+                        int i = 0;
+                        foreach (var x in seq)
+                        {
+                            if (i < args.Length)
+                            {
+                                format = format.Replace("{Value" + (i + 1) + "}", "{" + i + "}");
+                                args[i++] = x;
+                            }
+                        }
+
+                        q.AddCondition(defaultType, format, args);
+                        return;
+                    }
+                    if (implicitQuery.ValueStyle == ValueStyle.List)
+                    {
+                        if (seq == null)
+                            throw new ArgumentException("{0} expects a list of values".Fmt(implicitQuery.Field));
+
+                        format = format.Replace("{Values}", "{0}");
+                        value = new SqlInValues(seq);
+                    }
+                    else
+                    {
+                        format = format.Replace("{Value}", "{0}");
+                    }
+
+                    if (implicitQuery.ValueFormat != null)
+                        value = string.Format(implicitQuery.ValueFormat, value);
+                }
+            }
+            else
+            {
+                if (seq != null)
+                    value = new SqlInValues(seq);
+            }
+
+            q.AddCondition(defaultType, format, value);
+        }
+
+        private static void AppendUntypedQueries(SqlExpression<From> q, Dictionary<string, string> dynamicParams, string defaultType, IAutoQueryOptions options)
         {
             foreach (var entry in dynamicParams)
             {
@@ -518,30 +576,19 @@ namespace ServiceStack
                 var quotedColumn = q.DialectProvider.GetQuotedColumnName(match.ModelDef, match.FieldDef);
 
                 var strValue = entry.Value;
-                var value = match.FieldDef.FieldType == typeof(string)
-                    ? strValue
-                    : Convert.ChangeType(strValue, match.FieldDef.FieldType);
+                var fieldType = match.FieldDef.FieldType;
+                var isMultiple = (implicitQuery != null && (implicitQuery.ValueStyle > ValueStyle.Single))
+                    || string.Compare(name, match.FieldDef.Name + Pluralized, StringComparison.OrdinalIgnoreCase) == 0;
+                
+                var value = isMultiple ? 
+                    TypeSerializer.DeserializeFromString(strValue, Array.CreateInstance(fieldType, 0).GetType())
+                    : fieldType == typeof(string) ? 
+                      strValue
+                    : fieldType.IsValueType ? 
+                      Convert.ChangeType(strValue, fieldType) :
+                      TypeSerializer.DeserializeFromString(strValue, fieldType);
 
-                var format = quotedColumn + " = {0}";
-                if (implicitQuery != null)
-                {
-                    var operand = implicitQuery.Operand ?? "=";
-                    if (implicitQuery.Type == QueryType.Or)
-                        condition = "OR";
-                    else if (implicitQuery.Type == QueryType.And)
-                        condition = "AND";
-
-                    format = quotedColumn + " " + operand + " {0}";
-                    if (implicitQuery.Format != null)
-                    {
-                        format = implicitQuery.Format.Replace("{Field}", quotedColumn)
-                            .Replace("{Value}", "{0}");
-
-                        if (implicitQuery.ValueFormat != null)
-                            value = string.Format(implicitQuery.ValueFormat, value);
-                    }
-                }
-                q.AddCondition(condition, format, value);
+                AddCondition(q, defaultType, quotedColumn, value, implicitQuery);
             }
         }
 
@@ -558,12 +605,14 @@ namespace ServiceStack
             public readonly QueryFieldAttribute ImplicitQuery;
         }
 
+        private const string Pluralized = "s";
+
         private static MatchQuery GetQueryMatch(SqlExpression<From> q, string name, IAutoQueryOptions options)
         {
             if (options == null) return null;
 
             var match = options.IgnoreProperties == null || !options.IgnoreProperties.Contains(name)
-                ? q.FirstMatchingField(name)
+                ? q.FirstMatchingField(name) ?? (name.EndsWith(Pluralized) ? q.FirstMatchingField(name.TrimEnd('s')) : null)
                 : null;
 
             if (match == null)
@@ -573,7 +622,7 @@ namespace ServiceStack
                     if (name.Length <= startsWith.Key.Length || !name.StartsWith(startsWith.Key)) continue;
 
                     var field = name.Substring(startsWith.Key.Length);
-                    match = q.FirstMatchingField(field);
+                    match = q.FirstMatchingField(field) ?? (field.EndsWith(Pluralized) ? q.FirstMatchingField(field.TrimEnd('s')) : null);
                     if (match != null)
                         return new MatchQuery(match, startsWith.Value);
                 }
@@ -585,7 +634,7 @@ namespace ServiceStack
                     if (name.Length <= endsWith.Key.Length || !name.EndsWith(endsWith.Key)) continue;
 
                     var field = name.Substring(0, name.Length - endsWith.Key.Length);
-                    match = q.FirstMatchingField(field);
+                    match = q.FirstMatchingField(field) ?? (field.EndsWith(Pluralized) ? q.FirstMatchingField(field.TrimEnd('s')) : null);
                     if (match != null)
                         return new MatchQuery(match, endsWith.Value);
                 }
@@ -607,6 +656,30 @@ namespace ServiceStack
             };
 
             return response;
+        }
+    }
+
+    public static class AutoQueryExtensions
+    {
+        public static QueryFieldAttribute Init(this QueryFieldAttribute query)
+        {
+            query.ValueStyle = ValueStyle.Single;
+            if (query.Format == null || query.ValueFormat != null) return query;
+
+            var i = 0;
+            while (query.Format.Contains("{Value" + (i + 1) + "}")) i++;
+            if (i > 0)
+            {
+                query.ValueStyle = ValueStyle.Multiple;
+                query.ValueArity = i;
+            }
+            else
+            {
+                query.ValueStyle = !query.Format.Contains("{Values}")
+                    ? ValueStyle.Single
+                    : ValueStyle.List;
+            }
+            return query;
         }
     }
 }
