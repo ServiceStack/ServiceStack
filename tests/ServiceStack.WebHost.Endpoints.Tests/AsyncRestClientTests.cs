@@ -44,7 +44,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var asyncClient = CreateAsyncRestClient();
 
-            var response = await asyncClient.GetAsync<MoviesResponse>("movies");
+            var response = await asyncClient.GetAsync<MoviesResponse>("all-movies");
 
             Assert.That(response, Is.Not.Null, "No response received");
             Assert.That(response.Movies.EquivalentTo(ResetMoviesService.Top5Movies));
@@ -55,7 +55,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var asyncClient = CreateAsyncRestClient();
 
-            var response = await asyncClient.GetAsync<MovieResponse>("movies/1");
+            var response = await asyncClient.GetAsync<MovieResponse>("all-movies/1");
 
             Assert.That(response, Is.Not.Null, "No response received");
             Assert.That(response.Movie.Id, Is.EqualTo(1));
@@ -66,18 +66,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var asyncClient = CreateAsyncRestClient();
 
-            var newMovie = new Movie
+            var newMovie = new Support.Host.Movie
             {
                 ImdbId = "tt0450259",
                 Title = "Blood Diamond",
-                Score = 8.0m,
+                Rating = 8.0m,
                 Director = "Edward Zwick",
                 ReleaseDate = new DateTime(2007, 1, 26),
                 TagLine = "A fisherman, a smuggler, and a syndicate of businessmen match wits over the possession of a priceless diamond.",
                 Genres = new List<string> { "Adventure", "Drama", "Thriller" },
             };
 
-            var response = await asyncClient.PostAsync<MovieResponse>("movies", newMovie);
+            var response = await asyncClient.PostAsync<MovieResponse>("all-movies", newMovie);
 
             Assert.That(response, Is.Not.Null, "No response received");
 
@@ -91,22 +91,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var asyncClient = CreateAsyncRestClient();
 
-            var newMovie = new Movie
+            var newMovie = new Support.Host.Movie
             {
                 ImdbId = "tt0450259",
                 Title = "Blood Diamond",
-                Score = 8.0m,
+                Rating = 8.0m,
                 Director = "Edward Zwick",
                 ReleaseDate = new DateTime(2007, 1, 26),
                 TagLine = "A fisherman, a smuggler, and a syndicate of businessmen match wits over the possession of a priceless diamond.",
                 Genres = new List<string> { "Adventure", "Drama", "Thriller" },
             };
 
-            var response = await asyncClient.PostAsync<MovieResponse>("movies", newMovie);
+            var response = await asyncClient.PostAsync<MovieResponse>("all-movies", newMovie);
 
             var createdMovie = response.Movie;
 
-            response = await asyncClient.DeleteAsync<MovieResponse>("movies/" + createdMovie.Id);
+            response = await asyncClient.DeleteAsync<MovieResponse>("all-movies/" + createdMovie.Id);
 
             Assert.That(response, Is.Not.Null, "No response received");
             Assert.That(createdMovie, Is.Not.Null);

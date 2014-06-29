@@ -138,7 +138,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var client = new JsonServiceClient(ListeningOn);
             try
             {
-                var response = client.Put<MoviesZipResponse>("movies.zip", new MoviesZip());
+                var response = client.Put<MoviesZipResponse>("all-movies.zip", new MoviesZip());
                 Assert.Fail("Should throw 405 excetpion");
             }
             catch (WebServiceException ex)

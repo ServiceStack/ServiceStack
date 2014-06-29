@@ -110,7 +110,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Can_download_CSV_movies_using_csv_Accept_and_RestPath()
 		{
-			var req = (HttpWebRequest)WebRequest.Create(ListeningOn + "movies");
+			var req = (HttpWebRequest)WebRequest.Create(ListeningOn + "all-movies");
             req.Accept = MimeTypes.Csv;
 
 			var res = req.GetResponse();

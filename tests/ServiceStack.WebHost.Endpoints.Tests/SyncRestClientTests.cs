@@ -64,7 +64,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Result, Is.EqualTo(GetFactorialService.GetFactorial(3)));
         }
 
-        [TestCase("movies")]
+        [TestCase("all-movies")]
         [TestCase("custom-movies")]
         public void Can_GET_Movies_using_RestClient(string path)
         {
@@ -76,7 +76,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Movies.EquivalentTo(ResetMoviesService.Top5Movies));
         }
 
-        [TestCase("movies/1")]
+        [TestCase("all-movies/1")]
         [TestCase("custom-movies/1")]
         public void Can_GET_single_Movie_using_RestClient(string path)
         {
@@ -88,16 +88,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Movie.Id, Is.EqualTo(1));
         }
 
-        [TestCase("movies")]
+        [TestCase("all-movies")]
         [TestCase("custom-movies")]
         public void Can_POST_to_add_new_Movie_using_RestClient(string path)
         {
             var restClient = CreateRestClient();
 
-            var newMovie = new Movie {
+            var newMovie = new Support.Host.Movie {
                 ImdbId = "tt0450259",
                 Title = "Blood Diamond",
-                Score = 8.0m,
+                Rating = 8.0m,
                 Director = "Edward Zwick",
                 ReleaseDate = new DateTime(2007, 1, 26),
                 TagLine = "A fisherman, a smuggler, and a syndicate of businessmen match wits over the possession of a priceless diamond.",
@@ -130,16 +130,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
-        [TestCase("movies", "movies/")]
+        [TestCase("all-movies", "all-movies/")]
         [TestCase("custom-movies", "custom-movies/")]
         public void Can_DELETE_Movie_using_RestClient(string postPath, string deletePath)
         {
             var restClient = CreateRestClient();
 
-            var newMovie = new Movie {
+            var newMovie = new Support.Host.Movie
+            {
                 ImdbId = "tt0450259",
                 Title = "Blood Diamond",
-                Score = 8.0m,
+                Rating = 8.0m,
                 Director = "Edward Zwick",
                 ReleaseDate = new DateTime(2007, 1, 26),
                 TagLine = "A fisherman, a smuggler, and a syndicate of businessmen match wits over the possession of a priceless diamond.",
@@ -236,7 +237,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             ServiceClientBase.GlobalResponseFilter = r => isActioncalledGlobal = true;
             var restClient = (JsonServiceClient)CreateRestClient();
             restClient.ResponseFilter = r => isActioncalledLocal = true;
-            restClient.Get<MoviesResponse>("movies");
+            restClient.Get<MoviesResponse>("all-movies");
             Assert.That(isActioncalledGlobal, Is.True);
             Assert.That(isActioncalledLocal, Is.True);
 
