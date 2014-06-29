@@ -70,7 +70,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 ImdbId = "tt0450259",
                 Title = "Blood Diamond",
-                Rating = 8.0m,
+                Score = 8.0m,
                 Director = "Edward Zwick",
                 ReleaseDate = new DateTime(2007, 1, 26),
                 TagLine = "A fisherman, a smuggler, and a syndicate of businessmen match wits over the possession of a priceless diamond.",
@@ -95,7 +95,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 ImdbId = "tt0450259",
                 Title = "Blood Diamond",
-                Rating = 8.0m,
+                Score = 8.0m,
                 Director = "Edward Zwick",
                 ReleaseDate = new DateTime(2007, 1, 26),
                 TagLine = "A fisherman, a smuggler, and a syndicate of businessmen match wits over the possession of a priceless diamond.",

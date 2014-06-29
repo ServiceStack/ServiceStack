@@ -90,8 +90,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
     }
 
 
-	[Route("/movies", "POST,PUT")]
-	[Route("/movies/{Id}")]
+    [Route("/all-movies", "POST,PUT")]
+	[Route("/all-movies/{Id}")]
 	[DataContract]
 	public class Movie
 	{
@@ -230,8 +230,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 
 
 	[DataContract]
-	[Route("/movies", "GET")]
-    [Route("/movies/genres/{Genre}")]
+    [Route("/all-movies", "GET")]
+    [Route("/all-movies/genres/{Genre}")]
 	public class Movies
 	{
 		[DataMember]
@@ -475,7 +475,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 				.Add<Movie>("/custom-movies", "POST,PUT")
 				.Add<Movie>("/custom-movies/{Id}")
 				.Add<GetFactorial>("/fact/{ForNumber}")
-				.Add<MoviesZip>("/movies.zip")
+                .Add<MoviesZip>("/all-movies.zip")
 				.Add<GetHttpResult>("/gethttpresult")
 			;
 
@@ -542,7 +542,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
                 .Add<Movie>("/custom-movies", "POST,PUT")
                 .Add<Movie>("/custom-movies/{Id}")
                 .Add<GetFactorial>("/fact/{ForNumber}")
-                .Add<MoviesZip>("/movies.zip")
+                .Add<MoviesZip>("/all-movies.zip")
                 .Add<GetHttpResult>("/gethttpresult")
             ;
 
