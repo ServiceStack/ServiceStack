@@ -675,15 +675,23 @@ namespace ServiceStack
 
         public QueryResponse<Into> Execute<Into>(IDbConnection db, ISqlExpression query)
         {
-            var q = (SqlExpression<From>)query;
-            var response = new QueryResponse<Into>
+            try
             {
-                Offset = q.Offset.GetValueOrDefault(0),
-                Total = (int)db.Count(q),
-                Results = db.Select<Into, From>(q),
-            };
+                var q = (SqlExpression<From>)query;
 
-            return response;
+                var response = new QueryResponse<Into>
+                {
+                    Offset = q.Offset.GetValueOrDefault(0),
+                    Total = (int)db.Count(q),
+                    Results = db.Select<Into, From>(q),
+                };
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
         }
     }
 

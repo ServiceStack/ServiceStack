@@ -20,6 +20,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             container.Register<IDbConnectionFactory>(
                 new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
 
+            //container.Register<IDbConnectionFactory>(
+            //    new OrmLiteConnectionFactory("Server={0};Database=test;User Id=test;Password=test;".Fmt(Environment.GetEnvironmentVariable("CI_HOST")),
+            //        SqlServerDialect.Provider));
+
+            //container.Register<IDbConnectionFactory>(
+            //    new OrmLiteConnectionFactory("Server=localhost;Database=test;UID=root;Password=test",
+            //        MySqlDialect.Provider));
+
+            //container.Register<IDbConnectionFactory>(
+            //    new OrmLiteConnectionFactory("Server=localhost;Port=5432;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
+            //        PostgreSqlDialect.Provider));
+
             using (var db = container.Resolve<IDbConnectionFactory>().Open())
             {
                 db.DropAndCreateTable<Rockstar>();
@@ -439,9 +451,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = client.Get(new QueryFieldRockstars { FirstName = "Jim" });
             Assert.That(response.Results.Count, Is.EqualTo(1));
 
-            response = client.Get(new QueryFieldRockstars { FirstName = "jim" });
-            Assert.That(response.Results.Count, Is.EqualTo(0));
-
             response = client.Get(new QueryFieldRockstars { FirstNameCaseInsensitive = "jim" });
             Assert.That(response.Results.Count, Is.EqualTo(1));
 
@@ -613,22 +622,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = baseUrl.AddQueryParam("_where", "Age >= 42").AsJsonInto<Rockstar>();
             Assert.That(response.Results.Count, Is.EqualTo(4));
 
-            response = baseUrl.AddQueryParam("_where", "FirstName LIKE 'jim%'").AsJsonInto<Rockstar>();
+            response = baseUrl.AddQueryParam("_where", "FirstName".SqlColumn() + " LIKE 'Jim%'").AsJsonInto<Rockstar>();
             Assert.That(response.Results.Count, Is.EqualTo(2));
-            response = baseUrl.AddQueryParam("_where", "LastName LIKE '%son'").AsJsonInto<Rockstar>();
+            response = baseUrl.AddQueryParam("_where", "LastName".SqlColumn() + " LIKE '%son'").AsJsonInto<Rockstar>();
             Assert.That(response.Results.Count, Is.EqualTo(2));
-            response = baseUrl.AddQueryParam("_where", "LastName LIKE '%e%'").AsJsonInto<Rockstar>();
+            response = baseUrl.AddQueryParam("_where", "LastName".SqlColumn() + " LIKE '%e%'").AsJsonInto<Rockstar>();
             Assert.That(response.Results.Count, Is.EqualTo(3));
 
             response = baseUrl
                 .AddQueryParam("_select", "r.*")
-                .AddQueryParam("_from", "Rockstar r INNER JOIN RockstarAlbum a ON r.Id = a.RockstarId")
+                .AddQueryParam("_from", "{0} r INNER JOIN {1} a ON r.{2} = a.{3}".Fmt(
+                    "Rockstar".SqlTable(), "RockstarAlbum".SqlTable(), 
+                    "Id".SqlColumn(),      "RockstarId".SqlColumn()))
                 .AsJsonInto<Rockstar>();
             Assert.That(response.Results.Count, Is.EqualTo(TotalAlbums));
 
             response = baseUrl
-                .AddQueryParam("_select", "FirstName")
-                .AddQueryParam("_where", "LastName = 'Cobain'")
+                .AddQueryParam("_select", "FirstName".SqlColumn())
+                .AddQueryParam("_where", "LastName".SqlColumn() + " = 'Cobain'")
                 .AsJsonInto<Rockstar>();
             var row = response.Results[0];
             Assert.That(row.Id, Is.EqualTo(default(int)));
