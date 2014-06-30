@@ -214,12 +214,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int[] Ids { get; set; }
         public string[] ImdbIds { get; set; }
         public string[] Ratings { get; set; }
+        public string[] OrderBy { get; set; }
+        public string[] OrderByDesc { get; set; }
     }
 
     public class Movie
     {
         [AutoIncrement]
-        public long Id { get; set; }
+        public int Id { get; set; }
         public string ImdbId { get; set; }
         public string Title { get; set; }
         public decimal Score { get; set; }
@@ -228,6 +230,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string TagLine { get; set; }
         public List<string> Genres { get; set; }
         public string Rating { get; set; }
+    }
+
+    public class StreamMovies : QueryBase<Movie>
+    {
+        public string[] Ratings { get; set; }
     }
 
     public class AutoQueryService : Service
@@ -246,6 +253,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var q = AutoQuery.CreateQuery(dto, Request.GetRequestParams());
             q.Take(1);
+            return AutoQuery.Execute(dto, q);
+        }
+
+        public object Any(StreamMovies dto)
+        {
+            var q = AutoQuery.CreateQuery(dto, Request.GetRequestParams());
+            q.Take(2);
             return AutoQuery.Execute(dto, q);
         }
     }
@@ -679,6 +693,68 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             url = Config.ListeningOn + "movies?ratings=G,PG-13&ids=1,2&imdbIds=tt0071562,tt0060196";
             response = url.AsJsonInto<Movie>();
             Assert.That(response.Results.Count, Is.EqualTo(9));
+        }
+
+        [Test]
+        public void Can_StreamMovies()
+        {
+            var results = client.GetLazy(new StreamMovies()).ToList();
+            Assert.That(results.Count, Is.EqualTo(10));
+
+            results = client.GetLazy(new StreamMovies { Ratings = new[]{"G","PG-13"} }).ToList();
+            Assert.That(results.Count, Is.EqualTo(5));
+        }
+
+        [Test]
+        public void Does_implicitly_OrderBy_PrimaryKey_when_limits_is_specified()
+        {
+            var movies = client.Get(new QueryMovies { Take = 100 });
+            var ids = movies.Results.Map(x => x.Id);
+            var orderedIds = ids.OrderBy(x => x);
+            Assert.That(ids, Is.EqualTo(orderedIds));
+
+            var rockstars = client.Get(new QueryRockstars { Take = 100 });
+            ids = rockstars.Results.Map(x => x.Id);
+            orderedIds = ids.OrderBy(x => x);
+            Assert.That(ids, Is.EqualTo(orderedIds));
+        }
+
+        [Test]
+        public void Can_OrderBy_queries()
+        {
+            var movies = client.Get(new QueryMovies { Take = 100, OrderBy = new[] { "ImdbId" } });
+            var ids = movies.Results.Map(x => x.ImdbId);
+            var orderedIds = ids.OrderBy(x => x).ToList();
+            Assert.That(ids, Is.EqualTo(orderedIds));
+
+            movies = client.Get(new QueryMovies { Take = 100, OrderBy = new[] { "Rating", "ImdbId" } });
+            ids = movies.Results.Map(x => x.ImdbId);
+            orderedIds = movies.Results.OrderBy(x => x.Rating).ThenBy(x => x.ImdbId).Map(x => x.ImdbId);
+            Assert.That(ids, Is.EqualTo(orderedIds));
+
+            movies = client.Get(new QueryMovies { Take = 100, OrderByDesc = new[] { "ImdbId" } });
+            ids = movies.Results.Map(x => x.ImdbId);
+            orderedIds = ids.OrderByDescending(x => x).ToList();
+            Assert.That(ids, Is.EqualTo(orderedIds));
+
+            movies = client.Get(new QueryMovies { Take = 100, OrderByDesc = new[] { "Rating", "ImdbId" } });
+            ids = movies.Results.Map(x => x.ImdbId);
+            orderedIds = movies.Results.OrderByDescending(x => x.Rating)
+                .ThenByDescending(x => x.ImdbId).Map(x => x.ImdbId);
+            Assert.That(ids, Is.EqualTo(orderedIds));
+
+            var url = Config.ListeningOn + "movies?take=100&orderBy=Rating,ImdbId";
+            movies = url.AsJsonInto<Movie>();
+            ids = movies.Results.Map(x => x.ImdbId);
+            orderedIds = movies.Results.OrderBy(x => x.Rating).ThenBy(x => x.ImdbId).Map(x => x.ImdbId);
+            Assert.That(ids, Is.EqualTo(orderedIds));
+
+            url = Config.ListeningOn + "movies?take=100&orderByDesc=Rating,ImdbId";
+            movies = url.AsJsonInto<Movie>();
+            ids = movies.Results.Map(x => x.ImdbId);
+            orderedIds = movies.Results.OrderByDescending(x => x.Rating)
+                .ThenByDescending(x => x.ImdbId).Map(x => x.ImdbId);
+            Assert.That(ids, Is.EqualTo(orderedIds));
         }
     }
 

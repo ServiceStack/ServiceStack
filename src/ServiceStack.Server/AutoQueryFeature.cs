@@ -26,6 +26,7 @@ namespace ServiceStack
         public string UseNamedConnection { get; set; }
         public bool EnableUntypedQueries { get; set; }
         public bool EnableSqlFilters { get; set; }
+        public bool OrderByPrimaryKeyOnLimitQuery { get; set; }
         public Type AutoQueryServiceBaseType { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
 
@@ -92,6 +93,7 @@ namespace ServiceStack
             AutoQueryServiceBaseType = typeof(AutoQueryServiceBase);
             QueryFilters = new Dictionary<Type, QueryFilterDelegate>();
             EnableUntypedQueries = true;
+            OrderByPrimaryKeyOnLimitQuery = true;
         }
 
         public void Register(IAppHost appHost)
@@ -108,13 +110,14 @@ namespace ServiceStack
             }
 
             appHost.GetContainer().Register<IAutoQuery>(c =>
-                new AutoAutoQuery
+                new AutoQuery
                 {
                     IgnoreProperties = IgnoreProperties,                    
                     IllegalSqlFragmentTokens = IllegalSqlFragmentTokens,
                     MaxLimit = MaxLimit,
                     EnableUntypedQueries = EnableUntypedQueries,
                     EnableSqlFilters = EnableSqlFilters,
+                    OrderByPrimaryKeyOnLimitQuery = OrderByPrimaryKeyOnLimitQuery,
                     QueryFilters = QueryFilters,
                     StartsWithConventions = StartsWithConventions,
                     EndsWithConventions = EndsWithConventions,
@@ -240,17 +243,19 @@ namespace ServiceStack
         int? MaxLimit { get; set; }
         bool EnableUntypedQueries { get; set; }
         bool EnableSqlFilters { get; set; }
+        bool OrderByPrimaryKeyOnLimitQuery { get; set; }
         HashSet<string> IgnoreProperties { get; set; }
         HashSet<string> IllegalSqlFragmentTokens { get; set; }
         Dictionary<string, QueryFieldAttribute> StartsWithConventions { get; set; }
         Dictionary<string, QueryFieldAttribute> EndsWithConventions { get; set; }
     }
 
-    public class AutoAutoQuery : IAutoQuery, IAutoQueryOptions, IDisposable
+    public class AutoQuery : IAutoQuery, IAutoQueryOptions, IDisposable
     {
         public int? MaxLimit { get; set; }
         public bool EnableUntypedQueries { get; set; }
         public bool EnableSqlFilters { get; set; }
+        public bool OrderByPrimaryKeyOnLimitQuery { get; set; }
         public HashSet<string> IgnoreProperties { get; set; }
         public HashSet<string> IllegalSqlFragmentTokens { get; set; }
         public Dictionary<string, QueryFieldAttribute> StartsWithConventions { get; set; }
@@ -384,7 +389,7 @@ namespace ServiceStack
 
             AppendJoins(q, model);
 
-            AppendLimits(q, model, options);
+            AppendLimits(q, model, dynamicParams, options);
 
             var dtoAttr = model.GetType().FirstAttribute<QueryAttribute>();
             var defaultType = dtoAttr != null && dtoAttr.DefaultType == QueryType.Or ? "OR" : "AND";
@@ -428,13 +433,41 @@ namespace ServiceStack
             }
         }
 
-        private static void AppendLimits(SqlExpression<From> q, IQuery model, IAutoQueryOptions options)
+        private static readonly char[] FieldSeperators = new[] {',', ';'};
+
+        private static string GetMatchingField(SqlExpression<From> q, string fieldName)
+        {
+            var field = q.FirstMatchingField(fieldName);
+            if (field == null)
+                throw new ArgumentException("Could not find field " + fieldName);
+            var qualifiedName = q.DialectProvider.GetQuotedColumnName(field.Item1, field.Item2);
+            return qualifiedName;
+        }
+
+        private static void AppendLimits(SqlExpression<From> q, IQuery model, Dictionary<string, string> dynamicParams, IAutoQueryOptions options)
         {
             var maxLimit = options != null ? options.MaxLimit : null;
             var take = model.Take ?? maxLimit;
             if (take > maxLimit)
                 take = maxLimit;
             q.Limit(model.Skip, take);
+
+            string orderBy;
+            if (dynamicParams.TryGetValue("orderBy", out orderBy))
+            {
+                var fieldNames = orderBy.Split(FieldSeperators, StringSplitOptions.RemoveEmptyEntries);
+                q.OrderByFields(fieldNames);
+            }
+            else if (dynamicParams.TryGetValue("orderByDesc", out orderBy))
+            {
+                var fieldNames = orderBy.Split(FieldSeperators, StringSplitOptions.RemoveEmptyEntries);
+                q.OrderByFieldsDescending(fieldNames);
+            }
+            else if ((model.Skip != null || model.Take != null)
+                && (options != null && options.OrderByPrimaryKeyOnLimitQuery))
+            {
+                q.OrderByFields(typeof(From).GetModelMetadata().PrimaryKey);
+            }
         }
 
         private static void AppendJoins(SqlExpression<From> q, IQuery model)
