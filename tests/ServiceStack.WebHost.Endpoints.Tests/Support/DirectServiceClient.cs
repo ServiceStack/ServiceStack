@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
@@ -194,6 +195,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             if (ApplyResponseFilters<TResponse>(response)) return (TResponse)response;
 
             return (TResponse)response;
+        }
+
+        public IEnumerable<TResponse> GetLazy<TResponse>(IReturn<QueryResponse<TResponse>> queryDto)
+        {
+            throw new NotImplementedException();
         }
 
         public HttpWebResponse Delete(IReturnVoid requestDto)

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 
@@ -10,6 +11,7 @@ namespace ServiceStack
         TResponse Get<TResponse>(IReturn<TResponse> requestDto);
         TResponse Get<TResponse>(object requestDto);
         TResponse Get<TResponse>(string relativeOrAbsoluteUrl);
+        IEnumerable<TResponse> GetLazy<TResponse>(IReturn<QueryResponse<TResponse>> queryDto);
 
         HttpWebResponse Delete(IReturnVoid requestDto);
         HttpWebResponse Delete(object requestDto);

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
@@ -1022,6 +1023,21 @@ namespace ServiceStack
             return Send<TResponse>(HttpMethods.Get, relativeOrAbsoluteUrl, null);
         }
 
+        public virtual IEnumerable<TResponse> GetLazy<TResponse>(IReturn<QueryResponse<TResponse>> queryDto)
+        {
+            var query = (IQuery)queryDto;
+            QueryResponse<TResponse> response;
+            do
+            {
+                response = Get<QueryResponse<TResponse>>(queryDto.ToUrl(HttpMethods.Get, Format));
+                foreach (var result in response.Results)
+                {
+                    yield return result;
+                }
+                query.Skip = query.Skip.GetValueOrDefault(0) + response.Results.Count;
+            }
+            while (response.Results.Count + response.Offset < response.Total);
+        }
 
         public virtual HttpWebResponse Delete(IReturnVoid requestDto)
         {
