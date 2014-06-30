@@ -87,7 +87,7 @@ namespace ServiceStack
 
         public AutoQueryFeature()
         {
-            IgnoreProperties = new HashSet<string>(new[] { "Skip", "Take", "_select", "_from", "_join", "_where" }, 
+            IgnoreProperties = new HashSet<string>(new[] { "Skip", "Take", "OrderBy", "OrderByDesc", "_select", "_from", "_join", "_where" }, 
                 StringComparer.OrdinalIgnoreCase);
             IllegalSqlFragmentTokens = new HashSet<string>();
             AutoQueryServiceBaseType = typeof(AutoQueryServiceBase);
@@ -389,7 +389,7 @@ namespace ServiceStack
 
             AppendJoins(q, model);
 
-            AppendLimits(q, model, dynamicParams, options);
+            AppendLimits(q, model, options);
 
             var dtoAttr = model.GetType().FirstAttribute<QueryAttribute>();
             var defaultType = dtoAttr != null && dtoAttr.DefaultType == QueryType.Or ? "OR" : "AND";
@@ -399,6 +399,11 @@ namespace ServiceStack
             if (options != null && options.EnableUntypedQueries)
             {
                 AppendUntypedQueries(q, dynamicParams, defaultType, options);
+            }
+
+            if (defaultType == "OR" && q.WhereExpression == null)
+            {
+                q.Where("1=0"); //Empty OR queries should be empty
             }
 
             return q;
@@ -435,16 +440,7 @@ namespace ServiceStack
 
         private static readonly char[] FieldSeperators = new[] {',', ';'};
 
-        private static string GetMatchingField(SqlExpression<From> q, string fieldName)
-        {
-            var field = q.FirstMatchingField(fieldName);
-            if (field == null)
-                throw new ArgumentException("Could not find field " + fieldName);
-            var qualifiedName = q.DialectProvider.GetQuotedColumnName(field.Item1, field.Item2);
-            return qualifiedName;
-        }
-
-        private static void AppendLimits(SqlExpression<From> q, IQuery model, Dictionary<string, string> dynamicParams, IAutoQueryOptions options)
+        private static void AppendLimits(SqlExpression<From> q, IQuery model, IAutoQueryOptions options)
         {
             var maxLimit = options != null ? options.MaxLimit : null;
             var take = model.Take ?? maxLimit;
@@ -452,15 +448,14 @@ namespace ServiceStack
                 take = maxLimit;
             q.Limit(model.Skip, take);
 
-            string orderBy;
-            if (dynamicParams.TryGetValue("orderBy", out orderBy))
+            if (model.OrderBy != null)
             {
-                var fieldNames = orderBy.Split(FieldSeperators, StringSplitOptions.RemoveEmptyEntries);
+                var fieldNames = model.OrderBy.Split(FieldSeperators, StringSplitOptions.RemoveEmptyEntries);
                 q.OrderByFields(fieldNames);
             }
-            else if (dynamicParams.TryGetValue("orderByDesc", out orderBy))
+            else if (model.OrderByDesc != null)
             {
-                var fieldNames = orderBy.Split(FieldSeperators, StringSplitOptions.RemoveEmptyEntries);
+                var fieldNames = model.OrderByDesc.Split(FieldSeperators, StringSplitOptions.RemoveEmptyEntries);
                 q.OrderByFieldsDescending(fieldNames);
             }
             else if ((model.Skip != null || model.Take != null)

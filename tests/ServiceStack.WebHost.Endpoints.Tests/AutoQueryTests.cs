@@ -207,6 +207,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string RockstarAlbumName { get; set; }
     }
 
+    [Route("/movies/search")]
+    [Query(QueryType.And)] //Default
+    public class SearchMovies : QueryBase<Movie> {}
+
     [Route("/movies")]
     [Query(QueryType.Or)]
     public class QueryMovies : QueryBase<Movie>
@@ -214,8 +218,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int[] Ids { get; set; }
         public string[] ImdbIds { get; set; }
         public string[] Ratings { get; set; }
-        public string[] OrderBy { get; set; }
-        public string[] OrderByDesc { get; set; }
     }
 
     public class Movie
@@ -639,6 +641,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_execute_In_OR_Queries()
         {
             QueryResponse<Rockstar> response;
+            response = client.Get(new QueryGetRockstars());
+            Assert.That(response.Results.Count, Is.EqualTo(0));
+
             response = client.Get(new QueryGetRockstars { Ids = new[] { 1, 2, 3 } });
             Assert.That(response.Results.Count, Is.EqualTo(3));
 
@@ -708,12 +713,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Does_implicitly_OrderBy_PrimaryKey_when_limits_is_specified()
         {
-            var movies = client.Get(new QueryMovies { Take = 100 });
+            var movies = client.Get(new SearchMovies { Take = 100 });
             var ids = movies.Results.Map(x => x.Id);
             var orderedIds = ids.OrderBy(x => x);
             Assert.That(ids, Is.EqualTo(orderedIds));
 
-            var rockstars = client.Get(new QueryRockstars { Take = 100 });
+            var rockstars = client.Get(new SearchMovies { Take = 100 });
             ids = rockstars.Results.Map(x => x.Id);
             orderedIds = ids.OrderBy(x => x);
             Assert.That(ids, Is.EqualTo(orderedIds));
@@ -722,34 +727,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_OrderBy_queries()
         {
-            var movies = client.Get(new QueryMovies { Take = 100, OrderBy = new[] { "ImdbId" } });
+            var movies = client.Get(new SearchMovies { Take = 100, OrderBy = "ImdbId" });
             var ids = movies.Results.Map(x => x.ImdbId);
             var orderedIds = ids.OrderBy(x => x).ToList();
             Assert.That(ids, Is.EqualTo(orderedIds));
 
-            movies = client.Get(new QueryMovies { Take = 100, OrderBy = new[] { "Rating", "ImdbId" } });
+            movies = client.Get(new SearchMovies { Take = 100, OrderBy = "Rating,ImdbId" });
             ids = movies.Results.Map(x => x.ImdbId);
             orderedIds = movies.Results.OrderBy(x => x.Rating).ThenBy(x => x.ImdbId).Map(x => x.ImdbId);
             Assert.That(ids, Is.EqualTo(orderedIds));
 
-            movies = client.Get(new QueryMovies { Take = 100, OrderByDesc = new[] { "ImdbId" } });
+            movies = client.Get(new SearchMovies { Take = 100, OrderByDesc = "ImdbId" });
             ids = movies.Results.Map(x => x.ImdbId);
             orderedIds = ids.OrderByDescending(x => x).ToList();
             Assert.That(ids, Is.EqualTo(orderedIds));
 
-            movies = client.Get(new QueryMovies { Take = 100, OrderByDesc = new[] { "Rating", "ImdbId" } });
+            movies = client.Get(new SearchMovies { Take = 100, OrderByDesc = "Rating,ImdbId" });
             ids = movies.Results.Map(x => x.ImdbId);
             orderedIds = movies.Results.OrderByDescending(x => x.Rating)
                 .ThenByDescending(x => x.ImdbId).Map(x => x.ImdbId);
             Assert.That(ids, Is.EqualTo(orderedIds));
 
-            var url = Config.ListeningOn + "movies?take=100&orderBy=Rating,ImdbId";
+            var url = Config.ListeningOn + "movies/search?take=100&orderBy=Rating,ImdbId";
             movies = url.AsJsonInto<Movie>();
             ids = movies.Results.Map(x => x.ImdbId);
             orderedIds = movies.Results.OrderBy(x => x.Rating).ThenBy(x => x.ImdbId).Map(x => x.ImdbId);
             Assert.That(ids, Is.EqualTo(orderedIds));
 
-            url = Config.ListeningOn + "movies?take=100&orderByDesc=Rating,ImdbId";
+            url = Config.ListeningOn + "movies/search?take=100&orderByDesc=Rating,ImdbId";
             movies = url.AsJsonInto<Movie>();
             ids = movies.Results.Map(x => x.ImdbId);
             orderedIds = movies.Results.OrderByDescending(x => x.Rating)

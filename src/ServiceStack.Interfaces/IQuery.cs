@@ -9,6 +9,8 @@ namespace ServiceStack
     {
         int? Skip { get; set; }
         int? Take { get; set; }
+        string OrderBy { get; set; }
+        string OrderByDesc { get; set; }
     }
 
     public interface IQuery<From> : IQuery { }
@@ -70,6 +72,12 @@ namespace ServiceStack
 
         [DataMember(Order = 2)]
         public int? Take { get; set; }
+
+        [DataMember(Order = 3)]
+        public string OrderBy { get; set; }
+
+        [DataMember(Order = 4)]
+        public string OrderByDesc { get; set; }
     }
 
     public abstract class QueryBase<T> : QueryBase, IQuery<T>, IReturn<QueryResponse<T>> { }
