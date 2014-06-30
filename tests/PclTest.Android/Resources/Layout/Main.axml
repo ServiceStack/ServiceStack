@@ -35,13 +35,27 @@
             android:id="@+id/btnGoSync"
             android:layout_width="185dp"
             android:layout_height="match_parent"
-            android:layout_marginRight="0.0dp" />
+            android:layout_marginRight="3.2dp" />
         <Button
             android:text="Go Async"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/btnGoAsync"
             android:layout_marginLeft="0.0dp" />
+    </LinearLayout>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:minWidth="25px"
+        android:minHeight="25px"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/linearLayout3">
+        <Button
+            android:text="Test"
+            android:id="@+id/btnTest"
+            android:layout_width="185dp"
+            android:layout_height="match_parent"
+            android:layout_marginRight="3.2dp" />
     </LinearLayout>
     <TextView
         android:layout_width="match_parent"

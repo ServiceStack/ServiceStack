@@ -25,6 +25,7 @@ namespace PclTest.Android
 
             var btnGoSync = FindViewById<Button>(Resource.Id.btnGoSync);
             var btnGoAsync = FindViewById<Button>(Resource.Id.btnGoAsync);
+            var btnTest = FindViewById<Button>(Resource.Id.btnTest);
             var txtName = FindViewById<EditText>(Resource.Id.txtName);
             var lblResults = FindViewById<TextView>(Resource.Id.lblResults);
 
@@ -50,6 +51,17 @@ namespace PclTest.Android
                 client.GetAsync(new Hello { Name = txtName.Text })
                     .Success(response => lblResults.Text = response.Result)
                     .Error(ex => lblResults.Text = ex.ToString());
+            };
+
+            btnTest.Click += delegate
+            {
+                try
+                {
+                }
+                catch (Exception ex)
+                {
+                    lblResults.Text = ex.ToString();
+                }
             };
         }
     }
