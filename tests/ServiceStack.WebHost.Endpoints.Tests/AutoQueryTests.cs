@@ -90,7 +90,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			new Movie { ImdbId = "tt0109830", Title = "Forrest Gump", Score = 8.8m, Director = "Robert Zemeckis", ReleaseDate = new DateTime(1996,07,06), TagLine = "Forrest Gump, while not intelligent, has accidentally been present at many historic moments, but his true love, Jenny Curran, eludes him.", Genres = new List<string>{"Drama","Romance"}, Rating = "PG-13", },
         };
     }
-
+    
+    [Route("/query/rockstars")]
     public class QueryRockstars : QueryBase<Rockstar>
     {
         public int? Age { get; set; }
@@ -115,6 +116,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int? Age { get; set; }
     }
 
+    [Route("/customrockstars")]
     public class QueryRockstarAlbums : QueryBase<Rockstar, CustomRockstar>, IJoin<Rockstar, RockstarAlbum>
     {
         public int? Age { get; set; }
@@ -238,12 +240,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int Id { get; set; }
         public string ImdbId { get; set; }
         public string Title { get; set; }
+        public string Rating { get; set; }
         public decimal Score { get; set; }
         public string Director { get; set; }
         public DateTime ReleaseDate { get; set; }
         public string TagLine { get; set; }
         public List<string> Genres { get; set; }
-        public string Rating { get; set; }
     }
 
     public class StreamMovies : QueryBase<Movie>
@@ -771,6 +773,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             orderedIds = movies.Results.OrderByDescending(x => x.Rating)
                 .ThenByDescending(x => x.ImdbId).Map(x => x.ImdbId);
             Assert.That(ids, Is.EqualTo(orderedIds));
+        }
+
+        [Test]
+        public void Can_consume_as_CSV()
+        {
+            var url = Config.ListeningOn + "movies/search.csv";
+            var csv = url.GetStringFromUrl();
+            var headers = csv.SplitOnFirst('\n')[0].Trim();
+            Assert.That(headers, Is.EqualTo("Id,ImdbId,Title,Rating,Score,Director,ReleaseDate,TagLine,Genres"));
+            csv.Print();
+
+            url = Config.ListeningOn + "query/rockstars.csv";
+            csv = url.GetStringFromUrl();
+            headers = csv.SplitOnFirst('\n')[0].Trim();
+            Assert.That(headers, Is.EqualTo("Id,FirstName,LastName,Age"));
+            csv.Print();
+
+            url = Config.ListeningOn + "customrockstars.csv";
+            csv = url.GetStringFromUrl();
+            headers = csv.SplitOnFirst('\n')[0].Trim();
+            Assert.That(headers, Is.EqualTo("FirstName,LastName,Age,RockstarAlbumName"));
+            csv.Print();
         }
     }
 
