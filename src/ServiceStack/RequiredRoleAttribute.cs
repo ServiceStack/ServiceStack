@@ -104,6 +104,32 @@ namespace ServiceStack
 
             throw new HttpError(statusCode, "Invalid Role");
         }
+
+        public static bool HasRequiredRoles(IRequest req, string[] requiredRoles)
+        {
+            if (requiredRoles.IsEmpty())
+                return true;
+
+            if (HostContext.HasValidAuthSecret(req))
+                return true;
+
+            var session = req.GetSession();
+
+            if (session != null)
+            {
+                if (session.HasRole(RoleNames.Admin))
+                    return true;
+                if (requiredRoles.All(session.HasRole))
+                    return true;
+            }
+
+            session.UpdateFromUserAuthRepo(req);
+
+            if (session != null && requiredRoles.All(session.HasRole))
+                return true;
+
+            return false;
+        }
     }
 
 }
