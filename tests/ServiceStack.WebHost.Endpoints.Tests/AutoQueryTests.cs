@@ -165,7 +165,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [QueryField(Format = "{Field} BETWEEN {Value1} AND {Value2}", Field = "FirstName")]
         public string[] FirstNameBetween { get; set; }
 
-        [QueryField(Type = QueryType.Or, Format = "UPPER({Field}) LIKE UPPER({Value})", Field = "LastName")]
+        [QueryField(Term = QueryTerm.Or, Format = "UPPER({Field}) LIKE UPPER({Value})", Field = "LastName")]
         public string OrLastName { get; set; }
     }
 
@@ -190,7 +190,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int? Age { get; set; }
     }
 
-    [Query(QueryType.Or)]
+    [Query(QueryTerm.Or)]
     [Route("/OrRockstars")]
     public class QueryOrRockstars : QueryBase<Rockstar>
     {
@@ -198,7 +198,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string FirstName { get; set; }
     }
 
-    [Query(QueryType.Or)]
+    [Query(QueryTerm.Or)]
     public class QueryGetRockstars : QueryBase<Rockstar>
     {
         public int[] Ids { get; set; }
@@ -207,7 +207,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int[] IdsBetween { get; set; }
     }
 
-    [Query(QueryType.Or)]
+    [Query(QueryTerm.Or)]
     public class QueryGetRockstarsDynamic : QueryBase<Rockstar> {}
 
     public class RockstarAlbum
@@ -227,11 +227,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [Route("/movies/search")]
-    [Query(QueryType.And)] //Default
+    [Query(QueryTerm.And)] //Default
     public class SearchMovies : QueryBase<Movie> {}
 
     [Route("/movies")]
-    [Query(QueryType.Or)]
+    [Query(QueryTerm.Or)]
     public class QueryMovies : QueryBase<Movie>
     {
         public int[] Ids { get; set; }

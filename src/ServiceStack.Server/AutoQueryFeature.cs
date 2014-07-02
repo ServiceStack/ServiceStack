@@ -392,16 +392,16 @@ namespace ServiceStack
             AppendLimits(q, model, options);
 
             var dtoAttr = model.GetType().FirstAttribute<QueryAttribute>();
-            var defaultType = dtoAttr != null && dtoAttr.DefaultType == QueryType.Or ? "OR" : "AND";
+            var defaultTerm = dtoAttr != null && dtoAttr.DefaultTerm == QueryTerm.Or ? "OR" : "AND";
 
-            AppendTypedQueries(q, model, dynamicParams, defaultType, options);
+            AppendTypedQueries(q, model, dynamicParams, defaultTerm, options);
 
             if (options != null && options.EnableUntypedQueries)
             {
-                AppendUntypedQueries(q, dynamicParams, defaultType, options);
+                AppendUntypedQueries(q, dynamicParams, defaultTerm, options);
             }
 
-            if (defaultType == "OR" && q.WhereExpression == null)
+            if (defaultTerm == "OR" && q.WhereExpression == null)
             {
                 q.Where("1=0"); //Empty OR queries should be empty
             }
@@ -493,7 +493,7 @@ namespace ServiceStack
         }
 
         private static void AppendTypedQueries(SqlExpression<From> q, IQuery model,
-            Dictionary<string, string> dynamicParams, string defaultType, IAutoQueryOptions options)
+            Dictionary<string, string> dynamicParams, string defaultTerm, IAutoQueryOptions options)
         {
             foreach (var entry in PropertyGetters)
             {
@@ -519,11 +519,11 @@ namespace ServiceStack
 
                 dynamicParams.Remove(entry.Key);
 
-                AddCondition(q, defaultType, quotedColumn, value, implicitQuery);
+                AddCondition(q, defaultTerm, quotedColumn, value, implicitQuery);
             }
         }
 
-        private static void AddCondition(SqlExpression<From> q, string defaultType, string quotedColumn, object value, QueryFieldAttribute implicitQuery)
+        private static void AddCondition(SqlExpression<From> q, string defaultTerm, string quotedColumn, object value, QueryFieldAttribute implicitQuery)
         {
             var seq = value as IEnumerable;
             if (value is string)
@@ -534,10 +534,10 @@ namespace ServiceStack
             if (implicitQuery != null)
             {
                 var operand = implicitQuery.Operand ?? "=";
-                if (implicitQuery.Type == QueryType.Or)
-                    defaultType = "OR";
-                else if (implicitQuery.Type == QueryType.And)
-                    defaultType = "AND";
+                if (implicitQuery.Term == QueryTerm.Or)
+                    defaultTerm = "OR";
+                else if (implicitQuery.Term == QueryTerm.And)
+                    defaultTerm = "AND";
 
                 format = quotedColumn + " " + operand + " {0}";
                 if (implicitQuery.Format != null)
@@ -561,7 +561,7 @@ namespace ServiceStack
                             }
                         }
 
-                        q.AddCondition(defaultType, format, args);
+                        q.AddCondition(defaultTerm, format, args);
                         return;
                     }
                     if (implicitQuery.ValueStyle == ValueStyle.List)
@@ -587,10 +587,10 @@ namespace ServiceStack
                     value = new SqlInValues(seq);
             }
 
-            q.AddCondition(defaultType, format, value);
+            q.AddCondition(defaultTerm, format, value);
         }
 
-        private static void AppendUntypedQueries(SqlExpression<From> q, Dictionary<string, string> dynamicParams, string defaultType, IAutoQueryOptions options)
+        private static void AppendUntypedQueries(SqlExpression<From> q, Dictionary<string, string> dynamicParams, string defaultTerm, IAutoQueryOptions options)
         {
             foreach (var entry in dynamicParams)
             {
@@ -616,7 +616,7 @@ namespace ServiceStack
                       Convert.ChangeType(strValue, fieldType) :
                       TypeSerializer.DeserializeFromString(strValue, fieldType);
 
-                AddCondition(q, defaultType, quotedColumn, value, implicitQuery);
+                AddCondition(q, defaultTerm, quotedColumn, value, implicitQuery);
             }
         }
 

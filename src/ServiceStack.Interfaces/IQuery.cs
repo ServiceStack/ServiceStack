@@ -27,7 +27,7 @@ namespace ServiceStack
     public interface ILeftJoin<Source, Join1, Join2, Join3> : IJoin { }
     public interface ILeftJoin<Source, Join1, Join2, Join3, Join4> : IJoin { }
 
-    public enum QueryType
+    public enum QueryTerm
     {
         Default = 0,
         And = 1,
@@ -45,18 +45,18 @@ namespace ServiceStack
     {
         public QueryAttribute() {}
 
-        public QueryAttribute(QueryType defaultType)
+        public QueryAttribute(QueryTerm defaultTerm)
         {
-            DefaultType = defaultType;
+            DefaultTerm = defaultTerm;
         }
 
-        public QueryType DefaultType { get; set; }
+        public QueryTerm DefaultTerm { get; set; }
     }
 
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class QueryFieldAttribute : AttributeBase
     {
-        public QueryType Type { get; set; }
+        public QueryTerm Term { get; set; }
         public string Operand { get; set; }
         public string Format { get; set; }
         public string Field { get; set; }
