@@ -26,7 +26,7 @@ namespace ServiceStack
         public string UseNamedConnection { get; set; }
         public bool EnableUntypedQueries { get; set; }
         public bool EnableSqlFilters { get; set; }
-        public bool OrderByPrimaryKeyOnLimitQuery { get; set; }
+        public bool OrderByPrimaryKeyOnPagedQuery { get; set; }
         public Type AutoQueryServiceBaseType { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
 
@@ -93,7 +93,7 @@ namespace ServiceStack
             AutoQueryServiceBaseType = typeof(AutoQueryServiceBase);
             QueryFilters = new Dictionary<Type, QueryFilterDelegate>();
             EnableUntypedQueries = true;
-            OrderByPrimaryKeyOnLimitQuery = true;
+            OrderByPrimaryKeyOnPagedQuery = true;
         }
 
         public void Register(IAppHost appHost)
@@ -117,7 +117,7 @@ namespace ServiceStack
                     MaxLimit = MaxLimit,
                     EnableUntypedQueries = EnableUntypedQueries,
                     EnableSqlFilters = EnableSqlFilters,
-                    OrderByPrimaryKeyOnLimitQuery = OrderByPrimaryKeyOnLimitQuery,
+                    OrderByPrimaryKeyOnLimitQuery = OrderByPrimaryKeyOnPagedQuery,
                     QueryFilters = QueryFilters,
                     StartsWithConventions = StartsWithConventions,
                     EndsWithConventions = EndsWithConventions,
