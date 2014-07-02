@@ -58,7 +58,7 @@ namespace ServiceStack
     {
         public QueryTerm Term { get; set; }
         public string Operand { get; set; }
-        public string Format { get; set; }
+        public string Template { get; set; }
         public string Field { get; set; }
         public string ValueFormat { get; set; }
         public ValueStyle ValueStyle { get; set; }

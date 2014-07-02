@@ -81,9 +81,9 @@ namespace ServiceStack
 
         public Dictionary<string, QueryFieldAttribute> EndsWithConventions = new Dictionary<string, QueryFieldAttribute>
         {
-            { "StartsWith", new QueryFieldAttribute { Format = "UPPER({Field}) LIKE UPPER({Value})", ValueFormat = "{0}%" }},
-            { "Contains", new QueryFieldAttribute { Format = "UPPER({Field}) LIKE UPPER({Value})", ValueFormat = "%{0}%" }},
-            { "EndsWith", new QueryFieldAttribute { Format = "UPPER({Field}) LIKE UPPER({Value})", ValueFormat = "%{0}" }},
+            { "StartsWith", new QueryFieldAttribute { Template = "UPPER({Field}) LIKE UPPER({Value})", ValueFormat = "{0}%" }},
+            { "Contains", new QueryFieldAttribute { Template = "UPPER({Field}) LIKE UPPER({Value})", ValueFormat = "%{0}%" }},
+            { "EndsWith", new QueryFieldAttribute { Template = "UPPER({Field}) LIKE UPPER({Value})", ValueFormat = "%{0}" }},
         };
 
         public AutoQueryFeature()
@@ -103,7 +103,7 @@ namespace ServiceStack
             {
                 var key = entry.Key.Trim('%');
                 var fmt = entry.Value;
-                var query = new QueryFieldAttribute { Format = fmt }.Init();
+                var query = new QueryFieldAttribute { Template = fmt }.Init();
                 if (entry.Key.EndsWith("%"))
                     StartsWithConventions[key] = query;
                 if (entry.Key.StartsWith("%"))
@@ -542,9 +542,9 @@ namespace ServiceStack
                     defaultTerm = "AND";
 
                 format = quotedColumn + " " + operand + " {0}";
-                if (implicitQuery.Format != null)
+                if (implicitQuery.Template != null)
                 {
-                    format = implicitQuery.Format.Replace("{Field}", quotedColumn);
+                    format = implicitQuery.Template.Replace("{Field}", quotedColumn);
 
                     if (implicitQuery.ValueStyle == ValueStyle.Multiple)
                     {
@@ -702,10 +702,10 @@ namespace ServiceStack
         public static QueryFieldAttribute Init(this QueryFieldAttribute query)
         {
             query.ValueStyle = ValueStyle.Single;
-            if (query.Format == null || query.ValueFormat != null) return query;
+            if (query.Template == null || query.ValueFormat != null) return query;
 
             var i = 0;
-            while (query.Format.Contains("{Value" + (i + 1) + "}")) i++;
+            while (query.Template.Contains("{Value" + (i + 1) + "}")) i++;
             if (i > 0)
             {
                 query.ValueStyle = ValueStyle.Multiple;
@@ -713,7 +713,7 @@ namespace ServiceStack
             }
             else
             {
-                query.ValueStyle = !query.Format.Contains("{Values}")
+                query.ValueStyle = !query.Template.Contains("{Values}")
                     ? ValueStyle.Single
                     : ValueStyle.List;
             }

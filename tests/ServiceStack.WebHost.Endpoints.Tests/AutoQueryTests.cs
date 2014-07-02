@@ -153,19 +153,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [QueryField(Operand = ">=")]
         public int? Age { get; set; }
 
-        [QueryField(Format = "UPPER({Field}) LIKE UPPER({Value})", Field = "FirstName")]
+        [QueryField(Template = "UPPER({Field}) LIKE UPPER({Value})", Field = "FirstName")]
         public string FirstNameCaseInsensitive { get; set; }
 
-        [QueryField(Format = "{Field} LIKE {Value}", Field = "FirstName", ValueFormat = "{0}%")]
+        [QueryField(Template = "{Field} LIKE {Value}", Field = "FirstName", ValueFormat = "{0}%")]
         public string FirstNameStartsWith { get; set; }
 
-        [QueryField(Format = "{Field} LIKE {Value}", Field = "LastName", ValueFormat = "%{0}")]
+        [QueryField(Template = "{Field} LIKE {Value}", Field = "LastName", ValueFormat = "%{0}")]
         public string LastNameEndsWith { get; set; }
 
-        [QueryField(Format = "{Field} BETWEEN {Value1} AND {Value2}", Field = "FirstName")]
+        [QueryField(Template = "{Field} BETWEEN {Value1} AND {Value2}", Field = "FirstName")]
         public string[] FirstNameBetween { get; set; }
 
-        [QueryField(Term = QueryTerm.Or, Format = "UPPER({Field}) LIKE UPPER({Value})", Field = "LastName")]
+        [QueryField(Term = QueryTerm.Or, Template = "UPPER({Field}) LIKE UPPER({Value})", Field = "LastName")]
         public string OrLastName { get; set; }
     }
 
