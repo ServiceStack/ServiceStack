@@ -45,7 +45,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var autoQuery = new AutoQueryFeature
             {
                 MaxLimit = 100,
-                EnableSqlFilters = true,
+                EnableRawSqlFilters = true,
             }
                 .RegisterQueryFilter<QueryRockstarsFilter, Rockstar>((req, q, dto) =>
                     q.And(x => x.LastName.EndsWith("son"))

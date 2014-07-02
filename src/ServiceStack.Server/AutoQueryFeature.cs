@@ -8,6 +8,7 @@ using System.Reflection.Emit;
 using System.Threading;
 
 using Funq;
+using ServiceStack.Configuration;
 using ServiceStack.Reflection;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -25,7 +26,7 @@ namespace ServiceStack
         public int? MaxLimit { get; set; }
         public string UseNamedConnection { get; set; }
         public bool EnableUntypedQueries { get; set; }
-        public bool EnableSqlFilters { get; set; }
+        public bool EnableRawSqlFilters { get; set; }
         public bool OrderByPrimaryKeyOnPagedQuery { get; set; }
         public Type AutoQueryServiceBaseType { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
@@ -116,7 +117,7 @@ namespace ServiceStack
                     IllegalSqlFragmentTokens = IllegalSqlFragmentTokens,
                     MaxLimit = MaxLimit,
                     EnableUntypedQueries = EnableUntypedQueries,
-                    EnableSqlFilters = EnableSqlFilters,
+                    EnableSqlFilters = EnableRawSqlFilters,
                     OrderByPrimaryKeyOnLimitQuery = OrderByPrimaryKeyOnPagedQuery,
                     QueryFilters = QueryFilters,
                     StartsWithConventions = StartsWithConventions,
@@ -256,6 +257,7 @@ namespace ServiceStack
         public bool EnableUntypedQueries { get; set; }
         public bool EnableSqlFilters { get; set; }
         public bool OrderByPrimaryKeyOnLimitQuery { get; set; }
+        public string RequiredRoleForRawSqlFilters { get; set; }
         public HashSet<string> IgnoreProperties { get; set; }
         public HashSet<string> IllegalSqlFragmentTokens { get; set; }
         public Dictionary<string, QueryFieldAttribute> StartsWithConventions { get; set; }
