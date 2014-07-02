@@ -43,10 +43,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
 
             var autoQuery = new AutoQueryFeature
-            {
-                MaxLimit = 100,
-                EnableRawSqlFilters = true,
-            }
+                {
+                    MaxLimit = 100,
+                    EnableRawSqlFilters = true,
+                }
                 .RegisterQueryFilter<QueryRockstarsFilter, Rockstar>((req, q, dto) =>
                     q.And(x => x.LastName.EndsWith("son"))
                 )
@@ -789,13 +789,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_consume_as_CSV()
         {
-            var url = Config.ListeningOn + "movies/search.csv";
+            var url = Config.ListeningOn + "movies/search.csv?ratings=G,PG-13";
             var csv = url.GetStringFromUrl();
             var headers = csv.SplitOnFirst('\n')[0].Trim();
             Assert.That(headers, Is.EqualTo("Id,ImdbId,Title,Rating,Score,Director,ReleaseDate,TagLine,Genres"));
             csv.Print();
 
-            url = Config.ListeningOn + "query/rockstars.csv";
+            url = Config.ListeningOn + "query/rockstars.csv?Age=27";
             csv = url.GetStringFromUrl();
             headers = csv.SplitOnFirst('\n')[0].Trim();
             Assert.That(headers, Is.EqualTo("Id,FirstName,LastName,Age"));
