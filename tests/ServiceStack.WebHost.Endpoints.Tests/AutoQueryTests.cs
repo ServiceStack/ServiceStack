@@ -148,6 +148,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public string FirstName { get; set; } //default to 'AND FirstName = {Value}'
 
+        public string[] FirstNames { get; set; } //Collections default to 'FirstName IN ({Values})
+
+        [QueryField(Operand = ">=")]
+        public int? Age { get; set; }
+
         [QueryField(Format = "UPPER({Field}) LIKE UPPER({Value})", Field = "FirstName")]
         public string FirstNameCaseInsensitive { get; set; }
 
@@ -157,11 +162,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [QueryField(Format = "{Field} LIKE {Value}", Field = "LastName", ValueFormat = "%{0}")]
         public string LastNameEndsWith { get; set; }
 
+        [QueryField(Format = "{Field} BETWEEN {Value1} AND {Value2}", Field = "FirstName")]
+        public string[] FirstNameBetween { get; set; }
+
         [QueryField(Type = QueryType.Or, Format = "UPPER({Field}) LIKE UPPER({Value})", Field = "LastName")]
         public string OrLastName { get; set; }
-
-        [QueryField(Operand = ">=")]
-        public int? Age { get; set; }
     }
 
     public class QueryFieldRockstarsDynamic : QueryBase<Rockstar>
@@ -453,6 +458,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = client.Get(new QueryFieldRockstars { FirstName = "Jim" });
             Assert.That(response.Results.Count, Is.EqualTo(1));
 
+            response = client.Get(new QueryFieldRockstars { FirstNames = new[] { "Jim","Kurt" } });
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+
             response = client.Get(new QueryFieldRockstars { FirstNameCaseInsensitive = "jim" });
             Assert.That(response.Results.Count, Is.EqualTo(1));
 
@@ -461,6 +469,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             response = client.Get(new QueryFieldRockstars { LastNameEndsWith = "son" });
             Assert.That(response.Results.Count, Is.EqualTo(2));
+
+            response = client.Get(new QueryFieldRockstars { FirstNameBetween = new[] {"A","F"} });
+            Assert.That(response.Results.Count, Is.EqualTo(3));
 
             response = client.Get(new QueryFieldRockstars
             {
