@@ -4,7 +4,7 @@
 
 ## [AutoQuery](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query)
 
-The big ticket feature in this release is the new [AutoQuery](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query) feature - with our approach of enabling Queryable Data Services, [not-like OData](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query#why-not-odata).
+The big ticket feature in this release is the new [AutoQuery](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query) feature - with our approach of enabling Queryable Data Services, that's [not-like OData](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query#why-not-odata) by design.
 
  - Simple, intuitive and easy to use!
  - Works with all OrmLite's [supported RDBMS providers](https://github.com/ServiceStack/ServiceStack.OrmLite/#download)
