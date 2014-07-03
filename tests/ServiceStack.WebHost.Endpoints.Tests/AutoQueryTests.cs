@@ -99,6 +99,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class QueryRockstarsConventions : QueryBase<Rockstar>
     {
+        public int[] Ids { get; set; }
         public int? AgeOlderThan { get; set; }
         public int? AgeGreaterThanOrEqualTo { get; set; }
         public int? AgeGreaterThan { get; set; }
@@ -606,7 +607,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_Explicit_conventions()
         {
-            var response = client.Get(new QueryRockstarsConventions { AgeOlderThan = 42 });
+            var response = client.Get(new QueryRockstarsConventions { Ids = new[] {1, 2, 3} });
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+
+            response = client.Get(new QueryRockstarsConventions { AgeOlderThan = 42 });
             Assert.That(response.Results.Count, Is.EqualTo(3));
 
             response = client.Get(new QueryRockstarsConventions { AgeGreaterThanOrEqualTo = 42 });

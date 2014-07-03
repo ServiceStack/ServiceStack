@@ -73,6 +73,7 @@ namespace ServiceStack
 
             {"Like%",           "UPPER({Field}) LIKE UPPER({Value})"},
             {"%In",             "{Field} IN ({Values})"},
+            {"%Ids",            "{Field} IN ({Values})"},
             {"%Between%",       "{Field} BETWEEN {Value1} AND {Value2}"},
         };
 
