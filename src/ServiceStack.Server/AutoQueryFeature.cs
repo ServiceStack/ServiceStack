@@ -9,6 +9,7 @@ using System.Threading;
 
 using Funq;
 using ServiceStack.Configuration;
+using ServiceStack.MiniProfiler;
 using ServiceStack.Reflection;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -229,14 +230,28 @@ namespace ServiceStack
 
         public virtual object Exec<From>(IQuery<From> dto)
         {
-            var q = AutoQuery.CreateQuery(dto, Request.GetRequestParams());
-            return AutoQuery.Execute(dto, q);
+            SqlExpression<From> q;
+            using (Profiler.Current.Step("AutoQuery.CreateQuery"))
+            {
+                q = AutoQuery.CreateQuery(dto, Request.GetRequestParams());
+            }
+            using (Profiler.Current.Step("AutoQuery.Execute"))
+            {
+                return AutoQuery.Execute(dto, q);
+            }
         }
 
         public virtual object Exec<From, Into>(IQuery<From, Into> dto)
         {
-            var q = AutoQuery.CreateQuery(dto, Request.GetRequestParams());
-            return AutoQuery.Execute(dto, q);
+            SqlExpression<From> q;
+            using (Profiler.Current.Step("AutoQuery.CreateQuery"))
+            {
+                q = AutoQuery.CreateQuery(dto, Request.GetRequestParams());
+            }
+            using (Profiler.Current.Step("AutoQuery.Execute"))
+            {
+                return AutoQuery.Execute(dto, q);
+            }
         }
     }
 
