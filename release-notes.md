@@ -138,6 +138,8 @@ public void LoadUserAuthInfo(AuthUserSession userSession,
 }
 ```
 
+Then to use the above custom filter register it in AspNetWindowsAuthProvider with:
+
 ```csharp
 Plugins.Add(new AuthFeature(
     () => new CustomUserSession(),
