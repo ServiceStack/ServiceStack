@@ -1,5 +1,161 @@
 # Release Notes
 
+## v4.0.23 Release Notes
+
+## [AutoQuery](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query)
+
+The big ticket feature in this release is the new [AutoQuery](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query) feature - with our approach of enabling Queryable Data Services, [not-like OData](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query#why-not-odata).
+
+ - Simple, intuitive and easy to use!
+ - Works with all OrmLite's [supported RDBMS providers](https://github.com/ServiceStack/ServiceStack.OrmLite/#download)
+ - Supports multiple table JOINs and custom responses
+ - Code-first, declarative programming model
+ - Promotes clean, intent-based self-describing API's
+ - Highly extensible, implementations are completely overridable
+ - Configurable Adhoc, Explicit and Implicit conventions
+ - Allows preemptive client queries
+ - New `GetLazy()` API in Service Clients allow transparently streaming of paged queries
+ - Raw SqlFilters available if required
+
+#### AutoQuery Services are normal ServiceStack Services
+
+AutoQuery also benefits from just being normal ServiceStack Services where you can re-use existing knowledge in implementing, customizing, introspecting and consuming ServiceStack services, i.e:
+
+ - Utilizes the same customizable [Request Pipeline](https://github.com/ServiceStack/ServiceStack/wiki/Order-of-Operations)
+ - AutoQuery services can be mapped to any [user-defined route](https://github.com/ServiceStack/ServiceStack/wiki/Routing)
+ - Is available in all [registered formats](https://github.com/ServiceStack/ServiceStack/wiki/Formats)
+   - The [CSV Format](https://github.com/ServiceStack/ServiceStack/wiki/ServiceStack-CSV-Format) especially shines in AutoQuery who's tabular result-set are perfect for CSV
+ - Can be [consumed from typed Service Clients](https://github.com/ServiceStack/ServiceStack/wiki/Clients-overview) allowing an end-to-end API without code-gen in [PCL client platforms as well](https://github.com/ServiceStack/Hello)
+
+### Getting Started
+
+AutoQuery uses your Services existing OrmLite DB registration, the example below registers an InMemory Sqlite Provider:
+
+```csharp
+container.Register<IDbConnectionFactory>(
+    new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
+```
+
+There are no additional dependencies, enabling AutoQuery is as easy as registering the AutoQueryFeature Plugin:
+
+```csharp
+Plugins.Add(new AutoQueryFeature { MaxLimit = 100 });
+```
+
+The configuration above limits all queries to a maximum of **100** results.
+
+The minimum code to expose a Query Service for the `Rockstar` table under a user-defined Route is just:
+
+```csharp
+[Route("/rockstars")]
+public class FindRockstars : QueryBase<Rockstar> {}
+```
+
+With no additional code, this allows you to use any of the registered built-in conventions, e.g:
+
+    /rockstars?Ids=1,2,3
+    /rockstars?AgeOlderThan=42
+    /rockstars?AgeGreaterThanOrEqualTo=42
+    /rockstars?FirstNameIn=Jim,Kurt
+    /rockstars?FirstNameBetween=A,F
+    /rockstars?FirstNameStartsWith=Jim
+    /rockstars?LastNameEndsWith=son
+    /rockstars?IdAbove=1000
+
+You're also able to formalize your API by adding concrete properties to your Request DTO:
+
+```csharp
+public class QueryRockstars : QueryBase<Rockstar>
+{
+    public int? AgeOlderThan { get; set; }
+}
+```
+
+Which now lets you access AutoQuery Services from the ServiceStack's [Typed Service Clients](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client):
+
+```csharp
+client.Get(new QueryRockstars { AgeOlderThan = 42 });
+```
+
+You can also take advantage of the new `GetLazy()` API to transparently stream large result-sets in managable-sized chunks:
+
+```csharp
+var results = client.GetLazy(new QueryMovies { Ratings = new[]{"G","PG-13"}}).ToList();
+```
+
+As GetLazy returns a lazy `IEnumerable<T>` sequence it can be used within LINQ expressions:
+
+```csharp
+var top250 = client.GetLazy(new QueryMovies { Ratings = new[]{ "G", "PG-13" } })
+    .Take(250)
+    .ConvertTo(x => x.Title);
+```
+
+This is just a sampler, for a more complete guide to AutoQuery checkout the [AutoQuery wiki](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query).
+
+## New VistaDB OrmLite Provider!
+
+Also in this release is a preview release of OrmLite's new support for [VistaDB](http://www.gibraltarsoftware.com/) thanks to the efforts of [Ilya Lukyanov](https://github.com/ilyalukyanov).
+
+[VistaDB](http://www.gibraltarsoftware.com/) is a commercial easy-to-deploy SQL Server-compatible embedded database for .NET that provides a good alternative to Sqlite for embedded scenarios.
+
+To use first download and install [VistaDB](http://www.gibraltarsoftware.com/) itself, then grab OrmLite's VistaDB provider from NuGet:
+
+    PM> Install-Package ServiceStack.OrmLite.VistaDb
+
+Then register the VistaDB Provider and the filename of what embedded database to use with:
+
+```csharp
+VistaDbDialect.Provider.UseLibraryFromGac = true;
+
+container.Register<IDbConnectionFactory>(
+    new OrmLiteConnectionFactory("Data Source=db.vb5;", VistaDbDialect.Provider));
+```
+
+The VistaDB provider is almost a complete OrmLite provider, the one major missing feature is OrmLite's new support for [Optimistic Concurrency](https://github.com/ServiceStack/ServiceStack.OrmLite/#optimistic-concurrency) which is missing in VistaDB which doesn't support normal Database triggers but we're still researching the most optimal way to implement this in VistaDB.
+
+## Improved AspNetWindowsAuthProvider
+
+A new `LoadUserAuthFilter` was added to allow `AspNetWindowsAuthProvider` to retrieve more detailed information about Windows Authenticated users by using the .NET's ActiveDirectory services, e.g:
+
+```csharp
+public void LoadUserAuthInfo(AuthUserSession userSession, 
+    IAuthTokens tokens, Dictionary<string, string> authInfo)
+{
+    if (userSession == null) return;
+    using (PrincipalContext pc = new PrincipalContext(ContextType.Domain))
+    {
+        var user = UserPrincipal.FindByIdentity(pc, userSession.UserAuthName);
+        tokens.DisplayName = user.DisplayName;
+        tokens.Email = user.EmailAddress;
+        tokens.FirstName = user.GivenName;
+        tokens.LastName = user.Surname;
+        tokens.FullName = (String.IsNullOrWhiteSpace(user.MiddleName))
+            ? "{0} {1}".Fmt(user.GivenName, user.Surname)
+            : "{0} {1} {2}".Fmt(user.GivenName, user.MiddleName, user.Surname);
+        tokens.PhoneNumber = user.VoiceTelephoneNumber;
+    }
+}
+```
+
+```csharp
+Plugins.Add(new AuthFeature(
+    () => new CustomUserSession(),
+    new IAuthProvider[] {
+        new AspNetWindowsAuthProvider(this) {
+            LoadUserAuthFilter = LoadUserAuthInfo
+        }
+    ));
+```
+
+Above example kindly provided by [Kevin Howard](https://github.com/KevinHoward).
+
+## Other features
+
+ - [OrmLite's T4 Templates](https://github.com/ServiceStack/ServiceStack.OrmLite/#t4-template-support) were improved by [Darren Reid](https://github.com/Layoric)
+ - ApiVersion added to Swaggers ResourcesResponse DTO
+ - `Uri` in RedisClient allows passwords
+
 # v4.0.22 Release Notes
 
 ## OrmLite
