@@ -33,7 +33,7 @@ namespace ServiceStack
             appHost.CatchAllHandlers.Add(ProcessRequest);
         }
 
-        public IHttpHandler ProcessRequest(string httpMethod, string pathInfo, string filePath)
+        public virtual IHttpHandler ProcessRequest(string httpMethod, string pathInfo, string filePath)
         {
             var pathParts = pathInfo.TrimStart('/').Split('/');
             if (pathParts.Length == 0) return null;
