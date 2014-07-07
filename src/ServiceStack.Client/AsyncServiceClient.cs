@@ -405,15 +405,21 @@ namespace ServiceStack
                 {
                     using (var stream = errorResponse.GetResponseStream())
                     {
-                        //Uncomment to Debug exceptions:
-                        //var strResponse = new StreamReader(stream).ReadToEnd();
-                        //Console.WriteLine("Response: " + strResponse);
-                        //stream.Position = 0;
-                        serviceEx.ResponseBody = stream.ReadFully().FromUtf8Bytes();
+                        var bytes = stream.ReadFully();
+                        serviceEx.ResponseBody = bytes.FromUtf8Bytes();
 
-                        PclExport.Instance.ResetStream(stream);
-
-                        serviceEx.ResponseDto = this.StreamDeserializer(typeof(TResponse), stream);
+                        if (stream.CanSeek)
+                        {
+                            PclExport.Instance.ResetStream(stream);
+                            serviceEx.ResponseDto = this.StreamDeserializer(typeof(TResponse), stream);
+                        }
+                        else //Android
+                        {
+                            using (var ms = new MemoryStream(bytes))
+                            {
+                                serviceEx.ResponseDto = this.StreamDeserializer(typeof(TResponse), ms);
+                            }
+                        }
                         state.HandleError((TResponse)serviceEx.ResponseDto, serviceEx);
                     }
                 }
