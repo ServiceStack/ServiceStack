@@ -101,7 +101,9 @@ namespace ServiceStack
         public static string GetOperationName(this Type type)
         {
             return type.FullName != null //can be null, e.g. generic types
-                ? type.FullName.Replace(type.Namespace + ".", "").Replace("+", ".")
+                ? type.FullName.SplitOnFirst("[[").First() //Generic Fullname
+                    .Replace(type.Namespace + ".", "") //Trim Namespaces
+                    .Replace("+", ".") //Convert nested into normal type
                 : type.Name;
         }
 

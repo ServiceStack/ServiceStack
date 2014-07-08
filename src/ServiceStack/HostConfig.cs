@@ -6,10 +6,8 @@ using System.Reflection;
 using System.Web.Configuration;
 using System.Xml.Linq;
 using MarkdownSharp;
-using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
-using ServiceStack.Host.Handlers;
 using ServiceStack.Logging;
 using ServiceStack.Markdown;
 using ServiceStack.Metadata;
@@ -37,7 +35,6 @@ namespace ServiceStack
         {
             var config = new HostConfig
             {
-                MetadataTypesConfig = new MetadataTypesConfig(addDefaultXmlNamespace: DefaultWsdlNamespace),
                 WsdlServiceNamespace = DefaultWsdlNamespace,
                 ApiVersion = "1.0",
                 EmbeddedResourceSources = new List<Assembly>(),
@@ -130,7 +127,6 @@ namespace ServiceStack
             if (instance == null) return;
 
             //Get a copy of the singleton already partially configured
-            this.MetadataTypesConfig = instance.MetadataTypesConfig;
             this.WsdlServiceNamespace = instance.WsdlServiceNamespace;
             this.ApiVersion = instance.ApiVersion;
             this.EmbeddedResourceSources = instance.EmbeddedResourceSources;
@@ -180,7 +176,6 @@ namespace ServiceStack
             this.AdminAuthSecret = instance.AdminAuthSecret;
         }
 
-        public MetadataTypesConfig MetadataTypesConfig { get; set; }
         public string WsdlServiceNamespace { get; set; }
         public string ApiVersion { get; set; }
 

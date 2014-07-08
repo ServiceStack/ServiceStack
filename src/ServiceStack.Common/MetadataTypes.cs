@@ -1,11 +1,10 @@
+using System;
 using System.Collections.Generic;
 
 namespace ServiceStack
 {
     public class MetadataTypesConfig
     {
-        public MetadataTypesConfig() {}
-
         public MetadataTypesConfig(
             string baseUrl = null,
             bool makePartial = true,
@@ -32,17 +31,6 @@ namespace ServiceStack
             InitializeCollections = initializeCollections;
             AddResponseStatus = addResponseStatus;
             AddImplicitVersion = addImplicitVersion;
-
-            DefaultNamespaces = new List<string> 
-            {
-                "System",
-                "System.Collections",
-                "System.ComponentModel",
-                "System.Collections.Generic",
-                "System.Runtime.Serialization",
-                "ServiceStack.ServiceHost",
-                "ServiceStack.ServiceInterface.ServiceModel",
-            };
         }
 
         public string BaseUrl { get; set; }
@@ -59,26 +47,9 @@ namespace ServiceStack
         public string AddDefaultXmlNamespace { get; set; }
         public List<string> DefaultNamespaces { get; set; }
 
-
-        public MetadataTypesConfig Clone()
-        {
-            return new MetadataTypesConfig
-            {
-                BaseUrl = BaseUrl,
-                MakePartial = MakePartial,
-                MakeVirtual = MakeVirtual,
-                AddReturnMarker = AddReturnMarker,
-                AddDescriptionAsComments = AddDescriptionAsComments,
-                AddDataContractAttributes = AddDataContractAttributes,
-                MakeDataContractsExtensible = MakeDataContractsExtensible,
-                AddIndexesToDataMembers = AddIndexesToDataMembers,
-                InitializeCollections = InitializeCollections,
-                AddImplicitVersion = AddImplicitVersion,
-                AddResponseStatus = AddResponseStatus,
-                AddDefaultXmlNamespace = AddDefaultXmlNamespace,
-                DefaultNamespaces = DefaultNamespaces,
-            };
-        }
+        public Dictionary<string, string> TypeAlias { get; set; }
+        public HashSet<Type> SkipExistingTypes { get; set; }
+        public HashSet<Type> IgnoreTypes { get; set; }
     }
 
     public class MetadataTypes

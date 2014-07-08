@@ -22,6 +22,7 @@ using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler.UI;
+using ServiceStack.NativeTypes;
 using ServiceStack.Serialization;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
@@ -86,13 +87,14 @@ namespace ServiceStack
                 new MarkdownFormat(),
                 new PredefinedRoutesFeature(),
                 new MetadataFeature(),
+                new NativeTypesFeature(),
             };
             ExcludeAutoRegisteringServiceTypes = new HashSet<Type> {
                 typeof(AuthenticateService),
                 typeof(RegisterService),
                 typeof(AssignRolesService),
                 typeof(UnAssignRolesService),
-                typeof(DtoGenService),
+                typeof(NativeTypesService),
                 typeof(PostmanService),
             };
         }
@@ -397,7 +399,10 @@ namespace ServiceStack
                 Plugins.RemoveAll(x => x is PredefinedRoutesFeature);
 
             if ((Feature.Metadata & config.EnableFeatures) != Feature.Metadata)
+            {
                 Plugins.RemoveAll(x => x is MetadataFeature);
+                Plugins.RemoveAll(x => x is NativeTypesFeature);
+            }
 
             if ((Feature.RequestInfo & config.EnableFeatures) != Feature.RequestInfo)
                 Plugins.RemoveAll(x => x is RequestInfoFeature);

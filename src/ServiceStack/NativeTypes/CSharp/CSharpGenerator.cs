@@ -4,13 +4,18 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace ServiceStack.DtoGen
+namespace ServiceStack.NativeTypes.CSharp
 {
-    public static class CSharpGenerator
+    public class CSharpGenerator
     {
         private const int Version = 1;
 
-        public static MetadataTypesConfig Config;
+        readonly MetadataTypesConfig Config;
+
+        public CSharpGenerator(MetadataTypesConfig config)
+        {
+            Config = config;
+        }
 
         class CreateTypeOptions
         {
@@ -21,31 +26,17 @@ namespace ServiceStack.DtoGen
             public bool IsType { get; set; }
         }
 
-        public static string GetCode(MetadataTypes metadata, string defaultBaseUrl = null)
+        public string GetCode(MetadataTypes metadata)
         {
-            Config = metadata.Config;
-
             var namespaces = new HashSet<string>();
             Config.DefaultNamespaces.Each(x => namespaces.Add(x));
             metadata.Types.Each(x => namespaces.Add(x.Namespace));
             metadata.Operations.Each(x => namespaces.Add(x.Request.Namespace));
 
-            const bool flag = false;
-            Config.AddReturnMarker = flag;
-            Config.MakeVirtual = Config.MakePartial = flag;
-            Config.AddDescriptionAsComments = flag;
-            Config.AddDefaultXmlNamespace = "http://schemas.servicestack.net/dtogen-types";
-            Config.AddDataContractAttributes = flag;
-            Config.MakeDataContractsExtensible = flag;
-            Config.AddIndexesToDataMembers = flag;
-            Config.InitializeCollections = flag;
-            Config.AddResponseStatus = flag;
-            Config.AddImplicitVersion = null;
-
             var sb = new StringBuilderWrapper(new StringBuilder());
             sb.AppendLine("/* Options:");
             sb.AppendLine("Version: {0}".Fmt(Version));
-            sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl ?? defaultBaseUrl));
+            sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
             sb.AppendLine("ServerVersion: {0}".Fmt(metadata.Version));
             sb.AppendLine("MakePartial: {0}".Fmt(Config.MakePartial));
@@ -63,7 +54,7 @@ namespace ServiceStack.DtoGen
             sb.AppendLine("*/");
             sb.AppendLine();
 
-            namespaces.ToList().ForEach(x => sb.AppendLine("using {0};".Fmt(x)));
+            namespaces.Each(x => sb.AppendLine("using {0};".Fmt(x)));
 
             if (Config.AddDataContractAttributes
                 && Config.AddDefaultXmlNamespace != null)
@@ -124,7 +115,7 @@ namespace ServiceStack.DtoGen
             sb.AppendLine();
             foreach (var type in metadata.Types
                 .OrderBy(x => x.Namespace)
-                .OrderBy(x => x.Name))
+                .ThenBy(x => x.Name))
             {
                 lastNS = AppendType(ref sb, type, lastNS, 
                     new CreateTypeOptions { IsType = true });
@@ -137,7 +128,7 @@ namespace ServiceStack.DtoGen
             return sb.ToString();
         }
 
-        private static string AppendType(ref StringBuilderWrapper sb, MetadataType type, string lastNS,
+        private string AppendType(ref StringBuilderWrapper sb, MetadataType type, string lastNS,
             CreateTypeOptions options)
         {
             if (type == null || (type.Namespace != null && type.Namespace.StartsWith("System")))
@@ -158,8 +149,8 @@ namespace ServiceStack.DtoGen
             sb = sb.Indent();
 
             sb.AppendLine();
-            sb.AppendComments(type.Description);
-            sb.AppendDataContract(type.DataContract);
+            AppendComments(sb, type.Description);
+            AppendDataContract(sb, type.DataContract);
 
             var partial = Config.MakePartial ? "partial " : "";
             sb.AppendLine("public {0}class {1}".Fmt(partial, type.Name.SafeToken()));
@@ -184,8 +175,8 @@ namespace ServiceStack.DtoGen
             sb.AppendLine("{");
             sb = sb.Indent();
 
-            sb.AddConstuctor(type, options);
-            sb.AddProperties(type);
+            AddConstuctor(sb, type, options);
+            AddProperties(sb, type);
 
             sb = sb.UnIndent();
             sb.AppendLine("}");
@@ -194,7 +185,7 @@ namespace ServiceStack.DtoGen
             return lastNS;
         }
 
-        private static void AddConstuctor(this StringBuilderWrapper sb, MetadataType type, CreateTypeOptions options)
+        private void AddConstuctor(StringBuilderWrapper sb, MetadataType type, CreateTypeOptions options)
         {
             if (Config.AddImplicitVersion == null && !Config.InitializeCollections) 
                 return;
@@ -246,7 +237,7 @@ namespace ServiceStack.DtoGen
                 || prop.Type.SplitOnFirst('[').Length > 1;
         }
 
-        public static void AddProperties(this StringBuilderWrapper sb, MetadataType type)
+        public void AddProperties(StringBuilderWrapper sb, MetadataType type)
         {
             var makeExtensible = Config.MakeDataContractsExtensible && type.Inherits == null;
 
@@ -261,8 +252,8 @@ namespace ServiceStack.DtoGen
                     if (wasAdded) sb.AppendLine();
 
                     var propType = Type(prop.Type, prop.GenericArgs);
-                    wasAdded = sb.AppendDataMember(prop.DataMember, dataMemberIndex++);
-                    wasAdded = sb.AppendAttributes(prop.Attributes) || wasAdded;
+                    wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
+                    wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
                     sb.AppendLine("public {0}{1} {2} {{ get; set; }}".Fmt(@virtual, propType, prop.Name.SafeToken()));
                 }
             }
@@ -274,7 +265,7 @@ namespace ServiceStack.DtoGen
                 if (wasAdded) sb.AppendLine();
                 wasAdded = true;
 
-                sb.AppendDataMember(null, dataMemberIndex++);
+                AppendDataMember(sb, null, dataMemberIndex++);
                 sb.AppendLine("public {0}ResponseStatus ResponseStatus {{ get; set; }}".Fmt(@virtual));
             }
 
@@ -289,7 +280,7 @@ namespace ServiceStack.DtoGen
             }
         }
 
-        public static bool AppendAttributes(this StringBuilderWrapper sb, List<MetadataAttribute> attributes)
+        public bool AppendAttributes(StringBuilderWrapper sb, List<MetadataAttribute> attributes)
         {
             if (attributes == null || attributes.Count == 0) return false;
 
@@ -328,15 +319,17 @@ namespace ServiceStack.DtoGen
             return true;
         }
 
-        public static string TypeValue(string type, string value)
+        public string TypeValue(string type, string value)
         {
             var alias = TypeAlias(type);
+            if (value == null)
+                return "null";
             if (alias == "string")
                 return value.QuotedSafeValue();
             return value;
         }
 
-        public static string Type(string type, string[] genericArgs)
+        public string Type(string type, string[] genericArgs)
         {
             if (genericArgs != null)
             {
@@ -363,39 +356,19 @@ namespace ServiceStack.DtoGen
             return TypeAlias(type);
         }
 
-        private static string TypeAlias(string type)
+        private string TypeAlias(string type)
         {
             var arrParts = type.SplitOnFirst('[');
             if (arrParts.Length > 1)
                 return "{0}[]".Fmt(TypeAlias(arrParts[0]));
 
-            if (type == "String")
-                return "string";
-            if (type == "Byte")
-                return "byte";
-            if (type == "Int16")
-                return "short";
-            if (type == "Int32")
-                return "int";
-            if (type == "Int64")
-                return "long";
-            if (type == "UShort")
-                return "ushort";
-            if (type == "UInt32")
-                return "uint";
-            if (type == "UInt64")
-                return "ulong";
-            if (type == "Single")
-                return "float";
-            if (type == "Double")
-                return "double";
-            if (type == "Decimal")
-                return "decimal";
+            string typeAlias;
+            Config.TypeAlias.TryGetValue(type, out typeAlias);
 
-            return type.SafeToken();
+            return typeAlias ?? type.SafeToken();
         }
 
-        public static void AppendComments(this StringBuilderWrapper sb, string desc)
+        public void AppendComments(StringBuilderWrapper sb, string desc)
         {
             if (desc == null) return;
 
@@ -411,7 +384,7 @@ namespace ServiceStack.DtoGen
             }
         }
 
-        public static void AppendDataContract(this StringBuilderWrapper sb, MetadataDataContract dcMeta)
+        public void AppendDataContract(StringBuilderWrapper sb, MetadataDataContract dcMeta)
         {
             if (dcMeta == null)
             {
@@ -439,7 +412,7 @@ namespace ServiceStack.DtoGen
             sb.AppendLine("[DataContract{0}]".Fmt(dcArgs));
         }
 
-        public static bool AppendDataMember(this StringBuilderWrapper sb, MetadataDataMember dmMeta, int dataMemberIndex)
+        public bool AppendDataMember(StringBuilderWrapper sb, MetadataDataMember dmMeta, int dataMemberIndex)
         {
             if (dmMeta == null)
             {
@@ -493,7 +466,10 @@ namespace ServiceStack.DtoGen
 
             return true;
         }
+    }
 
+    public static class CSharpGeneratorExtensions
+    {
         public static string SafeComment(this string comment)
         {
             return comment.Replace("\r", "").Replace("\n", "");

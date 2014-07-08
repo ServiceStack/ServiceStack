@@ -104,9 +104,11 @@
     <Compile Include="CompressedFileResult.cs" />
     <Compile Include="CompressedResult.cs" />
     <Compile Include="Configuration\TextFileSettings.cs" />
-    <Compile Include="DtoGenFeature.cs" />
-    <Compile Include="DtoGen\CSharpGenerator.cs" />
-    <Compile Include="DtoGen\StringBuilderWrapper.cs" />
+    <Compile Include="NativeTypesFeature.cs" />
+    <Compile Include="NativeTypes\NativeTypesMetadata.cs" />
+    <Compile Include="NativeTypes\NativeTypesService.cs" />
+    <Compile Include="NativeTypes\CSharp\CSharpGenerator.cs" />
+    <Compile Include="NativeTypes\StringBuilderWrapper.cs" />
     <Compile Include="EnsureHttpsAttribute.cs" />
     <Compile Include="Host\ContentTypes.cs" />
     <Compile Include="Host\Handlers\CustomActionHandler.cs" />
@@ -321,7 +323,7 @@
     <Compile Include="Html\ViewContext.cs" />
     <Compile Include="HttpExtensions.cs" />
     <Compile Include="IServiceBase.cs" />
-    <Compile Include="Metadata\MetadataTypesHandler.cs" />
+    <Compile Include="NativeTypes\MetadataTypesHandler.cs" />
     <Compile Include="PredefinedRoutesFeature.cs" />
     <Compile Include="Funq\Action.cs" />
     <Compile Include="Funq\Container.cs" />

@@ -19,7 +19,7 @@ namespace CheckHttpListener
                 DebugMode = true
             });
 
-            Plugins.Add(new DtoGenFeature());
+            Plugins.Add(new NativeTypesFeature());
         }
     }
 
@@ -33,7 +33,7 @@ namespace CheckHttpListener
                 .Init()
                 .Start("http://localhost:2020/");
 
-            Process.Start("http://localhost:2020/dtogen/csharp");
+            Process.Start("http://localhost:2020/types/csharp");
             Console.ReadLine();
         }
     }

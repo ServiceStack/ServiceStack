@@ -1,39 +1,11 @@
-using System.Threading.Tasks;
-using System.Web;
-using ServiceStack.Support.WebHost;
-using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 
-namespace ServiceStack.Metadata
+namespace ServiceStack.NativeTypes
 {
-    public class MetadataTypesHandler : HttpHandlerBase
-    {
-        public MetadataTypesConfig Config { get; set; }
-
-        public override void Execute(HttpContextBase context)
-        {
-            var request = context.ToRequest(GetType().GetOperationName());
-            ProcessRequestAsync(request, request.Response, request.OperationName);
-        }
-
-        public override bool RunAsAsync()
-        {
-            return true;
-        }
-
-        public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
-        {
-            var metadata = DtoGenFeature.GetMetadataTypes(Config, httpReq);
-
-            return httpRes.WriteToResponse(httpReq, metadata);
-        }
-
-    }
-
     public static class MetadataTypeExtensions
     {
         public static MetadataType ToType(this Type type)

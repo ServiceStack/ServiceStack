@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace ServiceStack.DtoGen
+namespace ServiceStack.NativeTypes
 {
     public class StringBuilderWrapper
     {

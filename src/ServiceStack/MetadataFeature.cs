@@ -17,8 +17,10 @@ namespace ServiceStack
         public Action<IndexOperationsControl> IndexPageFilter { get; set; }
         public Action<OperationControl> DetailPageFilter { get; set; }
 
+
         public MetadataFeature()
         {
+
             PluginLinksTitle = "Plugin Links:";
             PluginLinks = new Dictionary<string, string>();
 
@@ -79,19 +81,7 @@ namespace ServiceStack
                 case "soap12":
                     return new Soap12MetadataHandler();
 
-                case "types":
-                    
-                    if (HostContext.Config == null
-                        || HostContext.Config.MetadataTypesConfig == null)
-                        return null;
-
-                    if (HostContext.Config.MetadataTypesConfig.BaseUrl == null)
-                        HostContext.Config.MetadataTypesConfig.BaseUrl = HttpHandlerFactory.GetBaseUrl();
-
-                    return new MetadataTypesHandler { Config = HostContext.Config.MetadataTypesConfig };
-
                 case "operations":
-                    
                     return new CustomResponseHandler((httpReq, httpRes) => 
                         HostContext.AppHost.HasAccessToMetadata(httpReq, httpRes) 
                             ? HostContext.Metadata.GetOperationDtos()
