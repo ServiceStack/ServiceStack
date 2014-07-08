@@ -195,7 +195,7 @@ namespace ServiceStack
                             if (responseHeaders.Key.Contains(reservedOptions)) continue;
                             if (responseHeaders.Key == HttpHeaders.ContentLength)
                             {
-                                response.SetContentLength(int.Parse(responseHeaders.Value));
+                                response.SetContentLength(long.Parse(responseHeaders.Value));
                                 continue;
                             }
 
