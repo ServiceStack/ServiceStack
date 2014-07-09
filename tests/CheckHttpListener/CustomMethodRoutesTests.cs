@@ -1,5 +1,5 @@
 ﻿using System;
-using Check.ServiceInterface;
+using Check.ServiceModel;
 using NUnit.Framework;
 using ServiceStack;
 using ServiceStack.Text;

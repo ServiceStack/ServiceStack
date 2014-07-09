@@ -92,6 +92,10 @@
       <Project>{9982317F-831C-478B-9CC3-57F888BCD97A}</Project>
       <Name>Check.ServiceInterface</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Check.ServiceModel\Check.ServiceModel.csproj">
+      <Project>{213EF4BA-786A-432F-B147-5702B18DE3CC}</Project>
+      <Name>Check.ServiceModel</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\..\lib\sqlite3.dll">
