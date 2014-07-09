@@ -17,7 +17,8 @@ namespace ServiceStack.Metadata
 
         public string RenderRow(string operation)
         {
-            var show = HostContext.DebugMode; //Always show in DebugMode
+            var show = HostContext.DebugMode //Show in DebugMode
+                && !MetadataConfig.AlwaysHideInMetadata(operation); //Hide When [Restrict(VisibilityTo = None)]
 
             // use a fully qualified path if WebHostUrl is set
             string baseUrl = HttpRequest.GetParentAbsolutePath();
@@ -36,7 +37,9 @@ namespace ServiceStack.Metadata
                     opTemplate.AppendFormat(@"<td><a href=""{0}?op={{0}}"">{1}</a></td>", uri, config.Name);
                 }
                 else
+                {
                     opTemplate.AppendFormat("<td>{0}</td>", config.Name);
+                }
             }
 
             opTemplate.Append("</tr>");

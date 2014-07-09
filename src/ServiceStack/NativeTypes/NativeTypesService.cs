@@ -34,6 +34,7 @@ namespace ServiceStack.NativeTypes
         MetadataTypes GetMetadataTypes(IRequest req, MetadataTypesConfig config = null);
     }
 
+    [Restrict(VisibilityTo = RequestAttributes.None)]
     public class NativeTypesService : Service
     {
         public INativeTypesMetadata NativeTypesMetadata { get; set; }

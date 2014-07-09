@@ -77,5 +77,14 @@ namespace ServiceStack.Metadata
             if (ignoredFormats.Contains(format.FromFormat())) return false;
             return metadata.CanAccess(format, operation);
         }
+
+        public bool AlwaysHideInMetadata(string operationName)
+        {
+            Operation operation;
+            metadata.OperationNamesMap.TryGetValue(operationName.ToLower(), out operation);
+            if (operation == null || operation.RestrictTo == null) return false;
+
+            return operation.RestrictTo.VisibilityTo == RequestAttributes.None;
+        }
     }
 }
