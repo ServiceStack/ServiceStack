@@ -4,10 +4,13 @@ using System.Collections.Specialized;
 using System.Net;
 using System.Web;
 using Check.ServiceInterface;
+using Check.ServiceModel;
 using Funq;
 using ServiceStack;
 using ServiceStack.Api.Swagger;
+using ServiceStack.Data;
 using ServiceStack.MiniProfiler;
+using ServiceStack.OrmLite;
 using ServiceStack.Razor;
 using ServiceStack.Text;
 using ServiceStack.Validation;
@@ -65,7 +68,29 @@ namespace CheckWeb
 
             // Configure ServiceStack Razor views.
             this.ConfigureView(container);
+
+            Plugins.Add(new AutoQueryFeature());
+
+            container.Register<IDbConnectionFactory>(
+                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
+
+            using (var db = container.Resolve<IDbConnectionFactory>().Open())
+            {
+                db.DropAndCreateTable<Rockstar>();
+                db.InsertAll(SeedRockstars);
+            }
         }
+
+        public static Rockstar[] SeedRockstars = new[] {
+            new Rockstar { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27 },
+            new Rockstar { Id = 2, FirstName = "Jim", LastName = "Morrison", Age = 27 },
+            new Rockstar { Id = 3, FirstName = "Kurt", LastName = "Cobain", Age = 27 },
+            new Rockstar { Id = 4, FirstName = "Elvis", LastName = "Presley", Age = 42 },
+            new Rockstar { Id = 5, FirstName = "David", LastName = "Grohl", Age = 44 },
+            new Rockstar { Id = 6, FirstName = "Eddie", LastName = "Vedder", Age = 48 },
+            new Rockstar { Id = 7, FirstName = "Michael", LastName = "Jackson", Age = 50 },
+        };
+
 
         /// <summary>
         /// Configure JSON serialization properties.

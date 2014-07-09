@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9982317F-831C-478B-9CC3-57F888BCD97A}</ProjectGuid>
+    <ProjectGuid>{213EF4BA-786A-432F-B147-5702B18DE3CC}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Check.ServiceInterface</RootNamespace>
-    <AssemblyName>Check.ServiceInterface</AssemblyName>
+    <RootNamespace>Check.ServiceModel</RootNamespace>
+    <AssemblyName>Check.ServiceModel</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -33,19 +33,9 @@
     <Reference Include="ServiceStack.Interfaces">
       <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
-    <Reference Include="ServiceStack.OrmLite">
-      <HintPath>..\..\lib\ServiceStack.OrmLite.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Redis">
-      <HintPath>..\..\lib\ServiceStack.Redis.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Text">
-      <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -53,22 +43,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ChangeRequestService.cs" />
-    <Compile Include="NativeTypesTestService.cs" />
-    <Compile Include="EchoesService.cs" />
-    <Compile Include="ErrorsService.cs" />
-    <Compile Include="MetadataDtoIssue.cs" />
+    <Compile Include="CodeGenTestTypes.cs" />
+    <Compile Include="CustomMethodRoutes.cs" />
+    <Compile Include="Echoes.cs" />
+    <Compile Include="Rockstar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
-      <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
-      <Name>ServiceStack</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Check.ServiceModel\Check.ServiceModel.csproj">
-      <Project>{213EF4BA-786A-432F-B147-5702B18DE3CC}</Project>
-      <Name>Check.ServiceModel</Name>
-    </ProjectReference>
+    <Compile Include="ThrowHttpError.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

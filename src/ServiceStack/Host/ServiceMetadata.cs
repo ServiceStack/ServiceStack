@@ -81,6 +81,24 @@ namespace ServiceStack.Host
             }
         }
 
+        readonly HashSet<Assembly> excludeAssemblies = new HashSet<Assembly>
+        {
+            typeof(string).Assembly,            //mscorelib
+            typeof(Uri).Assembly,               //System
+            typeof(ServiceStackHost).Assembly,  //ServiceStack
+            typeof(UrnId).Assembly,             //ServiceStack.Common
+            typeof(ErrorResponse).Assembly,     //ServiceStack.Interfaces
+        };
+
+        public List<Assembly> GetOperationAssemblies()
+        {
+            var assemblies = Operations
+                .SelectMany(x => x.GetAssemblies())
+                .Where(x => !excludeAssemblies.Contains(x));
+
+            return assemblies.ToList();
+        }
+
         public List<OperationDto> GetOperationDtos()
         {
             return OperationsMap.Values
@@ -389,6 +407,17 @@ namespace ServiceStack.Host
             }
 
             return attrs;
+        }
+
+        public static List<Assembly> GetAssemblies(this Operation operation)
+        {
+            var ret = new List<Assembly> { operation.RequestType.Assembly };
+            if (operation.ResponseType != null
+                && operation.ResponseType.Assembly != operation.RequestType.Assembly)
+            {
+                ret.Add(operation.ResponseType.Assembly);
+            }
+            return ret;
         }
     }
 

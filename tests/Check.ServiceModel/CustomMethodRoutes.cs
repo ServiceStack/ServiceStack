@@ -1,7 +1,7 @@
 ﻿using System;
 using ServiceStack;
 
-namespace Check.ServiceInterface
+namespace Check.ServiceModel
 {
     public class Organization
     {

@@ -43,6 +43,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
+    <Reference Include="ServiceStack.OrmLite, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\ServiceStack.OrmLite.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.OrmLite.Sqlite">
+      <HintPath>..\..\lib\ServiceStack.OrmLite.Sqlite.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Text">
       <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
     </Reference>
@@ -64,6 +71,10 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\..\lib\sqlite3.dll">
+      <Link>sqlite3.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Global.asax" />
     <Content Include="Web.config" />
   </ItemGroup>
@@ -99,6 +110,10 @@
       <Project>{d73274ae-006b-4cee-ba60-0ecf5873048d}</Project>
       <Name>ServiceStack.Razor</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj">
+      <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>
+      <Name>ServiceStack.Server</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
       <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>
       <Name>ServiceStack</Name>
@@ -106,6 +121,10 @@
     <ProjectReference Include="..\Check.ServiceInterface\Check.ServiceInterface.csproj">
       <Project>{9982317F-831C-478B-9CC3-57F888BCD97A}</Project>
       <Name>Check.ServiceInterface</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Check.ServiceModel\Check.ServiceModel.csproj">
+      <Project>{213EF4BA-786A-432F-B147-5702B18DE3CC}</Project>
+      <Name>Check.ServiceModel</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

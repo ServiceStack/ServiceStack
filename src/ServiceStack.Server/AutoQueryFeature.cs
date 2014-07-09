@@ -8,7 +8,7 @@ using System.Reflection.Emit;
 using System.Threading;
 
 using Funq;
-using ServiceStack.Configuration;
+using ServiceStack.Host;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Reflection;
 using ServiceStack.Text;
@@ -23,7 +23,8 @@ namespace ServiceStack
     public class AutoQueryFeature : IPlugin
     {
         public HashSet<string> IgnoreProperties { get; set; }
-        public HashSet<string> IllegalSqlFragmentTokens { get; set; } 
+        public HashSet<string> IllegalSqlFragmentTokens { get; set; }
+        public HashSet<Assembly> LoadFromAssemblies { get; set; } 
         public int? MaxLimit { get; set; }
         public string UseNamedConnection { get; set; }
         public bool EnableUntypedQueries { get; set; }
@@ -97,6 +98,7 @@ namespace ServiceStack
             QueryFilters = new Dictionary<Type, QueryFilterDelegate>();
             EnableUntypedQueries = true;
             OrderByPrimaryKeyOnPagedQuery = true;
+            LoadFromAssemblies = new HashSet<Assembly>();
         }
 
         public void Register(IAppHost appHost)
@@ -131,12 +133,15 @@ namespace ServiceStack
                 .ReusedWithin(ReuseScope.None);
 
             appHost.AfterInitCallbacks.Add(OnAfterLoad);
+
+            appHost.Metadata.GetOperationAssemblies()
+                .Each(x => LoadFromAssemblies.Add(x));
         }
 
         void OnAfterLoad(IAppHost appHost)
         {
-            var ssHost = (ServiceStackHost)appHost;
-            var scannedTypes = ssHost.ServiceController.ResolveServicesFn();
+            var scannedTypes = LoadFromAssemblies.SelectMany(x => x.GetTypes());
+
             var misingRequestTypes = scannedTypes
                 .Where(x => x.HasInterface(typeof(IQuery)))
                 .Where(x => !appHost.Metadata.OperationsMap.ContainsKey(x))
