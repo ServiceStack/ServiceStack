@@ -269,6 +269,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             public override void Configure(Container container)
             {
+                Plugins.RemoveAll(x => x is NativeTypesFeature);
             }
         }
     }
