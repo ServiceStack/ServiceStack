@@ -53,6 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnonTypeService.cs" />
     <Compile Include="ChangeRequestService.cs" />
     <Compile Include="NativeTypesTestService.cs" />
     <Compile Include="EchoesService.cs" />
