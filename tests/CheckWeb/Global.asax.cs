@@ -70,6 +70,7 @@ namespace CheckWeb
             this.ConfigureView(container);
 
             Plugins.Add(new AutoQueryFeature());
+            Plugins.Add(new PostmanFeature());
 
             container.Register<IDbConnectionFactory>(
                 new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));

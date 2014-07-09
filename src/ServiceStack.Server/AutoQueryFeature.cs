@@ -20,7 +20,7 @@ namespace ServiceStack
 {
     public delegate ISqlExpression QueryFilterDelegate(IRequest request, ISqlExpression sqlExpression, IQuery model);
 
-    public class AutoQueryFeature : IPlugin
+    public class AutoQueryFeature : IPlugin, IPostInitPlugin
     {
         public HashSet<string> IgnoreProperties { get; set; }
         public HashSet<string> IllegalSqlFragmentTokens { get; set; }
@@ -132,13 +132,11 @@ namespace ServiceStack
                 })
                 .ReusedWithin(ReuseScope.None);
 
-            appHost.AfterInitCallbacks.Add(OnAfterLoad);
-
             appHost.Metadata.GetOperationAssemblies()
                 .Each(x => LoadFromAssemblies.Add(x));
         }
 
-        void OnAfterLoad(IAppHost appHost)
+        public void AfterPluginsLoaded(IAppHost appHost)
         {
             var scannedTypes = LoadFromAssemblies.SelectMany(x => x.GetTypes());
 
