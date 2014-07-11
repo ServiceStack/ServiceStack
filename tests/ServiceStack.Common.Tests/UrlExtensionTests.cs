@@ -11,6 +11,11 @@ namespace ServiceStack.Common.Tests
         public long Id { get; set; }
     }
 
+    public class FluentJustId : IReturn
+    {
+        public long Id { get; set; }
+    }
+
     [FallbackRoute("/route/{Id}")]
     public class FallbackJustId : IReturn
     {
@@ -100,6 +105,16 @@ namespace ServiceStack.Common.Tests
         public void Can_create_url_with_JustId()
         {
             var url = new JustId { Id = 1 }.ToUrl("GET");
+            Assert.That(url, Is.EqualTo("/route/1"));
+        }
+
+        [Test]
+        public void Can_create_url_with_FluentJustId()
+        {
+            typeof(FluentJustId)
+                .AddAttributes(new RouteAttribute("/route/{Id}"));
+
+            var url = new FluentJustId { Id = 1 }.ToUrl("GET");
             Assert.That(url, Is.EqualTo("/route/1"));
         }
 
