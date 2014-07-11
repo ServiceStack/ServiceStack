@@ -783,6 +783,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .ThenByDescending(x => x.ImdbId).Map(x => x.ImdbId);
             Assert.That(ids, Is.EqualTo(orderedIds));
 
+            movies = client.Get(new SearchMovies { Take = 100, OrderBy = "Rating,-ImdbId" });
+            ids = movies.Results.Map(x => x.ImdbId);
+            orderedIds = movies.Results.OrderBy(x => x.Rating)
+                .ThenByDescending(x => x.ImdbId).Map(x => x.ImdbId);
+            Assert.That(ids, Is.EqualTo(orderedIds));
+
+            movies = client.Get(new SearchMovies { Take = 100, OrderByDesc = "Rating,-ImdbId" });
+            ids = movies.Results.Map(x => x.ImdbId);
+            orderedIds = movies.Results.OrderByDescending(x => x.Rating)
+                .ThenBy(x => x.ImdbId).Map(x => x.ImdbId);
+            Assert.That(ids, Is.EqualTo(orderedIds));
+
             var url = Config.ListeningOn + "movies/search?take=100&orderBy=Rating,ImdbId";
             movies = url.AsJsonInto<Movie>();
             ids = movies.Results.Map(x => x.ImdbId);
