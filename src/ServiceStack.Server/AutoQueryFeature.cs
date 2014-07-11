@@ -40,14 +40,14 @@ namespace ServiceStack
         
         public Dictionary<string, string> ImplicitConventions = new Dictionary<string, string> 
         {
-            {"Above%",          GreaterThanFormat},
+            {"%Above%",         GreaterThanFormat},
             {"Begin%",          GreaterThanFormat},
-            {"Beyond%",         GreaterThanFormat},
-            {"Over%",           GreaterThanFormat},
+            {"%Beyond%",        GreaterThanFormat},
+            {"%Over%",          GreaterThanFormat},
             {"%OlderThan",      GreaterThanFormat},
-            {"After%",          GreaterThanFormat},
+            {"%After%",         GreaterThanFormat},
             {"OnOrAfter%",      GreaterThanOrEqualFormat},
-            {"From%",           GreaterThanOrEqualFormat},
+            {"%From%",          GreaterThanOrEqualFormat},
             {"Since%",          GreaterThanOrEqualFormat},
             {"Start%",          GreaterThanOrEqualFormat},
             {"%Higher%",        GreaterThanOrEqualFormat},
@@ -60,10 +60,10 @@ namespace ServiceStack
             {"%LessThanOrEqualTo%",    LessThanOrEqualFormat},
 
             {"Behind%",         LessThanFormat},
-            {"Below%",          LessThanFormat},
-            {"Under%",          LessThanFormat},
+            {"%Below%",         LessThanFormat},
+            {"%Under%",         LessThanFormat},
             {"%Lower%",         LessThanFormat},
-            {"Before%",         LessThanFormat},
+            {"%Before%",        LessThanFormat},
             {"%YoungerThan",    LessThanFormat},
             {"OnOrBefore%",     LessThanOrEqualFormat},
             {"End%",            LessThanOrEqualFormat},
