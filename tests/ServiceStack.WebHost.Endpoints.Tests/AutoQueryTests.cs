@@ -259,6 +259,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string[] Ratings { get; set; }
     }
 
+
+    public class QueryUnknownRockstars : QueryBase<Rockstar>
+    {
+        public int UnknownInt { get; set; }
+        public string UnknownProperty { get; set; }
+    }
+
     public class AutoQueryService : Service
     {
         public IAutoQuery AutoQuery { get; set; }
@@ -810,6 +817,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             headers = csv.SplitOnFirst('\n')[0].Trim();
             Assert.That(headers, Is.EqualTo("FirstName,LastName,Age,RockstarAlbumName"));
             csv.Print();
+        }
+
+        [Test]
+        public void Does_not_query_Ignored_properties()
+        {
+            var response = client.Get(new QueryUnknownRockstars {
+                UnknownProperty = "Foo",
+                UnknownInt = 1,
+            });
+
+            Assert.That(response.Offset, Is.EqualTo(0));
+            Assert.That(response.Total, Is.EqualTo(TotalRockstars));
+            Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars));
         }
     }
 
