@@ -31,6 +31,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771
 		..\build\copy-sn.bat = ..\build\copy-sn.bat
 		..\build\copy.bat = ..\build\copy.bat
 		..\README.md = ..\README.md
+		..\release-notes.md = ..\release-notes.md
 		..\NuGet\ServiceStack.Api.Swagger\servicestack.api.swagger.nuspec = ..\NuGet\ServiceStack.Api.Swagger\servicestack.api.swagger.nuspec
 		..\NuGet\ServiceStack.Authentication.MongoDb\servicestack.authentication.mongodb.nuspec = ..\NuGet\ServiceStack.Authentication.MongoDb\servicestack.authentication.mongodb.nuspec
 		..\NuGet\ServiceStack.Authentication.NHibernate\servicestack.authentication.nhibernate.nuspec = ..\NuGet\ServiceStack.Authentication.NHibernate\servicestack.authentication.nhibernate.nuspec

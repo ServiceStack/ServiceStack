@@ -1701,7 +1701,8 @@ all services to be immediately available, naturally, via an end-to-end typed API
 During this release all Example projects, Demos, Starter Templates, etc in the 
 [ServiceStack.Example](https://github.com/ServiceStack/ServiceStack.Examples) and 
 [ServiceStack.UseCases](https://github.com/ServiceStack/ServiceStack.UseCases/) 
-master repositories were upgraded to ServiceStack v4. A new [ServiceStack + MVC5 project](https://github.com/ServiceStack/ServiceStack.UseCases/tree/master/Mvc5) was also added to UseCases, it just follows the instructions at [[MVC Integration]] wiki, but starts with an empty MVC5 project.
+master repositories were upgraded to ServiceStack v4. A new [ServiceStack + MVC5 project](https://github.com/ServiceStack/ServiceStack.UseCases/tree/master/Mvc5) 
+was also added to UseCases, it just follows the instructions at [MVC Integration](https://github.com/ServiceStack/ServiceStack/wiki/Mvc-integration) wiki, but starts with an empty MVC5 project.
 
 ### Added new OrmLiteCacheClient
 
@@ -2269,7 +2270,7 @@ The number of deletions is indicative of how much legacy code was able to be rem
   - ServiceManager has been merged into `ServiceController`. 
   - The **ServiceStack.Logging** and **ServiceStack.Contrib** v4 projects have been merged into the major ServiceStack repo.
   - The dynamic session `base.Session` has been renamed to `base.SessionBag` to better reflect its semantics.
-  - The [[Auto Mapping]] Utils extension methods were renamed from `TFrom.TranslateTo<T>()` to `TFrom.ConvertTo<T>()`.
+  - The [Auto Mapping](https://github.com/ServiceStack/ServiceStack/wiki/Auto-mapping) Utils extension methods were renamed from `TFrom.TranslateTo<T>()` to `TFrom.ConvertTo<T>()`.
   - The `RequestFilters` and `ResponseFilters` were renamed to `GlobalRequestFilters` and `GlobalResponseFilters` which matches naming in the client `ServiceClientBase.GlobalRequestFilter`.
   - New `GlobalMessageRequestFilters` and `GlobalMessageResponseFilters` have been added which are instead used by non-HTTP endpoints use, e.g. MQ. 
   - `CustomHttpHandlers` has been renamed to `CustomErrorHttpHandlers`
