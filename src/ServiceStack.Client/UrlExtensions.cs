@@ -9,6 +9,8 @@ using System.Text;
 using ServiceStack.Text;
 #else
 using System.Collections.Concurrent;
+using ServiceStack.Text;
+
 #endif
 
 namespace ServiceStack
@@ -449,7 +451,7 @@ namespace ServiceStack
                 };
             }
 
-            if (ServiceStack.Text.JsConfig.IncludePublicFields)
+            if (JsConfig.IncludePublicFields)
             {
                 foreach (var fieldInfo in requestType.GetPublicFields())
                 {

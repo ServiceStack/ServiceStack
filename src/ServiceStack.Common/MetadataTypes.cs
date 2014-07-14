@@ -12,11 +12,12 @@ namespace ServiceStack
             bool addReturnMarker = true,
             bool convertDescriptionToComments = true,
             bool addDataContractAttributes = false,
-            bool makeDataContractsExtensible = false,
+            bool addDataAnnotationAttributes = false,
             bool addIndexesToDataMembers = false,
             string addDefaultXmlNamespace = null,
-            bool initializeCollections = true,
             bool addResponseStatus = false,
+            bool makeDataContractsExtensible = false,
+            bool initializeCollections = true,
             int? addImplicitVersion = null)
         {
             BaseUrl = baseUrl;
@@ -25,6 +26,7 @@ namespace ServiceStack
             AddReturnMarker = addReturnMarker;
             AddDescriptionAsComments = convertDescriptionToComments;
             AddDataContractAttributes = addDataContractAttributes;
+            AddDataAnnotationAttributes = addDataAnnotationAttributes;
             AddDefaultXmlNamespace = addDefaultXmlNamespace;
             MakeDataContractsExtensible = makeDataContractsExtensible;
             AddIndexesToDataMembers = addIndexesToDataMembers;
@@ -39,12 +41,13 @@ namespace ServiceStack
         public bool AddReturnMarker { get; set; }
         public bool AddDescriptionAsComments { get; set; }
         public bool AddDataContractAttributes { get; set; }
-        public bool MakeDataContractsExtensible { get; set; }
+        public bool AddDataAnnotationAttributes { get; set; }
         public bool AddIndexesToDataMembers { get; set; }
-        public bool InitializeCollections { get; set; }
         public int? AddImplicitVersion { get; set; }
         public bool AddResponseStatus { get; set; }
         public string AddDefaultXmlNamespace { get; set; }
+        public bool MakeDataContractsExtensible { get; set; }
+        public bool InitializeCollections { get; set; }
         public List<string> DefaultNamespaces { get; set; }
 
         public Dictionary<string, string> TypeAlias { get; set; }
@@ -83,14 +86,22 @@ namespace ServiceStack
         public string[] InheritsGenericArgs { get; set; }
         public string Description { get; set; }
         public bool ReturnVoidMarker { get; set; }
-        public string[] ReturnMarkerGenericArgs { get; set; }
+
+        public MetadataTypeName ReturnMarkerTypeName { get; set; }
 
         public List<MetadataRoute> Routes { get; set; }
+
         public MetadataDataContract DataContract { get; set; }
 
         public List<MetadataPropertyType> Properties { get; set; }
 
         public List<MetadataAttribute> Attributes { get; set; }
+    }
+
+    public class MetadataTypeName
+    {
+        public string Name { get; set; }
+        public string[] GenericArgs { get; set; }
     }
 
     public class MetadataRoute

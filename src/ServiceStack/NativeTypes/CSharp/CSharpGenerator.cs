@@ -41,15 +41,16 @@ namespace ServiceStack.NativeTypes.CSharp
             sb.AppendLine("ServerVersion: {0}".Fmt(metadata.Version));
             sb.AppendLine("MakePartial: {0}".Fmt(Config.MakePartial));
             sb.AppendLine("MakeVirtual: {0}".Fmt(Config.MakeVirtual));
+            sb.AppendLine("MakeDataContractsExtensible: {0}".Fmt(Config.MakeDataContractsExtensible));
             sb.AppendLine("AddReturnMarker: {0}".Fmt(Config.AddReturnMarker));
             sb.AppendLine("AddDescriptionAsComments: {0}".Fmt(Config.AddDescriptionAsComments));
             sb.AppendLine("AddDataContractAttributes: {0}".Fmt(Config.AddDataContractAttributes));
+            sb.AppendLine("AddDataAnnotationAttributes: {0}".Fmt(Config.AddDataAnnotationAttributes));
             sb.AppendLine("AddDefaultXmlNamespace: {0}".Fmt(Config.AddDefaultXmlNamespace));
-            sb.AppendLine("MakeDataContractsExtensible: {0}".Fmt(Config.MakeDataContractsExtensible));
             sb.AppendLine("AddIndexesToDataMembers: {0}".Fmt(Config.AddIndexesToDataMembers));
-            sb.AppendLine("InitializeCollections: {0}".Fmt(Config.InitializeCollections));
             sb.AppendLine("AddResponseStatus: {0}".Fmt(Config.AddResponseStatus));
             sb.AppendLine("AddImplicitVersion: {0}".Fmt(Config.AddImplicitVersion));
+            sb.AppendLine("InitializeCollections: {0}".Fmt(Config.InitializeCollections));
             sb.AppendLine("DefaultNamespaces: {0}".Fmt(Config.DefaultNamespaces.ToArray().Join(", ")));
             sb.AppendLine("*/");
             sb.AppendLine();
@@ -84,15 +85,15 @@ namespace ServiceStack.NativeTypes.CSharp
                         ImplementsFn = () => {
                             if (!Config.AddReturnMarker
                                 && !request.ReturnVoidMarker
-                                && request.ReturnMarkerGenericArgs == null)
+                                && request.ReturnMarkerTypeName == null)
                                 return null;
 
                             if (request.ReturnVoidMarker)
                                 return "IReturnVoid";
-                            if (request.ReturnMarkerGenericArgs != null)
-                                return Type("IReturn`1", request.ReturnMarkerGenericArgs);
+                            if (request.ReturnMarkerTypeName != null)
+                                return Type("IReturn`1", new[] { Type(request.ReturnMarkerTypeName) });
                             return response != null
-                                ? Type("IReturn`1", new[] { response.Name })
+                                ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
                                 : null;
                         },
                         IsRequest = true,
@@ -153,7 +154,7 @@ namespace ServiceStack.NativeTypes.CSharp
             AppendDataContract(sb, type.DataContract);
 
             var partial = Config.MakePartial ? "partial " : "";
-            sb.AppendLine("public {0}class {1}".Fmt(partial, type.Name.SafeToken()));
+            sb.AppendLine("public {0}class {1}".Fmt(partial, Type(type.Name, type.GenericArgs)));
 
             //: BaseClass, Interfaces
             var inheritsList = new List<string>();
@@ -204,7 +205,7 @@ namespace ServiceStack.NativeTypes.CSharp
                 sb.AppendLine();
             }
 
-            sb.AppendLine("public {0}()".Fmt(type.Name.SafeToken()));
+            sb.AppendLine("public {0}()".Fmt(NameOnly(type.Name)));
             sb.AppendLine("{");
             sb = sb.Indent();
 
@@ -329,6 +330,11 @@ namespace ServiceStack.NativeTypes.CSharp
             return value;
         }
 
+        public string Type(MetadataTypeName typeName)
+        {
+            return Type(typeName.Name, typeName.GenericArgs);
+        }
+
         public string Type(string type, string[] genericArgs)
         {
             if (genericArgs != null)
@@ -366,6 +372,11 @@ namespace ServiceStack.NativeTypes.CSharp
             Config.TypeAlias.TryGetValue(type, out typeAlias);
 
             return typeAlias ?? type.SafeToken();
+        }
+
+        public string NameOnly(string type)
+        {
+            return type.SplitOnFirst('`')[0].SafeToken();
         }
 
         public void AppendComments(StringBuilderWrapper sb, string desc)
