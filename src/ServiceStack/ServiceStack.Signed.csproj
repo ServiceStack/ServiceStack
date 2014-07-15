@@ -329,7 +329,6 @@
     <Compile Include="Html\ViewContext.cs" />
     <Compile Include="HttpExtensions.cs" />
     <Compile Include="IServiceBase.cs" />
-    <Compile Include="NativeTypes\MetadataTypesHandler.cs" />
     <Compile Include="PredefinedRoutesFeature.cs" />
     <Compile Include="Funq\Action.cs" />
     <Compile Include="Funq\Container.cs" />
