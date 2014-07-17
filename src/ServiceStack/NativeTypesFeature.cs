@@ -28,32 +28,23 @@ namespace ServiceStack
                     { "Double", "double" },    
                     { "Decimal", "decimal" },    
                 },
-                SkipExistingTypes = new HashSet<Type>
-                {
-                    typeof(ResponseStatus),
-                    typeof(ErrorResponse),
-                    typeof(Authenticate),
-                    typeof(AuthenticateResponse),
-                    typeof(Register),
-                    typeof(RegisterResponse),
-                    typeof(QueryResponse<>),
-                },
                 IgnoreTypes = new HashSet<Type>
                 {
-                    typeof(TypesCSharp),
-                    typeof(TypesMetadata),
-                    typeof(NativeTypesBase),
-                    typeof(MetadataTypesConfig),
+                },
+                IgnoreTypesInNamespaces = new List<string>
+                {
+                    "ServiceStack",    
+                    "ServiceStack.NativeTypes",    
+                    "ServiceStack.Api.Swagger",    
                 },
                 DefaultNamespaces = new List<string> 
                 {
                     "System",
                     "System.Collections",
-                    "System.ComponentModel",
                     "System.Collections.Generic",
                     "System.Runtime.Serialization",
-                    "ServiceStack.ServiceHost",
-                    "ServiceStack.ServiceInterface.ServiceModel",
+                    "ServiceStack",
+                    "ServiceStack.DataAnnotations",
                 }
             };
         }

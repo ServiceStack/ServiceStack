@@ -72,6 +72,7 @@ namespace CheckWeb
             Plugins.Add(new AutoQueryFeature());
             Plugins.Add(new PostmanFeature());
 
+
             container.Register<IDbConnectionFactory>(
                 new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
 
@@ -115,8 +116,6 @@ namespace CheckWeb
         /// <param name="container">The container.</param>
         private void ConfigureDataConnection(Container container)
         {
-            container.RegisterAutoWiredAs<Echo, IEcho>();
-
             // ...
         }
 

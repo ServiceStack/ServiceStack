@@ -51,8 +51,8 @@ namespace ServiceStack
         public List<string> DefaultNamespaces { get; set; }
 
         public Dictionary<string, string> TypeAlias { get; set; }
-        public HashSet<Type> SkipExistingTypes { get; set; }
         public HashSet<Type> IgnoreTypes { get; set; }
+        public List<string> IgnoreTypesInNamespaces { get; set; }
     }
 
     public class MetadataTypes
@@ -82,8 +82,7 @@ namespace ServiceStack
         public string Name { get; set; }
         public string Namespace { get; set; }
         public string[] GenericArgs { get; set; }
-        public string Inherits { get; set; }
-        public string[] InheritsGenericArgs { get; set; }
+        public MetadataTypeName Inherits { get; set; }
         public string Description { get; set; }
         public bool ReturnVoidMarker { get; set; }
 
@@ -96,6 +95,11 @@ namespace ServiceStack
         public List<MetadataPropertyType> Properties { get; set; }
 
         public List<MetadataAttribute> Attributes { get; set; }
+
+        public string GetFullName()
+        {
+            return Namespace + "." + Name;
+        }
     }
 
     public class MetadataTypeName

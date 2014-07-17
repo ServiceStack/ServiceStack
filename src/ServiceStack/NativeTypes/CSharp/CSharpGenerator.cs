@@ -72,36 +72,51 @@ namespace ServiceStack.NativeTypes.CSharp
 
             string lastNS = null;
 
+            var existingOps = new HashSet<string>();
             sb.AppendLine("#region Operations");
             sb.AppendLine();
             foreach (var operation in metadata.Operations
                 .OrderBy(x => x.Request.Namespace)
-                .OrderBy(x => x.Request.Name))
+                .ThenBy(x => x.Request.Name))
             {
                 var request = operation.Request;
                 var response = operation.Response;
-                lastNS = AppendType(ref sb, request, lastNS,
-                    new CreateTypeOptions {
-                        ImplementsFn = () => {
-                            if (!Config.AddReturnMarker
-                                && !request.ReturnVoidMarker
-                                && request.ReturnMarkerTypeName == null)
-                                return null;
+                if (!existingOps.Contains(request.GetFullName()))
+                {
+                    lastNS = AppendType(ref sb, request, lastNS,
+                        new CreateTypeOptions
+                        {
+                            ImplementsFn = () =>
+                            {
+                                if (!Config.AddReturnMarker
+                                    && !request.ReturnVoidMarker
+                                    && request.ReturnMarkerTypeName == null)
+                                    return null;
 
-                            if (request.ReturnVoidMarker)
-                                return "IReturnVoid";
-                            if (request.ReturnMarkerTypeName != null)
-                                return Type("IReturn`1", new[] { Type(request.ReturnMarkerTypeName) });
-                            return response != null
-                                ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
-                                : null;
-                        },
-                        IsRequest = true,
-                    });
-                lastNS = AppendType(ref sb, operation.Response, lastNS,
-                    new CreateTypeOptions {
-                        IsResponse = true,
-                    });
+                                if (request.ReturnVoidMarker)
+                                    return "IReturnVoid";
+                                if (request.ReturnMarkerTypeName != null)
+                                    return Type("IReturn`1", new[] { Type(request.ReturnMarkerTypeName) });
+                                return response != null
+                                    ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
+                                    : null;
+                            },
+                            IsRequest = true,
+                        });
+
+                    existingOps.Add(request.GetFullName());
+                }
+                if (response != null && !existingOps.Contains(response.GetFullName())
+                    && !Config.IgnoreTypesInNamespaces.Contains(response.Namespace))
+                {
+                    lastNS = AppendType(ref sb, response, lastNS,
+                        new CreateTypeOptions
+                        {
+                            IsResponse = true,
+                        });
+
+                    existingOps.Add(response.GetFullName());
+                }
             }
             if (lastNS != null)
                 sb.AppendLine("}");
@@ -159,7 +174,7 @@ namespace ServiceStack.NativeTypes.CSharp
             //: BaseClass, Interfaces
             var inheritsList = new List<string>();
             if (type.Inherits != null)
-                inheritsList.Add(Type(type.Inherits, type.InheritsGenericArgs));
+                inheritsList.Add(Type(type.Inherits));
             if (options.ImplementsFn != null)
             {
                 var implStr = options.ImplementsFn();

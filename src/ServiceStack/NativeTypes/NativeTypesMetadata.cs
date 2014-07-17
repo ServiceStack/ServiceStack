@@ -22,27 +22,27 @@ namespace ServiceStack.NativeTypes
         public MetadataTypesConfig GetConfig(NativeTypesBase req)
         {
             return new MetadataTypesConfig
-                {
-                    BaseUrl = req.BaseUrl ?? defaults.BaseUrl,
-                    MakePartial = req.MakePartial ?? defaults.MakePartial,
-                    MakeVirtual = req.MakeVirtual ?? defaults.MakeVirtual,
-                    AddReturnMarker = req.AddReturnMarker ?? defaults.AddReturnMarker,
-                    AddDescriptionAsComments = req.AddDescriptionAsComments ?? defaults.AddDescriptionAsComments,
-                    AddDataContractAttributes = req.AddDataContractAttributes ?? defaults.AddDataContractAttributes,
-                    AddDataAnnotationAttributes =
-                        req.AddDataAnnotationAttributes ?? defaults.AddDataAnnotationAttributes,
-                    MakeDataContractsExtensible =
-                        req.MakeDataContractsExtensible ?? defaults.MakeDataContractsExtensible,
-                    AddIndexesToDataMembers = req.AddIndexesToDataMembers ?? defaults.AddIndexesToDataMembers,
-                    InitializeCollections = req.InitializeCollections ?? defaults.InitializeCollections,
-                    AddImplicitVersion = req.AddImplicitVersion ?? defaults.AddImplicitVersion,
-                    AddResponseStatus = req.AddResponseStatus ?? defaults.AddResponseStatus,
-                    AddDefaultXmlNamespace = req.AddDefaultXmlNamespace ?? defaults.AddDefaultXmlNamespace,
-                    DefaultNamespaces = req.DefaultNamespaces ?? defaults.DefaultNamespaces,
-                    SkipExistingTypes = defaults.SkipExistingTypes,
-                    IgnoreTypes = defaults.IgnoreTypes,
-                    TypeAlias = defaults.TypeAlias,
-                };
+            {
+                BaseUrl = req.BaseUrl ?? defaults.BaseUrl,
+                MakePartial = req.MakePartial ?? defaults.MakePartial,
+                MakeVirtual = req.MakeVirtual ?? defaults.MakeVirtual,
+                AddReturnMarker = req.AddReturnMarker ?? defaults.AddReturnMarker,
+                AddDescriptionAsComments = req.AddDescriptionAsComments ?? defaults.AddDescriptionAsComments,
+                AddDataContractAttributes = req.AddDataContractAttributes ?? defaults.AddDataContractAttributes,
+                AddDataAnnotationAttributes =
+                    req.AddDataAnnotationAttributes ?? defaults.AddDataAnnotationAttributes,
+                MakeDataContractsExtensible =
+                    req.MakeDataContractsExtensible ?? defaults.MakeDataContractsExtensible,
+                AddIndexesToDataMembers = req.AddIndexesToDataMembers ?? defaults.AddIndexesToDataMembers,
+                InitializeCollections = req.InitializeCollections ?? defaults.InitializeCollections,
+                AddImplicitVersion = req.AddImplicitVersion ?? defaults.AddImplicitVersion,
+                AddResponseStatus = req.AddResponseStatus ?? defaults.AddResponseStatus,
+                AddDefaultXmlNamespace = req.AddDefaultXmlNamespace ?? defaults.AddDefaultXmlNamespace,
+                DefaultNamespaces = req.DefaultNamespaces ?? defaults.DefaultNamespaces,
+                IgnoreTypes = defaults.IgnoreTypes,
+                IgnoreTypesInNamespaces = defaults.IgnoreTypesInNamespaces,
+                TypeAlias = defaults.TypeAlias,
+            };
         }
 
         public MetadataTypes GetMetadataTypes(IRequest req, MetadataTypesConfig config = null)
@@ -69,31 +69,54 @@ namespace ServiceStack.NativeTypes
                 Config = config,
             };
 
-            var skipTypes = new HashSet<Type>(config.SkipExistingTypes);
-            config.IgnoreTypes.Each(x => skipTypes.Add(x));
+            var skipTypes = config.IgnoreTypes ?? new HashSet<Type>();
+            var opTypes = new HashSet<Type>();
+            var ignoreNamespaces = config.IgnoreTypesInNamespaces ?? new List<string>();
 
             foreach (var operation in meta.Operations)
             {
                 if (!meta.IsVisible(req, operation))
                     continue;
 
-                metadata.Operations.Add(new MetadataOperationType
+                if (opTypes.Contains(operation.RequestType))
+                    continue;
+
+                if (skipTypes.Contains(operation.RequestType))
+                    continue;
+
+                if (ignoreNamespaces.Contains(operation.RequestType.Namespace))
+                    continue;
+
+                var opType = new MetadataOperationType
                 {
                     Actions = operation.Actions,
                     Request = ToType(operation.RequestType),
                     Response = ToType(operation.ResponseType),
-                });
-
-                skipTypes.Add(operation.RequestType);
+                };
+                metadata.Operations.Add(opType);
+                opTypes.Add(operation.RequestType);
+                
                 if (operation.ResponseType != null)
                 {
-                    skipTypes.Add(operation.ResponseType);
+                    if (skipTypes.Contains(operation.ResponseType))
+                    {
+                        //Config.IgnoreTypesInNamespaces in CSharpGenerator
+                        opType.Response = null;
+                    }
+                    else
+                    {
+                        opTypes.Add(operation.ResponseType);
+                    }
                 }
             }
 
             foreach (var type in meta.GetAllTypes())
             {
+                if (opTypes.Contains(type))
+                    continue;
                 if (skipTypes.Contains(type))
+                    continue;
+                if (ignoreNamespaces.Contains(type.Namespace))
                     continue;
 
                 metadata.Operations.Add(new MetadataOperationType
@@ -101,11 +124,11 @@ namespace ServiceStack.NativeTypes
                     Request = ToType(type),
                 });
 
-                skipTypes.Add(type);
+                opTypes.Add(type);
             }
 
-            var considered = new HashSet<Type>(skipTypes);
-            var queue = new Queue<Type>(skipTypes);
+            var considered = new HashSet<Type>(opTypes);
+            var queue = new Queue<Type>(opTypes);
 
             while (queue.Count > 0)
             {
@@ -116,6 +139,10 @@ namespace ServiceStack.NativeTypes
                     {
                         if (considered.Contains(pi.PropertyType))
                             continue;
+                        if (skipTypes.Contains(pi.PropertyType))
+                            continue;
+                        if (ignoreNamespaces.Contains(pi.PropertyType.Namespace))
+                            continue;
 
                         considered.Add(pi.PropertyType);
                         queue.Enqueue(pi.PropertyType);
@@ -125,13 +152,16 @@ namespace ServiceStack.NativeTypes
 
                 if (type.BaseType != null
                     && type.BaseType.IsUserType()
-                    && !considered.Contains(type.BaseType))
+                    && !considered.Contains(type.BaseType)
+                    && !skipTypes.Contains(type.BaseType)
+                    && !ignoreNamespaces.Contains(type.BaseType.Namespace))
                 {
                     considered.Add(type.BaseType);
                     queue.Enqueue(type.BaseType);
                     metadata.Types.Add(ToType(type.BaseType));
                 }
             }
+
             return metadata;
         }
 
@@ -165,10 +195,13 @@ namespace ServiceStack.NativeTypes
 
             if (type.BaseType != null && type.BaseType != typeof(object))
             {
-                metaType.Inherits = type.BaseType.GetOperationName();
-                metaType.InheritsGenericArgs = type.BaseType.IsGenericType
-                    ? type.BaseType.GetGenericArguments().Select(x => x.GetOperationName()).ToArray()
-                    : null;
+                metaType.Inherits = new MetadataTypeName 
+                {
+                    Name = type.BaseType.GetOperationName(),
+                    GenericArgs = type.BaseType.IsGenericType
+                        ? type.BaseType.GetGenericArguments().Select(x => x.GetOperationName()).ToArray()
+                        : null
+                };
             }
 
             if (type.GetTypeWithInterfaceOf(typeof(IReturnVoid)) != null)
