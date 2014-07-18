@@ -110,7 +110,7 @@ namespace ServiceStack
                     "/bin/",
                 },
                 IgnoreWarningsOnPropertyNames = new List<string> {
-                    "format", "callback", "debug", "_", "authsecret"
+                    "format", "callback", "debug", "_", "authsecret", "Version", "version"
                 }
             };
 
