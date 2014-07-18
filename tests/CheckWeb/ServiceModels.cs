@@ -1,6 +1,6 @@
 ﻿/* Options:
 Version: 1
-BaseUrl: 
+BaseUrl: http://localhost:55799
 
 ServerVersion: 1
 MakePartial: True
@@ -24,11 +24,9 @@ using System.Runtime.Serialization;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
 using Check.ServiceModel.Types;
+using Check.ServiceModel;
 using Check.ServiceInterface;
 using Check.ServiceModel.Operations;
-using Check.ServiceModel;
-
-#region Operations
 
 
 namespace Check.ServiceInterface
@@ -57,7 +55,7 @@ namespace Check.ServiceInterface
     }
 
     public partial class ChangeRequest
-        : IReturn<ChangeRequestResponse>
+        : IReturn<ChangeRequest>
     {
         public virtual string Id { get; set; }
     }
@@ -91,13 +89,21 @@ namespace Check.ServiceModel
     public partial class Echoes
         : IReturn<Echo>
     {
-        [ApiMember(Name="Sentence", DataType="string", Description="The sentence to echo.", IsRequired=true, ParameterType="form", AllowMultiple=false)]
+        [ApiMember(ParameterType="form", Name="Sentence", Description="The sentence to echo.", DataType="string", IsRequired=true, AllowMultiple=false)]
         public virtual string Sentence { get; set; }
     }
 
     public partial class QueryRockstars
         : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
     {
+    }
+
+    public partial class Rockstar
+    {
+        public virtual int Id { get; set; }
+        public virtual string FirstName { get; set; }
+        public virtual string LastName { get; set; }
+        public virtual int? Age { get; set; }
     }
 
     public partial class ThrowHttpError
@@ -111,14 +117,9 @@ namespace Check.ServiceModel.Operations
 {
 
     public partial class Hello
-        : IReturn<HelloResponse>
+        : IReturn<Hello>
     {
         public virtual string Name { get; set; }
-    }
-
-    public partial class HelloResponse
-    {
-        public virtual string Result { get; set; }
     }
 
     ///<summary>
@@ -143,7 +144,7 @@ namespace Check.ServiceModel.Operations
     }
 
     public partial class HelloAllTypes
-        : IReturn<HelloAllTypesResponse>
+        : IReturn<HelloAllTypes>
     {
         public virtual string Name { get; set; }
         public virtual AllTypes AllTypes { get; set; }
@@ -153,6 +154,11 @@ namespace Check.ServiceModel.Operations
     {
         public virtual string Result { get; set; }
         public virtual AllTypes AllTypes { get; set; }
+    }
+
+    public partial class HelloResponse
+    {
+        public virtual string Result { get; set; }
     }
 
     public partial class HelloString
@@ -165,9 +171,15 @@ namespace Check.ServiceModel.Operations
         public virtual string Name { get; set; }
     }
 
+    public partial class HelloWithAlternateReturnResponse
+        : HelloWithReturnResponse
+    {
+        public virtual string AltResult { get; set; }
+    }
+
     [DataContract]
     public partial class HelloWithDataContract
-        : IReturn<HelloWithDataContractResponse>
+        : IReturn<HelloWithDataContract>
     {
         [DataMember(Name="name", Order=1, IsRequired=true, EmitDefaultValue=false)]
         public virtual string Name { get; set; }
@@ -187,7 +199,7 @@ namespace Check.ServiceModel.Operations
     ///Description on HelloWithDescription type
     ///</summary>
     public partial class HelloWithDescription
-        : IReturn<HelloWithDescriptionResponse>
+        : IReturn<HelloWithDescription>
     {
         public virtual string Name { get; set; }
     }
@@ -201,7 +213,7 @@ namespace Check.ServiceModel.Operations
     }
 
     public partial class HelloWithInheritance
-        : HelloBase, IReturn<HelloWithInheritanceResponse>
+        : HelloBase, IReturn<HelloWithInheritance>
     {
         public virtual string Name { get; set; }
     }
@@ -218,14 +230,8 @@ namespace Check.ServiceModel.Operations
         public virtual string Name { get; set; }
     }
 
-    public partial class HelloWithAlternateReturnResponse
-        : HelloWithReturnResponse
-    {
-        public virtual string AltResult { get; set; }
-    }
-
     public partial class HelloWithRoute
-        : IReturn<HelloWithRouteResponse>
+        : IReturn<HelloWithRoute>
     {
         public virtual string Name { get; set; }
     }
@@ -236,7 +242,7 @@ namespace Check.ServiceModel.Operations
     }
 
     public partial class HelloWithType
-        : IReturn<HelloWithTypeResponse>
+        : IReturn<HelloWithType>
     {
         public virtual string Name { get; set; }
     }
@@ -246,12 +252,6 @@ namespace Check.ServiceModel.Operations
         public virtual HelloType Result { get; set; }
     }
 }
-
-#endregion
-
-
-#region Types
-
 
 namespace Check.ServiceModel.Types
 {
@@ -317,5 +317,4 @@ namespace Check.ServiceModel.Types
     }
 }
 
-#endregion
 

@@ -80,6 +80,11 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HttpBenchmarks.cs">
+      <DependentUpon>HttpBenchmarks.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -95,6 +100,10 @@
     <Content Include="ServiceModels.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>ServiceModels.cs</LastGenOutput>
+    </Content>
+    <Content Include="HttpBenchmarks.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>HttpBenchmarks.cs</LastGenOutput>
     </Content>
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
