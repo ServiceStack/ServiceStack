@@ -46,12 +46,12 @@ namespace ServiceStack.NativeTypes.CSharp
             sb.AppendLine("AddDescriptionAsComments: {0}".Fmt(Config.AddDescriptionAsComments));
             sb.AppendLine("AddDataContractAttributes: {0}".Fmt(Config.AddDataContractAttributes));
             sb.AppendLine("AddDataAnnotationAttributes: {0}".Fmt(Config.AddDataAnnotationAttributes));
-            sb.AppendLine("AddDefaultXmlNamespace: {0}".Fmt(Config.AddDefaultXmlNamespace));
             sb.AppendLine("AddIndexesToDataMembers: {0}".Fmt(Config.AddIndexesToDataMembers));
             sb.AppendLine("AddResponseStatus: {0}".Fmt(Config.AddResponseStatus));
             sb.AppendLine("AddImplicitVersion: {0}".Fmt(Config.AddImplicitVersion));
             sb.AppendLine("InitializeCollections: {0}".Fmt(Config.InitializeCollections));
-            sb.AppendLine("DefaultNamespaces: {0}".Fmt(Config.DefaultNamespaces.ToArray().Join(", ")));
+            sb.AppendLine("AddDefaultXmlNamespace: {0}".Fmt(Config.AddDefaultXmlNamespace));
+            //sb.AppendLine("DefaultNamespaces: {0}".Fmt(Config.DefaultNamespaces.ToArray().Join(", ")));
             sb.AppendLine("*/");
             sb.AppendLine();
 
