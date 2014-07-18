@@ -296,7 +296,7 @@ namespace ServiceStack
                 var values = nameValues.GetValues(key);
                 if (values != null && values.Length > 0)
                 {
-                    map[key] = values[0];
+                    map[key] = string.Join(",", values);
                 }
             }
             return map;
