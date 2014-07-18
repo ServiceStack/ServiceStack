@@ -43,6 +43,9 @@ namespace ServiceStack.NativeTypes
 
         public MetadataTypes Any(TypesMetadata request)
         {
+            if (request.BaseUrl == null)
+                request.BaseUrl = Request.GetBaseUrl();
+
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
             return metadataTypes;
@@ -51,6 +54,9 @@ namespace ServiceStack.NativeTypes
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesCSharp request)
         {
+            if (request.BaseUrl == null)
+                request.BaseUrl = Request.GetBaseUrl();
+
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
             var csharp = new CSharpGenerator(typesConfig).GetCode(metadataTypes);

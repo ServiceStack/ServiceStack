@@ -73,73 +73,84 @@ namespace ServiceStack.NativeTypes.CSharp
             string lastNS = null;
 
             var existingOps = new HashSet<string>();
-            sb.AppendLine("#region Operations");
-            sb.AppendLine();
-            foreach (var operation in metadata.Operations
-                .OrderBy(x => x.Request.Namespace)
-                .ThenBy(x => x.Request.Name))
-            {
-                var request = operation.Request;
-                var response = operation.Response;
-                if (!existingOps.Contains(request.GetFullName()))
-                {
-                    lastNS = AppendType(ref sb, request, lastNS,
-                        new CreateTypeOptions
-                        {
-                            ImplementsFn = () =>
-                            {
-                                if (!Config.AddReturnMarker
-                                    && !request.ReturnVoidMarker
-                                    && request.ReturnMarkerTypeName == null)
-                                    return null;
 
-                                if (request.ReturnVoidMarker)
-                                    return "IReturnVoid";
-                                if (request.ReturnMarkerTypeName != null)
-                                    return Type("IReturn`1", new[] { Type(request.ReturnMarkerTypeName) });
-                                return response != null
-                                    ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
-                                    : null;
-                            },
-                            IsRequest = true,
-                        });
+            var requestTypes = metadata.Operations.Select(x => x.Request).ToHashSet();
+            var requestTypesMap = metadata.Operations.ToSafeDictionary(x => x.Request);
+            var responseTypes = metadata.Operations
+                .Where(x => x.Response != null)
+                .Select(x => x.Response).ToHashSet();
+            var types = metadata.Types.ToHashSet();
 
-                    existingOps.Add(request.GetFullName());
-                }
-                if (response != null && !existingOps.Contains(response.GetFullName())
-                    && !Config.IgnoreTypesInNamespaces.Contains(response.Namespace))
-                {
-                    lastNS = AppendType(ref sb, response, lastNS,
-                        new CreateTypeOptions
-                        {
-                            IsResponse = true,
-                        });
-
-                    existingOps.Add(response.GetFullName());
-                }
-            }
-            if (lastNS != null)
-                sb.AppendLine("}");
-            sb.AppendLine();
-            sb.AppendLine("#endregion");
-
-            sb.AppendLine();
-            sb.AppendLine();
-
-            lastNS = null;
-            sb.AppendLine("#region Types");
-            sb.AppendLine();
-            foreach (var type in metadata.Types
+            var allTypes = new List<MetadataType>();
+            allTypes.AddRange(requestTypes);
+            allTypes.AddRange(responseTypes);
+            allTypes.AddRange(types);
+            var orderedTypes = allTypes
                 .OrderBy(x => x.Namespace)
-                .ThenBy(x => x.Name))
+                .ThenBy(x => x.Name);
+
+            foreach (var type in orderedTypes)
             {
-                lastNS = AppendType(ref sb, type, lastNS, 
-                    new CreateTypeOptions { IsType = true });
+                var fullTypeName = type.GetFullName();
+                if (requestTypes.Contains(type))
+                {
+                    if (!existingOps.Contains(fullTypeName))
+                    {
+                        MetadataType response = null;
+                        MetadataOperationType operation;
+                        if (requestTypesMap.TryGetValue(type, out operation))
+                        {
+                            response = operation.Response;
+                        }
+
+                        lastNS = AppendType(ref sb, type, lastNS,
+                            new CreateTypeOptions
+                            {
+                                ImplementsFn = () =>
+                                {
+                                    if (!Config.AddReturnMarker
+                                        && !type.ReturnVoidMarker
+                                        && type.ReturnMarkerTypeName == null)
+                                        return null;
+
+                                    if (type.ReturnVoidMarker)
+                                        return "IReturnVoid";
+                                    if (type.ReturnMarkerTypeName != null)
+                                        return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName) });
+                                    return response != null
+                                        ? Type("IReturn`1", new[] { Type(type.Name, type.GenericArgs) })
+                                        : null;
+                                },
+                                IsRequest = true,
+                            });
+
+                        existingOps.Add(fullTypeName);
+                    }
+                }
+                else if (responseTypes.Contains(type))
+                {
+                    if (!existingOps.Contains(fullTypeName)
+                        && !Config.IgnoreTypesInNamespaces.Contains(type.Namespace))
+                    {
+                        lastNS = AppendType(ref sb, type, lastNS,
+                            new CreateTypeOptions
+                            {
+                                IsResponse = true,
+                            });
+
+                        existingOps.Add(fullTypeName);
+                    }
+                }
+                else if (types.Contains(type) && !existingOps.Contains(fullTypeName))
+                {
+                    lastNS = AppendType(ref sb, type, lastNS,
+                        new CreateTypeOptions { IsType = true });
+                }
             }
+
             if (lastNS != null)
                 sb.AppendLine("}");
             sb.AppendLine();
-            sb.AppendLine("#endregion");
 
             return sb.ToString();
         }

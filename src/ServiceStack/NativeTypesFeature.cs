@@ -34,6 +34,8 @@ namespace ServiceStack
                 IgnoreTypesInNamespaces = new List<string>
                 {
                     "ServiceStack",    
+                    "ServiceStack.Auth",
+                    "ServiceStack.Admin",
                     "ServiceStack.NativeTypes",    
                     "ServiceStack.Api.Swagger",    
                 },

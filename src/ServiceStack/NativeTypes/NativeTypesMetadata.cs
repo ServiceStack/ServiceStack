@@ -130,35 +130,39 @@ namespace ServiceStack.NativeTypes
             var considered = new HashSet<Type>(opTypes);
             var queue = new Queue<Type>(opTypes);
 
+            Func<Type, bool> ignoreTypeFn = t => 
+                t == null 
+                || considered.Contains(t)
+                || skipTypes.Contains(t)
+                || ignoreNamespaces.Contains(t.Namespace);
+
+            Action<Type> registerTypeFn = t => {
+                considered.Add(t);
+                queue.Enqueue(t);
+                if (t.IsUserType())
+                    metadata.Types.Add(ToType(t));
+            };
+
             while (queue.Count > 0)
             {
                 var type = queue.Dequeue();
-                foreach (var pi in type.GetSerializableProperties())
+                foreach (var pi in type.GetSerializableProperties()
+                    .Where(pi => !ignoreTypeFn(pi.PropertyType)))
                 {
-                    if (pi.PropertyType.IsUserType())
-                    {
-                        if (considered.Contains(pi.PropertyType))
-                            continue;
-                        if (skipTypes.Contains(pi.PropertyType))
-                            continue;
-                        if (ignoreNamespaces.Contains(pi.PropertyType.Namespace))
-                            continue;
-
-                        considered.Add(pi.PropertyType);
-                        queue.Enqueue(pi.PropertyType);
-                        metadata.Types.Add(ToType(pi.PropertyType));
-                    }
+                    registerTypeFn(pi.PropertyType);
                 }
 
-                if (type.BaseType != null
-                    && type.BaseType.IsUserType()
-                    && !considered.Contains(type.BaseType)
-                    && !skipTypes.Contains(type.BaseType)
-                    && !ignoreNamespaces.Contains(type.BaseType.Namespace))
+                if (!ignoreTypeFn(type.BaseType))
                 {
-                    considered.Add(type.BaseType);
-                    queue.Enqueue(type.BaseType);
-                    metadata.Types.Add(ToType(type.BaseType));
+                    registerTypeFn(type.BaseType);
+                }
+
+                if (!type.IsGenericType()) continue;
+                
+                var args = type.GetGenericArguments();
+                foreach (var arg in args.Where(arg => !ignoreTypeFn(arg)))
+                {
+                    registerTypeFn(arg);
                 }
             }
 
