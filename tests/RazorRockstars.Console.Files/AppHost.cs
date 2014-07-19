@@ -27,6 +27,7 @@ namespace RazorRockstars.Console.Files
             Plugins.Add(new SwaggerFeature());
             Plugins.Add(new RequestInfoFeature());
             Plugins.Add(new RequestLogsFeature());
+            Plugins.Add(new ServerSentEventsFeature());
 
             Plugins.Add(new ValidationFeature());
             container.RegisterValidators(typeof(AutoValidationValidator).Assembly);
@@ -229,5 +230,23 @@ namespace RazorRockstars.Console.Files
     public class RedirectWithoutQueryString
     {
         public int Id { get; set; }
+    }
+
+    [Route("/notify-request/{Request}")]
+    public class NotifyRequest
+    {
+        public string Request { get; set; }
+        public string Message { get; set; }
+    }
+
+    public class ServerEventsService : Service
+    {
+        public INotifier Notifier { get; set; }
+
+        public object Any(NotifyRequest request)
+        {
+            Notifier.NotifyRequest(request.Request, "sel.tor", request);
+            return request;
+        }
     }
 }

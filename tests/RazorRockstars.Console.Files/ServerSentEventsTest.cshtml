@@ -1,0 +1,46 @@
+﻿@inherits ViewPage<Rockstar> 
+
+﻿@{
+    Layout = "SimpleLayout";
+    ViewBag.Title = "Server Sent Events Test";
+}
+
+<h1>Subscribing to SimpleModel</h1>
+
+<h3>Events</h3>
+
+<div id="events"></div>
+
+<script>
+    var source;
+    if (!!window.EventSource) {
+        source = new EventSource('/event-stream?op=SimpleModel');
+    } else {
+        // Result to xhr polling :(
+        alert('Get a better browser or EventSource polyfill');
+    }
+    
+    var $events = document.getElementById("events");
+    source.addEventListener('message', function (e) {
+        console.log(e.data);
+        $events.insertAdjacentHTML("afterbegin", "<div><b>message<b>: " + e.data + "</div>");
+    }, false);
+
+    source.addEventListener('open', function (e) {
+        console.log('open');
+        // Connection was opened.
+        $events.insertAdjacentHTML("afterbegin", "<div><b style='color:green'>open<b></div>");
+    }, false);
+
+    source.addEventListener('error', function (e) {
+        console.log('error');
+        $events.insertAdjacentHTML("afterbegin", "<div><b style='color:red'>ERROR<b></div>");
+        if (e.readyState == EventSource.CLOSED) {
+            // Connection was closed.
+            console.log('Connection was closed.');
+            $events.insertAdjacentHTML("afterbegin", "<div><b style='color:red'>CLOSED<b></div>");
+        }
+    }, false);
+    
+</script>
+
