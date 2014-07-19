@@ -51,6 +51,7 @@ namespace ServiceStack
             {
                OperationName = req.QueryString["op"] ?? req.OperationName,
                UserAuthId = session != null ? session.UserAuthId : null,
+               UserName = session != null ? session.UserName : null,
                PermSessionId = req.GetPermanentSessionId(),
                TempSessionId = req.GetTemporarySessionId(),
                Channel = req.QueryString["channel"],
@@ -89,6 +90,7 @@ window.location= "http://google.com"
 
         public string OperationName { get; set; }
         public string UserAuthId { get; set; }
+        public string UserName { get; set; }
         public string PermSessionId { get; set; }
         public string TempSessionId { get; set; }
         public string Channel { get; set; }
@@ -139,6 +141,7 @@ window.location= "http://google.com"
     {
         string OperationName { get; }
         string UserAuthId { get; }
+        string UserName { get; }
         string PermSessionId { get; }
         string TempSessionId { get; }
         string Channel { get; }
@@ -157,7 +160,9 @@ window.location= "http://google.com"
 
         public ConcurrentDictionary<string, IEventSubscription[]> OperationSubcriptions =
            new ConcurrentDictionary<string, IEventSubscription[]>();
-        public ConcurrentDictionary<string, IEventSubscription[]> UserSubcriptions =
+        public ConcurrentDictionary<string, IEventSubscription[]> UserIdSubcriptions =
+           new ConcurrentDictionary<string, IEventSubscription[]>();
+        public ConcurrentDictionary<string, IEventSubscription[]> UserNameSubcriptions =
            new ConcurrentDictionary<string, IEventSubscription[]>();
         public ConcurrentDictionary<string, IEventSubscription[]> PermSessionSubcriptions =
            new ConcurrentDictionary<string, IEventSubscription[]>();
@@ -183,9 +188,14 @@ window.location= "http://google.com"
             Notify(OperationSubcriptions, operationName, selector, message);
         }
 
-        public void NotifyUser(string userAuthId, string selector, object message)
+        public void NotifyUserId(string userAuthId, string selector, object message)
         {
-            Notify(UserSubcriptions, userAuthId, selector, message);
+            Notify(UserIdSubcriptions, userAuthId, selector, message);
+        }
+
+        public void NotifyUserName(string userName, string selector, object message)
+        {
+            Notify(UserNameSubcriptions, userName, selector, message);
         }
 
         public void NotifyPermSession(string sspid, string selector, object message)
@@ -222,7 +232,8 @@ window.location= "http://google.com"
             {
                 subscription.OnUnsubscribe = HandleUnsubscription;
                 RegisterSubscription(subscription, subscription.OperationName ?? UnknownOperation, OperationSubcriptions);
-                RegisterSubscription(subscription, subscription.UserAuthId, UserSubcriptions);
+                RegisterSubscription(subscription, subscription.UserAuthId, UserIdSubcriptions);
+                RegisterSubscription(subscription, subscription.UserName, UserNameSubcriptions);
                 RegisterSubscription(subscription, subscription.PermSessionId, PermSessionSubcriptions);
                 RegisterSubscription(subscription, subscription.TempSessionId, TempSessionSubcriptions);
                 RegisterSubscription(subscription, subscription.Channel, ChannelSubcriptions);
@@ -303,7 +314,8 @@ window.location= "http://google.com"
             lock (subscription)
             {
                 UnRegisterSubscription(subscription, subscription.OperationName ?? UnknownOperation, OperationSubcriptions);
-                UnRegisterSubscription(subscription, subscription.UserAuthId, UserSubcriptions);
+                UnRegisterSubscription(subscription, subscription.UserAuthId, UserIdSubcriptions);
+                UnRegisterSubscription(subscription, subscription.UserName, UserNameSubcriptions);
                 UnRegisterSubscription(subscription, subscription.PermSessionId, PermSessionSubcriptions);
                 UnRegisterSubscription(subscription, subscription.TempSessionId, TempSessionSubcriptions);
                 UnRegisterSubscription(subscription, subscription.Channel, ChannelSubcriptions);
@@ -323,7 +335,9 @@ window.location= "http://google.com"
 
         void NotifyRequest(string operationName, string selector, object message);
 
-        void NotifyUser(string userAuthId, string selector, object message);
+        void NotifyUserId(string userAuthId, string selector, object message);
+
+        void NotifyUserName(string userName, string selector, object message);
 
         void NotifyPermSession(string sspid, string selector, object message);
 
