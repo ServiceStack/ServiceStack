@@ -1206,6 +1206,12 @@
             A thin wrapper around each host's Response e.g: ASP.NET, HttpListener, MQ, etc
             </summary>
         </member>
+        <member name="M:ServiceStack.Web.IResponse.Write(System.String)">
+            <summary>
+            Write once to the Response Stream then close it. 
+            </summary>
+            <param name="text"></param>
+        </member>
         <member name="M:ServiceStack.Web.IResponse.Close">
             <summary>
             Signal that this response has been handled and no more processing should be done.
