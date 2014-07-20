@@ -3,19 +3,6 @@ using System.Collections.Generic;
 
 namespace ServiceStack.Auth
 {
-    public interface IAuthTokens : IUserAuthDetailsExtended
-    {
-        string Provider { get; set; }
-        string UserId { get; set; }
-        string AccessToken { get; set; }
-        string AccessTokenSecret { get; set; }
-        string RefreshToken { get; set; }
-        DateTime? RefreshTokenExpiry { get; set; }
-        string RequestToken { get; set; }
-        string RequestTokenSecret { get; set; }
-        Dictionary<string, string> Items { get; set; }
-    }
-
     public class AuthTokens : IAuthTokens
     {
         public AuthTokens() { Items = new Dictionary<string, string>(); }
