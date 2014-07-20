@@ -85,6 +85,8 @@ namespace ServiceStack.Testing
             Headers[HttpHeaders.ContentLength] = contentLength.ToString(CultureInfo.InvariantCulture);
         }
 
+        public bool KeepAlive { get; set; }
+
         public void SetCookie(Cookie cookie)
         {            
         }

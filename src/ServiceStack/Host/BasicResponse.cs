@@ -72,5 +72,7 @@ namespace ServiceStack.Host
         public void SetContentLength(long contentLength)
         {
         }
+
+        public bool KeepAlive { get; set; }
     }
 }

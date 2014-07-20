@@ -245,7 +245,7 @@ namespace RazorRockstars.Console.Files
 
         public object Any(NotifyRequest request)
         {
-            Notifier.NotifyRequest(request.Request, "sel.tor", request);
+            Notifier.NotifyChannel(request.Request, "sel.tor", request);
             return request;
         }
     }

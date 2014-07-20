@@ -79,7 +79,9 @@ namespace ServiceStack.Host
         public bool IsClosed { get; private set; }
 
         public void SetContentLength(long contentLength) {}
-        
+
+        public bool KeepAlive { get; set; }
+
         public void SetCookie(Cookie cookie)
         {
         }

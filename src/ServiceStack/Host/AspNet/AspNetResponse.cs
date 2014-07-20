@@ -145,6 +145,9 @@ namespace ServiceStack.Host.AspNet
             catch (PlatformNotSupportedException /*ignore*/) { } //This operation requires IIS integrated pipeline mode.
         }
 
+        //Benign, see how to enable in ASP.NET: http://technet.microsoft.com/en-us/library/cc772183(v=ws.10).aspx
+        public bool KeepAlive { get; set; }
+
         public void SetCookie(Cookie cookie)
         {
             var httpCookie = cookie.ToHttpCookie();

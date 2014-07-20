@@ -49,12 +49,11 @@ namespace ServiceStack
             var session = req.GetSession();            
             var subscription = new EventSubscription(res) 
             {
-               OperationName = req.QueryString["op"] ?? req.OperationName,
-               UserAuthId = session != null ? session.UserAuthId : null,
-               UserName = session != null ? session.UserName : null,
-               PermSessionId = req.GetPermanentSessionId(),
-               TempSessionId = req.GetTemporarySessionId(),
-               Channel = req.QueryString["channel"],
+                Channel = req.QueryString["channel"] ?? req.OperationName,
+                UserAuthId = session != null ? session.UserAuthId : null,
+                UserName = session != null ? session.UserName : null,
+                PermSessionId = req.GetPermanentSessionId(),
+                TempSessionId = req.GetTemporarySessionId(),
             };
             req.TryResolve<IEventSource>().Register(subscription);
 
@@ -88,12 +87,12 @@ window.location= "http://google.com"
             this.response = response;
         }
 
-        public string OperationName { get; set; }
+        public string Channel { get; set; }
         public string UserAuthId { get; set; }
         public string UserName { get; set; }
         public string PermSessionId { get; set; }
         public string TempSessionId { get; set; }
-        public string Channel { get; set; }
+
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
         public Action<IEventSubscription> OnDispose { get; set; }
 
@@ -139,12 +138,11 @@ window.location= "http://google.com"
 
     public interface IEventSubscription : IDisposable
     {
-        string OperationName { get; }
+        string Channel { get; }
         string UserAuthId { get; }
         string UserName { get; }
         string PermSessionId { get; }
         string TempSessionId { get; }
-        string Channel { get; }
 
         Action<IEventSubscription> OnUnsubscribe { get; set; }
 
@@ -156,9 +154,9 @@ window.location= "http://google.com"
         public static int DefaultArraySize = 10;
         public static int ReSizeMultiplier = 2;
         public static int ReSizeBuffer = 100;
-        const string UnknownOperation = "__unknown";
+        const string UnknownChannel = "__unknown";
 
-        public ConcurrentDictionary<string, IEventSubscription[]> OperationSubcriptions =
+        public ConcurrentDictionary<string, IEventSubscription[]> ChannelSubcriptions =
            new ConcurrentDictionary<string, IEventSubscription[]>();
         public ConcurrentDictionary<string, IEventSubscription[]> UserIdSubcriptions =
            new ConcurrentDictionary<string, IEventSubscription[]>();
@@ -168,12 +166,10 @@ window.location= "http://google.com"
            new ConcurrentDictionary<string, IEventSubscription[]>();
         public ConcurrentDictionary<string, IEventSubscription[]> TempSessionSubcriptions =
            new ConcurrentDictionary<string, IEventSubscription[]>();
-        public ConcurrentDictionary<string, IEventSubscription[]> ChannelSubcriptions =
-           new ConcurrentDictionary<string, IEventSubscription[]>();
 
         public void NotifyAll(string selector, object message)
         {
-            foreach (var entry in OperationSubcriptions)
+            foreach (var entry in ChannelSubcriptions)
             {
                 foreach (var sub in entry.Value)
                 {
@@ -183,45 +179,40 @@ window.location= "http://google.com"
             }
         }
 
-        public void NotifyRequest(string operationName, string selector, object message)
-        {
-            Notify(OperationSubcriptions, operationName, selector, message);
-        }
-
-        public void NotifyUserId(string userAuthId, string selector, object message)
-        {
-            Notify(UserIdSubcriptions, userAuthId, selector, message);
-        }
-
-        public void NotifyUserName(string userName, string selector, object message)
-        {
-            Notify(UserNameSubcriptions, userName, selector, message);
-        }
-
-        public void NotifyPermSession(string sspid, string selector, object message)
-        {
-            Notify(PermSessionSubcriptions, sspid, selector, message);
-        }
-
-        public void NotifyTempSession(string ssid, string selector, object message)
-        {
-            Notify(TempSessionSubcriptions, ssid, selector, message);
-        }
-
         public void NotifyChannel(string channel, string selector, object message)
         {
-            Notify(ChannelSubcriptions, channel, selector, message);
+            Notify(ChannelSubcriptions, channel, selector, message, channel);
+        }
+
+        public void NotifyUserId(string userAuthId, string selector, object message, string channel = null)
+        {
+            Notify(UserIdSubcriptions, userAuthId, selector, message, channel);
+        }
+
+        public void NotifyUserName(string userName, string selector, object message, string channel = null)
+        {
+            Notify(UserNameSubcriptions, userName, selector, message, channel);
+        }
+
+        public void NotifyPermSession(string sspid, string selector, object message, string channel = null)
+        {
+            Notify(PermSessionSubcriptions, sspid, selector, message, channel);
+        }
+
+        public void NotifyTempSession(string ssid, string selector, object message, string channel = null)
+        {
+            Notify(TempSessionSubcriptions, ssid, selector, message, channel);
         }
 
         void Notify(ConcurrentDictionary<string, IEventSubscription[]> map, string key,
-            string selector, object message)
+            string selector, object message, string channel = null)
         {
             IEventSubscription[] subs;
             if (!map.TryGetValue(key, out subs)) return;
 
             foreach (var subscription in subs)
             {
-                if (subscription != null)
+                if (subscription != null && (channel == null || subscription.Channel == channel))
                     subscription.Publish(selector, message);
             }
         }
@@ -231,12 +222,11 @@ window.location= "http://google.com"
             lock (subscription)
             {
                 subscription.OnUnsubscribe = HandleUnsubscription;
-                RegisterSubscription(subscription, subscription.OperationName ?? UnknownOperation, OperationSubcriptions);
+                RegisterSubscription(subscription, subscription.Channel ?? UnknownChannel, ChannelSubcriptions);
                 RegisterSubscription(subscription, subscription.UserAuthId, UserIdSubcriptions);
                 RegisterSubscription(subscription, subscription.UserName, UserNameSubcriptions);
                 RegisterSubscription(subscription, subscription.PermSessionId, PermSessionSubcriptions);
                 RegisterSubscription(subscription, subscription.TempSessionId, TempSessionSubcriptions);
-                RegisterSubscription(subscription, subscription.Channel, ChannelSubcriptions);
             }
         }
 
@@ -313,12 +303,11 @@ window.location= "http://google.com"
         {
             lock (subscription)
             {
-                UnRegisterSubscription(subscription, subscription.OperationName ?? UnknownOperation, OperationSubcriptions);
+                UnRegisterSubscription(subscription, subscription.Channel ?? UnknownChannel, ChannelSubcriptions);
                 UnRegisterSubscription(subscription, subscription.UserAuthId, UserIdSubcriptions);
                 UnRegisterSubscription(subscription, subscription.UserName, UserNameSubcriptions);
                 UnRegisterSubscription(subscription, subscription.PermSessionId, PermSessionSubcriptions);
                 UnRegisterSubscription(subscription, subscription.TempSessionId, TempSessionSubcriptions);
-                UnRegisterSubscription(subscription, subscription.Channel, ChannelSubcriptions);
                 subscription.Dispose();
             }
         }
@@ -333,16 +322,14 @@ window.location= "http://google.com"
     {
         void NotifyAll(string selector, object message);
 
-        void NotifyRequest(string operationName, string selector, object message);
-
-        void NotifyUserId(string userAuthId, string selector, object message);
-
-        void NotifyUserName(string userName, string selector, object message);
-
-        void NotifyPermSession(string sspid, string selector, object message);
-
-        void NotifyTempSession(string ssid, string selector, object message);
-
         void NotifyChannel(string channel, string selector, object message);
+
+        void NotifyUserId(string userAuthId, string selector, object message, string channel = null);
+
+        void NotifyUserName(string userName, string selector, object message, string channel = null);
+
+        void NotifyPermSession(string sspid, string selector, object message, string channel = null);
+
+        void NotifyTempSession(string ssid, string selector, object message, string channel = null);
     }
 }

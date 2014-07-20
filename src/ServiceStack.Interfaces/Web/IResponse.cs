@@ -32,6 +32,10 @@ namespace ServiceStack.Web
         /// </summary>
         object Dto { get; set; }
 
+        /// <summary>
+        /// Write once to the Response Stream then close it. 
+        /// </summary>
+        /// <param name="text"></param>
         void Write(string text);
 
         /// <summary>
@@ -62,5 +66,7 @@ namespace ServiceStack.Web
         bool IsClosed { get; }
 
         void SetContentLength(long contentLength);
+
+        bool KeepAlive { get; set; }
     }
 }

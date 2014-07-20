@@ -151,6 +151,12 @@ namespace ServiceStack.Host.HttpListener
             response.ContentLength64 = contentLength;
         }
 
+        public bool KeepAlive
+        {
+            get { return response.KeepAlive; }
+            set { response.KeepAlive = true; }
+        }
+
         public void SetCookie(Cookie cookie)
         {
             var cookieStr = cookie.AsHeaderValue();

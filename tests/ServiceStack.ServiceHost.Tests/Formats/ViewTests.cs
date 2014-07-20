@@ -204,6 +204,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
                 Headers[HttpHeaders.ContentLength] = contentLength.ToString();
             }
 
+            public bool KeepAlive { get; set; }
+
             public void SetCookie(Cookie cookie)
             {                
             }
