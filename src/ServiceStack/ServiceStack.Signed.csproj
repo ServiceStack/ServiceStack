@@ -102,7 +102,7 @@
     <Compile Include="AsyncExtensions.cs" />
     <Compile Include="Auth\AspNetWindowsAuthProvider.cs" />
     <Compile Include="Auth\OdnoklassnikiAuthProvider.cs" />
-    <Compile Include="Auth\ProfileGateway.cs" />
+    <Compile Include="Auth\AuthMetadataProvider.cs" />
     <Compile Include="Auth\VkAuthProvider.cs" />
     <Compile Include="Auth\YandexAuthProvider.cs" />
     <Compile Include="Auth\GithubAuthProvider.cs" />
