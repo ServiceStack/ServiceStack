@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -126,6 +126,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="IO\IEndpoint.cs" />
+    <Compile Include="IQuery.cs" />
     <Compile Include="IRestGateway.cs" />
     <Compile Include="Logging\DebugLogFactory.cs" />
     <Compile Include="Logging\DebugLogger.cs" />
@@ -288,6 +289,7 @@
     <Compile Include="Redis\RedisKeyType.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Redis\ScanResult.cs" />
     <Compile Include="Redis\SortOptions.cs">
       <SubType>Code</SubType>
     </Compile>
