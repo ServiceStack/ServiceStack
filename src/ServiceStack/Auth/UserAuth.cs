@@ -159,6 +159,12 @@ namespace ServiceStack.Auth
             if (!tokens.AccessTokenSecret.IsNullOrEmpty())
                 instance.AccessTokenSecret = tokens.AccessTokenSecret;
 
+            if (tokens.Items != null)
+            {
+                var items = instance.Items ?? (instance.Items = new Dictionary<string, string>());
+                tokens.Items.ForEach((x,y) => items[x] = y);
+            }
+
             PopulateMissingExtended(instance, tokens, overwriteReserved);
         }
 

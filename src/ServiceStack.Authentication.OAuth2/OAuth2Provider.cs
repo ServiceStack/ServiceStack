@@ -6,8 +6,6 @@ using DotNetOpenAuth.Messaging;
 using DotNetOpenAuth.OAuth2;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
-using ServiceStack.Text;
-using ServiceStack.Web;
 
 namespace ServiceStack.Authentication.OAuth2
 {
@@ -171,6 +169,10 @@ namespace ServiceStack.Authentication.OAuth2
                 tokens.LastName = authInfo["last_name"];
                 tokens.Email = authInfo["email"];
                 userSession.UserAuthName = tokens.Email;
+
+                string profileUrl;
+                if (authInfo.TryGetValue("picture", out profileUrl))
+                    tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
 
                 this.LoadUserOAuthProvider(userSession, tokens);
             }

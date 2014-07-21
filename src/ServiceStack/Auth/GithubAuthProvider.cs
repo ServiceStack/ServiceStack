@@ -126,6 +126,10 @@ namespace ServiceStack.Auth
                 tokens.Company = obj.Get("company");
                 tokens.Country = obj.Get("country");
 
+                string profileUrl;
+                if (obj.TryGetValue("avatar_url", out profileUrl))
+                    tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
+
                 LoadUserOAuthProvider(userSession, tokens);
             }
             catch (Exception ex)

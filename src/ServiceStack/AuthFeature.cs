@@ -20,6 +20,8 @@ namespace ServiceStack
 
         public string HtmlRedirect { get; set; }
 
+        public bool IncludeAuthMetadataProvider { get; set; }
+
         public bool IncludeAssignRoleServices
         {
             set
@@ -73,6 +75,7 @@ namespace ServiceStack
             };
 
             this.HtmlRedirect = htmlRedirect ?? "~/" + localize(LocalizedStrings.Login);
+            this.IncludeAuthMetadataProvider = true;
         }
 
         public void Register(IAppHost appHost)
@@ -89,6 +92,9 @@ namespace ServiceStack
             }
 
             RegisterPlugins.ForEach(x => appHost.LoadPlugin(x));
+
+            if (IncludeAuthMetadataProvider && appHost.TryResolve<IAuthMetadataProvider>() == null)
+                appHost.Register<IAuthMetadataProvider>(new AuthMetadataProvider());
         }
 
         public TimeSpan GetDefaultSessionExpiry()

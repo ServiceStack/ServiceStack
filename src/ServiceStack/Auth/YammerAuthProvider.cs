@@ -160,6 +160,7 @@ namespace ServiceStack.Auth
                     return response;
 
                 this.LoadUserAuthInfo((AuthUserSession)session, tokens, authInfo.ToDictionary());
+                HostContext.TryResolve<IAuthMetadataProvider>().AddMetadata(tokens, authInfo.ToDictionary());
 
                 // Has access!
                 return authService.Redirect(this.CallbackUrl.AddHashParam("s", "1"));
