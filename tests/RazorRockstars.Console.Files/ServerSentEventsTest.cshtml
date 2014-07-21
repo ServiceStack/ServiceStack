@@ -21,19 +21,20 @@
 <input type="text" id="txtSel" placeholder="selector" />
 <button id="btnSend">Submit</button>
 
-<div id="examples" style="font:14px consolas; margin: 10px">
+<div id="examples" style="font:14px consolas; margin: 10px; cursor:pointer;">
 <div>cmd.showPopup message</div>
+<div>cmd.toggle$h1:first-child</div>
+<br/>
+<div>trigger.animateBox$#boxid {"opacity":".5","marginRight":"+=20px"}</div>
+<div>trigger.animateBox$.boxclass {"marginTop":"+=20px", "padding":"+=20"}</div>
 <br/>
 <div>css.color #0C0</div>
-<div>css.color$h1 black</div>
+<div>css.color$h1 yellow</div>
 <div>css.backgroundColor #f1f1f1</div>
-<div>css.backgroundColor$h1 yellow</div>
-<div>css.backgroundColor$#boxid red</div>
-<div>css.backgroundColor$.boxclass purple</div>
+<div>css.backgroundColor$h1 blue</div>
+<div>css.backgroundColor$#boxid purple</div>
+<div>css.backgroundColor$.boxclass red</div>
 <div>css.color$#boxid,.boxclass white</div>
-<br/>
-<div>trigger.animateBox$#boxid {"opacity":".5","padding":"-=20px"}</div>
-<div>trigger.animateBox$.boxclass {"marginTop":"+=20px", "padding":"+=20"}</div>
 <br/>
 <div>document.title Hello World</div>
 <div>window.location http://google.com</div>
@@ -88,6 +89,9 @@
     $(document).bindHandlers({
         showPopup: function (msg) {
             alert(msg);
+        },
+        toggle: function () {
+            $(this).toggle();
         }
     });
 

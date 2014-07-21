@@ -114,15 +114,24 @@ namespace ServiceStack
         }
     }
 
-/*
-cmd.showPopup {A:1,B:2}
-cmd.showPopup [1,2,3]
-cmd.showPopup "stringArg"
+    /*
+    cmd.showPopup message
+    cmd.toggle$h1:first-child
 
-trigger.evt {A:1,B:2}
+    trigger.animateBox$#boxid {"opacity":".5","padding":"-=20px"}
+    trigger.animateBox$.boxclass {"marginTop":"+=20px", "padding":"+=20"}
 
-window.location "http://google.com"
-*/
+    css.color #0C0
+    css.color$h1 black
+    css.backgroundColor #f1f1f1
+    css.backgroundColor$h1 yellow
+    css.backgroundColor$#boxid red
+    css.backgroundColor$.boxclass purple
+    css.color$#boxid,.boxclass white
+    
+    document.title Hello World
+    window.location http://google.com
+    */
 
     public class EventSubscription : IEventSubscription
     {

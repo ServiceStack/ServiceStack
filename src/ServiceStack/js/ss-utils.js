@@ -278,15 +278,16 @@
             var parts = $.ss.splitOnFirst(e.data, ' ');
             var selector = parts[0];
             var json = parts[1];
-            var msg = JSON.parse(json);
+            var msg = json ? JSON.parse(json) : null;
 
             parts = $.ss.splitOnFirst(selector, '.');
             var op = parts[0],
                 target = parts[1];
             if (op == "cmd") {
-                var fn = $.ss.handlers[target];
+                parts = $.ss.splitOnFirst(target, '$');
+                var fn = $.ss.handlers[parts[0]];
                 if (fn) {
-                    fn(msg);
+                    fn.call($(parts[1])[0], msg);
                 }
             }
             else if (op == "trigger") {
