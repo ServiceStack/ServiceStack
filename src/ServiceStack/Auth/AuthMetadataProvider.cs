@@ -21,6 +21,9 @@ namespace ServiceStack.Auth
 
         public virtual void AddProfileUrl(IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
+            if (tokens == null || authInfo == null)
+                return;
+            
             var items = tokens.Items ?? (tokens.Items = new Dictionary<string, string>());
 
             try
