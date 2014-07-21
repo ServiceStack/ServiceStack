@@ -31,20 +31,36 @@ namespace ServiceStack.Auth
                 if (tokens.Provider == FacebookAuthProvider.Name)
                 {
                     tokens.DisplayName = tokens.DisplayName ?? tokens.DisplayName;
-                    items[ProfileUrlKey] = "http://avatars.io/facebook/{0}?size=medium".Fmt(tokens.UserName)
-                        .GetRedirectUrlIfAny() ?? items[ProfileUrlKey];
+                    items[ProfileUrlKey] = GetRedirectUrlIfAny(
+                        "http://avatars.io/facebook/{0}?size=medium".Fmt(tokens.UserName))
+                        ?? items[ProfileUrlKey];
                 }
                 else if (tokens.Provider == TwitterAuthProvider.Name)
                 {
                     tokens.DisplayName = tokens.UserName ?? tokens.DisplayName;
-                    items[ProfileUrlKey] = "http://avatars.io/twitter/{0}?size=medium".Fmt(tokens.UserName)
-                        .GetRedirectUrlIfAny() ?? items[ProfileUrlKey];
+                    items[ProfileUrlKey] = GetRedirectUrlIfAny(
+                        "http://avatars.io/twitter/{0}?size=medium".Fmt(tokens.UserName)) 
+                        ?? items[ProfileUrlKey];
                 }
             }
             catch (Exception ex)
             {
                 Log.Error("Error AddProfileUrl to: {0}>{1}".Fmt(tokens.Provider, tokens.UserName), ex);
             }
+        }
+
+        public static string GetRedirectUrlIfAny(string url)
+        {
+            var finalUrl = url;
+            try
+            {
+                var ignore = url.GetBytesFromUrl(
+                    requestFilter: req => { req.AllowAutoRedirect = false; req.UserAgent = "ServiceStack"; },
+                    responseFilter: res => finalUrl = res.Headers[HttpHeaders.Location] ?? finalUrl);
+            }
+            catch { }
+
+            return finalUrl;
         }
 
         public virtual string GetProfileUrl(IAuthSession authSession)
