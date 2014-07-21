@@ -27,6 +27,7 @@
     function pad(d) { return d < 10 ? '0' + d : d; };
     $.ss.dfmt = function (d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()); };
     $.ss.dfmthm = function (d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ":" + pad(d.getMinutes()); };
+    $.ss.splitOnFirst = function (s, c) { if (!s) return [s]; var pos = s.indexOf(c); return pos >= 0 ? [s.substring(0, pos), s.substring(pos + 1)] : [s]; };
 
     function splitCase(t) {
         return typeof t != 'string' ? t : t.replace( /([A-Z]|[0-9]+)/g , ' $1').replace( /_/g , ' ');
@@ -270,6 +271,51 @@
             .addClass('active')
             .closest("li").addClass('active');
         });
+    };
+
+    $.ss.handleServerEvents = function (source, cb) {
+        source.addEventListener('message', function (e) {
+            var parts = $.ss.splitOnFirst(e.data, ' ');
+            var selector = parts[0];
+            var json = parts[1];
+            var msg = JSON.parse(json);
+
+            parts = $.ss.splitOnFirst(selector, '.');
+            var op = parts[0],
+                target = parts[1];
+            if (op == "cmd") {
+                var fn = $.ss.handlers[target];
+                if (fn) {
+                    fn(msg);
+                }
+            }
+            else if (op == "trigger") {
+                parts = $.ss.splitOnFirst(target, '$');
+                $(parts.length > 1 ? parts[1] : document).trigger(parts[0], [msg]);
+            }
+            else if (op == "css") {
+                parts = $.ss.splitOnFirst(target, '$');
+                $(parts.length > 1 ? parts[1] : document.body).css(parts[0], msg);
+            }
+            else if (op == "window") {
+                if (typeof (window[target]) == "function") {
+                    window[target](msg);
+                } else {
+                    window[target] = msg;
+                }
+            }
+            else if (op == "document") {
+                if (typeof (document[target]) == "function") {
+                    document[target](msg);
+                } else {
+                    document[target] = msg;
+                }
+            }
+
+            if (cb) {
+                cb(selector, msg, json);
+            }
+        }, false);
     };
 
 })(window.jQuery);
