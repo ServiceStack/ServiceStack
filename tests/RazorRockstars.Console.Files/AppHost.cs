@@ -232,20 +232,24 @@ namespace RazorRockstars.Console.Files
         public int Id { get; set; }
     }
 
-    [Route("/notify-request/{Request}")]
-    public class NotifyRequest
+    [Route("/notify-request/{Channel}")]
+    public class NotifyChannel
     {
-        public string Request { get; set; }
+        public string Channel { get; set; }
         public string Message { get; set; }
+        public string Selector { get; set; }
     }
 
     public class ServerEventsService : Service
     {
         public INotifier Notifier { get; set; }
 
-        public object Any(NotifyRequest request)
+        public object Any(NotifyChannel request)
         {
-            Notifier.NotifyChannel(request.Request, "sel.tor", request);
+            var selector = !string.IsNullOrEmpty(request.Selector)
+                ? request.Selector
+                : "sel.ect.or";
+            Notifier.NotifyChannel(request.Channel, selector, request.Message);
             return request;
         }
     }
