@@ -47,7 +47,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public string GetProfileUrl(IAuthSession authSession)
+        public virtual string GetProfileUrl(IAuthSession authSession)
         {
             if (authSession == null)
                 return NoProfileImgUrl;

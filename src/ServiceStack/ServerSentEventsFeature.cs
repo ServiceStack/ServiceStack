@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Auth;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Logging;
 using ServiceStack.Web;
@@ -11,29 +14,43 @@ namespace ServiceStack
     public class ServerSentEventsFeature : IPlugin
     {
         public string AtRestPath { get; set; }
-        public IEventSource EventSource { get; set; }
-        public INotifier Notifier { get; set; }
+
+        public Action<IEventSubscription, IRequest> OnCreated { get; set; }
+        public Action<IEventSubscription> OnSubscribe { get; set; }
+        public Action<IEventSubscription> OnUnsubscribe { get; set; } 
 
         public ServerSentEventsFeature()
         {
             AtRestPath = "/event-stream";
-            EventSource = (IEventSource) (Notifier = new MemoryNotifications());
         }
 
         public void Register(IAppHost appHost)
         {
-            appHost.Register(EventSource);
-            appHost.Register(Notifier);
+            var defaultNotifications = new MemoryNotifications {
+                OnSubscribe = OnSubscribe,
+                OnUnsubscribe = OnUnsubscribe,
+            };
+            var container = appHost.GetContainer();
+
+            if (container.TryResolve<IEventSource>() == null)
+                container.Register<IEventSource>(defaultNotifications);
+
+            if (container.TryResolve<INotifier>() == null)
+                container.Register<INotifier>(defaultNotifications);
 
             appHost.RawHttpHandlers.Add(httpReq => 
                 httpReq.PathInfo.EndsWith(AtRestPath)
-                    ? new ServerSentEventsHandler() 
+                    ? new ServerSentEventsHandler()
                     : null);
+
+            appHost.RegisterService(typeof(ServerSentEventsService), AtRestPath.CombineWith("subscriptions"));
         }
     }
 
     public class ServerSentEventsHandler : HttpAsyncTaskHandler
     {
+        static long anonUserId;
+
         public override bool RunAsAsync()
         {
             return true;
@@ -43,18 +60,33 @@ namespace ServiceStack
         {
             res.ContentType = MimeTypes.ServerSentEvents;
             res.AddHeader(HttpHeaders.CacheControl, "no-cache");
-            //(res.OriginalResponse as HttpListenerResponse).KeepAlive = true;
+            res.KeepAlive = true;
             res.Flush();
 
-            var session = req.GetSession();            
+            var session = req.GetSession();
+            var userAuthId = session != null ? session.UserAuthId : null;
+            var displayName = (session != null ? session.DisplayName : null) 
+                ?? "User" + Interlocked.Increment(ref anonUserId);
+
+            var subscriptionId = SessionExtensions.CreateRandomSessionId();
             var subscription = new EventSubscription(res) 
             {
                 Channel = req.QueryString["channel"] ?? req.OperationName,
-                UserAuthId = session != null ? session.UserAuthId : null,
+                SubscriptionId = subscriptionId,
+                UserAuthId = userAuthId,
                 UserName = session != null ? session.UserName : null,
-                PermSessionId = req.GetPermanentSessionId(),
-                TempSessionId = req.GetTemporarySessionId(),
+                SessionId = req.GetPermanentSessionId(),
+                Meta = {
+                    { "id", subscriptionId },
+                    { "userAuthId", userAuthId },
+                    { "displayName", displayName },
+                    { AuthMetadataProvider.ProfileUrlKey, session.GetProfileUrl() ?? AuthMetadataProvider.DefaultNoProfileImgUrl },
+                }
             };
+            var feature = HostContext.GetPlugin<ServerSentEventsFeature>();
+            if (feature.OnCreated != null)
+                feature.OnCreated(subscription, req);
+
             req.TryResolve<IEventSource>().Register(subscription);
 
             var tcs = new TaskCompletionSource<bool>();
@@ -65,6 +97,23 @@ namespace ServiceStack
         }
     }
 
+    public class GetActiveSubscriptions : IReturn<List<Dictionary<string,string>>>
+    {
+        public string Channel { get; set; }
+    }
+
+    [DefaultRequest(typeof(GetActiveSubscriptions))]
+    [Restrict(VisibilityTo = RequestAttributes.None)]
+    public class ServerSentEventsService : Service
+    {
+        public IEventSource EventSource { get; set; }
+
+        public object Any(GetActiveSubscriptions request)
+        {
+            return EventSource.GetActiveSubscriptions(request.Channel);
+        }
+    }
+
 /*
 cmd.showPopup {A:1,B:2}
 cmd.showPopup [1,2,3]
@@ -72,7 +121,7 @@ cmd.showPopup "stringArg"
 
 trigger.evt {A:1,B:2}
 
-window.location= "http://google.com"
+window.location "http://google.com"
 */
 
     public class EventSubscription : IEventSubscription
@@ -85,13 +134,14 @@ window.location= "http://google.com"
         public EventSubscription(IResponse response)
         {
             this.response = response;
+            this.Meta = new Dictionary<string, string>();
         }
 
         public string Channel { get; set; }
+        public string SubscriptionId { get; set; }
         public string UserAuthId { get; set; }
         public string UserName { get; set; }
-        public string PermSessionId { get; set; }
-        public string TempSessionId { get; set; }
+        public string SessionId { get; set; }
 
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
         public Action<IEventSubscription> OnDispose { get; set; }
@@ -112,7 +162,9 @@ window.location= "http://google.com"
             catch (Exception ex)
             {
                 Log.Error("Error publishing notification to: " + selector, ex);
-                OnUnsubscribe(this);
+
+                if (OnUnsubscribe != null)
+                    OnUnsubscribe(this);
             }
         }
 
@@ -134,15 +186,17 @@ window.location= "http://google.com"
             if (OnDispose != null)
                 OnDispose(this);
         }
+
+        public Dictionary<string, string> Meta { get; set; }
     }
 
-    public interface IEventSubscription : IDisposable
+    public interface IEventSubscription : IMeta, IDisposable
     {
         string Channel { get; }
         string UserAuthId { get; }
         string UserName { get; }
-        string PermSessionId { get; }
-        string TempSessionId { get; }
+        string SessionId { get; }
+        string SubscriptionId { get; }
 
         Action<IEventSubscription> OnUnsubscribe { get; set; }
 
@@ -154,22 +208,25 @@ window.location= "http://google.com"
         public static int DefaultArraySize = 10;
         public static int ReSizeMultiplier = 2;
         public static int ReSizeBuffer = 100;
-        const string UnknownChannel = "__unknown";
+        const string UnknownChannel = "*";
 
+        public Action<IEventSubscription> OnSubscribe { get; set; }
+        public Action<IEventSubscription> OnUnsubscribe { get; set; }
+
+        public ConcurrentDictionary<string, IEventSubscription[]> Subcriptions =
+           new ConcurrentDictionary<string, IEventSubscription[]>();
         public ConcurrentDictionary<string, IEventSubscription[]> ChannelSubcriptions =
            new ConcurrentDictionary<string, IEventSubscription[]>();
         public ConcurrentDictionary<string, IEventSubscription[]> UserIdSubcriptions =
            new ConcurrentDictionary<string, IEventSubscription[]>();
         public ConcurrentDictionary<string, IEventSubscription[]> UserNameSubcriptions =
            new ConcurrentDictionary<string, IEventSubscription[]>();
-        public ConcurrentDictionary<string, IEventSubscription[]> PermSessionSubcriptions =
-           new ConcurrentDictionary<string, IEventSubscription[]>();
-        public ConcurrentDictionary<string, IEventSubscription[]> TempSessionSubcriptions =
+        public ConcurrentDictionary<string, IEventSubscription[]> SessionSubcriptions =
            new ConcurrentDictionary<string, IEventSubscription[]>();
 
         public void NotifyAll(string selector, object message)
         {
-            foreach (var entry in ChannelSubcriptions)
+            foreach (var entry in Subcriptions)
             {
                 foreach (var sub in entry.Value)
                 {
@@ -177,6 +234,11 @@ window.location= "http://google.com"
                         sub.Publish(selector, message);
                 }
             }
+        }
+
+        public void NotifySubscription(string subscriptionId, string selector, object message, string channel = null)
+        {
+            Notify(Subcriptions, subscriptionId, selector, message, channel);
         }
 
         public void NotifyChannel(string channel, string selector, object message)
@@ -194,14 +256,9 @@ window.location= "http://google.com"
             Notify(UserNameSubcriptions, userName, selector, message, channel);
         }
 
-        public void NotifyPermSession(string sspid, string selector, object message, string channel = null)
+        public void NotifySession(string sspid, string selector, object message, string channel = null)
         {
-            Notify(PermSessionSubcriptions, sspid, selector, message, channel);
-        }
-
-        public void NotifyTempSession(string ssid, string selector, object message, string channel = null)
-        {
-            Notify(TempSessionSubcriptions, ssid, selector, message, channel);
+            Notify(SessionSubcriptions, sspid, selector, message, channel);
         }
 
         void Notify(ConcurrentDictionary<string, IEventSubscription[]> map, string key,
@@ -217,16 +274,28 @@ window.location= "http://google.com"
             }
         }
 
+        public List<Dictionary<string, string>> GetActiveSubscriptions(string channel=null)
+        {
+            return ChannelSubcriptions.Values
+                .SelectMany(x => x)
+                .Where(x => x != null && (channel == null || x.Channel == channel))
+                .Select(x => x.Meta)
+                .ToList();
+        }
+
         public void Register(IEventSubscription subscription)
         {
             lock (subscription)
             {
                 subscription.OnUnsubscribe = HandleUnsubscription;
                 RegisterSubscription(subscription, subscription.Channel ?? UnknownChannel, ChannelSubcriptions);
+                RegisterSubscription(subscription, subscription.SubscriptionId, Subcriptions);
                 RegisterSubscription(subscription, subscription.UserAuthId, UserIdSubcriptions);
                 RegisterSubscription(subscription, subscription.UserName, UserNameSubcriptions);
-                RegisterSubscription(subscription, subscription.PermSessionId, PermSessionSubcriptions);
-                RegisterSubscription(subscription, subscription.TempSessionId, TempSessionSubcriptions);
+                RegisterSubscription(subscription, subscription.SessionId, SessionSubcriptions);
+
+                if (OnSubscribe != null)
+                    OnSubscribe(subscription);
             }
         }
 
@@ -246,14 +315,12 @@ window.location= "http://google.com"
             }
 
             while (!map.TryGetValue(key, out subs));
-
             if (!TryAdd(subs, subscription))
             {
                 IEventSubscription[] snapshot, newArray;
                 do
                 {
-                    while (!map.TryGetValue(key, out subs));
-                    snapshot = subs;
+                    while (!map.TryGetValue(key, out snapshot));
                     newArray = new IEventSubscription[subs.Length * ReSizeMultiplier + ReSizeBuffer];
                     Array.Copy(snapshot, 0, newArray, 0, snapshot.Length);
                     if (!TryAdd(subs, subscription, startIndex:snapshot.Length))
@@ -304,10 +371,14 @@ window.location= "http://google.com"
             lock (subscription)
             {
                 UnRegisterSubscription(subscription, subscription.Channel ?? UnknownChannel, ChannelSubcriptions);
+                UnRegisterSubscription(subscription, subscription.SubscriptionId, Subcriptions);
                 UnRegisterSubscription(subscription, subscription.UserAuthId, UserIdSubcriptions);
                 UnRegisterSubscription(subscription, subscription.UserName, UserNameSubcriptions);
-                UnRegisterSubscription(subscription, subscription.PermSessionId, PermSessionSubcriptions);
-                UnRegisterSubscription(subscription, subscription.TempSessionId, TempSessionSubcriptions);
+                UnRegisterSubscription(subscription, subscription.SessionId, SessionSubcriptions);
+
+                if (OnUnsubscribe != null)
+                    OnUnsubscribe(subscription);
+
                 subscription.Dispose();
             }
         }
@@ -315,6 +386,8 @@ window.location= "http://google.com"
 
     public interface IEventSource
     {
+        List<Dictionary<string, string>> GetActiveSubscriptions(string channel = null);
+
         void Register(IEventSubscription subscription);
     }
 
@@ -324,12 +397,12 @@ window.location= "http://google.com"
 
         void NotifyChannel(string channel, string selector, object message);
 
+        void NotifySubscription(string subscriptionId, string selector, object message, string channel = null);
+
         void NotifyUserId(string userAuthId, string selector, object message, string channel = null);
 
         void NotifyUserName(string userName, string selector, object message, string channel = null);
 
-        void NotifyPermSession(string sspid, string selector, object message, string channel = null);
-
-        void NotifyTempSession(string ssid, string selector, object message, string channel = null);
+        void NotifySession(string sspid, string selector, object message, string channel = null);
     }
 }
