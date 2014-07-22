@@ -1,0 +1,228 @@
+@inherits ViewPage
+
+@{
+    Layout = "Empty";
+    ViewBag.Title = "Server Sent Events Chat";
+}
+
+<style>
+    body {
+        font: 14px Arial;
+        overflow: hidden;
+        padding: 0;
+        margin: 0;
+    }
+    #main {
+        background: #f1f1f1;
+        height: 100%;
+    }
+    #channels {
+        position: fixed;
+        top: 0;
+        background: #09F;
+        width: 100%;
+        color: #fff;
+    }
+    ul {
+        padding: 0;
+        margin: 10px 10px 0 10px;
+        list-style: none;
+    }
+    li {
+        width: 100px;
+        padding: 5px;
+        text-align: center;
+        background: #f1f1f1;
+        color: #444;
+        font-size: 18px;
+        cursor: pointer;
+    }
+    #subscribers {
+        float: right;
+        width: 250px;
+        height: 100%;
+        background: #fff;
+        border-left: 1px solid #ccc;
+    }
+    #log {
+        background: #f1f1f1;
+        margin: 40px 10px 65px 10px;
+        bottom: 0;
+        position: fixed;
+    }
+    #message {
+        padding: 10px;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        background: #fff;
+        border-top: 1px solid #ccc;
+    }
+    #message input {
+        padding: 4px 8px;
+        width: 93%; 
+        font-size: 18px;
+    }
+    #message button {
+        padding: 4px 8px;
+        font-size: 18px;
+    }
+    .open, .error, .closed {
+        font-weight: bold;
+    }
+    .open {
+        color: green;
+    }
+    .error {
+        color: red;
+    }
+    .closed {
+        color: maroon;
+    }
+    #social {
+        float: right;
+        padding: 5px;
+    }
+    #social a {
+        display: inline-block;
+        width: 77px;
+        height: 20px;
+        margin: 5px 5px 0 0;
+    }
+    .twitter { background: url(/img/twitter_normal.png) no-repeat; }
+    .facebook { background: url(/img/facebook_normal.png) no-repeat; }
+    .github { background: url(/img/github_normal.png) no-repeat; }
+    #user {
+        float: left;
+        margin: 0 5px 0 0;
+    }
+    #user span {
+        line-height: 24px;
+    }
+    #user img{
+        height: 24px; 
+        margin: 0 0 0 5px;
+        vertical-align: bottom;
+    }
+    #users {
+        margin: 50px 0 0 10px;
+        color: #666;
+    }
+    .user img {
+        height: 20px; 
+        margin: 2px 5px 2px 0;
+        vertical-align: bottom;
+    }
+    .private {
+        color: red;
+    }
+</style>
+
+<script src="/jquery-2.0.2.min.js"></script>
+<script src="/js/ss-utils.js"></script>
+
+<div id="main">
+    <div id="channels">
+        <div id="social">
+            <div id="user"></div>
+            @if (!IsAuthenticated)
+            {
+                <a href="/auth/twitter" class="twitter"></a>
+                <a href="/auth/facebook" class="facebook"></a>
+                <a href="/auth/github" class="github"></a>
+            }
+        </div>
+        <ul>
+            <li>home</li>
+        </ul>
+    </div>
+    <div id="subscribers">
+        <div id="users"></div>
+    </div>
+    <div id="window">
+        <div id="log"></div>
+        <div id="message">
+            <input type="text" id="txtMsg" />
+            <button id="btnSend">Send</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    var source = new EventSource('/event-stream?channel=home');
+
+    $.getJSON("/event-subscriptions?channel=home", function(users) {
+        var html = $.map(users, function(user) { return createUser(user); }).join('');
+        $("#users").html(html);
+    });
+
+    function createUser(user) {
+        return "<div id='u_" + user.userId + "' class='user'><img src='" +
+            user.profileUrl + "'/><span>" + user.displayName + "</span></div>";
+    }
+    
+    var $log = $("#log");
+    $(source).handleServerEvents({
+        success: function (selector, msg, json) {
+            console.log(selector, json);
+        },
+        handlers: {
+            onConnect: function (user) {
+                console.log('onConnect', user);
+                userSub = user;
+                var html = '<span>Welcome, ' + user.displayName + '</span>' +
+                           '<img src="' + user.profileUrl + '"/>';
+                $("#user").html(html);
+                $log.append("<div class='open'>CONNECTED!</div>");
+            },
+            onJoin: function (user) {
+                console.log('onJoin', user);
+                $("#u_" + user.userId).slideUp().remove();
+                $("#users").prepend(createUser(user));
+            },
+            onLeave: function (user) {
+                console.log('onLeave', user);
+                $("#u_" + user.userId).slideUp().remove();
+            },
+            chat: function (dto) {
+                console.log("chat", dto);
+                var cls = dto.private ? ' private' : '';
+                $("#log").append("<div class='msg" + cls + "'>" + dto.message + "</div>");
+            }
+        }
+    });
+
+    source.addEventListener('error', function (e) {
+        $log.append("<div class='error'>ERROR</div>");
+    }, false);
+
+    function postMsg() {
+        var msg = $("#txtMsg").val();
+        if (!msg || !userSub) return;
+        if (msg[0] == "/") {
+            var parts = $.ss.splitOnFirst(msg, " ");
+            $.post("/channels/home/raw", { from: userSub.id, message: parts[1], selector: parts[0].substring(1) }, function (r) { });
+        } else {
+            $.post("/channels/home/chat", { from: userSub.id, message: msg, selector: "cmd.chat" }, function (r) { });
+        }
+        $("#txtMsg").val("");
+    }
+    $("#btnSend").click(postMsg);
+    $("#txtMsg").keypress(function(e) {
+        var keycode = (e.keyCode ? e.keyCode : e.which);
+        if (keycode == '13') {
+            postMsg();
+        }
+    });
+
+    var userSub = null;
+    $(document).bindHandlers({
+        showPopup: function (msg) {
+            alert(msg);
+        },
+        toggle: function () {
+            $(this).toggle();
+        }
+    });
+</script>
+
