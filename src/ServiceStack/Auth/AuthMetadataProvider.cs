@@ -66,10 +66,10 @@ namespace ServiceStack.Auth
             return finalUrl;
         }
 
-        public virtual string GetProfileUrl(IAuthSession authSession)
+        public virtual string GetProfileUrl(IAuthSession authSession, string defaultUrl = null)
         {
             if (authSession == null)
-                return NoProfileImgUrl;
+                return defaultUrl ?? NoProfileImgUrl;
 
             foreach (var authTokens in authSession.ProviderOAuthAccess)
             {
@@ -81,7 +81,7 @@ namespace ServiceStack.Auth
                 }
             }
 
-            return NoProfileImgUrl;
+            return defaultUrl ?? NoProfileImgUrl;
         }
     }
 
@@ -89,7 +89,7 @@ namespace ServiceStack.Auth
     {
         void AddProfileUrl(IAuthTokens tokens, Dictionary<string, string> authInfo);
 
-        string GetProfileUrl(IAuthSession authSession);
+        string GetProfileUrl(IAuthSession authSession, string defaultUrl = null);
     }
 
     public static class AuthMetadataProviderExtensions
@@ -100,12 +100,6 @@ namespace ServiceStack.Auth
                 return;
 
             provider.AddProfileUrl(tokens, authInfo);
-        }
-
-        public static string GetProfileUrl(this IAuthSession authSession)
-        {
-            var profile = HostContext.TryResolve<IAuthMetadataProvider>();
-            return profile == null ? null : profile.GetProfileUrl(authSession);
         }
     }
 }

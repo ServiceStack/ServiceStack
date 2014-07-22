@@ -101,5 +101,11 @@ namespace ServiceStack
             }
             return null;
         }
+
+        public static string GetProfileUrl(this IAuthSession authSession, string defaultUrl = null)
+        {
+            var profile = HostContext.TryResolve<IAuthMetadataProvider>();
+            return profile == null ? defaultUrl : profile.GetProfileUrl(authSession, defaultUrl);
+        }
     }
 }
