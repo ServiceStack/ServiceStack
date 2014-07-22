@@ -104,7 +104,7 @@ h1 {
     }, false);
 
     function postMsg() {
-        var url = "/channels/SimpleModel";
+        var url = "/channels/SimpleModel/raw";
         $.post(url, { message: $("#txtMsg").val(), selector: $("#txtSel").val() }, function(r) {});
     }
     $("#btnSend").click(postMsg);

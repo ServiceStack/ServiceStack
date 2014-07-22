@@ -217,7 +217,7 @@ namespace ServiceStack.AuthWeb.Tests
     }
 
     [Route("/channels/{Channel}/raw")]
-    public class PostRawToChannel : IReturn<ChatMessage>
+    public class PostRawToChannel : IReturnVoid
     {
         public string From { get; set; }
         public string ToUserId { get; set; }

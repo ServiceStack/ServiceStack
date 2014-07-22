@@ -232,9 +232,12 @@ namespace RazorRockstars.Console.Files
         public int Id { get; set; }
     }
 
-    [Route("/channels/{Channel}")]
-    public class PublishToChannel
+
+    [Route("/channels/{Channel}/raw")]
+    public class PostRawToChannel : IReturnVoid
     {
+        public string From { get; set; }
+        public string ToUserId { get; set; }
         public string Channel { get; set; }
         public string Message { get; set; }
         public string Selector { get; set; }
@@ -242,15 +245,22 @@ namespace RazorRockstars.Console.Files
 
     public class ServerEventsService : Service
     {
-        public INotifier Notifier { get; set; }
+        public IEventsBroker EventsBroker { get; set; }
 
-        public object Any(PublishToChannel request)
+        public void Any(PostRawToChannel request)
         {
-            var selector = !string.IsNullOrEmpty(request.Selector)
-                ? request.Selector
-                : "sel.ect.or";
-            Notifier.NotifyChannel(request.Channel, selector, request.Message);
-            return request;
+            var sub = EventsBroker.GetSubscription(request.From);
+            if (sub == null)
+                throw HttpError.NotFound("Subscription {0} does not exist".Fmt(request.From));
+
+            if (request.ToUserId != null)
+            {
+                EventsBroker.NotifyUserId(request.ToUserId, request.Selector, request.Message);
+            }
+            else
+            {
+                EventsBroker.NotifyChannel(request.Channel, request.Selector, request.Message);
+            }
         }
     }
 }
