@@ -1,9 +1,36 @@
 @inherits ViewPage<Rockstar> 
 
 @{
-    Layout = "SimpleLayout";
+    Layout = "Empty";
     ViewBag.Title = "Server Sent Events Test";
 }
+<style>
+body {
+    background-color:white;
+    color:#000000;
+    font-family:Verdana;
+    margin: 0;
+    padding: 10px;        
+}
+h1 {
+    background-color: #036;
+    color: #FFF;
+    font-family: Tahoma;
+    font-size: 26px;
+    font-weight: normal;
+    margin: 0;
+    padding: 10px 0 3px 15px;
+}
+#content {
+    padding: 15px;
+}
+#content-page {
+    max-width: 1100px;
+}
+#sidebar {
+    float:right;
+}
+</style>
 
 <script src="/jquery-2.0.2.min.js"></script>
 <script src="/js/ss-utils.js"></script>
@@ -54,8 +81,10 @@
     }
     
     var $events = document.getElementById("events");
-    $.ss.handleServerEvents(source, function (selector, msg, json) {
-        $events.insertAdjacentHTML("afterbegin", "<div><b>" + selector + "</b>: " + json + "</div>");
+    $.ss.handleServerEvents(source, {
+        success: function (selector, msg, json) {
+            $events.insertAdjacentHTML("afterbegin", "<div><b>" + selector + "</b>: " + json + "</div>");
+        }
     });
 
     source.addEventListener('open', function (e) {
@@ -75,7 +104,7 @@
     }, false);
 
     function postMsg() {
-        var url = "/notify-request/SimpleModel";
+        var url = "/channels/SimpleModel";
         $.post(url, { message: $("#txtMsg").val(), selector: $("#txtSel").val() }, function(r) {});
     }
     $("#btnSend").click(postMsg);

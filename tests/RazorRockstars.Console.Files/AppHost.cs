@@ -232,8 +232,8 @@ namespace RazorRockstars.Console.Files
         public int Id { get; set; }
     }
 
-    [Route("/notify-request/{Channel}")]
-    public class NotifyChannel
+    [Route("/channels/{Channel}")]
+    public class PublishToChannel
     {
         public string Channel { get; set; }
         public string Message { get; set; }
@@ -244,7 +244,7 @@ namespace RazorRockstars.Console.Files
     {
         public INotifier Notifier { get; set; }
 
-        public object Any(NotifyChannel request)
+        public object Any(PublishToChannel request)
         {
             var selector = !string.IsNullOrEmpty(request.Selector)
                 ? request.Selector
