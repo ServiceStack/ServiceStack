@@ -2,19 +2,17 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.Auth;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Logging;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class ServerSentEventsFeature : IPlugin
+    public class ServerEventsFeature : IPlugin
     {
         public string StreamPath { get; set; }
         public string HeartbeatPath { get; set; }
@@ -28,7 +26,7 @@ namespace ServiceStack
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
         public bool NotifyChannelOfSubscriptions { get; set; }
 
-        public ServerSentEventsFeature()
+        public ServerEventsFeature()
         {
             StreamPath = "/event-stream";
             HeartbeatPath = "/event-heartbeat";
@@ -42,7 +40,7 @@ namespace ServiceStack
 
         public void Register(IAppHost appHost)
         {
-            var broker = new MemoryEventsBroker {
+            var broker = new MemoryServerEvents {
                 Timeout = Timeout,
                 OnSubscribe = OnSubscribe,
                 OnUnsubscribe = OnUnsubscribe,
@@ -50,21 +48,21 @@ namespace ServiceStack
             };
             var container = appHost.GetContainer();
 
-            if (container.TryResolve<IEventsBroker>() == null)
-                container.Register<IEventsBroker>(broker);
+            if (container.TryResolve<IServerEvents>() == null)
+                container.Register<IServerEvents>(broker);
 
             appHost.RawHttpHandlers.Add(httpReq => 
                 httpReq.PathInfo.EndsWith(StreamPath)
-                    ? (IHttpHandler) new ServerSentEventsHandler()
+                    ? (IHttpHandler) new ServerEventsHandler()
                     : httpReq.PathInfo.EndsWith(HeartbeatPath)
-                      ? new ServerSentEventsHeartbeatHandler() 
+                      ? new ServerEventsHeartbeatHandler() 
                       : null);
 
-            appHost.RegisterService(typeof(ServerSentEventsService), SubscriptionsPath);
+            appHost.RegisterService(typeof(ServerEventsService), SubscriptionsPath);
         }
     }
 
-    public class ServerSentEventsHandler : HttpAsyncTaskHandler
+    public class ServerEventsHandler : HttpAsyncTaskHandler
     {
         static long anonUserId;
 
@@ -86,7 +84,7 @@ namespace ServiceStack
             var displayName = (session != null ? session.DisplayName : null) 
                 ?? "User" + Interlocked.Increment(ref anonUserId);
 
-            var feature = HostContext.GetPlugin<ServerSentEventsFeature>();
+            var feature = HostContext.GetPlugin<ServerEventsFeature>();
 
             var now = DateTime.UtcNow;
             var subscriptionId = SessionExtensions.CreateRandomSessionId();
@@ -110,7 +108,7 @@ namespace ServiceStack
             if (feature.OnCreated != null)
                 feature.OnCreated(subscription, req);
 
-            req.TryResolve<IEventsBroker>().Register(subscription);
+            req.TryResolve<IServerEvents>().Register(subscription);
 
             var heartbeatUrl = req.ResolveAbsoluteUrl("~/".CombineWith(feature.HeartbeatPath))
                 .AddQueryParam("from", subscriptionId);
@@ -133,7 +131,7 @@ namespace ServiceStack
         }
     }
 
-    public class ServerSentEventsHeartbeatHandler : HttpAsyncTaskHandler
+    public class ServerEventsHeartbeatHandler : HttpAsyncTaskHandler
     {
         public override bool RunAsAsync()
         {
@@ -143,7 +141,7 @@ namespace ServiceStack
         public override Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
         {
             var subscriptionId = req.QueryString["from"];
-            req.TryResolve<IEventsBroker>().Pulse(subscriptionId);
+            req.TryResolve<IServerEvents>().Pulse(subscriptionId);
 
             res.EndHttpHandlerRequest(skipHeaders:true);
 
@@ -158,13 +156,13 @@ namespace ServiceStack
 
     [DefaultRequest(typeof(GetSubscriptions))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
-    public class ServerSentEventsService : Service
+    public class ServerEventsService : Service
     {
-        public IEventsBroker EventsBroker { get; set; }
+        public IServerEvents ServerEvents { get; set; }
 
         public object Any(GetSubscriptions request)
         {
-            return EventsBroker.GetSubscriptions(request.Channel);
+            return ServerEvents.GetSubscriptions(request.Channel);
         }
     }
 
@@ -287,9 +285,9 @@ namespace ServiceStack
         void Pulse();
     }
 
-    public class MemoryEventsBroker : IEventsBroker
+    public class MemoryServerEvents : IServerEvents
     {
-        private static ILog Log = LogManager.GetLogger(typeof(MemoryEventsBroker));
+        private static ILog Log = LogManager.GetLogger(typeof(MemoryServerEvents));
 
         public static int DefaultArraySize = 2;
         public static int ReSizeMultiplier = 2;
@@ -536,7 +534,7 @@ namespace ServiceStack
         }
     }
 
-    public interface IEventsBroker
+    public interface IServerEvents
     {
         void Pulse(string id);
 

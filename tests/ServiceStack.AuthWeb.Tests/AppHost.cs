@@ -40,7 +40,7 @@ namespace ServiceStack.AuthWeb.Tests
         public override void Configure(Container container)
         {
             Plugins.Add(new RazorFormat());
-            Plugins.Add(new ServerSentEventsFeature());
+            Plugins.Add(new ServerEventsFeature());
 
             container.Register(new DataSource());
 
@@ -230,11 +230,11 @@ namespace ServiceStack.AuthWeb.Tests
     {
         private long msgId;
 
-        public IEventsBroker EventsBroker { get; set; }
+        public IServerEvents ServerEvents { get; set; }
 
         public object Any(PostChatToChannel request)
         {
-            var sub = EventsBroker.GetSubscription(request.From);
+            var sub = ServerEvents.GetSubscription(request.From);
             if (sub == null)
                 throw HttpError.NotFound("Subscription {0} does not exist".Fmt(request.From));
 
@@ -249,11 +249,11 @@ namespace ServiceStack.AuthWeb.Tests
             if (request.ToUserId != null)
             {
                 msg.Private = true;
-                EventsBroker.NotifyUserId(request.ToUserId, request.Selector, msg);
+                ServerEvents.NotifyUserId(request.ToUserId, request.Selector, msg);
             }
             else
             {
-                EventsBroker.NotifyChannel(request.Channel, request.Selector, msg);
+                ServerEvents.NotifyChannel(request.Channel, request.Selector, msg);
             }
 
             return msg;
@@ -261,17 +261,17 @@ namespace ServiceStack.AuthWeb.Tests
 
         public void Any(PostRawToChannel request)
         {
-            var sub = EventsBroker.GetSubscription(request.From);
+            var sub = ServerEvents.GetSubscription(request.From);
             if (sub == null)
                 throw HttpError.NotFound("Subscription {0} does not exist".Fmt(request.From));
 
             if (request.ToUserId != null)
             {
-                EventsBroker.NotifyUserId(request.ToUserId, request.Selector, request.Message);
+                ServerEvents.NotifyUserId(request.ToUserId, request.Selector, request.Message);
             }
             else
             {
-                EventsBroker.NotifyChannel(request.Channel, request.Selector, request.Message);
+                ServerEvents.NotifyChannel(request.Channel, request.Selector, request.Message);
             }
         }
     }

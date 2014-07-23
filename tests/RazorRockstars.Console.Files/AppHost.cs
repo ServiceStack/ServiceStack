@@ -27,7 +27,7 @@ namespace RazorRockstars.Console.Files
             Plugins.Add(new SwaggerFeature());
             Plugins.Add(new RequestInfoFeature());
             Plugins.Add(new RequestLogsFeature());
-            Plugins.Add(new ServerSentEventsFeature());
+            Plugins.Add(new ServerEventsFeature());
 
             Plugins.Add(new ValidationFeature());
             container.RegisterValidators(typeof(AutoValidationValidator).Assembly);
@@ -245,21 +245,21 @@ namespace RazorRockstars.Console.Files
 
     public class ServerEventsService : Service
     {
-        public IEventsBroker EventsBroker { get; set; }
+        public IServerEvents ServerEvents { get; set; }
 
         public void Any(PostRawToChannel request)
         {
-            var sub = EventsBroker.GetSubscription(request.From);
+            var sub = ServerEvents.GetSubscription(request.From);
             if (sub == null)
                 throw HttpError.NotFound("Subscription {0} does not exist".Fmt(request.From));
 
             if (request.ToUserId != null)
             {
-                EventsBroker.NotifyUserId(request.ToUserId, request.Selector, request.Message);
+                ServerEvents.NotifyUserId(request.ToUserId, request.Selector, request.Message);
             }
             else
             {
-                EventsBroker.NotifyChannel(request.Channel, request.Selector, request.Message);
+                ServerEvents.NotifyChannel(request.Channel, request.Selector, request.Message);
             }
         }
     }
