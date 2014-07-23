@@ -273,6 +273,29 @@
             <para>db.Count(db.From&lt;Person&gt;().Where(x =&gt; x.Age &lt; 50))</para>
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.LoadSelect``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Returns results with references from using a LINQ Expression. E.g:
+            <para>db.LoadSelect&lt;Person&gt;(x =&gt; x.Age &gt; 40)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.LoadSelect``1(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}})">
+            <summary>
+            Returns results with references from using an SqlExpression lambda. E.g:
+            <para>db.LoadSelect&lt;Person&gt;(q =&gt; q.Where(x =&gt; x.Age &gt; 40))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.LoadSelect``1(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``0})">
+            <summary>
+            Returns results with references from using an SqlExpression lambda. E.g:
+            <para>db.LoadSelect(db.From&lt;Person&gt;().Where(x =&gt; x.Age &gt; 40))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.LoadSelect``2(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``1})">
+            <summary>
+            Project results with references from a number of joined tables into a different model
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.WriteConnectionExtensions.InsertOnly``1(System.Data.IDbConnection,``0,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}})">
             <summary>
             Insert only fields in POCO specified by the SqlExpression lambda. E.g:
@@ -588,6 +611,18 @@
             <summary>
             Returns results from an arbitrary parameterized raw sql query. E.g:
             <para>db.SqlList&lt;Person&gt;("EXEC GetRockstarsAged @age", new Dictionary&lt;string, object&gt; { { "age", 42 } })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SqlList``1(System.Data.IDbConnection,System.String,System.Action{System.Data.IDbCommand})">
+            <summary>
+            Returns results from an arbitrary parameterized raw sql query with a dbCmd filter. E.g:
+            <para>db.SqlList&lt;Person&gt;("EXEC GetRockstarsAged @age", dbCmd => ...)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SqlProc(System.Data.IDbConnection,System.String,System.Object,System.Boolean)">
+            <summary>
+            Prepare Stored Procedure with Input parameters, optionally populated with Input Params. E.g:
+            <para>var cmd = db.SqlProc("GetRockstarsAged", new { age = 42 })</para>
             </summary>
         </member>
         <!-- Badly formed XML comment ignored for member "M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.SqlColumn``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression)" -->
