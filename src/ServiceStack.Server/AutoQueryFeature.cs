@@ -704,7 +704,7 @@ namespace ServiceStack
                 {
                     Offset = q.Offset.GetValueOrDefault(0),
                     Total = (int)db.Count(q),
-                    Results = db.Select<Into, From>(q),
+                    Results = db.LoadSelect<Into, From>(q),
                 };
 
                 return response;

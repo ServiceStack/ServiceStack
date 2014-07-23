@@ -259,12 +259,30 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string[] Ratings { get; set; }
     }
 
-
     public class QueryUnknownRockstars : QueryBase<Rockstar>
     {
         public int UnknownInt { get; set; }
         public string UnknownProperty { get; set; }
+
     }
+    [Route("/query/rockstar-references")]
+    public class QueryRockstarsWithReferences : QueryBase<RockstarReference>
+    {
+        public int? Age { get; set; }
+    }
+
+    [Alias("Rockstar")]
+    public class RockstarReference
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public int? Age { get; set; }
+
+        [Reference]
+        public List<RockstarAlbum> Albums { get; set; } 
+    }
+
 
     public class AutoQueryService : Service
     {
@@ -842,6 +860,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Offset, Is.EqualTo(0));
             Assert.That(response.Total, Is.EqualTo(TotalRockstars));
             Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars));
+        }
+
+        [Test]
+        public void Can_Query_Rockstars_with_References()
+        {
+            var response = client.Get(new QueryRockstarsWithReferences {
+                Age = 27
+            });
+         
+            response.PrintDump();
+
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+
+            var jimi = response.Results.First(x => x.FirstName == "Jimi");
+            Assert.That(jimi.Albums.Count, Is.EqualTo(1));
+            Assert.That(jimi.Albums[0].Name, Is.EqualTo("Electric Ladyland"));
+
+            var jim = response.Results.First(x => x.FirstName == "Jim");
+            Assert.That(jim.Albums, Is.Null);
+
+            var kurt = response.Results.First(x => x.FirstName == "Kurt");
+            Assert.That(kurt.Albums.Count, Is.EqualTo(1));
+            Assert.That(kurt.Albums[0].Name, Is.EqualTo("Nevermind"));
         }
     }
 
