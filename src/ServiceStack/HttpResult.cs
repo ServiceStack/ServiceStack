@@ -205,10 +205,15 @@ namespace ServiceStack
 
         public void WriteTo(Stream responseStream)
         {
-            WriteTo(responseStream, PaddingLength);
-
-            responseStream.Flush();
-            DisposeStream();
+            try
+            {
+                WriteTo(responseStream, PaddingLength);
+                responseStream.Flush();
+            }
+            finally
+            {
+                DisposeStream();
+            }
         }
 
         private void WriteTo(Stream responseStream, int paddingLength)
@@ -242,6 +247,7 @@ namespace ServiceStack
                 }
 
                 this.ResponseStream.WriteTo(responseStream);
+                return;
             }
 
             if (this.ResponseText != null)
@@ -307,8 +313,14 @@ namespace ServiceStack
             }
             else if (ResponseStream != null)
             {
-                ResponseStream.WritePartialTo(outputStream, rangeStart, rangeEnd);
-                DisposeStream();
+                try
+                {
+                    ResponseStream.WritePartialTo(outputStream, rangeStart, rangeEnd);
+                }
+                finally 
+                {
+                    DisposeStream();
+                }
             }
             else if (ResponseText != null)
             {
