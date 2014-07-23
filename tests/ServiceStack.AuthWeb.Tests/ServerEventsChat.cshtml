@@ -178,7 +178,7 @@
             user.profileUrl + "'/><span>" + user.displayName + "</span></div>";
     }
     
-    var $log = $("#log");
+    var userSub = null;
     $(source).handleServerEvents({
         success: function (selector, msg, json) {
             console.log(selector, json);
@@ -187,23 +187,30 @@
             onConnect: function (user) {
                 console.log('onConnect', user);
                 userSub = user;
-                var html = '<span>Welcome, ' + user.displayName + '</span>' +
-                    '<img src="' + user.profileUrl + '"/>';
-                $("#user").html(html);
+                $("#user").html('<span>Welcome, ' + user.displayName + '</span>' + '<img src="' + user.profileUrl + '"/>');
                 addEntry({ msg: "CONNECTED!", cls: "open" });
             },
             onJoin: function (user) {
                 console.log('onJoin', user);
-                $(".u_" + user.userId).remove();
+                $("#users .u_" + user.userId).remove();
                 $("#users").prepend(createUser(user));
             },
             onLeave: function (user) {
                 console.log('onLeave', user);
-                $("#u_" + user.userId).slideUp().remove();
+                $("#users .u_" + user.userId).remove();
             },
             chat: function (o, e) {
                 addEntry({ id: o.id, userId: o.fromUserId, userName: o.fromName, msg: o.message, cls: o.private ? ' private' : '' });
             }
+        }
+    });
+
+    $(document).bindHandlers({
+        showPopup: function (msg) {
+            alert(msg);
+        },
+        toggle: function () {
+            $(this).toggle();
         }
     });
 
@@ -214,9 +221,8 @@
     function addEntry(o) {
         console.log("addEntry", o);
         var id = "u_" + o.userId + "";
-        var userHtml = $("#users ." + id).html();
         var skipUser = $("#log .msg:last-child b").hasClass(id);
-        var user = o.userId && !skipUser ? "<b class='user " + id + "'>" + userHtml + "</b>" : "<b class=" + id + ">&nbsp;</b>";
+        var user = o.userId && !skipUser ? "<b class='user " + id + "'>" + $("#users ." + id).html() + "</b>" : "<b class=" + id + ">&nbsp;</b>";
         var time = "<i>" + $.ss.tfmt12(new Date()) + "</i>";
         $("#log").append("<div id='m_" + (o.id || "0") + "' class='msg " + o.cls + "'>" +
             user + time + "<div>" + o.msg + "</div>" + "</div>");
@@ -241,14 +247,5 @@
         }
     });
 
-    var userSub = null;
-    $(document).bindHandlers({
-        showPopup: function (msg) {
-            alert(msg);
-        },
-        toggle: function () {
-            $(this).toggle();
-        }
-    });
 </script>
 
