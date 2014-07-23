@@ -228,7 +228,7 @@ namespace ServiceStack.AuthWeb.Tests
 
     public class ServerEventsService : Service
     {
-        private long msgId;
+        private static long msgId;
 
         public IServerEvents ServerEvents { get; set; }
 

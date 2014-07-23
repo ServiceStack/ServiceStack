@@ -30,7 +30,7 @@ namespace ServiceStack
         {
             StreamPath = "/event-stream";
             HeartbeatPath = "/event-heartbeat";
-            SubscriptionsPath = "/event-subscriptions";
+            SubscriptionsPath = "/event-subscribers";
 
             Timeout = TimeSpan.FromSeconds(30);
             HeartbeatInterval = TimeSpan.FromSeconds(10);
@@ -133,34 +133,28 @@ namespace ServiceStack
 
     public class ServerEventsHeartbeatHandler : HttpAsyncTaskHandler
     {
-        public override bool RunAsAsync()
-        {
-            return true;
-        }
+        public override bool RunAsAsync() { return true; }
 
         public override Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
         {
-            var subscriptionId = req.QueryString["from"];
-            req.TryResolve<IServerEvents>().Pulse(subscriptionId);
-
+            req.TryResolve<IServerEvents>().Pulse(req.QueryString["from"]);
             res.EndHttpHandlerRequest(skipHeaders:true);
-
             return EmptyTask;
         }
     }
 
-    public class GetSubscriptions : IReturn<List<Dictionary<string,string>>>
+    public class GetEventSubscribers : IReturn<List<Dictionary<string,string>>>
     {
         public string Channel { get; set; }
     }
 
-    [DefaultRequest(typeof(GetSubscriptions))]
+    [DefaultRequest(typeof(GetEventSubscribers))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class ServerEventsService : Service
     {
         public IServerEvents ServerEvents { get; set; }
 
-        public object Any(GetSubscriptions request)
+        public object Any(GetEventSubscribers request)
         {
             return ServerEvents.GetSubscriptions(request.Channel);
         }

@@ -27,6 +27,7 @@
     function pad(d) { return d < 10 ? '0' + d : d; };
     $.ss.dfmt = function (d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()); };
     $.ss.dfmthm = function (d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ":" + pad(d.getMinutes()); };
+    $.ss.tfmt12 = function (d) { return pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds()) + " " + (d.getHours() > 12 ? "PM" : "AM"); };
     $.ss.splitOnFirst = function (s, c) { if (!s) return [s]; var pos = s.indexOf(c); return pos >= 0 ? [s.substring(0, pos), s.substring(pos + 1)] : [s]; };
 
     function splitCase(t) {
@@ -273,6 +274,8 @@
         });
     };
 
+    $.ss.eventReceivers = { "window": window, "document": document };
+
     $.fn.handleServerEvents = function (opt) {
         var source = this[0];
         opt = opt || {};
@@ -306,37 +309,32 @@
                         }, parseInt(opt.heartbeatIntervalMs) || 10000);
                     }
                 }
-
                 var fn = $.ss.handlers[cmd];
                 if (fn) {
-                    fn.call($(parts[1])[0], msg);
+                    fn.call($(parts[1])[0], msg, e);
                 }
             }
             else if (op == "trigger") {
                 parts = $.ss.splitOnFirst(target, '$');
-                $(parts.length > 1 ? parts[1] : document).trigger(parts[0], [msg]);
+                $(parts.length > 1 ? parts[1] : document).trigger(parts[0], [msg, e]);
             }
             else if (op == "css") {
                 parts = $.ss.splitOnFirst(target, '$');
-                $(parts.length > 1 ? parts[1] : document.body).css(parts[0], msg);
+                $(parts.length > 1 ? parts[1] : document.body).css(parts[0], msg, e);
             }
-            else if (op == "window") {
-                if (typeof (window[target]) == "function") {
-                    window[target](msg);
-                } else {
-                    window[target] = msg;
-                }
-            }
-            else if (op == "document") {
-                if (typeof (document[target]) == "function") {
-                    document[target](msg);
-                } else {
-                    document[target] = msg;
+            else {
+                var r = opt.receivers && opt.receivers[op] || $.ss.eventReceivers[op];
+                if (r) {
+                    if (typeof(r[target]) == "function") {
+                        r[target](msg, e);
+                    } else {
+                        r[target] = msg;
+                    }
                 }
             }
 
             if (opt.success) {
-                opt.success(selector, msg, json);
+                opt.success(selector, msg, e);
             }
         }, false);
     };

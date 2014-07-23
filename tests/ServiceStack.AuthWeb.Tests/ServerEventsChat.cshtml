@@ -3,81 +3,79 @@
 @{
     Layout = "Empty";
     ViewBag.Title = "Server Sent Events Chat";
+    var channel = Request.QueryString["channel"] ?? "home";
 }
 
 <style>
     body {
-        font: 14px Arial;
+        font: 16px Arial;
         overflow: hidden;
         padding: 0;
         margin: 0;
-    }
-    #main {
-        background: #f1f1f1;
-        height: 100%;
+        color: #444;
     }
     #channels {
+        z-index: 1;
         position: fixed;
         top: 0;
         background: #09F;
         width: 100%;
-        color: #fff;
+        height: 40px;
     }
     ul {
         padding: 0;
-        margin: 10px 10px 0 10px;
+        margin: 0;
+        position: absolute;
+        top: 10px;
+        left: 10px;
         list-style: none;
     }
     li {
+        display: block;
         width: 100px;
         padding: 5px;
         text-align: center;
-        background: #f1f1f1;
-        color: #444;
+        background: #fff;
         font-size: 18px;
         cursor: pointer;
     }
     #subscribers {
-        float: right;
-        width: 250px;
+        position: absolute;
+        top: 40px;
+        right: 0;
+        width: 15%;
         height: 100%;
         background: #fff;
-        border-left: 1px solid #ccc;
+        border-left: 2px solid #ccc;
     }
     #log {
-        background: #f1f1f1;
-        margin: 40px 10px 65px 10px;
-        bottom: 0;
         position: fixed;
+        left: -2px;
+        bottom: 50px;
+        width: 85%;
     }
-    #message {
-        padding: 10px;
+    #controls {
         position: fixed;
         bottom: 0;
+        height: 50px;
         width: 100%;
-        background: #fff;
+        background: #f1f1f1;
         border-top: 1px solid #ccc;
     }
-    #message input {
+    #controls input {
+        font-size: 16px;
+        margin: 6px 0 0 6px;
         padding: 4px 8px;
-        width: 93%; 
-        font-size: 18px;
+        width: 77%; 
     }
-    #message button {
+    #controls button {
         padding: 4px 8px;
-        font-size: 18px;
     }
-    .open, .error, .closed {
-        font-weight: bold;
-    }
-    .open {
+    .open div {
         color: green;
     }
-    .error {
+    .error div {
         color: red;
-    }
-    .closed {
-        color: maroon;
     }
     #social {
         float: right;
@@ -95,69 +93,88 @@
     #user {
         float: left;
         margin: 0 5px 0 0;
+        color: #f1f1f1;
     }
     #user span {
         line-height: 24px;
     }
-    #user img{
+    #user img {
         height: 24px; 
         margin: 0 0 0 5px;
         vertical-align: bottom;
     }
     #users {
-        margin: 50px 0 0 10px;
         color: #666;
     }
     .user img {
-        height: 20px; 
-        margin: 2px 5px 2px 0;
+        height: 24px; 
+        margin: 2px 5px 0 5px;
         vertical-align: bottom;
     }
     .private {
         color: red;
+    }
+    .msg {
+        border-top: 1px solid #eee;
+    }
+    .msg b, .msg div, .msg i {
+        line-height: 30px;
+        height: 30px;
+        display: inline-block;
+        padding: 0 0 0 10px;
+        font-style: normal;
+        font-weight: normal;
+    }
+    .msg b {
+        width: 200px;
+        background: #fafafa;
+    }
+    .msg div {
+    }
+    .msg i {
+        color: #999;
+        float: right;
+        padding: 0 10px 0 0;
     }
 </style>
 
 <script src="/jquery-2.0.2.min.js"></script>
 <script src="/js/ss-utils.js"></script>
 
-<div id="main">
-    <div id="channels">
-        <div id="social">
-            <div id="user"></div>
-            @if (!IsAuthenticated)
-            {
-                <a href="/auth/twitter" class="twitter"></a>
-                <a href="/auth/facebook" class="facebook"></a>
-                <a href="/auth/github" class="github"></a>
-            }
-        </div>
-        <ul>
-            <li>home</li>
-        </ul>
+<div id="channels">
+    <div id="social">
+        <div id="user"></div>
+        @if (!IsAuthenticated)
+        {
+            <a href="/auth/twitter" class="twitter"></a>
+            <a href="/auth/facebook" class="facebook"></a>
+            <a href="/auth/github" class="github"></a>
+        }
     </div>
-    <div id="subscribers">
-        <div id="users"></div>
-    </div>
-    <div id="window">
-        <div id="log"></div>
-        <div id="message">
-            <input type="text" id="txtMsg" />
-            <button id="btnSend">Send</button>
-        </div>
-    </div>
+    <ul>
+        <li>@channel</li>
+    </ul>
+</div>
+<div id="subscribers">
+    <div id="users"></div>
+</div>
+
+<div id="log"></div>
+<div id="controls">
+    <input type="text" id="txtMsg" />
+    <button id="btnSend">Send</button>
 </div>
 
 <script>
-    var source = new EventSource('/event-stream?channel=home');
+    var source = new EventSource('/event-stream?channel=@channel');
 
-    $.getJSON("/event-subscriptions?channel=home", function(users) {
+    $.getJSON("/event-subscribers?channel=@channel", function (users) {
         var html = $.map(users, function(user) { return createUser(user); }).join('');
         $("#users").html(html);
     });
 
     function createUser(user) {
-        return "<div id='u_" + user.userId + "' class='user'><img src='" +
+        return "<div class='user u_" + user.userId + "'><img src='" +
             user.profileUrl + "'/><span>" + user.displayName + "</span></div>";
     }
     
@@ -171,39 +188,48 @@
                 console.log('onConnect', user);
                 userSub = user;
                 var html = '<span>Welcome, ' + user.displayName + '</span>' +
-                           '<img src="' + user.profileUrl + '"/>';
+                    '<img src="' + user.profileUrl + '"/>';
                 $("#user").html(html);
-                $log.append("<div class='open'>CONNECTED!</div>");
+                addEntry({ msg: "CONNECTED!", cls: "open" });
             },
             onJoin: function (user) {
                 console.log('onJoin', user);
-                $("#u_" + user.userId).slideUp().remove();
+                $(".u_" + user.userId).remove();
                 $("#users").prepend(createUser(user));
             },
             onLeave: function (user) {
                 console.log('onLeave', user);
                 $("#u_" + user.userId).slideUp().remove();
             },
-            chat: function (dto) {
-                console.log("chat", dto);
-                var cls = dto.private ? ' private' : '';
-                $("#log").append("<div class='msg" + cls + "'>" + dto.message + "</div>");
+            chat: function (o, e) {
+                addEntry({ id: o.id, userId: o.fromUserId, userName: o.fromName, msg: o.message, cls: o.private ? ' private' : '' });
             }
         }
     });
 
     source.addEventListener('error', function (e) {
-        $log.append("<div class='error'>ERROR</div>");
+        addEntry({ msg: "ERROR!", cls: "error" });
     }, false);
+
+    function addEntry(o) {
+        console.log("addEntry", o);
+        var id = "u_" + o.userId + "";
+        var userHtml = $("#users ." + id).html();
+        var skipUser = $("#log .msg:last-child b").hasClass(id);
+        var user = o.userId && !skipUser ? "<b class='user " + id + "'>" + userHtml + "</b>" : "<b class=" + id + ">&nbsp;</b>";
+        var time = "<i>" + $.ss.tfmt12(new Date()) + "</i>";
+        $("#log").append("<div id='m_" + (o.id || "0") + "' class='msg " + o.cls + "'>" +
+            user + time + "<div>" + o.msg + "</div>" + "</div>");
+    }
 
     function postMsg() {
         var msg = $("#txtMsg").val();
         if (!msg || !userSub) return;
         if (msg[0] == "/") {
             var parts = $.ss.splitOnFirst(msg, " ");
-            $.post("/channels/home/raw", { from: userSub.id, message: parts[1], selector: parts[0].substring(1) }, function (r) { });
+            $.post("/channels/@channel/raw", { from: userSub.id, message: parts[1], selector: parts[0].substring(1) }, function (r) { });
         } else {
-            $.post("/channels/home/chat", { from: userSub.id, message: msg, selector: "cmd.chat" }, function (r) { });
+            $.post("/channels/@channel/chat", { from: userSub.id, message: msg, selector: "cmd.chat" }, function (r) { });
         }
         $("#txtMsg").val("");
     }
