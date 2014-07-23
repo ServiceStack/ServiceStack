@@ -64,6 +64,11 @@ namespace ServiceStack.Auth
             newUser.ThrowIfNull("newUser");
             password.ThrowIfNullOrEmpty("password");
 
+            ValidateNewUser(newUser);
+        }
+
+        private void ValidateNewUser(IUserAuth newUser)
+        {
             if (newUser.UserName.IsNullOrEmpty() && newUser.Email.IsNullOrEmpty())
             {
                 throw new ArgumentNullException("UserName or Email is required");
@@ -150,6 +155,27 @@ namespace ServiceStack.Auth
                 newUser.PasswordHash = hash;
                 newUser.Salt = salt;
                 newUser.DigestHa1Hash = digestHash;
+                newUser.CreatedDate = existingUser.CreatedDate;
+                newUser.ModifiedDate = DateTime.UtcNow;
+
+                db.Save((TUserAuth)newUser);
+
+                return newUser;
+            }
+        }
+
+        public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser)
+        {
+            ValidateNewUser(newUser);
+
+            using (var db = dbFactory.Open())
+            {
+                AssertNoExistingUser(db, newUser, existingUser);
+
+                newUser.Id = existingUser.Id;
+                newUser.PasswordHash = existingUser.PasswordHash;
+                newUser.Salt = existingUser.Salt;
+                newUser.DigestHa1Hash = existingUser.DigestHa1Hash;
                 newUser.CreatedDate = existingUser.CreatedDate;
                 newUser.ModifiedDate = DateTime.UtcNow;
 
