@@ -18,7 +18,7 @@
         z-index: 1;
         position: fixed;
         top: 0;
-        background: #09F;
+        background: #03a9f4;
         width: 100%;
         height: 40px;
     }
@@ -33,11 +33,30 @@
     li {
         display: block;
         float: left;
-        padding: 5px 30px;
+        padding: 4px 30px;
         text-align: center;
         background: #fff;
         font-size: 18px;
         cursor: pointer;
+    }
+    #announce {
+        z-index: 2;
+        display: none;
+        position: absolute;
+        top: 40px;
+        line-height: 50px;
+        width: 100%;
+        background: #ffc;
+        text-align: center;
+        box-shadow: 0px 2px 3px rgba(100, 100, 100, 0.75);
+    }
+    #tv {
+        z-index: 1;
+        position: absolute;
+        display: none;
+        text-align: center;
+        width: 85%;
+        top: 40px;
     }
     #right {
         position: absolute;
@@ -45,8 +64,33 @@
         right: 0;
         width: 15%;
         height: 100%;
-        border-left: 2px solid #ccc;
+        border: 2px solid #ccc;
         color: #666;
+    }
+    #examples {
+        position: fixed;
+        bottom: 60px;
+        right: .5%;
+        width: 14%;
+        border: 1px solid #ccc;
+        font-size: 12px;
+        background: #fcfcfc;
+    }
+    #examples h4 {
+        margin: 0;
+        padding: 5px 10px;
+        background: #f1f1f1;
+    }
+    #examples div {
+        white-space: nowrap;
+        overflow: hidden;
+        cursor: pointer;
+        padding: 0 5px;
+        line-height: 28px;
+    }
+    #examples div:hover {
+        background: #ffe;
+        color: #222;
     }
     #log {
         position: fixed;
@@ -59,7 +103,7 @@
         bottom: 0;
         height: 50px;
         width: 100%;
-        background: #f1f1f1;
+        background: #eaeaea;
         border-top: 1px solid #ccc;
     }
     #bottom input {
@@ -76,6 +120,9 @@
     }
     .error div {
         color: red;
+    }
+    .event div {
+        color: blue;
     }
     #social {
         float: right;
@@ -154,16 +201,43 @@
             <a href="/auth/github" class="github"></a>
         }
     </div>
-    <ul>
+    <ul id="channels">
         <li>
             @channel
         </li>
         <li style="background:none; padding: 0 0 0 5px;">
-            <button onclick="var chan = prompt('Open another Channel in new Window:','ChannelName'); if (chan) window.open('?channel='+chan);">+</button>
+            <button onclick="var chan = prompt('Open another Channel in new Window:','ChannelName'); if (chan) window.open('?channel='+chan.replace(/\s+/g,''));">+</button>
         </li>
     </ul>
 </div>
-<div id="right"><div id="users"></div></div>
+<div id="announce"></div>
+<div id="tv"></div>
+<div id="right">
+    <div id="users"></div>
+    <div id="examples" data-click="sendCommand">
+        <h4>Example Commands</h4>
+        <div>/cmd.announce This is your captain speaking ...</div>
+        <div>/cmd.toggle$#channels</div>
+        <h4>CSS</h4>
+        <div>/css.background #eceff1</div>
+        <div>/css.background$#top #673ab7</div>
+        <div>/css.background$#right #fffde7</div>
+        <div>/css.background$#bottom #0091ea</div>
+        <div>/css.color$#me #ff0</div>
+        <div>/css.display$img none</div>
+        <div>/css.display$img inline</div>
+        <h4>Receivers</h4>
+        <div>/document.title New Window Title</div>
+        <div>/window.location http://google.com</div>
+        <div>/cmd.removeReceiver window</div>
+        <div>/cmd.addReceiver window</div>
+        <div>/tv.watch http://youtu.be/518XP8prwZo</div>
+        <div>/tv.watch https://servicestack.net/img/logo-220.png</div>        
+        <div>@@me /tv.off</div>
+        <h4>Triggers</h4>
+        <div>/trigger.customEvent arg</div>
+    </div>
+</div>
 
 <div id="log"></div>
 <div id="bottom">
@@ -172,8 +246,11 @@
 </div>
 
 <script>
-    var source = new EventSource('/event-stream?channel=@channel')
-        , $txtMsg = $("#txtMsg");
+    var source = new EventSource('/event-stream?channel=@channel&t=' + new Date().getMilliseconds()); //disable cache
+
+    source.addEventListener('error', function (e) {
+        addEntry({ msg: "ERROR!", cls: "error" });
+    }, false);
 
     $.getJSON("/event-subscribers?channel=@channel", function (users) {
         var usersMap = {};
@@ -182,6 +259,7 @@
         $("#users").html(html);
     });
 
+    var $txtMsg = $("#txtMsg");
     $txtMsg.focus();
 
     function createUser(user) {
@@ -189,7 +267,7 @@
                 user.profileUrl + "'/><span data-id='" + user.userId + "' data-click='privateMsg'>" + user.displayName + "</span></div>";
     }
     
-    var userSub = null;
+    var activeSub = null;
     $(source).handleServerEvents({
         success: function (selector, msg, json) {
             console.log(selector, json);
@@ -197,7 +275,7 @@
         handlers: {
             onConnect: function (user) {
                 console.log('onConnect', user);
-                userSub = user;
+                activeSub = user;
                 $("#me").html('<span>Welcome, ' + user.displayName + '</span>' + '<img src="' + user.profileUrl + '"/>');
                 addEntry({ msg: "CONNECTED!", cls: "open" });
             },
@@ -208,7 +286,7 @@
             },
             onLeave: function (user) {
                 console.log('onLeave', user);
-                if (userSub != null && user.userId != userSub.userId)
+                if (activeSub != null && user.userId != activeSub.userId)
                     $("#users .u_" + user.userId).remove();
             },
             chat: function (o, e) {
@@ -217,21 +295,55 @@
         }
     });
 
+    var templates = {
+        youtube: '<iframe width="640" height="360" src="//www.youtube.com/embed/{id}?autoplay=1" frameborder="0" allowfullscreen></iframe>',
+        generic: '<iframe width="640" height="360" src="{id}" frameborder="0"></iframe>'
+    };
+
+    var tv = {
+        watch: function (id) {
+            if (id.indexOf('youtube.com') >= 0) {
+                var qs = $.ss.queryString(id);
+                $("#tv").html(templates.youtube.replace("{id}", qs["v"])).show();
+            }
+            else if (id.indexOf('youtu.be') >= 0) {
+                var v = $.ss.splitOnLast(id, '/')[1];
+                $("#tv").html(templates.youtube.replace("{id}", v)).show();
+            } else {
+                $("#tv").html(templates.generic.replace("{id}", id)).show();
+            }
+        },
+        off: function() {
+            $("#tv").hide().html("");
+        }
+    };
+    $.ss.eventReceivers["tv"] = tv;
+
+    $(document).on('customEvent', function (e, msg, msgEvent) {
+        addEntry({ msg: "[event " + e.type + " message: " + msg + "]", cls: "event" });
+    });
+
     $(document).bindHandlers({
-        showPopup: function (msg) {
-            alert(msg);
+        announce: function (msg) {
+            $("#announce").html(msg).fadeIn('fast');
+            setTimeout(function () { $("#announce").fadeOut('slow'); }, 2000);
         },
         toggle: function () {
             $(this).toggle();
         },
+        sendCommand: function () {
+            $("#txtMsg").val($(this).html()).focus();
+        },
         privateMsg: function() {
             $txtMsg.val("@@" + this.innerHTML + " ").focus();
+        },
+        removeReceiver: function(name) {
+            delete $.ss.eventReceivers[name];
+        },
+        addReceiver: function (name) {
+            $.ss.eventReceivers[name] = window[name];
         }
     });
-
-    source.addEventListener('error', function (e) {
-        addEntry({ msg: "ERROR!", cls: "error" });
-    }, false);
 
     function addEntry(o) {
         console.log("addEntry", o);
@@ -239,7 +351,7 @@
         var skipUser = $("#log .msg:last-child b").hasClass(id);
         var user = o.userId && !skipUser ? "<b class='user " + id + "'>" + $("#users ." + id).html() + "</b>" : "<b class=" + id + ">&nbsp;</b>";
         var time = "<i>" + $.ss.tfmt12(new Date()) + "</i>";
-        var highlight = o.msg.indexOf(userSub.displayName.replace(" ", "")) >= 0 ? "highlight " : "";
+        var highlight = o.msg.indexOf(activeSub.displayName.replace(" ", "")) >= 0 ? "highlight " : "";
         $("#log").append("<div id='m_" + (o.id || "0") + "' class='msg " + highlight + o.cls + "'>" +
             user + time + "<div>" + o.msg + "</div>" + "</div>");
     }
@@ -253,18 +365,22 @@
         if (msg[0] == "@@") {
             parts = $.ss.splitOnFirst(msg, " ");
             var toName = parts[0].substring(1);
-            var matches = $.grep($("#users .user span"),
-                function(x) { return x.innerHTML.replace(" ", "").toLowerCase() === toName.toLowerCase(); });
-            to = matches.length > 0 ? matches[0].getAttribute("data-id") : null;
+            if (toName == "me") {
+                to = activeSub.userId;
+            } else {
+                var matches = $.grep($("#users .user span"),
+                    function (x) { return x.innerHTML.replace(" ", "").toLowerCase() === toName.toLowerCase(); });
+                to = matches.length > 0 ? matches[0].getAttribute("data-id") : null;
+            }
             msg = parts[1];
         }
-        if (!msg || !userSub) return;
+        if (!msg || !activeSub) return;
 
         if (msg[0] == "/") {
             parts = $.ss.splitOnFirst(msg, " ");
-            $.post("/channels/@channel/raw", { from: userSub.id, toUserId: to, message: parts[1], selector: parts[0].substring(1) }, function (r) { });
+            $.post("/channels/@channel/raw", { from: activeSub.id, toUserId: to, message: parts[1], selector: parts[0].substring(1) }, function (r) { });
         } else {
-            $.post("/channels/@channel/chat", { from: userSub.id, toUserId: to, message: msg, selector: "cmd.chat" }, function (r) { });
+            $.post("/channels/@channel/chat", { from: activeSub.id, toUserId: to, message: msg, selector: "cmd.chat" }, function (r) { });
         }
         $txtMsg.val("");
     }
@@ -298,7 +414,7 @@
             var matchingNames = $.grep($("#users .user span")
                 .map(function () { return this.innerHTML.replace(" ", ""); }), function (x) {
                     return x.substring(0, partialVal.length).toLowerCase() === partialVal.toLowerCase()
-                        && x.toLowerCase() != userSub.displayName.toLowerCase();
+                        && x.toLowerCase() != activeSub.displayName.toLowerCase();
                 });
 
             if (matchingNames.length > 0) {
