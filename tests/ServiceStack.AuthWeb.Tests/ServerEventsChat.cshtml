@@ -14,7 +14,7 @@
         margin: 0;
         color: #444;
     }
-    #channels {
+    #top {
         z-index: 1;
         position: fixed;
         top: 0;
@@ -32,21 +32,21 @@
     }
     li {
         display: block;
-        width: 100px;
-        padding: 5px;
+        float: left;
+        padding: 5px 30px;
         text-align: center;
         background: #fff;
         font-size: 18px;
         cursor: pointer;
     }
-    #subscribers {
+    #right {
         position: absolute;
         top: 40px;
         right: 0;
         width: 15%;
         height: 100%;
-        background: #fff;
         border-left: 2px solid #ccc;
+        color: #666;
     }
     #log {
         position: fixed;
@@ -54,7 +54,7 @@
         bottom: 50px;
         width: 85%;
     }
-    #controls {
+    #bottom {
         position: fixed;
         bottom: 0;
         height: 50px;
@@ -62,13 +62,13 @@
         background: #f1f1f1;
         border-top: 1px solid #ccc;
     }
-    #controls input {
+    #bottom input {
         font-size: 16px;
         margin: 6px 0 0 6px;
         padding: 4px 8px;
         width: 77%; 
     }
-    #controls button {
+    #bottom button {
         padding: 4px 8px;
     }
     .open div {
@@ -90,26 +90,26 @@
     .twitter { background: url(/img/twitter_normal.png) no-repeat; }
     .facebook { background: url(/img/facebook_normal.png) no-repeat; }
     .github { background: url(/img/github_normal.png) no-repeat; }
-    #user {
+    #me {
         float: left;
         margin: 0 5px 0 0;
         color: #f1f1f1;
     }
-    #user span {
+    #me span {
         line-height: 24px;
     }
-    #user img {
+    #me img {
         height: 24px; 
         margin: 0 0 0 5px;
         vertical-align: bottom;
-    }
-    #users {
-        color: #666;
     }
     .user img {
         height: 24px; 
         margin: 2px 5px 0 5px;
         vertical-align: bottom;
+    }
+    .user span {
+        cursor: pointer;
     }
     .private {
         color: red;
@@ -136,14 +136,17 @@
         float: right;
         padding: 0 10px 0 0;
     }
+    .msg.highlight {
+        background: #ffc;
+    }
 </style>
 
 <script src="/jquery-2.0.2.min.js"></script>
 <script src="/js/ss-utils.js"></script>
 
-<div id="channels">
+<div id="top">
     <div id="social">
-        <div id="user"></div>
+        <div id="me"></div>
         @if (!IsAuthenticated)
         {
             <a href="/auth/twitter" class="twitter"></a>
@@ -152,30 +155,38 @@
         }
     </div>
     <ul>
-        <li>@channel</li>
+        <li>
+            @channel
+        </li>
+        <li style="background:none; padding: 0 0 0 5px;">
+            <button onclick="var chan = prompt('Open another Channel in new Window:','ChannelName'); if (chan) window.open('?channel='+chan);">+</button>
+        </li>
     </ul>
 </div>
-<div id="subscribers">
-    <div id="users"></div>
-</div>
+<div id="right"><div id="users"></div></div>
 
 <div id="log"></div>
-<div id="controls">
-    <input type="text" id="txtMsg" />
+<div id="bottom">
+    <input type="text" id="txtMsg" onfocus="this.value = this.value;" />
     <button id="btnSend">Send</button>
 </div>
 
 <script>
-    var source = new EventSource('/event-stream?channel=@channel');
+    var source = new EventSource('/event-stream?channel=@channel')
+        , $txtMsg = $("#txtMsg");
 
     $.getJSON("/event-subscribers?channel=@channel", function (users) {
-        var html = $.map(users, function(user) { return createUser(user); }).join('');
+        var usersMap = {};
+        $.map(users, function (user) { usersMap[user.userId] = user; });
+        var html = $.map(usersMap, function (user) { return createUser(user); }).join('');
         $("#users").html(html);
     });
 
+    $txtMsg.focus();
+
     function createUser(user) {
         return "<div class='user u_" + user.userId + "'><img src='" +
-            user.profileUrl + "'/><span>" + user.displayName + "</span></div>";
+                user.profileUrl + "'/><span data-id='" + user.userId + "' data-click='privateMsg'>" + user.displayName + "</span></div>";
     }
     
     var userSub = null;
@@ -187,7 +198,7 @@
             onConnect: function (user) {
                 console.log('onConnect', user);
                 userSub = user;
-                $("#user").html('<span>Welcome, ' + user.displayName + '</span>' + '<img src="' + user.profileUrl + '"/>');
+                $("#me").html('<span>Welcome, ' + user.displayName + '</span>' + '<img src="' + user.profileUrl + '"/>');
                 addEntry({ msg: "CONNECTED!", cls: "open" });
             },
             onJoin: function (user) {
@@ -197,7 +208,8 @@
             },
             onLeave: function (user) {
                 console.log('onLeave', user);
-                $("#users .u_" + user.userId).remove();
+                if (userSub != null && user.userId != userSub.userId)
+                    $("#users .u_" + user.userId).remove();
             },
             chat: function (o, e) {
                 addEntry({ id: o.id, userId: o.fromUserId, userName: o.fromName, msg: o.message, cls: o.private ? ' private' : '' });
@@ -211,6 +223,9 @@
         },
         toggle: function () {
             $(this).toggle();
+        },
+        privateMsg: function() {
+            $txtMsg.val("@@" + this.innerHTML + " ").focus();
         }
     });
 
@@ -224,26 +239,73 @@
         var skipUser = $("#log .msg:last-child b").hasClass(id);
         var user = o.userId && !skipUser ? "<b class='user " + id + "'>" + $("#users ." + id).html() + "</b>" : "<b class=" + id + ">&nbsp;</b>";
         var time = "<i>" + $.ss.tfmt12(new Date()) + "</i>";
-        $("#log").append("<div id='m_" + (o.id || "0") + "' class='msg " + o.cls + "'>" +
+        var highlight = o.msg.indexOf(userSub.displayName.replace(" ", "")) >= 0 ? "highlight " : "";
+        $("#log").append("<div id='m_" + (o.id || "0") + "' class='msg " + highlight + o.cls + "'>" +
             user + time + "<div>" + o.msg + "</div>" + "</div>");
     }
 
+    var historyIndex = -1;
+    var msgHistory = [];
     function postMsg() {
-        var msg = $("#txtMsg").val();
-        if (!msg || !userSub) return;
-        if (msg[0] == "/") {
-            var parts = $.ss.splitOnFirst(msg, " ");
-            $.post("/channels/@channel/raw", { from: userSub.id, message: parts[1], selector: parts[0].substring(1) }, function (r) { });
-        } else {
-            $.post("/channels/@channel/chat", { from: userSub.id, message: msg, selector: "cmd.chat" }, function (r) { });
+        var msg = $txtMsg.val(), parts, to = null;
+        msgHistory.push(msg);
+
+        if (msg[0] == "@@") {
+            parts = $.ss.splitOnFirst(msg, " ");
+            var toName = parts[0].substring(1);
+            var matches = $.grep($("#users .user span"),
+                function(x) { return x.innerHTML.replace(" ", "").toLowerCase() === toName.toLowerCase(); });
+            to = matches.length > 0 ? matches[0].getAttribute("data-id") : null;
+            msg = parts[1];
         }
-        $("#txtMsg").val("");
+        if (!msg || !userSub) return;
+
+        if (msg[0] == "/") {
+            parts = $.ss.splitOnFirst(msg, " ");
+            $.post("/channels/@channel/raw", { from: userSub.id, toUserId: to, message: parts[1], selector: parts[0].substring(1) }, function (r) { });
+        } else {
+            $.post("/channels/@channel/chat", { from: userSub.id, toUserId: to, message: msg, selector: "cmd.chat" }, function (r) { });
+        }
+        $txtMsg.val("");
     }
     $("#btnSend").click(postMsg);
-    $("#txtMsg").keypress(function(e) {
+    $txtMsg.keydown(function(e) {
         var keycode = (e.keyCode ? e.keyCode : e.which);
-        if (keycode == '13') {
+        if ($.ss.getSelection()) {
+            if (keycode == '9' || keycode == '13' || keycode == '32' || keycode == '39') {
+                this.value += " ";
+                if (this.setSelectionRange) this.setSelectionRange(this.value.length, this.value.length);
+                return false;
+            }
+        }
+        if (keycode == '13') { //enter
             postMsg();
+        } else if (keycode == '38') { //up arrow
+            historyIndex = Math.min(++historyIndex, msgHistory.length);
+            $txtMsg.val(msgHistory[msgHistory.length - 1 - historyIndex]);
+            return false;
+        }
+        else if (keycode == '40') { //down arrow
+            historyIndex = Math.max(--historyIndex, -1);
+            $txtMsg.val(msgHistory[msgHistory.length - 1 - historyIndex]);
+        } else {
+            historyIndex = -1;
+        }        
+    });
+    $txtMsg.keyup(function (e) {
+        if (!$.ss.getSelection() && this.value[0] == '@@' && this.value.indexOf(' ') < 0) {
+            var partialVal = this.value.substring(1);
+            var matchingNames = $.grep($("#users .user span")
+                .map(function () { return this.innerHTML.replace(" ", ""); }), function (x) {
+                    return x.substring(0, partialVal.length).toLowerCase() === partialVal.toLowerCase()
+                        && x.toLowerCase() != userSub.displayName.toLowerCase();
+                });
+
+            if (matchingNames.length > 0) {
+                this.value += matchingNames[0].substring(partialVal.length);
+                if (this.setSelectionRange) this.setSelectionRange(partialVal.length + 1, this.value.length);
+                return false;
+            }
         }
     });
 
