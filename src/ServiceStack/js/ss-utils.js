@@ -29,6 +29,12 @@
     $.ss.dfmthm = function (d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ":" + pad(d.getMinutes()); };
     $.ss.tfmt12 = function (d) { return pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds()) + " " + (d.getHours() > 12 ? "PM" : "AM"); };
     $.ss.splitOnFirst = function (s, c) { if (!s) return [s]; var pos = s.indexOf(c); return pos >= 0 ? [s.substring(0, pos), s.substring(pos + 1)] : [s]; };
+    $.ss.getSelection = function () {
+        return window.getSelection
+            ? window.getSelection().toString()
+            : document.selection && document.selection.type != "Control"
+                ? document.selection.createRange().text : "";
+    };
 
     function splitCase(t) {
         return typeof t != 'string' ? t : t.replace( /([A-Z]|[0-9]+)/g , ' $1').replace( /_/g , ' ');
@@ -290,7 +296,7 @@
 
             parts = $.ss.splitOnFirst(selector, '.');
             var op = parts[0],
-                target = parts[1];
+                target = parts[1].replace(new RegExp("%20",'g')," ");
 
             if (opt.validate && opt.validate(op, target, msg, json) === false)
                 return;
