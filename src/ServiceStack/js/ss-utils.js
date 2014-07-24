@@ -29,11 +29,24 @@
     $.ss.dfmthm = function (d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ":" + pad(d.getMinutes()); };
     $.ss.tfmt12 = function (d) { return pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds()) + " " + (d.getHours() > 12 ? "PM" : "AM"); };
     $.ss.splitOnFirst = function (s, c) { if (!s) return [s]; var pos = s.indexOf(c); return pos >= 0 ? [s.substring(0, pos), s.substring(pos + 1)] : [s]; };
+    $.ss.splitOnLast = function (s, c) { if (!s) return [s]; var pos = s.lastIndexOf(c); return pos >= 0 ? [s.substring(0, pos), s.substring(pos + 1)] : [s]; };
     $.ss.getSelection = function () {
         return window.getSelection
             ? window.getSelection().toString()
             : document.selection && document.selection.type != "Control"
                 ? document.selection.createRange().text : "";
+    };
+    $.ss.queryString = function(url) {
+        if (!url) return {};
+        var pairs = $.ss.splitOnFirst(url, '?')[1].split('&');
+        var map = {};
+        for (var i = 0; i < pairs.length; ++i) {
+            var p = pairs[i].split('=');
+            map[p[0]] = p.length > 1
+                ? decodeURIComponent(p[1].replace(/\+/g, ' '))
+                : null;
+        }
+        return map;
     };
 
     function splitCase(t) {
