@@ -16,7 +16,8 @@ namespace ServiceStack
     {
         public string StreamPath { get; set; }
         public string HeartbeatPath { get; set; }
-        public string SubscriptionsPath { get; set; }
+        public string SubscribersPath { get; set; }
+        public bool EnableSubscribers { get; set; }
 
         public TimeSpan Timeout { get; set; }
         public TimeSpan HeartbeatInterval { get; set; }
@@ -30,7 +31,8 @@ namespace ServiceStack
         {
             StreamPath = "/event-stream";
             HeartbeatPath = "/event-heartbeat";
-            SubscriptionsPath = "/event-subscribers";
+            SubscribersPath = "/event-subscribers";
+            EnableSubscribers = true;
 
             Timeout = TimeSpan.FromSeconds(30);
             HeartbeatInterval = TimeSpan.FromSeconds(10);
@@ -58,7 +60,10 @@ namespace ServiceStack
                       ? new ServerEventsHeartbeatHandler() 
                       : null);
 
-            appHost.RegisterService(typeof(ServerEventsService), SubscriptionsPath);
+            if (EnableSubscribers)
+            {
+                appHost.RegisterService(typeof(ServerEventsService), SubscribersPath);
+            }
         }
     }
 
@@ -82,7 +87,7 @@ namespace ServiceStack
             var userAuthId = session != null ? session.UserAuthId : null;
             var userId = userAuthId ?? ("-" + anonUserId);
             var displayName = (session != null ? session.DisplayName : null) 
-                ?? "User" + Interlocked.Increment(ref anonUserId);
+                ?? "user" + Interlocked.Increment(ref anonUserId);
 
             var feature = HostContext.GetPlugin<ServerEventsFeature>();
 
@@ -391,6 +396,20 @@ namespace ServiceStack
             return null;
         }
 
+        public IEventSubscription GetSubscriptionByUserId(string userId)
+        {
+            if (userId == null) return null;
+            foreach (var subs in Subcriptions.Values)
+            {
+                foreach (var sub in subs)
+                {
+                    if (sub != null && sub.UserId == userId)
+                        return sub;
+                }
+            }
+            return null;
+        }
+
         public List<Dictionary<string, string>> GetSubscriptions(string channel=null)
         {
             var ret = new List<Dictionary<string, string>>();
@@ -533,6 +552,7 @@ namespace ServiceStack
         void Pulse(string id);
 
         IEventSubscription GetSubscription(string id);
+        IEventSubscription GetSubscriptionByUserId(string userId);
 
         List<Dictionary<string, string>> GetSubscriptions(string channel = null);
 
