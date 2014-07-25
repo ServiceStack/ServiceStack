@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ServiceStack.DataAnnotations;
 
 namespace ServiceStack
 {
@@ -55,6 +56,7 @@ namespace ServiceStack
         public List<string> IgnoreTypesInNamespaces { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class MetadataTypes
     {
         public MetadataTypes()
