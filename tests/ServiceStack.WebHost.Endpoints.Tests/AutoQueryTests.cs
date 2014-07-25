@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Data;
@@ -333,6 +335,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
+        }
+
+        [NUnit.Framework.Ignore("Debug Run")]
+        [Test]
+        public void RunFor10Mins()
+        {
+            Process.Start(Config.ListeningOn);
+            Thread.Sleep(TimeSpan.FromMinutes(10));
         }
 
         [Test]

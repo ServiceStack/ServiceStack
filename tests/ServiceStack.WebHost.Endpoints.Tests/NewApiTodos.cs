@@ -22,6 +22,8 @@ namespace NewApi.Todos
     public class Todos : IReturn<List<Todo>>
     {
         public long[] Ids { get; set; }
+
+        public Todos() {}
         public Todos(params long[] ids)
         {
             this.Ids = ids;
