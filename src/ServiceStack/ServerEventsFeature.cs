@@ -24,6 +24,7 @@ namespace ServiceStack
         public TimeSpan HeartbeatInterval { get; set; }
 
         public Action<IEventSubscription, IRequest> OnCreated { get; set; }
+        public Action<IEventSubscription, Dictionary<string, string>> OnConnect { get; set; }
         public Action<IEventSubscription> OnSubscribe { get; set; }
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
         public bool NotifyChannelOfSubscriptions { get; set; }
@@ -32,7 +33,7 @@ namespace ServiceStack
         {
             StreamPath = "/event-stream";
             HeartbeatPath = "/event-heartbeat";
-            UnRegisterPath = "/event-unregister/{Id}";
+            UnRegisterPath = "/event-unregister";
             SubscribersPath = "/event-subscribers";
             EnableSubscribers = true;
 
@@ -44,7 +45,8 @@ namespace ServiceStack
 
         public void Register(IAppHost appHost)
         {
-            var broker = new MemoryServerEvents {
+            var broker = new MemoryServerEvents
+            {
                 Timeout = Timeout,
                 OnSubscribe = OnSubscribe,
                 OnUnsubscribe = OnUnsubscribe,
@@ -55,11 +57,11 @@ namespace ServiceStack
             if (container.TryResolve<IServerEvents>() == null)
                 container.Register<IServerEvents>(broker);
 
-            appHost.RawHttpHandlers.Add(httpReq => 
+            appHost.RawHttpHandlers.Add(httpReq =>
                 httpReq.PathInfo.EndsWith(StreamPath)
-                    ? (IHttpHandler) new ServerEventsHandler()
+                    ? (IHttpHandler)new ServerEventsHandler()
                     : httpReq.PathInfo.EndsWith(HeartbeatPath)
-                      ? new ServerEventsHeartbeatHandler() 
+                      ? new ServerEventsHeartbeatHandler()
                       : null);
 
             appHost.RegisterService(typeof(ServerEventsUnRegisterService), UnRegisterPath);
@@ -90,14 +92,14 @@ namespace ServiceStack
             var session = req.GetSession();
             var userAuthId = session != null ? session.UserAuthId : null;
             var userId = userAuthId ?? ("-" + anonUserId);
-            var displayName = (session != null ? session.DisplayName : null) 
+            var displayName = (session != null ? session.DisplayName : null)
                 ?? "user" + Interlocked.Increment(ref anonUserId);
 
             var feature = HostContext.GetPlugin<ServerEventsFeature>();
 
             var now = DateTime.UtcNow;
             var subscriptionId = SessionExtensions.CreateRandomSessionId();
-            var subscription = new EventSubscription(res) 
+            var subscription = new EventSubscription(res)
             {
                 CreatedAt = now,
                 LastPulseAt = now,
@@ -114,28 +116,36 @@ namespace ServiceStack
                     { AuthMetadataProvider.ProfileUrlKey, session.GetProfileUrl() ?? AuthMetadataProvider.DefaultNoProfileImgUrl },
                 }
             };
+
             if (feature.OnCreated != null)
                 feature.OnCreated(subscription, req);
 
             req.TryResolve<IServerEvents>().Register(subscription);
 
             var heartbeatUrl = req.ResolveAbsoluteUrl("~/".CombineWith(feature.HeartbeatPath))
-                .AddQueryParam("from", subscriptionId);
+                .AddQueryParam("id", subscriptionId);
             var unRegisterUrl = req.ResolveAbsoluteUrl("~/".CombineWith(feature.UnRegisterPath))
-                .Replace("{Id}", subscriptionId);
+                .AddQueryParam("id", subscriptionId);
             var privateArgs = new Dictionary<string, string>(subscription.Meta) {
                 {"id", subscriptionId },
                 {"unRegisterUrl", unRegisterUrl},
                 {"heartbeatUrl", heartbeatUrl},
                 {"heartbeatIntervalMs", ((long)feature.HeartbeatInterval.TotalMilliseconds).ToString(CultureInfo.InvariantCulture) }};
+
+            if (feature.OnConnect != null)
+                feature.OnConnect(subscription, privateArgs);
+
             subscription.Publish("cmd.onConnect", privateArgs);
 
             var tcs = new TaskCompletionSource<bool>();
 
-            subscription.OnDispose = _ => {
-                try {
+            subscription.OnDispose = _ =>
+            {
+                try
+                {
                     res.EndHttpHandlerRequest(skipHeaders: true);
-                } catch {} 
+                }
+                catch { }
                 tcs.SetResult(true);
             };
 
@@ -149,8 +159,8 @@ namespace ServiceStack
 
         public override Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
         {
-            req.TryResolve<IServerEvents>().Pulse(req.QueryString["from"]);
-            res.EndHttpHandlerRequest(skipHeaders:true);
+            req.TryResolve<IServerEvents>().Pulse(req.QueryString["id"]);
+            res.EndHttpHandlerRequest(skipHeaders: true);
             return EmptyTask;
         }
     }
@@ -448,7 +458,7 @@ namespace ServiceStack
             return null;
         }
 
-        public List<Dictionary<string, string>> GetSubscriptions(string channel=null)
+        public List<Dictionary<string, string>> GetSubscriptions(string channel = null)
         {
             var ret = new List<Dictionary<string, string>>();
             foreach (var subs in Subcriptions.Values)
@@ -504,22 +514,22 @@ namespace ServiceStack
                     return;
             }
 
-            while (!map.TryGetValue(key, out subs));
+            while (!map.TryGetValue(key, out subs)) ;
             if (!TryAdd(subs, subscription))
             {
                 IEventSubscription[] snapshot, newArray;
                 do
                 {
-                    while (!map.TryGetValue(key, out snapshot));
+                    while (!map.TryGetValue(key, out snapshot)) ;
                     newArray = new IEventSubscription[subs.Length * ReSizeMultiplier + ReSizeBuffer];
                     Array.Copy(snapshot, 0, newArray, 0, snapshot.Length);
-                    if (!TryAdd(newArray, subscription, startIndex:snapshot.Length))
+                    if (!TryAdd(newArray, subscription, startIndex: snapshot.Length))
                         snapshot = null;
                 } while (!map.TryUpdate(key, newArray, snapshot));
             }
         }
 
-        private static bool TryAdd(IEventSubscription[] subs, IEventSubscription subscription, int startIndex=0)
+        private static bool TryAdd(IEventSubscription[] subs, IEventSubscription subscription, int startIndex = 0)
         {
             for (int i = startIndex; i < subs.Length; i++)
             {
