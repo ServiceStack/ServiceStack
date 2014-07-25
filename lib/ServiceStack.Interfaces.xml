@@ -288,6 +288,11 @@
             Use to indicate that a property is a Calculated Field 
             </summary>
         </member>
+        <member name="T:ServiceStack.DataAnnotations.ExcludeAttribute">
+            <summary>
+            Mark types that are to be excluded from specified features
+            </summary>
+        </member>
         <member name="T:ServiceStack.DataAnnotations.DecimalLengthAttribute">
             <summary>
             Decimal length attribute.
