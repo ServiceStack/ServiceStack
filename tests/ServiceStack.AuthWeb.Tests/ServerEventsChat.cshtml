@@ -1,11 +1,12 @@
 @inherits ViewPage
-
 @{
     Layout = "Empty";
     ViewBag.Title = "Server Sent Events Chat";
     var channel = Request.QueryString["channel"] ?? "home";
 }
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
 <style>
     body {
         font: 16px Arial;
@@ -190,7 +191,8 @@
 
 <script src="/jquery-2.0.2.min.js"></script>
 <script src="/js/ss-utils.js"></script>
-
+</head>
+<body>
 <div id="top">
     <div id="social">
         <div id="me"></div>
@@ -268,6 +270,7 @@
     }
     
     var activeSub = null;
+    $.ss.eventReceivers = { "window": window, "document": document };
     $(source).handleServerEvents({
         success: function (selector, msg, json) {
             console.log(selector, json);
@@ -292,6 +295,25 @@
             chat: function (o, e) {
                 addEntry({ id: o.id, userId: o.fromUserId, userName: o.fromName, msg: o.message, cls: o.private ? ' private' : '' });
             }
+        },
+        receivers: {
+            tv: {
+                watch: function (id) {
+                    if (id.indexOf('youtube.com') >= 0) {
+                        var qs = $.ss.queryString(id);
+                        $("#tv").html(templates.youtube.replace("{id}", qs["v"])).show();
+                    }
+                    else if (id.indexOf('youtu.be') >= 0) {
+                        var v = $.ss.splitOnLast(id, '/')[1];
+                        $("#tv").html(templates.youtube.replace("{id}", v)).show();
+                    } else {
+                        $("#tv").html(templates.generic.replace("{id}", id)).show();
+                    }
+                },
+                off: function () {
+                    $("#tv").hide().html("");
+                }
+            }
         }
     });
 
@@ -299,25 +321,6 @@
         youtube: '<iframe width="640" height="360" src="//www.youtube.com/embed/{id}?autoplay=1" frameborder="0" allowfullscreen></iframe>',
         generic: '<iframe width="640" height="360" src="{id}" frameborder="0"></iframe>'
     };
-
-    var tv = {
-        watch: function (id) {
-            if (id.indexOf('youtube.com') >= 0) {
-                var qs = $.ss.queryString(id);
-                $("#tv").html(templates.youtube.replace("{id}", qs["v"])).show();
-            }
-            else if (id.indexOf('youtu.be') >= 0) {
-                var v = $.ss.splitOnLast(id, '/')[1];
-                $("#tv").html(templates.youtube.replace("{id}", v)).show();
-            } else {
-                $("#tv").html(templates.generic.replace("{id}", id)).show();
-            }
-        },
-        off: function() {
-            $("#tv").hide().html("");
-        }
-    };
-    $.ss.eventReceivers["tv"] = tv;
 
     $(document).on('customEvent', function (e, msg, msgEvent) {
         addEntry({ msg: "[event " + e.type + " message: " + msg + "]", cls: "event" });
@@ -427,3 +430,5 @@
 
 </script>
 
+  </body>
+</html>

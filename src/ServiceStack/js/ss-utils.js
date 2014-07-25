@@ -293,8 +293,7 @@
         });
     };
 
-    $.ss.eventReceivers = { "window": window, "document": document };
-
+    $.ss.eventReceivers = {};
     $.fn.handleServerEvents = function (opt) {
         var source = this[0];
         opt = opt || {};
