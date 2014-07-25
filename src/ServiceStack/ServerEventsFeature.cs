@@ -17,6 +17,7 @@ namespace ServiceStack
         public string StreamPath { get; set; }
         public string HeartbeatPath { get; set; }
         public string SubscribersPath { get; set; }
+        public string UnRegisterPath { get; set; }
         public bool EnableSubscribers { get; set; }
 
         public TimeSpan Timeout { get; set; }
@@ -31,6 +32,7 @@ namespace ServiceStack
         {
             StreamPath = "/event-stream";
             HeartbeatPath = "/event-heartbeat";
+            UnRegisterPath = "/event-unregister/{Id}";
             SubscribersPath = "/event-subscribers";
             EnableSubscribers = true;
 
@@ -60,9 +62,11 @@ namespace ServiceStack
                       ? new ServerEventsHeartbeatHandler() 
                       : null);
 
+            appHost.RegisterService(typeof(ServerEventsUnRegisterService), UnRegisterPath);
+
             if (EnableSubscribers)
             {
-                appHost.RegisterService(typeof(ServerEventsService), SubscribersPath);
+                appHost.RegisterService(typeof(ServerEventsSubscribersService), SubscribersPath);
             }
         }
     }
@@ -117,8 +121,11 @@ namespace ServiceStack
 
             var heartbeatUrl = req.ResolveAbsoluteUrl("~/".CombineWith(feature.HeartbeatPath))
                 .AddQueryParam("from", subscriptionId);
+            var unRegisterUrl = req.ResolveAbsoluteUrl("~/".CombineWith(feature.UnRegisterPath))
+                .Replace("{Id}", subscriptionId);
             var privateArgs = new Dictionary<string, string>(subscription.Meta) {
                 {"id", subscriptionId },
+                {"unRegisterUrl", unRegisterUrl},
                 {"heartbeatUrl", heartbeatUrl},
                 {"heartbeatIntervalMs", ((long)feature.HeartbeatInterval.TotalMilliseconds).ToString(CultureInfo.InvariantCulture) }};
             subscription.Publish("cmd.onConnect", privateArgs);
@@ -148,14 +155,14 @@ namespace ServiceStack
         }
     }
 
-    public class GetEventSubscribers : IReturn<List<Dictionary<string,string>>>
+    public class GetEventSubscribers : IReturn<List<Dictionary<string, string>>>
     {
         public string Channel { get; set; }
     }
 
     [DefaultRequest(typeof(GetEventSubscribers))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
-    public class ServerEventsService : Service
+    public class ServerEventsSubscribersService : Service
     {
         public IServerEvents ServerEvents { get; set; }
 
@@ -165,23 +172,54 @@ namespace ServiceStack
         }
     }
 
+    public class UnRegisterEventSubscriber : IReturn<Dictionary<string, string>>
+    {
+        public string Id { get; set; }
+    }
+
+    [DefaultRequest(typeof(UnRegisterEventSubscriber))]
+    [Restrict(VisibilityTo = RequestAttributes.None)]
+    public class ServerEventsUnRegisterService : Service
+    {
+        public IServerEvents ServerEvents { get; set; }
+
+        public object Any(UnRegisterEventSubscriber request)
+        {
+            var subscription = ServerEvents.GetSubscription(request.Id);
+            if (subscription == null)
+                throw HttpError.NotFound("Subscription '{0}' does not exist.".Fmt(request.Id));
+
+            ServerEvents.UnRegister(subscription);
+
+            return subscription.Meta;
+        }
+    }
+
     /*
-    cmd.showPopup message
-    cmd.toggle$h1:first-child
+    # Commands
+    cmd.announce This is your captain speaking ...
+    cmd.toggle$#channels
 
-    trigger.animateBox$#boxid {"opacity":".5","padding":"-=20px"}
-    trigger.animateBox$.boxclass {"marginTop":"+=20px", "padding":"+=20"}
+    # CSS
+    css.background #eceff1
+    css.background$#top #673ab7
+    css.background$#right #fffde7
+    css.background$#bottom #0091ea
+    css.color$#me #ff0
+    css.display$img none
+    css.display$img inline
 
-    css.color #0C0
-    css.color$h1 black
-    css.backgroundColor #f1f1f1
-    css.backgroundColor$h1 yellow
-    css.backgroundColor$#boxid red
-    css.backgroundColor$.boxclass purple
-    css.color$#boxid,.boxclass white
-    
-    document.title Hello World
+    # Receivers
+    document.title New Window Title
     window.location http://google.com
+    cmd.removeReceiver window
+    cmd.addReceiver window
+    tv.watch http://youtu.be/518XP8prwZo
+    tv.watch https://servicestack.net/img/logo-220.png        
+    tv.off
+
+    # Triggers
+    trigger.customEvent arg
     */
 
     public class EventSubscription : IEventSubscription
@@ -496,6 +534,14 @@ namespace ServiceStack
             return false;
         }
 
+        public void UnRegister(IEventSubscription subscription)
+        {
+            if (subscription == null)
+                return;
+
+            HandleUnsubscription(subscription);
+        }
+
         void UnRegisterSubscription(IEventSubscription subscription, string key,
             ConcurrentDictionary<string, IEventSubscription[]> map)
         {
@@ -557,6 +603,8 @@ namespace ServiceStack
         List<Dictionary<string, string>> GetSubscriptions(string channel = null);
 
         void Register(IEventSubscription subscription);
+
+        void UnRegister(IEventSubscription subscription);
 
         void NotifyAll(string selector, object message);
 

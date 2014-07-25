@@ -326,6 +326,11 @@
                             $.post(opt.heartbeatUrl, null, function(r) {});
                         }, parseInt(opt.heartbeatIntervalMs) || 10000);
                     }
+                    if (opt.unRegisterUrl) {
+                        $(window).unload(function () {
+                            $.post(opt.unRegisterUrl, null, function(r) {});
+                        });
+                    }
                 }
                 var fn = $.ss.handlers[cmd];
                 if (fn) {
