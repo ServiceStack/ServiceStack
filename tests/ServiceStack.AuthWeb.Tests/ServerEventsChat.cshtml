@@ -189,7 +189,7 @@
     }
 </style>
 
-<script src="/jquery-2.0.2.min.js"></script>
+<script src="/jquery-2.1.1.min.js"></script>
 <script src="/js/ss-utils.js"></script>
 </head>
 <body>
@@ -248,7 +248,7 @@
 </div>
 
 <script>
-    var source = new EventSource('/event-stream?channel=@channel&t=' + new Date().getMilliseconds()); //disable cache
+    var source = new EventSource('/event-stream?channel=@channel&t=' + new Date().getTime()); //disable cache
 
     source.addEventListener('error', function (e) {
         addEntry({ msg: "ERROR!", cls: "error" });
@@ -268,7 +268,7 @@
         return "<div class='user u_" + user.userId + "'><img src='" +
                 user.profileUrl + "'/><span data-id='" + user.userId + "' data-click='privateMsg'>" + user.displayName + "</span></div>";
     }
-    
+
     var activeSub = null;
     $.ss.eventReceivers = { "window": window, "document": document };
     $(source).handleServerEvents({
@@ -337,10 +337,10 @@
         sendCommand: function () {
             $("#txtMsg").val($(this).html()).focus();
         },
-        privateMsg: function() {
+        privateMsg: function () {
             $txtMsg.val("@@" + this.innerHTML + " ").focus();
         },
-        removeReceiver: function(name) {
+        removeReceiver: function (name) {
             delete $.ss.eventReceivers[name];
         },
         addReceiver: function (name) {
@@ -388,7 +388,7 @@
         $txtMsg.val("");
     }
     $("#btnSend").click(postMsg);
-    $txtMsg.keydown(function(e) {
+    $txtMsg.keydown(function (e) {
         var keycode = (e.keyCode ? e.keyCode : e.which);
         if ($.ss.getSelection()) {
             if (keycode == '9' || keycode == '13' || keycode == '32' || keycode == '39') {
@@ -409,7 +409,7 @@
             $txtMsg.val(msgHistory[msgHistory.length - 1 - historyIndex]);
         } else {
             historyIndex = -1;
-        }        
+        }
     });
     $txtMsg.keyup(function (e) {
         if (!$.ss.getSelection() && this.value[0] == '@@' && this.value.indexOf(' ') < 0) {
