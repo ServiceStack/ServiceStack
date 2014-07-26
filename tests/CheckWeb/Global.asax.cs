@@ -46,7 +46,7 @@ namespace CheckWeb
                 DebugMode = true,
 #endif
                 // Disable SOAP endpoints
-                EnableFeatures = Feature.All.Remove(Feature.Soap)
+                //EnableFeatures = Feature.All.Remove(Feature.Soap)
             });
 
             container.Register<IServiceClient>(c =>

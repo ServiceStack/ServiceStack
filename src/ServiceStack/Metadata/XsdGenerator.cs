@@ -21,7 +21,7 @@ namespace ServiceStack.Metadata
 		{
 			if (OperationTypes == null || OperationTypes.Count == 0) return null;
 
-            var uniqueTypes = new List<Type>();
+            var uniqueTypes = new HashSet<Type>();
             var uniqueTypeNames = new List<string>();
             foreach (var type in OperationTypes)
             {
@@ -38,6 +38,9 @@ namespace ServiceStack.Metadata
                     }
                 }
             }
+
+		    uniqueTypes.RemoveWhere(x => x.IsGenericTypeDefinition());
+
             this.OperationTypes = uniqueTypes;
 
 			var schemaSet = XsdUtils.GetXmlSchemaSet(OperationTypes);
