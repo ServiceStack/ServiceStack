@@ -284,9 +284,9 @@ namespace ServiceStack.Auth
                 return;
             }
 
-            var idSesije = session.Id; //first record session Id (original session Id)
+            var originalId = session.Id; //first record session Id (original session Id)
             session.PopulateWith(userAuth); //here, original sessionId is overwritten with facebook user Id
-            session.Id = idSesije; //we return Id of original session here
+            session.Id = originalId; //we return Id of original session here
 
             session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
             session.ProviderOAuthAccess = GetUserAuthDetails(session.UserAuthId)

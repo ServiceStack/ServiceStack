@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 using System.Net;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
@@ -129,15 +130,15 @@ namespace ServiceStack.Auth
                 }
             }
 
+            var hasTokens = tokens != null && authInfo != null;
+            if (hasTokens)
+            {
+                authInfo.ForEach((x, y) => tokens.Items[x] = y);
+            }
+
             var authRepo = authService.TryResolve<IAuthRepository>();
             if (authRepo != null)
             {
-                var hasTokens = tokens != null;
-                if (hasTokens)
-                {
-                    authInfo.ForEach((x, y) => tokens.Items[x] = y);
-                }
-
                 var failed = ValidateAccount(authService, authRepo, session, tokens);
                 if (failed != null)
                     return failed;
@@ -159,12 +160,19 @@ namespace ServiceStack.Auth
                         userAuthProvider.LoadUserOAuthProvider(session, oAuthToken);
                     }
                 }
-
-                var httpRes = authService.Request.Response as IHttpResponse;
-                if (httpRes != null)
+            }
+            else
+            {
+                if (hasTokens)
                 {
-                    httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
+                    session.UserAuthId = CreateOrMergeAuthSession(session, tokens);
                 }
+            }
+
+            var httpRes = authService.Request.Response as IHttpResponse;
+            if (session.UserAuthId != null && httpRes != null)
+            {
+                httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
             }
 
             try
@@ -175,6 +183,35 @@ namespace ServiceStack.Auth
             finally
             {
                 authService.SaveSession(session, SessionExpiry);
+            }
+
+            return null;
+        }
+
+        // Merge tokens into session where no IAuthRepository exists
+        public virtual string CreateOrMergeAuthSession(IAuthSession session, IAuthTokens tokens)
+        {
+            if (session.UserName.IsNullOrEmpty())
+                session.UserName = tokens.UserName;
+            if (session.DisplayName.IsNullOrEmpty())
+                session.DisplayName = tokens.DisplayName;
+            if (session.Email.IsNullOrEmpty())
+                session.Email = tokens.Email;
+
+            var oAuthProvider = session.ProviderOAuthAccess.FirstOrDefault(
+                x => x.Provider == tokens.Provider && x.UserId == tokens.UserId);
+            if (oAuthProvider != null)
+            {
+                if (!oAuthProvider.UserName.IsNullOrEmpty())
+                    session.UserName = oAuthProvider.UserName;
+                if (!oAuthProvider.DisplayName.IsNullOrEmpty())
+                    session.DisplayName = oAuthProvider.DisplayName;
+                if (!oAuthProvider.Email.IsNullOrEmpty())
+                    session.Email = oAuthProvider.Email;
+                if (!oAuthProvider.FirstName.IsNullOrEmpty())
+                    session.FirstName = oAuthProvider.FirstName;
+                if (!oAuthProvider.LastName.IsNullOrEmpty())
+                    session.LastName = oAuthProvider.LastName;
             }
 
             return null;
