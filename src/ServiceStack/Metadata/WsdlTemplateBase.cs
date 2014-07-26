@@ -3,71 +3,71 @@ using System.Text;
 
 namespace ServiceStack.Metadata
 {
-	public abstract class WsdlTemplateBase
-	{
-		public string Xsd { get; set; }
-		public string ServiceName { get; set; }
+    public abstract class WsdlTemplateBase
+    {
+        public string Xsd { get; set; }
+        public string ServiceName { get; set; }
         public IList<string> ReplyOperationNames { get; set; }
         public IList<string> OneWayOperationNames { get; set; }
-		public string ReplyEndpointUri { get; set; }
-		public string OneWayEndpointUri { get; set; }
+        public string ReplyEndpointUri { get; set; }
+        public string OneWayEndpointUri { get; set; }
 
-		public abstract string WsdlName { get; }
+        public abstract string WsdlName { get; }
 
-		protected virtual string ReplyMessagesTemplate
-		{
-			get
-			{
-				return
-	@"<wsdl:message name=""{0}In"">
+        protected virtual string ReplyMessagesTemplate
+        {
+            get
+            {
+                return
+    @"<wsdl:message name=""{0}In"">
         <wsdl:part name=""par"" element=""tns:{0}"" />
     </wsdl:message>
     <wsdl:message name=""{0}Out"">
         <wsdl:part name=""par"" element=""tns:{0}Response"" />
     </wsdl:message>";
-			}
-		}
+            }
+        }
 
-		protected virtual string OneWayMessagesTemplate
-		{
-			get
-			{
-				return
-	@"<wsdl:message name=""{0}In"">
+        protected virtual string OneWayMessagesTemplate
+        {
+            get
+            {
+                return
+    @"<wsdl:message name=""{0}In"">
         <wsdl:part name=""par"" element=""tns:{0}"" />
     </wsdl:message>";
-			}
-		}
+            }
+        }
 
-		protected virtual string ReplyOperationsTemplate
-		{
-			get
-			{
-				return
-	@"<wsdl:operation name=""{0}"">
+        protected virtual string ReplyOperationsTemplate
+        {
+            get
+            {
+                return
+    @"<wsdl:operation name=""{0}"">
         <wsdl:input message=""svc:{0}In"" />
         <wsdl:output message=""svc:{0}Out"" />
     </wsdl:operation>";
-			}
-		}
+            }
+        }
 
-		protected virtual string OneWayOperationsTemplate
-		{
-			get
-			{
-				return
-	@"<wsdl:operation name=""{0}"">
+        protected virtual string OneWayOperationsTemplate
+        {
+            get
+            {
+                return
+    @"<wsdl:operation name=""{0}"">
         <wsdl:input message=""svc:{0}In"" />
     </wsdl:operation>";
-			}
-		}
+            }
+        }
 
-		protected virtual string ReplyActionsTemplate
-		{
-			get
-			{
-				return
-	@"<wsdl:operation name=""{1}"">
+        protected virtual string ReplyActionsTemplate
+        {
+            get
+            {
+                return
+    @"<wsdl:operation name=""{1}"">
       <soap:operation soapAction=""{0}{1}"" style=""document"" />
       <wsdl:input>
         <soap:body use=""literal"" />
@@ -76,29 +76,29 @@ namespace ServiceStack.Metadata
         <soap:body use=""literal"" />
       </wsdl:output>
     </wsdl:operation>";
-			}
-		}
+            }
+        }
 
-		protected virtual string OneWayActionsTemplate
-		{
-			get
-			{
-				return
-	@"<wsdl:operation name=""{1}"">
+        protected virtual string OneWayActionsTemplate
+        {
+            get
+            {
+                return
+    @"<wsdl:operation name=""{1}"">
       <soap:operation soapAction=""{0}{1}"" style=""document"" />
       <wsdl:input>
         <soap:body use=""literal"" />
       </wsdl:input>
     </wsdl:operation>";
-			}
-		}
+            }
+        }
 
-		protected abstract string ReplyBindingContainerTemplate { get; }
-		protected abstract string OneWayBindingContainerTemplate { get; }
-		protected abstract string ReplyEndpointUriTemplate { get; }
-		protected abstract string OneWayEndpointUriTemplate { get; }
+        protected abstract string ReplyBindingContainerTemplate { get; }
+        protected abstract string OneWayBindingContainerTemplate { get; }
+        protected abstract string ReplyEndpointUriTemplate { get; }
+        protected abstract string OneWayEndpointUriTemplate { get; }
 
-		private const string Template =
+        private const string Template =
 @"<?xml version=""1.0"" encoding=""utf-8""?>
 <wsdl:definitions name=""{0}"" 
     targetNamespace=""{10}"" 
@@ -142,43 +142,43 @@ namespace ServiceStack.Metadata
 	
 </wsdl:definitions>";
 
-		public string RepeaterTemplate(string template, IEnumerable<string> dataSource)
-		{
-			var sb = new StringBuilder();
-			foreach (var item in dataSource)
-			{
-				sb.AppendFormat(template, item);
-			}
-			return sb.ToString();
-		}
+        public string RepeaterTemplate(string template, IEnumerable<string> dataSource)
+        {
+            var sb = new StringBuilder();
+            foreach (var item in dataSource)
+            {
+                sb.AppendFormat(template, item);
+            }
+            return sb.ToString();
+        }
 
-		public string RepeaterTemplate(string template, object arg0, IEnumerable<string> dataSource)
-		{
-			var sb = new StringBuilder();
-			foreach (var item in dataSource)
-			{
-				sb.AppendFormat(template, arg0, item);
-			}
-			return sb.ToString();
-		}
+        public string RepeaterTemplate(string template, object arg0, IEnumerable<string> dataSource)
+        {
+            var sb = new StringBuilder();
+            foreach (var item in dataSource)
+            {
+                sb.AppendFormat(template, arg0, item);
+            }
+            return sb.ToString();
+        }
 
-		public override string ToString()
-		{
+        public override string ToString()
+        {
             var wsdlSoapActionNamespace = HostContext.Config.WsdlServiceNamespace;
             if (!wsdlSoapActionNamespace.EndsWith("/"))
                 wsdlSoapActionNamespace += '/';
-            
+
             var replyMessages = RepeaterTemplate(this.ReplyMessagesTemplate, this.ReplyOperationNames);
-		    var replyOperations  = RepeaterTemplate(this.ReplyOperationsTemplate, this.ReplyOperationNames);
-		    var replyServiceName = (ServiceName ?? "SyncReply");
-		    replyOperations = "<wsdl:portType name=\"I" + replyServiceName + "\">" + replyOperations + "</wsdl:portType>";
+            var replyOperations = RepeaterTemplate(this.ReplyOperationsTemplate, this.ReplyOperationNames);
+            var replyServiceName = (ServiceName ?? "SyncReply");
+            replyOperations = "<wsdl:portType name=\"I" + replyServiceName + "\">" + replyOperations + "</wsdl:portType>";
             var replyActions = RepeaterTemplate(this.ReplyActionsTemplate, wsdlSoapActionNamespace, this.ReplyOperationNames);
             var replyBindings = string.Format(this.ReplyBindingContainerTemplate, replyActions, replyServiceName);
             var replyEndpointUri = string.Format(this.ReplyEndpointUriTemplate, ServiceName, this.ReplyEndpointUri, replyServiceName);
 
             string oneWayMessages = "";
             string oneWayOperations = "";
-		    string oneWayBindings = "";
+            string oneWayBindings = "";
             string oneWayEndpointUri = "";
             if (OneWayOperationNames.Count > 0)
             {
@@ -186,25 +186,25 @@ namespace ServiceStack.Metadata
                 oneWayOperations = RepeaterTemplate(this.OneWayOperationsTemplate, this.OneWayOperationNames);
                 var oneWayServiceName = (ServiceName ?? "");
                 oneWayOperations = "<wsdl:portType name=\"I" + oneWayServiceName + "OneWay\">" + oneWayOperations + "</wsdl:portType>";
-                var oneWayActions=RepeaterTemplate(this.OneWayActionsTemplate, wsdlSoapActionNamespace, this.OneWayOperationNames);
+                var oneWayActions = RepeaterTemplate(this.OneWayActionsTemplate, wsdlSoapActionNamespace, this.OneWayOperationNames);
                 oneWayBindings = string.Format(this.OneWayBindingContainerTemplate, oneWayActions, oneWayServiceName);
                 oneWayEndpointUri = string.Format(this.OneWayEndpointUriTemplate, ServiceName, this.OneWayEndpointUri, oneWayServiceName);
             }
 
-		    var wsdl = string.Format(Template, 
-				WsdlName, 
-				Xsd, 
-				replyMessages, 
-				oneWayMessages, 
-				replyOperations, 
-				oneWayOperations,
-				replyBindings, 
-				oneWayBindings, 
-				replyEndpointUri, 
-				oneWayEndpointUri,
-				HostContext.Config.WsdlServiceNamespace);
-            
-			return wsdl;
-		}
-	}
+            var wsdl = string.Format(Template,
+                WsdlName,
+                Xsd,
+                replyMessages,
+                oneWayMessages,
+                replyOperations,
+                oneWayOperations,
+                replyBindings,
+                oneWayBindings,
+                replyEndpointUri,
+                oneWayEndpointUri,
+                HostContext.Config.WsdlServiceNamespace);
+
+            return wsdl;
+        }
+    }
 }

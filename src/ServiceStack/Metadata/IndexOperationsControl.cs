@@ -87,15 +87,17 @@ namespace ServiceStack.Metadata
 
             var metadata = HostContext.GetPlugin<MetadataFeature>();
             var pluginLinks = metadata != null && metadata.PluginLinks.Count > 0
-                ? new ListTemplate {
+                ? new ListTemplate
+                {
                     Title = metadata.PluginLinksTitle,
                     ListItemsMap = metadata.PluginLinks,
                     ListItemTemplate = @"<li><a href=""{0}"">{1}</a></li>"
-                  }.ToString()
+                }.ToString()
                 : "";
 
             var debugOnlyInfo = HostContext.DebugMode && metadata != null && metadata.DebugLinks.Count > 0
-                ? new ListTemplate {
+                ? new ListTemplate
+                {
                     Title = metadata.DebugLinksTitle,
                     ListItemsMap = metadata.DebugLinks,
                     ListItemTemplate = @"<li><a href=""{0}"">{1}</a></li>"

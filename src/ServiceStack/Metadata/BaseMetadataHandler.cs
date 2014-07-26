@@ -64,9 +64,9 @@ namespace ServiceStack.Metadata
             if (operationName != null)
             {
                 var allTypes = metadata.GetAllTypes();
-				//var operationType = allTypes.Single(x => x.Name == operationName);
-				var operationType = allTypes.Single(x => x.GetOperationName() == operationName);
-				var op = metadata.GetOperation(operationType);
+                //var operationType = allTypes.Single(x => x.Name == operationName);
+                var operationType = allTypes.Single(x => x.GetOperationName() == operationName);
+                var op = metadata.GetOperation(operationType);
                 var requestMessage = CreateResponse(operationType);
                 string responseMessage = null;
 
@@ -183,7 +183,7 @@ namespace ServiceStack.Metadata
 
             defaultPage.RenderControl(writer);
         }
-        
+
         private string ConvertToHtml(string text)
         {
             return text.Replace("<", "&lt;")

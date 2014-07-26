@@ -6,20 +6,20 @@ using ServiceStack.Logging;
 
 namespace ServiceStack.Metadata
 {
-	public class XsdGenerator
-	{
-		private readonly ILog log = LogManager.GetLogger(typeof(XsdGenerator));
-		public bool OptimizeForFlash { get; set; }
-		public ICollection<Type> OperationTypes { get; set; }
+    public class XsdGenerator
+    {
+        private readonly ILog log = LogManager.GetLogger(typeof(XsdGenerator));
+        public bool OptimizeForFlash { get; set; }
+        public ICollection<Type> OperationTypes { get; set; }
 
-		private string Filter(string xsd)
-		{
-			return !this.OptimizeForFlash ? xsd : xsd.Replace("ser:guid", "xs:string");
-		}
+        private string Filter(string xsd)
+        {
+            return !this.OptimizeForFlash ? xsd : xsd.Replace("ser:guid", "xs:string");
+        }
 
-		public override string ToString()
-		{
-			if (OperationTypes == null || OperationTypes.Count == 0) return null;
+        public override string ToString()
+        {
+            if (OperationTypes == null || OperationTypes.Count == 0) return null;
 
             var uniqueTypes = new HashSet<Type>();
             var uniqueTypeNames = new List<string>();
@@ -39,14 +39,14 @@ namespace ServiceStack.Metadata
                 }
             }
 
-		    uniqueTypes.RemoveWhere(x => x.IsGenericTypeDefinition());
+            uniqueTypes.RemoveWhere(x => x.IsGenericTypeDefinition());
 
             this.OperationTypes = uniqueTypes;
 
-			var schemaSet = XsdUtils.GetXmlSchemaSet(OperationTypes);
-			var xsd = XsdUtils.GetXsd(schemaSet);
-			var filteredXsd = Filter(xsd);
-			return filteredXsd;
-		}
-	}
+            var schemaSet = XsdUtils.GetXmlSchemaSet(OperationTypes);
+            var xsd = XsdUtils.GetXsd(schemaSet);
+            var filteredXsd = Filter(xsd);
+            return filteredXsd;
+        }
+    }
 }

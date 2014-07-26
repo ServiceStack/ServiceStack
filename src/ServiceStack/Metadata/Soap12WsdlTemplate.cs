@@ -1,18 +1,18 @@
 namespace ServiceStack.Metadata
 {
-	public class Soap12WsdlTemplate : WsdlTemplateBase
-	{
-		public override string WsdlName
-		{
-			get { return "Soap12"; }
-		}
+    public class Soap12WsdlTemplate : WsdlTemplateBase
+    {
+        public override string WsdlName
+        {
+            get { return "Soap12"; }
+        }
 
-		protected override string ReplyActionsTemplate
-		{
-			get
-			{
-				return
-	@"<wsdl:operation name=""{1}"">
+        protected override string ReplyActionsTemplate
+        {
+            get
+            {
+                return
+    @"<wsdl:operation name=""{1}"">
       <soap:operation soapAction=""{0}{1}"" style=""document"" />
       <wsdl:input>
         <soap:body use=""literal"" />
@@ -21,72 +21,72 @@ namespace ServiceStack.Metadata
         <soap:body use=""literal"" />
       </wsdl:output>
     </wsdl:operation>";
-			}
-		}
+            }
+        }
 
-		protected override string OneWayActionsTemplate
-		{
-			get
-			{
-				return
+        protected override string OneWayActionsTemplate
+        {
+            get
+            {
+                return
     @"<wsdl:operation name=""{1}"">
       <soap:operation soapAction=""{0}{1}"" style=""document"" />
       <wsdl:input>
         <soap:body use=""literal"" />
       </wsdl:input>
     </wsdl:operation>";
-			}
-		}
+            }
+        }
 
-		protected override string ReplyBindingContainerTemplate
-		{
-			get
-			{
-				return
+        protected override string ReplyBindingContainerTemplate
+        {
+            get
+            {
+                return
     @"<wsdl:binding name=""WSHttpBinding_I{1}"" type=""svc:I{1}"">
 		<soap12:binding transport=""http://schemas.xmlsoap.org/soap/http"" />
 		{0}
 	</wsdl:binding>";
-			}
-		}
+            }
+        }
 
-		protected override string OneWayBindingContainerTemplate
-		{
-			get
-			{
-				return
+        protected override string OneWayBindingContainerTemplate
+        {
+            get
+            {
+                return
     @"<wsdl:binding name=""WSHttpBinding_I{1}OneWay"" type=""svc:I{1}OneWay"">
 		<soap12:binding transport=""http://schemas.xmlsoap.org/soap/http"" />
 		{0}
 	</wsdl:binding>";
-			}
-		}
+            }
+        }
 
-		protected override string ReplyEndpointUriTemplate
-		{
-			get
-			{
-				return
+        protected override string ReplyEndpointUriTemplate
+        {
+            get
+            {
+                return
     @"<wsdl:service name=""{0}SyncReply"">
 		<wsdl:port name=""WSHttpBinding_I{2}"" binding=""svc:WSHttpBinding_I{2}"">
 			<soap:address location=""{1}"" />
 		</wsdl:port>
 	</wsdl:service>";
-			}
-		}
+            }
+        }
 
-		protected override string OneWayEndpointUriTemplate
-		{
-			get
-			{
-				return
+        protected override string OneWayEndpointUriTemplate
+        {
+            get
+            {
+                return
     @"<wsdl:service name=""{0}AsyncOneWay"">
 		<wsdl:port name=""WSHttpBinding_I{2}OneWay"" binding=""svc:WSHttpBinding_I{2}OneWay"">
 			<soap:address location=""{1}"" />
 		</wsdl:port>
 	</wsdl:service>";
-			}
-		}
+            }
+        }
 
-	}
+    }
 }
