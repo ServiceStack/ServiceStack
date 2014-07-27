@@ -96,12 +96,28 @@ namespace ServiceStack.Auth
                 tokens.LastName = obj.Get("last_name");
                 tokens.Email = obj.Get("email");
 
-                LoadUserOAuthProvider(userSession, tokens);
+                if (SaveExtendedUserInfo)
+                {
+                    obj.Each(x => authInfo[x.Key] = x.Value);
+                }
+
+                json = AuthHttpGateway.DownloadFacebookUserInfo(tokens.AccessTokenSecret, "picture");
+                obj = JsonObject.Parse(json);
+                var picture = obj.Object("picture");
+                var data = picture != null ? picture.Object("data") : null;
+                if (data != null)
+                {
+                    string profileUrl;
+                    if (data.TryGetValue("url", out profileUrl))
+                        tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
+                }
             }
             catch (Exception ex)
             {
                 Log.Error("Could not retrieve facebook user info for '{0}'".Fmt(tokens.DisplayName), ex);
             }
+
+            LoadUserOAuthProvider(userSession, tokens);
         }
 
         public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)

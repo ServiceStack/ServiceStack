@@ -160,7 +160,7 @@ namespace ServiceStack.Auth
                     return response;
 
                 this.LoadUserAuthInfo((AuthUserSession)session, tokens, authInfo.ToDictionary());
-                HostContext.TryResolve<IAuthMetadataProvider>().AddMetadata(tokens, authInfo.ToDictionary());
+                HostContext.TryResolve<IAuthMetadataProvider>().SafeAddMetadata(tokens, authInfo.ToDictionary());
 
                 // Has access!
                 return authService.Redirect(this.CallbackUrl.AddHashParam("s", "1"));
@@ -196,16 +196,16 @@ namespace ServiceStack.Auth
             {
                 var contents = AuthHttpGateway.DownloadYammerUserInfo(tokens.UserId);
 
-                var authObj = JsonObject.Parse(contents);
+                var obj = JsonObject.Parse(contents);
 
-                tokens.UserId = authObj.Get("id");
-                tokens.UserName = authObj.Get("name");
-                tokens.DisplayName = authObj.Get("full_name");
-                tokens.FullName = authObj.Get("full_name");
-                tokens.FirstName = authObj.Get("first_name");
-                tokens.LastName = authObj.Get("last_name");
+                tokens.UserId = obj.Get("id");
+                tokens.UserName = obj.Get("name");
+                tokens.DisplayName = obj.Get("full_name");
+                tokens.FullName = obj.Get("full_name");
+                tokens.FirstName = obj.Get("first_name");
+                tokens.LastName = obj.Get("last_name");
 
-                var emails = authObj.Object("contact").ArrayObjects("email_addresses").ConvertAll(x =>
+                var emails = obj.Object("contact").ArrayObjects("email_addresses").ConvertAll(x =>
                     new EmailAddresses
                     {
                         Type = x.Get("type"),
@@ -218,13 +218,17 @@ namespace ServiceStack.Auth
                     tokens.Email = email.Address;
                 }
 
-                // Pass along
-                this.LoadUserOAuthProvider(userSession, tokens);
+                if (SaveExtendedUserInfo)
+                {
+                    obj.Each(x => authInfo[x.Key] = x.Value);
+                }
             }
             catch (Exception ex)
             {
                 Log.Error("Could not retrieve Yammer user info for '{0}'".Fmt(tokens.DisplayName), ex);
             }
+
+            this.LoadUserOAuthProvider(userSession, tokens);
         }
 
         /// <summary>

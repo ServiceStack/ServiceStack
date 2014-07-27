@@ -1,7 +1,5 @@
-using System;
 using System.Linq;
 using ServiceStack.Configuration;
-using ServiceStack.Text;
 
 namespace ServiceStack.Auth
 {
@@ -26,6 +24,7 @@ namespace ServiceStack.Auth
             this.RequestTokenUrl = appSettings.Get("oauth.{0}.RequestTokenUrl".Fmt(oAuthProvider), authRealm + "oauth/request_token");
             this.AuthorizeUrl = appSettings.Get("oauth.{0}.AuthorizeUrl".Fmt(oAuthProvider), authRealm + "oauth/authorize");
             this.AccessTokenUrl = appSettings.Get("oauth.{0}.AccessTokenUrl".Fmt(oAuthProvider), authRealm + "oauth/access_token");
+            this.SaveExtendedUserInfo = appSettings.Get("oauth.{0}.SaveExtendedUserInfo".Fmt(oAuthProvider), true);
 
             this.OAuthUtils = new OAuthAuthorizer(this);
             this.AuthHttpGateway = new AuthHttpGateway();
@@ -39,6 +38,8 @@ namespace ServiceStack.Auth
         public string AuthorizeUrl { get; set; }
         public string AccessTokenUrl { get; set; }
         public OAuthAuthorizer OAuthUtils { get; set; }
+
+        public bool SaveExtendedUserInfo { get; set; }
 
         public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)
         {

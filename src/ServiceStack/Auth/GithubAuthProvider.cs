@@ -115,10 +115,9 @@ namespace ServiceStack.Auth
         {
             try
             {
-                var json = "https://api.github.com/user?access_token={0}"
-                  .Fmt(tokens.AccessTokenSecret).GetStringFromUrl("*/*", UserRequestFilter);
+                var json = "https://api.github.com/user?access_token={0}".Fmt(tokens.AccessTokenSecret)
+                  .GetStringFromUrl("*/*", UserRequestFilter);
                 var obj = JsonObject.Parse(json);
-
                 tokens.UserId = obj.Get("id");
                 tokens.UserName = obj.Get("login");
                 tokens.DisplayName = obj.Get("name");
@@ -126,16 +125,21 @@ namespace ServiceStack.Auth
                 tokens.Company = obj.Get("company");
                 tokens.Country = obj.Get("country");
 
+                if (SaveExtendedUserInfo)
+                {
+                    obj.Each(x => authInfo[x.Key] = x.Value);
+                }
+
                 string profileUrl;
                 if (obj.TryGetValue("avatar_url", out profileUrl))
                     tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
-
-                LoadUserOAuthProvider(userSession, tokens);
             }
             catch (Exception ex)
             {
                 Log.Error("Could not retrieve github user info for '{0}'".Fmt(tokens.DisplayName), ex);
             }
+
+            LoadUserOAuthProvider(userSession, tokens);
         }
 
         public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)

@@ -102,7 +102,7 @@ namespace ServiceStack.Auth
             var userSession = session as AuthUserSession;
             if (userSession != null) {
                 LoadUserAuthInfo(userSession, tokens, authInfo);
-                HostContext.TryResolve<IAuthMetadataProvider>().AddMetadata(tokens, authInfo);
+                HostContext.TryResolve<IAuthMetadataProvider>().SafeAddMetadata(tokens, authInfo);
             }
 
             var authRepo = authService.TryResolve<IAuthRepository>();
