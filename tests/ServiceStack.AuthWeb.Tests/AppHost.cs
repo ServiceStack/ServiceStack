@@ -250,8 +250,8 @@ namespace ServiceStack.AuthWeb.Tests
             {
                 msg.Private = true;
                 ServerEvents.NotifyUserId(request.ToUserId, request.Selector, msg);
-                var toSub = ServerEvents.GetSubscriptionByUserId(request.ToUserId);
-                if (toSub != null)
+                var toSubs = ServerEvents.GetSubscriptionsByUserId(request.ToUserId);
+                foreach (var toSub in toSubs)
                 {
                     msg.Message = "@{0}: {1}".Fmt(toSub.DisplayName, msg.Message);
                     ServerEvents.NotifySubscription(request.From, request.Selector, msg);

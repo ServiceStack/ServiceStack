@@ -445,18 +445,19 @@ namespace ServiceStack
             return null;
         }
 
-        public IEventSubscription GetSubscriptionByUserId(string userId)
+        public List<IEventSubscription> GetSubscriptionsByUserId(string userId)
         {
-            if (userId == null) return null;
+            var userSubs = new List<IEventSubscription>();
+            if (userId == null) return userSubs;
             foreach (var subs in Subcriptions.Values)
             {
                 foreach (var sub in subs)
                 {
                     if (sub != null && sub.UserId == userId)
-                        return sub;
+                        userSubs.Add(sub);
                 }
             }
-            return null;
+            return userSubs;
         }
 
         public List<Dictionary<string, string>> GetSubscriptions(string channel = null)
@@ -606,17 +607,7 @@ namespace ServiceStack
 
     public interface IServerEvents
     {
-        void Pulse(string id);
-
-        IEventSubscription GetSubscription(string id);
-        IEventSubscription GetSubscriptionByUserId(string userId);
-
-        List<Dictionary<string, string>> GetSubscriptions(string channel = null);
-
-        void Register(IEventSubscription subscription);
-
-        void UnRegister(IEventSubscription subscription);
-
+        // External API's
         void NotifyAll(string selector, object message);
 
         void NotifyChannel(string channel, string selector, object message);
@@ -628,5 +619,20 @@ namespace ServiceStack
         void NotifyUserName(string userName, string selector, object message, string channel = null);
 
         void NotifySession(string sspid, string selector, object message, string channel = null);
+
+        IEventSubscription GetSubscription(string id);
+
+        List<IEventSubscription> GetSubscriptionsByUserId(string userId);
+
+        // Admin API's
+        void Register(IEventSubscription subscription);
+
+        void UnRegister(IEventSubscription subscription);
+
+        // Client API's
+
+        List<Dictionary<string, string>> GetSubscriptions(string channel = null);
+
+        void Pulse(string id);
     }
 }
