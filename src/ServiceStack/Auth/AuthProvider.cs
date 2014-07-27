@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Web;
@@ -160,6 +163,12 @@ namespace ServiceStack.Auth
                         userAuthProvider.LoadUserOAuthProvider(session, oAuthToken);
                     }
                 }
+
+                var httpRes = authService.Request.Response as IHttpResponse;
+                if (session.UserAuthId != null && httpRes != null)
+                {
+                    httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
+                }
             }
             else
             {
@@ -167,12 +176,6 @@ namespace ServiceStack.Auth
                 {
                     session.UserAuthId = CreateOrMergeAuthSession(session, tokens);
                 }
-            }
-
-            var httpRes = authService.Request.Response as IHttpResponse;
-            if (session.UserAuthId != null && httpRes != null)
-            {
-                httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
             }
 
             try
@@ -188,7 +191,11 @@ namespace ServiceStack.Auth
             return null;
         }
 
-        // Merge tokens into session where no IAuthRepository exists
+        // Keep in-memory map of userAuthId's when no IAuthRepository exists 
+        private static long transientUserAuthId;
+        static readonly ConcurrentDictionary<string, long> transientUserIdsMap = new ConcurrentDictionary<string, long>();
+
+        // Merge tokens into session when no IAuthRepository exists
         public virtual string CreateOrMergeAuthSession(IAuthSession session, IAuthTokens tokens)
         {
             if (session.UserName.IsNullOrEmpty())
@@ -214,7 +221,9 @@ namespace ServiceStack.Auth
                     session.LastName = oAuthProvider.LastName;
             }
 
-            return null;
+            var key = tokens.Provider + ":" + (tokens.UserId ?? tokens.UserName);
+            return transientUserIdsMap.GetOrAdd(key, 
+                k => Interlocked.Increment(ref transientUserAuthId)).ToString(CultureInfo.InvariantCulture);
         }
 
         protected virtual void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo) { }
