@@ -29,21 +29,36 @@ namespace ServiceStack.Auth
             {
                 if (tokens.UserId != null)
                 {
-                    var json = AuthHttpGateway.DownloadTwitterUserInfo(tokens.UserId);
+                    var oauthToken = new OAuthAccessToken
+                    {
+                        OAuthProvider = this,
+                        AccessToken = tokens.AccessToken,
+                        AccessTokenSecret = tokens.AccessTokenSecret,
+                    };
+                    var json = AuthHttpGateway.DownloadTwitterUserInfo(oauthToken, tokens.UserId);
                     var objs = JsonObject.ParseArray(json);
                     if (objs.Count > 0)
                     {
                         var obj = objs[0];
                         tokens.DisplayName = obj.Get("name");
+
+                        string profileUrl;
+                        if (obj.TryGetValue("profile_image_url", out profileUrl))
+                            tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
+
+                        if (SaveExtendedUserInfo)
+                        {
+                            obj.Each(x => authInfo[x.Key] = x.Value);
+                        }
                     }
                 }
-
-                LoadUserOAuthProvider(userSession, tokens);
             }
             catch (Exception ex)
             {
                 Log.Error("Could not retrieve twitter user info for '{0}'".Fmt(userSession.TwitterUserId), ex);
             }
+
+            LoadUserOAuthProvider(userSession, tokens);
         }
 
         public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
@@ -56,4 +71,5 @@ namespace ServiceStack.Auth
             userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
         }
     }
+
 }
