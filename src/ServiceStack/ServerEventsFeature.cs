@@ -18,7 +18,6 @@ namespace ServiceStack
         public string HeartbeatPath { get; set; }
         public string SubscribersPath { get; set; }
         public string UnRegisterPath { get; set; }
-        public bool EnableSubscribers { get; set; }
 
         public TimeSpan Timeout { get; set; }
         public TimeSpan HeartbeatInterval { get; set; }
@@ -35,7 +34,6 @@ namespace ServiceStack
             HeartbeatPath = "/event-heartbeat";
             UnRegisterPath = "/event-unregister";
             SubscribersPath = "/event-subscribers";
-            EnableSubscribers = true;
 
             Timeout = TimeSpan.FromSeconds(30);
             HeartbeatInterval = TimeSpan.FromSeconds(10);
@@ -64,9 +62,12 @@ namespace ServiceStack
                       ? new ServerEventsHeartbeatHandler()
                       : null);
 
-            appHost.RegisterService(typeof(ServerEventsUnRegisterService), UnRegisterPath);
+            if (UnRegisterPath != null)
+            {
+                appHost.RegisterService(typeof(ServerEventsUnRegisterService), UnRegisterPath);
+            }
 
-            if (EnableSubscribers)
+            if (SubscribersPath != null)
             {
                 appHost.RegisterService(typeof(ServerEventsSubscribersService), SubscribersPath);
             }
