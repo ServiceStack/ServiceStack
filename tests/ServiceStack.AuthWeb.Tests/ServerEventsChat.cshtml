@@ -1,13 +1,12 @@
 @inherits ViewPage
 @{
-    Layout = "Empty";
     ViewBag.Title = "Server Sent Events Chat";
     var channel = Request.QueryString["channel"] ?? "home";
 }
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<style>
+<link href="/img/favicon.png" rel="icon"> <style>
     body {
         font: 16px Arial;
         overflow: hidden;
@@ -41,7 +40,7 @@
         cursor: pointer;
     }
     #announce {
-        z-index: 2;
+        z-index: 3;
         display: none;
         position: absolute;
         top: 40px;
@@ -52,7 +51,7 @@
         box-shadow: 0px 2px 3px rgba(100, 100, 100, 0.75);
     }
     #tv {
-        z-index: 1;
+        z-index: 2;
         position: absolute;
         display: none;
         text-align: center;
@@ -60,19 +59,23 @@
         top: 40px;
     }
     #right {
+        z-index: 1;
         position: absolute;
         top: 40px;
         right: 0;
-        width: 15%;
+        width: 18%;
+        min-width: 200px;
         height: 100%;
         border: 2px solid #ccc;
         color: #666;
+        background: #fff;
     }
     #examples {
         position: fixed;
-        bottom: 60px;
+        bottom: 10px;
         right: .5%;
-        width: 14%;
+        width: 17%;
+        min-width: 190px;
         border: 1px solid #ccc;
         font-size: 12px;
         background: #fcfcfc;
@@ -97,13 +100,13 @@
         position: fixed;
         left: -2px;
         bottom: 50px;
-        width: 85%;
+        width: 82%;
     }
     #bottom {
         position: fixed;
         bottom: 0;
         height: 50px;
-        width: 100%;
+        width: 82%;
         background: #eaeaea;
         border-top: 1px solid #ccc;
     }
@@ -226,8 +229,8 @@
         <div>/css.background$#right #fffde7</div>
         <div>/css.background$#bottom #0091ea</div>
         <div>/css.color$#me #ff0</div>
-        <div>/css.display$img none</div>
-        <div>/css.display$img inline</div>
+        <div>/css.visibility$img,a hidden</div>
+        <div>/css.visibility$img,a visible</div>
         <h4>Receivers</h4>
         <div>/document.title New Window Title</div>
         <div>/window.location http://google.com</div>
@@ -249,51 +252,40 @@
 
 <script>
     var source = new EventSource('/event-stream?channel=@channel&t=' + new Date().getTime()); //disable cache
+    source.addEventListener('error', function (e) { addEntry({ msg: "ERROR!", cls: "error" }); }, false);
 
-    source.addEventListener('error', function (e) {
-        addEntry({ msg: "ERROR!", cls: "error" });
-    }, false);
-
+    var $txtMsg = $("#txtMsg").focus(), usersMap = {}, refCounter = {}, activeSub = null;
     $.getJSON("/event-subscribers?channel=@channel", function (users) {
-        var usersMap = {};
-        $.map(users, function (user) { usersMap[user.userId] = user; });
+        $.map(users, function (user) {
+            usersMap[user.userId] = user;
+            refCounter[user.userId] = (refCounter[user.userId] || 0) + 1;
+        });
         var html = $.map(usersMap, function (user) { return createUser(user); }).join('');
         $("#users").html(html);
     });
 
-    var $txtMsg = $("#txtMsg");
-    $txtMsg.focus();
-
-    function createUser(user) {
-        return "<div class='user u_" + user.userId + "'><img src='" +
-                user.profileUrl + "'/><span data-id='" + user.userId + "' data-click='privateMsg'>" + user.displayName + "</span></div>";
-    }
-
-    var activeSub = null;
     $.ss.eventReceivers = { "window": window, "document": document };
     $(source).handleServerEvents({
         success: function (selector, msg, json) {
             console.log(selector, json);
         },
         handlers: {
-            onConnect: function (user) {
-                console.log('onConnect', user);
-                activeSub = user;
-                $("#me").html('<span>Welcome, ' + user.displayName + '</span>' + '<img src="' + user.profileUrl + '"/>');
+            onConnect: function (u) {
+                activeSub = u;
+                $("#me").html('<span>Welcome, ' + u.displayName + '</span>' + '<img src="' + u.profileUrl + '"/>');
                 addEntry({ msg: "CONNECTED!", cls: "open" });
             },
-            onJoin: function (user) {
-                console.log('onJoin', user);
-                $("#users .u_" + user.userId).remove();
-                $("#users").prepend(createUser(user));
+            onJoin: function (u) {
+                $("#users .u_" + u.userId).remove();
+                $("#users").prepend(createUser(u));
+                refCounter[u.userId] = (refCounter[u.userId] || 0) + 1;
             },
-            onLeave: function (user) {
-                console.log('onLeave', user);
-                if (activeSub != null && user.userId != activeSub.userId)
-                    $("#users .u_" + user.userId).remove();
+            onLeave: function (u) {
+                if (activeSub != null && u.userId != activeSub.userId && (refCounter[u.userId] = refCounter[u.userId] - 1) <= 0)
+                    $("#users .u_" + u.userId).remove();
             },
-            chat: function (o, e) {
-                addEntry({ id: o.id, userId: o.fromUserId, userName: o.fromName, msg: o.message, cls: o.private ? ' private' : '' });
+            chat: function (m, e) {
+                addEntry({ id: m.id, userId: m.fromUserId, userName: m.fromName, msg: m.message, cls: m.private ? ' private' : '' });
             }
         },
         receivers: {
@@ -316,15 +308,10 @@
             }
         }
     });
-
     var templates = {
         youtube: '<iframe width="640" height="360" src="//www.youtube.com/embed/{id}?autoplay=1" frameborder="0" allowfullscreen></iframe>',
         generic: '<iframe width="640" height="360" src="{id}" frameborder="0"></iframe>'
     };
-
-    $(document).on('customEvent', function (e, msg, msgEvent) {
-        addEntry({ msg: "[event " + e.type + " message: " + msg + "]", cls: "event" });
-    });
 
     $(document).bindHandlers({
         announce: function (msg) {
@@ -346,6 +333,8 @@
         addReceiver: function (name) {
             $.ss.eventReceivers[name] = window[name];
         }
+    }).on('customEvent', function (e, msg, msgEvent) {
+        addEntry({ msg: "[event " + e.type + " message: " + msg + "]", cls: "event" });
     });
 
     function addEntry(o) {
@@ -358,9 +347,12 @@
         $("#log").append("<div id='m_" + (o.id || "0") + "' class='msg " + highlight + o.cls + "'>" +
             user + time + "<div>" + o.msg + "</div>" + "</div>");
     }
+    function createUser(user) {
+        return "<div class='user u_" + user.userId + "'><img src='" + user.profileUrl + "'/><span data-id='" +
+            user.userId + "' data-click='privateMsg'>" + user.displayName + "</span></div>";
+    }
 
-    var historyIndex = -1;
-    var msgHistory = [];
+    var msgHistory = [], historyIndex = -1;
     function postMsg() {
         var msg = $txtMsg.val(), parts, to = null;
         msgHistory.push(msg);
@@ -388,6 +380,7 @@
         $txtMsg.val("");
     }
     $("#btnSend").click(postMsg);
+
     $txtMsg.keydown(function (e) {
         var keycode = (e.keyCode ? e.keyCode : e.which);
         if ($.ss.getSelection()) {
@@ -410,8 +403,7 @@
         } else {
             historyIndex = -1;
         }
-    });
-    $txtMsg.keyup(function (e) {
+    }).keyup(function (e) {
         if (!$.ss.getSelection() && this.value[0] == '@@' && this.value.indexOf(' ') < 0) {
             var partialVal = this.value.substring(1);
             var matchingNames = $.grep($("#users .user span")
