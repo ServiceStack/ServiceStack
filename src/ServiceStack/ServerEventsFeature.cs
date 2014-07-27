@@ -91,9 +91,9 @@ namespace ServiceStack
 
             IAuthSession session = req.GetSession();
             var userAuthId = session != null ? session.UserAuthId : null;
-            var userId = userAuthId ?? ("-" + anonUserId);
+            var userId = userAuthId ?? ("-" + Interlocked.Increment(ref anonUserId));
             var displayName = session.GetSafeDisplayName()
-                ?? "user" + Interlocked.Increment(ref anonUserId);
+                ?? "user" + anonUserId;
 
             var feature = HostContext.GetPlugin<ServerEventsFeature>();
 
