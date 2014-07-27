@@ -115,15 +115,15 @@ namespace ServiceStack.Common.Tests.OAuth
     ""full_name"":""{1}""
 }";
 
-		public string DownloadTwitterUserInfo(string twitterUserId)
+	    public string DownloadTwitterUserInfo(OAuthAccessToken oauthToken, string twitterUserId)
 		{
 			twitterUserId.ThrowIfNullOrEmpty("twitterUserId");
 
 			return JsonTwitter.Fmt(Tokens.DisplayName);
 		}
 
-		public string DownloadFacebookUserInfo(string facebookCode)
-		{
+        public string DownloadFacebookUserInfo(string facebookCode, params string[] fields)
+        {
 			facebookCode.ThrowIfNullOrEmpty("facebookCode");
 
 			return JsonFacebook.Fmt(Tokens.UserId, Tokens.DisplayName, 
