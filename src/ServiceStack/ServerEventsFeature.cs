@@ -89,10 +89,10 @@ namespace ServiceStack
             res.KeepAlive = true;
             res.Flush();
 
-            var session = req.GetSession();
+            IAuthSession session = req.GetSession();
             var userAuthId = session != null ? session.UserAuthId : null;
             var userId = userAuthId ?? ("-" + anonUserId);
-            var displayName = (session != null ? session.DisplayName : null)
+            var displayName = session.GetSafeDisplayName()
                 ?? "user" + Interlocked.Increment(ref anonUserId);
 
             var feature = HostContext.GetPlugin<ServerEventsFeature>();

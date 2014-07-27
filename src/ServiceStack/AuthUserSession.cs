@@ -107,5 +107,16 @@ namespace ServiceStack
             var profile = HostContext.TryResolve<IAuthMetadataProvider>();
             return profile == null ? defaultUrl : profile.GetProfileUrl(authSession, defaultUrl);
         }
+
+        public static string GetSafeDisplayName(this IAuthSession authSession)
+        {
+            if (authSession != null)
+            {
+                return authSession.UserName != null && authSession.UserName.IndexOf('@') < 0
+                    ? authSession.UserName
+                    : authSession.DisplayName.SafeVarName();
+            }
+            return null;
+        }
     }
 }
