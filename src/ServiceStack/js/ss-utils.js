@@ -334,7 +334,7 @@
                 }
                 var fn = $.ss.handlers[cmd];
                 if (fn) {
-                    fn.call($(parts[1])[0], msg, e);
+                    fn.call($(parts[1])[0] || document.body, msg, e);
                 }
             }
             else if (op == "trigger") {
