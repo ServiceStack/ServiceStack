@@ -78,7 +78,7 @@ namespace ServiceStack
                 }
 
                 //Exec remaining RequestFilter attributes with Priority >= 0
-                for (; i < attributes.Length; i++)
+                for (; i < attributes.Length && attributes[i].Priority >= 0; i++)
                 {
                     var attribute = attributes[i];
                     Container.AutoWire(attribute);
