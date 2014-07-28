@@ -141,15 +141,15 @@
     .twitter { background: url(/img/twitter_normal.png) no-repeat; }
     .facebook { background: url(/img/facebook_normal.png) no-repeat; }
     .github { background: url(/img/github_normal.png) no-repeat; }
-    #me {
+    #welcome {
         float: left;
         margin: 0 5px 0 0;
         color: #f1f1f1;
     }
-    #me span {
+    #welcome span {
         line-height: 24px;
     }
-    #me img {
+    #welcome img {
         height: 24px; 
         margin: 0 0 0 5px;
         vertical-align: bottom;
@@ -198,7 +198,7 @@
 <body>
 <div id="top">
     <div id="social">
-        <div id="me"></div>
+        <div id="welcome"></div>
         @if (!IsAuthenticated)
         {
             <a href="/auth/twitter" class="twitter"></a>
@@ -231,7 +231,7 @@
         <div>/css.background$#top #673ab7</div>
         <div>/css.background$#right #fffde7</div>
         <div>/css.background$#bottom #0091ea</div>
-        <div>/css.color$#me #ff0</div>
+        <div>/css.color$#welcome #ff0</div>
         <div>/css.visibility$img,a hidden</div>
         <div>/css.visibility$img,a visible</div>
         <h4>Receivers</h4>
@@ -275,7 +275,7 @@
         handlers: {
             onConnect: function (u) {
                 activeSub = u;
-                $("#me").html('<span>Welcome, ' + u.displayName + '</span>' + '<img src="' + u.profileUrl + '"/>');
+                $("#welcome").html('<span>Welcome, ' + u.displayName + '</span>' + '<img src="' + u.profileUrl + '"/>');
                 addEntry({ msg: "CONNECTED!", cls: "open" });
             },
             onJoin: function (u) {

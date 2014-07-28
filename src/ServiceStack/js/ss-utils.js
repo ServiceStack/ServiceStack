@@ -314,7 +314,8 @@
                 return;
 
             var tokens = $.ss.splitOnFirst(target, '$'), 
-                cmd = tokens[0], cssSel = tokens[1], el = cssSel && $(cssSel)[0];
+                cmd = tokens[0], cssSel = tokens[1],
+                $els = cssSel && $(cssSel), el = $els && $els[0];
             if (op == "cmd") {
                 if (cmd == "onConnect") {
                     $.extend(opt, msg);
@@ -341,7 +342,7 @@
                 $(el || document).trigger(cmd, [msg, e]);
             }
             else if (op == "css") {
-                $(el || document.body).css(cmd, msg, e);
+                $($els || document.body).css(cmd, msg, e);
             }
             else {
                 var r = opt.receivers && opt.receivers[op] || $.ss.eventReceivers[op];
