@@ -313,9 +313,9 @@
             if (opt.validate && opt.validate(op, target, msg, json) === false)
                 return;
 
+            var tokens = $.ss.splitOnFirst(target, '$'), 
+                cmd = tokens[0], cssSel = tokens[1], el = cssSel && $(cssSel)[0];
             if (op == "cmd") {
-                parts = $.ss.splitOnFirst(target, '$');
-                var cmd = parts[0];
                 if (cmd == "onConnect") {
                     $.extend(opt, msg);
                     if (opt.heartbeatUrl) {
@@ -334,24 +334,22 @@
                 }
                 var fn = $.ss.handlers[cmd];
                 if (fn) {
-                    fn.call($(parts[1])[0] || document.body, msg, e);
+                    fn.call(el || document.body, msg, e);
                 }
             }
             else if (op == "trigger") {
-                parts = $.ss.splitOnFirst(target, '$');
-                $(parts.length > 1 ? parts[1] : document).trigger(parts[0], [msg, e]);
+                $(el || document).trigger(cmd, [msg, e]);
             }
             else if (op == "css") {
-                parts = $.ss.splitOnFirst(target, '$');
-                $(parts.length > 1 ? parts[1] : document.body).css(parts[0], msg, e);
+                $(el || document.body).css(cmd, msg, e);
             }
             else {
                 var r = opt.receivers && opt.receivers[op] || $.ss.eventReceivers[op];
                 if (r) {
-                    if (typeof(r[target]) == "function") {
-                        r[target](msg, e);
+                    if (typeof (r[cmd]) == "function") {
+                        r[cmd].call(el || r[cmd], msg, e);
                     } else {
-                        r[target] = msg;
+                        r[cmd] = msg;
                     }
                 }
             }

@@ -213,6 +213,9 @@
         <li style="background:none; padding: 0 0 0 5px;">
             <button onclick="var chan = prompt('Open another Channel in new Window:','ChannelName'); if (chan) window.open('?channel='+chan.replace(/\s+/g,''));">+</button>
         </li>
+        <li style="background:none; padding: 0 0 0 5px;">
+            <button data-click="paintGreen" data-focusout="paintRed">Paint</button>
+        </li>
     </ul>
 </div>
 <div id="announce"></div>
@@ -286,6 +289,14 @@
             },
             chat: function (m, e) {
                 addEntry({ id: m.id, userId: m.fromUserId, userName: m.fromName, msg: m.message, cls: m.private ? ' private' : '' });
+            },
+            paintGreen: function () {
+                console.log("paintGreen", this, arguments);
+                $(this).css("background", "green");
+            },
+            paintRed: function () {
+                console.log("paintRed", this, arguments);
+                $(this).css("background", "red");
             }
         },
         receivers: {
@@ -304,6 +315,7 @@
                 },
                 off: function () {
                     $("#tv").hide().html("");
+                    console.log("tv.off()", this, arguments);
                 }
             }
         }
@@ -335,6 +347,7 @@
         }
     }).on('customEvent', function (e, msg, msgEvent) {
         addEntry({ msg: "[event " + e.type + " message: " + msg + "]", cls: "event" });
+        console.log("on.customEvent()", this, arguments);
     });
 
     function addEntry(o) {
