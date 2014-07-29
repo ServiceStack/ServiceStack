@@ -10,8 +10,8 @@ using System.Collections.Generic;
 namespace ServiceStack.Mvc
 {
     public class FunqControllerFactory : DefaultControllerFactory
-	{
-		private readonly ContainerResolveCache funqBuilder;
+    {
+        private readonly ContainerResolveCache funqBuilder;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FunqControllerFactory" /> class.
@@ -19,8 +19,8 @@ namespace ServiceStack.Mvc
         /// <param name="container">The container.</param>
         /// <param name="assemblies">The assemblies to reflect for IController discovery.</param>
         public FunqControllerFactory(Container container, params Assembly[] assemblies)
-		{
-			this.funqBuilder = new ContainerResolveCache(container);
+        {
+            this.funqBuilder = new ContainerResolveCache(container);
 
             // aggregate the local and external assemblies for processing (unless ignored)
             IEnumerable<Assembly> targetAssemblies = assemblies.Concat(new[] { Assembly.GetCallingAssembly() });
@@ -35,35 +35,35 @@ namespace ServiceStack.Mvc
 
                 container.RegisterAutoWiredTypes(controllerTypes);
             }
-		}
+        }
 
-		protected override IController GetControllerInstance(
+        protected override IController GetControllerInstance(
             System.Web.Routing.RequestContext requestContext, Type controllerType)
-		{
-			try
-			{
-				if (controllerType == null)
-					return base.GetControllerInstance(requestContext, null);
+        {
+            try
+            {
+                if (controllerType == null)
+                    return base.GetControllerInstance(requestContext, null);
 
-				var controller = funqBuilder.CreateInstance(controllerType) as IController;
+                var controller = funqBuilder.CreateInstance(controllerType) as IController;
 
-				return controller ?? base.GetControllerInstance(requestContext, controllerType);
-			}
-			catch (HttpException ex)
-			{
-				if (ex.GetHttpCode() == 404)
-				{
-					try
-					{
-						if (ServiceStackController.CatchAllController != null)
-						{
-							return ServiceStackController.CatchAllController(requestContext);
-						}
-					}
-					catch { } //ignore not found CatchAllController
-				}
-				throw;
-			}
-		}
-	}
+                return controller ?? base.GetControllerInstance(requestContext, controllerType);
+            }
+            catch (HttpException ex)
+            {
+                if (ex.GetHttpCode() == 404)
+                {
+                    try
+                    {
+                        if (ServiceStackController.CatchAllController != null)
+                        {
+                            return ServiceStackController.CatchAllController(requestContext);
+                        }
+                    }
+                    catch { } //ignore not found CatchAllController
+                }
+                throw;
+            }
+        }
+    }
 }
