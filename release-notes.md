@@ -64,8 +64,8 @@ To demonstrate how to make use Server Events we've created a cursory Chat web ap
 
 Chat is another ServiceStack Single Page App Special showing how you can get a lot done with minimal effort and dependencies which delivers all these features in a tiny footprint built with vanilla jQuery and weighing just:
 
-  - [1 default.cshtml page](https://github.com/ServiceStackApps/Chat/blob/master/src/Chat/default.cshtml), with less than **170 lines of JavaScript** and **70 lines of HTML** markup
-  - [2 ServiceStack Services](https://github.com/ServiceStackApps/Chat/blob/master/src/Chat/Global.asax.cs), entire backend in 1 `.cs` file
+  - [1 default.cshtml page](https://github.com/ServiceStackApps/Chat/blob/master/src/Chat/default.cshtml) with under **170 lines of JavaScript** and **70 lines** of HTML
+  - [2 ServiceStack Services](https://github.com/ServiceStackApps/Chat/blob/master/src/Chat/Global.asax.cs) entire backend in 1 `.cs` file
   - 1 ASP.NET Web Application project requiring only a sane **9 .NET dll** references
 
 ### Remote control
