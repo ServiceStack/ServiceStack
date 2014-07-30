@@ -91,7 +91,7 @@ This is now the fastest way to get up and running with ServiceStack. With these 
 
 ![AngularJS WalkThrough](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/servicestackvs/angularjs-overview.gif)
 
-### Get the [Learning AngularJS for .NET Developers]("http://www.packtpub.com/learning-angularjs-for-net-developers/book) Book!
+### Get the [Learning AngularJS for .NET Developers]("https://raw.githubusercontent.com/ServiceStack/Assets/master/img/community/learning-angularjs.jpg) Book!
 
 <a href="http://www.packtpub.com/learning-angularjs-for-net-developers/book"><img src="https://github.com/ServiceStack/Assets/blob/master/img/apps/Chat/vs-sln.png" width="175" align="right" hspace="10"></a>
 
