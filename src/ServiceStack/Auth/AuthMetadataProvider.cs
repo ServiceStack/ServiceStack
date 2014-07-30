@@ -35,6 +35,7 @@ namespace ServiceStack.Auth
 
             try
             {
+                //Provide Fallback to retrieve avatar urls in-case built-in access fails
                 if (tokens.Provider == FacebookAuthProvider.Name)
                 {
                     items[ProfileUrlKey] = GetRedirectUrlIfAny(
@@ -55,6 +56,7 @@ namespace ServiceStack.Auth
             }
         }
 
+        // Strip out any user identifying information on the url
         public static string GetRedirectUrlIfAny(string url)
         {
             var finalUrl = url;
@@ -91,8 +93,6 @@ namespace ServiceStack.Auth
     public interface IAuthMetadataProvider
     {
         void AddMetadata(IAuthTokens tokens, Dictionary<string, string> authInfo);
-
-        void AddProfileUrl(IAuthTokens tokens, Dictionary<string, string> authInfo);
 
         string GetProfileUrl(IAuthSession authSession, string defaultUrl = null);
     }
