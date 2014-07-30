@@ -1,6 +1,309 @@
 # Release Notes
 
-## v4.0.23 Release Notes
+# v4.0.24 Release Notes
+
+## [Server Events](https://github.com/ServiceStackApps/Chat)
+
+In keeping with our quest to provide a simple, lean and deep integrated technology stack for all your web framework needs we've added support in this release for Server push communications with our initial support for [Server Sent Events](http://www.html5rocks.com/en/tutorials/eventsource/basics/). 
+
+[Server Sent Events](http://www.html5rocks.com/en/tutorials/eventsource/basics/) (SSE) is an elegant [web technology](http://dev.w3.org/html5/eventsource/) for efficiently receiving push notifications from any HTTP Server. It can be thought of as a mix between long polling and one-way WebSockets and contains many benefits over each:
+
+  - **Simple** - Server Sent Events is just a single long-lived HTTP Request that any HTTP Server and Web Framework can support
+  - **Efficient** - Each client uses a single TCP connection and each message avoids the overhead of HTTP Connections and Headers that's [often faster than Web Sockets](http://matthiasnehlsen.com/blog/2013/05/01/server-sent-events-vs-websockets/).
+  - **Resilient** - Browsers automatically detect when a connection is broken and automatically reconnects
+  - **Interoperable** - As it's just plain-old HTTP, it's introspectable with your favorite HTTP Tools and even works through HTTP proxies (with buffering and checked-encoding off).
+  - **Well Supported** - As a Web Standard it's supported in all major browsers except for IE which [can be enabled with polyfills](http://html5doctor.com/server-sent-events/#yaffle).
+
+Server Events provides a number of API's that allow sending messages to:
+
+  - All Users
+  - All Users subscribed to a channel
+  - A Single Users Subscription
+
+It also includes deep integration with ServiceStack's [Sessions](https://github.com/ServiceStack/ServiceStack/wiki/Sessions) and [Authentication Providers](https://github.com/ServiceStack/ServiceStack/wiki/Authentication-and-authorization) which also sending messages to uses using either:
+
+  - UserAuthId
+  - UserName
+  - Permanent Session Id (ss-pid)
+
+### Registering
+
+List most other [modular functionality](https://github.com/ServiceStack/ServiceStack/wiki/Plugins) in ServiceStack, Server Sent Events is encapsulated in a single Plugin that can be registered in your AppHost with:
+
+```csharp
+Plugins.Add(new ServerEventsFeature());
+```
+
+### [ServiceStack Chat (beta)](https://github.com/ServiceStackApps/Chat)
+
+![Chat Overview](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/apps/Chat/chat-overview.gif)
+
+To demonstrate how to make use Server Events we've created a cursory Chat web app for showcasing server push notifications packed with a number of features including:
+
+  - Anonymous or Authenticated access with Twitter, Facebook or GitHub OAuth
+  - Joining any arbitrary user-defined channel
+  - Private messaging
+  - Command history
+  - Autocomplete of user names
+  - Highlighting of mentions
+  - Grouping messages by user
+  - Active list of users, kept live with:
+    - Periodic Heartbeats
+    - Automatic unregistration on page unload
+  - Remote Control
+    - Send a global announcement to all users
+    - Toggle on/off channel controls
+    - Change the CSS style of any element
+    - Change the HTML document's title
+    - Redirect users to any url
+    - Play a youtube video
+    - Display an image url
+    - Raise DOM events
+
+<img src="https://github.com/ServiceStack/Assets/blob/master/img/apps/Chat/vs-sln.png" alight="right" hspace="10">
+
+Chat is another ServiceStack Single Page App Special showing how you can get a lot done with minimal effort and dependencies which delivers all these features in a tiny footprint built with vanilla jQuery and weighing just:
+
+  - [1 default.cshtml page](https://github.com/ServiceStackApps/Chat/blob/master/src/Chat/default.cshtml), with less than **170 lines of JavaScript** and **70 lines of HTML** markup
+  - [2 ServiceStack Services](https://github.com/ServiceStackApps/Chat/blob/master/src/Chat/Global.asax.cs), entire backend in 1 `.cs` file
+  - 1 ASP.NET Web Application project requiring only a sane **9 .NET dll** references
+
+### Remote control
+
+Chat features the ability to remotely control other users chat window with the client bindings in `/js/ss-utils.js`, providing a number of different ways to interact and modify a live webapp by either:
+
+  - Invoking Global Event Handlers
+  - Modifying CSS via jQuery
+  - Sending messages to Receivers
+  - Raising jQuery Events
+
+All options above are designed to integrate with an apps existing functionality by providing the ability to invoke predefined handlers and exported object instances as well as modify jQuery CSS and raising DOM events.
+
+The [complete documentation](https://github.com/ServiceStackApps/Chat) in Chat is the recommended way to learn more about Server Events which goes through and explains how to use its Server and Client features.
+
+## [ServiceStackVS](https://github.com/ServiceStack/ServiceStackVS) - ServiceStack's VS.NET Extension
+
+Another exciting announcement is the initial release of [ServiceStackVS](https://github.com/ServiceStack/ServiceStackVS) - our VS.NET ServiceStack Extension containing the most popular starting templates for ServiceStack powered solutions:
+
+![Visual Studio Templates](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/servicestackvs/vs-templates.png)
+
+Each project template supports our [recommended multi-project structure](https://github.com/ServiceStack/ServiceStack/wiki/Physical-project-structure) promoting a clean architecture and Web Services best-practices, previously [documented in Email Contacts](https://github.com/ServiceStack/EmailContacts/#creating-emailcontacts-solution-from-scratch).
+
+This is now the fastest way to get up and running with ServiceStack. With these new templates you can now create a new ServiceStack Razor, AngularJS and Bootstrap enabled WebApp, pre-wired end-to-end in seconds:
+
+![AngularJS WalkThrough](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/servicestackvs/angularjs-overview.gif)
+
+### Download ServiceStackVS
+
+ServiceStackVS supports both VS.NET 2013 and 2012 and can be [downloaded from the Visual Studio Gallery](http://visualstudiogallery.msdn.microsoft.com/5bd40817-0986-444d-a77d-482e43a48da7)
+
+[![VS.NET Gallery Download](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/servicestackvs/vsgallery-download.png)](http://visualstudiogallery.msdn.microsoft.com/5bd40817-0986-444d-a77d-482e43a48da7)
+
+### VS.NET 2012 Prerequisites
+
+  - VS.NET 2012 Users must install the [Microsoft Visual Studio Shell Redistributable](http://www.microsoft.com/en-au/download/details.aspx?id=40764)
+  - It's also highly recommended to [Update to the latest NuGet](http://docs.nuget.org/docs/start-here/installing-nuget). 
+
+> Alternatively if continuing to use an older version of the **NuGet Package Manager** you will need to click on **Enable NuGet Package Restore** after creating a new project to ensure its NuGet dependencies are installed.
+
+### Feedback
+
+We hope ServiceStackVS helps make ServiceStack developers more productive than ever and we'll look to continue improving it with new features. [Suggestions and feedback are welcome](http://servicestack.uservoice.com/forums/176786-feature-requests).  
+
+## [Authentication](https://github.com/ServiceStack/ServiceStack/wiki/Authentication-and-authorization)
+
+### Saving User Profile Images
+
+To make it easier to build Social Apps like Chat with ServiceStack we've started saving profile image urls (aka avatars) for the following popular OAuth providers:
+
+ - Twitter
+ - Facebook
+ - GitHub
+ - Google OAuth2
+ - LinkedIn OAuth2
+
+The users profile url can be accessed in your services using the `IAuthSession.GetProfileUrl()` extension method which goes through the new `IAuthMetadataProvider` which by default looks in `UserAuthDetails.Items["profileUrl"]`.
+
+### New IAuthMetadataProvider
+
+A new [IAuthMetadataProvider](https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack/Auth/AuthMetadataProvider.cs) has been added that provides a way to customize the `authInfo` in all AuthProviders. It also allows overriding of how extended Auth metadata like `profileUrl` is returned.
+
+```csharp
+public interface IAuthMetadataProvider
+{
+    void AddMetadata(IAuthTokens tokens, Dictionary<string, string> authInfo);
+
+    string GetProfileUrl(IAuthSession authSession, string defaultUrl = null);
+}
+```
+
+> To override with a custom implementation, register `IAuthMetadataProvider` in the IOC
+
+### Saving OAuth Metadata
+
+
+The new `SaveExtendedUserInfo` property (enabled by default) on all OAuth providers let you control whether to save the extended OAuth metadata available (into `UserAuthDetails.Items`) when logging in via OAuth.
+
+## [OrmLite](https://github.com/ServiceStack/ServiceStack.OrmLite/)
+
+### Loading of References in Multi-Select Queries
+
+Previous support of pre-loading of references were limited to a single entity using `LoadSingleById` to automatically fetch all child references, e.g:
+
+```csharp
+public class Customer
+{
+    [AutoIncrement]
+    public int Id { get; set; }
+    public string Name { get; set; }
+
+    [Reference] // Save in CustomerAddress table
+    public CustomerAddress PrimaryAddress { get; set; }
+
+    [Reference] // Save in Order table
+    public List<Order> Orders { get; set; }
+}
+
+var customer = db.LoadSingleById<Customer>(request.Id);
+customer.PrimaryAddress   // Loads 1:1 CustomerAddress record 
+customer.Orders           // Loads 1:M Order records 
+```
+
+We've now also added support for pre-loading of references for multiple resultsets as well with `LoadSelect` which loads references for all results, e.g:
+
+```csharp
+var customers = db.LoadSelect<Customer>(q => q.Name.StartsWith("A"));
+```
+
+This is implemented efficiently behind the scenes where only 1 additional SQL Query is performed for each defined reference.
+
+> As a design goal none of OrmLite Query API's perform N+1 queries.
+
+### Self References
+
+We've extended OrmLite [References support](https://github.com/ServiceStack/ServiceStack.OrmLite/#reference-support-poco-style) to support Self References for **1:1** relations where the foreign key property can be on the parent table, e.g: 
+
+```csharp
+public class Customer
+{
+    ...
+    public int CustomerAddressId { get; set; }
+
+    [Reference]
+    public CustomerAddress PrimaryAddress { get; set; }
+}
+```
+
+Which maintains the same relationship as having the Foreign Key column on the child table instead, i,e:
+
+```csharp
+public class CustomerAddress
+{
+    public int CustomerId { get; set; }
+}
+```
+
+### Support Foreign Key Attributes to specify Reference Fields
+
+Previously definitions of references relied on [Reference Conventions](https://github.com/ServiceStack/ServiceStack.OrmLite/#reference-conventions) using either the C# Property Name or Property Aliases. You can now also use the [References and ForeignKey attributes](https://github.com/ServiceStack/ServiceStack.OrmLite/#new-foreign-key-attribute-for-referential-actions-on-updatedeletes) to specify Reference Properties, e.g:
+
+```csharp
+public class Customer
+{
+    [Reference(typeof(CustomerAddress))]
+    public int PrimaryAddressId { get; set; }
+
+    [Reference]
+    public CustomerAddress PrimaryAddress { get; set; }
+}
+```
+
+> Reference Attributes take precedence over naming conventions
+
+### Support for Stored Procedures with out params
+
+A new `SqlProc` API was added returning an `IDbCommand` which can be used to customize the Stored Procedure call letting you add custom out parameters. The example below shows 
+
+```csharp
+string spSql = @"DROP PROCEDURE IF EXISTS spSearchLetters;
+    CREATE PROCEDURE spSearchLetters (IN pLetter varchar(10), OUT pTotal int)
+    BEGIN
+        SELECT COUNT(*) FROM LetterFrequency WHERE Letter = pLetter INTO pTotal;
+        SELECT * FROM LetterFrequency WHERE Letter = pLetter;
+    END";
+
+db.ExecuteSql(spSql);
+
+var cmd = db.SqlProc("spSearchLetters", new { pLetter = "C" });
+var pTotal = cmd.AddParam("pTotal", direction: ParameterDirection.Output);
+
+var results = cmd.ConvertToList<LetterFrequency>();
+var total = pTotal.Value;
+```
+
+An alternative approach is to use the new overload added to the raw SQL API `SqlList` that lets you customize the Stored Procedure using a filter, e.g:
+
+``csharp
+IDbDataParameter pTotal = null;
+var results = db.SqlList<LetterFrequency>("spSearchLetters", cmd => {
+        cmd.CommandType = CommandType.StoredProcedure;
+        cmd.AddParam("pLetter", "C");
+        pTotal = cmd.AddParam("pTotal", direction: ParameterDirection.Output);
+    });
+var total = pTotal.Value;
+```
+
+### Minor OrmLite Features
+
+ - Use `OrmLiteConfig.DisableColumnGuessFallback=false` to disable fallback matching heuristics
+ - Added [GenericTableExpressions](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/tests/ServiceStack.OrmLite.Tests/Expression/GenericTableExpressions.cs) example showing how to extend OrmLite to support different runtime table names on a single schema type.
+
+## [AutoQuery](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query)
+
+### Support for loading References
+
+AutoQuery now takes advantage of OrmLite's new support for preloading child references which 
+
+```csharp
+public class Rockstar
+{
+    public int Id { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public int? Age { get; set; }
+
+    [Reference]
+    public List<RockstarAlbum> Albums { get; set; } 
+}
+```
+
+### Improved OrderBy
+
+Add support for inverting sort direction of individual orderBy fields using '-' prefix e.g: 
+
+```csharp
+// ?orderBy=Rating,-ImdbId
+var movies = client.Get(new SearchMovies { OrderBy = "Rating,-ImdbId" });
+
+// ?orderByDesc=-Rating,ImdbId
+var movies = client.Get(new SearchMovies { OrderByDesc = "-Rating,ImdbId" });
+```
+
+## ServiceStack.Text
+
+ - Add support for `OrderedDictionary` and other uncommon `IDictionary` types
+ - WCF-style `JsConfig.OnSerializedFn` custom hook has been added
+ - `JsConfig.ReuseStringBuffer` is enabled by default for faster JSON/JSV text serialization
+ - Properties can also be ignored with `[JsonIgnore]` attribute
+
+## Other Features
+
+  - New `[Exclude(Feature.Soap)]` attribute can be used to exclude types from XSD/WSDL's
+  - XSD/WSDL's no longer including open generic types
+  - Added `$.ss.getSelection()`, `$.ss.queryString()`, `$.ss.splitOnFirst()`, `$.ss.splitOnLast()` to /ss-utils.js
+  - `TwitterAuthProvider` now makes authenticated v1.1 API requests to fetch user metadata
+
+# v4.0.23 Release Notes
 
 ## [AutoQuery](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query)
 
