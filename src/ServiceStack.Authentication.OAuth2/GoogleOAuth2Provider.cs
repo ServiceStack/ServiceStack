@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
 
@@ -55,6 +56,7 @@ namespace ServiceStack.Authentication.OAuth2
                 { "link", obj["link"] },
                 { "picture", obj["picture"] },
                 { "locale", obj["locale"] },
+                { AuthMetadataProvider.ProfileUrlKey, obj["picture"] },
             };
             return authInfo;
         }
