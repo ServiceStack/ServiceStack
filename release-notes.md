@@ -1,5 +1,3 @@
-# Release Notes
-
 # v4.0.24 Release Notes
 
 ## [Server Events](https://github.com/ServiceStackApps/Chat)
