@@ -60,7 +60,7 @@ To demonstrate how to make use Server Events we've created a cursory Chat web ap
     - Display an image url
     - Raise DOM events
 
-<img src="https://github.com/ServiceStack/Assets/blob/master/img/apps/Chat/vs-sln.png" style="float:right;padding:10px">
+<img src="https://github.com/ServiceStack/Assets/blob/master/img/apps/Chat/vs-sln.png" width="257" align="right" hspace="10">
 
 Chat is another ServiceStack Single Page App Special showing how you can get a lot done with minimal effort and dependencies which delivers all these features in a tiny footprint built with vanilla jQuery and weighing just:
 
