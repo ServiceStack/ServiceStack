@@ -93,10 +93,10 @@ This is now the fastest way to get up and running with ServiceStack. With these 
 
 <a href="http://www.packtpub.com/learning-angularjs-for-net-developers/book"><img src="https://raw.githubusercontent.com/ServiceStack/Assets/master/img/community/learning-angularjs.jpg" width="175" align="right" hspace="10"></a>
 
-### Get the [Learning AngularJS for .NET Developers]("http://www.packtpub.com/learning-angularjs-for-net-developers/book) Book!
+### Get the [Learning AngularJS for .NET Developers](http://www.packtpub.com/learning-angularjs-for-net-developers/book) Book!
 
 On ServiceStack and AngularJS front, we also have great content coming from the ServiceStack community as 
-**[Learning AngularJS for .NET Developers]("http://www.packtpub.com/learning-angularjs-for-net-developers/book)**, 
+**[Learning AngularJS for .NET Developers](http://www.packtpub.com/learning-angularjs-for-net-developers/book)**, 
 a new book by [Alex Pop](https://twitter.com/AlexandruVPop) has just been made available. 
 
 More details about the book as well as downloadable code-samples is available on 
