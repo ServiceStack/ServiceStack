@@ -34,7 +34,7 @@ Plugins.Add(new ServerEventsFeature());
 
 ### [ServiceStack Chat (beta)](https://github.com/ServiceStackApps/Chat)
 
-![Chat Overview](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/apps/Chat/chat-overview.gif)
+[![Chat Overview](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/apps/Chat/chat-overview.gif)](https://github.com/ServiceStackApps/Chat)
 
 To demonstrate how to make use Server Events we've created a cursory Chat web app for showcasing server push notifications packed with a number of features including:
 
@@ -90,6 +90,17 @@ Each project template supports our [recommended multi-project structure](https:/
 This is now the fastest way to get up and running with ServiceStack. With these new templates you can now create a new ServiceStack Razor, AngularJS and Bootstrap enabled WebApp, pre-wired end-to-end in seconds:
 
 ![AngularJS WalkThrough](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/servicestackvs/angularjs-overview.gif)
+
+### Get the [Learning AngularJS for .NET Developers]("http://www.packtpub.com/learning-angularjs-for-net-developers/book) Book!
+
+<a href="http://www.packtpub.com/learning-angularjs-for-net-developers/book"><img src="https://github.com/ServiceStack/Assets/blob/master/img/apps/Chat/vs-sln.png" width="175" align="right" hspace="10"></a>
+
+On ServiceStack and AngularJS front, we also have great content coming from the ServiceStack community as 
+**[Learning AngularJS for .NET Developers]("http://www.packtpub.com/learning-angularjs-for-net-developers/book)**, 
+a new book by [Alex Pop](https://twitter.com/AlexandruVPop) has just been made available. 
+
+More details about the book as well as downloadable code-samples is available on 
+[Alex's announcement blog post](http://alexvpop.blogspot.co.uk/2014/06/announcing-learning-angularjs-dotnet.html).
 
 ### Download ServiceStackVS
 
