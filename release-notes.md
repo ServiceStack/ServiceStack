@@ -60,7 +60,7 @@ To demonstrate how to make use Server Events we've created a cursory Chat web ap
     - Display an image url
     - Raise DOM events
 
-<img src="https://github.com/ServiceStack/Assets/blob/master/img/apps/Chat/vs-sln.png" alight="right" hspace="10">
+<img src="https://github.com/ServiceStack/Assets/blob/master/img/apps/Chat/vs-sln.png" style="float:right;padding:10px">
 
 Chat is another ServiceStack Single Page App Special showing how you can get a lot done with minimal effort and dependencies which delivers all these features in a tiny footprint built with vanilla jQuery and weighing just:
 
@@ -108,13 +108,13 @@ ServiceStackVS supports both VS.NET 2013 and 2012 and can be [downloaded from th
 
 ### Feedback
 
-We hope ServiceStackVS helps make ServiceStack developers more productive than ever and we'll look to continue improving it with new features. [Suggestions and feedback are welcome](http://servicestack.uservoice.com/forums/176786-feature-requests).  
+We hope **ServiceStackVS** helps make ServiceStack developers more productive than ever and we'll look at continue improving it with new features in future. [Suggestions and feedback are welcome](http://servicestack.uservoice.com/forums/176786-feature-requests).  
 
 ## [Authentication](https://github.com/ServiceStack/ServiceStack/wiki/Authentication-and-authorization)
 
 ### Saving User Profile Images
 
-To make it easier to build Social Apps like Chat with ServiceStack we've started saving profile image urls (aka avatars) for the following popular OAuth providers:
+To make it easier to build Social Apps like [Chat](https://github.com/ServiceStackApps/Chat) with ServiceStack we've started saving profile image urls (aka avatars) for the following popular OAuth providers:
 
  - Twitter
  - Facebook
@@ -243,7 +243,7 @@ var total = pTotal.Value;
 
 An alternative approach is to use the new overload added to the raw SQL API `SqlList` that lets you customize the Stored Procedure using a filter, e.g:
 
-``csharp
+```csharp
 IDbDataParameter pTotal = null;
 var results = db.SqlList<LetterFrequency>("spSearchLetters", cmd => {
         cmd.CommandType = CommandType.StoredProcedure;
@@ -262,7 +262,7 @@ var total = pTotal.Value;
 
 ### Support for loading References
 
-AutoQuery now takes advantage of OrmLite's new support for preloading child references which 
+AutoQuery now takes advantage of OrmLite's new support for loading child references where marking your Query DTO with `[Reference]` will automatically load its related data, e.g:
 
 ```csharp
 public class Rockstar
@@ -291,7 +291,7 @@ var movies = client.Get(new SearchMovies { OrderByDesc = "-Rating,ImdbId" });
 
 ## ServiceStack.Text
 
- - Add support for `OrderedDictionary` and other uncommon `IDictionary` types
+ - Added support for `OrderedDictionary` and other uncommon `IDictionary` types
  - WCF-style `JsConfig.OnSerializedFn` custom hook has been added
  - `JsConfig.ReuseStringBuffer` is enabled by default for faster JSON/JSV text serialization
  - Properties can also be ignored with `[JsonIgnore]` attribute
@@ -302,6 +302,7 @@ var movies = client.Get(new SearchMovies { OrderByDesc = "-Rating,ImdbId" });
   - XSD/WSDL's no longer including open generic types
   - Added `$.ss.getSelection()`, `$.ss.queryString()`, `$.ss.splitOnFirst()`, `$.ss.splitOnLast()` to /ss-utils.js
   - `TwitterAuthProvider` now makes authenticated v1.1 API requests to fetch user metadata
+
 
 # v4.0.23 Release Notes
 
