@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.DirectoryServices.AccountManagement;
+using System.Net;
 using System.Threading;
 using Funq;
 using ServiceStack.Admin;
@@ -19,6 +20,7 @@ using ServiceStack.MiniProfiler.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.Razor;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 #if HTTP_LISTENER
 namespace ServiceStack.Auth.Tests
@@ -91,7 +93,7 @@ namespace ServiceStack.AuthWeb.Tests
                         LoadUserAuthFilter = LoadUserAuthInfo,
                         AllowAllWindowsAuthUsers = true
                     }, 
-                    new CredentialsAuthProvider(),              //HTML Form post of UserName/Password credentials
+                    new CustomCredentialsAuthProvider(),        //HTML Form post of UserName/Password credentials
                     new TwitterAuthProvider(appSettings),       //Sign-in with Twitter
                     new FacebookAuthProvider(appSettings),      //Sign-in with Facebook
                     new DigestAuthProvider(appSettings),        //Sign-in with Digest Auth
@@ -161,7 +163,29 @@ namespace ServiceStack.AuthWeb.Tests
                 Log.Error("Could not retrieve windows user info for '{0}'".Fmt(tokens.DisplayName), ex);
             }
         }
+    }
 
+    public class CustomCredentialsAuthProvider : CredentialsAuthProvider
+    {
+        public override bool TryAuthenticate(IServiceBase authService, string userName, string password)
+        {
+            if (userName == "test" && password == "test")
+                return true;
+
+            throw HttpError.Unauthorized("Custom Error Message");
+        }
+
+        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        {
+            try
+            {
+                return base.Authenticate(authService, session, request);
+            }
+            catch (Exception ex)
+            {
+                return ex;
+            }
+        }
     }
 
     //Provide extra validation for the registration process
