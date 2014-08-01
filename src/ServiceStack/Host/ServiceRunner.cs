@@ -40,13 +40,13 @@ namespace ServiceStack.Host
 
         public virtual void BeforeEachRequest(IRequest requestContext, TRequest request)
         {
-            OnBeforeExecute(requestContext, request);
-
             var requestLogger = AppHost.TryResolve<IRequestLogger>();
             if (requestLogger != null)
             {
                 requestContext.SetItem("_requestDurationStopwatch", Stopwatch.StartNew());
             }
+            
+            OnBeforeExecute(requestContext, request);
         }
 
         public virtual object AfterEachRequest(IRequest requestContext, TRequest request, object response)
