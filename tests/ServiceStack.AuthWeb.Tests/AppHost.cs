@@ -130,6 +130,15 @@ namespace ServiceStack.AuthWeb.Tests
             else
                 authRepo.InitSchema();   //Create only the missing tables
 
+            authRepo.CreateUserAuth(new UserAuth
+                {
+                    DisplayName = "Credentials",
+                    FirstName = "First",
+                    LastName = "Last",
+                    FullName = "First Last",
+                    Email = "demis.bellot@gmail.com",
+                }, "test");
+
             Plugins.Add(new RequestLogsFeature());
         }
 
@@ -169,7 +178,7 @@ namespace ServiceStack.AuthWeb.Tests
     {
         public override bool TryAuthenticate(IServiceBase authService, string userName, string password)
         {
-            if (userName == "test" && password == "test")
+            if (password == "test")
                 return true;
 
             throw HttpError.Unauthorized("Custom Error Message");
