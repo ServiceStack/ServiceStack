@@ -114,7 +114,7 @@ That's all the application code required to create a simple REST web service.
  * [Example Apps and Demos](http://stackoverflow.com/questions/15862634/in-what-order-are-the-servicestack-examples-supposed-to-be-grokked/15869816#15869816)
  * [Community resources](https://github.com/ServiceStack/ServiceStack/wiki/Community-Resources)
 
-### [Release Notes](https://github.com/ServiceStack/ServiceStack/wiki/Release-Notes)
+### [Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md)
 
 ## Download
 
