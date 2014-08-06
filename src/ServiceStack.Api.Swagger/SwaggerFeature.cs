@@ -4,7 +4,7 @@ using ServiceStack.Host.Handlers;
 
 namespace ServiceStack.Api.Swagger
 {
-    public class SwaggerFeature : IPlugin
+    public class SwaggerFeature : IPlugin, IPreInitPlugin
     {
         /// <summary>
         /// Gets or sets <see cref="Regex"/> pattern to filter available resources. 
@@ -20,6 +20,11 @@ namespace ServiceStack.Api.Swagger
         public Action<SwaggerModel> ModelFilter { get; set; }
 
         public Action<ModelProperty> ModelPropertyFilter { get; set; }
+
+        public void Configure(IAppHost appHost)
+        {
+            appHost.Config.EmbeddedResourceSources.Add(typeof(SwaggerFeature).Assembly);
+        }
 
         public void Register(IAppHost appHost)
         {
@@ -56,7 +61,7 @@ namespace ServiceStack.Api.Swagger
                         });
                     }
                 }
-                return null;
+                return pathInfo.StartsWith("/swagger-ui") ? new StaticFileHandler() : null;
             });
         }
 
