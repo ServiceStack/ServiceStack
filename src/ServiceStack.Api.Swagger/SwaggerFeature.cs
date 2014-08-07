@@ -18,6 +18,8 @@ namespace ServiceStack.Api.Swagger
 
         public bool DisableAutoDtoInBodyParam { get; set; }
 
+        public bool UseBootstrapTheme { get; set; }
+
         public Action<SwaggerModel> ModelFilter { get; set; }
 
         public Action<ModelProperty> ModelPropertyFilter { get; set; }
@@ -41,8 +43,12 @@ namespace ServiceStack.Api.Swagger
             appHost.RegisterService(typeof(SwaggerResourcesService), new[] { "/resources" });
             appHost.RegisterService(typeof(SwaggerApiService), new[] { SwaggerResourcesService.RESOURCE_PATH + "/{Name*}" });
 
+            var swaggerUrl = UseBootstrapTheme
+                ? "swagger-ui-bootstrap/"
+                : "swagger-ui/";
+
             appHost.GetPlugin<MetadataFeature>()
-                .AddPluginLink("swagger-ui/", "Swagger UI");
+                .AddPluginLink(swaggerUrl, "Swagger UI");
 
             appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) =>
             {

@@ -98,7 +98,7 @@ namespace ServiceStack.WebHost.IntegrationTests
                 Plugins.Add(new SessionFeature());
                 Plugins.Add(new ProtoBufFormat());
                 Plugins.Add(new RequestLogsFeature());
-                Plugins.Add(new SwaggerFeature());
+                Plugins.Add(new SwaggerFeature { UseBootstrapTheme = true });
                 Plugins.Add(new PostmanFeature());
                 Plugins.Add(new CorsFeature());
 

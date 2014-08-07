@@ -22,7 +22,7 @@ namespace RazorRockstars.Web
         {
             Plugins.Add(new RazorFormat());
             Plugins.Add(new MsgPackFormat());
-            Plugins.Add(new SwaggerFeature());
+            Plugins.Add(new SwaggerFeature { UseBootstrapTheme = true });
 
             typeof(Resources)
                 .AddAttributes(new RestrictAttribute { VisibilityTo = RequestAttributes.None });
