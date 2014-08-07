@@ -61,12 +61,11 @@
             }
 
             $(document).ready(function () {
-                var swaggerUrl = "http://petstore.swagger.wordnik.com/api/api-docs";
-                var resourcesRequest = getRequest(swaggerUrl);
+                var resourcesRequest = getRequest("http://petstore.swagger.wordnik.com/api/api-docs");
                 resourcesRequest.done(function (resources) {
                     resources.apis.forEach(function (api, key) {
                         var placeholder = $('<div />').css({'margin-bottom': '1em'}).appendTo($("#main")), 
-                            apiRequest = getRequest(swaggerUrl.substring(0,swaggerUrl.lastIndexOf('/')) + api.path);
+                            apiRequest = getRequest(resources.basePath + api.path);
                         apiRequest.done(function (data) {
                             _.extend(data, { api: api });
                             test.push(data);
