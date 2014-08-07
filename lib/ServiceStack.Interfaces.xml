@@ -914,7 +914,7 @@
         </member>
         <member name="P:ServiceStack.ApiMemberAttribute.ParameterType">
             <summary>
-            Gets or sets parameter type: It can be only one of the following: path, query, body, or header.
+            Gets or sets parameter type: It can be only one of the following: path, query, body, model, or header.
             </summary>
         </member>
         <member name="P:ServiceStack.ApiMemberAttribute.Name">
@@ -948,6 +948,11 @@
         <member name="P:ServiceStack.ApiMemberAttribute.AllowMultiple">
             <summary>
             For query params, this specifies that a comma-separated list of values can be passed to the API. For path and body types, this field cannot be true.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ApiMemberAttribute.Route">
+            <summary>
+            Gets or sets route to which applies attribute, matches using StartsWith. By default applies to all routes. 
             </summary>
         </member>
         <member name="P:ServiceStack.IApiResponseDescription.StatusCode">
