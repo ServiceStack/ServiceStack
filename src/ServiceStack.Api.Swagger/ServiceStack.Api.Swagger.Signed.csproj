@@ -82,7 +82,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="swagger-ui\css\highlight.default.css" />
+    <EmbeddedResource Include="swagger-ui-bootstrap\index.html" />
+    <EmbeddedResource Include="swagger-ui-bootstrap\jiko.js" />
+    <EmbeddedResource Include="swagger-ui-bootstrap\swagger-like-template.html" />
     <EmbeddedResource Include="swagger-ui\css\screen.css" />
     <EmbeddedResource Include="swagger-ui\images\logo_small.png" />
     <EmbeddedResource Include="swagger-ui\images\pet_store_api.png" />
@@ -104,9 +106,10 @@
     <EmbeddedResource Include="swagger-ui\swagger-ui.min.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="swagger-ui-bootstrap\index.html" />
-    <EmbeddedResource Include="swagger-ui-bootstrap\jiko.js" />
-    <EmbeddedResource Include="swagger-ui-bootstrap\swagger-like-template.html" />
+    <EmbeddedResource Include="swagger-ui\css\reset.css" />
+    <EmbeddedResource Include="swagger-ui\images\explorer_icons.png" />
+    <EmbeddedResource Include="swagger-ui\lib\swagger-oauth.js" />
+    <EmbeddedResource Include="swagger-ui\o2c.html" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
