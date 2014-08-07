@@ -97,6 +97,11 @@
     <EmbeddedResource Include="swagger-ui\swagger-ui.js" />
     <EmbeddedResource Include="swagger-ui\swagger-ui.min.js" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="swagger-ui-bootstrap\index.html" />
+    <EmbeddedResource Include="swagger-ui-bootstrap\jiko.js" />
+    <EmbeddedResource Include="swagger-ui-bootstrap\swagger-like-template.html" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

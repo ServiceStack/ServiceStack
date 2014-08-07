@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using ServiceStack.Host.Handlers;
+using ServiceStack.IO;
 
 namespace ServiceStack.Api.Swagger
 {
@@ -45,21 +46,35 @@ namespace ServiceStack.Api.Swagger
 
             appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) =>
             {
-                if (pathInfo == "/swagger-ui" || pathInfo == "/swagger-ui/" || pathInfo == "/swagger-ui/default.html")
+                IVirtualFile indexFile;
+                switch (pathInfo)
                 {
-                    var indexFile = appHost.VirtualPathProvider.GetFile("/swagger-ui/index.html");
-                    if (indexFile != null)
-                    {
-                        var html = indexFile.ReadAllText();
+                    case "/swagger-ui":
+                    case "/swagger-ui/":
+                    case "/swagger-ui/default.html":
+                        indexFile = appHost.VirtualPathProvider.GetFile("/swagger-ui/index.html");
+                        break;
+                    case "/swagger-ui-bootstrap":
+                    case "/swagger-ui-bootstrap/":
+                    case "/swagger-ui-bootstrap/index.html":
+                        indexFile = appHost.VirtualPathProvider.GetFile("/swagger-ui-bootstrap/index.html");
+                        break;
+                    default:
+                        indexFile = null;
+                        break;
+                }
+                if (indexFile != null)
+                {
+                    var html = indexFile.ReadAllText();
 
-                        return new CustomResponseHandler((req, res) =>
-                        {
-                            res.ContentType = MimeTypes.Html;
-                            var resourcesUrl = req.ResolveAbsoluteUrl("~/resources");
-                            html = html.Replace("http://petstore.swagger.wordnik.com/api/api-docs", resourcesUrl);
-                            return html;
-                        });
-                    }
+                    return new CustomResponseHandler((req, res) =>
+                    {
+                        res.ContentType = MimeTypes.Html;
+                        var resourcesUrl = req.ResolveAbsoluteUrl("~/resources");
+                        html = html.Replace("http://petstore.swagger.wordnik.com/api/api-docs", resourcesUrl)
+                            .Replace("ApiDocs", HostContext.ServiceName);
+                        return html;
+                    });
                 }
                 return pathInfo.StartsWith("/swagger-ui") ? new StaticFileHandler() : null;
             });
