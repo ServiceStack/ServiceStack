@@ -22,7 +22,6 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="content\**\*.*" target="content" />
     <file src="lib\**\*.*" target="lib" />
     <file src="..\..\src\ServiceStack.Api.Swagger\**\*.cs" target="src" />
   </files>

@@ -140,8 +140,6 @@
       <MsgPackFiles Include="$(SrcDir)/ServiceStack.MsgPack/bin/$(Configuration)/ServiceStack.MsgPack.*"></MsgPackFiles>
 
       <SwaggerFiles Include="$(SrcDir)/ServiceStack.Api.Swagger/bin/$(Configuration)/ServiceStack.Api.Swagger.*"></SwaggerFiles>
-      
-      <SwaggerContentFiles Include="$(SrcDir)/ServiceStack.Api.Swagger/swagger-ui/**/*"></SwaggerContentFiles>
     </ItemGroup>
 
 
@@ -153,10 +151,6 @@
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/net40')" />
     <Copy SourceFiles="%(SwaggerFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/net40" />
-
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.Swagger/content/swagger-ui" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.Swagger/content/swagger-ui')" />
-    <Copy SourceFiles="%(SwaggerContentFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.Swagger/content/swagger-ui/%(SwaggerContentFiles.RecursiveDir)" />
-
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.Swagger/servicestack.api.swagger.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
