@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -332,20 +333,26 @@ namespace ServiceStack.Host
 
         public List<string> GetReplyOperationNames(Format format)
         {
+            var feature = format.ToFeature();
             return Metadata.OperationsMap.Values
                 .Where(x => HostContext.Config != null
                     && HostContext.MetadataPagesConfig.CanAccess(format, x.Name))
                 .Where(x => !x.IsOneWay)
+                .Where(x => !x.RequestType.AllAttributes<ExcludeAttribute>()
+                    .Any(attr => attr.Feature.HasFlag(feature)))
                 .Select(x => x.RequestType.GetOperationName())
                 .ToList();
         }
 
         public List<string> GetOneWayOperationNames(Format format)
         {
+            var feature = format.ToFeature();
             return Metadata.OperationsMap.Values
                 .Where(x => HostContext.Config != null
                     && HostContext.MetadataPagesConfig.CanAccess(format, x.Name))
                 .Where(x => x.IsOneWay)
+                .Where(x => !x.RequestType.AllAttributes<ExcludeAttribute>()
+                    .Any(attr => attr.Feature.HasFlag(feature)))
                 .Select(x => x.RequestType.GetOperationName())
                 .ToList();
         }

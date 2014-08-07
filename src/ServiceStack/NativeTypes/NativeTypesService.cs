@@ -1,12 +1,15 @@
 ﻿using System.Collections.Generic;
+using ServiceStack.DataAnnotations;
 using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.Web;
 
 namespace ServiceStack.NativeTypes
 {
+    [Exclude(Feature.Soap)]
     [Route("/types/metadata")]
     public class TypesMetadata : NativeTypesBase { }
 
+    [Exclude(Feature.Soap)]
     [Route("/types/csharp")]
     public class TypesCSharp : NativeTypesBase { }
 
