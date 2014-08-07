@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using ServiceStack.Host.Handlers;
+using ServiceStack.IO;
 
 namespace ServiceStack.Api.Swagger
 {
-    public class SwaggerFeature : IPlugin
+    public class SwaggerFeature : IPlugin, IPreInitPlugin
     {
         /// <summary>
         /// Gets or sets <see cref="Regex"/> pattern to filter available resources. 
@@ -20,6 +21,11 @@ namespace ServiceStack.Api.Swagger
         public Action<SwaggerModel> ModelFilter { get; set; }
 
         public Action<ModelProperty> ModelPropertyFilter { get; set; }
+
+        public void Configure(IAppHost appHost)
+        {
+            appHost.Config.EmbeddedResourceSources.Add(typeof(SwaggerFeature).Assembly);
+        }
 
         public void Register(IAppHost appHost)
         {
@@ -40,23 +46,37 @@ namespace ServiceStack.Api.Swagger
 
             appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) =>
             {
-                if (pathInfo == "/swagger-ui" || pathInfo == "/swagger-ui/" || pathInfo == "/swagger-ui/default.html")
+                IVirtualFile indexFile;
+                switch (pathInfo)
                 {
-                    var indexFile = appHost.VirtualPathProvider.GetFile("/swagger-ui/index.html");
-                    if (indexFile != null)
-                    {
-                        var html = indexFile.ReadAllText();
-
-                        return new CustomResponseHandler((req, res) =>
-                        {
-                            res.ContentType = MimeTypes.Html;
-                            var resourcesUrl = req.ResolveAbsoluteUrl("~/resources");
-                            html = html.Replace("http://petstore.swagger.wordnik.com/api/api-docs", resourcesUrl);
-                            return html;
-                        });
-                    }
+                    case "/swagger-ui":
+                    case "/swagger-ui/":
+                    case "/swagger-ui/default.html":
+                        indexFile = appHost.VirtualPathProvider.GetFile("/swagger-ui/index.html");
+                        break;
+                    case "/swagger-ui-bootstrap":
+                    case "/swagger-ui-bootstrap/":
+                    case "/swagger-ui-bootstrap/index.html":
+                        indexFile = appHost.VirtualPathProvider.GetFile("/swagger-ui-bootstrap/index.html");
+                        break;
+                    default:
+                        indexFile = null;
+                        break;
                 }
-                return null;
+                if (indexFile != null)
+                {
+                    var html = indexFile.ReadAllText();
+
+                    return new CustomResponseHandler((req, res) =>
+                    {
+                        res.ContentType = MimeTypes.Html;
+                        var resourcesUrl = req.ResolveAbsoluteUrl("~/resources");
+                        html = html.Replace("http://petstore.swagger.wordnik.com/api/api-docs", resourcesUrl)
+                            .Replace("ApiDocs", HostContext.ServiceName);
+                        return html;
+                    });
+                }
+                return pathInfo.StartsWith("/swagger-ui") ? new StaticFileHandler() : null;
             });
         }
 

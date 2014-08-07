@@ -40,6 +40,8 @@ namespace ServiceStack.Api.Swagger
     {
         [DataMember(Name = "id")]
         public string Id { get; set; }
+        [DataMember(Name = "description")]
+        public string Description { get; set; }
         [DataMember(Name = "properties")]
         public OrderedDictionary<string, ModelProperty> Properties { get; set; }
     }
@@ -172,9 +174,9 @@ namespace ServiceStack.Api.Swagger
             }
 
             var models = new Dictionary<string, SwaggerModel>();
-            foreach (var restPath in paths)
+            foreach (var restPath in paths.SelectMany(x => x.Verbs.Select(y => new {Value = x, Verb = y})))
             {
-                ParseModel(models, restPath.RequestType);
+                ParseModel(models, restPath.Value.RequestType, restPath.Value.Path, restPath.Verb);
             }
 
             return new ResourceResponse
@@ -209,13 +211,13 @@ namespace ServiceStack.Api.Swagger
             return ClrTypesToSwaggerScalarTypes.ContainsKey(type) || (Nullable.GetUnderlyingType(type) ?? type).IsEnum;
         }
 
-        private static string GetSwaggerTypeName(Type type)
+        private static string GetSwaggerTypeName(Type type, string route = null, string verb = null)
         {
             var lookupType = Nullable.GetUnderlyingType(type) ?? type;
 
             return ClrTypesToSwaggerScalarTypes.ContainsKey(lookupType)
                 ? ClrTypesToSwaggerScalarTypes[lookupType]
-                : GetModelTypeName(lookupType);
+                : GetModelTypeName(lookupType, route, verb);
         }
 
         private static Type GetListElementType(Type type)
@@ -239,28 +241,35 @@ namespace ServiceStack.Api.Swagger
             return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
 
-		private static string GetModelTypeName(Type modelType)
+		private static string GetModelTypeName(Type modelType, string path = null, string verb = null)
 		{
-			if (!modelType.IsGenericType)
-				return modelType.Name;
+		    verb = string.IsNullOrEmpty(verb) ? "" : verb + "_";
+		    if (!modelType.IsGenericType)
+		        return verb + modelType.Name + (path ?? "");
 
 			var modelTypeName = modelType.FullName.Replace("`1[[", "`").Replace(modelType.Namespace + ".", "");
 			var index = modelTypeName.IndexOf(",", StringComparison.Ordinal);
 			var genericNamespace = modelType.GenericTypeArguments()[0].Namespace + ".";
 
-			return modelTypeName.Substring(0, index).Replace(genericNamespace, "") + "`";
+		    return verb + modelTypeName.Substring(0, index).Replace(genericNamespace, "") + "`" + (path ?? "");
 		}
 
-        private void ParseModel(IDictionary<string, SwaggerModel> models, Type modelType)
+        private void ParseResponseModel(IDictionary<string, SwaggerModel> models, Type modelType)
+        {
+            ParseModel(models, modelType, null, null);
+        }
+
+        private void ParseModel(IDictionary<string, SwaggerModel> models, Type modelType, string route, string verb)
         {
             if (IsSwaggerScalarType(modelType)) return;
 
-	        var modelId = GetModelTypeName(modelType);
+            var modelId = GetModelTypeName(modelType, route, verb);
             if (models.ContainsKey(modelId)) return;
 
             var model = new SwaggerModel
             {
                 Id = modelId,
+                Description = GetModelTypeName(modelType),
                 Properties = new OrderedDictionary<string, ModelProperty>()
             };
             models[model.Id] = model;
@@ -298,22 +307,26 @@ namespace ServiceStack.Api.Swagger
                 var allApiDocAttributes = prop
                     .AllAttributes<ApiMemberAttribute>()
                     .Where(attr => prop.Name.Equals(attr.Name, StringComparison.InvariantCultureIgnoreCase))
+                    .OrderByDescending(attr => attr.Route)
                     .ToList();
-                var apiDoc = allApiDocAttributes.FirstOrDefault(attr => attr.ParameterType == "body");
+                var apiDoc = allApiDocAttributes
+                    .Where(attr => string.IsNullOrEmpty(verb) || string.IsNullOrEmpty(attr.Verb) || (verb ?? "").Equals(attr.Verb))
+                    .Where(attr => string.IsNullOrEmpty(route) || string.IsNullOrEmpty(attr.Route) || (route ?? "").StartsWith(attr.Route))
+                    .FirstOrDefault(attr => attr.ParameterType == "body" || attr.ParameterType == "model");
 
-                if (allApiDocAttributes.Any() && apiDoc == null) continue;
+                if (allApiDocAttributes.Any(x => !string.IsNullOrEmpty(x.Verb) || !string.IsNullOrEmpty(x.Route)) && apiDoc == null) continue;
 
                 var propertyType = prop.PropertyType;
-                var modelProp = new ModelProperty { Type = GetSwaggerTypeName(propertyType), Required = !IsNullable(propertyType) };
+                var modelProp = new ModelProperty { Type = GetSwaggerTypeName(propertyType, route, verb), Required = !IsNullable(propertyType) };
 
                 if (IsListType(propertyType))
                 {
                     modelProp.Type = SwaggerType.Array;
                     var listItemType = GetListElementType(propertyType);
                     modelProp.Items = new Dictionary<string, string> {
-                        { IsSwaggerScalarType(listItemType) ? "type" : "$ref", GetSwaggerTypeName(listItemType) }
+                        { IsSwaggerScalarType(listItemType) ? "type" : "$ref", GetSwaggerTypeName(listItemType, route, verb) }
                     };
-                    ParseModel(models, listItemType);
+                    ParseModel(models, listItemType, route, verb);
                 }
                 else if ((Nullable.GetUnderlyingType(propertyType) ?? propertyType).IsEnum)
                 {
@@ -321,7 +334,7 @@ namespace ServiceStack.Api.Swagger
                     if (enumType.IsNumericType())
                     {
                         var underlyingType = Enum.GetUnderlyingType(enumType);
-                        modelProp.Type = GetSwaggerTypeName(underlyingType);
+                        modelProp.Type = GetSwaggerTypeName(underlyingType, route, verb);
                         modelProp.AllowableValues = new ParameterAllowableValues
                         {
                             Values = GetNumericValues(enumType, underlyingType).ToArray(),
@@ -340,7 +353,7 @@ namespace ServiceStack.Api.Swagger
                 }
                 else
                 {
-                    ParseModel(models, propertyType);
+                    ParseModel(models, propertyType, route, verb);
                 }
 
                 modelProp.Description = prop.GetDescription();
@@ -397,10 +410,10 @@ namespace ServiceStack.Api.Swagger
                     if (IsListType(returnType))
                     {
                         var listItemType = GetListElementType(returnType);
-                        ParseModel(models, listItemType);
+                        ParseResponseModel(models, listItemType);
                         return string.Format("List[{0}]", GetSwaggerTypeName(listItemType));
                     }
-                    ParseModel(models, returnType);
+                    ParseResponseModel(models, returnType);
                     return GetSwaggerTypeName(i.GetGenericArguments()[0]);
                 }
             }
@@ -446,7 +459,7 @@ namespace ServiceStack.Api.Swagger
                         Nickname = verb.ToLowerInvariant() + nickName,
                         Summary = summary,
                         Notes = notes,
-                        Parameters = ParseParameters(verb, restPath.RequestType, models),
+                        Parameters = ParseParameters(verb, restPath.RequestType, models, restPath.Path),
                         ResponseClass = GetResponseClass(restPath, models),
                         ErrorResponses = GetMethodResponseCodes(restPath.RequestType)
                     }).ToList()
@@ -469,7 +482,7 @@ namespace ServiceStack.Api.Swagger
             return null;
         }
 
-        private List<MethodOperationParameter> ParseParameters(string verb, Type operationType, IDictionary<string, SwaggerModel> models)
+        private List<MethodOperationParameter> ParseParameters(string verb, Type operationType, IDictionary<string, SwaggerModel> models, string route)
         {
             var hasDataContract = operationType.HasAttribute<DataContractAttribute>();
 
@@ -499,6 +512,8 @@ namespace ServiceStack.Api.Swagger
                 methodOperationParameters.AddRange(
                     from ApiMemberAttribute member in value
                     where member.Verb == null || string.Compare(member.Verb, verb, StringComparison.InvariantCultureIgnoreCase) == 0
+                    where member.Route == null || (route ?? "").StartsWith(member.Route)
+                    where !string.Equals(member.ParameterType, "model") 
                     select new MethodOperationParameter
                     {
                         DataType = member.DataType,
@@ -515,11 +530,12 @@ namespace ServiceStack.Api.Swagger
             {
                 if (!HttpMethods.Get.Equals(verb, StringComparison.OrdinalIgnoreCase) && !methodOperationParameters.Any(p => p.ParamType.Equals("body", StringComparison.OrdinalIgnoreCase)))
                 {
-                    ParseModel(models, operationType);
+                    ParseModel(models, operationType, route, verb);
                     methodOperationParameters.Add(new MethodOperationParameter()
                     {
-                        DataType = GetSwaggerTypeName(operationType),
-                        ParamType = "body"
+                        DataType = GetSwaggerTypeName(operationType, route, verb),
+                        ParamType = "body",
+                        Name = GetSwaggerTypeName(operationType)
                     });
                 }
             }

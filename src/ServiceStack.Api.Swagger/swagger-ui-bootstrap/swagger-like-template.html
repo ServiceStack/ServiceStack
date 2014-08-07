@@ -1,0 +1,307 @@
+﻿{% module %}
+
+<% 
+
+var currentData;
+var swaggerTypes = ['byte', 'boolean', 'int', 'long', 'float', 'double', 'string', 'date', 'array'];
+
+function getModelChain(model, chain) {
+    if (!model) {
+        return [];
+    }
+    if (chain === undefined || chain === null) {
+        chain = [];
+    }
+
+    chain.push(model);
+    _.each(model.properties, function(prop) {
+        if (prop.type.toLowerCase() == "array" && prop.items !== undefined && prop.items.$ref !== undefined) {
+            candidate = currentData.models[prop.items.$ref]
+        } else {
+            candidate = currentData.models[prop.type];
+        }
+
+        if (candidate !== undefined && !_.contains(chain, candidate)) {
+            chain = getModelChain(candidate, chain);
+        }        
+    });
+
+    return chain;
+}
+
+function getDtoChain(model, modelsAlreadyProcessed) {
+    modelsAlreadyProcessed = modelsAlreadyProcessed || {};
+    modelsAlreadyProcessed[model.id] = true;
+    var obj = {};
+    
+    if (model === undefined || model === null) {
+        return {};
+    }
+
+    _.each(model.properties, function(prop, key) {
+        if (prop.type.toLowerCase() == "array" && prop.items !== undefined && prop.items.$ref !== undefined) {
+            candidate = currentData.models[prop.items.$ref]
+        } else {
+            candidate = currentData.models[prop.type];
+        }
+            
+        if (candidate !== undefined && !modelsAlreadyProcessed[candidate.id]) {
+            obj[key] = getDtoChain(candidate, modelsAlreadyProcessed);
+        } else {
+            obj[key] = toSwaggerType(prop);
+        }
+    });
+
+    return obj;
+}
+
+function toSwaggerType(prop) {
+    if (prop.type.toLowerCase() == "array") {
+        var type = prop.items.type === undefined ? prop.items.$ref : prop.items.type;
+        return "Array<" + type + ">";
+    } else {
+        return prop.type;
+    }
+}
+
+function getVerbClass(verb) {
+    switch (verb.toLowerCase()) {
+        case "get":
+            return "info";
+        case "post":
+            return "success";
+        case "delete":
+            return "danger";
+        case "patch":
+        case "put":
+            return "warning";
+        default:
+            return "default"
+    }
+}
+
+// http://stackoverflow.com/a/7220510
+function syntaxHighlight(json) {
+    if (typeof json != 'string') {
+         json = JSON.stringify(json, undefined, 2);
+    }
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        var cls = 'number';
+        if (/^"/.test(match)) {
+            if (/:$/.test(match)) {
+                cls = 'key';
+            } else {
+                cls = 'string';
+            }
+        } else if (/true|false/.test(match)) {
+            cls = 'boolean';
+        } else if (/null/.test(match)) {
+            cls = 'null';
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+    });
+}
+
+function notUndefinedNullOrZeroLength(obj) {
+    return obj !== undefined && obj !== null && obj.length > 0;
+}
+
+%>
+
+{% function name="apiAccordion" %}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h4 class="panel-title clearfix">
+            <a data-toggle="collapse" data-parent="#main" href="#apiPanel${ a.order }">
+                <strong>${ a.resourcePath }</strong>
+            </a>
+            <span class="pull-right">${ a.api.description }</span>
+        </h4>
+    </div>
+    <div id="apiPanel${ a.order }" class="panel-collapse collapse">
+        <div class="panel-body">
+
+            % var accordionId = _.uniqueId('accordion');
+            <div class="panel-group" id="${ accordionId }">
+                <%
+                currentData = a;
+                a.apis.forEach(function(api) {
+                api.operations.forEach(function (operation) {
+                operation.path = api.path;
+                operation.accordionId = accordionId;
+                %>
+
+                %{ apiAccordionPanel(operation) }
+
+                %     });
+                % });
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% end %}
+
+{% function name="apiAccordionPanel" %}
+
+<div class="panel panel-${ getVerbClass(a.httpMethod ) }">
+    <div class="panel-heading">
+        <div class="panel-title clearfix">
+            <div class="col-md-2">
+                <a data-toggle="collapse" data-parent="#${ a.accordionId }" href="#${ a.nickname }Panel" class="verb">
+                    <span class="label label-${ getVerbClass(a.httpMethod ) } verb">${ a.httpMethod }</span>
+                </a>
+            </div>
+            <a data-toggle="collapse" data-parent="#${ a.accordionId }" href="#${ a.nickname }Panel">
+                <strong>${ a.path }</strong>
+            </a>
+            <a data-toggle="collapse" data-parent="#${ a.accordionId }" href="#${ a.nickname }Panel" class="pull-right">
+                <strong>${ a.summary }</strong>
+            </a>
+        </div>
+    </div>
+
+    <div id="${ a.nickname }Panel" class="panel-collapse collapse">
+        <div class="panel-body">
+            % if (a.notes !== undefined && a.notes !== null) {
+                <h3>Implementation Notes</h3>
+                <p>${ a.notes }</p>
+            % }
+
+            % if (notUndefinedNullOrZeroLength(a.parameters)) {
+                <h3>Parameters</h3>
+                %{ parametersDescription(a) }
+            % }
+                
+            % var requestClassType = _.findWhere(a.parameters, { paramType: 'body' });   
+            % if (requestClassType !== undefined && requestClassType.dataType !== undefined) {      
+            %   var requestClassModel = currentData.models[requestClassType.dataType];
+                <h3>Request Class</h3>
+                %{ classDescription({ nickname: a.nickname, models: getModelChain(requestClassModel) }) }
+            % }
+
+            
+            % var responseClassModel = currentData.models[a.responseClass];
+            % if (responseClassModel !== undefined) {
+                <h3>Response Class</h3>
+                %{ classDescription({ nickname: a.nickname, models: getModelChain(responseClassModel) }) }
+            % }
+            
+            % if (notUndefinedNullOrZeroLength(a.errorResponses)) {
+                <h3>Error Status Codes</h3>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th width="7%">HTTP Status</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        % _.each(a.errorResponses, function(error) {
+                            <tr>
+                                <td>${ error.code }</td>
+                                <td>${ error.reason }</td>
+                            </tr>
+                        % });
+                    </tbody>
+                </table>
+            % }
+        </div>
+    </div>
+    
+</div>
+
+{% end %}
+
+{% function name="parametersDescription" %}
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th width="12%">Parameter</th>
+            <th width="7%">Parameter Type</th>
+            <th width="7%">Data Type</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        % a.parameters.forEach(function(param) {
+        <tr>
+            <td>${ param.name !== undefined && param.name !== null ? param.name : param.dataType }</td>
+            <td>${ param.paramType }</td>
+            <td>${ param.name === undefined || param.name === null ? '' : param.dataType }</td>
+            <td>${ param.description }</td>
+        </tr>
+        % });
+    </tbody>
+</table>
+
+{% end %}
+
+{% function name="classDescription" %}
+
+% console.log(a);
+% var prefix = _.uniqueId(a.nickname);
+<ul id="myTab" class="nav nav-tabs">
+    <li class="active"><a href="#${ prefix }ModelTab" data-toggle="tab">Model</a></li>
+    <li><a href="#${ prefix }ModelSchemaTab" data-toggle="tab">Schema</a></li>
+    <li><a href="#${ prefix }DtoTab" data-toggle="tab">DTO</a></li>
+</ul>
+<div id="myTabContent" class="tab-content">
+    <div class="tab-pane fade in active" id="${ prefix }ModelTab">
+        <div>
+            %   _.each(a.models, function(model) {
+            %{ modelTable(model) }
+            %   });
+        </div>
+    </div>
+    <div class="tab-pane fade in" id="${ prefix }ModelSchemaTab">
+        <div>
+            %   _.each(a.models, function(model) {
+            <span><strong>${ model.description || model.id }</strong></span>
+            <pre>%{ syntaxHighlight(model.properties) }</pre>
+            %   });
+        </div>
+
+    </div>
+    <div class="tab-pane fade in" id="${ prefix }DtoTab">
+        <div>
+            %   _.each(a.models, function(model) {
+            <span><strong>${ model.description || model.id }</strong></span>
+            <pre>%{ syntaxHighlight(getDtoChain(model)) }</pre>
+            %   });
+        </div>
+
+    </div>
+</div>
+
+{% end %}
+
+
+{% function name="modelTable" %}
+    <span><strong>${ a.description || a.id }</strong></span>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th width="12%">Field</th>
+                <th width="5%">Required</th>
+                <th width="9%">Data Type</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            % _.each(a.properties, function(prop, key) {
+            <tr>
+                <td>${ key }</td>
+                <td>${ prop.required }</td>
+                <td>${ toSwaggerType(prop) }</td>
+                <td>${ prop.description }</td>
+            </tr>
+            % });
+        </tbody>
+    </table>
+{% end %}

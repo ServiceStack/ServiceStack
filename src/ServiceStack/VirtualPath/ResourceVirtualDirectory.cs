@@ -177,7 +177,8 @@ namespace ServiceStack.VirtualPath
 
         protected override IVirtualDirectory GetDirectoryFromBackingDirectoryOrDefault(string directoryName)
         {
-            return Directories.FirstOrDefault(d => d.Name.EqualsIgnoreCase(directoryName));
+            return Directories.FirstOrDefault(d => d.Name.EqualsIgnoreCase(directoryName)) ??
+                Directories.FirstOrDefault(d => d.Name.EqualsIgnoreCase((directoryName ?? "").Replace('-', '_')));
         }
 
         protected override string GetRealPathToRoot()
