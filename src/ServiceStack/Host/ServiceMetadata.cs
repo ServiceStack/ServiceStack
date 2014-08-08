@@ -188,8 +188,17 @@ namespace ServiceStack.Host
 
             //Less fine-grained on /metadata pages. Only check Network and Format
             var reqAttrs = httpReq.GetAttributes();
-            var showToNetwork = CanShowToNetwork(operation, reqAttrs);
+            var showToNetwork = CanShowToNetwork(operation.RestrictTo, reqAttrs);
             return showToNetwork;
+        }
+
+        public bool IsVisible(IRequest httpReq, Type requestType)
+        {
+            if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
+                return true;
+
+            var operation = HostContext.Metadata.GetOperation(requestType);
+            return operation == null || IsVisible(httpReq, operation);
         }
 
         public bool IsVisible(IRequest httpReq, Format format, string operationName)
@@ -269,13 +278,13 @@ namespace ServiceStack.Host
             return true;
         }
 
-        private static bool CanShowToNetwork(Operation operation, RequestAttributes reqAttrs)
+        private static bool CanShowToNetwork(RestrictAttribute restrictTo, RequestAttributes reqAttrs)
         {
             if (reqAttrs.IsLocalhost())
-                return operation.RestrictTo.CanShowTo(RequestAttributes.Localhost)
-                       || operation.RestrictTo.CanShowTo(RequestAttributes.LocalSubnet);
+                return restrictTo.CanShowTo(RequestAttributes.Localhost)
+                       || restrictTo.CanShowTo(RequestAttributes.LocalSubnet);
 
-            return operation.RestrictTo.CanShowTo(
+            return restrictTo.CanShowTo(
                 reqAttrs.IsLocalSubnet()
                     ? RequestAttributes.LocalSubnet
                     : RequestAttributes.External);
