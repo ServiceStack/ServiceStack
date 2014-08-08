@@ -110,23 +110,6 @@ namespace ServiceStack.NativeTypes
                 }
             }
 
-            foreach (var type in meta.GetAllTypes())
-            {
-                if (opTypes.Contains(type))
-                    continue;
-                if (skipTypes.Contains(type))
-                    continue;
-                if (ignoreNamespaces.Contains(type.Namespace))
-                    continue;
-
-                metadata.Operations.Add(new MetadataOperationType
-                {
-                    Request = ToType(type),
-                });
-
-                opTypes.Add(type);
-            }
-
             var considered = new HashSet<Type>(opTypes);
             var queue = new Queue<Type>(opTypes);
 
@@ -336,8 +319,15 @@ namespace ServiceStack.NativeTypes
                 var value = pi.GetValue(instance, null);
                 if (value != pi.PropertyType.GetDefaultValue())
                 {
-                    var strValue = value as string;
-                    property.Value = strValue ?? value.ToJson();
+                    if (pi.PropertyType.IsEnum())
+                    {
+                        property.Value = "{0}.{1}".Fmt(pi.PropertyType.Name, value);
+                    }
+                    else
+                    {
+                        var strValue = value as string;
+                        property.Value = strValue ?? value.ToJson();
+                    }
                 }
             }
             return property;
