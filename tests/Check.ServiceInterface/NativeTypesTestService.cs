@@ -11,9 +11,9 @@ namespace Check.ServiceInterface
             return new HelloResponse { Result = request.Name };
         }
 
-        public object Any(HelloAll request)
+        public object Any(HelloAnnotated request)
         {
-            return new HelloAllResponse { Result = request.Name };
+            return new HelloAnnotatedResponse { Result = request.Name };
         }
 
         public object Any(HelloAllTypes request)

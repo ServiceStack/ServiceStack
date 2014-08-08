@@ -17,10 +17,11 @@ namespace Check.ServiceModel.Operations
         public string Result { get; set; }
     }
 
+    [Restrict(ExternalOnly = true)]
     [Description("Description on HelloAll type")]
     [DataContract]
-    public class HelloAll
-        : IReturn<HelloAllResponse>
+    public class HelloAnnotated
+        : IReturn<HelloAnnotatedResponse>
     {
         [DataMember]
         public string Name { get; set; }
@@ -28,7 +29,7 @@ namespace Check.ServiceModel.Operations
 
     [Description("Description on HelloAllResponse type")]
     [DataContract]
-    public class HelloAllResponse
+    public class HelloAnnotatedResponse
     {
         [DataMember]
         public string Result { get; set; }
