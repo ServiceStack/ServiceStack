@@ -1596,14 +1596,19 @@
             Allow access but hide from metadata to requests from Localhost and Local Intranet only
             </summary>
         </member>
+        <member name="P:ServiceStack.RestrictAttribute.LocalhostOnly">
+            <summary>
+            Restrict access and hide from metadata to requests from Localhost only
+            </summary>
+        </member>
         <member name="P:ServiceStack.RestrictAttribute.InternalOnly">
             <summary>
             Restrict access and hide from metadata to requests from Localhost and Local Intranet only
             </summary>
         </member>
-        <member name="P:ServiceStack.RestrictAttribute.LocalhostOnly">
+        <member name="P:ServiceStack.RestrictAttribute.ExternalOnly">
             <summary>
-            Restrict access and hide from metadata to requests from Localhost only
+            Restrict access and hide from metadata to requests from External only
             </summary>
         </member>
         <member name="P:ServiceStack.RestrictAttribute.AccessTo">
