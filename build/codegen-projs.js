@@ -275,9 +275,9 @@ var CUSTOM_PROJS = [
             //tmpl = tmpl.replace(/ServiceStack.Interfaces.SL5/g, 'ServiceStack.Interfaces');
             tmpl = tmpl.replace('<HintPath>..\\..\\lib\\ServiceStack.Text.dll</HintPath>', '<HintPath>..\\..\\lib\\sl5\\ServiceStack.Text.dll</HintPath>');
         }
-        //else if (code == 'PCL') {
-        //    tmpl = tmpl.replace('<HintPath>..\\..\\lib\\ServiceStack.Text.dll</HintPath>', '<HintPath>..\\..\\lib\\pcl\\ServiceStack.Text.dll</HintPath>');
-        //}
+        else if (code == 'PCL') {
+            tmpl = tmpl.replace('<HintPath>..\\..\\lib\\ServiceStack.Text.dll</HintPath>', '<HintPath>..\\..\\lib\\pcl\\ServiceStack.Text.dll</HintPath>');
+        }
         return tmpl;
     }
 }];
