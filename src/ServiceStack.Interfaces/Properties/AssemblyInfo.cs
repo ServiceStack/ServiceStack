@@ -18,10 +18,5 @@ using System.Runtime.Serialization;
 [assembly: AssemblyVersion("4.0.0")]
 [assembly: AssemblyFileVersion("4.0.0.0")]
 
-#if !(PCL || SL5)
-// The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("d13ebd2a-6589-453d-bf31-4c744a59e993")]
-#endif
-
 [assembly: ContractNamespace("http://schemas.servicestack.net/types", 
 	ClrNamespace = "ServiceStack")]

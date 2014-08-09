@@ -116,17 +116,6 @@ namespace ServiceStack
         /// i.e. Priorities below 0 are auto-generated have less precedence.
         /// </summary>
         public int Priority { get; set; }
-
-#if !(NETFX_CORE || WP || SL5 || PCL)
-        public override object TypeId
-        {
-            get
-            {
-                return (Path ?? "")
-                    + (Verbs ?? "");
-            }
-        }
-#endif
     }
 
 
