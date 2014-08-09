@@ -100,9 +100,9 @@
 
     <!-- ServiceStack.Interfaces -->
 
-    <MSBuild Projects="../src/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj" Properties="Configuration=$(Configuration)"/>
-    <Copy SourceFiles="%(InterfacesFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
     <!-- ServiceStack.Interfaces is already signed -->
+    <!--<MSBuild Projects="../src/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj" Properties="Configuration=$(Configuration)"/>
+    <Copy SourceFiles="%(InterfacesFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />-->
 
 
     <!-- ServiceStack.Api.Swagger -->
