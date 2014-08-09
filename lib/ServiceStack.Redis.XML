@@ -184,6 +184,38 @@
             <param name="id"></param>
             <returns></returns>
         </member>
+        <member name="M:ServiceStack.Redis.RedisSentinel.Setup">
+            <summary>
+            Initialize channel and register client manager
+            </summary>
+            <param name="container"></param>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisSentinelWorker.SentinelMessageReceived(System.String,System.String)">
+            <summary>
+            Event that is fired when the sentinel subscription raises an event
+            </summary>
+            <param name="channel"></param>
+            <param name="message"></param>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisSentinelWorker.ConfigureRedisFromSentinel">
+            <summary>
+            Does a sentinel check for masters and slaves and either sets up or fails over to the new config
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisSentinelWorker.ConvertSlaveArrayToList(System.Object[])">
+            <summary>
+            Takes output from sentinel slaves command and converts into a list of servers
+            </summary>
+            <param name="items"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisSentinelWorker.ConvertMasterArrayToList(System.Object[])">
+            <summary>
+            Takes output from sentinel master command and converts into a list of servers
+            </summary>
+            <param name="items"></param>
+            <returns></returns>
+        </member>
         <member name="T:ServiceStack.Redis.ShardedConnectionPool">
             <summary>
             Provides a redis connection pool that can be sharded

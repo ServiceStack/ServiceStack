@@ -4,11 +4,6 @@
         <name>ServiceStack.Interfaces</name>
     </assembly>
     <members>
-        <member name="F:ServiceStack.AttributeBase.typeId">
-            <summary>
-            Required when using a TypeDescriptor to make it unique
-            </summary>
-        </member>
         <member name="T:ServiceStack.Caching.ICacheClient">
             <summary>
             A common interface implementation that is implemented by most cache providers

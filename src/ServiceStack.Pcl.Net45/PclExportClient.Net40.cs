@@ -17,7 +17,7 @@ namespace ServiceStack
 
         public static PclExportClient Configure()
         {
-            Configure(Provider);
+            Configure(Provider ?? (Provider = new Net40PclExportClient()));
             Net40PclExport.Configure();
             return Provider;
         }

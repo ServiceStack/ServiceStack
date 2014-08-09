@@ -120,9 +120,9 @@
   <!--ItemGroup,Content-->
   <!--ItemGroup,None-->
   <ItemGroup>
-  <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.PCL.csproj">
-    <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
-    <Name>ServiceStack.Interfaces.PCL</Name>
+  <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
+    <Project>{55942102-033A-4DA8-A6AF-1DB7B2F34A2D}</Project>
+    <Name>ServiceStack.Interfaces</Name>
   </ProjectReference>
 </ItemGroup>
 <ItemGroup>

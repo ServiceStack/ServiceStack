@@ -105,9 +105,9 @@
       <Project>{135808A7-CE69-4C32-BE30-25A8FFBF4A58}</Project>
       <Name>ServiceStack.Client.PCL</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.PCL.csproj">
-      <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
-      <Name>ServiceStack.Interfaces.PCL</Name>
+    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
+      <Project>{55942102-033a-4da8-a6af-1db7b2f34a2d}</Project>
+      <Name>ServiceStack.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Pcl.WinStore\ServiceStack.Pcl.WinStore.csproj">
       <Project>{3F246BD3-8D56-43AC-84AD-681371A9D6A9}</Project>
