@@ -24,6 +24,7 @@ using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler.UI;
 using ServiceStack.NativeTypes;
 using ServiceStack.Serialization;
+using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 using ServiceStack.Redis;
@@ -707,6 +708,8 @@ namespace ServiceStack
                 Container.Dispose();
                 Container = null;
             }
+
+            JsConfig.Reset(); //Clears Runtime Attributes
 
             Instance = null;
         }
