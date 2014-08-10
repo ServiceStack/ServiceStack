@@ -1,4 +1,17 @@
 ﻿@{
+    Response.StatusCode = 404;
+    if (!Request.ResponseContentType.MatchesContentType(MimeTypes.Html))
+    {
+        Layout = "";
+        Response.ContentType = Request.ResponseContentType;
+        var error = new ErrorResponse
+        {
+            ResponseStatus = DtoUtils.CreateResponseStatus("NotFound", "Not Found")
+        };
+        HostContext.ContentTypes.SerializeToStream(base.Request, error, Response.OutputStream);
+        throw new StopExecutionException();
+    }
+
     Layout = "Empty";
     var search = (@Request.PathInfo ?? "").SplitOnLast("/").Last().Trim();
 }
