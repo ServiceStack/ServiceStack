@@ -20,9 +20,16 @@ namespace ServiceStack.Api.Swagger
 
         public bool UseBootstrapTheme { get; set; }
 
+        public string LogoUrl { get; set; }
+
         public Action<SwaggerModel> ModelFilter { get; set; }
 
         public Action<ModelProperty> ModelPropertyFilter { get; set; }
+
+        public SwaggerFeature()
+        {
+            LogoUrl = "//raw.githubusercontent.com/ServiceStack/Assets/master/img/artwork/logo-24.png";
+        }
 
         public void Configure(IAppHost appHost)
         {
@@ -78,7 +85,8 @@ namespace ServiceStack.Api.Swagger
                         res.ContentType = MimeTypes.Html;
                         var resourcesUrl = req.ResolveAbsoluteUrl("~/resources");
                         html = html.Replace("http://petstore.swagger.wordnik.com/api/api-docs", resourcesUrl)
-                            .Replace("ApiDocs", HostContext.ServiceName);
+                            .Replace("ApiDocs", HostContext.ServiceName)
+                            .Replace("{LogoUrl}", LogoUrl);
                         return html;
                     });
                 }
