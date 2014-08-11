@@ -7,6 +7,7 @@ using Android.Views;
 using Android.Widget;
 using Android.OS;
 using PclTest.ServiceModel;
+using PclTest.SharedLogic;
 using ServiceStack;
 using ServiceStack.Text;
 
@@ -25,6 +26,7 @@ namespace PclTest.Android
 
             var btnGoSync = FindViewById<Button>(Resource.Id.btnGoSync);
             var btnGoAsync = FindViewById<Button>(Resource.Id.btnGoAsync);
+            var btnGoShared = FindViewById<Button>(Resource.Id.btnGoShared);
             var btnTest = FindViewById<Button>(Resource.Id.btnTest);
             var txtName = FindViewById<EditText>(Resource.Id.txtName);
             var lblResults = FindViewById<TextView>(Resource.Id.lblResults);
@@ -32,6 +34,7 @@ namespace PclTest.Android
             //10.0.2.2 = loopback
             //http://developer.android.com/tools/devices/emulator.html
             var client = new JsonServiceClient("http://10.0.2.2:81/");
+            var gateway = new SharedGateway("http://10.0.2.2:81/");
 
             btnGoSync.Click += delegate
             {
@@ -57,6 +60,19 @@ namespace PclTest.Android
             {
                 try
                 {
+                }
+                catch (Exception ex)
+                {
+                    lblResults.Text = ex.ToString();
+                }
+            };
+
+            btnGoShared.Click += async delegate
+            {
+                try
+                {
+                    var greeting = await gateway.SayHello(txtName.Text);
+                    lblResults.Text = greeting;
                 }
                 catch (Exception ex)
                 {

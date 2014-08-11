@@ -65,6 +65,9 @@ namespace PclTest.Android
 			// aapt resource value: 0x7f050005
 			public const int btnGoAsync = 2131034117;
 			
+			// aapt resource value: 0x7f050008
+			public const int btnGoShared = 2131034120;
+			
 			// aapt resource value: 0x7f050004
 			public const int btnGoSync = 2131034116;
 			
@@ -74,8 +77,8 @@ namespace PclTest.Android
 			// aapt resource value: 0x7f050001
 			public const int lblName = 2131034113;
 			
-			// aapt resource value: 0x7f050008
-			public const int lblResults = 2131034120;
+			// aapt resource value: 0x7f050009
+			public const int lblResults = 2131034121;
 			
 			// aapt resource value: 0x7f050000
 			public const int linearLayout1 = 2131034112;

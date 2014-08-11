@@ -93,9 +93,13 @@
       <Project>{20837D3A-FD17-4867-B242-00523A9252D4}</Project>
       <Name>ServiceStack.Pcl.Android</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PclTest.ServiceModel.Pcl\PclTest.ServiceModel.Pcl.csproj">
-      <Project>{891d214f-c5b2-46b7-b648-fb735612c1c9}</Project>
-      <Name>PclTest.ServiceModel.Pcl</Name>
+    <ProjectReference Include="..\PclTest.ServiceModel\PclTest.ServiceModel.csproj">
+      <Project>{891D214F-C5B2-46B7-B648-FB735612C1C9}</Project>
+      <Name>PclTest.ServiceModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PclTest.SharedLogic\PclTest.SharedLogic.csproj">
+      <Project>{1bd4bbf9-fdd7-4b2d-9ac3-9a1003205dc3}</Project>
+      <Name>PclTest.SharedLogic</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />

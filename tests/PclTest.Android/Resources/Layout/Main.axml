@@ -56,6 +56,12 @@
             android:layout_width="185dp"
             android:layout_height="match_parent"
             android:layout_marginRight="3.2dp" />
+        <Button
+            android:text="Go Shared"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/btnGoShared"
+            android:layout_marginLeft="0.0dp" />
     </LinearLayout>
     <TextView
         android:layout_width="match_parent"

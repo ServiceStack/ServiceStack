@@ -113,9 +113,13 @@
       <Project>{3F246BD3-8D56-43AC-84AD-681371A9D6A9}</Project>
       <Name>ServiceStack.Pcl.WinStore</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PclTest.ServiceModel.Pcl\PclTest.ServiceModel.Pcl.csproj">
+    <ProjectReference Include="..\PclTest.ServiceModel\PclTest.ServiceModel.csproj">
       <Project>{891D214F-C5B2-46B7-B648-FB735612C1C9}</Project>
-      <Name>PclTest.ServiceModel.Pcl</Name>
+      <Name>PclTest.ServiceModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PclTest.SharedLogic\PclTest.SharedLogic.csproj">
+      <Project>{1bd4bbf9-fdd7-4b2d-9ac3-9a1003205dc3}</Project>
+      <Name>PclTest.SharedLogic</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

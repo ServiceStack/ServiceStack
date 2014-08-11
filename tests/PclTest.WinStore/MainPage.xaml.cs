@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using PclTest.ServiceModel;
+using PclTest.SharedLogic;
 using ServiceStack;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -24,6 +25,7 @@ namespace PclTest.WinStore
     public sealed partial class MainPage : Page
     {
         private readonly JsonServiceClient client;
+        private readonly SharedGateway gateway = new SharedGateway();
 
         public MainPage()
         {
@@ -60,6 +62,19 @@ namespace PclTest.WinStore
             client.GetAsync(new Hello { Name = txtName.Text })
                 .Success(r => lblResults.Text = r.Result)
                 .Error(ex => lblResults.Text = ex.ToString());
+        }
+
+        private async void btnGoShared_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var greeting = await gateway.SayHello(txtName.Text);
+                lblResults.Text = greeting;
+            }
+            catch (Exception ex)
+            {
+                lblResults.Text = ex.ToString();
+            }
         }
     }
 }

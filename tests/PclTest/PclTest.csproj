@@ -63,18 +63,18 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PclTest.ServiceModel\PclTest.ServiceModel.csproj">
-      <Project>{398B4BBD-0A88-4555-876F-8823E7CB22B6}</Project>
-      <Name>PclTest.ServiceModel</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="clientaccesspolicy.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="crossdomain.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PclTest.ServiceModel\PclTest.ServiceModel.csproj">
+      <Project>{891D214F-C5B2-46B7-B648-FB735612C1C9}</Project>
+      <Name>PclTest.ServiceModel</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using PclTest.ServiceModel;
+using PclTest.SharedLogic;
 using ServiceStack;
 
 namespace PclTest.Wpf
@@ -23,6 +24,7 @@ namespace PclTest.Wpf
     public partial class MainWindow : Window
     {
         private readonly JsonServiceClient client;
+        private readonly SharedGateway gateway = new SharedGateway();
 
         public MainWindow()
         {
@@ -49,6 +51,19 @@ namespace PclTest.Wpf
             client.GetAsync(new Hello { Name = txtName.Text })
                 .Success(r => lblResults.Text = r.Result)
                 .Error(ex => lblResults.Text = ex.ToString());
+        }
+
+        private async void btnGoShared_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var greeting = await gateway.SayHello(txtName.Text);
+                lblResults.Text = greeting;
+            }
+            catch (Exception ex)
+            {
+                lblResults.Text = ex.ToString();
+            }
         }
     }
 }

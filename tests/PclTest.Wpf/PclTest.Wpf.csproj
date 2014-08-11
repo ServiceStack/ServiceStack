@@ -110,9 +110,13 @@
       <Project>{579491a6-c4c9-4a2a-8940-204279b74413}</Project>
       <Name>ServiceStack.Pcl.Net45</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PclTest.ServiceModel.Pcl\PclTest.ServiceModel.Pcl.csproj">
+    <ProjectReference Include="..\PclTest.ServiceModel\PclTest.ServiceModel.csproj">
       <Project>{891D214F-C5B2-46B7-B648-FB735612C1C9}</Project>
-      <Name>PclTest.ServiceModel.Pcl</Name>
+      <Name>PclTest.ServiceModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PclTest.SharedLogic\PclTest.SharedLogic.csproj">
+      <Project>{1bd4bbf9-fdd7-4b2d-9ac3-9a1003205dc3}</Project>
+      <Name>PclTest.SharedLogic</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
