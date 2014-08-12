@@ -1,6 +1,6 @@
 ## v4.0.30 Release Notes
 
-## [[Add ServiceStack Reference]]
+## [Add ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference)
 
 We have an exciting feature in this release showcasing our initial support for generating Native Types from client VS.NET projects using [ServiceStackVS](https://github.com/ServiceStack/ServiceStack/wiki/Creating-your-first-project#step-1-download-and-install-servicestackvs) new **Add ServiceStack Reference** feature. It provides a simpler, cleaner and more versatile alternative to WCF's **Add Service Reference** in VS.NET. 
 
@@ -41,7 +41,7 @@ Native Types is now available by default on all **v4.0.30+** ServiceStack projec
 Plugins.RemoveAll(x => x is NativeTypesFeature);
 ```
 
-For detailed info on how NativeTypesFeature works, its different customization options and improvements over WCF, checkout the [[Add ServiceStack Reference]] docs.
+For detailed info on how NativeTypesFeature works, its different customization options and improvements over WCF, checkout the [Add ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference) docs.
 
 ### Upgrade ServiceStackVS
 
