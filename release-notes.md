@@ -57,15 +57,15 @@ Our [PCL Story](https://github.com/ServiceStackApps/Hello) has been greatly impr
  - WPF app using .NET 4.0 PCL support
  - Silverlight 5
 
-Whilst our impl-free `ServiceStack.Interfaces.dll` could be converted into a pure PCL dll, our Client libraries resort into using [PCL's Bait and Switch technique](http://log.paulbetts.org/the-bait-and-switch-pcl-trick/) to provide platform-specific extensions and optimizations. The one outlier is Silverlight 5 which is remains a custom (non-PCL) SL5 build, which whilst still allowing sharing of DTO's, it still doesn't support projects with transitive dependencies on the PCL-compatible version of **ServiceStack.Client**. 
+Whilst our impl-free `ServiceStack.Interfaces.dll` could be converted into a pure PCL dll, our Client libraries resorted to using [PCL's Bait and Switch technique](http://log.paulbetts.org/the-bait-and-switch-pcl-trick/) to provide platform-specific extensions and optimizations. The one outlier is Silverlight 5 which remains a custom (non-PCL) SL5 build, that whilst allowing sharing of DTO's, still doesn't support projects with dependencies on the PCL-compatible version of **ServiceStack.Client**. 
 
-All PCL, platform and Silverlight dlls have now been merged into the main client NuGet packages so now all clients need only reference the main client NuGet package:
+All PCL, platform and Silverlight dlls are now merged into the main client NuGet packages so now clients need only reference the main Client NuGet package:
 
 ```
 Install-Package ServiceStack.Client
 ``` 
 
-The [Hello PCL](https://github.com/ServiceStackApps/Hello) project contains examples of reusing Server DTO project with all supported client platforms as well as reusing a `SharedGateway` with all PCL-compatible platforms. 
+The [Hello PCL](https://github.com/ServiceStackApps/Hello) project contains examples of reusing a Server DTO project with all supported client platforms as well as showing re-use of a `SharedGateway` referencing `ServiceStack.Client` in PCL-compatible platforms. 
 
 ### New ServiceStack + AngularJS Example - [StackApis](http://stackapis.servicestack.net)
 
