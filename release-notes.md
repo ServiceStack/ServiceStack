@@ -1,3 +1,163 @@
+## v4.0.30 Release Notes
+
+## [[Add ServiceStack Reference]]
+
+We have an exciting feature in this release showcasing our initial support for generating Native Types from client VS.NET projects using [ServiceStackVS](https://github.com/ServiceStack/ServiceStack/wiki/Creating-your-first-project#step-1-download-and-install-servicestackvs) new **Add ServiceStack Reference** feature. It provides a simpler, cleaner and more versatile alternative to WCF's **Add Service Reference** in VS.NET. 
+
+Our goal with Native Types is to provide Typed APIs to clients in their native language, reducing the burden and effort required to consume ServiceStack Services whilst benefiting from clients native language strong-typing feedback.
+
+This is just the beginning, whilst C# is the first language supported it lays the groundwork and signals our approach on adding support for typed API's in other languages in future. Add a [feature request for your favorite language](http://servicestack.uservoice.com/forums/176786-feature-requests) to prioritize support for it sooner!
+
+### Example Usage
+
+The easiest way to Add a ServiceStack reference to your project is to right-click on your project to bring up [ServiceStackVS's](https://github.com/ServiceStack/ServiceStack/wiki/Creating-your-first-project) `Add ServiceStack Reference` context-menu item. This opens a dialog where you can add the url of the ServiceStack instance you want to typed DTO's for, as well as the name of the T4 template that's added to your project.
+
+![Add ServiceStack Reference](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/apps/StackApis/add-service-ref-flow.png)
+
+After clicking OK, the servers DTO's and [ServiceStack.Client](https://www.nuget.org/packages/ServiceStack.Client) NuGet package are added to the project, providing an instant typed API:
+
+![Calling ServiceStack Service](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/apps/StackApis/call-service.png)
+
+### Consuming Services from Mobile Clients now Easier than Ever!
+
+In addition with our improved PCL Support in this release, it's never been easier to consume remote Services with a typed API from any Xamarin.Android, Xamarin.iOS, Silverlgiht 5, Windows Store or .full NET4.0+ platforms, here's a quick demo of it working in Android:
+
+![Android Add ServiceStack Reference](https://raw.githubusercontent.com/ServiceStack/ServiceStackVS/master/Images/android-add-ref-demo.gif)
+
+### Advantages over WCF
+
+ - **Simple** Uses a small T4 template to save generated POCO Types. Updating as easy as re-running T4 template
+ - **Versatile** Clean DTOs works in all JSON, XML, JSV, MsgPack and ProtoBuf [generic service clients](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client#built-in-clients)
+ - **Reusable** Generated DTO's are not coupled to any endpoint or format. Defaults are both partial and virtual for maximum re-use 
+ - **Resilient** Messaging-based services offer a number of [advantages over RPC Services](https://github.com/ServiceStack/ServiceStack/wiki/Advantages-of-message-based-web-services)
+ - **Flexible** DTO generation is customizable, Server and Clients can override built-in defaults
+ - **Integrated** Rich Service metadata annotated on DTO's, [Internal Services](https://github.com/ServiceStack/ServiceStack/wiki/Restricting-Services) are excluded when accessed externally
+
+### Available from v4.0.24+ ServiceStack Projects
+
+Native Types is now available by default on all **v4.0.30+** ServiceStack projects. It can be disabled by removing the `NativeTypesFeature` plugin with:
+
+```csharp
+Plugins.RemoveAll(x => x is NativeTypesFeature);
+```
+
+For detailed info on how NativeTypesFeature works, its different customization options and improvements over WCF, checkout the [[Add ServiceStack Reference]] docs.
+
+### Upgrade ServiceStackVS
+
+To take advantage of this feature [Upgrade or Install ServiceStackVS](https://github.com/ServiceStack/ServiceStack/wiki/Creating-your-first-project) VS.NET Extension. If you already have **ServiceStackVS** installed, uninstall it first from `Tools -> Extensions and Updates... -> ServiceStackVS -> Uninstall`.
+
+## Improved PCL Story
+
+Our [PCL Story](https://github.com/ServiceStackApps/Hello) has been greatly improved in this release now that `ServiceStack.Interfaces` has been converted into a pure PCL dll. This now lets you maintain your server DTO's in a pure PCL DLL that can be shared as-is on most supported platforms (Profile136):
+
+ - Xamarin.iOS
+ - Xamarin.Android
+ - Windows Store
+ - WPF app using .NET 4.0 PCL support
+ - Silverlight 5
+
+Whilst our impl-free `ServiceStack.Interfaces.dll` could be converted into a pure PCL dll, our Client libraries resort into using [PCL's Bait and Switch technique](http://log.paulbetts.org/the-bait-and-switch-pcl-trick/) to provide platform-specific extensions and optimizations. The one outlier is Silverlight 5 which is remains a custom (non-PCL) SL5 build, which whilst still allowing sharing of DTO's, it still doesn't support projects with transitive dependencies on the PCL-compatible version of **ServiceStack.Client**. 
+
+All PCL, platform and Silverlight dlls have now been merged into the main client NuGet packages so now all clients need only reference the main client NuGet package:
+
+```
+Install-Package ServiceStack.Client
+``` 
+
+The [Hello PCL](https://github.com/ServiceStackApps/Hello) project contains examples of reusing Server DTO project with all supported client platforms as well as reusing a `SharedGateway` with all PCL-compatible platforms. 
+
+### New ServiceStack + AngularJS Example - [StackApis](http://stackapis.servicestack.net)
+
+[![StackApis Home](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/apps/StackApis/stackapis-home.png)](http://stackapis.servicestack.net/)
+
+[StackApis](http://stackapis.servicestack.net/) is a simple new ServiceStack + AngularJS example project created with [ServiceStackVS AngularJS Template](https://github.com/ServiceStack/ServiceStackVS#servicestackvs) showcasing how quick and easy it is to create responsive feature-rich Single Page Apps with AngularJS and [AutoQuery](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query). StackApis is powered by a Sqlite database containing [snapshot of ServiceStack questions from StackOverflow APIs](https://github.com/ServiceStackApps/StackApis/blob/master/src/StackApis.Tests/UnitTests.cs#L67) that's [persisted in an sqlite database](https://github.com/ServiceStackApps/StackApis/blob/master/src/StackApis.Tests/UnitTests.cs#L119-L124) using [OrmLite](https://github.com/ServiceStack/ServiceStack.OrmLite/).
+
+The [Home Page](https://github.com/ServiceStackApps/StackApis/blob/master/src/StackApis/default.cshtml) is built with less than **<50 Lines** of JavaScript which thanks to [AutoQuery](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query) routes all requests to the single AutoQuery Service below:
+
+```csharp
+[Route("/questions")]
+public class StackOverflowQuery : QueryBase<Question>
+{
+    public int? ScoreGreaterThan { get; set; }
+}
+```
+
+> Not even `ScoreGreaterThan` is a required property, it's just an example of a [formalized convention](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query#advantages-of-well-defined-service-contracts) enabling queries from Typed Service Clients.
+
+Feel free to play around with a deployed version of StackApis at [stackapis.servicestack.net](http://stackapis.servicestack.net/).
+
+You can also use the public `http://stackapis.servicestack.net/` url to test out ServiceStack's new **Add ServiceStack Reference** feature :)
+
+## New AngularJS + Bootstrap theme
+
+ServiceStack's [Swagger Support](https://github.com/ServiceStack/ServiceStack/wiki/Swagger-API) received some welcomed enhancements thanks to [@tvjames](https://github.com/tvjames) and [@tyst](https://github.com/tyst)'s efforts which now sees all of Swagger's static resources embedded into a single `ServiceStack.Api.Swagger.dll`, taking advantage of the Virtual File Systems [transparent support for Embedded Resources](https://github.com/ServiceStack/ServiceStack.Gap#creating-an-embedded-servicestack-app), making it easier to manage and upgrade Swagger as a self-contained unit.
+
+A new attractive Bootstrap Theme was also added to Swagger, available from [/swagger-ui-bootstrap/](http://stackapis.servicestack.net/swagger-ui-bootstrap/):
+
+[![Swagger Bootstrap](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/apps/StackApis/stackapis-swagger-bootstrap.png)](http://stackapis.servicestack.net/swagger-ui-bootstrap/)
+
+You can change the [metadata page plugin link](https://github.com/ServiceStack/ServiceStack/wiki/Metadata-page#adding-links-to-metadata-page) to point to this new theme with:
+
+```csharp
+Plugins.Add(new SwaggerFeature {
+    UseBootstrapTheme = true, 
+    LogoUrl = "your-logo.png" //optional use your own logo
+});
+```
+
+Swagger was also been updated to the latest version.
+
+## Authentication
+
+### Unique Emails
+
+ServiceStack now verifies emails returned by OAuth providers are now unique where if there's already another UserAuth with an existing email, authentication will fail and redirect (for HTML/Web Browser requests) with the Error token: 
+
+    /#f=EmailAlreadyExists
+
+This behavior is in-line with ServiceStack's other AuthProviders. If this change causes any issues, it can be disabled with:
+
+```csharp
+AuthProvider.ValidateUniqueEmails = false;
+```
+
+> This doesn't apply to Users who login with multiple OAuth Providers as there accounts automatically get merged into a single UserAuth entity.
+
+### CustomValidationFilter
+
+A new `CustomValidationFilter` was added to all AuthProviders which can be used to return a `IHttpResult` to control what error response is returned, e.g: 
+
+```csharp
+Plugins.Add(new AuthFeature(
+    () => new CustomUserSession(), 
+    new IAuthProvider[] {
+        new FacebookAuthProvider(appSettings) { 
+            CustomValidationFilter = authCtx => 
+                CustomIsValid(authCtx) 
+                    ? authCtx.Service.Redirect(authCtx.Session.ReferrerUrl
+                        .AddHashParam("f","CustomErrorCode"))
+                    : null,
+        },
+    }));
+```
+
+## Breaking Changes
+
+### Upgrade all ServiceStack NuGet packages
+
+The primary breaking change was converting ServiceStack's core `ServiceStack.Interfaces.dll` into a pure portable class library which as it's incompatible with the previous non-PCL ServiceStack.Interfaces.dll requires that all NuGet dependenices (inc. transitive dependencies) be upgraded to **v4.0.30**. The version number was bumped to **v4.0.30** specifically to stress that it's incompatible with any **<v4.0.2x** before it. The only other issue we ran into after upgrading most of ServiceStack projects is that projets referencing or mocking Interfaces that reference a `System.Net.*` Type like `HttpWebResponse` in `IServiceClient` requires an explicit reference to `System.Net` so the C# compiler considers them to be the same type.
+
+So in summary if you have a build error when upgrading v4.0.30 then:
+  - Delete any older v4.0.2x SS packages from NuGet /packages
+  - Reference `System.Net` on projects that still have build errors
+
+More details about these issues is available on the [announcement post](https://plus.google.com/+DemisBellot/posts/SyVJR419sdE).
+
+### TypeDescriptor support removed 
+
+In order to convert ServiceStack.Interfaces into a portable class library we've had to remove support for an undocumented feature allowing adding of Attributes via .NET's TypeDescriptor. If you were using TypeDescriptor, you can switch to adding attributes dynamically using [ServiceStack's Reflection APIs](https://github.com/ServiceStack/ServiceStack.Text/blob/master/tests/ServiceStack.Text.Tests/AttributeTests.cs).
+
 # v4.0.24 Release Notes
 
 ## [Server Events](https://github.com/ServiceStackApps/Chat)
