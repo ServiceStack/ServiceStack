@@ -13,7 +13,6 @@ namespace ServiceStack
             bool addReturnMarker = true,
             bool convertDescriptionToComments = true,
             bool addDataContractAttributes = false,
-            bool addDataAnnotationAttributes = false,
             bool addIndexesToDataMembers = false,
             string addDefaultXmlNamespace = null,
             bool addResponseStatus = false,
@@ -27,7 +26,6 @@ namespace ServiceStack
             AddReturnMarker = addReturnMarker;
             AddDescriptionAsComments = convertDescriptionToComments;
             AddDataContractAttributes = addDataContractAttributes;
-            AddDataAnnotationAttributes = addDataAnnotationAttributes;
             AddDefaultXmlNamespace = addDefaultXmlNamespace;
             MakeDataContractsExtensible = makeDataContractsExtensible;
             AddIndexesToDataMembers = addIndexesToDataMembers;
@@ -42,7 +40,6 @@ namespace ServiceStack
         public bool AddReturnMarker { get; set; }
         public bool AddDescriptionAsComments { get; set; }
         public bool AddDataContractAttributes { get; set; }
-        public bool AddDataAnnotationAttributes { get; set; }
         public bool AddIndexesToDataMembers { get; set; }
         public int? AddImplicitVersion { get; set; }
         public bool AddResponseStatus { get; set; }
@@ -53,6 +50,7 @@ namespace ServiceStack
 
         public Dictionary<string, string> TypeAlias { get; set; }
         public HashSet<Type> IgnoreTypes { get; set; }
+        public HashSet<Type> ExportAttributes { get; set; }
         public List<string> IgnoreTypesInNamespaces { get; set; }
     }
 
@@ -140,6 +138,7 @@ namespace ServiceStack
         public string Value { get; set; }
         public string Description { get; set; }
         public MetadataDataMember DataMember { get; set; }
+        public bool? ReadOnly { get; set; }
 
         public List<MetadataAttribute> Attributes { get; set; }
     }
