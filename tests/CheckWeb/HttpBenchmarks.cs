@@ -1,6 +1,6 @@
 ﻿/* Options:
 Version: 1
-BaseUrl: http://localhost:56000
+BaseUrl: https://httpbenchmarks.servicestack.net
 
 ServerVersion: 1
 MakePartial: True
@@ -9,7 +9,6 @@ MakeDataContractsExtensible: False
 AddReturnMarker: True
 AddDescriptionAsComments: True
 AddDataContractAttributes: False
-AddDataAnnotationAttributes: False
 AddIndexesToDataMembers: False
 AddResponseStatus: False
 AddImplicitVersion: 
@@ -30,6 +29,8 @@ using BenchmarksAnalyzer.ServiceModel;
 namespace BenchmarksAnalyzer.ServiceModel
 {
 
+    [Route("/testplans/{TestPlanId}/testruns/{TestRunId}/testresults", "POST")]
+    [Route("/testplans/{TestPlanId}/testresults", "POST")]
     public partial class AddTestResults
         : IReturn<List<TestResult>>
     {
@@ -38,6 +39,7 @@ namespace BenchmarksAnalyzer.ServiceModel
         public virtual string Contents { get; set; }
     }
 
+    [Route("/testplans", "POST")]
     public partial class CreateTestPlan
         : IReturn<TestPlan>
     {
@@ -45,6 +47,7 @@ namespace BenchmarksAnalyzer.ServiceModel
         public virtual string Slug { get; set; }
     }
 
+    [Route("/testplans/{TestPlanId}/testruns", "POST")]
     public partial class CreateTestRun
         : IReturn<TestRun>
     {
@@ -52,16 +55,20 @@ namespace BenchmarksAnalyzer.ServiceModel
         public virtual string SeriesId { get; set; }
     }
 
+    [Route("/testplans/{Id}/delete", "POST DELETE")]
     public partial class DeleteTestPlan
     {
         public virtual int Id { get; set; }
     }
 
+    [Route("/testruns/{Id}/delete", "POST DELETE")]
     public partial class DeleteTestRun
     {
         public virtual int Id { get; set; }
     }
 
+    [Route("/testplans/{Id}/edit")]
+    [Route("/testplans/{Id}/testruns/{TestRunId}/edit")]
     public partial class EditTestPlan
         : IReturn<TestPlan>
     {
@@ -69,28 +76,33 @@ namespace BenchmarksAnalyzer.ServiceModel
         public virtual int? TestRunId { get; set; }
     }
 
+    [Route("/testplans", "GET")]
     public partial class FindTestPlans
         : IReturn<List<TestPlan>>
     {
     }
 
+    [Route("/testplans/{TestPlanId}/testruns", "GET")]
     public partial class FindTestRuns
         : IReturn<List<TestRun>>
     {
         public virtual int TestPlanId { get; set; }
     }
 
+    [Route("/testplans/{Id}")]
     public partial class GetTestPlan
         : IReturn<TestPlan>
     {
         public virtual int Id { get; set; }
     }
 
+    [Route("/myinfo")]
     public partial class MyInfo
         : IReturn<MyInfo>
     {
     }
 
+    [Route("/ping")]
     public partial class Ping
         : IReturn<Ping>
     {
@@ -102,10 +114,13 @@ namespace BenchmarksAnalyzer.ServiceModel
         public virtual ResponseStatus ResponseStatus { get; set; }
     }
 
+    [Route("/reset")]
     public partial class Reset
     {
     }
 
+    [Route("/testplans/{TestPlanId}/results", "GET")]
+    [Route("/testplans/{TestPlanId}/testruns/{TestRunId}/results", "GET")]
     public partial class SearchTestResults
         : IReturn<SearchTestResultsResponse>
     {
@@ -137,6 +152,7 @@ namespace BenchmarksAnalyzer.ServiceModel
         public virtual ResponseStatus ResponseStatus { get; set; }
     }
 
+    [Route("/testplans/{Id}/labels", "POST")]
     public partial class UpdateTestPlanLabels
         : IReturn<TestPlan>
     {
@@ -146,6 +162,8 @@ namespace BenchmarksAnalyzer.ServiceModel
         public virtual ResponseStatus ResponseStatus { get; set; }
     }
 
+    [Route("/testplans/{TestPlanId}/upload", "POST")]
+    [Route("/testplans/{TestPlanId}/testruns/{TestRunId}/upload", "POST")]
     public partial class UploadTestResults
         : IReturn<List<TestResult>>
     {
@@ -154,6 +172,7 @@ namespace BenchmarksAnalyzer.ServiceModel
         public virtual bool CreateNewTestRuns { get; set; }
     }
 
+    [Route("/{Slug}")]
     public partial class ViewTestPlan
         : IReturn<ViewTestPlanResponse>
     {
@@ -168,10 +187,10 @@ namespace BenchmarksAnalyzer.ServiceModel
             Results = new List<DisplayResult>{};
         }
 
+        public virtual ResponseStatus ResponseStatus { get; set; }
         public virtual TestPlan TestPlan { get; set; }
         public virtual TestRun TestRun { get; set; }
         public virtual List<DisplayResult> Results { get; set; }
-        public virtual ResponseStatus ResponseStatus { get; set; }
     }
 }
 
@@ -245,6 +264,7 @@ namespace BenchmarksAnalyzer.ServiceModel.Types
         public virtual int TestPlanId { get; set; }
         public virtual string SeriesId { get; set; }
         public virtual DateTime CreatedDate { get; set; }
+        [Ignore]
         public virtual int TestResultsCount { get; set; }
     }
 

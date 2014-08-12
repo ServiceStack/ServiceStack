@@ -1,6 +1,6 @@
 ﻿<#@ template debug="false" hostspecific="false" language="C#" #>
 <#@ output extension=".cs" #>
-<#= DownloadCSharpDtos("http://localhost:56000/types/csharp") #>
+<#= DownloadCSharpDtos("https://httpbenchmarks.servicestack.net/types/csharp") #>
 <#+
 public class CodegenOptions 
 {
