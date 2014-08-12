@@ -24,5 +24,7 @@
   <files>
     <file src="lib\**\*.*" target="lib" />
     <file src="..\..\src\ServiceStack.Api.Swagger\**\*.cs" target="src" />
+    <file src="..\..\src\ServiceStack.Api.Swagger\swagger-ui\**\*.*" target="src" />
+    <file src="..\..\src\ServiceStack.Api.Swagger\swagger-ui-bootstrap\**\*.*" target="src" />
   </files>
 </package>
