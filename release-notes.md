@@ -89,9 +89,13 @@ Feel free to play around with a deployed version of StackApis at [stackapis.serv
 
 You can also use the public `http://stackapis.servicestack.net/` url to test out ServiceStack's new **Add ServiceStack Reference** feature :)
 
-## New AngularJS + Bootstrap theme
+## [Swagger Support](https://github.com/ServiceStack/ServiceStack/wiki/Swagger-API)
+
+### All static resources are now embedded 
 
 ServiceStack's [Swagger Support](https://github.com/ServiceStack/ServiceStack/wiki/Swagger-API) received some welcomed enhancements thanks to [@tvjames](https://github.com/tvjames) and [@tyst](https://github.com/tyst)'s efforts which now sees all of Swagger's static resources embedded into a single `ServiceStack.Api.Swagger.dll`, taking advantage of the Virtual File Systems [transparent support for Embedded Resources](https://github.com/ServiceStack/ServiceStack.Gap#creating-an-embedded-servicestack-app), making it easier to manage and upgrade Swagger as a self-contained unit.
+
+### New Bootstrap theme for Swagger
 
 A new attractive Bootstrap Theme was also added to Swagger, available from [/swagger-ui-bootstrap/](http://stackapis.servicestack.net/swagger-ui-bootstrap/):
 
