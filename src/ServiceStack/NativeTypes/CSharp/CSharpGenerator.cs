@@ -177,6 +177,11 @@ namespace ServiceStack.NativeTypes.CSharp
 
             sb.AppendLine();
             AppendComments(sb, type.Description);
+            if (type.Routes != null)
+            {
+                AppendAttributes(sb, type.Routes.ConvertAll(x => x.ToMetadataAttribute()));
+            }
+            AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
 
             var partial = Config.MakePartial ? "partial " : "";
@@ -214,7 +219,7 @@ namespace ServiceStack.NativeTypes.CSharp
 
         private void AddConstuctor(StringBuilderWrapper sb, MetadataType type, CreateTypeOptions options)
         {
-            if (Config.AddImplicitVersion == null && !Config.InitializeCollections) 
+            if (Config.AddImplicitVersion == null && !Config.InitializeCollections)
                 return;
 
             var collectionProps = new List<MetadataPropertyType>();
@@ -531,6 +536,26 @@ namespace ServiceStack.NativeTypes.CSharp
         public static string QuotedSafeValue(this string value)
         {
             return "\"{0}\"".Fmt(value.SafeValue());
+        }
+
+        public static MetadataAttribute ToMetadataAttribute(this MetadataRoute route)
+        {
+            var attr = new MetadataAttribute
+            {
+                Name = "Route",
+                ConstructorArgs = new List<MetadataPropertyType>
+                {
+                    new MetadataPropertyType { Type = "string", Value = route.Path },
+                },
+            };
+
+            if (route.Verbs != null)
+            {
+                attr.ConstructorArgs.Add(
+                    new MetadataPropertyType { Type = "string", Value = route.Verbs });
+            }
+
+            return attr;
         }
     }
 }
