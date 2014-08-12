@@ -9,7 +9,6 @@ MakeDataContractsExtensible: False
 AddReturnMarker: True
 AddDescriptionAsComments: True
 AddDataContractAttributes: False
-AddDataAnnotationAttributes: False
 AddIndexesToDataMembers: False
 AddResponseStatus: False
 AddImplicitVersion: 
@@ -32,17 +31,28 @@ using Check.ServiceModel.Operations;
 namespace Check.ServiceInterface
 {
 
-    [Route("/api/acsprofiles", "POST,PUT,PATCH,DELETE")]
     [Route("/api/acsprofiles/{profileId}")]
+    [Route("/api/acsprofiles", "POST,PUT,PATCH,DELETE")]
     public partial class ACSProfile
         : IReturn<acsprofileResponse>
     {
         public virtual string profileId { get; set; }
+        [StringLength(20)]
+        [Required]
         public virtual string shortName { get; set; }
+
+        [StringLength(60)]
         public virtual string longName { get; set; }
+
+        [StringLength(20)]
         public virtual string regionId { get; set; }
+
+        [StringLength(20)]
         public virtual string groupId { get; set; }
+
+        [StringLength(12)]
         public virtual string deviceID { get; set; }
+
         public virtual DateTime lastUpdated { get; set; }
         public virtual bool enabled { get; set; }
     }
@@ -122,22 +132,11 @@ namespace Check.ServiceInterface
 
         public virtual string FirstName { get; set; }
         public virtual string[] FirstNames { get; set; }
-        [QueryField(Operand=">=", Term=QueryTerm.Default, ValueStyle=ValueStyle.Single, ValueArity=0)]
         public virtual int? Age { get; set; }
-
-        [QueryField(Term=QueryTerm.Default, Template="UPPER({Field}) LIKE UPPER({Value})", Field="FirstName", ValueStyle=ValueStyle.Single, ValueArity=0)]
         public virtual string FirstNameCaseInsensitive { get; set; }
-
-        [QueryField(Term=QueryTerm.Default, Template="{Field} LIKE {Value}", Field="FirstName", ValueFormat="{0}%", ValueStyle=ValueStyle.Single, ValueArity=0)]
         public virtual string FirstNameStartsWith { get; set; }
-
-        [QueryField(Term=QueryTerm.Default, Template="{Field} LIKE {Value}", Field="LastName", ValueFormat="%{0}", ValueStyle=ValueStyle.Single, ValueArity=0)]
         public virtual string LastNameEndsWith { get; set; }
-
-        [QueryField(Term=QueryTerm.Default, Template="{Field} BETWEEN {Value1} AND {Value2}", Field="FirstName", ValueStyle=ValueStyle.Single, ValueArity=0)]
         public virtual string[] FirstNameBetween { get; set; }
-
-        [QueryField(Term=QueryTerm.Or, Template="UPPER({Field}) LIKE UPPER({Value})", Field="LastName", ValueStyle=ValueStyle.Single, ValueArity=0)]
         public virtual string OrLastName { get; set; }
     }
 
@@ -147,7 +146,6 @@ namespace Check.ServiceInterface
         public virtual int? Age { get; set; }
     }
 
-    [Query(DefaultTerm=QueryTerm.Or)]
     public partial class QueryGetRockstars
         : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
     {
@@ -165,14 +163,12 @@ namespace Check.ServiceInterface
         public virtual int[] IdsBetween { get; set; }
     }
 
-    [Query(DefaultTerm=QueryTerm.Or)]
     public partial class QueryGetRockstarsDynamic
         : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
     {
     }
 
     [Route("/movies")]
-    [Query(DefaultTerm=QueryTerm.Or)]
     public partial class QueryMovies
         : QueryBase<Movie>, IReturn<QueryResponse<Movie>>
     {
@@ -189,7 +185,6 @@ namespace Check.ServiceInterface
     }
 
     [Route("/OrRockstars")]
-    [Query(DefaultTerm=QueryTerm.Or)]
     public partial class QueryOrRockstars
         : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
     {
@@ -305,7 +300,6 @@ namespace Check.ServiceInterface
     }
 
     [Route("/movies/search")]
-    [Query(DefaultTerm=QueryTerm.And)]
     public partial class SearchMovies
         : QueryBase<Movie>, IReturn<QueryResponse<Movie>>
     {
@@ -340,11 +334,11 @@ namespace Check.ServiceModel
     ///Echoes a sentence
     ///</summary>
     [Route("/echoes", "POST")]
-    [Api(Description="Echoes a sentence")]
+    [Api("Echoes a sentence")]
     public partial class Echoes
         : IReturn<Echo>
     {
-        [ApiMember(Name="Sentence", DataType="string", Description="The sentence to echo.", IsRequired=true, ParameterType="form", AllowMultiple=false)]
+        [ApiMember(Description="The sentence to echo.", ParameterType="form", DataType="string", IsRequired=true, Name="Sentence")]
         public virtual string Sentence { get; set; }
     }
 
@@ -373,6 +367,29 @@ namespace Check.ServiceModel
 namespace Check.ServiceModel.Operations
 {
 
+    ///<summary>
+    ///AllowedAttributes Description
+    ///</summary>
+    [Route("/allowed-attributes", "GET")]
+    [Api("AllowedAttributes Description")]
+    [ApiResponse(400, "Your request was not understood")]
+    [DataContract]
+    public partial class AllowedAttributes
+    {
+        [Required]
+        [Default(5)]
+        public virtual int Id { get; set; }
+
+        [DataMember(Name="Aliased")]
+        [ApiMember(ParameterType="path", Description="Range Description", DataType="double", IsRequired=true)]
+        public virtual double Range { get; set; }
+
+        [Meta("Foo", "Bar")]
+        [References(typeof(Check.ServiceModel.Operations.Hello))]
+        [StringLength(20)]
+        public virtual string Name { get; set; }
+    }
+
     public partial class Hello
         : IReturn<Hello>
     {
@@ -390,6 +407,27 @@ namespace Check.ServiceModel.Operations
     {
         public virtual string Result { get; set; }
         public virtual AllTypes AllTypes { get; set; }
+    }
+
+    ///<summary>
+    ///Description on HelloAll type
+    ///</summary>
+    [DataContract]
+    public partial class HelloAnnotated
+        : IReturn<HelloAnnotatedResponse>
+    {
+        [DataMember]
+        public virtual string Name { get; set; }
+    }
+
+    ///<summary>
+    ///Description on HelloAllResponse type
+    ///</summary>
+    [DataContract]
+    public partial class HelloAnnotatedResponse
+    {
+        [DataMember]
+        public virtual string Result { get; set; }
     }
 
     public partial class HelloResponse
@@ -487,6 +525,13 @@ namespace Check.ServiceModel.Operations
     public partial class HelloWithTypeResponse
     {
         public virtual HelloType Result { get; set; }
+    }
+
+    public partial class RestrictedAttributes
+    {
+        public virtual int Id { get; set; }
+        public virtual string Name { get; set; }
+        public virtual Hello Hello { get; set; }
     }
 }
 

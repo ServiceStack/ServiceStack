@@ -11,7 +11,6 @@ public class CodegenOptions
 	bool? AddReturnMarker;
 	bool? AddDescriptionAsComments;
 	bool? AddDataContractAttributes;
-	bool? AddDataAnnotationAttributes;
 	bool? AddIndexesToDataMembers;
 	bool? AddResponseStatus;
 	int? AddImplicitVersion;
