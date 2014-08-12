@@ -23,8 +23,8 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
-using Check.ServiceModel.Types;
 using Check.ServiceModel;
+using Check.ServiceModel.Types;
 using Check.ServiceInterface;
 using Check.ServiceModel.Operations;
 
@@ -32,6 +32,8 @@ using Check.ServiceModel.Operations;
 namespace Check.ServiceInterface
 {
 
+    [Route("/api/acsprofiles", "POST,PUT,PATCH,DELETE")]
+    [Route("/api/acsprofiles/{profileId}")]
     public partial class ACSProfile
         : IReturn<acsprofileResponse>
     {
@@ -50,10 +52,12 @@ namespace Check.ServiceInterface
         public virtual string profileId { get; set; }
     }
 
+    [Route("/anontype")]
     public partial class AnonType
     {
     }
 
+    [Route("/changerequest/{Id}")]
     public partial class ChangeRequest
         : IReturn<ChangeRequest>
     {
@@ -67,6 +71,255 @@ namespace Check.ServiceInterface
         public virtual string QueryString { get; set; }
         public virtual string Form { get; set; }
         public virtual ResponseStatus ResponseStatus { get; set; }
+    }
+
+    public partial class CustomRockstar
+    {
+        public virtual string FirstName { get; set; }
+        public virtual string LastName { get; set; }
+        public virtual int? Age { get; set; }
+        public virtual string RockstarAlbumName { get; set; }
+    }
+
+    public partial class Movie
+    {
+        public Movie()
+        {
+            Genres = new List<string>{};
+        }
+
+        public virtual int Id { get; set; }
+        public virtual string ImdbId { get; set; }
+        public virtual string Title { get; set; }
+        public virtual string Rating { get; set; }
+        public virtual decimal Score { get; set; }
+        public virtual string Director { get; set; }
+        public virtual DateTime ReleaseDate { get; set; }
+        public virtual string TagLine { get; set; }
+        public virtual List<string> Genres { get; set; }
+    }
+
+    public partial class QueryCustomRockstars
+        : QueryBase<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+    {
+        public virtual int? Age { get; set; }
+    }
+
+    public partial class QueryCustomRockstarsFilter
+        : QueryBase<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+    {
+        public virtual int? Age { get; set; }
+    }
+
+    public partial class QueryFieldRockstars
+        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    {
+        public QueryFieldRockstars()
+        {
+            FirstNames = new string[]{};
+            FirstNameBetween = new string[]{};
+        }
+
+        public virtual string FirstName { get; set; }
+        public virtual string[] FirstNames { get; set; }
+        [QueryField(Operand=">=", Term=QueryTerm.Default, ValueStyle=ValueStyle.Single, ValueArity=0)]
+        public virtual int? Age { get; set; }
+
+        [QueryField(Term=QueryTerm.Default, Template="UPPER({Field}) LIKE UPPER({Value})", Field="FirstName", ValueStyle=ValueStyle.Single, ValueArity=0)]
+        public virtual string FirstNameCaseInsensitive { get; set; }
+
+        [QueryField(Term=QueryTerm.Default, Template="{Field} LIKE {Value}", Field="FirstName", ValueFormat="{0}%", ValueStyle=ValueStyle.Single, ValueArity=0)]
+        public virtual string FirstNameStartsWith { get; set; }
+
+        [QueryField(Term=QueryTerm.Default, Template="{Field} LIKE {Value}", Field="LastName", ValueFormat="%{0}", ValueStyle=ValueStyle.Single, ValueArity=0)]
+        public virtual string LastNameEndsWith { get; set; }
+
+        [QueryField(Term=QueryTerm.Default, Template="{Field} BETWEEN {Value1} AND {Value2}", Field="FirstName", ValueStyle=ValueStyle.Single, ValueArity=0)]
+        public virtual string[] FirstNameBetween { get; set; }
+
+        [QueryField(Term=QueryTerm.Or, Template="UPPER({Field}) LIKE UPPER({Value})", Field="LastName", ValueStyle=ValueStyle.Single, ValueArity=0)]
+        public virtual string OrLastName { get; set; }
+    }
+
+    public partial class QueryFieldRockstarsDynamic
+        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    {
+        public virtual int? Age { get; set; }
+    }
+
+    [Query(DefaultTerm=QueryTerm.Or)]
+    public partial class QueryGetRockstars
+        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    {
+        public QueryGetRockstars()
+        {
+            Ids = new int[]{};
+            Ages = new List<int>{};
+            FirstNames = new List<string>{};
+            IdsBetween = new int[]{};
+        }
+
+        public virtual int[] Ids { get; set; }
+        public virtual List<int> Ages { get; set; }
+        public virtual List<string> FirstNames { get; set; }
+        public virtual int[] IdsBetween { get; set; }
+    }
+
+    [Query(DefaultTerm=QueryTerm.Or)]
+    public partial class QueryGetRockstarsDynamic
+        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    {
+    }
+
+    [Route("/movies")]
+    [Query(DefaultTerm=QueryTerm.Or)]
+    public partial class QueryMovies
+        : QueryBase<Movie>, IReturn<QueryResponse<Movie>>
+    {
+        public QueryMovies()
+        {
+            Ids = new int[]{};
+            ImdbIds = new string[]{};
+            Ratings = new string[]{};
+        }
+
+        public virtual int[] Ids { get; set; }
+        public virtual string[] ImdbIds { get; set; }
+        public virtual string[] Ratings { get; set; }
+    }
+
+    [Route("/OrRockstars")]
+    [Query(DefaultTerm=QueryTerm.Or)]
+    public partial class QueryOrRockstars
+        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    {
+        public virtual int? Age { get; set; }
+        public virtual string FirstName { get; set; }
+    }
+
+    public partial class QueryOverridedCustomRockstars
+        : QueryBase<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+    {
+        public virtual int? Age { get; set; }
+    }
+
+    public partial class QueryOverridedRockstars
+        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    {
+        public virtual int? Age { get; set; }
+    }
+
+    [Route("/customrockstars")]
+    public partial class QueryRockstarAlbums
+        : QueryBase<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+    {
+        public virtual int? Age { get; set; }
+        public virtual string RockstarAlbumName { get; set; }
+    }
+
+    public partial class QueryRockstarAlbumsImplicit
+        : QueryBase<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+    {
+    }
+
+    public partial class QueryRockstarAlbumsLeftJoin
+        : QueryBase<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+    {
+        public virtual int? Age { get; set; }
+        public virtual string AlbumName { get; set; }
+    }
+
+    [Route("/query/rockstars")]
+    public partial class QueryRockstars
+        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    {
+        public virtual int? Age { get; set; }
+    }
+
+    public partial class QueryRockstarsConventions
+        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    {
+        public QueryRockstarsConventions()
+        {
+            Ids = new int[]{};
+        }
+
+        public virtual int[] Ids { get; set; }
+        public virtual int? AgeOlderThan { get; set; }
+        public virtual int? AgeGreaterThanOrEqualTo { get; set; }
+        public virtual int? AgeGreaterThan { get; set; }
+        public virtual int? GreaterThanAge { get; set; }
+        public virtual string FirstNameStartsWith { get; set; }
+        public virtual string LastNameEndsWith { get; set; }
+        public virtual string LastNameContains { get; set; }
+        public virtual string RockstarAlbumNameContains { get; set; }
+        public virtual int? RockstarIdAfter { get; set; }
+        public virtual int? RockstarIdOnOrAfter { get; set; }
+    }
+
+    public partial class QueryRockstarsFilter
+        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    {
+        public virtual int? Age { get; set; }
+    }
+
+    public partial class QueryRockstarsIFilter
+        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    {
+        public virtual int? Age { get; set; }
+    }
+
+    [Route("/query/rockstar-references")]
+    public partial class QueryRockstarsWithReferences
+        : QueryBase<RockstarReference>, IReturn<QueryResponse<RockstarReference>>
+    {
+        public virtual int? Age { get; set; }
+    }
+
+    public partial class QueryUnknownRockstars
+        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    {
+        public virtual int UnknownInt { get; set; }
+        public virtual string UnknownProperty { get; set; }
+    }
+
+    public partial class RockstarAlbum
+    {
+        public virtual int Id { get; set; }
+        public virtual int RockstarId { get; set; }
+        public virtual string Name { get; set; }
+    }
+
+    public partial class RockstarReference
+    {
+        public RockstarReference()
+        {
+            Albums = new List<RockstarAlbum>{};
+        }
+
+        public virtual int Id { get; set; }
+        public virtual string FirstName { get; set; }
+        public virtual string LastName { get; set; }
+        public virtual int? Age { get; set; }
+        public virtual List<RockstarAlbum> Albums { get; set; }
+    }
+
+    [Route("/movies/search")]
+    [Query(DefaultTerm=QueryTerm.And)]
+    public partial class SearchMovies
+        : QueryBase<Movie>, IReturn<QueryResponse<Movie>>
+    {
+    }
+
+    public partial class StreamMovies
+        : QueryBase<Movie>, IReturn<QueryResponse<Movie>>
+    {
+        public StreamMovies()
+        {
+            Ratings = new string[]{};
+        }
+
+        public virtual string[] Ratings { get; set; }
     }
 }
 
@@ -86,13 +339,16 @@ namespace Check.ServiceModel
     ///<summary>
     ///Echoes a sentence
     ///</summary>
+    [Route("/echoes", "POST")]
+    [Api(Description="Echoes a sentence")]
     public partial class Echoes
         : IReturn<Echo>
     {
-        [ApiMember(ParameterType="form", Name="Sentence", Description="The sentence to echo.", DataType="string", IsRequired=true, AllowMultiple=false)]
+        [ApiMember(Name="Sentence", DataType="string", Description="The sentence to echo.", IsRequired=true, ParameterType="form", AllowMultiple=false)]
         public virtual string Sentence { get; set; }
     }
 
+    [Route("/rockstars")]
     public partial class QueryRockstars
         : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
     {
@@ -106,6 +362,7 @@ namespace Check.ServiceModel
         public virtual int? Age { get; set; }
     }
 
+    [Route("/throwhttperror/{Status}")]
     public partial class ThrowHttpError
     {
         public virtual int Status { get; set; }
@@ -120,27 +377,6 @@ namespace Check.ServiceModel.Operations
         : IReturn<Hello>
     {
         public virtual string Name { get; set; }
-    }
-
-    ///<summary>
-    ///Description on HelloAll type
-    ///</summary>
-    [DataContract]
-    public partial class HelloAll
-        : IReturn<HelloAllResponse>
-    {
-        [DataMember]
-        public virtual string Name { get; set; }
-    }
-
-    ///<summary>
-    ///Description on HelloAllResponse type
-    ///</summary>
-    [DataContract]
-    public partial class HelloAllResponse
-    {
-        [DataMember]
-        public virtual string Result { get; set; }
     }
 
     public partial class HelloAllTypes
@@ -230,6 +466,7 @@ namespace Check.ServiceModel.Operations
         public virtual string Name { get; set; }
     }
 
+    [Route("/helloroute")]
     public partial class HelloWithRoute
         : IReturn<HelloWithRoute>
     {
