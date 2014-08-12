@@ -24,5 +24,10 @@
   <files>
     <file src="lib\**\*.*" target="lib" />
     <file src="..\..\src\ServiceStack.Api.Swagger\**\*.cs" target="src" />
+    <file src="..\..\src\ServiceStack.Api.Swagger\**\*.html" target="src" />
+    <file src="..\..\src\ServiceStack.Api.Swagger\**\*.js" target="src" />
+    <file src="..\..\src\ServiceStack.Api.Swagger\**\*.css" target="src" />
+    <file src="..\..\src\ServiceStack.Api.Swagger\**\*.png" target="src" />
+    <file src="..\..\src\ServiceStack.Api.Swagger\**\*.gif" target="src" />
   </files>
 </package>
