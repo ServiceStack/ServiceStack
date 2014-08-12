@@ -114,7 +114,8 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.Swagger.Signed/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.Swagger.Signed/lib/net40')" />
     <Copy SourceFiles="%(SwaggerFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.Swagger.Signed/lib/net40" />
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.Swagger.Signed/servicestack.api.swagger.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+    <!-- Disables -Symbols-->
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.Swagger.Signed/servicestack.api.swagger.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Client -->
