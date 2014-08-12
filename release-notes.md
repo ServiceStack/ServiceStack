@@ -20,7 +20,7 @@ After clicking OK, the servers DTO's and [ServiceStack.Client](https://www.nuget
 
 ### Consuming Services from Mobile Clients now Easier than Ever!
 
-In addition with our improved PCL Support in this release, it's never been easier to consume remote Services with a typed API from any Xamarin.Android, Xamarin.iOS, Silverlgiht 5, Windows Store or .full NET4.0+ platforms, here's a quick demo of it working in Android:
+In addition with our improved PCL Support in this release, it's never been easier to create an instant Typed API for a remote Service consumable from any Xamarin.Android, Xamarin.iOS, Silverlgiht 5, Windows Store or .full NET4.0+ platforms - Here's a quick demo of it working in Android:
 
 ![Android Add ServiceStack Reference](https://raw.githubusercontent.com/ServiceStack/ServiceStackVS/master/Images/android-add-ref-demo.gif)
 
@@ -150,9 +150,9 @@ Plugins.Add(new AuthFeature(
 
 ### Upgrade all ServiceStack NuGet packages
 
-The primary breaking change was converting ServiceStack's core `ServiceStack.Interfaces.dll` into a pure portable class library which as it's incompatible with the previous non-PCL ServiceStack.Interfaces.dll requires that all NuGet dependenices (inc. transitive dependencies) be upgraded to **v4.0.30**. The version number was bumped to **v4.0.30** specifically to stress that it's incompatible with any **<v4.0.2x** before it. The only other issue we ran into after upgrading most of ServiceStack projects is that projets referencing or mocking Interfaces that reference a `System.Net.*` Type like `HttpWebResponse` in `IServiceClient` requires an explicit reference to `System.Net` so the C# compiler considers them to be the same type.
+The primary breaking change was converting ServiceStack's core `ServiceStack.Interfaces.dll` into a pure portable class library which as it's incompatible with the previous non-PCL ServiceStack.Interfaces.dll requires that all NuGet dependenices (inc. transitive dependencies) be upgraded to **v4.0.30**. The version number was bumped to **v4.0.30** specifically to stress that it's incompatible with any **<v4.0.2x** before it. The only other issue we ran into after upgrading most of ServiceStack projects is on projects that reference or mock Interfaces that reference a `System.Net.*` Type like `HttpWebResponse` in `IServiceClient` will now require an explicit reference to `System.Net` for the C# compiler to consider them to be of the same type.
 
-So in summary if you have a build error when upgrading v4.0.30 then:
+In summary if you have a build error when upgrading v4.0.30 then:
   - Delete any older v4.0.2x SS packages from NuGet /packages
   - Reference `System.Net` on projects that still have build errors
 
