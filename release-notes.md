@@ -33,7 +33,7 @@ In addition with our improved PCL Support in this release, it's never been easie
  - **Flexible** DTO generation is customizable, Server and Clients can override built-in defaults
  - **Integrated** Rich Service metadata annotated on DTO's, [Internal Services](https://github.com/ServiceStack/ServiceStack/wiki/Restricting-Services) are excluded when accessed externally
 
-### Available from v4.0.24+ ServiceStack Projects
+### Available from v4.0.30+ ServiceStack Projects
 
 Native Types is now available by default on all **v4.0.30+** ServiceStack projects. It can be disabled by removing the `NativeTypesFeature` plugin with:
 
