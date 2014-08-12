@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
+using ServiceStack.DataAnnotations;
 using ServiceStack.NativeTypes;
 
 namespace ServiceStack
@@ -27,6 +29,20 @@ namespace ServiceStack
                     { "Single", "float" },    
                     { "Double", "double" },    
                     { "Decimal", "decimal" },    
+                },
+                ExportAttributes = new HashSet<Type>
+                {
+                    typeof(ApiAttribute),
+                    typeof(ApiResponseAttribute),
+                    typeof(ApiMemberAttribute),
+                    typeof(StringLengthAttribute),
+                    typeof(DefaultAttribute),
+                    typeof(IgnoreAttribute),
+                    typeof(IgnoreDataMemberAttribute),
+                    typeof(MetaAttribute),
+                    typeof(RequiredAttribute),
+                    typeof(ReferencesAttribute),
+                    typeof(StringLengthAttribute),
                 },
                 IgnoreTypes = new HashSet<Type>
                 {

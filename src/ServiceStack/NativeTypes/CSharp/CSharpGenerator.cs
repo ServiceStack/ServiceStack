@@ -45,7 +45,6 @@ namespace ServiceStack.NativeTypes.CSharp
             sb.AppendLine("AddReturnMarker: {0}".Fmt(Config.AddReturnMarker));
             sb.AppendLine("AddDescriptionAsComments: {0}".Fmt(Config.AddDescriptionAsComments));
             sb.AppendLine("AddDataContractAttributes: {0}".Fmt(Config.AddDataContractAttributes));
-            sb.AppendLine("AddDataAnnotationAttributes: {0}".Fmt(Config.AddDataAnnotationAttributes));
             sb.AppendLine("AddIndexesToDataMembers: {0}".Fmt(Config.AddIndexesToDataMembers));
             sb.AppendLine("AddResponseStatus: {0}".Fmt(Config.AddResponseStatus));
             sb.AppendLine("AddImplicitVersion: {0}".Fmt(Config.AddImplicitVersion));
@@ -335,7 +334,7 @@ namespace ServiceStack.NativeTypes.CSharp
                             args.Append("{0}".Fmt(TypeValue(ctorArg.Type, ctorArg.Value)));
                         }
                     }
-                    if (attr.Args != null)
+                    else if (attr.Args != null)
                     {
                         foreach (var attrArg in attr.Args)
                         {

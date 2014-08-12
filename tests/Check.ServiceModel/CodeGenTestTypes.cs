@@ -1,9 +1,10 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.Net;
 using System.Runtime.Serialization;
 using Check.ServiceModel.Types;
 using ServiceStack;
+using ServiceStack.DataAnnotations;
 
 namespace Check.ServiceModel.Operations
 {
@@ -17,8 +18,8 @@ namespace Check.ServiceModel.Operations
         public string Result { get; set; }
     }
 
-    [Restrict(ExternalOnly = true)]
-    [Description("Description on HelloAll type")]
+    [Restrict(InternalOnly = true)]
+    [System.ComponentModel.Description("Description on HelloAll type")]
     [DataContract]
     public class HelloAnnotated
         : IReturn<HelloAnnotatedResponse>
@@ -27,7 +28,52 @@ namespace Check.ServiceModel.Operations
         public string Name { get; set; }
     }
 
-    [Description("Description on HelloAllResponse type")]
+    [Restrict(ExternalOnly = true)]
+    public class HelloExternal
+    {
+        public string Name { get; set; }
+    }
+
+    [Restrict(InternalOnly = true)]
+    [Alias("Alias")]
+    public class RestrictedAttributes
+    {
+        [PrimaryKey]
+        [AutoIncrement]
+        public int Id { get; set; }
+
+        [Index]
+        [ApiAllowableValues("DateKind", typeof(DateTimeKind))]
+        public string Name { get; set; }
+
+        public Hello Hello { get; set; }
+    }
+
+    [DataContract]
+    [Route("/allowed-attributes","GET")]
+    [Api("AllowedAttributes Description")]
+    [ApiResponse(HttpStatusCode.BadRequest, "Your request was not understood")]
+    [Description("Description on AllowedAttributes")]
+    public class AllowedAttributes
+    {
+        [Required]
+        [Range(1, 10)]
+        [Default(5)]
+        public int Id { get; set; }
+
+        [Range(1.0, 10.0)]
+        [DataMember(Name = "Aliased")]
+        [ApiMember(Description = "Range Description",
+                   ParameterType = "path", DataType = "double", IsRequired = true)]
+        public double Range { get; set; }
+
+        [StringLength(20)]
+        [References(typeof(Hello))]
+        [Meta("Foo","Bar")]
+        public string Name { get; set; }
+    }
+
+    [System.ComponentModel.Description("Description on HelloAllResponse type")]
     [DataContract]
     public class HelloAnnotatedResponse
     {
@@ -74,13 +120,13 @@ namespace Check.ServiceModel.Operations
         public string Result { get; set; }
     }
 
-    [Description("Description on HelloWithDescription type")]
+    [System.ComponentModel.Description("Description on HelloWithDescription type")]
     public class HelloWithDescription
     {
         public string Name { get; set; }
     }
 
-    [Description("Description on HelloWithDescriptionResponse type")]
+    [System.ComponentModel.Description("Description on HelloWithDescriptionResponse type")]
     public class HelloWithDescriptionResponse
     {
         public string Result { get; set; }

@@ -16,6 +16,21 @@ namespace Check.ServiceInterface
             return new HelloAnnotatedResponse { Result = request.Name };
         }
 
+        public object Any(HelloExternal request)
+        {
+            return request;
+        }
+
+        public object Any(RestrictedAttributes request)
+        {
+            return request;
+        }
+
+        public object Any(AllowedAttributes request)
+        {
+            return request;
+        }
+
         public object Any(HelloAllTypes request)
         {
             return new HelloAllTypesResponse { AllTypes = request.AllTypes, Result = request.Name };

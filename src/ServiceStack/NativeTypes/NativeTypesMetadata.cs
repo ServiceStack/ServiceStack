@@ -29,8 +29,6 @@ namespace ServiceStack.NativeTypes
                 AddReturnMarker = req.AddReturnMarker ?? defaults.AddReturnMarker,
                 AddDescriptionAsComments = req.AddDescriptionAsComments ?? defaults.AddDescriptionAsComments,
                 AddDataContractAttributes = req.AddDataContractAttributes ?? defaults.AddDataContractAttributes,
-                AddDataAnnotationAttributes =
-                    req.AddDataAnnotationAttributes ?? defaults.AddDataAnnotationAttributes,
                 MakeDataContractsExtensible =
                     req.MakeDataContractsExtensible ?? defaults.MakeDataContractsExtensible,
                 AddIndexesToDataMembers = req.AddIndexesToDataMembers ?? defaults.AddIndexesToDataMembers,
@@ -39,6 +37,7 @@ namespace ServiceStack.NativeTypes
                 AddResponseStatus = req.AddResponseStatus ?? defaults.AddResponseStatus,
                 AddDefaultXmlNamespace = req.AddDefaultXmlNamespace ?? defaults.AddDefaultXmlNamespace,
                 DefaultNamespaces = req.DefaultNamespaces ?? defaults.DefaultNamespaces,
+                ExportAttributes = defaults.ExportAttributes,
                 IgnoreTypes = defaults.IgnoreTypes,
                 IgnoreTypesInNamespaces = defaults.IgnoreTypesInNamespaces,
                 TypeAlias = defaults.TypeAlias,
@@ -248,21 +247,16 @@ namespace ServiceStack.NativeTypes
             return props == null || props.Count == 0 ? null : props;
         }
 
-        public bool ExcludeAttrsFilter(Attribute x)
+        public bool IncludeAttrsFilter(Attribute x)
         {
             var type = x.GetType();
-            var name = type.Name;
-            return type != typeof(RouteAttribute)
-                && name != "DescriptionAttribute"
-                && name != "DataContractAttribute"  //Type equality issues with Mono .NET 3.5/4
-                && name != "DataMemberAttribute"
-                && (config.AddDataAnnotationAttributes || type.Namespace != "ServiceStack.DataAnnotations");
+            return config.ExportAttributes.Contains(type);
         }
 
         public List<MetadataAttribute> ToAttributes(object[] attrs)
         {
             var to = attrs.OfType<Attribute>()
-                .Where(ExcludeAttrsFilter)
+                .Where(IncludeAttrsFilter)
                 .Select(ToAttribute)
                 .ToList();
 
@@ -272,7 +266,7 @@ namespace ServiceStack.NativeTypes
         public List<MetadataAttribute> ToAttributes(IEnumerable<Attribute> attrs)
         {
             var to = attrs
-                .Where(ExcludeAttrsFilter)
+                .Where(IncludeAttrsFilter)
                 .Select(ToAttribute)
                 .ToList();
 
@@ -281,7 +275,9 @@ namespace ServiceStack.NativeTypes
 
         public MetadataAttribute ToAttribute(Attribute attr)
         {
-            var firstCtor = attr.GetType().GetConstructors().OrderBy(x => x.GetParameters().Length).FirstOrDefault();
+            var firstCtor = attr.GetType().GetConstructors()
+                //.OrderBy(x => x.GetParameters().Length)
+                .FirstOrDefault();
             var metaAttr = new MetadataAttribute
             {
                 Name = attr.GetType().Name.Replace("Attribute", ""),
@@ -290,6 +286,38 @@ namespace ServiceStack.NativeTypes
                     : null,
                 Args = NonDefaultProperties(attr),
             };
+
+            //Populate ctor Arg values from matching properties
+            var argValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            metaAttr.Args.Each(x => argValues[x.Name] = x.Value);
+            metaAttr.Args.RemoveAll(x => x.ReadOnly == true);
+
+            if (metaAttr.ConstructorArgs != null)
+            {
+                foreach (var arg in metaAttr.ConstructorArgs)
+                {
+                    string value;
+                    if (argValues.TryGetValue(arg.Name, out value))
+                    {
+                        arg.Value = value;
+                    }
+                }
+                metaAttr.ConstructorArgs.RemoveAll(x => x.Value == null);
+                if (metaAttr.ConstructorArgs.Count == 0)
+                    metaAttr.ConstructorArgs = null;
+            }
+
+            //Only emit ctor args or property args
+            if (metaAttr.ConstructorArgs == null 
+                || metaAttr.ConstructorArgs.Count != metaAttr.Args.Count)
+            {
+                metaAttr.ConstructorArgs = null;
+            }
+            else
+            {
+                metaAttr.Args = null;
+            }
+
             return metaAttr;
         }
 
@@ -317,11 +345,17 @@ namespace ServiceStack.NativeTypes
             if (instance != null)
             {
                 var value = pi.GetValue(instance, null);
-                if (value != pi.PropertyType.GetDefaultValue())
+                if (value != null
+                    && !value.Equals(pi.PropertyType.GetDefaultValue()))
                 {
                     if (pi.PropertyType.IsEnum())
                     {
                         property.Value = "{0}.{1}".Fmt(pi.PropertyType.Name, value);
+                    }
+                    else if (pi.PropertyType == typeof(Type))
+                    {
+                        var type = (Type)value;
+                        property.Value = "typeof({0})".Fmt(type.FullName);
                     }
                     else
                     {
@@ -329,6 +363,9 @@ namespace ServiceStack.NativeTypes
                         property.Value = strValue ?? value.ToJson();
                     }
                 }
+
+                if (pi.GetSetMethod() == null) //ReadOnly is bool? to minimize serialization
+                    property.ReadOnly = true;
             }
             return property;
         }
