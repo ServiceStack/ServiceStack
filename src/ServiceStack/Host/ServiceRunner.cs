@@ -101,6 +101,10 @@ namespace ServiceStack.Host
                 var taskResponse = response as Task;
                 if (taskResponse != null)
                 {
+                    if (taskResponse.Status == TaskStatus.Created)
+                    {
+                        taskResponse.Start();
+                    }
                     return taskResponse.ContinueWith(task =>
                     {
                         if (task.IsFaulted)
@@ -115,10 +119,10 @@ namespace ServiceStack.Host
 
                             return result;
                         }
-                        else if (ResponseFilters != null)
-                        {
-                            response = task.GetResult();
 
+                        response = task.GetResult();
+                        if (ResponseFilters != null)
+                        {
                             //Async Exec ResponseFilters
                             foreach (var responseFilter in ResponseFilters)
                             {
