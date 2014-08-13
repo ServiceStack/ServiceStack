@@ -4,7 +4,7 @@
 
 We have an exciting feature in this release showcasing our initial support for generating Native Types from client VS.NET projects using [ServiceStackVS](https://github.com/ServiceStack/ServiceStack/wiki/Creating-your-first-project#step-1-download-and-install-servicestackvs) new **Add ServiceStack Reference** feature. It provides a simpler, cleaner and more versatile alternative to WCF's **Add Service Reference** in VS.NET. 
 
-Our goal with Native Types is to provide Typed APIs to clients in their native language, reducing the burden and effort required to consume ServiceStack Services whilst benefiting from clients native language strong-typing feedback.
+Our goal with Native Types is to provide an alternative for sharing DTO dlls, that can enable a better dev workflow for external clients who are now able to generate (and update) Typed APIs for your Services from a remote url - reducing the burden and effort required to consume ServiceStack Services whilst benefiting from clients native language strong-typing feedback.
 
 This is just the beginning, whilst C# is the first language supported it lays the groundwork and signals our approach on adding support for typed API's in other languages in future. Add a [feature request for your favorite language](http://servicestack.uservoice.com/forums/176786-feature-requests) to prioritize support for it sooner!
 
@@ -43,7 +43,7 @@ Plugins.RemoveAll(x => x is NativeTypesFeature);
 
 For detailed info on how NativeTypesFeature works, its different customization options and improvements over WCF, checkout the [Add ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference) docs.
 
-### Upgrade ServiceStackVS
+### [Upgrade ServiceStackVS](https://github.com/ServiceStack/ServiceStack/wiki/Creating-your-first-project)
 
 To take advantage of this feature [Upgrade or Install ServiceStackVS](https://github.com/ServiceStack/ServiceStack/wiki/Creating-your-first-project) VS.NET Extension. If you already have **ServiceStackVS** installed, uninstall it first from `Tools -> Extensions and Updates... -> ServiceStackVS -> Uninstall`.
 
@@ -57,15 +57,15 @@ Our [PCL Story](https://github.com/ServiceStackApps/Hello) has been greatly impr
  - WPF app using .NET 4.0 PCL support
  - Silverlight 5
 
-Whilst our impl-free `ServiceStack.Interfaces.dll` could be converted into a pure PCL dll, our Client libraries resorted to using [PCL's Bait and Switch technique](http://log.paulbetts.org/the-bait-and-switch-pcl-trick/) to provide platform-specific extensions and optimizations. The one outlier is Silverlight 5 which remains a custom (non-PCL) SL5 build, that whilst allowing sharing of DTO's, still doesn't support projects with dependencies on the PCL-compatible version of **ServiceStack.Client**. 
+Whilst our impl-free `ServiceStack.Interfaces.dll` was able to be converted into a pure PCL dll, our Client libraries have instead resorted to using [PCL's Bait and Switch technique](http://log.paulbetts.org/the-bait-and-switch-pcl-trick/) to provide platform-specific extensions and optimizations. The one outlier is Silverlight5 which remains a custom (non-PCL) SL5 build, that whilst can now share DTO's, still can't support projects with dependencies on the PCL-compatible version of **ServiceStack.Client**. 
 
-All PCL, platform and Silverlight dlls are now merged into the main client NuGet packages so now clients need only reference the main Client NuGet package:
+As of this release all PCL, platform and Silverlight dlls are now merged into the main [ServiceStack.Client](https://www.nuget.org/packages/ServiceStack.Client) NuGet packages so now any clients need only reference the main Client NuGet package:
 
 ```
 Install-Package ServiceStack.Client
 ``` 
 
-The [Hello PCL](https://github.com/ServiceStackApps/Hello) project contains examples of reusing a Server DTO project with all supported client platforms as well as showing re-use of a `SharedGateway` referencing `ServiceStack.Client` in PCL-compatible platforms. 
+The [Hello PCL](https://github.com/ServiceStackApps/Hello) project now contains examples of reusing a Server DTO project with all supported client platforms as well as showing re-use of a high-level `SharedGateway` which referenes `ServiceStack.Client` that's shared between all PCL-compatible platforms. 
 
 ### New ServiceStack + AngularJS Example - [StackApis](http://stackapis.servicestack.net)
 
