@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Funq;
 using ServiceStack.Text;
@@ -75,7 +76,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class CaughtException { }
+    public class CaughtExceptionAsync { }
+    public class CaughtExceptionService : Service
+    {
+        public object Any(CaughtException request)
+        {
+            throw new ArgumentException();
+        }
+
+        public async Task<object> Any(CaughtExceptionAsync request)
+        {
+            await Task.Yield();
+            throw new ArgumentException();
+        }
+    }
+
     public class UncatchedException { }
+    public class UncatchedExceptionAsync { }
     public class UncatchedExceptionResponse { }
     public class UncatchedExceptionService : Service
     {
@@ -83,6 +101,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             //We don't wrap a try..catch block around the service (which happens with ServiceBase<> automatically)
             //so the global exception handling strategy is invoked
+            throw new ArgumentException();
+        }
+
+        public async Task<object> Any(UncatchedExceptionAsync request)
+        {
+            await Task.Yield();
             throw new ArgumentException();
         }
     }
@@ -127,10 +151,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     res.EndRequest(skipHeaders: true);
                 });
 
-                this.ServiceExceptionHandlers.Add((httpReq, request, exception) =>
+                this.ServiceExceptionHandlers.Add((httpReq, request, ex) =>
                 {
-                    if (request is UncatchedException)
-                        throw exception;
+                    if (request is UncatchedException || request is UncatchedExceptionAsync)
+                        throw ex;
+
+                    if (request is CaughtException || request is CaughtExceptionAsync)
+                    {
+                        return DtoUtils.CreateErrorResponse(request, new ArgumentException("ExceptionCaught"));
+                    }
 
                     return null;
                 });
@@ -300,6 +329,50 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var req = (HttpWebRequest)WebRequest.Create(PredefinedJsonUrl<UncatchedException>());
             var res = req.GetResponse().ReadToEnd();
             Assert.AreEqual("UncaughtException ArgumentException", res);
+        }
+
+        [Test]
+        public void Can_override_global_exception_handling_async()
+        {
+            var req = (HttpWebRequest)WebRequest.Create(PredefinedJsonUrl<UncatchedExceptionAsync>());
+            var res = req.GetResponse().ReadToEnd();
+            Assert.AreEqual("UncaughtException ArgumentException", res);
+        }
+
+        [Test]
+        public void Can_override_caught_exception()
+        {
+            try
+            {
+                var req = (HttpWebRequest)WebRequest.Create(PredefinedJsonUrl<CaughtException>());
+                var res = req.GetResponse().ReadToEnd();
+                Assert.Fail("Should Throw");
+            }
+            catch (WebException ex)
+            {
+                Assert.That(ex.IsAny400());
+                var json = ex.GetResponseBody();
+                var response = json.FromJson<ErrorResponse>();
+                Assert.That(response.ResponseStatus.Message, Is.EqualTo("ExceptionCaught"));
+            }
+        }
+
+        [Test]
+        public void Can_override_caught_exception_async()
+        {
+            try
+            {
+                var req = (HttpWebRequest)WebRequest.Create(PredefinedJsonUrl<CaughtExceptionAsync>());
+                var res = req.GetResponse().ReadToEnd();
+                Assert.Fail("Should Throw");
+            }
+            catch (WebException ex)
+            {
+                Assert.That(ex.IsAny400());
+                var json = ex.GetResponseBody();
+                var response = json.FromJson<ErrorResponse>();
+                Assert.That(response.ResponseStatus.Message, Is.EqualTo("ExceptionCaught"));
+            }
         }
 
         [Test]
