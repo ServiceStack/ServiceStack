@@ -97,6 +97,17 @@ namespace ServiceStack.Host
                 }
 
                 var response = AfterEachRequest(request, requestDto, ServiceAction(instance, requestDto));
+                var error = response as IHttpError;
+                if (error != null)
+                {
+                    var ex = (Exception) error;
+                    var result = HandleException(request, requestDto, ex);
+
+                    if (result == null)
+                        throw ex;
+
+                    return result;
+                }
 
                 var taskResponse = response as Task;
                 if (taskResponse != null)
