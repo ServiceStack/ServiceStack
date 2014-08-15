@@ -1,5 +1,6 @@
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Model;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -32,6 +33,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string SharedProperty { get; set; }
     }
 
+    public interface IClearLongId
+    {
+        long Id { get; set; }
+    }
+
+    public class TypedResponseFilter1 : IReturn<TypedResponseFilter1>, IClearLongId
+    {
+        public long Id { get; set; }
+    }
+
     public class TypedFilterService : Service
     {
         public object Any(ResourceType1 request)
@@ -40,6 +51,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         public object Any(ResourceType2 request)
+        {
+            return request;
+        }
+
+        public object Any(TypedResponseFilter1 request)
         {
             return request;
         }
@@ -65,8 +81,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         dto.SubResourceName = "CustomResource";
                     }
                 });
-                RegisterTypedRequestFilter<IHasSharedProperty>((req, res, dtoInterface) => {
-                    dtoInterface.SharedProperty = "Is Shared";    
+                RegisterTypedRequestFilter<IHasSharedProperty>((req, res, dtoInterface) =>
+                {
+                    dtoInterface.SharedProperty = "Is Shared";
+                });
+                RegisterTypedResponseFilter<IClearLongId>((req, res, dtoInterface) =>
+                {
+                    dtoInterface.Id = 0;
                 });
             }
         }
@@ -112,6 +133,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var response2 = client.Get(new ResourceType2 { TenantName = "tennant" });
             Assert.That(response2.SharedProperty, Is.EqualTo("Is Shared"));
+        }
+
+        [Test]
+        public void Does_execute_requestDto_interfaces_TypedResponsefilters()
+        {
+            var client = new JsonServiceClient(Config.ListeningOn);
+
+            var response1 = client.Get(new TypedResponseFilter1 { Id = 1 });
+            Assert.That(response1.Id, Is.EqualTo(0));
         }
     }
 }
