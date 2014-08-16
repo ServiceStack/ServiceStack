@@ -49,7 +49,7 @@ To take advantage of this feature [Upgrade or Install ServiceStackVS](https://gi
 
 ## Improved PCL Story
 
-Our [PCL Story](https://github.com/ServiceStackApps/Hello) has been greatly improved in this release now that `ServiceStack.Interfaces` has been converted into a pure PCL dll. This now lets you maintain your server DTO's in a pure PCL DLL that can be shared as-is on most supported platforms (Profile136):
+Our [PCL Story](https://github.com/ServiceStackApps/HelloMobile) has been greatly improved in this release now that `ServiceStack.Interfaces` has been converted into a pure PCL dll. This now lets you maintain your server DTO's in a pure PCL DLL that can be shared as-is on most supported platforms (Profile136):
 
  - Xamarin.iOS
  - Xamarin.Android
@@ -65,7 +65,7 @@ As of this release all PCL, platform and Silverlight dlls are now merged into th
 Install-Package ServiceStack.Client
 ``` 
 
-The [Hello PCL](https://github.com/ServiceStackApps/Hello) project now contains examples of reusing a Server DTO project with all supported client platforms as well as showing re-use of a high-level `SharedGateway` which referenes `ServiceStack.Client` that's shared between all PCL-compatible platforms. 
+The [Hello PCL](https://github.com/ServiceStackApps/HelloMobile) project now contains examples of reusing a Server DTO project with all supported client platforms as well as showing re-use of a high-level `SharedGateway` which referenes `ServiceStack.Client` that's shared between all PCL-compatible platforms. 
 
 ### New ServiceStack + AngularJS Example - [StackApis](http://stackapis.servicestack.net)
 
@@ -504,7 +504,7 @@ AutoQuery also benefits from just being normal ServiceStack Services where you c
  - AutoQuery services can be mapped to any [user-defined route](https://github.com/ServiceStack/ServiceStack/wiki/Routing)
  - Is available in all [registered formats](https://github.com/ServiceStack/ServiceStack/wiki/Formats)
    - The [CSV Format](https://github.com/ServiceStack/ServiceStack/wiki/ServiceStack-CSV-Format) especially shines in AutoQuery who's tabular result-set are perfect for CSV
- - Can be [consumed from typed Service Clients](https://github.com/ServiceStack/ServiceStack/wiki/Clients-overview) allowing an end-to-end API without code-gen in [PCL client platforms as well](https://github.com/ServiceStack/Hello)
+ - Can be [consumed from typed Service Clients](https://github.com/ServiceStack/ServiceStack/wiki/Clients-overview) allowing an end-to-end API without code-gen in [PCL client platforms as well](https://github.com/ServiceStackApps/HelloMobile)
 
 ### Getting Started
 
@@ -1089,7 +1089,7 @@ Detailed command logging is now enabled in OrmLite and Redis when `debugEnabled=
 
  - Change Silverlight to auto emulate HTTP Verbs for non GET or POST requests
  - Shorter aliases added on `PostFileWithRequest` which uses the Request DTO's auto-generated url
- - The [PCL version of ServiceStack.Interfaces](https://github.com/ServiceStack/Hello) now supports a min version of .NET 4.0
+ - The [PCL version of ServiceStack.Interfaces](https://github.com/ServiceStackApps/HelloMobile) now supports a min version of .NET 4.0
 
 ## OrmLite
 
@@ -2662,7 +2662,7 @@ New in this release:
 
 The biggest feature of this release is the release of the new Portable Client NuGet packages:
 
-[![Portable Class Library Support](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/hello-pcl.png)](https://github.com/ServiceStack/Hello)
+[![Portable Class Library Support](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/hello-pcl.png)](https://github.com/ServiceStackApps/HelloMobile)
 
   - ServiceStack.Interfaces.Pcl
     - PCL Profiles: iOS, Android, Windows8, .NET 4.5, Silverlight5, WP8
@@ -2673,7 +2673,7 @@ The biggest feature of this release is the release of the new Portable Client Nu
     - PCL Profiles: iOS, Android, Windows8, .NET 4.5
     - Custom builds: Silverlight 5
 
-This now allows sharing binaries between the above platforms. To illustrate this a new [Hello Repository](https://github.com/ServiceStack/Hello) was created to show how to use the same portable class libraries and DTO's across the different client platforms above.
+This now allows sharing binaries between the above platforms. To illustrate this a new [Hello Repository](https://github.com/ServiceStackApps/HelloMobile) was created to show how to use the same portable class libraries and DTO's across the different client platforms above.
 
 #### Breaking Changes
 
