@@ -47,6 +47,7 @@ namespace ServiceStack.Host.Handlers
         public StaticFileHandler()
         {
             BufferSize = DefaultBufferSize;
+            RequestName = GetType().Name; //Always allow StaticFileHandlers
         }
 
         public override void ProcessRequest(HttpContextBase context)
