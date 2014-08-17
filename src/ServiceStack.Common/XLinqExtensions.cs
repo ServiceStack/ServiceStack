@@ -5,7 +5,7 @@
 // Authors:
 //   Demis Bellot (demis.bellot@gmail.com)
 //
-// Copyright 2013 Service Stack LLC. All Rights Reserved.
+// Copyright 2014 Service Stack LLC. All Rights Reserved.
 //
 // Licensed under the same terms of reddis and ServiceStack: new BSD license.
 //
