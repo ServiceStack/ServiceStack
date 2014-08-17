@@ -9,7 +9,7 @@
     <summary>Opensource .NET and Mono REST Web Services framework</summary>
     <description>
       Binaries for the ServiceStack web framework.
-      Visit http://mono.servicestack.net/ServiceStack.Hello/
+      Visit https://github.com/ServiceStack/ServiceStack/wiki/Creating-your-first-project
       and https://github.com/ServiceStack/ServiceStack/wiki/Create-your-first-webservice
       for walk throughs and docs on creating your first web service.
     </description>
