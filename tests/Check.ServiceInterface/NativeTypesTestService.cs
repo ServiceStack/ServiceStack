@@ -33,7 +33,12 @@ namespace Check.ServiceInterface
 
         public object Any(HelloAllTypes request)
         {
-            return new HelloAllTypesResponse { AllTypes = request.AllTypes, Result = request.Name };
+            return new HelloAllTypesResponse
+            {
+                AllTypes = request.AllTypes,
+                AllCollectionTypes = request.AllCollectionTypes, 
+                Result = request.Name
+            };
         }
 
         public object Any(HelloString request)

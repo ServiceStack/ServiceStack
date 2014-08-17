@@ -85,12 +85,14 @@ namespace Check.ServiceModel.Operations
     {
         public string Name { get; set; }
         public AllTypes AllTypes { get; set; }
+        public AllCollectionTypes AllCollectionTypes { get; set; }
     }
 
     public class HelloAllTypesResponse
     {
         public string Result { get; set; }
         public AllTypes AllTypes { get; set; }
+        public AllCollectionTypes AllCollectionTypes { get; set; }
     }
 
     public class HelloString
@@ -204,6 +206,23 @@ namespace Check.ServiceModel.Types
         public Dictionary<string, string> StringMap { get; set; }
         public Dictionary<int, string> IntStringMap { get; set; }
         public SubType SubType { get; set; }
+    }
+
+    public class AllCollectionTypes
+    {
+        public int[] IntArray { get; set; }
+        public List<int> IntList { get; set; }
+
+        public string[] StringArray { get; set; }
+        public List<string> StringList { get; set; }
+
+        public Poco[] PocoArray { get; set; }
+        public List<Poco> PocoList { get; set; }
+    }
+
+    public class Poco
+    {
+        public string Name { get; set; }
     }
 
     public class HelloBase

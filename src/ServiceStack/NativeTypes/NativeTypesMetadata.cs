@@ -119,6 +119,9 @@ namespace ServiceStack.NativeTypes
                 || ignoreNamespaces.Contains(t.Namespace);
 
             Action<Type> registerTypeFn = t => {
+                if (t.IsArray || t == typeof(Array))
+                    return;
+
                 considered.Add(t);
                 queue.Enqueue(t);
                 if (t.IsUserType())
