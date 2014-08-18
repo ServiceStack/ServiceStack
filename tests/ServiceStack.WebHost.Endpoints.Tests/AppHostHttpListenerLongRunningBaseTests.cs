@@ -149,7 +149,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             webReq.Accept = "*/*";
             using (var webRes = webReq.GetResponse())
             {
-                Assert.That(webRes.ContentType, Is.StringStarting(MimeTypes.Json));
+                Assert.That(webRes.ContentType, Is.StringStarting(MimeTypes.JavaScript));
                 response = webRes.ReadToEnd();
             }
 
