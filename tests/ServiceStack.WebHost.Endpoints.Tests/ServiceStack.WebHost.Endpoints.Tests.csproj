@@ -370,6 +370,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Issues\" />
     <Folder Include="ServiceModel\" />
   </ItemGroup>
   <ItemGroup>
