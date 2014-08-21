@@ -109,6 +109,7 @@
     <Compile Include="Serialization\XmlSerializableSerializer.Deserialize.cs" />
     <Compile Include="Serialization\XmlSerializableSerializer.cs" />
     <Compile Include="Serialization\XmlSerializableWrapper.cs" />
+    <Compile Include="ServerEventsClient.cs" />
     <Compile Include="ServiceClientBase.cs" />
     <Compile Include="Soap11ServiceClient.cs" />
     <Compile Include="Soap12ServiceClient.cs" />

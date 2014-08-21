@@ -196,6 +196,7 @@
     <Compile Include="RestHandlerTests.cs" />
     <Compile Include="RouteInferenceTests.cs" />
     <Compile Include="RuntimeAttributeTests.cs" />
+    <Compile Include="ServerEventTests.cs" />
     <Compile Include="ServiceClientsBuiltInResponseTests.cs" />
     <Compile Include="SessionTests.cs" />
     <Compile Include="Support\Services\EchoService.cs" />

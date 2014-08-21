@@ -113,7 +113,9 @@
     <Compile Include="CompressedResult.cs" />
     <Compile Include="Configuration\TextFileSettings.cs" />
     <Compile Include="NativeTypesFeature.cs" />
-    <Compile Include="NativeTypes\NativeTypesMetadata.cs" />
+    <Compile Include="NativeTypes\NativeTypesMetadata.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="NativeTypes\NativeTypesService.cs" />
     <Compile Include="NativeTypes\CSharp\CSharpGenerator.cs" />
     <Compile Include="NativeTypes\StringBuilderWrapper.cs" />
