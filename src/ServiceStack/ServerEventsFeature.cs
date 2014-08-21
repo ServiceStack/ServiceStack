@@ -104,7 +104,7 @@ namespace ServiceStack
             {
                 CreatedAt = now,
                 LastPulseAt = now,
-                Channel = req.QueryString["channel"] ?? req.OperationName,
+                Channel = req.QueryString["channel"] ?? EventSubscription.UnknownChannel,
                 SubscriptionId = subscriptionId,
                 UserId = userId,
                 UserName = session != null ? session.UserName : null,
@@ -121,8 +121,6 @@ namespace ServiceStack
             if (feature.OnCreated != null)
                 feature.OnCreated(subscription, req);
 
-            req.TryResolve<IServerEvents>().Register(subscription);
-
             var heartbeatUrl = req.ResolveAbsoluteUrl("~/".CombineWith(feature.HeartbeatPath))
                 .AddQueryParam("id", subscriptionId);
             var unRegisterUrl = req.ResolveAbsoluteUrl("~/".CombineWith(feature.UnRegisterPath))
@@ -137,6 +135,8 @@ namespace ServiceStack
                 feature.OnConnect(subscription, privateArgs);
 
             subscription.Publish("cmd.onConnect", privateArgs);
+
+            req.TryResolve<IServerEvents>().Register(subscription);
 
             var tcs = new TaskCompletionSource<bool>();
 
@@ -236,6 +236,7 @@ namespace ServiceStack
     public class EventSubscription : IEventSubscription
     {
         private static ILog Log = LogManager.GetLogger(typeof(EventSubscription));
+        public static string UnknownChannel = "*";
 
         private readonly IResponse response;
         private long msgId;
@@ -340,7 +341,6 @@ namespace ServiceStack
         public static int DefaultArraySize = 2;
         public static int ReSizeMultiplier = 2;
         public static int ReSizeBuffer = 20;
-        const string UnknownChannel = "*";
 
         public TimeSpan Timeout { get; set; }
 
@@ -348,17 +348,25 @@ namespace ServiceStack
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
         public bool NotifyChannelOfSubscriptions { get; set; }
 
+        public ConcurrentDictionary<string, IEventSubscription[]> Subcriptions;
+        public ConcurrentDictionary<string, IEventSubscription[]> ChannelSubcriptions;
+        public ConcurrentDictionary<string, IEventSubscription[]> UserIdSubcriptions;
+        public ConcurrentDictionary<string, IEventSubscription[]> UserNameSubcriptions;
+        public ConcurrentDictionary<string, IEventSubscription[]> SessionSubcriptions;
 
-        public ConcurrentDictionary<string, IEventSubscription[]> Subcriptions =
-           new ConcurrentDictionary<string, IEventSubscription[]>();
-        public ConcurrentDictionary<string, IEventSubscription[]> ChannelSubcriptions =
-           new ConcurrentDictionary<string, IEventSubscription[]>();
-        public ConcurrentDictionary<string, IEventSubscription[]> UserIdSubcriptions =
-           new ConcurrentDictionary<string, IEventSubscription[]>();
-        public ConcurrentDictionary<string, IEventSubscription[]> UserNameSubcriptions =
-           new ConcurrentDictionary<string, IEventSubscription[]>();
-        public ConcurrentDictionary<string, IEventSubscription[]> SessionSubcriptions =
-           new ConcurrentDictionary<string, IEventSubscription[]>();
+        public MemoryServerEvents()
+        {
+            Reset();
+        }
+
+        public void Reset()
+        {
+            Subcriptions = new ConcurrentDictionary<string, IEventSubscription[]>();
+            ChannelSubcriptions = new ConcurrentDictionary<string, IEventSubscription[]>();
+            UserIdSubcriptions = new ConcurrentDictionary<string, IEventSubscription[]>();
+            UserNameSubcriptions = new ConcurrentDictionary<string, IEventSubscription[]>();
+            SessionSubcriptions = new ConcurrentDictionary<string, IEventSubscription[]>();
+        }
 
         public void NotifyAll(string selector, object message)
         {
@@ -481,7 +489,7 @@ namespace ServiceStack
                 lock (subscription)
                 {
                     subscription.OnUnsubscribe = HandleUnsubscription;
-                    RegisterSubscription(subscription, subscription.Channel ?? UnknownChannel, ChannelSubcriptions);
+                    RegisterSubscription(subscription, subscription.Channel ?? EventSubscription.UnknownChannel, ChannelSubcriptions);
                     RegisterSubscription(subscription, subscription.SubscriptionId, Subcriptions);
                     RegisterSubscription(subscription, subscription.UserId, UserIdSubcriptions);
                     RegisterSubscription(subscription, subscription.UserName, UserNameSubcriptions);
@@ -588,7 +596,7 @@ namespace ServiceStack
         {
             lock (subscription)
             {
-                UnRegisterSubscription(subscription, subscription.Channel ?? UnknownChannel, ChannelSubcriptions);
+                UnRegisterSubscription(subscription, subscription.Channel ?? EventSubscription.UnknownChannel, ChannelSubcriptions);
                 UnRegisterSubscription(subscription, subscription.SubscriptionId, Subcriptions);
                 UnRegisterSubscription(subscription, subscription.UserId, UserIdSubcriptions);
                 UnRegisterSubscription(subscription, subscription.UserName, UserNameSubcriptions);
@@ -634,5 +642,54 @@ namespace ServiceStack
         List<Dictionary<string, string>> GetSubscriptions(string channel = null);
 
         void Pulse(string id);
+
+        // Clear all Registrations
+        void Reset();
+    }
+
+    static class Selector
+    {
+        public static string Id(Type type)
+        {
+            return "cmd." + type.Name;
+        }
+
+        public static string Id<T>()
+        {
+            return "cmd." + typeof(T).Name;
+        }
+    }
+
+    public static class ServerEventExtensions
+    {
+        public static void NotifyAll(this IServerEvents server, object message)
+        {
+            server.NotifyAll(Selector.Id(message.GetType()), message);
+        }
+
+        public static void NotifyChannel(this IServerEvents server, string channel, object message)
+        {
+            server.NotifyChannel(channel, Selector.Id(message.GetType()), message);
+        }
+
+        public static void NotifySubscription(this IServerEvents server, string subscriptionId, object message, string channel = null)
+        {
+            server.NotifySubscription(subscriptionId, Selector.Id(message.GetType()), message, channel);
+        }
+
+        public static void NotifyUserId(this IServerEvents server, string userId, string selector, object message, string channel = null)
+        {
+            server.NotifyUserId(userId, Selector.Id(message.GetType()), message, channel);
+        }
+
+        public static void NotifyUserName(this IServerEvents server, string userName, string selector, object message, string channel = null)
+        {
+            server.NotifyUserName(userName, Selector.Id(message.GetType()), message, channel);
+        }
+
+        public static void NotifySession(this IServerEvents server, string sspid, string selector, object message, string channel = null)
+        {
+            server.NotifySession(sspid, Selector.Id(message.GetType()), message, channel);
+        }
     }
 }
