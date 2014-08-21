@@ -83,7 +83,7 @@ namespace ServiceStack
             httpReq = (HttpWebRequest)WebRequest.Create(EventStreamUri);
             //httpReq.AllowReadStreamBuffering = false; //.NET v4.5
 
-            var response = httpReq.GetResponse();
+            var response = PclExport.Instance.GetResponse(httpReq);
             var stream = response.GetResponseStream();
 
             buffer = new byte[BufferSize];
