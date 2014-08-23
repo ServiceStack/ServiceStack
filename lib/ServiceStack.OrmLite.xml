@@ -506,6 +506,18 @@
             <para>db.Column&lt;int&gt;(db.From&lt;Persion&gt;().Select(x => x.LastName).Where(q => q.Age == 27))</para>
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.ColumnLazy``1(System.Data.IDbConnection,System.String,System.Object)">
+            <summary>
+            Returns the first column in a List using a SqlFormat query. E.g:
+            <para>db.ColumnLazy&lt;string&gt;("SELECT LastName FROM Person WHERE Age = @age", new { age = 27 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.ColumnLazy``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression)">
+            <summary>
+            Returns the distinct first column values in a HashSet using an SqlExpression. E.g:
+            <para>db.ColumnLazy&lt;int&gt;(db.From&lt;Persion&gt;().Select(x => x.LastName).Where(q => q.Age == 27))</para>
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadConnectionExtensions.Column``1(System.Data.IDbConnection,System.String,System.Object)">
             <summary>
             Returns the first column in a List using a SqlFormat query. E.g:
