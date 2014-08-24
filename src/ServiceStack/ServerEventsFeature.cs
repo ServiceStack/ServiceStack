@@ -160,7 +160,12 @@ namespace ServiceStack
 
         public override Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
         {
-            req.TryResolve<IServerEvents>().Pulse(req.QueryString["id"]);
+            var subscriptionId = req.QueryString["id"];
+            if (!req.TryResolve<IServerEvents>().Pulse(subscriptionId))
+            {
+                res.StatusCode = 404;
+                res.StatusDescription = "Subscription {0} does not exist".Fmt(subscriptionId);
+            }
             res.EndHttpHandlerRequest(skipHeaders: true);
             return EmptyTask;
         }
@@ -432,11 +437,13 @@ namespace ServiceStack
             }
         }
 
-        public void Pulse(string id)
+        public bool Pulse(string id)
         {
             var sub = GetSubscription(id);
-            if (sub == null) return;
+            if (sub == null) 
+                return false;
             sub.Pulse();
+            return true;
         }
 
         public IEventSubscription GetSubscription(string id)
@@ -641,13 +648,13 @@ namespace ServiceStack
 
         List<Dictionary<string, string>> GetSubscriptions(string channel = null);
 
-        void Pulse(string id);
+        bool Pulse(string id);
 
         // Clear all Registrations
         void Reset();
     }
 
-    static class Selector
+    public static class Selector
     {
         public static string Id(Type type)
         {
@@ -677,17 +684,17 @@ namespace ServiceStack
             server.NotifySubscription(subscriptionId, Selector.Id(message.GetType()), message, channel);
         }
 
-        public static void NotifyUserId(this IServerEvents server, string userId, string selector, object message, string channel = null)
+        public static void NotifyUserId(this IServerEvents server, string userId, object message, string channel = null)
         {
             server.NotifyUserId(userId, Selector.Id(message.GetType()), message, channel);
         }
 
-        public static void NotifyUserName(this IServerEvents server, string userName, string selector, object message, string channel = null)
+        public static void NotifyUserName(this IServerEvents server, string userName, object message, string channel = null)
         {
             server.NotifyUserName(userName, Selector.Id(message.GetType()), message, channel);
         }
 
-        public static void NotifySession(this IServerEvents server, string sspid, string selector, object message, string channel = null)
+        public static void NotifySession(this IServerEvents server, string sspid, object message, string channel = null)
         {
             server.NotifySession(sspid, Selector.Id(message.GetType()), message, channel);
         }
