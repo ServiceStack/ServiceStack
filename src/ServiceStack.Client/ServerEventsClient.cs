@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -36,12 +37,13 @@ namespace ServiceStack
         public string Selector { get; set; }
         public string Json { get; set; }
         public string Op { get; set; }
+        public string Target { get; set; }
         public string CssSelector { get; set; }
 
         public Dictionary<string, string> Meta { get; set; }
     }
 
-    public class ServerEventsClient : IDisposable
+    public partial class ServerEventsClient : IDisposable
     {
         private static ILog log = LogManager.GetLogger(typeof(ServerEventsClient));
 
@@ -53,6 +55,7 @@ namespace ServiceStack
 
         HttpWebRequest httpReq;
         CancellationTokenSource cancel;
+        private ITimer heartbeatTimer;
 
         public ServerEventConnect ConnectionInfo { get; private set; }
 
@@ -67,6 +70,7 @@ namespace ServiceStack
         public Action<ServerEventConnect> OnConnect;
         public Action<ServerEventMessage> OnCommand;
         public Action<ServerEventMessage> OnMessage;
+        public Action OnHeartbeat;
         public Action<Exception> OnException;
 
         public ServerEventsClient(string baseUri, string channel=null)
@@ -76,10 +80,18 @@ namespace ServiceStack
                 this.EventStreamUri = this.EventStreamUri.AddQueryParam("channel", channel);
 
             this.ServiceClient = new JsonServiceClient(baseUri);
+
+            this.Resolver = new NewInstanceResolver();
+            this.ReceiverTypes = new List<Type>();
+            this.Handlers = new Dictionary<string, ServerEventCallback>();
+            this.NamedReceivers = new Dictionary<string, ServerEventCallback>();
         }
 
         public ServerEventsClient Start()
         {
+            if (log.IsDebugEnabled)
+                log.DebugFormat("Start()");
+
             httpReq = (HttpWebRequest)WebRequest.Create(EventStreamUri);
             //httpReq.AllowReadStreamBuffering = false; //.NET v4.5
 
@@ -88,9 +100,14 @@ namespace ServiceStack
 
             buffer = new byte[BufferSize];
             cancel = new CancellationTokenSource();
-            connectTcs = new TaskCompletionSource<ServerEventConnect>();
-            commandTcs = new TaskCompletionSource<ServerEventCommand>();
-            messageTcs = new TaskCompletionSource<ServerEventMessage>();
+
+            //maintain existing tcs so reconnecting is transparent
+            if (connectTcs == null || connectTcs.Task.IsCompleted)
+                connectTcs = new TaskCompletionSource<ServerEventConnect>();
+            if (commandTcs == null || commandTcs.Task.IsCompleted)
+                commandTcs = new TaskCompletionSource<ServerEventCommand>();
+            if (messageTcs == null || messageTcs.Task.IsCompleted)
+                messageTcs = new TaskCompletionSource<ServerEventMessage>();
 
             ProcessResponse(stream);
 
@@ -103,30 +120,29 @@ namespace ServiceStack
             if (httpReq == null)
                 Start();
 
+            Contract.Assert(!connectTcs.Task.IsCompleted);
             return connectTcs.Task;
         }
 
         private TaskCompletionSource<ServerEventCommand> commandTcs;
         public Task<ServerEventCommand> WaitForNextCommand()
         {
+            Contract.Assert(!commandTcs.Task.IsCompleted);
             return commandTcs.Task;
         }
 
         private TaskCompletionSource<ServerEventMessage> messageTcs;
         public Task<ServerEventMessage> WaitForNextMessage()
         {
-            if (messageTcs.Task.IsCompleted)
-            {
-                log.WarnFormat("WaitForNextMessage Already Completed: {0}", messageTcs.Task.Result.EventId);
-            }
-
+            Contract.Assert(!messageTcs.Task.IsCompleted);
             return messageTcs.Task;
         }
 
         protected void OnConnectReceived()
         {
             if (log.IsDebugEnabled)
-                log.DebugFormat("OnConnectReceived: {0} on #{1}", ConnectionInfo.EventId, ConnectionInfo.DisplayName);
+                log.DebugFormat("OnConnectReceived: {0} on #{1} / {2}", 
+                    ConnectionInfo.EventId, ConnectionInfo.DisplayName, ConnectionInfo.Id);
 
             var hold = connectTcs;
             connectTcs = new TaskCompletionSource<ServerEventConnect>();
@@ -135,6 +151,54 @@ namespace ServiceStack
                 OnConnect(ConnectionInfo);
 
             hold.SetResult(ConnectionInfo);
+
+            StartNewHeartbeat();
+        }
+
+        private void StartNewHeartbeat()
+        {
+            if (string.IsNullOrEmpty(ConnectionInfo.HeartbeatUrl)) return;
+
+            if (heartbeatTimer != null)
+                heartbeatTimer.Cancel();
+
+            heartbeatTimer = PclExportClient.Instance.CreateTimer(Heartbeat,
+                TimeSpan.FromMilliseconds(ConnectionInfo.HeartbeatIntervalMs), this);
+        }
+
+        protected void Heartbeat(object state)
+        {
+            if (cancel.IsCancellationRequested)
+                return;
+
+            EnsureSynchronizationContext();
+
+            ConnectionInfo.HeartbeatUrl.GetStringFromUrlAsync()
+                .Success(t => {
+                    if (OnHeartbeat != null)
+                        OnHeartbeat(); //mainly for testing
+
+                    if (log.IsDebugEnabled)
+                        log.DebugFormat("Heartbeat sent to: " + ConnectionInfo.HeartbeatUrl);
+
+                    StartNewHeartbeat();
+                })
+                .Error(ex => {
+                    if (log.IsDebugEnabled)
+                        log.DebugFormat("Error from Heartbeat: {0}", ex.UnwrapIfSingleException().Message);
+                    OnExceptionReceived(ex);
+                });
+        }
+
+        private static void EnsureSynchronizationContext()
+        {
+            if (SynchronizationContext.Current != null) return;
+            
+            //Unit test runner
+            if (log.IsDebugEnabled)
+                log.DebugFormat("SynchronizationContext.Current == null");
+
+            SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
         }
 
         protected void OnCommandReceived(ServerEventCommand e)
@@ -165,17 +229,49 @@ namespace ServiceStack
             hold.SetResult(e);
         }
 
+        private int errorsCount;
         protected void OnExceptionReceived(Exception ex)
         {
+            errorsCount++;
+
             ex = ex.UnwrapIfSingleException();
+            log.Error("OnExceptionReceived: {0} on #{1}".Fmt(ex.Message, ConnectionInfo.DisplayName), ex);
 
             if (OnException != null)
                 OnException(ex);
 
-            if (ConnectionInfo == null)
-                connectTcs.SetException(ex);
+            Restart();
+        }
 
-            messageTcs.SetException(ex);
+        private void Restart()
+        {
+            try
+            {
+                Stop();
+                SleepBackOffMultiplier(errorsCount);
+                Start();
+            }
+            catch (Exception ex)
+            {
+                log.Error("Error whilst restarting: {0}".Fmt(ex.Message), ex);
+            }
+        }
+
+        readonly Random rand = new Random(Environment.TickCount);
+        private void SleepBackOffMultiplier(int continuousErrorsCount)
+        {
+            if (continuousErrorsCount <= 1) return;
+            const int MaxSleepMs = 60 * 1000;
+
+            //exponential/random retry back-off.
+            var nextTry = Math.Min(
+                rand.Next((int)Math.Pow(continuousErrorsCount, 3), (int)Math.Pow(continuousErrorsCount + 1, 3) + 1),
+                MaxSleepMs);
+
+            if (log.IsDebugEnabled)
+                log.Debug("Sleeping for {0}ms after {1} continuous errors".Fmt(nextTry, continuousErrorsCount));
+
+            Thread.Sleep(nextTry);
         }
 
         private string overflowText = "";
@@ -198,6 +294,8 @@ namespace ServiceStack
                     httpReq = null;
                     return;
                 }
+
+                errorsCount = 0;
 
                 int len = task.Result;
                 if (len > 0)
@@ -222,6 +320,12 @@ namespace ServiceStack
                     overflowText = text;
 
                     ProcessResponse(stream);
+                }
+                else
+                {
+                    if (log.IsDebugEnabled)
+                        log.DebugFormat("Connection ended on {0}", 
+                            ConnectionInfo != null ? ConnectionInfo.DisplayName : null);
                 }
             });
         }
@@ -257,8 +361,6 @@ namespace ServiceStack
             e.Selector = parts[0];
             e.Json = parts[1];
 
-            //"Message Received: ".Fmt(e.Selector);
-
             if (!string.IsNullOrEmpty(e.Selector))
             {
                 parts = e.Selector.SplitOnFirst('.');
@@ -266,13 +368,13 @@ namespace ServiceStack
                 var target = parts[1].Replace("%20", " ");
 
                 var tokens = target.SplitOnFirst('$');
-                var cmd = tokens[0];
+                e.Target = tokens[0];
                 if (tokens.Length > 1)
                     e.CssSelector = tokens[1];
 
                 if (e.Op == "cmd")
                 {
-                    switch (cmd)
+                    switch (e.Target)
                     {
                         case "onConnect":
                             ProcessOnConnectMessage(e);
@@ -284,8 +386,20 @@ namespace ServiceStack
                             ProcessOnLeaveMessage(e);
                             return;
                         default:
+                            ServerEventCallback cb;
+                            if (Handlers.TryGetValue(e.Target, out cb))
+                            {
+                                cb(this, e);
+                            }
                             break;
                     }
+                }
+
+                ServerEventCallback receiver;
+                NamedReceivers.TryGetValue(e.Op, out receiver);
+                if (receiver != null)
+                {
+                    receiver(this, e);
                 }
             }
 
@@ -329,18 +443,29 @@ namespace ServiceStack
             OnCommandReceived(leaveMsg);
         }
 
-        public void Dispose()
+        public virtual void Stop()
         {
-            if (cancel != null)
-                cancel.Cancel();
+            if (log.IsDebugEnabled)
+                log.DebugFormat("Stop()");
+
+            cancel.Cancel();
 
             if (ConnectionInfo != null && ConnectionInfo.UnRegisterUrl != null)
             {
-                ConnectionInfo.UnRegisterUrl.GetStringFromUrlAsync();
+                EnsureSynchronizationContext();
+                ConnectionInfo.UnRegisterUrl.GetStringFromUrlAsync()
+                    .Error(ex => { /*ignore*/});
             }
-   
-            cancel = null;
+
             httpReq = null;
+        }
+
+        public void Dispose()
+        {
+            if (log.IsDebugEnabled)
+                log.DebugFormat("Dispose()");
+
+            Stop();
         }
     }
 
@@ -363,6 +488,15 @@ namespace ServiceStack
             }
 
             return dst;
+        }
+
+        public static ServerEventsClient RegisterHandlers(this ServerEventsClient client, Dictionary<string, ServerEventCallback> handlers)
+        {
+            foreach (var entry in handlers)
+            {
+                client.Handlers[entry.Key] = entry.Value;
+            }
+            return client;
         }
     }
 }
