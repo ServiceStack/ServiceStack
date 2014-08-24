@@ -166,7 +166,8 @@ namespace ServiceStack
 
         private void StartNewHeartbeat()
         {
-            if (string.IsNullOrEmpty(ConnectionInfo.HeartbeatUrl)) return;
+            if (string.IsNullOrEmpty(ConnectionInfo.HeartbeatUrl)) 
+                return;
 
             if (heartbeatTimer != null)
                 heartbeatTimer.Cancel();
@@ -184,6 +185,9 @@ namespace ServiceStack
 
             ConnectionInfo.HeartbeatUrl.GetStringFromUrlAsync()
                 .Success(t => {
+                    if (cancel.IsCancellationRequested)
+                        return;
+
                     if (OnHeartbeat != null)
                         OnHeartbeat(); //mainly for testing
 
@@ -193,6 +197,9 @@ namespace ServiceStack
                     StartNewHeartbeat();
                 })
                 .Error(ex => {
+                    if (cancel.IsCancellationRequested)
+                        return;
+
                     if (log.IsDebugEnabled)
                         log.DebugFormat("Error from Heartbeat: {0}", ex.UnwrapIfSingleException().Message);
                     OnExceptionReceived(ex);
@@ -258,7 +265,8 @@ namespace ServiceStack
             {
                 Stop();
                 SleepBackOffMultiplier(errorsCount)
-                    .ContinueWith(t => Start());
+                    .ContinueWith(t =>
+                        Start());
             }
             catch (Exception ex)
             {
@@ -318,6 +326,7 @@ namespace ServiceStack
                         if (text == "\n")
                         {
                             ProcessEventMessage(currentMsg);
+                            currentMsg = null;
                             text = "";
                             break;
                         }
@@ -468,6 +477,7 @@ namespace ServiceStack
                     .Error(ex => { /*ignore*/});
             }
 
+            ConnectionInfo = null;
             httpReq = null;
         }
 

@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Configuration;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -141,11 +144,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class ServerEventsAppHost : AppSelfHostBase
     {
         public ServerEventsAppHost()
-            : base(typeof(ServerEventsAppHost).Name, typeof(ServerEventsAppHost).Assembly) {}
+            : base(typeof(ServerEventsAppHost).Name, typeof(ServerEventsAppHost).Assembly) { }
 
         public override void Configure(Container container)
         {
-            Plugins.Add(new ServerEventsFeature {
+            Plugins.Add(new ServerEventsFeature
+            {
                 HeartbeatInterval = TimeSpan.FromMilliseconds(200),
             });
         }
@@ -368,48 +372,93 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 };
                 client1.Start();
 
-                await tcs.Task.WaitAsync();
+                await tcs.Task.WaitAsync(4000);
 
                 Assert.That(heartbeats, Is.GreaterThanOrEqualTo(2));
             }
         }
 
+        private static void EnsureSynchronizationContext()
+        {
+            if (SynchronizationContext.Current != null) return;
+
+            SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+        }
+
+        [Test]
+        public async Task GetStringFromUrlAsync_does_throw_error()
+        {
+            EnsureSynchronizationContext();
+
+            var heartbeatUrl = Config.AbsoluteBaseUri.CombineWith("event-heartbeat")
+                .AddQueryParam("id", "unknown");
+
+            var task = heartbeatUrl.GetStringFromUrlAsync()
+            .Success(t =>
+            {
+                "Was success".Print();
+                Assert.Fail("Should Error");
+            })
+            .Error(ex =>
+            {
+                "Was error".Print();
+            })
+            .ContinueWith(t =>
+            {
+                "was cancelled".Print();
+                Assert.Fail("Should Error");
+            }, TaskContinuationOptions.OnlyOnCanceled)
+            ;
+
+            if (task != await Task.WhenAny(task, Task.Delay(2000)))
+                throw new TimeoutException();
+        }
+
         [Test]
         public async Task Does_reconnect_on_lost_connection()
         {
-            using (var client1 = CreateServerEventsClient())
+            try
             {
-                var serverEvents = appHost.TryResolve<IServerEvents>();
-                var msgs = new List<ServerEventMessage>();
-
-                client1.OnMessage = msgs.Add;
-
-                await client1.Connect();
-
-                var msgTask = client1.WaitForNextMessage();
-
-                client1.PostChat("msg1 from client1");
-
-                var msg1 = await msgTask.WaitAsync();
-
-                msgTask = client1.WaitForNextMessage();
-
-                serverEvents.Reset(); //Dispose all existing subscriptions
-
-                using (var client2 = CreateServerEventsClient())
+                using (var client1 = CreateServerEventsClient())
                 {
-                    await client2.Connect();
+                    var serverEvents = appHost.TryResolve<IServerEvents>();
+                    var msgs = new List<ServerEventMessage>();
 
-                    await Task.WhenAny(client1.Connect(), Task.Delay(1000));
+                    client1.OnMessage = msgs.Add;
 
-                    client2.PostChat("msg2 from client2");
+                    await client1.Connect();
+
+                    var msgTask = client1.WaitForNextMessage();
+
+                    client1.PostChat("msg1 from client1");
+
+                    var msg1 = await msgTask.WaitAsync();
+
+                    msgTask = client1.WaitForNextMessage();
+
+                    serverEvents.Reset(); //Dispose all existing subscriptions
+
+                    using (var client2 = CreateServerEventsClient())
+                    {
+                        await client2.Connect();
+
+                        await Task.WhenAny(client1.Connect(), Task.Delay(1000));
+
+                        client2.PostChat("msg2 from client2");
+                    }
+
+                    "Waiting for 30s...".Print();
+                    var msg2 = await msgTask.WaitAsync(2000);
+
+                    var chatMsg2 = msg2.Json.FromJson<ChatMessage>();
+
+                    Assert.That(chatMsg2.Message, Is.EqualTo("msg2 from client2"));
                 }
-
-                var msg2 = await msgTask.WaitAsync(30000);
-
-                var chatMsg2 = msg2.Json.FromJson<ChatMessage>();
-
-                Assert.That(chatMsg2.Message, Is.EqualTo("msg2 from client2"));
+            }
+            catch (Exception ex)
+            {
+                ex.Message.Print();
+                throw;
             }
         }
 
