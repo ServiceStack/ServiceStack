@@ -372,7 +372,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 };
                 client1.Start();
 
-                await tcs.Task.WaitAsync(4000);
+                await tcs.Task.WaitAsync();
 
                 Assert.That(heartbeats, Is.GreaterThanOrEqualTo(2));
             }
