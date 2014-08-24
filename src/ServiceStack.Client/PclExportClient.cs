@@ -1704,13 +1704,13 @@ namespace ServiceStack
         {
         }
 
-        public virtual ITimer CreateTimer<TResponse>(AsyncState<TResponse> state, TimeSpan timeOut)
+        public virtual ITimer CreateTimer(TimerCallback cb, TimeSpan timeOut, object state)
         {
 #if PCL
-            return new Timer(state.TimedOut, state, (int)timeOut.TotalMilliseconds);
+            return new Timer(cb, state, (int)timeOut.TotalMilliseconds);
 #else
             return new AsyncTimer(new
-                System.Threading.Timer(state.TimedOut, state, (int)timeOut.TotalMilliseconds, Timeout.Infinite));
+                System.Threading.Timer(cb, state, (int)timeOut.TotalMilliseconds, Timeout.Infinite));
 #endif
         }
 

@@ -37,7 +37,7 @@ namespace ServiceStack
 
         internal static ITimer CreateTimer<TResponse>(this AsyncState<TResponse> state, TimeSpan timeOut)
         {
-            return PclExportClient.Instance.CreateTimer(state, timeOut);
+            return PclExportClient.Instance.CreateTimer(state.TimedOut, timeOut, state);
         }
 
         internal static void EndReadStream(this Stream stream)
