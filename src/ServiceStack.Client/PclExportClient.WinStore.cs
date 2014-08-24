@@ -31,9 +31,9 @@ namespace ServiceStack
             return HttpUtility.ParseQueryString(query).InWrapper();
         }
 
-        public override ITimer CreateTimer<TResponse>(AsyncState<TResponse> state, TimeSpan timeOut)
+        public override ITimer CreateTimer(TimerCallback cb, TimeSpan timeOut, object state)
         {
-            return new WinStoreAsyncTimer(ThreadPoolTimer.CreateTimer(state.TimedOut, timeOut));
+            return new WinStoreAsyncTimer(ThreadPoolTimer.CreateTimer(cb, timeOut));
         }
 
         public override void RunOnUiThread(Action fn)
