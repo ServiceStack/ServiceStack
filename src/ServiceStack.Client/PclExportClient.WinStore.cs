@@ -16,7 +16,7 @@ namespace ServiceStack
 
         public static PclExportClient Configure()
         {
-            Configure(Provider);
+            Configure(Provider ?? (Provider = new WinStorePclExportClient()));
             WinStorePclExport.Configure();
             return Provider;
         }
@@ -33,7 +33,7 @@ namespace ServiceStack
 
         public override ITimer CreateTimer(TimerCallback cb, TimeSpan timeOut, object state)
         {
-            return new WinStoreAsyncTimer(ThreadPoolTimer.CreateTimer(cb, timeOut));
+            return new WinStoreAsyncTimer(ThreadPoolTimer.CreateTimer(s => cb(s), timeOut));
         }
 
         public override void RunOnUiThread(Action fn)

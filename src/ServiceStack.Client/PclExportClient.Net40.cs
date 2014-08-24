@@ -17,7 +17,7 @@ namespace ServiceStack
 
         public static PclExportClient Configure()
         {
-            Configure(Provider);
+            Configure(Provider ?? (Provider = new Net40PclExportClient()));
             Net40PclExport.Configure();
             return Provider;
         }
@@ -53,10 +53,9 @@ namespace ServiceStack
         }
 
         public override ITimer CreateTimer(TimerCallback cb, TimeSpan timeOut, object state)
-
         {
             return new AsyncTimer(new
-                System.Threading.Timer(cb, state, (int)timeOut.TotalMilliseconds, Timeout.Infinite));
+                System.Threading.Timer(s => cb(s), state, (int)timeOut.TotalMilliseconds, Timeout.Infinite));
         }
     }
 

@@ -52,10 +52,10 @@ namespace ServiceStack
             return HttpUtility.HtmlDecode(html);
         }
 
-        public override ITimer CreateTimer<TResponse>(AsyncState<TResponse> state, TimeSpan timeOut)
+        public override ITimer CreateTimer(TimerCallback cb, TimeSpan timeOut, object state)
         {
             return new AsyncTimer(new
-                System.Threading.Timer(state.TimedOut, state, (int)timeOut.TotalMilliseconds, Timeout.Infinite));
+                System.Threading.Timer(s => cb(s), state, (int)timeOut.TotalMilliseconds, Timeout.Infinite));
         }
     }
 

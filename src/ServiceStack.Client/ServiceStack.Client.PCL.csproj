@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</ProjectGuid>
+    <ProjectGuid>{135808A7-CE69-4C32-BE30-25A8FFBF4A58}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ServiceStack</RootNamespace>
@@ -99,16 +99,16 @@
   <!--ItemGroup,Content-->
   <!--ItemGroup,None-->
   <ItemGroup>
-  <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-    <Project>{55942102-033A-4DA8-A6AF-1DB7B2F34A2D}</Project>
-    <Name>ServiceStack.Interfaces</Name>
-  </ProjectReference>
-</ItemGroup>
-<ItemGroup>
-  <Reference Include="ServiceStack.Text">
-    <HintPath>..\..\lib\pcl\ServiceStack.Text.dll</HintPath>
-  </Reference>
-</ItemGroup>
+    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
+      <Project>{55942102-033A-4DA8-A6AF-1DB7B2F34A2D}</Project>
+      <Name>ServiceStack.Interfaces</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="ServiceStack.Text">
+      <HintPath>..\..\lib\pcl\ServiceStack.Text.dll</HintPath>
+    </Reference>
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
