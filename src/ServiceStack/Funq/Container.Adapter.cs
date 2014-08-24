@@ -9,7 +9,7 @@ using System;
 
 namespace Funq
 {
-	public partial class Container
+	public partial class Container : IResolver
 	{
         public IContainerAdapter Adapter { get; set; }
 
