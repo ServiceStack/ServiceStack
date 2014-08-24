@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
-using ServiceStack.Logging;
+using ServiceStack.Configuration;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -39,6 +39,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Channel { get; set; }
         public string Message { get; set; }
         public string Selector { get; set; }
+    }
+
+    [Route("/channels/{Channel}/object")]
+    public class PostObjectToChannel
+    {
+        public string ToUserId { get; set; }
+        public string Channel { get; set; }
+        public string Selector { get; set; }
+
+        public CustomType CustomType { get; set; }
+        public SetterType SetterType { get; set; }
+    }
+
+    public class CustomType
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class SetterType
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
     }
 
     public class ServerEventsService : Service
@@ -95,6 +118,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 ServerEvents.NotifyChannel(request.Channel, request.Selector, request.Message);
             }
         }
+
+        public void Any(PostObjectToChannel request)
+        {
+            if (request.ToUserId != null)
+            {
+                if (request.CustomType != null)
+                    ServerEvents.NotifyUserId(request.ToUserId, request.Selector ?? Selector.Id<CustomType>(), request.CustomType);
+                if (request.SetterType != null)
+                    ServerEvents.NotifyUserId(request.ToUserId, request.Selector ?? Selector.Id<SetterType>(), request.SetterType);
+            }
+            else
+            {
+                if (request.CustomType != null)
+                    ServerEvents.NotifyChannel(request.Channel, request.Selector ?? Selector.Id<CustomType>(), request.CustomType);
+                if (request.SetterType != null)
+                    ServerEvents.NotifyChannel(request.Channel, request.Selector ?? Selector.Id<SetterType>(), request.SetterType);
+            }
+        }
     }
 
     public class ServerEventsAppHost : AppSelfHostBase
@@ -104,7 +145,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public override void Configure(Container container)
         {
-            Plugins.Add(new ServerEventsFeature());
+            Plugins.Add(new ServerEventsFeature {
+                HeartbeatInterval = TimeSpan.FromMilliseconds(200),
+            });
         }
     }
 
@@ -136,202 +179,653 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             serverEvents.Reset();
         }
 
+        static List<ServerEventsClient> clients = new List<ServerEventsClient>();
+
         private static ServerEventsClient CreateServerEventsClient()
         {
-            return new ServerEventsClient(Config.AbsoluteBaseUri);
+            var client = new ServerEventsClient(Config.AbsoluteBaseUri);
+            return client;
         }
 
         [Test]
         public async void Can_connect_to_ServerEventsStream()
         {
-            var client = CreateServerEventsClient()
-                .Start();
+            using (var client = CreateServerEventsClient().Start())
+            {
+                var task = client.Connect();
+                var connectMsg = await task.WaitAsync();
 
-            var task = client.Connect();
-            if (task != await Task.WhenAny(task, Task.Delay(2000)))
-                throw new TimeoutException();
-            
-            var connectMsg = await task;
-            Assert.That(connectMsg.HeartbeatUrl, Is.StringStarting(Config.AbsoluteBaseUri));
-            Assert.That(connectMsg.UnRegisterUrl, Is.StringStarting(Config.AbsoluteBaseUri));
-            Assert.That(connectMsg.HeartbeatIntervalMs, Is.GreaterThan(0));
+                Assert.That(connectMsg.HeartbeatUrl, Is.StringStarting(Config.AbsoluteBaseUri));
+                Assert.That(connectMsg.UnRegisterUrl, Is.StringStarting(Config.AbsoluteBaseUri));
+                Assert.That(connectMsg.HeartbeatIntervalMs, Is.GreaterThan(0));
+            }
         }
 
         [Test]
         public async void Does_fire_onJoin_events()
         {
-            var client = CreateServerEventsClient()
-                .Start();
+            using (var client = CreateServerEventsClient().Start())
+            {
+                var taskConnect = client.Connect();
+                var taskMsg = client.WaitForNextCommand();
 
-            var taskConnect = client.Connect();
-            var taskMsg = client.WaitForNextCommand();
+                var connectMsg = await taskConnect.WaitAsync();
+                Assert.That(connectMsg.HeartbeatUrl, Is.StringStarting(Config.AbsoluteBaseUri));
 
-            if (taskConnect != await Task.WhenAny(taskConnect, Task.Delay(2000)))
-                throw new TimeoutException();
-
-            if (taskMsg != await Task.WhenAny(taskMsg, Task.Delay(2000)))
-                throw new TimeoutException();
-
-            var connectMsg = await taskConnect;
-            Assert.That(connectMsg.HeartbeatUrl, Is.StringStarting(Config.AbsoluteBaseUri));
-
-            var joinMsg = (ServerEventJoin)await taskMsg;
-            Assert.That(joinMsg.DisplayName, Is.EqualTo(client.ConnectionInfo.DisplayName));
+                var joinMsg = (ServerEventJoin)await taskMsg.WaitAsync();
+                Assert.That(joinMsg.DisplayName, Is.EqualTo(client.ConnectionInfo.DisplayName));
+            }
         }
 
         [Test]
         public async void Does_fire_all_callbacks()
         {
-            ServerEventConnect connectMsg = null;
+            using (var client1 = CreateServerEventsClient())
+            {
+                ServerEventConnect connectMsg = null;
+                var msgs = new List<ServerEventMessage>();
+                var commands = new List<ServerEventMessage>();
+                var errors = new List<Exception>();
 
-            var client1 = CreateServerEventsClient();
+                client1.OnConnect = e => connectMsg = e;
+                client1.OnCommand = commands.Add;
+                client1.OnMessage = msgs.Add;
+                client1.OnException = errors.Add;
 
-            var msgs = new List<ServerEventMessage>();
-            var commands = new List<ServerEventMessage>();
-            var errors = new List<Exception>();
+                //Pop Connect + onJoin messages off
+                var taskConnect = client1.Connect();
+                var taskCmd = client1.WaitForNextCommand();
 
-            client1.OnConnect = e => connectMsg = e;
-            client1.OnCommand = commands.Add;
-            client1.OnMessage = msgs.Add;
-            client1.OnException = errors.Add;
+                await taskConnect.WaitAsync();
+                await taskCmd.WaitAsync();
 
-            //Pop Connect + onJoin messages off
-            var taskConnect = client1.Connect();
-            var taskCmd = client1.WaitForNextCommand();
+                var joinMsg = commands.OfType<ServerEventJoin>().FirstOrDefault();
 
-            if (taskConnect != await Task.WhenAny(taskConnect, Task.Delay(2000)))
-                throw new TimeoutException();
-            if (taskCmd != await Task.WhenAny(taskCmd, Task.Delay(2000)))
-                throw new TimeoutException();
+                Assert.That(connectMsg, Is.Not.Null, "connectMsg == null");
+                Assert.That(joinMsg, Is.Not.Null, "joinMsg == null");
 
-            var joinMsg = commands.OfType<ServerEventJoin>().FirstOrDefault();
+                Assert.That(msgs.Count, Is.EqualTo(0));
+                Assert.That(errors.Count, Is.EqualTo(0));
+                Assert.That(commands.Count, Is.EqualTo(1)); //join
 
-            Assert.That(connectMsg, Is.Not.Null, "connectMsg == null");
-            Assert.That(joinMsg, Is.Not.Null, "joinMsg == null");
+                commands.Clear();
 
-            Assert.That(msgs.Count, Is.EqualTo(0));
-            Assert.That(errors.Count, Is.EqualTo(0));
-            Assert.That(commands.Count, Is.EqualTo(1)); //join
+                "New Client....".Print();
+                taskCmd = client1.WaitForNextCommand();
 
-            commands.Clear();
+                using (var client2 = CreateServerEventsClient())
+                {
+                    var connectMsg2 = await client2.Connect();
 
-            "New Client....".Print();
-            taskCmd = client1.WaitForNextCommand();
+                    if (taskCmd != await Task.WhenAny(taskCmd, Task.Delay(2000)))
+                        throw new TimeoutException();
 
-            var client2 = CreateServerEventsClient();
-            var connectMsg2 = await client2.Connect();
+                    joinMsg = commands.OfType<ServerEventJoin>().FirstOrDefault();
 
-            if (taskCmd != await Task.WhenAny(taskCmd, Task.Delay(2000)))
-                throw new TimeoutException();
+                    taskCmd = client1.WaitForNextCommand();
 
-            joinMsg = commands.OfType<ServerEventJoin>().FirstOrDefault();
+                    connectMsg2.UnRegisterUrl.GetStringFromUrl(); //unsubscribe 2nd client
 
-            taskCmd = client1.WaitForNextCommand();
+                }
 
-            connectMsg2.UnRegisterUrl.GetStringFromUrl(); //unsubscribe 2nd client
+                await taskCmd.WaitAsync();
 
-            if (taskCmd != await Task.WhenAny(taskCmd, Task.Delay(2000)))
-                throw new TimeoutException();
+                var leaveMsg = commands.OfType<ServerEventLeave>().FirstOrDefault();
 
-            var leaveMsg = commands.OfType<ServerEventLeave>().FirstOrDefault();
-
-            Assert.That(joinMsg, Is.Not.Null, "joinMsg == null");  //2nd connection
-            Assert.That(leaveMsg, Is.Not.Null, "leaveMsg == null");
-            Assert.That(commands.Count, Is.EqualTo(2)); //join + leave
-            Assert.That(errors.Count, Is.EqualTo(0)); 
+                Assert.That(joinMsg, Is.Not.Null, "joinMsg == null");  //2nd connection
+                Assert.That(leaveMsg, Is.Not.Null, "leaveMsg == null");
+                Assert.That(commands.Count, Is.EqualTo(2)); //join + leave
+                Assert.That(errors.Count, Is.EqualTo(0));
+            }
         }
 
         [Test]
         public async Task Does_receive_messages()
         {
-            var msgs1 = new List<ServerEventMessage>();
-            var msgs2 = new List<ServerEventMessage>();
-
-            var client1 = CreateServerEventsClient();
-            var client2 = CreateServerEventsClient();
-            client1.OnMessage = msgs1.Add;
-            client2.OnMessage = msgs2.Add;
-
-            await Task.WhenAll(client1.Connect(), client1.WaitForNextCommand()); //connect1 + join1
-
-            "client2.Connect()...".Print();
-            await Task.WhenAll(
-                client2.Connect(), client2.WaitForNextCommand(), //connect2 + join2
-                client1.WaitForNextCommand()); //join2
-
-            "Waiting for Msg1...".Print();
-            var taskMsg1 = client1.WaitForNextMessage();
-            var taskMsg2 = client2.WaitForNextMessage();
-
-            var info1 = client1.ConnectionInfo;
-            client1.ServiceClient.Post(new PostChatToChannel {
-                From = client1.SubscriptionId,
-                Message = "hello from client1",
-                Channel = EventSubscription.UnknownChannel,
-                Selector = "cmd.chat",
-            });
-
-            if (taskMsg1 != await Task.WhenAny(taskMsg1, Task.Delay(2000)))
-                throw new TimeoutException();
-            if (taskMsg2 != await Task.WhenAny(taskMsg2, Task.Delay(2000)))
-                throw new TimeoutException();
-
-            var msg1 = await taskMsg1;
-            var msg2 = await taskMsg2;
-
-            Assert.That(msg1.EventId, Is.GreaterThan(0));
-            Assert.That(msg2.EventId, Is.GreaterThan(0));
-            Assert.That(msg1.Selector, Is.EqualTo("cmd.chat"));
-            Assert.That(msg2.Selector, Is.EqualTo("cmd.chat"));
-
-            var chatMsg1 = msg1.Json.FromJson<ChatMessage>();
-            Assert.That(chatMsg1.Id, Is.GreaterThan(0));
-            Assert.That(chatMsg1.FromUserId, Is.EqualTo(info1.UserId)); //-1 / anon user
-            Assert.That(chatMsg1.FromName, Is.EqualTo(info1.DisplayName)); //user1 / anon user
-            Assert.That(chatMsg1.Message, Is.EqualTo("hello from client1"));
-
-            var chatMsg2 = msg2.Json.FromJson<ChatMessage>();
-            Assert.That(chatMsg2.Id, Is.GreaterThan(0));
-            Assert.That(chatMsg2.FromUserId, Is.EqualTo(info1.UserId));
-            Assert.That(chatMsg2.FromName, Is.EqualTo(info1.DisplayName));
-            Assert.That(chatMsg2.Message, Is.EqualTo("hello from client1"));
-
-            Assert.That(msgs1.Count, Is.EqualTo(1));
-            Assert.That(msgs2.Count, Is.EqualTo(1));
-
-            "Waiting for Msg2...".Print();
-            taskMsg1 = client1.WaitForNextMessage();
-            taskMsg2 = client2.WaitForNextMessage();
-
-            var info2 = client2.ConnectionInfo;
-            client2.ServiceClient.Post(new PostChatToChannel
+            using (var client1 = CreateServerEventsClient())
+            using (var client2 = CreateServerEventsClient())
             {
-                From = client2.SubscriptionId,
-                Message = "hello from client2",
-                Channel = EventSubscription.UnknownChannel,
+                var msgs1 = new List<ServerEventMessage>();
+                var msgs2 = new List<ServerEventMessage>();
+
+                client1.OnMessage = msgs1.Add;
+                client2.OnMessage = msgs2.Add;
+
+                await Task.WhenAll(client1.Connect(), client1.WaitForNextCommand()); //connect1 + join1
+
+                "client2.Connect()...".Print();
+                await Task.WhenAll(
+                    client2.Connect(), client2.WaitForNextCommand(), //connect2 + join2
+                    client1.WaitForNextCommand()); //join2
+
+                "Waiting for Msg1...".Print();
+                var taskMsg1 = client1.WaitForNextMessage();
+                var taskMsg2 = client2.WaitForNextMessage();
+
+                var info1 = client1.ConnectionInfo;
+                client1.PostChat("hello from client1");
+
+                var msg1 = await taskMsg1.WaitAsync();
+                var msg2 = await taskMsg2.WaitAsync();
+
+                Assert.That(msg1.EventId, Is.GreaterThan(0));
+                Assert.That(msg2.EventId, Is.GreaterThan(0));
+                Assert.That(msg1.Selector, Is.EqualTo("cmd.chat"));
+                Assert.That(msg2.Selector, Is.EqualTo("cmd.chat"));
+
+                var chatMsg1 = msg1.Json.FromJson<ChatMessage>();
+                Assert.That(chatMsg1.Id, Is.GreaterThan(0));
+                Assert.That(chatMsg1.FromUserId, Is.EqualTo(info1.UserId)); //-1 / anon user
+                Assert.That(chatMsg1.FromName, Is.EqualTo(info1.DisplayName)); //user1 / anon user
+                Assert.That(chatMsg1.Message, Is.EqualTo("hello from client1"));
+
+                var chatMsg2 = msg2.Json.FromJson<ChatMessage>();
+                Assert.That(chatMsg2.Id, Is.GreaterThan(0));
+                Assert.That(chatMsg2.FromUserId, Is.EqualTo(info1.UserId));
+                Assert.That(chatMsg2.FromName, Is.EqualTo(info1.DisplayName));
+                Assert.That(chatMsg2.Message, Is.EqualTo("hello from client1"));
+
+                Assert.That(msgs1.Count, Is.EqualTo(1));
+                Assert.That(msgs2.Count, Is.EqualTo(1));
+
+                "Waiting for Msg2...".Print();
+                taskMsg1 = client1.WaitForNextMessage();
+                taskMsg2 = client2.WaitForNextMessage();
+
+                var info2 = client2.ConnectionInfo;
+                client2.PostChat("hello from client2");
+
+                msg1 = await taskMsg1.WaitAsync();
+                msg2 = await taskMsg2.WaitAsync();
+
+                chatMsg1 = msg1.Json.FromJson<ChatMessage>();
+                Assert.That(chatMsg1.FromUserId, Is.EqualTo(info2.UserId));
+                Assert.That(chatMsg1.FromName, Is.EqualTo(info2.DisplayName));
+                Assert.That(chatMsg1.Message, Is.EqualTo("hello from client2"));
+
+                chatMsg2 = msg2.Json.FromJson<ChatMessage>();
+                Assert.That(chatMsg2.FromUserId, Is.EqualTo(info2.UserId));
+                Assert.That(chatMsg2.FromName, Is.EqualTo(info2.DisplayName));
+                Assert.That(chatMsg2.Message, Is.EqualTo("hello from client2"));
+
+                Assert.That(msgs1.Count, Is.EqualTo(2));
+                Assert.That(msgs2.Count, Is.EqualTo(2));
+            }
+        }
+
+        [Test]
+        public async Task Does_send_multiple_heartbeats()
+        {
+            using (var client1 = CreateServerEventsClient())
+            {
+                var heartbeats = 0;
+                var tcs = new TaskCompletionSource<object>();
+                client1.OnHeartbeat = () =>
+                {
+                    //configured to 1s interval in AppHost
+                    if (heartbeats++ == 2)
+                        tcs.SetResult(null);
+                };
+                client1.Start();
+
+                await tcs.Task.WaitAsync();
+
+                Assert.That(heartbeats, Is.GreaterThanOrEqualTo(2));
+            }
+        }
+
+        [Test]
+        public async Task Does_reconnect_on_lost_connection()
+        {
+            using (var client1 = CreateServerEventsClient())
+            {
+                var serverEvents = appHost.TryResolve<IServerEvents>();
+                var msgs = new List<ServerEventMessage>();
+
+                client1.OnMessage = msgs.Add;
+
+                await client1.Connect();
+
+                var msgTask = client1.WaitForNextMessage();
+
+                client1.PostChat("msg1 from client1");
+
+                var msg1 = await msgTask.WaitAsync();
+
+                msgTask = client1.WaitForNextMessage();
+
+                serverEvents.Reset(); //Dispose all existing subscriptions
+
+                using (var client2 = CreateServerEventsClient())
+                {
+                    await client2.Connect();
+
+                    await Task.WhenAny(client1.Connect(), Task.Delay(1000));
+
+                    client2.PostChat("msg2 from client2");
+                }
+
+                var msg2 = await msgTask.WaitAsync(30000);
+
+                var chatMsg2 = msg2.Json.FromJson<ChatMessage>();
+
+                Assert.That(chatMsg2.Message, Is.EqualTo("msg2 from client2"));
+            }
+        }
+
+        [Test]
+        public async Task Does_send_message_to_Handler()
+        {
+            using (var client1 = CreateServerEventsClient())
+            {
+                await client1.Connect();
+
+                ChatMessage chatMsg = null;
+                client1.Handlers["chat"] = (client, msg) =>
+                {
+                    chatMsg = msg.Json.FromJson<ChatMessage>();
+                };
+
+                var msgTask = client1.WaitForNextMessage();
+                client1.PostChat("msg1");
+                await msgTask.WaitAsync();
+
+                Assert.That(chatMsg, Is.Not.Null);
+                Assert.That(chatMsg.Message, Is.EqualTo("msg1"));
+
+                msgTask = client1.WaitForNextMessage();
+                client1.PostChat("msg2");
+                await msgTask.WaitAsync();
+
+                Assert.That(chatMsg, Is.Not.Null);
+                Assert.That(chatMsg.Message, Is.EqualTo("msg2"));
+            }
+        }
+
+        [Test]
+        public async Task Does_send_message_to_named_receiver()
+        {
+            using (var client1 = CreateServerEventsClient())
+            {
+                client1.RegisterNamedReceiver<TestNamedReceiver>("test");
+
+                await client1.Connect();
+
+                var msgTask = client1.WaitForNextMessage();
+                client1.Post(new CustomType { Id = 1, Name = "Foo" }, "test.FooMethod");
+                await msgTask.WaitAsync();
+
+                var foo = TestNamedReceiver.FooMethodReceived;
+                Assert.That(foo, Is.Not.Null);
+                Assert.That(foo.Id, Is.EqualTo(1));
+                Assert.That(foo.Name, Is.EqualTo("Foo"));
+
+                msgTask = client1.WaitForNextMessage();
+                client1.Post(new CustomType { Id = 2, Name = "Bar" }, "test.BarMethod");
+                await msgTask.WaitAsync();
+
+                var bar = TestNamedReceiver.BarMethodReceived;
+                Assert.That(bar, Is.Not.Null);
+                Assert.That(bar.Id, Is.EqualTo(2));
+                Assert.That(bar.Name, Is.EqualTo("Bar"));
+
+                msgTask = client1.WaitForNextMessage();
+                client1.Post(new CustomType { Id = 3, Name = "Baz" }, "test.BazMethod");
+                await msgTask.WaitAsync();
+
+                var baz = TestNamedReceiver.NoSuchMethodReceived;
+                Assert.That(baz, Is.Not.Null);
+                Assert.That(baz.Id, Is.EqualTo(3));
+                Assert.That(baz.Name, Is.EqualTo("Baz"));
+                Assert.That(TestNamedReceiver.NoSuchMethodSelector, Is.EqualTo("BazMethod"));
+            }
+        }
+
+        [Test]
+        public async Task Does_send_message_to_global_receiver()
+        {
+            using (var client1 = CreateServerEventsClient())
+            {
+                client1.RegisterReceiver<TestGlobalReceiver>();
+
+                await client1.Connect();
+
+                var msgTask = client1.WaitForNextMessage();
+                client1.Post(new CustomType { Id = 1, Name = "Foo" });
+                await msgTask.WaitAsync();
+
+                var foo = TestGlobalReceiver.FooMethodReceived;
+                Assert.That(foo, Is.Not.Null);
+                Assert.That(foo.Id, Is.EqualTo(1));
+                Assert.That(foo.Name, Is.EqualTo("Foo"));
+            }
+        }
+
+        [Test]
+        public async Task Does_set_properties_on_global_receiver()
+        {
+            using (var client1 = CreateServerEventsClient())
+            {
+                client1.RegisterReceiver<TestGlobalReceiver>();
+
+                await client1.Connect();
+
+                var msgTask = client1.WaitForNextMessage();
+                client1.Post(new SetterType { Id = 1, Name = "Foo" });
+                await msgTask.WaitAsync();
+
+                var foo = TestGlobalReceiver.AnyNamedSetterReceived;
+                Assert.That(foo, Is.Not.Null);
+                Assert.That(foo.Id, Is.EqualTo(1));
+                Assert.That(foo.Name, Is.EqualTo("Foo"));
+            }
+        }
+
+        [Test]
+        public async Task Does_send_raw_string_messages()
+        {
+            using (var client1 = CreateServerEventsClient())
+            {
+                client1.RegisterReceiver<TestJavaScriptReceiver>();
+                client1.RegisterNamedReceiver<TestJavaScriptReceiver>("css");
+
+                await client1.Connect();
+
+                var msgTask = client1.WaitForNextMessage();
+                client1.PostChat("chat msg");
+                await msgTask.WaitAsync();
+
+                var chatMsg = TestJavaScriptReceiver.ChatReceived;
+                Assert.That(chatMsg, Is.Not.Null);
+                Assert.That(chatMsg.Message, Is.EqualTo("chat msg"));
+
+                msgTask = client1.WaitForNextMessage();
+                client1.PostRaw("cmd.announce", "This is your captain speaking...");
+                await msgTask.WaitAsync();
+
+                var announce = TestJavaScriptReceiver.AnnounceReceived;
+                Assert.That(announce, Is.EqualTo("This is your captain speaking..."));
+
+                msgTask = client1.WaitForNextMessage();
+                client1.PostRaw("cmd.toggle$#channels", null);
+                await msgTask.WaitAsync();
+
+                var toggle = TestJavaScriptReceiver.ToggleReceived;
+                Assert.That(toggle, Is.EqualTo(""));
+                var toggleRequest = TestJavaScriptReceiver.ToggleRequestReceived;
+                Assert.That(toggleRequest.Selector, Is.EqualTo("cmd.toggle$#channels"));
+                Assert.That(toggleRequest.Op, Is.EqualTo("cmd"));
+                Assert.That(toggleRequest.Target, Is.EqualTo("toggle"));
+                Assert.That(toggleRequest.CssSelector, Is.EqualTo("#channels"));
+
+                msgTask = client1.WaitForNextMessage();
+                client1.PostRaw("css.background-image$#top", "url(http://bit.ly/1yIJOBH)");
+                await msgTask.WaitAsync();
+
+                var bgImage = TestJavaScriptReceiver.BackgroundImageReceived;
+                Assert.That(bgImage, Is.EqualTo("url(http://bit.ly/1yIJOBH)"));
+                var bgImageRequest = TestJavaScriptReceiver.BackgroundImageRequestReceived;
+                Assert.That(bgImageRequest.Selector, Is.EqualTo("css.background-image$#top"));
+                Assert.That(bgImageRequest.Op, Is.EqualTo("css"));
+                Assert.That(bgImageRequest.Target, Is.EqualTo("background-image"));
+                Assert.That(bgImageRequest.CssSelector, Is.EqualTo("#top"));
+            }
+        }
+
+        [Test]
+        public async Task Can_reuse_same_instance()
+        {
+            using (var client1 = CreateServerEventsClient())
+            {
+                client1.RegisterReceiver<TestJavaScriptReceiver>();
+                client1.RegisterNamedReceiver<TestJavaScriptReceiver>("css");
+                client1.Resolver = new SingletonInstanceResolver();
+
+                await client1.Connect();
+
+                var msgTask = client1.WaitForNextMessage();
+                client1.PostRaw("cmd.announce", "This is your captain speaking...");
+                await msgTask.WaitAsync();
+
+                var instance = client1.Resolver.TryResolve<TestJavaScriptReceiver>();
+                Assert.That(instance.AnnounceInstance, Is.EqualTo("This is your captain speaking..."));
+
+                msgTask = client1.WaitForNextMessage();
+                client1.PostRaw("cmd.announce", "2nd Announcement");
+                await msgTask.WaitAsync();
+
+                Assert.That(instance.AnnounceInstance, Is.EqualTo("2nd Announcement"));
+            }
+        }
+
+        [Test]
+        public async Task Can_use_IOC_to_autowire_Receivers()
+        {
+            using (var client1 = CreateServerEventsClient())
+            {
+                client1.RegisterReceiver<TestContainerReceiver>();
+
+                var container = new Container();
+                container.RegisterAs<Dependency, IDependency>();
+                container.RegisterAutoWiredTypes(client1.ReceiverTypes);
+
+                client1.Resolver = container;
+
+                await client1.Connect();
+
+                var msgTask = client1.WaitForNextMessage();
+                client1.Post(new CustomType { Id = 1, Name = "Foo" });
+                await msgTask.WaitAsync();
+
+                var instance = (Dependency)container.Resolve<IDependency>();
+                var customType = instance.CustomTypeReceived;
+                Assert.That(customType, Is.Not.Null);
+                Assert.That(customType.Id, Is.EqualTo(1));
+                Assert.That(customType.Name, Is.EqualTo("Foo"));
+
+                msgTask = client1.WaitForNextMessage();
+                client1.Post(new SetterType { Id = 2, Name = "Bar" });
+                await msgTask.WaitAsync();
+
+                var setterType = instance.SetterTypeReceived;
+                Assert.That(setterType, Is.Not.Null);
+                Assert.That(setterType.Id, Is.EqualTo(2));
+                Assert.That(setterType.Name, Is.EqualTo("Bar"));
+            }
+        }
+    }
+
+    public class TestNamedReceiver : ServerEventReceiver
+    {
+        public static CustomType FooMethodReceived;
+        public static CustomType BarMethodReceived;
+        public static CustomType NoSuchMethodReceived;
+        public static string NoSuchMethodSelector;
+
+        public void FooMethod(CustomType request)
+        {
+            FooMethodReceived = request;
+        }
+
+        public CustomType BarMethod(CustomType request)
+        {
+            BarMethodReceived = request;
+            return request;
+        }
+
+        public override void NoSuchMethod(string selector, object message)
+        {
+            var msg = (ServerEventMessage)message;
+            NoSuchMethodReceived = msg.Json.FromJson<CustomType>();
+            NoSuchMethodSelector = selector;
+        }
+    }
+
+    public class TestGlobalReceiver : ServerEventReceiver
+    {
+        public static CustomType FooMethodReceived;
+        public static CustomType NoSuchMethodReceived;
+        public static string NoSuchMethodSelector;
+
+        internal static SetterType AnyNamedSetterReceived;
+
+        public SetterType AnyNamedSetter
+        {
+            set { AnyNamedSetterReceived = value; }
+        }
+
+        public void AnyNamedMethod(CustomType request)
+        {
+            FooMethodReceived = request;
+        }
+
+        public override void NoSuchMethod(string selector, object message)
+        {
+            var msg = (ServerEventMessage)message;
+            NoSuchMethodReceived = msg.Json.FromJson<CustomType>();
+            NoSuchMethodSelector = selector;
+        }
+    }
+
+    public class TestJavaScriptReceiver : ServerEventReceiver
+    {
+        public static ChatMessage ChatReceived;
+        public static string AnnounceReceived;
+        public string AnnounceInstance;
+        public static string ToggleReceived;
+        public static ServerEventMessage ToggleRequestReceived;
+        public static string BackgroundImageReceived;
+        public static ServerEventMessage BackgroundImageRequestReceived;
+
+        public void Chat(ChatMessage message)
+        {
+            ChatReceived = message;
+        }
+
+        public void Announce(string message)
+        {
+            AnnounceReceived = message;
+            AnnounceInstance = message;
+        }
+
+        public void Toggle(string message)
+        {
+            ToggleReceived = message;
+            ToggleRequestReceived = Request;
+        }
+
+        public void BackgroundImage(string cssRule)
+        {
+            BackgroundImageReceived = cssRule;
+            BackgroundImageRequestReceived = Request;
+        }
+    }
+
+    public class ContainerResolver : IResolver
+    {
+        private readonly Container container;
+
+        public ContainerResolver(Container container)
+        {
+            this.container = container;
+        }
+
+        public T TryResolve<T>()
+        {
+            return container.TryResolve<T>();
+        }
+    }
+
+    public interface IDependency
+    {
+        void Record(CustomType msg);
+        void Record(SetterType msg);
+    }
+
+    class Dependency : IDependency
+    {
+        public CustomType CustomTypeReceived;
+        public SetterType SetterTypeReceived;
+
+        public void Record(CustomType msg)
+        {
+            CustomTypeReceived = msg;
+        }
+
+        public void Record(SetterType msg)
+        {
+            SetterTypeReceived = msg;
+        }
+    }
+
+    public class TestContainerReceiver : ServerEventReceiver
+    {
+        public IDependency Dependency { get; set; }
+
+        public void AnyNamedMethod(CustomType request)
+        {
+            Dependency.Record(request);
+        }
+
+        public void AnySetter(SetterType request)
+        {
+            Dependency.Record(request);
+        }
+    }
+
+    public static class ServerClientExtensions
+    {
+        public static void PostChat(this ServerEventsClient client,
+            string message, string channel = null)
+        {
+            client.ServiceClient.Post(new PostChatToChannel
+            {
+                From = client.SubscriptionId,
+                Message = message,
+                Channel = channel ?? EventSubscription.UnknownChannel,
                 Selector = "cmd.chat",
             });
+        }
 
-            if (taskMsg1 != await Task.WhenAny(taskMsg1, Task.Delay(2000)))
+        public static void PostRaw(this ServerEventsClient client, string selector, string message, string channel = null)
+        {
+            client.ServiceClient.Post(new PostRawToChannel
+            {
+                From = client.SubscriptionId,
+                Message = message,
+                Channel = channel ?? EventSubscription.UnknownChannel,
+                Selector = selector,
+            });
+        }
+
+        public static void Post(this ServerEventsClient client,
+            CustomType message, string selector = null, string channel = null)
+        {
+            client.ServiceClient.Post(new PostObjectToChannel
+            {
+                CustomType = message,
+                Channel = channel ?? EventSubscription.UnknownChannel,
+                Selector = selector,
+            });
+        }
+
+        public static void Post(this ServerEventsClient client,
+            SetterType message, string selector = null, string channel = null)
+        {
+            client.ServiceClient.Post(new PostObjectToChannel
+            {
+                SetterType = message,
+                Channel = channel ?? EventSubscription.UnknownChannel,
+                Selector = selector,
+            });
+        }
+
+        public static async Task<T> WaitAsync<T>(this Task<T> task, int timeMs = 1000)
+        {
+            if (task != await Task.WhenAny(task, Task.Delay(timeMs)))
                 throw new TimeoutException();
-            if (taskMsg2 != await Task.WhenAny(taskMsg2, Task.Delay(2000)))
-                throw new TimeoutException();
 
-            msg1 = await taskMsg1;
-            msg2 = await taskMsg2;
-
-            chatMsg1 = msg1.Json.FromJson<ChatMessage>();
-            Assert.That(chatMsg1.FromUserId, Is.EqualTo(info2.UserId));
-            Assert.That(chatMsg1.FromName, Is.EqualTo(info2.DisplayName));
-            Assert.That(chatMsg1.Message, Is.EqualTo("hello from client2"));
-
-            chatMsg2 = msg2.Json.FromJson<ChatMessage>();
-            Assert.That(chatMsg2.FromUserId, Is.EqualTo(info2.UserId));
-            Assert.That(chatMsg2.FromName, Is.EqualTo(info2.DisplayName));
-            Assert.That(chatMsg2.Message, Is.EqualTo("hello from client2"));
-
-            Assert.That(msgs1.Count, Is.EqualTo(2));
-            Assert.That(msgs2.Count, Is.EqualTo(2));
+            return await task;
         }
     }
 }

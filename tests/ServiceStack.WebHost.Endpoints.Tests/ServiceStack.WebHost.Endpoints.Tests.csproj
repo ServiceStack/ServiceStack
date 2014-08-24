@@ -95,6 +95,9 @@
     <Reference Include="MySql.Data">
       <HintPath>..\..\lib\MySql.Data.dll</HintPath>
     </Reference>
+    <Reference Include="NHibernate">
+      <HintPath>..\..\src\ServiceStack.Authentication.NHibernate\bin\Release\NHibernate.dll</HintPath>
+    </Reference>
     <Reference Include="Npgsql">
       <HintPath>..\..\lib\Npgsql.dll</HintPath>
     </Reference>
