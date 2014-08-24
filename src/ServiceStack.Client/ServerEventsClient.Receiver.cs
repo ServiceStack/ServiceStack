@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -146,7 +147,7 @@ namespace ServiceStack
             RequestTypeExecMap = new Dictionary<string, ReceiverExecContext>(StringComparer.OrdinalIgnoreCase);
             MethodNameExecMap = new Dictionary<string, ReceiverExecContext>(StringComparer.OrdinalIgnoreCase);
 
-            var methods = typeof(T).GetMethods(BindingFlags.Public | BindingFlags.Instance);
+            var methods = typeof(T).GetMethodInfos().Where(x => x.IsPublic && !x.IsStatic);
             foreach (var mi in methods)
             {
                 var actionName = mi.Name;

@@ -73,6 +73,15 @@ namespace ServiceStack
         public Action OnHeartbeat;
         public Action<Exception> OnException;
 
+        public static readonly Task<object> EmptyTask;
+
+        static ServerEventsClient()
+        {
+            var tcs = new TaskCompletionSource<object>();
+            tcs.SetResult(null);
+            EmptyTask = tcs.Task;
+        }
+
         public ServerEventsClient(string baseUri, string channel=null)
         {
             this.EventStreamUri = baseUri.CombineWith("event-stream");
@@ -248,8 +257,8 @@ namespace ServiceStack
             try
             {
                 Stop();
-                SleepBackOffMultiplier(errorsCount);
-                Start();
+                SleepBackOffMultiplier(errorsCount)
+                    .ContinueWith(t => Start());
             }
             catch (Exception ex)
             {
@@ -258,9 +267,11 @@ namespace ServiceStack
         }
 
         readonly Random rand = new Random(Environment.TickCount);
-        private void SleepBackOffMultiplier(int continuousErrorsCount)
+        private Task SleepBackOffMultiplier(int continuousErrorsCount)
         {
-            if (continuousErrorsCount <= 1) return;
+            if (continuousErrorsCount <= 1) 
+                return EmptyTask;
+
             const int MaxSleepMs = 60 * 1000;
 
             //exponential/random retry back-off.
@@ -271,7 +282,7 @@ namespace ServiceStack
             if (log.IsDebugEnabled)
                 log.Debug("Sleeping for {0}ms after {1} continuous errors".Fmt(nextTry, continuousErrorsCount));
 
-            Thread.Sleep(nextTry);
+            return PclExportClient.Instance.WaitAsync(nextTry);
         }
 
         private string overflowText = "";

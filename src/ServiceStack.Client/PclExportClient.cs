@@ -1590,6 +1590,8 @@ namespace ServiceStack
 #endif
         ;
 
+        public static readonly Task<object> EmptyTask;
+
         static PclExportClient()
         {
             if (Instance != null) 
@@ -1607,6 +1609,10 @@ namespace ServiceStack
                     return;
             }
             catch (Exception /*ignore*/) {}
+
+            var tcs = new TaskCompletionSource<object>();
+            tcs.SetResult(null);
+            EmptyTask = tcs.Task;
         }
 
         public static bool ConfigureProvider(string typeName)
@@ -1711,6 +1717,18 @@ namespace ServiceStack
 #else
             return new AsyncTimer(new
                 System.Threading.Timer(cb, state, (int)timeOut.TotalMilliseconds, Timeout.Infinite));
+#endif
+        }
+
+        public virtual Task WaitAsync(int waitForMs)
+        {
+#if PCL
+            return EmptyTask;
+#else
+            var tcs = new TaskCompletionSource<object>();
+            Thread.Sleep(waitForMs);
+            tcs.SetResult(null);
+            return tcs.Task;
 #endif
         }
 
