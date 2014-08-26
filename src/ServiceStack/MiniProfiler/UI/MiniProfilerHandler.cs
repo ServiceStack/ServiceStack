@@ -202,7 +202,7 @@ namespace ServiceStack.MiniProfiler.UI
 		{
 			// when we're rendering as a button/popup in the corner, we'll pass ?popup=1
 			// if it's absent, we're rendering results as a full page for sharing
-			var isPopup = httpReq.QueryString["popup"].IsNullOrWhiteSpace();
+			var isPopup = !httpReq.QueryString["popup"].IsNullOrWhiteSpace();
 
 			// this guid is the MiniProfiler.Id property
 			var id = new Guid();
