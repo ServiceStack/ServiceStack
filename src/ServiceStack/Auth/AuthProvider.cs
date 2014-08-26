@@ -306,7 +306,8 @@ namespace ServiceStack.Auth
             if (ValidateUniqueEmails && tokens != null && tokens.Email != null)
             {
                 var userWithEmail = authRepo.GetUserAuthByUserName(tokens.Email);
-                if (userWithEmail == null) return true;
+                if (userWithEmail == null) 
+                    return false;
 
                 var isAnotherUser = userAuth == null || (userAuth.Id != userWithEmail.Id);
                 if (isAnotherUser)
