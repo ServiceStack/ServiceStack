@@ -179,6 +179,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    [Explicit("Remove from autorunning in CI for now")]
     [TestFixture]
     public class RedisServerEventsTests : ServerEventsTests
     {
