@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using ServiceStack.Configuration;
@@ -40,7 +41,8 @@ namespace ServiceStack.Auth
             IUserAuth userAuth;
             if (authRepo.TryAuthenticate(userName, password, out userAuth))
             {
-                AssertNotLocked(userAuth);
+                if (IsAccountLocked(authRepo, userAuth))
+                    throw new AuthenticationException("This account has been locked");
 
                 var holdSessionId = session.Id;
                 session.PopulateWith(userAuth); //overwrites session.Id
