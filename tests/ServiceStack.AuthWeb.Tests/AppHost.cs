@@ -93,7 +93,7 @@ namespace ServiceStack.AuthWeb.Tests
                         LoadUserAuthFilter = LoadUserAuthInfo,
                         AllowAllWindowsAuthUsers = true
                     }, 
-                    new CustomCredentialsAuthProvider(),        //HTML Form post of UserName/Password credentials
+                    new CredentialsAuthProvider(),        //HTML Form post of UserName/Password credentials
                     new TwitterAuthProvider(appSettings),       //Sign-in with Twitter
                     new FacebookAuthProvider(appSettings),      //Sign-in with Facebook
                     new DigestAuthProvider(appSettings),        //Sign-in with Digest Auth
@@ -267,7 +267,7 @@ namespace ServiceStack.AuthWeb.Tests
 
         public object Any(PostChatToChannel request)
         {
-            var sub = ServerEvents.GetSubscription(request.From);
+            var sub = ServerEvents.GetSubscriptionInfo(request.From);
             if (sub == null)
                 throw HttpError.NotFound("Subscription {0} does not exist".Fmt(request.From));
 
@@ -283,7 +283,7 @@ namespace ServiceStack.AuthWeb.Tests
             {
                 msg.Private = true;
                 ServerEvents.NotifyUserId(request.ToUserId, request.Selector, msg);
-                var toSubs = ServerEvents.GetSubscriptionsByUserId(request.ToUserId);
+                var toSubs = ServerEvents.GetSubscriptionInfosByUserId(request.ToUserId);
                 foreach (var toSub in toSubs)
                 {
                     msg.Message = "@{0}: {1}".Fmt(toSub.DisplayName, msg.Message);
@@ -300,7 +300,7 @@ namespace ServiceStack.AuthWeb.Tests
 
         public void Any(PostRawToChannel request)
         {
-            var sub = ServerEvents.GetSubscription(request.From);
+            var sub = ServerEvents.GetSubscriptionInfo(request.From);
             if (sub == null)
                 throw HttpError.NotFound("Subscription {0} does not exist".Fmt(request.From));
 

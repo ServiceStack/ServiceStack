@@ -9,6 +9,7 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
+using ServiceStack.Redis;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -75,7 +76,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public object Any(PostChatToChannel request)
         {
-            var sub = ServerEvents.GetSubscription(request.From);
+            var sub = ServerEvents.GetSubscriptionInfo(request.From);
             if (sub == null)
                 throw HttpError.NotFound("Subscription {0} does not exist".Fmt(request.From));
 
@@ -91,7 +92,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 msg.Private = true;
                 ServerEvents.NotifyUserId(request.ToUserId, request.Selector, msg);
-                var toSubs = ServerEvents.GetSubscriptionsByUserId(request.ToUserId);
+                var toSubs = ServerEvents.GetSubscriptionInfosByUserId(request.ToUserId);
                 foreach (var toSub in toSubs)
                 {
                     msg.Message = "@{0}: {1}".Fmt(toSub.DisplayName, msg.Message);
@@ -108,7 +109,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public void Any(PostRawToChannel request)
         {
-            var sub = ServerEvents.GetSubscription(request.From);
+            var sub = ServerEvents.GetSubscriptionInfo(request.From);
             if (sub == null)
                 throw HttpError.NotFound("Subscription {0} does not exist".Fmt(request.From));
 
@@ -146,29 +147,60 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public ServerEventsAppHost()
             : base(typeof(ServerEventsAppHost).Name, typeof(ServerEventsAppHost).Assembly) { }
 
+        public bool UseRedisServerEvents { get; set; }
+
         public override void Configure(Container container)
         {
             Plugins.Add(new ServerEventsFeature
             {
                 HeartbeatInterval = TimeSpan.FromMilliseconds(200),
             });
+
+            if (UseRedisServerEvents)
+            {
+                container.Register<IRedisClientsManager>(new PooledRedisClientManager());
+
+                container.Register<IServerEvents>(c =>
+                    new RedisServerEvents(c.Resolve<IRedisClientsManager>()));
+
+                container.Resolve<IServerEvents>().Start();
+            }
         }
     }
 
+    [TestFixture]
+    public class MemoryServerEventsTests : ServerEventsTests
+    {
+        protected override ServiceStackHost CreateAppHost()
+        {
+            return new ServerEventsAppHost()
+                .Init()
+                .Start(Config.AbsoluteBaseUri);
+        }
+    }
 
     [TestFixture]
-    public class ServerEventsTests
+    public class RedisServerEventsTests : ServerEventsTests
+    {
+        protected override ServiceStackHost CreateAppHost()
+        {
+            return new ServerEventsAppHost { UseRedisServerEvents = true }
+                .Init()
+                .Start(Config.AbsoluteBaseUri);
+        }
+    }
+
+    public abstract class ServerEventsTests
     {
         private ServiceStackHost appHost;
 
         public ServerEventsTests()
         {
             //LogManager.LogFactory = new ConsoleLogFactory();
-
-            appHost = new ServerEventsAppHost()
-                .Init()
-                .Start(Config.AbsoluteBaseUri);
+            appHost = CreateAppHost();
         }
+
+        protected abstract ServiceStackHost CreateAppHost();
 
         [TestFixtureTearDown]
         public void TestFixtureTearDown()

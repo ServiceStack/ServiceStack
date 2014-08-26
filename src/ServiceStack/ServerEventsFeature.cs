@@ -134,7 +134,7 @@ namespace ServiceStack
             if (feature.OnConnect != null)
                 feature.OnConnect(subscription, privateArgs);
 
-            subscription.Publish("cmd.onConnect", privateArgs);
+            subscription.Publish("cmd.onConnect", privateArgs.ToJson());
 
             req.TryResolve<IServerEvents>().Register(subscription);
 
@@ -184,7 +184,7 @@ namespace ServiceStack
 
         public object Any(GetEventSubscribers request)
         {
-            return ServerEvents.GetSubscriptions(request.Channel);
+            return ServerEvents.GetSubscriptionsDetails(request.Channel);
         }
     }
 
@@ -201,11 +201,11 @@ namespace ServiceStack
 
         public object Any(UnRegisterEventSubscriber request)
         {
-            var subscription = ServerEvents.GetSubscription(request.Id);
+            var subscription = ServerEvents.GetSubscriptionInfo(request.Id);
             if (subscription == null)
                 throw HttpError.NotFound("Subscription '{0}' does not exist.".Fmt(request.Id));
 
-            ServerEvents.UnRegister(subscription);
+            ServerEvents.UnRegister(subscription.SubscriptionId);
 
             return subscription.Meta;
         }
@@ -238,10 +238,12 @@ namespace ServiceStack
     trigger.customEvent arg
     */
 
-    public class EventSubscription : IEventSubscription
+    public class EventSubscription : SubscriptionInfo, IEventSubscription
     {
         private static ILog Log = LogManager.GetLogger(typeof(EventSubscription));
         public static string UnknownChannel = "*";
+
+        public DateTime LastPulseAt { get; set; }
 
         private readonly IResponse response;
         private long msgId;
@@ -252,24 +254,19 @@ namespace ServiceStack
             this.Meta = new Dictionary<string, string>();
         }
 
-        public DateTime CreatedAt { get; set; }
-        public DateTime LastPulseAt { get; set; }
-        public string Channel { get; set; }
-        public string SubscriptionId { get; set; }
-        public string UserId { get; set; }
-        public string UserName { get; set; }
-        public string DisplayName { get; set; }
-        public string SessionId { get; set; }
-        public bool IsAuthenticated { get; set; }
-
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
         public Action<IEventSubscription> OnDispose { get; set; }
 
-        public void Publish(string selector, object message)
+        public void Publish(string selector)
+        {
+            Publish(selector, null);
+        }
+
+        public void Publish(string selector, string message)
         {
             try
             {
-                var msg = (message != null ? message.ToJson() : "");
+                var msg = message ?? "";
                 var frame = "id: " + Interlocked.Increment(ref msgId) + "\n"
                           + "data: " + selector + " " + msg + "\n\n";
 
@@ -315,8 +312,6 @@ namespace ServiceStack
             if (OnDispose != null)
                 OnDispose(this);
         }
-
-        public Dictionary<string, string> Meta { get; set; }
     }
 
     public interface IEventSubscription : IMeta, IDisposable
@@ -335,8 +330,23 @@ namespace ServiceStack
         Action<IEventSubscription> OnUnsubscribe { get; set; }
         void Unsubscribe();
 
-        void Publish(string selector, object message);
+        void Publish(string selector, string message);
         void Pulse();
+    }
+
+    public class SubscriptionInfo
+    {
+        public DateTime CreatedAt { get; set; }
+
+        public string Channel { get; set; }
+        public string UserId { get; set; }
+        public string UserName { get; set; }
+        public string DisplayName { get; set; }
+        public string SessionId { get; set; }
+        public string SubscriptionId { get; set; }
+        public bool IsAuthenticated { get; set; }
+
+        public Dictionary<string, string> Meta { get; set; }
     }
 
     public class MemoryServerEvents : IServerEvents
@@ -351,6 +361,12 @@ namespace ServiceStack
 
         public Action<IEventSubscription> OnSubscribe { get; set; }
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
+
+        public Action<IEventSubscription> NotifyJoin { get; set; }
+        public Action<IEventSubscription> NotifyLeave { get; set; }
+        public Func<object,string> Serialize { get; set; }
+
+        
         public bool NotifyChannelOfSubscriptions { get; set; }
 
         public ConcurrentDictionary<string, IEventSubscription[]> Subcriptions;
@@ -362,6 +378,10 @@ namespace ServiceStack
         public MemoryServerEvents()
         {
             Reset();
+
+            NotifyJoin = s => NotifyChannel(s.Channel, "cmd.onJoin", s.Meta);
+            NotifyLeave = s => NotifyChannel(s.Channel, "cmd.onLeave", s.Meta);
+            Serialize = o => o != null ? o.ToJson() : null;
         }
 
         public void Reset()
@@ -373,6 +393,15 @@ namespace ServiceStack
             SessionSubcriptions = new ConcurrentDictionary<string, IEventSubscription[]>();
         }
 
+        public void Start()
+        {
+        }
+
+        public void Stop()
+        {
+            Reset();
+        }
+
         public void NotifyAll(string selector, object message)
         {
             foreach (var entry in Subcriptions)
@@ -380,7 +409,7 @@ namespace ServiceStack
                 foreach (var sub in entry.Value)
                 {
                     if (sub != null)
-                        sub.Publish(selector, message);
+                        sub.Publish(selector, Serialize(message));
                 }
             }
         }
@@ -410,7 +439,7 @@ namespace ServiceStack
             Notify(SessionSubcriptions, sspid, selector, message, channel);
         }
 
-        void Notify(ConcurrentDictionary<string, IEventSubscription[]> map, string key,
+        protected void Notify(ConcurrentDictionary<string, IEventSubscription[]> map, string key,
             string selector, object message, string channel = null)
         {
             IEventSubscription[] subs;
@@ -427,7 +456,7 @@ namespace ServiceStack
                     {
                         expired.Add(subscription);
                     }
-                    subscription.Publish(selector, message);
+                    subscription.Publish(selector, Serialize(message));
                 }
             }
 
@@ -460,22 +489,28 @@ namespace ServiceStack
             return null;
         }
 
-        public List<IEventSubscription> GetSubscriptionsByUserId(string userId)
+        public SubscriptionInfo GetSubscriptionInfo(string id)
         {
-            var userSubs = new List<IEventSubscription>();
+            return GetSubscription(id).GetInfo();
+        }
+
+        public List<SubscriptionInfo> GetSubscriptionInfosByUserId(string userId)
+        {
+            var userSubs = new List<SubscriptionInfo>();
             if (userId == null) return userSubs;
             foreach (var subs in Subcriptions.Values)
             {
                 foreach (var sub in subs)
                 {
-                    if (sub != null && sub.UserId == userId)
-                        userSubs.Add(sub);
+                    var info = sub.GetInfo();
+                    if (info != null && info.UserId == userId)
+                        userSubs.Add(info);
                 }
             }
             return userSubs;
         }
 
-        public List<Dictionary<string, string>> GetSubscriptions(string channel = null)
+        public List<Dictionary<string, string>> GetSubscriptionsDetails(string channel = null)
         {
             var ret = new List<Dictionary<string, string>>();
             foreach (var subs in Subcriptions.Values)
@@ -506,8 +541,8 @@ namespace ServiceStack
                         OnSubscribe(subscription);
                 }
 
-                if (NotifyChannelOfSubscriptions && subscription.Channel != null)
-                    NotifyChannel(subscription.Channel, "cmd.onJoin", subscription.Meta);
+                if (NotifyChannelOfSubscriptions && subscription.Channel != null && NotifyJoin != null)
+                    NotifyJoin(subscription);
             }
             catch (Exception ex)
             {
@@ -561,8 +596,9 @@ namespace ServiceStack
             return false;
         }
 
-        public void UnRegister(IEventSubscription subscription)
+        public void UnRegister(string subscriptionId)
         {
+            var subscription = GetSubscription(subscriptionId);
             if (subscription == null)
                 return;
 
@@ -615,12 +651,17 @@ namespace ServiceStack
                 subscription.Dispose();
             }
 
-            if (NotifyChannelOfSubscriptions && subscription.Channel != null)
-                NotifyChannel(subscription.Channel, "cmd.onLeave", subscription.Meta);
+            if (NotifyChannelOfSubscriptions && subscription.Channel != null && NotifyLeave != null)
+                NotifyLeave(subscription);
+        }
+
+        public void Dispose()
+        {
+            Reset();
         }
     }
 
-    public interface IServerEvents
+    public interface IServerEvents : IDisposable
     {
         // External API's
         void NotifyAll(string selector, object message);
@@ -635,23 +676,24 @@ namespace ServiceStack
 
         void NotifySession(string sspid, string selector, object message, string channel = null);
 
-        IEventSubscription GetSubscription(string id);
+        SubscriptionInfo GetSubscriptionInfo(string id);
 
-        List<IEventSubscription> GetSubscriptionsByUserId(string userId);
+        List<SubscriptionInfo> GetSubscriptionInfosByUserId(string userId);
 
         // Admin API's
         void Register(IEventSubscription subscription);
 
-        void UnRegister(IEventSubscription subscription);
+        void UnRegister(string subscriptionId);
 
         // Client API's
+        List<Dictionary<string, string>> GetSubscriptionsDetails(string channel = null);
 
-        List<Dictionary<string, string>> GetSubscriptions(string channel = null);
-
-        bool Pulse(string id);
+        bool Pulse(string subscriptionId);
 
         // Clear all Registrations
         void Reset();
+        void Start();
+        void Stop();
     }
 
     public static class Selector
@@ -669,6 +711,25 @@ namespace ServiceStack
 
     public static class ServerEventExtensions
     {
+        public static SubscriptionInfo GetInfo(this IEventSubscription sub)
+        {
+            if (sub == null)
+                return null;
+
+            return new SubscriptionInfo
+            {
+                CreatedAt = sub.CreatedAt,
+                Channel = sub.Channel,
+                UserId = sub.UserId,
+                UserName = sub.UserName,
+                DisplayName = sub.DisplayName,
+                SessionId = sub.SessionId,
+                SubscriptionId = sub.SubscriptionId,
+                IsAuthenticated = sub.IsAuthenticated,
+                Meta = sub.Meta,
+            };
+        }
+
         public static void NotifyAll(this IServerEvents server, object message)
         {
             server.NotifyAll(Selector.Id(message.GetType()), message);

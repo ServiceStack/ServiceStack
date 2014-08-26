@@ -249,7 +249,7 @@ namespace RazorRockstars.Console.Files
 
         public void Any(PostRawToChannel request)
         {
-            var sub = ServerEvents.GetSubscription(request.From);
+            var sub = ServerEvents.GetSubscriptionInfo(request.From);
             if (sub == null)
                 throw HttpError.NotFound("Subscription {0} does not exist".Fmt(request.From));
 
