@@ -76,8 +76,6 @@ namespace ServiceStack
 
     public class ServerEventsHandler : HttpAsyncTaskHandler
     {
-        static long anonUserId;
-
         public override bool RunAsAsync()
         {
             return true;
@@ -90,9 +88,11 @@ namespace ServiceStack
             res.KeepAlive = true;
             res.Flush();
 
+            var serverEvents = req.TryResolve<IServerEvents>();
             IAuthSession session = req.GetSession();
             var userAuthId = session != null ? session.UserAuthId : null;
-            var userId = userAuthId ?? ("-" + Interlocked.Increment(ref anonUserId));
+            var anonUserId = serverEvents.GetNextSequence("anonUser");
+            var userId = userAuthId ?? ("-" + anonUserId);
             var displayName = session.GetSafeDisplayName()
                 ?? "user" + anonUserId;
 
@@ -136,7 +136,7 @@ namespace ServiceStack
 
             subscription.Publish("cmd.onConnect", privateArgs.ToJson());
 
-            req.TryResolve<IServerEvents>().Register(subscription);
+            serverEvents.Register(subscription);
 
             var tcs = new TaskCompletionSource<bool>();
 
@@ -510,6 +510,13 @@ namespace ServiceStack
             return userSubs;
         }
 
+        ConcurrentDictionary<string, long> SequenceCounters = new ConcurrentDictionary<string, long>(); 
+
+        public long GetNextSequence(string sequenceId)
+        {
+            return SequenceCounters.AddOrUpdate(sequenceId, 1, (id, count) => count + 1);
+        }
+
         public List<Dictionary<string, string>> GetSubscriptionsDetails(string channel = null)
         {
             var ret = new List<Dictionary<string, string>>();
@@ -684,6 +691,8 @@ namespace ServiceStack
         void Register(IEventSubscription subscription);
 
         void UnRegister(string subscriptionId);
+
+        long GetNextSequence(string sequenceId);
 
         // Client API's
         List<Dictionary<string, string>> GetSubscriptionsDetails(string channel = null);

@@ -205,6 +205,14 @@ namespace ServiceStack
             NotifyRedis("unregister.id." + subscriptionId, null, null);
         }
 
+        public long GetNextSequence(string sequenceId)
+        {
+            using (var redis = clientsManager.GetClient())
+            {
+                return redis.Increment("sse:seq:" + sequenceId, 1);
+            }
+        }
+
         public List<Dictionary<string, string>> GetSubscriptionsDetails(string channel = null)
         {
             using (var redis = clientsManager.GetClient())
