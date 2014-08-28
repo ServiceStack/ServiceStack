@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Web;
 using ServiceStack.Host;
@@ -50,7 +51,8 @@ namespace ServiceStack
             if (!IsIntegratedPipeline && isAspNetHost && !hostedAtRootPath && !Env.IsMono)
                 DefaultHttpHandler = new DefaultHttpHandler();
 
-            foreach (var file in appHost.VirtualPathProvider.GetRootFiles())
+            var rootFiles = appHost.VirtualPathProvider.GetRootFiles().ToList();
+            foreach (var file in rootFiles)
             {
                 var fileNameLower = file.Name.ToLower();
                 if (DefaultRootFileName == null && config.DefaultDocuments.Contains(fileNameLower))
@@ -65,7 +67,7 @@ namespace ServiceStack
                             DefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = DefaultRootFileName };
                     }
                 }
-                WebHostRootFileNames.Add(file.Name.ToLower());
+                WebHostRootFileNames.Add(fileNameLower);
             }
 
             foreach (var dir in appHost.VirtualPathProvider.GetRootDirectories())

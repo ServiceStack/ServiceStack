@@ -39,6 +39,7 @@ namespace ServiceStack
                 ApiVersion = "1.0",
                 EmbeddedResourceSources = new List<Assembly>(),
                 EmbeddedResourceBaseTypes = new[] { HostContext.AppHost.GetType(), typeof(Service) }.ToList(),
+                EmbeddedResourceTreatAsFiles = new HashSet<string>(),
                 LogFactory = new NullLogFactory(),
                 EnableAccessRestrictions = true,
                 WebHostPhysicalPath = "~".MapServerPath(),
@@ -131,6 +132,7 @@ namespace ServiceStack
             this.ApiVersion = instance.ApiVersion;
             this.EmbeddedResourceSources = instance.EmbeddedResourceSources;
             this.EmbeddedResourceBaseTypes = instance.EmbeddedResourceBaseTypes;
+            this.EmbeddedResourceTreatAsFiles = instance.EmbeddedResourceTreatAsFiles;
             this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
             this.ServiceEndpointsMetadataConfig = instance.ServiceEndpointsMetadataConfig;
             this.LogFactory = instance.LogFactory;
@@ -188,6 +190,7 @@ namespace ServiceStack
 
         public List<Type> EmbeddedResourceBaseTypes { get; set; }
         public List<Assembly> EmbeddedResourceSources { get; set; }
+        public HashSet<string> EmbeddedResourceTreatAsFiles { get; set; }
 
         public string SoapServiceName { get; set; }
         public string DefaultContentType { get; set; }

@@ -82,9 +82,10 @@ namespace ServiceStack.VirtualPath
         {
             SubDirectories = new List<ResourceVirtualDirectory>();
             SubFiles = new List<ResourceVirtualFile>();
+            var treatAsFiles = (HostContext.Config != null ? HostContext.Config.EmbeddedResourceTreatAsFiles : null) ?? new HashSet<string>();
 
             SubFiles.AddRange(manifestResourceNames
-                .Where(n => n.Count(c => c == '.') <= 1)
+                .Where(n => n.Count(c => c == '.') <= 1 || treatAsFiles.Contains(n))
                 .Select(CreateVirtualFile)
                 .Where(f => f != null)
                 .OrderBy(f => f.Name));
