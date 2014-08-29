@@ -171,7 +171,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    public class CustomUserSession : AuthUserSession
+    public class CustomUserSession : WebSudoAuthUserSession
     {
         public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, System.Collections.Generic.Dictionary<string, string> authInfo)
         {
@@ -256,6 +256,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class RequiresWebSudo
+    {
+        public string Name { get; set; }
+    }
+
+    public class RequiresWebSudoResponse
+    {
+        public string Result { get; set; }
+
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [WebSudoRequired]
+    public class RequiresWebSudoService : Service
+    {
+        public RequiresWebSudoResponse Any(RequiresWebSudo request)
+        {
+            return new RequiresWebSudoResponse { Result = request.Name };
+        }
+    }
+
     public class AuthTests
     {
         protected virtual string VirtualDirectory { get { return ""; } }
@@ -296,7 +317,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         new BasicAuthProvider(), //Sign-in with Basic Auth
 						new CredentialsAuthProvider(), //HTML Form post of UserName/Password credentials
                         new CustomAuthProvider()
-					}, "~/" + LoginUrl));
+					}, "~/" + LoginUrl) { RegisterPlugins = { new WebSudoFeature() } });
 
                 container.Register(new MemoryCacheClient());
                 userRep = new InMemoryAuthRepository();
@@ -1072,6 +1093,108 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException webEx)
             {
                 Assert.Fail(webEx.Message);
+            }
+        }
+
+        [Test]
+        public void WebSudoRequired_service_returns_PaymentRequired_if_not_re_authenticated()
+        {
+            try
+            {
+                var client = GetClient();
+                var authRequest = new Authenticate
+                {
+                    provider = CredentialsAuthProvider.Name,
+                    UserName = UserName,
+                    Password = Password,
+                    RememberMe = true,
+                };
+                client.Send(authRequest);
+                var request = new RequiresWebSudo { Name = "test" };
+                var response = client.Send<RequiresWebSudoResponse>(request);
+
+                Assert.Fail("Shouldn't be allowed");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.PaymentRequired));
+                Console.WriteLine(webEx.Dump());
+            }
+        }
+
+        [Test]
+        public void WebSudoRequired_service_succeeds_if_re_authenticated()
+        {
+            var client = GetClient();
+            var authRequest = new Authenticate
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = UserName,
+                Password = Password,
+                RememberMe = true,
+            };
+            client.Send(authRequest);
+            var request = new RequiresWebSudo { Name = "test" };
+            try
+            {
+                client.Send<RequiresWebSudoResponse>(request);
+                Assert.Fail("Shouldn't be allowed");
+            }
+            catch
+            {}
+            client.Send(authRequest);
+            var response = client.Send<RequiresWebSudoResponse>(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+        }
+
+        [Test]
+        public void Failed_re_authentication_does_not_logout_user()
+        {
+            var client = GetClient();
+            var authRequest = new Authenticate
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = UserName,
+                Password = Password,
+                RememberMe = true,
+            };
+            client.Send(authRequest);
+            var request = new RequiresWebSudo { Name = "test" };
+            try
+            {
+                client.Send<RequiresWebSudoResponse>(request);
+                Assert.Fail("Shouldn't be allowed");
+            }
+            catch
+            {
+                // ignore the first 402
+            }
+            try
+            {
+                client.Send(new Authenticate
+                {
+                    provider = CredentialsAuthProvider.Name,
+                    UserName = UserName,
+                    Password = "some other password",
+                    RememberMe = true,
+                });
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+                Console.WriteLine(webEx.ResponseDto.Dump());
+            }
+            
+            // Should still be authenticated, but not elevated
+            try 
+            { 
+                client.Send<RequiresWebSudoResponse>(request);
+                Assert.Fail("Shouldn't be allowed");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.PaymentRequired));
+                Console.WriteLine(webEx.Dump());
             }
         }
     }
