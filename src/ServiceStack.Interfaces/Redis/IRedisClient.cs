@@ -27,6 +27,7 @@ namespace ServiceStack.Redis
         long Db { get; set; }
         long DbSize { get; }
         Dictionary<string, string> Info { get; }
+        DateTime GetServerTime();
         DateTime LastSave { get; }
         string Host { get; }
         int Port { get; }
