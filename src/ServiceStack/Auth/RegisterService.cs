@@ -133,7 +133,8 @@ namespace ServiceStack.Auth
             {
                 session = this.GetSession();
                 session.OnRegistered(this);
-                AuthEvents.OnRegistered(this.Request, session, this);
+                if (AuthEvents != null)
+                    AuthEvents.OnRegistered(this.Request, session, this);
             }
 
             if (response == null)

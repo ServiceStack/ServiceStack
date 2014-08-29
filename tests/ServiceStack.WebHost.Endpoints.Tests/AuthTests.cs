@@ -1134,17 +1134,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 RememberMe = true,
             };
             client.Send(authRequest);
+
             var request = new RequiresWebSudo { Name = "test" };
             try
             {
                 client.Send<RequiresWebSudoResponse>(request);
                 Assert.Fail("Shouldn't be allowed");
             }
-            catch
-            {}
-            client.Send(authRequest);
-            var response = client.Send<RequiresWebSudoResponse>(request);
-            Assert.That(response.Result, Is.EqualTo(request.Name));
+            catch (WebServiceException)
+            {
+                client.Send(authRequest);
+                var response = client.Send<RequiresWebSudoResponse>(request);
+                Assert.That(response.Result, Is.EqualTo(request.Name));
+            }
         }
 
         [Test]

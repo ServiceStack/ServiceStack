@@ -14,21 +14,23 @@ namespace ServiceStack
         }
 
         public WebSudoRequiredAttribute()
-            : this(ApplyTo.All)
-        {
-        }
+            : this(ApplyTo.All) {}
 
         public override void Execute(IRequest req, IResponse res, object requestDto)
         {
             if (HostContext.AppHost.HasValidAuthSecret(req))
                 return;
+
             base.Execute(req, res, requestDto);
             if (res.IsClosed)
                 return;
 
             var session = req.GetSession();
-            if (session != null && session.HasRole("Admin") || (this.HasWebSudo(req, session as IWebSudoAuthSession) || this.DoHtmlRedirectIfConfigured(req, res)))
+            if (session != null && session.HasRole("Admin") 
+                || (this.HasWebSudo(req, session as IWebSudoAuthSession) 
+                || this.DoHtmlRedirectIfConfigured(req, res)))
                 return;
+
             res.StatusCode = 402;
             res.StatusDescription = "Web Sudo Required";
             res.EndRequest();

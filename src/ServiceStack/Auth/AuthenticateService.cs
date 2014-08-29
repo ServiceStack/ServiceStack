@@ -37,8 +37,6 @@ namespace ServiceStack.Auth
         public static string HtmlRedirect { get; internal set; }
         public static IAuthProvider[] AuthProviders { get; private set; }
 
-        public IAuthEvents AuthEvents { get; set; }
-        
         static AuthenticateService()
         {
             CurrentSessionFactory = () => new AuthUserSession();
