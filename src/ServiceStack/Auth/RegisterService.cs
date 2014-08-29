@@ -131,6 +131,7 @@ namespace ServiceStack.Auth
             {
                 session = this.GetSession();
                 session.OnRegistered(this);
+                AuthenticateService.AuthSessionHooks.OnRegistered(this.Request, session, this);
             }
 
             if (response == null)

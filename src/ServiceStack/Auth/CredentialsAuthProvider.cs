@@ -161,6 +161,7 @@ namespace ServiceStack.Auth
             {
                 session.IsAuthenticated = true;
                 session.OnAuthenticated(authService, session, tokens, authInfo);
+                AuthenticateService.AuthSessionHooks.OnAuthenticated(authService.Request, session, authService, tokens, authInfo);
             }
             finally
             {
