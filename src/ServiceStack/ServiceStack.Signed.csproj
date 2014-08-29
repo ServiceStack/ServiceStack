@@ -102,6 +102,7 @@
     <Compile Include="AppSelfHostBase.cs" />
     <Compile Include="AsyncExtensions.cs" />
     <Compile Include="Auth\AspNetWindowsAuthProvider.cs" />
+    <Compile Include="Auth\AuthEvents.cs" />
     <Compile Include="Auth\OdnoklassnikiAuthProvider.cs" />
     <Compile Include="Auth\AuthMetadataProvider.cs" />
     <Compile Include="Auth\VkAuthProvider.cs" />
@@ -563,6 +564,8 @@
     <Compile Include="Metadata\IndexOperationsControl.cs" />
     <Compile Include="Metadata\XsdTypeNames.cs" />
     <Compile Include="Metadata\XsdTypes.cs" />
+    <Compile Include="WebSudoFeature.cs" />
+    <Compile Include="WebSudoRequiredAttribute.cs" />
     <Compile Include="XsdUtils.cs" />
     <Compile Include="Metadata\ListTemplate.cs" />
     <Compile Include="IAppHost.cs" />

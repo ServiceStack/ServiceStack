@@ -118,6 +118,8 @@
     <Compile Include="Messaging\Rcon\Server.cs" />
     <Compile Include="MiniProfiler.Storage\SqlServerStorage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RedisPubSubServer.cs" />
+    <Compile Include="RedisServerEvents.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
