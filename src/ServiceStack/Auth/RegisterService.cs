@@ -58,6 +58,8 @@ namespace ServiceStack.Auth
 
         public IValidator<Register> RegistrationValidator { get; set; }
 
+        public IAuthEvents AuthEvents { get; set; }
+
         /// <summary>
         /// Update an existing registraiton
         /// </summary>
@@ -131,7 +133,7 @@ namespace ServiceStack.Auth
             {
                 session = this.GetSession();
                 session.OnRegistered(this);
-                AuthenticateService.AuthSessionHooks.OnRegistered(this.Request, session, this);
+                AuthEvents.OnRegistered(this.Request, session, this);
             }
 
             if (response == null)

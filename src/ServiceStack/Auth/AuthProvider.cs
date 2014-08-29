@@ -48,6 +48,11 @@ namespace ServiceStack.Auth
             }
         }
 
+        public IAuthEvents AuthEvents
+        {
+            get { return HostContext.TryResolve<IAuthEvents>() ?? new AuthEvents(); }
+        }
+
         /// <summary>
         /// Allows specifying a global fallback config that if exists is formatted with the Provider as the first arg.
         /// E.g. this appSetting with the TwitterAuthProvider: 
@@ -76,7 +81,7 @@ namespace ServiceStack.Auth
                 ?? this.CallbackUrl;
 
             session.OnLogout(service);
-            AuthenticateService.AuthSessionHooks.OnLogout(service.Request, session, service);
+            AuthEvents.OnLogout(service.Request, session, service);
 
             service.RemoveSession();
 
@@ -211,7 +216,7 @@ namespace ServiceStack.Auth
 
                 session.IsAuthenticated = true;
                 session.OnAuthenticated(authService, session, tokens, authInfo);
-                AuthenticateService.AuthSessionHooks.OnAuthenticated(authService.Request, session, authService, tokens, authInfo);
+                AuthEvents.OnAuthenticated(authService.Request, session, authService, tokens, authInfo);
             }
             finally
             {

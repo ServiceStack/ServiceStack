@@ -144,7 +144,10 @@ namespace ServiceStack
                     session.Id = sessionId;
                     session.CreatedAt = session.LastModified = DateTime.UtcNow;
                     session.OnCreated(httpReq);
-                    AuthenticateService.AuthSessionHooks.OnCreated(httpReq, session);
+
+                    var authEvents = HostContext.TryResolve<IAuthEvents>();
+                    if (authEvents != null) 
+                        authEvents.OnCreated(httpReq, session);
                 }
 
                 if (httpReq.Items.ContainsKey(RequestItemsSessionKey))

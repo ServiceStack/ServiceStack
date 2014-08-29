@@ -96,6 +96,7 @@
     <Compile Include="AppSelfHostBase.cs" />
     <Compile Include="AsyncExtensions.cs" />
     <Compile Include="Auth\AspNetWindowsAuthProvider.cs" />
+    <Compile Include="Auth\AuthEvents.cs" />
     <Compile Include="Auth\OdnoklassnikiAuthProvider.cs" />
     <Compile Include="Auth\AuthMetadataProvider.cs" />
     <Compile Include="Auth\VkAuthProvider.cs" />

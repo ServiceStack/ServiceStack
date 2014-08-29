@@ -5,7 +5,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class WebSudoFeature : IPlugin, IAuthSessionHooks
+    public class WebSudoFeature : IPlugin, IAuthEvents
     {
         public const string SessionCopyRequestItemKey = "__copy-of-request-session";
 
@@ -24,9 +24,11 @@ namespace ServiceStack
                 throw new NotSupportedException("The IUserAuth session must also implement IWebSudoAuthSession");
             }
 
-            AuthenticateService.Register(this);
             appHost.GlobalRequestFilters.Add(OnRequestStart);
             appHost.GlobalResponseFilters.Add(OnRequestEnd);
+
+            var authFeature = appHost.GetPlugin<AuthFeature>();
+            authFeature.AuthEvents.Add(this);
         }
 
         private void OnRequestStart(IRequest request, IResponse response, object dto)
