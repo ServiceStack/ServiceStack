@@ -27,6 +27,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771
 		..\build\build.tasks = ..\build\build.tasks
 		..\build\codegen-projs.js = ..\build\codegen-projs.js
 		..\CONTRIBUTORS.md = ..\CONTRIBUTORS.md
+		..\build\copy-interfaces.bat = ..\build\copy-interfaces.bat
 		..\build\copy-pcl.bat = ..\build\copy-pcl.bat
 		..\build\copy-sn.bat = ..\build\copy-sn.bat
 		..\build\copy.bat = ..\build\copy.bat
