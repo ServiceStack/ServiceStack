@@ -183,10 +183,6 @@
       <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>
       <Name>ServiceStack</Name>
     </ProjectReference>
-    <ProjectReference Include="..\RazorRockstars.BuildTask\RazorRockstars.BuildTask.csproj">
-      <Project>{62e10c68-4357-410f-8217-a9d19dd77f29}</Project>
-      <Name>RazorRockstars.BuildTask</Name>
-    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
