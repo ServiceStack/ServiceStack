@@ -751,6 +751,12 @@
             <para>db.TableExists("Person")</para>
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.TableExists``1(System.Data.IDbConnection)">
+            <summary>
+            Checks whether a Table Exists. E.g:
+            <para>db.TableExists&lt;Person&gt;()</para>
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.CreateTables(System.Data.IDbConnection,System.Boolean,System.Type[])">
             <summary>
             Create DB Tables from the schemas of runtime types. E.g:
