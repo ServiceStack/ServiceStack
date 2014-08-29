@@ -105,6 +105,7 @@ namespace ServiceStack.Auth
 
                 return new AuthenticateResponse
                 {
+                    UserId = session.UserAuthId,
                     UserName = userName,
                     SessionId = session.Id,
                     ReferrerUrl = referrerUrl

@@ -89,6 +89,7 @@ namespace ServiceStack.Auth
                     return response;
 
                 return new AuthenticateResponse {
+                    UserId = session.UserAuthId,
                     UserName = userName,
                     SessionId = session.Id,
                 };
