@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Text;
@@ -35,10 +36,13 @@ namespace ServiceStack.Auth
         public static string DefaultOAuthRealm { get; private set; }
         public static string HtmlRedirect { get; internal set; }
         public static IAuthProvider[] AuthProviders { get; private set; }
+
+        public static AuthSessionHooks AuthSessionHooks { get; private set; }
         
         static AuthenticateService()
         {
             CurrentSessionFactory = () => new AuthUserSession();
+            AuthSessionHooks = new AuthSessionHooks();
         }
 
         public static IAuthProvider GetAuthProvider(string provider)
@@ -67,6 +71,11 @@ namespace ServiceStack.Auth
             AuthProviders = authProviders;
             if (sessionFactory != null)
                 CurrentSessionFactory = sessionFactory;
+        }
+
+        public static void Register(IAuthSessionHooks hooks)
+        {
+            AuthSessionHooks.Hooks.Add(hooks);
         }
 
         private void AssertAuthProviders()
@@ -245,5 +254,54 @@ namespace ServiceStack.Auth
         }
     }
 
+    public interface IAuthSessionHooks
+    {
+        void OnRegistered(IRequest httpReq, IAuthSession session, IServiceBase registrationService);
+        void OnAuthenticated(IRequest httpReq, IAuthSession session, IServiceBase authService, IAuthTokens tokens, Dictionary<string, string> authInfo);
+        void OnLogout(IRequest httpReq, IAuthSession session, IServiceBase authService);
+        void OnCreated(IRequest httpReq, IAuthSession session);
+    }
+
+    public class AuthSessionHooks
+    {
+        public AuthSessionHooks()
+        {
+            Hooks = new List<IAuthSessionHooks>();
+        }
+
+        public List<IAuthSessionHooks> Hooks { get; private set; }
+
+        public void OnRegistered(IRequest httpReq, IAuthSession session, IServiceBase registrationService)
+        {
+            foreach (var hook in Hooks)
+            {
+                hook.OnRegistered(httpReq, session, registrationService);
+            }
+        }
+
+        public void OnAuthenticated(IRequest httpReq, IAuthSession session, IServiceBase authService, IAuthTokens tokens, Dictionary<string, string> authInfo)
+        {
+            foreach (var hook in Hooks)
+            {
+                hook.OnAuthenticated(httpReq, session, authService, tokens, authInfo);
+            }
+        }
+
+        public void OnLogout(IRequest httpReq, IAuthSession session, IServiceBase authService)
+        {
+            foreach (var hook in Hooks)
+            {
+                hook.OnLogout(httpReq, session, authService);
+            }
+        }
+
+        public void OnCreated(IRequest httpReq, IAuthSession session)
+        {
+            foreach (var hook in Hooks)
+            {
+                hook.OnCreated(httpReq, session);
+            }
+        }
+    }
 }
 

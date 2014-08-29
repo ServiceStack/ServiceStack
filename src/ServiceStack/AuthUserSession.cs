@@ -90,6 +90,18 @@ namespace ServiceStack
         public virtual void OnCreated(IRequest httpReq) {}
     }
 
+    public class WebSudoAuthUserSession : AuthUserSession, IWebSudoAuthSession
+    {
+        [DataMember(Order = 41)]
+        public DateTime AuthenticatedAt { get; set; }
+
+        [DataMember(Order = 42)]
+        public int AuthenticatedCount { get; set; }
+
+        [DataMember(Order = 43)]
+        public DateTime? AuthenticatedWebSudoUntil { get; set; }
+    }
+
     public static class AuthSessionExtensions
     {
         public static IAuthTokens GetOAuthTokens(this IAuthSession session, string provider)

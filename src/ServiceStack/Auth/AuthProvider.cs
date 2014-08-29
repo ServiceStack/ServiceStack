@@ -76,6 +76,7 @@ namespace ServiceStack.Auth
                 ?? this.CallbackUrl;
 
             session.OnLogout(service);
+            AuthenticateService.AuthSessionHooks.OnLogout(service.Request, session, service);
 
             service.RemoveSession();
 
@@ -210,6 +211,7 @@ namespace ServiceStack.Auth
 
                 session.IsAuthenticated = true;
                 session.OnAuthenticated(authService, session, tokens, authInfo);
+                AuthenticateService.AuthSessionHooks.OnAuthenticated(authService.Request, session, authService, tokens, authInfo);
             }
             finally
             {
