@@ -337,7 +337,7 @@ namespace ServiceStack.Host
                         continue;
                     }
 
-                    if (withPathInfoParts[pathIx] != literalToMatch) return false;
+                    if (withPathInfoParts.Length <= pathIx || withPathInfoParts[pathIx] != literalToMatch) return false;
                     pathIx++;
                 }
             }

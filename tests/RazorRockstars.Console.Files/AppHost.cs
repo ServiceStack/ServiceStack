@@ -263,4 +263,18 @@ namespace RazorRockstars.Console.Files
             }
         }
     }
+
+    [Route("/Content/hello/{Name*}")]
+    public class TestWildcardRazorPage
+    {
+        public string Name { get; set; }
+    }
+
+    public class IssueServices : Service
+    {
+        public object Get(TestWildcardRazorPage request)
+        {
+            return request;
+        }
+    }
 }
