@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -410,20 +411,33 @@ namespace ServiceStack.Host
             return to;
         }
 
-        public static List<ApiMemberAttribute> GetApiMembers(this Type operationType)
-        {
-            var members = operationType.GetMembers(BindingFlags.Instance | BindingFlags.Public);
-            var attrs = new List<ApiMemberAttribute>();
-            foreach (var member in members)
-            {
-                var memattr = member.AllAttributes<ApiMemberAttribute>()
-                    .Select(x => { x.Name = x.Name ?? member.Name; return x; });
+		public static List< ModelInfo > GetApiMembers( this Type operationType )
+		{
+			var hasDataContract = operationType.HasAttribute< DataContractAttribute >();
+			var properties = operationType.GetProperties();
+			var attrsModel = new List< ModelInfo >();
+			foreach( var property in properties )
+			{
+				var memattr = property.FirstAttribute< ApiMemberAttribute >();
 
-                attrs.AddRange(memattr);
-            }
+				var valattr = property.FirstAttribute< ApiAllowableValuesAttribute >();
 
-            return attrs;
-        }
+				if( memattr == null )
+					continue;
+
+				var propertyName = memattr.Name ?? property.Name;
+				if( hasDataContract )
+				{
+					var dataMemberAttr = property.FirstAttribute< DataMemberAttribute >();
+					if( dataMemberAttr != null && dataMemberAttr.Name != null )
+						propertyName = dataMemberAttr.Name;
+				}
+
+				attrsModel.Add( new ModelInfo( propertyName, memattr, valattr ) );
+			}
+
+			return attrsModel;
+		}
 
         public static List<Assembly> GetAssemblies(this Operation operation)
         {
@@ -437,5 +451,38 @@ namespace ServiceStack.Host
         }
     }
 
+		public class ModelInfo
+	{
+		public ModelInfo( string name, ApiMemberAttribute apiMemberAttribute )
+		{
+			this.Verb = apiMemberAttribute.Verb;
+			this.ParameterType = apiMemberAttribute.ParameterType;
+			this.Name = name ?? apiMemberAttribute.Name;
+			this.Description = apiMemberAttribute.Description;
+			this.DataType = apiMemberAttribute.DataType;
+			this.IsRequired = apiMemberAttribute.IsRequired;
+			this.AllowMultiple = apiMemberAttribute.AllowMultiple;
+		}
 
+		public ModelInfo( string name, ApiMemberAttribute apiMemberAttribute, ApiAllowableValuesAttribute allowedValues ): this( name, apiMemberAttribute )
+		{
+			if( allowedValues != null )
+			{
+				this.AllowedValues = allowedValues.Values;
+				this.Min = allowedValues.Min;
+				this.Max = allowedValues.Max;
+			}
+		}
+
+		public string Verb{ get; private set; }
+		public string ParameterType{ get; private set; }
+		public string Name{ get; private set; }
+		public string Description{ get; private set; }
+		public string DataType{ get; private set; }
+		public bool IsRequired{ get; private set; }
+		public bool AllowMultiple{ get; private set; }
+		public string[] AllowedValues{ get; private set; }
+		public int? Min{ get; set; }
+		public int? Max{ get; set; }
+	}
 }

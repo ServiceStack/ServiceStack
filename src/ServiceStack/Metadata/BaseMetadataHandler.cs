@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -117,33 +118,8 @@ namespace ServiceStack.Metadata
                     sb.Append("</tbody>");
                     sb.Append("</table>");
                 }
-
-                var apiMembers = operationType.GetApiMembers();
-                if (apiMembers.Count > 0)
-                {
-                    sb.Append("<table><caption>Parameters:</caption>");
-                    sb.Append("<thead><tr>");
-                    sb.Append("<th>Name</th>");
-                    sb.Append("<th>Parameter</th>");
-                    sb.Append("<th>Data Type</th>");
-                    sb.Append("<th>Required</th>");
-                    sb.Append("<th>Description</th>");
-                    sb.Append("</tr></thead>");
-
-                    sb.Append("<tbody>");
-                    foreach (var apiMember in apiMembers)
-                    {
-                        sb.Append("<tr>");
-                        sb.AppendFormat("<td>{0}</td>", ConvertToHtml(apiMember.Name));
-                        sb.AppendFormat("<td>{0}</td>", apiMember.ParameterType);
-                        sb.AppendFormat("<td>{0}</td>", apiMember.DataType);
-                        sb.AppendFormat("<td>{0}</td>", apiMember.IsRequired ? "Yes" : "No");
-                        sb.AppendFormat("<td>{0}</td>", apiMember.Description);
-                        sb.Append("</tr>");
-                    }
-                    sb.Append("</tbody>");
-                    sb.Append("</table>");
-                }
+                
+				this.AppendParameterDescription( operationType, sb, new HashSet< Type >() );
 
                 sb.Append(@"<div class=""call-info"">");
                 var overrideExtCopy = HostContext.Config.AllowRouteContentTypeExtensions
@@ -163,7 +139,7 @@ namespace ServiceStack.Metadata
             RenderOperations(writer, httpReq, metadata);
         }
 
-        protected void RenderOperations(HtmlTextWriter writer, IRequest httpReq, ServiceMetadata metadata)
+	    protected void RenderOperations(HtmlTextWriter writer, IRequest httpReq, ServiceMetadata metadata)
         {
             var defaultPage = new IndexOperationsControl
             {
@@ -242,5 +218,126 @@ namespace ServiceStack.Metadata
             operationControl.Render(writer);
         }
 
+	    private void AppendParameterDescription( Type modelType, StringBuilder sb, HashSet< Type > processedTypes )
+	    {
+		    if( IsScalarType( modelType ) || processedTypes.Contains( modelType ) || !IsValidToDocumentType( modelType ) )
+			    return;
+
+		    if( IsListType( modelType ) )
+			    modelType = GetListElementType( modelType );
+
+		    var apiMembers = modelType.GetApiMembers();
+		    if( apiMembers.Count > 0 )
+		    {
+			    sb.AppendFormat( "<table class='membersTable'><caption>Parameters for <strong><em>{0}</em></strong>:</caption>", modelType.Name );
+			    sb.Append( "<thead><tr>" );
+			    sb.Append( "<th>Name</th>" );
+			    sb.Append( "<th>Parameter</th>" );
+			    sb.Append( "<th>Data Type</th>" );
+			    sb.Append( "<th>Required</th>" );
+			    sb.Append( "<th>Description</th>" );
+			    sb.Append( "</tr></thead>" );
+
+			    sb.Append( "<tbody>" );
+			    foreach( var apiMember in apiMembers )
+			    {
+				    sb.Append( "<tr valign='top'>" );
+				    sb.AppendFormat( "<td>{0}</td>", this.ConvertToHtml( apiMember.Name ) );
+				    sb.AppendFormat( "<td>{0}</td>", apiMember.ParameterType );
+				    sb.AppendFormat( "<td>{0}</td>", apiMember.DataType );
+				    sb.AppendFormat( "<td>{0}</td>", apiMember.IsRequired ? "Yes" : "No" );
+				    sb.Append( "<td>" );
+				    AppendFullDescription( apiMember, sb );
+				    sb.Append( "</td>" );
+				    sb.Append( "</tr>" );
+			    }
+			    sb.Append( "</tbody>" );
+			    sb.Append( "</table>" );
+		    }
+
+		    processedTypes.Add( modelType );
+
+		    foreach( var propertyType in modelType.GetProperties().Select( p => p.PropertyType ) )
+		    {
+			    this.AppendParameterDescription( propertyType, sb, processedTypes );
+
+			    foreach( var genericTypeArgument in propertyType.GenericTypeArguments() )
+			    {
+				    this.AppendParameterDescription( genericTypeArgument, sb, processedTypes );
+			    }
+		    }
+	    }
+		
+		private static bool IsValidToDocumentType( Type modelType )
+		{
+			return modelType.Namespace != null && !modelType.Namespace.StartsWith( "System" ) && !modelType.Namespace.StartsWith( "Microsoft" );
+		}
+
+		private static void AppendFullDescription( ModelInfo apiMember, StringBuilder sb )
+		{
+			sb.Append( apiMember.Description );
+			if( apiMember.Min.HasValue || apiMember.Max.HasValue )
+			{
+				sb.Append( "<br /" );
+				sb.AppendFormat( "Min/Max: [{0}-{1}]", ConvertToString( apiMember.Min ), ConvertToString( apiMember.Max ) );
+			}
+
+			if( apiMember.AllowedValues != null )
+			{
+				sb.AppendFormat( "<div class='valuesHeader'>Possible values</div>" );
+				sb.Append( "<ul>" );
+				foreach( var value in apiMember.AllowedValues )
+				{
+					sb.AppendFormat( "<li>{0}</li>", value );
+				}
+				sb.Append( "</ul>" );
+			}
+		}
+
+		private static string ConvertToString( int? value )
+		{
+			return value.HasValue ? value.ToString() : string.Empty;
+		}
+
+		private static readonly Dictionary< Type, string > _clrTypesToSwaggerScalarTypes = new Dictionary< Type, string >
+		{
+			{ typeof( byte ), SwaggerType.Byte },
+			{ typeof( sbyte ), SwaggerType.Byte },
+			{ typeof( bool ), SwaggerType.Boolean },
+			{ typeof( short ), SwaggerType.Int },
+			{ typeof( ushort ), SwaggerType.Int },
+			{ typeof( int ), SwaggerType.Int },
+			{ typeof( uint ), SwaggerType.Int },
+			{ typeof( long ), SwaggerType.Long },
+			{ typeof( ulong ), SwaggerType.Long },
+			{ typeof( float ), SwaggerType.Float },
+			{ typeof( double ), SwaggerType.Double },
+			{ typeof( decimal ), SwaggerType.Double },
+			{ typeof( string ), SwaggerType.String },
+			{ typeof( DateTime ), SwaggerType.Date }
+		};
+
+		private static bool IsScalarType( Type type )
+		{
+			return _clrTypesToSwaggerScalarTypes.ContainsKey( type ) || ( Nullable.GetUnderlyingType( type ) ?? type ).IsEnum;
+		}
+
+		private static Type GetListElementType( Type type )
+		{
+			if( type.IsArray )
+				return type.GetElementType();
+
+			if( !type.IsGenericType )
+				return null;
+			var genericType = type.GetGenericTypeDefinition();
+			if( genericType == typeof( List< > ) || genericType == typeof( IList< > ) || genericType == typeof( IEnumerable< > ) )
+				return type.GetGenericArguments()[ 0 ];
+			return null;
+		}
+
+		private static bool IsListType( Type type )
+		{
+			return GetListElementType( type ) != null;
+		}
     }
 }
