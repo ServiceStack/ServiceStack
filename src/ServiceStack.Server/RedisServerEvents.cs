@@ -131,22 +131,21 @@ namespace ServiceStack
         private void RemoveSubscriptionFromRedis(SubscriptionInfo info)
         {
             var id = info.SubscriptionId;
-            var keys = new List<string>(new[] {
-                RedisIndex.Subscription.Fmt(id),
-                RedisIndex.ChannelSet.Fmt(info.Channel),
-                RedisIndex.UserIdSet.Fmt(info.UserId),
-            });
-
-            if (info.UserName != null)
-                keys.Add(RedisIndex.UserNameSet.Fmt(info.UserName));
-
-            if (info.SessionId != null)
-                keys.Add(RedisIndex.SessionSet.Fmt(info.SessionId));
 
             using (var redis = clientsManager.GetClient())
+            using (var trans = redis.CreateTransaction())
             {
-                redis.RemoveAll(keys);
-                redis.RemoveItemFromSortedSet(RedisIndex.ActiveSubscriptionsSet, id);
+                trans.QueueCommand(r => r.Remove(RedisIndex.Subscription.Fmt(id)));
+                trans.QueueCommand(r => r.RemoveItemFromSortedSet(RedisIndex.ActiveSubscriptionsSet, id));
+                trans.QueueCommand(r => r.RemoveItemFromSet(RedisIndex.ChannelSet.Fmt(info.Channel), id));
+                trans.QueueCommand(r => r.RemoveItemFromSet(RedisIndex.UserIdSet.Fmt(info.UserId), id));
+
+                if (info.UserName != null)
+                    trans.QueueCommand(r => r.RemoveItemFromSet(RedisIndex.UserNameSet.Fmt(info.UserName), id));
+                if (info.SessionId != null)
+                    trans.QueueCommand(r => r.RemoveItemFromSet(RedisIndex.SessionSet.Fmt(info.SessionId), id));
+
+                trans.Commit();
             }
         }
 
