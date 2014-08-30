@@ -90,7 +90,7 @@ namespace ServiceStack
             var webSudoSession = session as IWebSudoAuthSession;
             if (webSudoSession == null) return;
 
-            webSudoSession.AuthenticatedAt = DateTime.UtcNow;
+            webSudoSession.AuthenticatedAt = DateTime.Now;
             webSudoSession.AuthenticatedCount++;
 
             if (webSudoSession.AuthenticatedCount > 1)
