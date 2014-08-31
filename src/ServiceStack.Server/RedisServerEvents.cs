@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 
@@ -294,6 +295,7 @@ namespace ServiceStack
 
         public void Reset()
         {
+            local.Reset();
             using (var redis = clientsManager.GetClient())
             {
                 redis.FlushDb();

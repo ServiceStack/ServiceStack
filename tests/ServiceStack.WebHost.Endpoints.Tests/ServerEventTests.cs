@@ -179,7 +179,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    //[Explicit("Remove from autorunning in CI for now")]
+    [Explicit("Remove from autorunning in CI for now")]
     [TestFixture]
     public class RedisServerEventsTests : ServerEventsTests
     {
@@ -215,8 +215,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var serverEvents = appHost.TryResolve<IServerEvents>();
             serverEvents.Reset();
         }
-
-        static List<ServerEventsClient> clients = new List<ServerEventsClient>();
 
         private static ServerEventsClient CreateServerEventsClient()
         {
