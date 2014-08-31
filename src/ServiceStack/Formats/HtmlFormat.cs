@@ -36,7 +36,8 @@ namespace ServiceStack.Formats
         public void SerializeToStream(IRequest request, object response, IResponse httpRes)
         {
             var httpResult = request.GetItem("HttpResult") as IHttpResult;
-            if (httpResult != null && httpResult.Headers.ContainsKey(HttpHeaders.Location))
+            if (httpResult != null && httpResult.Headers.ContainsKey(HttpHeaders.Location) 
+                && httpResult.StatusCode != System.Net.HttpStatusCode.Created)  
                 return;
 
             try
