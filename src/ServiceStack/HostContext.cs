@@ -6,6 +6,7 @@ using System.Net;
 using System.Runtime.Serialization;
 using System.Web;
 using Funq;
+using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Host.HttpListener;
 using ServiceStack.IO;
@@ -81,6 +82,11 @@ namespace ServiceStack
         public static HostConfig Config
         {
             get { return AssertAppHost().Config; }
+        }
+
+        public static IAppSettings AppSettings
+        {
+            get { return AssertAppHost().AppSettings; }
         }
 
         public static ServiceMetadata Metadata

@@ -128,6 +128,11 @@ namespace ServiceStack
         HostConfig Config { get; }
 
         /// <summary>
+        /// The AppHost AppSettings. Defaults to App or Web.config appSettings.
+        /// </summary>
+        IAppSettings AppSettings { get; }
+
+        /// <summary>
         /// Register an Adhoc web service on Startup
         /// </summary>
         void RegisterService(Type serviceType, params string[] atRestPaths);

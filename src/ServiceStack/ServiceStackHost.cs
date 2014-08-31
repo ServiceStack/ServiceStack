@@ -51,6 +51,7 @@ namespace ServiceStack
             this.StartedAt = DateTime.UtcNow;
 
             ServiceName = serviceName;
+            AppSettings = new AppSettings();
             Container = new Container { DefaultOwner = Owner.External };
             ServiceController = CreateServiceController(assembliesWithServices);
 
@@ -188,6 +189,8 @@ namespace ServiceStack
         }
 
         public string ServiceName { get; set; }
+
+        public IAppSettings AppSettings { get; set; }
 
         public ServiceMetadata Metadata { get; set; }
 

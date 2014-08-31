@@ -8,6 +8,7 @@ using System.Text;
 using System.Web;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
+using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.Formats;
 using ServiceStack.Html;
@@ -363,6 +364,11 @@ namespace ServiceStack.Razor
         {
             get { return appHost ?? ServiceStackHost.Instance; }
             set { appHost = value; }
+        }
+
+        public IAppSettings AppSettings
+        {
+            get { return AppHost.AppSettings; }
         }
 
         public virtual T Get<T>()
