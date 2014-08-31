@@ -349,7 +349,7 @@ namespace ServiceStack.Host
 
         static MetadataType FindMetadataType(MetadataTypes metadataTypes, string name, string @namespace)
         {
-            if (@namespace == "System")
+            if (@namespace.StartsWith("System"))
                 return null;
 
             var reqType = metadataTypes.Operations.FirstOrDefault(x => x.Request.Name == name);
