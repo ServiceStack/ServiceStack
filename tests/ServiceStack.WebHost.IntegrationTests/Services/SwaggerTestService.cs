@@ -26,6 +26,28 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         [ApiMember(Description = "Not Aliased Description",
                    ParameterType = "path", DataType = "string", IsRequired = true)]
         public string NotAliased { get; set; }
+
+		[ApiMember( Description = "Nested model 1", DataType = "SwaggerNestedModel" )]
+		public SwaggerNestedModel NestedModel1{ get; set; }
+
+		[ApiMember( Description = "Nested model 2", DataType = "SwaggerNestedModel2" )]
+		public SwaggerNestedModel2 NestedModel2{ get; set; }
+    }
+
+    public class SwaggerNestedModel
+    {
+        [ApiMember( Description = "NestedProperty description")]
+        public bool NestedProperty { get; set;}
+    }
+
+    public class SwaggerNestedModel2
+    {
+        [ApiMember( Description = "NestedProperty2 description")]
+        public bool NestedProperty2 { get; set;}
+
+        [ApiMember( Description = "MultipleValues description")]
+		[ApiAllowableValues( "NestedProperty2", new [] { "val1", "val2" } ) ]
+        public string MultipleValues { get; set;}
     }
 
     public class SwaggerTestService : Service

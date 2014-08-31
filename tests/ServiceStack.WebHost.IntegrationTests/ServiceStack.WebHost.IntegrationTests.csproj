@@ -158,8 +158,6 @@
     <Content Include="Default.aspx" />
     <Content Include="default.html" />
     <Content Include="Subpages\Test.aspx" />
-    <EmbeddedResource Include="Templates\OperationControl.html" />
-    <EmbeddedResource Include="Templates\HtmlFormat.html" />
     <Content Include="user-notfound.htm" />
     <Content Include="user-default.htm" />
     <Content Include="Global.asax" />
@@ -299,7 +297,7 @@
       <Name>ServiceStack.Server</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
-      <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
+      <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>
       <Name>ServiceStack</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj">
@@ -310,7 +308,9 @@
   <ItemGroup>
     <Content Include="packages.config" />
     <Content Include="static-root.txt" />
-    <Content Include="App.config" />
+    <Content Include="App.config">
+      <SubType>Designer</SubType>
+    </Content>
     <None Include="Properties\DataSources\ServiceStack.ServiceInterface.ServiceModel.ResponseStatus.datasource" />
     <None Include="README.md" />
     <Content Include="sample.pdf" />
@@ -318,6 +318,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Templates\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
