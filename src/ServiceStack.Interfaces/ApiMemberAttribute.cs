@@ -10,7 +10,6 @@ namespace ServiceStack
     {
         public ApiMemberAttribute()
         {
-            ParameterType = "path";
             DataType = "string";
         }
 
@@ -20,7 +19,7 @@ namespace ServiceStack
         public string Verb { get; set; }
 
         /// <summary>
-        /// Gets or sets parameter type: It can be only one of the following: path, query, body, model, or header.
+        /// Gets or sets parameter type: It can be only one of the following: path, query, body, form, or header.
         /// </summary>
         public string ParameterType { get; set; }
 

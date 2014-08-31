@@ -474,6 +474,11 @@ namespace ServiceStack.Host
             return this.typeDeserializer.PopulateFromMap(fromInstance, requestKeyValuesMap, HostContext.Config.IgnoreWarningsOnPropertyNames);
         }
 
+        public bool IsVariable(string name)
+        {
+            return name != null && variablesNames.Any(name.EqualsIgnoreCase);
+        }
+
         public override int GetHashCode()
         {
             return UniqueMatchHashKey.GetHashCode();

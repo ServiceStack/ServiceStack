@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using ServiceStack.DataAnnotations;
+using ServiceStack.NativeTypes;
+using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -290,6 +292,78 @@ namespace ServiceStack.Host
                     : RequestAttributes.External);
         }
 
+        public List<MetadataType> GetMetadataTypesForOperation(IRequest httpReq, Operation op)
+        {
+            var typeMetadata = HostContext.TryResolve<INativeTypesMetadata>();
+
+            var metadataTypes = typeMetadata != null
+                ? typeMetadata.GetMetadataTypes(httpReq)
+                : new MetadataTypesGenerator(this, new NativeTypesFeature().MetadataTypesConfig)
+                    .GetMetadataTypes(httpReq);
+
+            var types = new List<MetadataType>();
+
+            var reqType = FindMetadataType(metadataTypes, op.RequestType);
+            if (reqType != null)
+            {
+                types.Add(reqType);
+
+                if (reqType.Properties != null)
+                {
+                    var propertyTypes = reqType.Properties
+                        .Select(p => FindMetadataType(metadataTypes, p.Type, p.TypeNamespace))
+                        .Where(type => type != null)
+                        .ToList();
+
+                    types.AddRange(propertyTypes);
+                }
+            }
+
+            var resType = FindMetadataType(metadataTypes, op.ResponseType);
+            if (resType != null)
+            {
+                types.Add(resType);
+
+                if (resType.Properties != null)
+                {
+                    var propertyTypes = resType.Properties
+                        .Select(p => FindMetadataType(metadataTypes, p.Type, p.TypeNamespace))
+                        .Where(type => type != null && !types.Contains(type))
+                        .ToList();
+
+                    types.AddRange(propertyTypes);
+                }
+            }
+
+            var generator = new CSharpGenerator(new NativeTypesFeature().MetadataTypesConfig);
+            types.Each(x => x.Properties.Each(p => 
+                p.DisplayType = p.DisplayType ?? generator.Type(p.Type, p.GenericArgs)));
+
+            return types;
+        }
+
+        static MetadataType FindMetadataType(MetadataTypes metadataTypes, Type type)
+        {
+            return type == null ? null : FindMetadataType(metadataTypes, type.Name, type.Namespace);
+        }
+
+        static MetadataType FindMetadataType(MetadataTypes metadataTypes, string name, string @namespace)
+        {
+            if (@namespace == "System")
+                return null;
+
+            var reqType = metadataTypes.Operations.FirstOrDefault(x => x.Request.Name == name);
+            if (reqType != null)
+                return reqType.Request;
+
+            var resType = metadataTypes.Operations
+                .FirstOrDefault(x => x.Response != null && x.Response.Name == name);
+
+            if (resType != null)
+                return resType.Response;
+
+            return metadataTypes.Types.FirstOrDefault(x => x.Name == name && x.Namespace == @namespace);
+        }
     }
 
     public class Operation
@@ -437,5 +511,21 @@ namespace ServiceStack.Host
         }
     }
 
+    public static class MetadataTypeExtensions
+    {
+        public static string GetParamType(this MetadataPropertyType prop, MetadataType type, Operation op)
+        {
+            if (prop.ParamType != null)
+                return prop.ParamType;
 
+            if (op.Routes.Any(x => x.IsVariable(prop.Name)))
+                return "path";
+
+            var isRequest = type.Name == op.RequestType.Name;
+            return isRequest && !op.Routes.Any(x => 
+                x.Verbs.Contains(HttpMethods.Post) || x.Verbs.Contains(HttpMethods.Put)) 
+                ? "query" 
+                : "body";
+        }
+    }
 }

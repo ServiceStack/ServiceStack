@@ -16,23 +16,53 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         [ApiMember(Description = "Color Description",
                    ParameterType = "path", DataType = "string", IsRequired = true)]
         [ApiAllowableValues("Color", typeof(Color))] //Enum
+        [DataMember(Name = "Aliased")]
         public string Color { get; set; }
 
         [ApiMember(Description = "Aliased Description",
-                   ParameterType = "path", DataType = "string", IsRequired = true)]
+                   DataType = "string", IsRequired = true)]
         [DataMember(Name = "Aliased")]
         public string Name { get; set; }
 
         [ApiMember(Description = "Not Aliased Description",
-                   ParameterType = "path", DataType = "string", IsRequired = true)]
+                   DataType = "string", IsRequired = true)]
+        [DataMember(Name = "Aliased")]
         public string NotAliased { get; set; }
+
+        [ApiMember(Description = "Nested model 1", DataType = "SwaggerNestedModel")]
+        [DataMember(Name = "Aliased")]
+        public SwaggerNestedModel NestedModel1 { get; set; }
+
+        [ApiMember(Description = "Nested model 2", DataType = "SwaggerNestedModel2")]
+        [DataMember(Name = "Aliased")]
+        public SwaggerNestedModel2 NestedModel2 { get; set; }
+    }
+
+    public class SwaggerNestedModel
+    {
+        [ApiMember(Description = "NestedProperty description")]
+        public bool NestedProperty { get; set; }
+    }
+
+    public class SwaggerNestedModel2
+    {
+        [ApiMember(Description = "NestedProperty2 description")]
+        public bool NestedProperty2 { get; set; }
+
+        [ApiMember(Description = "MultipleValues description")]
+        [ApiAllowableValues("MultipleValues", new[] { "val1", "val2" })]
+        public string MultipleValues { get; set; }
+
+        [ApiMember(Description = "TestRange description")]
+        [ApiAllowableValues("TestRange", 1, 10)]
+        public int TestRange { get; set; }
     }
 
     public class SwaggerTestService : Service
     {
-         public object Get(SwaggerTest request)
-         {
-             return request;
-         }
+        public object Get(SwaggerTest request)
+        {
+            return request;
+        }
     }
 }

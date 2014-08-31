@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.UI;
 using ServiceStack.Host;
+using ServiceStack.NativeTypes;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Web;
 using System.Text;
@@ -118,32 +120,8 @@ namespace ServiceStack.Metadata
                     sb.Append("</table>");
                 }
 
-                var apiMembers = operationType.GetApiMembers();
-                if (apiMembers.Count > 0)
-                {
-                    sb.Append("<table><caption>Parameters:</caption>");
-                    sb.Append("<thead><tr>");
-                    sb.Append("<th>Name</th>");
-                    sb.Append("<th>Parameter</th>");
-                    sb.Append("<th>Data Type</th>");
-                    sb.Append("<th>Required</th>");
-                    sb.Append("<th>Description</th>");
-                    sb.Append("</tr></thead>");
-
-                    sb.Append("<tbody>");
-                    foreach (var apiMember in apiMembers)
-                    {
-                        sb.Append("<tr>");
-                        sb.AppendFormat("<td>{0}</td>", ConvertToHtml(apiMember.Name));
-                        sb.AppendFormat("<td>{0}</td>", apiMember.ParameterType);
-                        sb.AppendFormat("<td>{0}</td>", apiMember.DataType);
-                        sb.AppendFormat("<td>{0}</td>", apiMember.IsRequired ? "Yes" : "No");
-                        sb.AppendFormat("<td>{0}</td>", apiMember.Description);
-                        sb.Append("</tr>");
-                    }
-                    sb.Append("</tbody>");
-                    sb.Append("</table>");
-                }
+                var metadataTypes = metadata.GetMetadataTypesForOperation(httpReq, op);
+                metadataTypes.Each(x => AppendType(sb, op, x));
 
                 sb.Append(@"<div class=""call-info"">");
                 var overrideExtCopy = HostContext.Config.AllowRouteContentTypeExtensions
@@ -161,6 +139,49 @@ namespace ServiceStack.Metadata
             }
 
             RenderOperations(writer, httpReq, metadata);
+        }
+
+        private void AppendType(StringBuilder sb, Operation op, MetadataType metadataType)
+        {
+            if (metadataType.Properties.IsEmpty()) return;
+            
+            sb.Append("<table>");
+            sb.Append("<caption><b>{0}</b> Parameters:</caption>".Fmt(metadataType.Name));
+            sb.Append("<thead><tr>");
+            sb.Append("<th>Name</th>");
+            sb.Append("<th>Parameter</th>");
+            sb.Append("<th>Data Type</th>");
+            sb.Append("<th>Required</th>");
+            sb.Append("<th>Description</th>");
+            sb.Append("</tr></thead>");
+
+            sb.Append("<tbody>");
+            foreach (var p in metadataType.Properties)
+            {
+                sb.Append("<tr>");
+                sb.AppendFormat("<td>{0}</td>", ConvertToHtml(p.Name));
+                sb.AppendFormat("<td>{0}</td>", p.GetParamType(metadataType, op));
+                sb.AppendFormat("<td>{0}</td>", ConvertToHtml(p.DisplayType ?? p.Type));
+                sb.AppendFormat("<td>{0}</td>", p.IsRequired.GetValueOrDefault() ? "Yes" : "No");
+
+                var desc = p.Description;
+                if (!p.AllowableValues.IsEmpty())
+                {
+                    desc += "<h4>Allowable Values</h4>";
+                    desc += "<ul>";
+                    p.AllowableValues.Each(x => desc += "<li>{0}</li>".Fmt(x));
+                    desc += "</ul>";
+                }
+                if (p.AllowableMin != null)
+                {
+                    desc += "<h4>Valid Range: {0} - {1}</h4>".Fmt(p.AllowableMin, p.AllowableMax);
+                }
+                sb.AppendFormat("<td>{0}</td>", desc);
+                
+                sb.Append("</tr>");
+            }
+            sb.Append("</tbody>");
+            sb.Append("</table>");
         }
 
         protected void RenderOperations(HtmlTextWriter writer, IRequest httpReq, ServiceMetadata metadata)

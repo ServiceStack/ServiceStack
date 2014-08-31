@@ -131,6 +131,8 @@ namespace ServiceStack.NativeTypes
             while (queue.Count > 0)
             {
                 var type = queue.Dequeue();
+                if (!type.IsUserType()) continue;
+
                 foreach (var pi in type.GetSerializableProperties()
                     .Where(pi => !ignoreTypeFn(pi.PropertyType)))
                 {
@@ -340,11 +342,32 @@ namespace ServiceStack.NativeTypes
                 Name = pi.Name,
                 Attributes = ToAttributes(pi.GetCustomAttributes(false)),
                 Type = pi.PropertyType.GetOperationName(),
+                TypeNamespace = pi.PropertyType.Namespace,
                 DataMember = ToDataMember(pi.GetDataMember()),
                 GenericArgs = pi.PropertyType.IsGenericType
                     ? pi.PropertyType.GetGenericArguments().Select(x => x.GetOperationName()).ToArray()
                     : null,
+                Description = pi.GetDescription(),
             };
+
+            var apiMember = pi.FirstAttribute<ApiMemberAttribute>();
+            if (apiMember != null)
+            {
+                if (apiMember.IsRequired)
+                    property.IsRequired = true;
+
+                property.ParamType = apiMember.ParameterType;
+                property.DisplayType = apiMember.DataType;
+            }
+
+            var apiAllowableValues = pi.FirstAttribute<ApiAllowableValuesAttribute>();
+            if (apiAllowableValues != null)
+            {
+                property.AllowableValues = apiAllowableValues.Values;
+                property.AllowableMin = apiAllowableValues.Min;
+                property.AllowableMax = apiAllowableValues.Max;
+            }
+
             if (instance != null)
             {
                 var value = pi.GetValue(instance, null);
@@ -381,6 +404,7 @@ namespace ServiceStack.NativeTypes
                 Name = pi.Name,
                 Attributes = ToAttributes(propertyAttrs),
                 Type = pi.ParameterType.GetOperationName(),
+                TypeNamespace = pi.ParameterType.Namespace,
                 Description = pi.GetDescription(),
             };
 

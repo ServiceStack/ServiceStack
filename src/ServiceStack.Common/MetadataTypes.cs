@@ -134,11 +134,19 @@ namespace ServiceStack
     {
         public string Name { get; set; }
         public string Type { get; set; }
+        public string TypeNamespace { get; set; }
         public string[] GenericArgs { get; set; }
         public string Value { get; set; }
         public string Description { get; set; }
         public MetadataDataMember DataMember { get; set; }
         public bool? ReadOnly { get; set; }
+
+        public string ParamType { get; set; }
+        public string DisplayType { get; set; }
+        public bool? IsRequired { get; set; }
+        public string[] AllowableValues { get; set; }
+        public int? AllowableMin { get; set; }
+        public int? AllowableMax { get; set; }
 
         public List<MetadataAttribute> Attributes { get; set; }
     }
