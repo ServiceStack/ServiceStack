@@ -36,6 +36,12 @@ namespace ServiceStack
             set { local.NotifyChannelOfSubscriptions = value; }
         }
 
+        public int? KeepAliveRetryAfterMs
+        {
+            get { return RedisPubSub.KeepAliveRetryAfterMs; }
+            set { RedisPubSub.KeepAliveRetryAfterMs = value; }
+        }
+
         public static string Topic = "sse:topic";
 
         public class RedisIndex
@@ -50,16 +56,17 @@ namespace ServiceStack
 
         public IRedisClientsManager clientsManager;
 
-        private IRedisPubSubServer redisPubSub;
+        public IRedisPubSubServer RedisPubSub { get; set; }
 
         public RedisServerEvents(IRedisPubSubServer redisPubSub)
         {
-            this.redisPubSub = redisPubSub;
+            this.RedisPubSub = redisPubSub;
             this.clientsManager = redisPubSub.ClientsManager;
             redisPubSub.OnInit = OnInit;
             redisPubSub.OnError = ex => Log.Error("Exception in RedisServerEvents: " + ex.Message, ex);
             redisPubSub.OnMessage = HandleMessage;
-            redisPubSub.KeepAliveRetryAfterMs = 2000;
+
+            KeepAliveRetryAfterMs = 2000;
 
             local = new MemoryServerEvents
             {
@@ -88,7 +95,7 @@ namespace ServiceStack
         {
             using (var redis = clientsManager.GetClient())
             {
-                var lastPulseBefore = (redisPubSub.CurrentServerTime - Timeout).Ticks;
+                var lastPulseBefore = (RedisPubSub.CurrentServerTime - Timeout).Ticks;
                 var expiredSubIds = redis.GetRangeFromSortedSetByLowestScore(
                     RedisIndex.ActiveSubscriptionsSet, 0, lastPulseBefore);
                 foreach (var id in expiredSubIds)
@@ -224,7 +231,7 @@ namespace ServiceStack
             var id = info.SubscriptionId;
             using (var trans = redis.CreateTransaction())
             {
-                trans.QueueCommand(r => r.AddItemToSortedSet(RedisIndex.ActiveSubscriptionsSet, id, redisPubSub.CurrentServerTime.Ticks));
+                trans.QueueCommand(r => r.AddItemToSortedSet(RedisIndex.ActiveSubscriptionsSet, id, RedisPubSub.CurrentServerTime.Ticks));
                 trans.QueueCommand(r => r.Set(RedisIndex.Subscription.Fmt(id), info));
                 trans.QueueCommand(r => r.AddItemToSet(RedisIndex.ChannelSet.Fmt(info.Channel), id));
                 trans.QueueCommand(r => r.AddItemToSet(RedisIndex.UserIdSet.Fmt(info.UserId), id));
@@ -277,7 +284,7 @@ namespace ServiceStack
                     return false;
 
                 redis.AddItemToSortedSet(RedisIndex.ActiveSubscriptionsSet, 
-                    info.SubscriptionId, redisPubSub.CurrentServerTime.Ticks);
+                    info.SubscriptionId, RedisPubSub.CurrentServerTime.Ticks);
 
                 NotifyRedis("pulse.id." + subscriptionId, null, null);
 
@@ -295,13 +302,13 @@ namespace ServiceStack
 
         public void Start()
         {
-            redisPubSub.Start();
+            RedisPubSub.Start();
             local.Start();
         }
 
         public void Stop()
         {
-            redisPubSub.Stop();
+            RedisPubSub.Stop();
             local.Stop();
         }
 
@@ -403,13 +410,13 @@ namespace ServiceStack
 
         public void Dispose()
         {
-            if (redisPubSub != null)
-                redisPubSub.Dispose();
+            if (RedisPubSub != null)
+                RedisPubSub.Dispose();
    
             if (local != null)
                 local.Dispose();
 
-            redisPubSub = null;
+            RedisPubSub = null;
             local = null;
         }
     }

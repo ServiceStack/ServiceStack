@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Text;
 using System.Threading;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
@@ -25,6 +26,9 @@ namespace ServiceStack
         int? KeepAliveRetryAfterMs { get; set; }
         DateTime CurrentServerTime { get; }
 
+        string GetStatus();
+        string GetStatsDescription();
+
         void Start();
         void Stop();
         void Restart();
@@ -48,7 +52,7 @@ namespace ServiceStack
         readonly Random rand = new Random(Environment.TickCount);
         public int? KeepAliveRetryAfterMs { get; set; }
 
-        private int doOperation = WorkerOperation.NoOp;
+        private int doOperation = Operation.NoOp;
 
         private long timesStarted = 0;
         private long noOfErrors = 0;
@@ -85,7 +89,7 @@ namespace ServiceStack
 
         public void Start()
         {
-            if (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Started)
+            if (Interlocked.CompareExchange(ref status, 0, 0) == Status.Started)
             {
                 //Start any stopped worker threads
                 if (OnStart != null)
@@ -93,11 +97,11 @@ namespace ServiceStack
 
                 return;
             }
-            if (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Disposed)
+            if (Interlocked.CompareExchange(ref status, 0, 0) == Status.Disposed)
                 throw new ObjectDisposedException("RedisPubSubServer has been disposed");
 
             //Only 1 thread allowed past
-            if (Interlocked.CompareExchange(ref status, WorkerStatus.Starting, WorkerStatus.Stopped) == WorkerStatus.Stopped) //Should only be 1 thread past this point
+            if (Interlocked.CompareExchange(ref status, Status.Starting, Status.Stopped) == Status.Stopped) //Should only be 1 thread past this point
             {
                 try
                 {
@@ -150,13 +154,13 @@ namespace ServiceStack
         private IRedisClient masterClient;
         private void RunLoop()
         {
-            if (Interlocked.CompareExchange(ref status, WorkerStatus.Started, WorkerStatus.Starting) != WorkerStatus.Starting) return;
+            if (Interlocked.CompareExchange(ref status, Status.Started, Status.Starting) != Status.Starting) return;
             Interlocked.Increment(ref timesStarted);
 
             try
             {
                 //RESET
-                while (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Started)
+                while (Interlocked.CompareExchange(ref status, 0, 0) == Status.Started)
                 {
                     using (var redis = ClientsManager.GetReadOnlyClient())
                     {
@@ -171,22 +175,22 @@ namespace ServiceStack
 
                             subscription.OnMessage = (channel, msg) =>
                             {
-                                if (msg == WorkerOperation.ControlCommand)
+                                if (msg == Operation.ControlCommand)
                                 {
-                                    var op = Interlocked.CompareExchange(ref doOperation, WorkerOperation.NoOp, doOperation);
+                                    var op = Interlocked.CompareExchange(ref doOperation, Operation.NoOp, doOperation);
                                     switch (op)
                                     {
-                                        case WorkerOperation.Stop:
+                                        case Operation.Stop:
                                             Log.Debug("Stop Command Issued");
 
-                                            if (Interlocked.CompareExchange(ref status, WorkerStatus.Stopped, WorkerStatus.Started) != WorkerStatus.Started)
-                                                Interlocked.CompareExchange(ref status, WorkerStatus.Stopped, WorkerStatus.Stopping);
+                                            if (Interlocked.CompareExchange(ref status, Status.Stopped, Status.Started) != Status.Started)
+                                                Interlocked.CompareExchange(ref status, Status.Stopped, Status.Stopping);
 
                                             Log.Debug("UnSubscribe From All Channels...");
                                             subscription.UnSubscribeFromAllChannels(); //Un block thread.
                                             return;
 
-                                        case WorkerOperation.Reset:
+                                        case Operation.Reset:
                                             subscription.UnSubscribeFromAllChannels(); //Un block thread.
                                             return;
                                     }
@@ -213,8 +217,8 @@ namespace ServiceStack
                 Interlocked.Increment(ref noOfErrors);
                 Interlocked.Increment(ref noOfContinuousErrors);
 
-                if (Interlocked.CompareExchange(ref status, WorkerStatus.Stopped, WorkerStatus.Started) != WorkerStatus.Started)
-                    Interlocked.CompareExchange(ref status, WorkerStatus.Stopped, WorkerStatus.Stopping);
+                if (Interlocked.CompareExchange(ref status, Status.Stopped, Status.Started) != Status.Started)
+                    Interlocked.CompareExchange(ref status, Status.Stopped, Status.Stopping);
 
                 if (OnStop != null)
                     OnStop();
@@ -232,10 +236,10 @@ namespace ServiceStack
 
         public void Stop()
         {
-            if (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Disposed)
+            if (Interlocked.CompareExchange(ref status, 0, 0) == Status.Disposed)
                 throw new ObjectDisposedException("RedisPubSubServer has been disposed");
 
-            if (Interlocked.CompareExchange(ref status, WorkerStatus.Stopping, WorkerStatus.Started) == WorkerStatus.Started)
+            if (Interlocked.CompareExchange(ref status, Status.Stopping, Status.Started) == Status.Started)
             {
                 Log.Debug("Stopping RedisPubSubServer...");
 
@@ -244,9 +248,9 @@ namespace ServiceStack
                 {
                     using (var redis = ClientsManager.GetClient())
                     {
-                        Interlocked.CompareExchange(ref doOperation, WorkerOperation.Stop, doOperation);
+                        Interlocked.CompareExchange(ref doOperation, Operation.Stop, doOperation);
                         Channels.Each(x => 
-                            redis.PublishMessage(x, WorkerOperation.ControlCommand));
+                            redis.PublishMessage(x, Operation.ControlCommand));
                     }
                 }
                 catch (Exception ex)
@@ -269,9 +273,9 @@ namespace ServiceStack
                     //New thread-safe client with same connection info as connected master
                     using (var currentlySubscribedClient = ((RedisClient)masterClient).CloneClient())
                     {
-                        Interlocked.CompareExchange(ref doOperation, WorkerOperation.Reset, doOperation);
+                        Interlocked.CompareExchange(ref doOperation, Operation.Reset, doOperation);
                         Channels.Each(x => 
-                            currentlySubscribedClient.PublishMessage(x, WorkerOperation.ControlCommand));
+                            currentlySubscribedClient.PublishMessage(x, Operation.ControlCommand));
                     }
                 }
                 else
@@ -336,15 +340,65 @@ namespace ServiceStack
             Thread.Sleep(nextTry);
         }
 
+        public static class Operation //dep-free copy of WorkerOperation
+        {
+            public const string ControlCommand = "CTRL";
+
+            public const int NoOp = 0;
+            public const int Stop = 1;
+            public const int Reset = 2;
+            public const int Restart = 3;
+        }
+
+        class Status //dep-free copy of WorkerStatus
+        {
+            public const int Disposed = -1;
+            public const int Stopped = 0;
+            public const int Stopping = 1;
+            public const int Starting = 2;
+            public const int Started = 3;
+        }
+
+        public string GetStatus()
+        {
+            switch (Interlocked.CompareExchange(ref status, 0, 0))
+            {
+                case Status.Disposed:
+                    return "Disposed";
+                case Status.Stopped:
+                    return "Stopped";
+                case Status.Stopping:
+                    return "Stopping";
+                case Status.Starting:
+                    return "Starting";
+                case Status.Started:
+                    return "Started";
+            }
+            return null;
+        }
+
+        public string GetStatsDescription()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("===============");
+            sb.AppendLine("Current Status: " + GetStatus());
+            sb.AppendLine("Times Started: " + Interlocked.CompareExchange(ref timesStarted, 0, 0));
+            sb.AppendLine("Num of Errors: " + Interlocked.CompareExchange(ref noOfErrors, 0, 0));
+            sb.AppendLine("Num of Continuous Errors: " + Interlocked.CompareExchange(ref noOfContinuousErrors, 0, 0));
+            sb.AppendLine("Last ErrorMsg: " + lastExMsg);
+            sb.AppendLine("===============");
+            return sb.ToString();
+        }
+
         public virtual void Dispose()
         {
-            if (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Disposed)
+            if (Interlocked.CompareExchange(ref status, 0, 0) == Status.Disposed)
                 return;
 
             Stop();
 
-            if (Interlocked.CompareExchange(ref status, WorkerStatus.Disposed, WorkerStatus.Stopped) != WorkerStatus.Stopped)
-                Interlocked.CompareExchange(ref status, WorkerStatus.Disposed, WorkerStatus.Stopping);
+            if (Interlocked.CompareExchange(ref status, Status.Disposed, Status.Stopped) != Status.Stopped)
+                Interlocked.CompareExchange(ref status, Status.Disposed, Status.Stopping);
 
             try
             {
