@@ -47,8 +47,8 @@ namespace ServiceStack
                 return false;
             }
 
-            var now = DateTime.Now;
-            if (now < session.AuthenticatedWebSudoUntil.Value)
+            var now = DateTime.UtcNow;
+            if (now < session.AuthenticatedWebSudoUntil.Value.ToUniversalTime())
             {
                 return true;
             }
