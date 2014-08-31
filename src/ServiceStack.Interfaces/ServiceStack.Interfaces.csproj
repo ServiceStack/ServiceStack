@@ -264,6 +264,7 @@
     <Compile Include="Redis\IRedisNativeClient.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Redis\IRedisPubSubServer.cs" />
     <Compile Include="Redis\IRedisSet.cs">
       <SubType>Code</SubType>
     </Compile>

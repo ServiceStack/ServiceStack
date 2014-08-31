@@ -94,7 +94,15 @@
         </member>
         <member name="T:ServiceStack.Redis.RedisClientsManagerExtensions">
             <summary>
-            Useful wrapper IRedisClientsManager to cut down the boiler plat of most IRedisClient access
+            Useful wrapper IRedisClientsManager to cut down the boiler plate of most IRedisClient access
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisClientsManagerExtensions.CreatePubSubServer(ServiceStack.Redis.IRedisClientsManager,System.String,System.Action{System.String,System.String},System.Action{System.Exception},System.Action,System.Action,System.Action)">
+            <summary>
+            Creates a PubSubServer that uses a background thread to listen and process for
+            Redis Pub/Sub messages published to the specified channel. 
+            Use optional callbacks to listen for message, error and life-cycle events.
+            Callbacks can be assigned later, then call Start() for PubSubServer to start listening for messages
             </summary>
         </member>
         <member name="T:ServiceStack.Redis.Pipeline.QueuedRedisCommand">
