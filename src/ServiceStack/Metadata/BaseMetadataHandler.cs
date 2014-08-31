@@ -88,7 +88,7 @@ namespace ServiceStack.Metadata
 
                 if (op.Routes.Count > 0)
                 {
-                    sb.Append("<table>");
+                    sb.Append("<table class='routes'>");
                     if (!isSoap)
                     {
                         sb.Append("<caption>The following routes are available for this service:</caption>");
@@ -145,7 +145,7 @@ namespace ServiceStack.Metadata
         {
             if (metadataType.Properties.IsEmpty()) return;
             
-            sb.Append("<table>");
+            sb.Append("<table class='params'>");
             sb.Append("<caption><b>{0}</b> Parameters:</caption>".Fmt(metadataType.Name));
             sb.Append("<thead><tr>");
             sb.Append("<th>Name</th>");
