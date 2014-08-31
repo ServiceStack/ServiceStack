@@ -518,12 +518,14 @@ namespace ServiceStack.Host
             if (prop.ParamType != null)
                 return prop.ParamType;
 
+            var isRequest = type.Name == op.RequestType.Name;
+            if (!isRequest)
+                return "body";
+
             if (op.Routes.Any(x => x.IsVariable(prop.Name)))
                 return "path";
 
-            var isRequest = type.Name == op.RequestType.Name;
-            return isRequest && !op.Routes.Any(x => 
-                x.Verbs.Contains(HttpMethods.Post) || x.Verbs.Contains(HttpMethods.Put)) 
+            return !op.Routes.Any(x => x.Verbs.Contains(HttpMethods.Post) || x.Verbs.Contains(HttpMethods.Put)) 
                 ? "query" 
                 : "body";
         }
