@@ -430,6 +430,9 @@ namespace ServiceStack
 
             AfterPluginsLoaded(specifiedContentType);
 
+            if (!Container.Exists<IAppSettings>())
+                Container.Register(AppSettings);
+
             if (!Container.Exists<ICacheClient>())
             {
                 if (Container.Exists<IRedisClientsManager>())
