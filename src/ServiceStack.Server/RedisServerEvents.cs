@@ -213,18 +213,21 @@ namespace ServiceStack
             }
         }
 
-        public void Register(IEventSubscription sub)
+        public void Register(IEventSubscription sub, Dictionary<string, string> connectArgs = null)
         {
             if (sub == null)
                 throw new ArgumentNullException("subscription");
-
-            local.Register(sub);
 
             var info = sub.GetInfo();
             using (var redis = clientsManager.GetClient())
             {
                 StoreSubscriptionInfo(redis, info);
             }
+
+            if (connectArgs != null)
+                sub.Publish("cmd.onConnect", connectArgs.ToJson());
+
+            local.Register(sub);
         }
 
         private void StoreSubscriptionInfo(IRedisClient redis, SubscriptionInfo info)
@@ -407,7 +410,7 @@ namespace ServiceStack
                         local.Pulse(id);
                     }
                     break;
-            }
+            } 
         }
 
         public void Dispose()

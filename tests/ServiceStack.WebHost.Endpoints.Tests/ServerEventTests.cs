@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Funq;
@@ -179,7 +177,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    [Explicit("Remove from autorunning in CI for now")]
+    //[Explicit("Remove from autorunning in CI for now")]
     [TestFixture]
     public class RedisServerEventsTests : ServerEventsTests
     {
@@ -300,7 +298,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     taskCmd = client1.WaitForNextCommand();
 
                     connectMsg2.UnRegisterUrl.GetStringFromUrl(); //unsubscribe 2nd client
-
                 }
 
                 await taskCmd.WaitAsync();

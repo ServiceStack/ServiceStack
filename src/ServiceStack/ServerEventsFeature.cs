@@ -134,9 +134,7 @@ namespace ServiceStack
             if (feature.OnConnect != null)
                 feature.OnConnect(subscription, privateArgs);
 
-            subscription.Publish("cmd.onConnect", privateArgs.ToJson());
-
-            serverEvents.Register(subscription);
+            serverEvents.Register(subscription, privateArgs);
 
             var tcs = new TaskCompletionSource<bool>();
 
@@ -531,12 +529,15 @@ namespace ServiceStack
             return ret;
         }
 
-        public void Register(IEventSubscription subscription)
+        public void Register(IEventSubscription subscription, Dictionary<string, string> connectArgs = null)
         {
             try
             {
                 lock (subscription)
                 {
+                    if (connectArgs != null)
+                        subscription.Publish("cmd.onConnect", connectArgs.ToJson());
+
                     subscription.OnUnsubscribe = HandleUnsubscription;
                     RegisterSubscription(subscription, subscription.Channel ?? EventSubscription.UnknownChannel, ChannelSubcriptions);
                     RegisterSubscription(subscription, subscription.SubscriptionId, Subcriptions);
@@ -688,7 +689,7 @@ namespace ServiceStack
         List<SubscriptionInfo> GetSubscriptionInfosByUserId(string userId);
 
         // Admin API's
-        void Register(IEventSubscription subscription);
+        void Register(IEventSubscription subscription, Dictionary<string, string> connectArgs = null);
 
         void UnRegister(string subscriptionId);
 
