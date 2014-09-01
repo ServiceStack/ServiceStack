@@ -33,6 +33,11 @@ namespace ServiceStack.Configuration
                 : value;
         }
 
+        public virtual bool Exists(string key)
+        {
+            return GetNullableString(key) != null;
+        }
+
         public virtual string GetString(string name)
         {
             return GetNullableString(name);

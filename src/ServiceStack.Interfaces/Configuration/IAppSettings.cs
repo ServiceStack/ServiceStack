@@ -4,7 +4,9 @@ namespace ServiceStack.Configuration
 {
 	public interface IAppSettings
 	{
-		string GetString(string name);
+        bool Exists(string key);
+        
+        string GetString(string name);
 
 		IList<string> GetList(string key);
 
