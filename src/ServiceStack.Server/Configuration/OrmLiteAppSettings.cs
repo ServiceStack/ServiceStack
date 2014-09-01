@@ -11,7 +11,7 @@ namespace ServiceStack.Configuration
         public string Value { get; set; }
     }
 
-    public class OrmLiteAppSettings : AppSettingsBase, IRequiresSchema 
+    public class OrmLiteAppSettings : AppSettingsBase, IRequiresSchema, ISettingsWriter
     {
         private OrmLiteSettings DbSettings
         {

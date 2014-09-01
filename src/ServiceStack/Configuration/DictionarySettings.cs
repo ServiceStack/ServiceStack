@@ -12,15 +12,24 @@ namespace ServiceStack.Configuration
             settings = this;
         }
 
-        public string Get(string key)
+        public virtual string Get(string key)
         {
             string value;
             return map.TryGetValue(key, out value) ? value : null;
         }
 
-        public Dictionary<string, string> GetAll()
+        public virtual Dictionary<string, string> GetAll()
         {
             return map;
+        }
+
+        public override void Set<T>(string key, T value)
+        {
+            var textValue = value is string
+                ? (string)(object)value
+                : value.ToJsv();
+
+            map[key] = textValue;
         }
     }
 }

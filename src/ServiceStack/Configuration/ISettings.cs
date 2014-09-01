@@ -13,4 +13,9 @@ namespace ServiceStack.Configuration
         /// was invalid</returns>
         string Get(string key);
     }
+
+    public interface ISettingsWriter
+    {
+        void Set<T>(string key, T value);
+    }
 }

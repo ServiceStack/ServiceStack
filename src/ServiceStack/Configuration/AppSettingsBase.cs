@@ -8,7 +8,7 @@ namespace ServiceStack.Configuration
 {
     public delegate string ParsingStrategyDelegate(string originalSetting);
 
-    public class AppSettingsBase : IAppSettings
+    public class AppSettingsBase : IAppSettings, ISettingsWriter
     {
         protected ISettings settings;
         protected const string ErrorAppsettingNotFound = "Unable to find App Setting: {0}";
@@ -101,6 +101,12 @@ namespace ServiceStack.Configuration
             }
 
             return ret;
+        }
+
+        public virtual void Set<T>(string key, T value)
+        {
+            var settingsWriter = (ISettingsWriter)settings;
+            settingsWriter.Set(key, value);
         }
     }
 
