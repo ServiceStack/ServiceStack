@@ -14,7 +14,7 @@ namespace ServiceStack.Configuration
         string Get(string key);
     }
 
-    public interface ISettingsWriter
+    public interface ISettingsWriter : ISettings
     {
         void Set<T>(string key, T value);
     }

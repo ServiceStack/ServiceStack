@@ -8,6 +8,14 @@ using ServiceStack.OrmLite;
 
 namespace ServiceStack.Common.Tests
 {
+    public class AppConfigAppSettingsTest : AppSettingsTest
+    {
+        public override AppSettingsBase GetAppSettings()
+        {
+            return new AppSettings();
+        }
+    }
+
     public class OrmLiteAppSettingsTest : AppSettingsTest
     {
         private OrmLiteAppSettings settings;
@@ -274,6 +282,18 @@ ObjectKey: {SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}";
             Assert.That(value.FinalSetting, Is.EqualTo("Final"));
             Assert.That(value.SomeOtherSetting, Is.EqualTo(12));
             Assert.That(value.SomeSetting, Is.EqualTo("Test"));
+        }
+
+        [Test]
+        public void Can_write_to_AppSettings()
+        {
+            var appSettings = GetAppSettings();
+            var value = appSettings.Get("IntKey", 0);
+            Assert.That(value, Is.EqualTo(42));
+
+            appSettings.Set("IntKey", 99);
+            value = appSettings.Get("IntKey", 0);
+            Assert.That(value, Is.EqualTo(99));
         }
 
         public class SimpleAppSettings

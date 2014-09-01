@@ -4,32 +4,42 @@ namespace ServiceStack.Configuration
 {
     public class DictionarySettings : AppSettingsBase, ISettings
     {
-        private readonly Dictionary<string, string> map;
+        private DictionaryWrapper instance;
 
-        public DictionarySettings(Dictionary<string, string> map=null)
+        class DictionaryWrapper : ISettingsWriter
         {
-            this.map = map ?? new Dictionary<string, string>();
-            settings = this;
+            internal readonly Dictionary<string, string> Map;
+
+            public DictionaryWrapper(Dictionary<string, string> map = null)
+            {
+                Map = map ?? new Dictionary<string, string>();
+            }
+
+            public string Get(string key)
+            {
+                string value;
+                return Map.TryGetValue(key, out value) ? value : null;
+            }
+
+            public void Set<T>(string key, T value)
+            {
+                var textValue = value is string
+                    ? (string)(object)value
+                    : value.ToJsv();
+
+                Map[key] = textValue;
+            }
         }
 
-        public virtual string Get(string key)
+        public DictionarySettings(Dictionary<string, string> map=null)
+            : base(new DictionaryWrapper(map))
         {
-            string value;
-            return map.TryGetValue(key, out value) ? value : null;
+            instance = (DictionaryWrapper)settings;
         }
 
         public virtual Dictionary<string, string> GetAll()
         {
-            return map;
-        }
-
-        public override void Set<T>(string key, T value)
-        {
-            var textValue = value is string
-                ? (string)(object)value
-                : value.ToJsv();
-
-            map[key] = textValue;
+            return instance.Map;
         }
     }
 }

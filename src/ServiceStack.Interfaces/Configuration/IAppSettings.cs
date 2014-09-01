@@ -5,6 +5,8 @@ namespace ServiceStack.Configuration
 	public interface IAppSettings
 	{
         bool Exists(string key);
+
+	    void Set<T>(string key, T value);
         
         string GetString(string name);
 
