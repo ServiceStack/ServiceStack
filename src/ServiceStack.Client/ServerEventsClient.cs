@@ -65,6 +65,7 @@ namespace ServiceStack
         }
 
         public string EventStreamUri { get; set; }
+        public string Channel { get; set; }
         public IServiceClient ServiceClient { get; set; }
 
         public Action<ServerEventConnect> OnConnect;
@@ -85,8 +86,10 @@ namespace ServiceStack
         public ServerEventsClient(string baseUri, string channel=null)
         {
             this.EventStreamUri = baseUri.CombineWith("event-stream");
-            if (channel != null)
-                this.EventStreamUri = this.EventStreamUri.AddQueryParam("channel", channel);
+            this.Channel = channel;
+
+            if (Channel != null)
+                this.EventStreamUri = this.EventStreamUri.AddQueryParam("channel", Channel);
 
             this.ServiceClient = new JsonServiceClient(baseUri);
 
