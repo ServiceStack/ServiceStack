@@ -4,6 +4,13 @@ using System.Runtime.Serialization;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
+    public enum MyColor
+    {
+        Red,
+        Green,
+        Blue
+    }
+
     [Api("SwaggerTest Service Description")]
     [ApiResponse(HttpStatusCode.BadRequest, "Your request was not understood")]
     [ApiResponse(HttpStatusCode.InternalServerError, "Oops, something broke")]
@@ -15,9 +22,14 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
     {
         [ApiMember(Description = "Color Description",
                    ParameterType = "path", DataType = "string", IsRequired = true)]
-        [ApiAllowableValues("Color", typeof(Color))] //Enum
-        [DataMember(Name = "Aliased")]
-        public string Color { get; set; }
+        [ApiAllowableValues("ColorName", typeof(MyColor))] //Enum
+        [DataMember]
+        public string ColorName { get; set; }
+
+        [ApiMember]
+        [ApiAllowableValues("Color", typeof(MyColor))] //Enum
+        [DataMember]
+        public MyColor Color { get; set; }
 
         [ApiMember(Description = "Aliased Description",
                    DataType = "string", IsRequired = true)]
@@ -26,15 +38,15 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 
         [ApiMember(Description = "Not Aliased Description",
                    DataType = "string", IsRequired = true)]
-        [DataMember(Name = "Aliased")]
+        [DataMember]
         public string NotAliased { get; set; }
 
         [ApiMember(Description = "Nested model 1", DataType = "SwaggerNestedModel")]
-        [DataMember(Name = "Aliased")]
+        [DataMember]
         public SwaggerNestedModel NestedModel1 { get; set; }
 
         [ApiMember(Description = "Nested model 2", DataType = "SwaggerNestedModel2")]
-        [DataMember(Name = "Aliased")]
+        [DataMember]
         public SwaggerNestedModel2 NestedModel2 { get; set; }
     }
 

@@ -519,15 +519,29 @@ namespace ServiceStack.Host
                 return prop.ParamType;
 
             var isRequest = type.Name == op.RequestType.Name;
-            if (!isRequest)
-                return "body";
 
-            if (op.Routes.Any(x => x.IsVariable(prop.Name)))
+            return !isRequest ? "body" : GetRequestParamType(op, prop.Name);
+        }
+
+        public static string GetParamType(this ApiMemberAttribute attr, Type type)
+        {
+            if (attr.ParameterType != null)
+                return attr.ParameterType;
+
+            var op = HostContext.Metadata.GetOperation(type);
+            var isRequestType = op != null;
+
+            return !isRequestType ? "body" : GetRequestParamType(op, attr.Name);
+        }
+
+        private static string GetRequestParamType(Operation op, string name)
+        {
+            if (op.Routes.Any(x => x.IsVariable(name)))
                 return "path";
 
-            return !op.Routes.Any(x => x.Verbs.Contains(HttpMethods.Post) || x.Verbs.Contains(HttpMethods.Put)) 
-                ? "query" 
-                : "body";
+            return !op.Routes.Any(x => x.Verbs.Contains(HttpMethods.Post) || x.Verbs.Contains(HttpMethods.Put))
+                       ? "query"
+                       : "body";
         }
     }
 }

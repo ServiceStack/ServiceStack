@@ -179,12 +179,15 @@ namespace ServiceStack.Api.Swagger
                 ParseModel(models, restPath.Value.RequestType, restPath.Value.Path, restPath.Verb);
             }
 
+            var apis = paths.Select(p => FormateMethodDescription(p, models))
+                .ToArray().OrderBy(md => md.Path).ToList();
+
             return new ResourceResponse
             {
                 ApiVersion = HostContext.Config.ApiVersion,
                 ResourcePath = path,
                 BasePath = basePath,
-                Apis = new List<MethodDescription>(paths.Select(p => FormateMethodDescription(p, models)).ToArray().OrderBy(md => md.Path)),
+                Apis = apis,
                 Models = models
             };
         }
@@ -266,13 +269,20 @@ namespace ServiceStack.Api.Swagger
             var modelId = GetModelTypeName(modelType, route, verb);
             if (models.ContainsKey(modelId)) return;
 
+            var modelTypeName = GetModelTypeName(modelType);
             var model = new SwaggerModel
             {
                 Id = modelId,
-                Description = GetModelTypeName(modelType),
+                Description = modelTypeName,
                 Properties = new OrderedDictionary<string, ModelProperty>()
             };
             models[model.Id] = model;
+            models[modelTypeName] = new SwaggerModel
+            {
+                Id = modelTypeName,
+                Description = modelTypeName,
+                Properties = model.Properties,
+            };
 
             var properties = modelType.GetProperties();
 
@@ -292,14 +302,14 @@ namespace ServiceStack.Api.Swagger
                 var propsWithDataMember = properties.Where(prop => prop.IsDefined(typeof(DataMemberAttribute), true));
                 var propDataMemberAttrs = properties.ToDictionary(prop => prop, prop => prop.FirstAttribute<DataMemberAttribute>());
 
-                properties =
-                    propsWithDataMember.OrderBy(prop => propDataMemberAttrs[prop].Order)                // Order by DataMember.Order
-                                       .ThenByDescending(prop => typeOrder.IndexOf(prop.DeclaringType)) // Then by BaseTypes First
-                                       .ThenBy(prop =>                                                  // Then by [DataMember].Name / prop.Name
-                                          {
-                                              var name = propDataMemberAttrs[prop].Name;
-                                              return name.IsNullOrEmpty() ? prop.Name : name;
-                                          }).ToArray();
+                properties = propsWithDataMember
+                    .OrderBy(prop => propDataMemberAttrs[prop].Order)                // Order by DataMember.Order
+                    .ThenByDescending(prop => typeOrder.IndexOf(prop.DeclaringType)) // Then by BaseTypes First
+                    .ThenBy(prop =>                                                  // Then by [DataMember].Name / prop.Name
+                    {
+                        var name = propDataMemberAttrs[prop].Name;
+                        return name.IsNullOrEmpty() ? prop.Name : name;
+                    }).ToArray();
             }
 
             foreach (var prop in properties)
@@ -314,7 +324,10 @@ namespace ServiceStack.Api.Swagger
                     .Where(attr => string.IsNullOrEmpty(route) || string.IsNullOrEmpty(attr.Route) || (route ?? "").StartsWith(attr.Route))
                     .FirstOrDefault(attr => attr.ParameterType == "body" || attr.ParameterType == "model");
 
-                if (allApiDocAttributes.Any(x => !string.IsNullOrEmpty(x.Verb) || !string.IsNullOrEmpty(x.Route)) && apiDoc == null) continue;
+                if (allApiDocAttributes.Any(x => !string.IsNullOrEmpty(x.Verb) 
+                    || !string.IsNullOrEmpty(x.Route)) 
+                    && apiDoc == null) 
+                    continue;
 
                 var propertyType = prop.PropertyType;
                 var modelProp = new ModelProperty { Type = GetSwaggerTypeName(propertyType, route, verb), Required = !IsNullable(propertyType) };
@@ -471,7 +484,7 @@ namespace ServiceStack.Api.Swagger
         {
             if (attr != null)
             {
-                return new ParameterAllowableValues()
+                return new ParameterAllowableValues
                 {
                     ValueType = attr.Type,
                     Values = attr.Values,
@@ -520,7 +533,7 @@ namespace ServiceStack.Api.Swagger
                         AllowMultiple = member.AllowMultiple,
                         Description = member.Description,
                         Name = member.Name ?? key,
-                        ParamType = member.ParameterType,
+                        ParamType = member.GetParamType(operationType),
                         Required = member.IsRequired,
                         AllowableValues = GetAllowableValue(allowableParams.FirstOrDefault(attr => attr.Name == member.Name))
                     });
@@ -528,10 +541,11 @@ namespace ServiceStack.Api.Swagger
 
             if (!DisableAutoDtoInBodyParam)
             {
-                if (!HttpMethods.Get.Equals(verb, StringComparison.OrdinalIgnoreCase) && !methodOperationParameters.Any(p => p.ParamType.Equals("body", StringComparison.OrdinalIgnoreCase)))
+                if (!HttpMethods.Get.Equals(verb, StringComparison.OrdinalIgnoreCase) 
+                    && !methodOperationParameters.Any(p => "body".EqualsIgnoreCase(p.ParamType)))
                 {
                     ParseModel(models, operationType, route, verb);
-                    methodOperationParameters.Add(new MethodOperationParameter()
+                    methodOperationParameters.Add(new MethodOperationParameter
                     {
                         DataType = GetSwaggerTypeName(operationType, route, verb),
                         ParamType = "body",
