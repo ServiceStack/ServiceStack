@@ -533,7 +533,7 @@ namespace ServiceStack.Api.Swagger
                         AllowMultiple = member.AllowMultiple,
                         Description = member.Description,
                         Name = member.Name ?? key,
-                        ParamType = member.GetParamType(operationType),
+                        ParamType = member.GetParamType(operationType, member.Verb ?? verb),
                         Required = member.IsRequired,
                         AllowableValues = GetAllowableValue(allowableParams.FirstOrDefault(attr => attr.Name == member.Name))
                     });
