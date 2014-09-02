@@ -555,6 +555,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(baz.Id, Is.EqualTo(3));
                 Assert.That(baz.Name, Is.EqualTo("Baz"));
                 Assert.That(TestNamedReceiver.NoSuchMethodSelector, Is.EqualTo("BazMethod"));
+
+                msgTask = client1.WaitForNextMessage();
+                client1.Post(new CustomType { Id = 4, Name = "Qux" }, "test.QuxSetter");
+                await msgTask.WaitAsync();
+                var qux = TestNamedReceiver.QuxSetterReceived;
+                Assert.That(qux, Is.Not.Null);
+                Assert.That(qux.Id, Is.EqualTo(4));
+                Assert.That(qux.Name, Is.EqualTo("Qux"));
             }
         }
 
@@ -718,6 +726,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public static CustomType BarMethodReceived;
         public static CustomType NoSuchMethodReceived;
         public static string NoSuchMethodSelector;
+
+        internal static CustomType QuxSetterReceived;
+        public CustomType QuxSetter
+        {
+            set { QuxSetterReceived = value; }
+        }
 
         public void FooMethod(CustomType request)
         {
