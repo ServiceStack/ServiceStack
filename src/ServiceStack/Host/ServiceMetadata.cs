@@ -393,7 +393,7 @@ namespace ServiceStack.Host
         public List<string> RestrictTo { get; set; }
         public List<string> VisibleTo { get; set; }
         public List<string> Actions { get; set; }
-        public Dictionary<string, string> Routes { get; set; }
+        public List<string> Routes { get; set; }
     }
 
     public class XsdMetadata
@@ -472,7 +472,7 @@ namespace ServiceStack.Host
                 ResponseName = operation.IsOneWay ? null : operation.ResponseType.GetOperationName(),
                 ServiceName = operation.ServiceType.GetOperationName(),
                 Actions = operation.Actions,
-                Routes = operation.Routes.ToDictionary(x => x.Path.PairWith(x.AllowedVerbs)),
+                Routes = operation.Routes.Map(x => x.Path),
             };
             
             if (operation.RestrictTo != null)
