@@ -256,7 +256,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    public class RequiresWebSudo
+    public class RequiresWebSudo : IReturn<RequiresWebSudoResponse>
     {
         public string Name { get; set; }
     }
@@ -271,7 +271,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [WebSudoRequired]
     public class RequiresWebSudoService : Service
     {
-        public RequiresWebSudoResponse Any(RequiresWebSudo request)
+        public object Any(RequiresWebSudo request)
         {
             return new RequiresWebSudoResponse { Result = request.Name };
         }
@@ -1111,7 +1111,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 };
                 client.Send(authRequest);
                 var request = new RequiresWebSudo { Name = "test" };
-                var response = client.Send<RequiresWebSudoResponse>(request);
+                var response = client.Send(request);
 
                 Assert.Fail("Shouldn't be allowed");
             }
@@ -1164,7 +1164,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var request = new RequiresWebSudo { Name = "test" };
             try
             {
-                client.Send<RequiresWebSudoResponse>(request);
+                client.Send(request);
                 Assert.Fail("Shouldn't be allowed");
             }
             catch
