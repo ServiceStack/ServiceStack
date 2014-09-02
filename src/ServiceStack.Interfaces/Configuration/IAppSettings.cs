@@ -2,18 +2,18 @@ using System.Collections.Generic;
 
 namespace ServiceStack.Configuration
 {
-	public interface IAppSettings
-	{
+    public interface IAppSettings
+    {
         bool Exists(string key);
 
-	    void Set<T>(string key, T value);
-        
+        void Set<T>(string key, T value);
+
         string GetString(string name);
 
-		IList<string> GetList(string key);
+        IList<string> GetList(string key);
 
-		IDictionary<string, string> GetDictionary(string key);
+        IDictionary<string, string> GetDictionary(string key);
 
-		T Get<T>(string name, T defaultValue);
-	}
+        T Get<T>(string name, T defaultValue);
+    }
 }
