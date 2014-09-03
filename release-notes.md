@@ -4,19 +4,21 @@ The most requested feature since our last release was to expand our last release
 
 #### Major features in this release
 
-  - [Redis ServerEvents](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#redis-serverevents)
-  - [C# ServerEvents Client](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#c-serverevents-client)
-  - [Redis](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#servicestackredis)
+  - Server Events
+    - [Redis ServerEvents](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#redis-serverevents)
+    - [C# ServerEvents Client](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#c-serverevents-client)
+  - Redis
     - [Redis Pub/Sub Server](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#redis-pubsub-server)
-  - [AppSettings](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#app-settings)
-    - [First-class App Settings](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#first-class-appsettings)
+  - AppSettings
+    - [First-class AppSettings](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#first-class-appsettings)
+    - [Writable AppSettings API](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#appsettings-are-now-writable)
   - [Metadata Pages](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#metadata-pages)
   - Authentication
     - [WebSudo](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#web-sudo)
     - [Auth Events](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#auth-events)
   - [OrmLite](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#ormlite)
   - [Text](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#text)
-  - [Community](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#community)
+  - Community
     - [ServiceStack MiniProfiler Toolkit](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#servicestack-miniprofiler-toolkit)
 
 ## Redis ServerEvents
@@ -56,7 +58,7 @@ To showcase Redis ServerEvents in action, we've developed a stand-alone [Service
 
 ### [Chat.zip](https://github.com/ServiceStack/ServiceStack.Gap/raw/master/deploy/Chat.zip) (1.2MB)
 
-![Redis ServerEvents Preview](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/redis-server-events.gif)
+[![Redis ServerEvents Preview](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/redis-server-events.gif)](https://github.com/ServiceStack/ServiceStack.Gap/raw/master/deploy/Chat.zip)
 
 > As Chat only runs on **2 back-end Services**, it fits well within [ServiceStack's Free Quota's](https://servicestack.net/download#free-quotas) which can be further customized and enhanced without a ServiceStack commercial license.
 
