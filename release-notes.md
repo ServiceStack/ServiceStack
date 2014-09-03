@@ -1,10 +1,8 @@
 # v4.0.31 Release Notes
 
-## [Server Events](https://github.com/ServiceStackApps/Chat#server-sent-events)
-
 The most requested feature since our last release was to expand our last releases support for [Server Sent Events](https://github.com/ServiceStackApps/Chat#server-sent-events) with both a **typed C# Client** as well as providing a scale-out **Redis ServerEvents back-end** which can be used in load-balanced App Servers scenarios - we're happy to announce we've been able to deliver both features in this release!
 
-### Major features in this release
+#### Major features in this release
 
   - [Redis ServerEvents](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#redis-serverevents)
   - [C# ServerEvents Client](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#c-serverevents-client)
