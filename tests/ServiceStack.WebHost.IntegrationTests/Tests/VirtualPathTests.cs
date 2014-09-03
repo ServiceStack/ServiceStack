@@ -84,7 +84,13 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         [Test]
         public void Can_get_swagger_urls()
         {
-            var contents = "{0}/resources".Fmt(ServiceStackBaseUri).GetStringFromUrl();
+            var contents = "{0}/swagger-ui/".Fmt(ServiceStackBaseUri).GetStringFromUrl();
+            Assert.That(contents, Is.StringContaining(ServiceStackBaseUri));
+
+            contents = "{0}/swagger-ui-bootstrap/".Fmt(ServiceStackBaseUri).GetStringFromUrl();
+            Assert.That(contents, Is.StringContaining(ServiceStackBaseUri));
+
+            contents = "{0}/resources".Fmt(ServiceStackBaseUri).GetStringFromUrl();
             Assert.That(contents, Is.StringContaining("/resource/swagger"));
             contents = "{0}/resource/swagger".Fmt(ServiceStackBaseUri).GetStringFromUrl();
             Assert.That(contents, Is.StringContaining("SwaggerNestedModel"));
