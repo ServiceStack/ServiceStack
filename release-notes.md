@@ -1,4 +1,746 @@
-## v4.0.30 Release Notes
+# v4.0.31 Release Notes
+
+## [Server Events](https://github.com/ServiceStackApps/Chat#server-sent-events)
+
+The most requested feature since our last release was to expand our last releases support for [Server Sent Events](https://github.com/ServiceStackApps/Chat#server-sent-events) with both a **typed C# Client** as well as providing a scale-out **Redis ServerEvents back-end** which can be used in load-balanced App Servers scenarios - we're happy to announce we've been able to deliver both features in this release!
+
+## C# ServerEvents Client
+
+Like ServiceStack's other [C# Service Clients](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client), the new `ServerEventsClient` is a [portable library](https://github.com/ServiceStackApps/HelloMobile) contained in the `ServiceStack.Client` NuGet package:
+
+```
+PM> Install-Package ServiceStack.Client
+```
+
+And like the Service Clients it takes the `BaseUri` of your ServiceStack instance as well as an optional `channel` that your client should listen to:
+
+```csharp
+var client = new ServerEventsClient("http://chat.servicestack.net", channel:"home");
+```
+
+### Managed Connection
+
+The C# ServerEvent Client is a managed client with feature parity with the [ServiceStack's JavaScript client](https://github.com/ServiceStackApps/Chat#client-bindings---ss-utilsjs) which **auto-reconnects** when a connection is lost, **sends periodic heartbeats** to maintain an active subscription as well as **auto-unregistering** once the client stops listening for messages, or is disposed.
+
+### Handling Server Events
+
+Unlike other C# clients, the ServerEvents Client is primarily re-active in that you're waiting for Server Events to be fired from a remote server instead of sending requests to it. To maximize utility, we've provided a number of different ways you can receive and process messages:
+
+### Assigning Callback Handlers
+
+One way to receive messages (useful in long-running clients) is to assign handlers for each of the different events that are fired. This example shows how to capture all the different events the Client receives:
+
+```csharp
+ServerEventConnect connectMsg = null;
+var msgs = new List<ServerEventMessage>();
+var commands = new List<ServerEventMessage>();
+var errors = new List<Exception>();
+
+var client = new ServerEventsClient(baseUri) {
+    OnConnect = e => connectMsg = e,
+    OnCommand = commands.Add,
+    OnMessage = msgs.Add,
+    OnException = errors.Add,
+}.Start();
+```
+
+Once the Client is configured, call `Start()` to start listening for messages. Likewise calling `Stop()` or `Dispose()` will cancel the background HTTP connection and stop listening for messages.
+
+### Customizing Metadata sent to clients
+
+As Server Events has deep integration with the rest of ServiceStack we're able to offer [Typed Messages](https://github.com/ServiceStack/ServiceStack/blob/71b51d231d1ddb2ba7da39613e216ab75fd181c0/src/ServiceStack.Client/ServerEventsClient.cs#L14-L44) containing the `UserAuthId`, `DisplayName` and `ProfileUrl` of the users avatar when it's available. The typed messages also offer an extensible `Dictionary<string,string> Meta` collection for custom metadata you can optionally send to clients by adding them when registering the `ServerEventsFeature`:
+
+```csharp
+Plugins.Add(new ServerEventsFeature { 
+    // private Connect args
+    OnConnect = (subscription,httpReq) => AppendTo(subscription.Meta),
+
+    // public Join/Leave args
+    OnCreated = (subscription,httpReq) => AppendTo(subscription.Meta), 
+})
+``` 
+
+### Using C# Async/Await friendly API's
+
+Depending on your use-case, if you only want to use the ServerEvent Client for a short-time to listen for predictable responses (i.e. waiting for a Server callback on a pending request) you can alternatively use the Task-based API's letting you to participate in C# async/await workflows:
+
+```csharp
+var client = new ServerEventsClient(baseUri, channel="Home");
+
+// Wait to receive onConnect event
+ServerEventConnect connectMsg = await client.Connect();
+
+// Wait to receive onJoin command event
+ServerEventCommand joinMsg = await client.WaitForNextCommand();
+
+// Hold a future task to get notified once a msg has been received
+Task<ServerEventMessage> msgTask = client1.WaitForNextMessage();
+
+// Send a Web Service Request using the built-in JsonServiceClient
+client.ServiceClient.Post(new PostChatToChannel {
+    Channel = client.Channel,     // The channel we're listening on
+    From = client.SubscriptionId, // SubscriptionId Populated after Connect() 
+    Message = "Hello, World!",
+});
+
+// Wait till we receive the chat Msg event we sent earlier
+ServerEventMessage msg = await msgTask;
+```
+
+The above example showcases the 3 Task-based API's available:
+
+  1. `Connect()` wait till we receive confirmation of a successful event subscription
+  2. `WaitForNextCommand()` wait for the next `onJoin` or `onLeave` subscription events
+  3. `WaitForNextMessage()` wait for the next message published to the channel
+
+The `ServiceClient` property lets you access a pre-populated `JsonServiceClient` configured with the clients `BaseUri` which you can use to Send Web Service Requests with.
+
+After Server Event Client has connected, the `ConnectionInfo` property is populated with the `ServerEventConnect` response. 
+
+### Message Event Handlers
+
+The above examples show generic API's for receiving any type of message, but just like the JavaScript client there are also fine-grained API's for handling specific message types.
+
+The `Handlers` dictionary is akin to the JavaScript Client's [Global Event Handlers](https://github.com/ServiceStackApps/Chat#global-event-handlers) which you can assign with lambda's that get executed for specific `cmd.*` message types:
+
+```csharp
+client.Handlers["chat"] = (client, msg) => {
+    var chatMsg = msg.Json.FromJson<ChatMessage>(); //Deserialize JSON string to typed DTO
+    "Received '{0}' from '{1}'".Print(chatMsg.Message, chatMsg.FromName);
+};
+```
+
+This example roughly translates to the JavaScript below:
+
+```javascript
+$(source).handleServerEvents({
+    handlers: {
+        chat: function (msg, event) {
+            console.log("Received " + msg.message + " from " + msg.fromName);
+        }
+    }
+});
+```
+
+Where both methods handle the `ChatMessage` with sent with the `cmd.chat` selector.
+
+### Named Receivers
+
+Whilst handlers provide a light way to handle loose-typed messages, there's also a more structured and typed option that works similar to ServiceStack's `IService` classes but for processing typed Event Messages you can use by having classes implement the `IReceiver` interface:
+
+```csharp
+public interface IReceiver
+{
+    void NoSuchMethod(string selector, object message);
+}
+```
+
+`IReceiver` is also an empty marker interface but also includes a `NoSuchMethod` that gets invoked when a message is sent with a unknown selector **target** that doesn't match any defined method or property.
+
+Named Receivers are equivalent to [Receivers](https://github.com/ServiceStackApps/Chat#receivers) in the JavaScript client where you can register an object to handle all messages sent to a receiver with the selector format:
+
+```
+{receiver}.{target}
+```
+
+You can register a named Receiver by providing the Receiver Type as well as the name of the receiver it will be processing:
+
+```csharp
+client.RegisterNamedReceiver<TestNamedReceiver>("test");
+```
+
+The rule above will send all messages with any `test.*` selector to an instance of the `TestNamedReceiver` Type:
+
+```csharp
+public class TestNamedReceiver : ServerEventReceiver
+{
+    public void FooMethod(CustomType request) {} // void return type
+
+    public CustomType BarMethod(CustomType request)
+    {        
+        return request; // works with any return type, which are ignored
+    }
+
+    public CustomType BazSetter { get; set; } // Auto populate properties
+
+    public override void NoSuchMethod(string selector, object message)
+    {
+        var msg = (ServerEventMessage)message;
+        var nonExistentMethodCustomType = msg.Json.FromJson<CustomType>();
+    }
+}
+```
+
+> The [ServerEventReceiver](https://github.com/ServiceStack/ServiceStack/blob/68c7159037e7cf2a519d482b7dae524ca073da20/src/ServiceStack.Client/ServerEventsClient.Receiver.cs#L16-L28) is a convenient base class containing a reference to the `Client` as well as additional context about the request populated in the `Request` property.
+
+This roughly translates in the JavaScript client to:
+
+```javascript
+$(source).handleServerEvents({
+    receivers: {
+        test: {
+            FooMethod: function (msg, event) { ... },
+            BarMethod: function (msg, event) { ... },
+            BazSetter: null,            
+        }
+    }
+});
+```
+
+One difference with the JavaScript client is that messages with **unknown** targets are just assigned to the named property on the `test` receiver, e.g `text.QuxTarget = {..}`.
+
+Once registered, receivers will process any messages sent with a `test.*` selector. The example below shows how to call each method or property defined above:
+
+```csharp
+public class MyEventServices : Service
+{
+    public IServerEvents ServerEvents { get; set; }
+
+    public void Any(CustomType request)
+    {
+        ServerEvents.NotifyChannel("home", "text.FooMethod", request);
+        ServerEvents.NotifyChannel("home", "text.BarMethod", request);
+        ServerEvents.NotifyChannel("home", "text.BazSetter", request);
+
+        ServerEvents.NotifyChannel("home", "text.QuxTarget", request);
+    }
+}
+```
+
+### Life-cycle of Receivers
+
+Similar to Services in ServiceStack, each message is processed with an instance of the Receiver resolved from `ServerEventsClient.Resolver` which by default uses the [NewInstanceResolver](https://github.com/ServiceStack/ServiceStack/blob/ec0226b97227048c3bd7c24667a71e7af7e1ff31/src/ServiceStack.Client/ServerEventsClient.Receiver.cs#L30-L36) to return a new instance of the Receiver Type: 
+
+```csharp
+public class NewInstanceResolver : IResolver
+{
+    public T TryResolve<T>()
+    {
+        return typeof(T).CreateInstance<T>();
+    }
+}
+```
+
+This can be changed to re-use the same instance by assigning a [SingletonInstanceResolver](https://github.com/ServiceStack/ServiceStack/blob/ec0226b97227048c3bd7c24667a71e7af7e1ff31/src/ServiceStack.Client/ServerEventsClient.Receiver.cs#L38-L46):
+
+```csharp
+public class SingletonInstanceResolver : IResolver
+{
+    ConcurrentDictionary<Type, object> Cache = new ConcurrentDictionary<Type, object>();
+
+    public T TryResolve<T>()
+    {
+        return (T) Cache.GetOrAdd(typeof (T), type => type.CreateInstance<T>());
+    }
+}
+
+client.Resolver = new SingletonInstanceResolver();
+```
+
+Likewise we can easily change it to resolve instances from your preferred IOC. Here's how to registered Receiver Types, auto-wire them with any custom dependencies, and change the client to resolve instances from ServiceStack's IOC:
+
+```csharp
+// Register all Receivers:
+client.RegisterNamedReceiver<TestNamedReceiver>("test");
+...
+
+// Register all dependencies used in a new Funq.Container:
+var container = new Container();
+container.RegisterAs<Dependency, IDependency>();
+
+// Go through an auto-wire all Registered Receiver Types with Funq:
+container.RegisterAutoWiredTypes(client.ReceiverTypes);
+
+// Change the client to resolve receivers from the new Funq Container:
+client.Resolver = container;
+```
+
+We can assign Funq directly as it already implements the [IResolver](https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack.Interfaces/Configuration/IResolver.cs) interface, whilst you can re-use the existing **Container Adapters** to [enable support for other IOCs](https://github.com/ServiceStack/ServiceStack/wiki/The-IoC-container#use-another-ioc-container). 
+
+### The Global Receiver
+
+Where Named Receivers are used to handle messages sent to a namespaced selector, we also support registering a **Global Receiver** to handle messages with the special `cmd.*` selector.
+
+#### Handling Messages with No Selector
+
+All `IServerEvents` Notify API's also inlcudes [overloads for sending messages without a selector](https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack/ServerEventsFeature.cs#L743-L771) that by convention will take the format `cmd.{TypeName}`. 
+
+These events can be handled with a Global Receiver **based on Message type**, e.g:
+
+```csharp
+public class GlobalReceiver : ServerEventReceiver
+{
+    public SetterType AnyNamedProperty { get; set; }
+
+    public void AnyNamedMethod(CustomType request)
+    {
+        ...
+    }
+}
+
+client.RegisterReceiver<GlobalReceiver>();
+```
+
+Which will be called when sending types with no selector, e.g:
+
+```csharp
+public class MyServices : Service
+{
+    public IServerEvents ServerEvents { get; set; }
+
+    public void Any(Request request)
+    {
+        ServerEvents.NotifyChannel("home", new CustomType { ... });
+        ServerEvents.NotifyChannel("home", new SetterType { ... });
+    }
+}
+```
+
+Global Receivers also handle other messages sent to the `cmd.*` selector and can be re-used as a named receiver, making it easy to handle all the different custom messages sent in [chat.servicestack.net](http://chat.servicestack.net), e.g:
+
+```
+cmd.chat Hi
+cmd.announce This is your captain speaking...
+cmd.toggle#channels
+css.background-image url(https://servicestack.net/img/bg.jpg)
+```
+
+Can all be handled with the Receiver below:
+
+```csharp
+public class JavaScriptReceiver : ServerEventReceiver
+{
+    public void Chat(ChatMessage message) { ... }
+    public void Announce(string message) { ... }
+    public void Toggle(string message) { ... }
+    public void BackgroundImage(string cssRule) { ... }
+}
+
+client.RegisterNamedReceiver<JavaScriptReceiver>();
+client.RegisterNamedReceiver<JavaScriptReceiver>("css");
+```
+
+As can be seen with the example above the **target** names are **case-insensitive** and `-` are collapsed to cater for JavaScript conventions.
+
+## Redis ServerEvents
+
+One limitation our existing `MemoryServerEvents` implementation had was being limited for use within a single App Server. This is no longer a limitation when using the new **Redis ServerEvents back-end**, providing a scale-out option that can serve load-balanced App Server scenarios by utilizing a distributed redis-server back-end. If you're familiar with SignalR, this akin to [SignalR's scaleout with Redis back-end](http://www.asp.net/signalr/overview/signalr-20/performance-and-scaling/scaleout-with-redis).
+
+`RedisServerEvents` is a drop-in replacement for the built-in `MemoryServerEvents` that's effectively a transparent implementation detail, invisible to the Server or Client API's where both implementations even [share the Server Event integration Tests](https://github.com/ServiceStack/ServiceStack/blob/b9eb34eb80ff64fa1171d2f7f29ef359c3580eed/tests/ServiceStack.WebHost.Endpoints.Tests/ServerEventTests.cs#L169-L189).
+
+![Redis ServerEvents Scale Out](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/gap/Chat/redis-scaleout.png)
+
+### Enabling RedisServer Events
+
+RedisServer Events is a drop-in replacement that can easily be configured in just a few lines of code as seen in the updated Chat App which now supports both [Memory and Redis ServerEvents providers](https://github.com/ServiceStackApps/Chat/blob/326617e88272d7cc0a8b7513272cf055378957e2/src/Chat/Global.asax.cs#L46-L54):
+
+```csharp
+var redisHost = AppSettings.GetString("RedisHost");
+if (redisHost != null)
+{
+    container.Register<IRedisClientsManager>(new PooledRedisClientManager(redisHost));
+
+    container.Register<IServerEvents>(c => 
+        new RedisServerEvents(c.Resolve<IRedisClientsManager>()));
+    
+    container.Resolve<IServerEvents>().Start();
+}
+```
+
+The above configuration will use a Redis ServerEvents provider when the **appSetting** in Chat's [Web.config is un-commented](https://github.com/ServiceStackApps/Chat/blob/326617e88272d7cc0a8b7513272cf055378957e2/src/Chat/Web.config#L21):
+
+```xml
+<!--<add key="RedisHost" value="localhost:6379" />-->
+```
+
+### Cross-platform Memory and Redis ServerEvent Enabled Chat.exe
+
+To showcase Redis ServerEvents in action, we've developed a stand-alone [ServiceStack.Gap](https://github.com/ServiceStack/ServiceStack.Gap) version of [Chat](http://chat.servicestack.net) compiled down into a single **Chat.exe** that's runnable on both Windows and OSX with Mono. It can be downloaded from: 
+
+### [Chat.zip](https://github.com/ServiceStack/ServiceStack.Gap/raw/master/deploy/Chat.zip) (1.2MB)
+
+![Redis ServerEvents Preview](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/redis-server-events.gif)
+
+> As Chat only runs on **2 back-end Services**, it fits well within [ServiceStack's Free Quota's](https://servicestack.net/download#free-quotas) which can be further customized and enhanced without a ServiceStack commercial license.
+
+Running **Chat.exe** without any arguments will run Chat using the default **Memory ServerEvents**. You can change it to use **Redis ServerEvents** by [un-commenting this line in appsettings.txt](https://github.com/ServiceStack/ServiceStack.Gap/blob/master/src/Chat/Chat/appsettings.txt#L5):
+
+```
+#redis localhost
+```
+
+This will require a **redis-server** running on `localhost`. If you haven't got redis yet, [download redis-server for Windows](https://github.com/ServiceStack/redis-windows).
+
+Alternatively you can specify which **port** to run Chat on as well as getting it to use Redis ServerEvents by specifying which **redis** instance it should connect to on the command-line with:
+
+```
+Chat.exe /port=1337 /redis=localhost
+```
+
+Also included in `Chat.zip` are [test-fanout-redis-events.bat](https://github.com/ServiceStack/ServiceStack.Gap/blob/master/src/Chat/build/test-fanout-redis-events.bat) and equivalent [test-fanout-redis-events.sh](https://github.com/ServiceStack/ServiceStack.Gap/blob/master/src/Chat/build/test-fanout-redis-events.sh) helper scripts for **Windows or OSX** that **spawn multiple versions of Chat.exe** on different ports (and backgrounds) showing how multiple clients can send messages to each other whilst subscribed to different HTTP Servers connected to the same redis-server:
+
+```
+START Chat.exe /port=1337 /redis=localhost
+START Chat.exe /port=2337 /redis=localhost /background=http://bit.ly/1oQqhtm
+START Chat.exe /port=3337 /redis=localhost /background=http://bit.ly/1yIJOBH
+```
+
+This script is what the animated gif above uses to launch **3 self-hosting instances of Chat.exe** running on **different ports** that can communicate with each other via Redis. This enables some interesting peer-to-peer scenarios where users each run decentralized stand-alone HTTP Servers on their own machines, all able to communicate together via a remote redis server.
+
+## ServiceStack.Redis
+
+### Redis Pub/Sub Server
+
+To power RedisServerEvents we've extracted the managed long-running Pub/Sub message-loop originally built for [Redis MQ](https://github.com/ServiceStack/ServiceStack/wiki/Messaging-and-Redis) into a re-usable class that can be used independently for processing messages published to specific [Redis Pub/Sub](http://redis.io/commands#pubsub) channels. 
+
+`RedisPubSubServer` processes messages in a managed background thread that **automatically reconnects** when the connection with redis-server fails that can be stopped and started independently. 
+
+The public API for is available at [IRedisPubSubServer](https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack.Interfaces/Redis/IRedisPubSubServer.cs):
+
+```csharp
+public interface IRedisPubSubServer : IDisposable
+{
+    IRedisClientsManager ClientsManager { get; }
+    // What Channels it's subscribed to
+    string[] Channels { get; }
+
+    // Run once on initial StartUp
+    Action OnInit { get; set; }
+    // Called each time a new Connection is Started
+    Action OnStart { get; set; }
+    // Invoked when Connection is broken or Stopped
+    Action OnStop { get; set; }
+    // Invoked after Dispose()
+    Action OnDispose { get; set; }
+
+    // Fired when each message is received
+    Action<string, string> OnMessage { get; set; }
+    // Fired after successfully subscribing to the specified channels
+    Action<string> OnUnSubscribe { get; set; }
+    // Called when an exception occurs 
+    Action<Exception> OnError { get; set; }
+    // Called before attempting to Failover to a new redis master
+    Action<IRedisPubSubServer> OnFailover { get; set; }
+
+    int? KeepAliveRetryAfterMs { get; set; }
+    // The Current Time for RedisServer
+    DateTime CurrentServerTime { get; }
+
+    // Current Status: Starting, Started, Stopping, Stopped, Disposed
+    string GetStatus();
+    // Different life-cycle stats
+    string GetStatsDescription();
+    
+    // Subscribe to specified Channels and listening for new messages
+    IRedisPubSubServer Start();
+    // Close active Connection and stop running background thread
+    void Stop();
+    // Stop than Start
+    void Restart();
+}
+```
+
+To use `RedisPubSubServer`, initialize it with the channels you want to subscribe to and assign handlers for each of the events you want to handle. At a minimum you'll want to handle `OnMessage`:
+
+```csharp
+var clientsManager = new PooledRedisClientManager();
+var redisPubSub = new RedisPubSubServer(clientsManager, "channel-1", "channel-2") {
+        OnMessage = (channel, msg) => "Received '{0}' from '{1}'".Print(msg, channel)
+    }.Start();
+```
+
+Then call `Start()` after it's initialized to start listening and processing messages published to the subscribed channels.
+
+## [App Settings](https://github.com/ServiceStack/ServiceStack/wiki/AppSettings)
+
+For many years our solution against using .NET's complex XML configuration for App configuration is to store structured configuration in the **Web.config** appSettings which thanks to the [JSV Format](https://github.com/ServiceStack/ServiceStack.Text/wiki/JSV-Format) makes it easy to read and write structured data from a single string value, e.g:
+
+```xml
+<appSettings>
+    <add key="String" value="Foo"/>
+    <add key="Int" value="42"/>
+    <add key="List" value="A,B,C,D,E"/>
+    <add key="Dict" value="A:1,B:2,C:3"/>
+    <add key="Poco" value="{Foo:Bar}"/>
+</appSettings>
+```
+
+This can be easily parsed into C# types with the [IAppSettings](https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack.Interfaces/Configuration/IAppSettings.cs) API:
+
+```csharp
+IAppSettings settings = new AppSettings();
+
+string value = settings.Get("String");
+int value = settings.Get("Int", defaultValue:1);
+List<string> values = settings.GetList("List");
+Dictionary<string,string> valuesMap = settings.GetDictionary("Dict");
+MyConfig config = settings.Get("Poco", new MyConfig { Foo = "Baz" });
+```
+
+Like other ServiceStack providers, `IAppSettings` is a clean interface with multiple providers letting you easily change or override where you want to source your App configuration from:
+
+  - **DictionarySettings** - Maintain settings in an in-memory Dictionary
+  - **TextFileSettings** - Maintain settings in a plain-text file
+  - **OrmLiteAppSettings** - Maintain settings in any RDBMS `Config` table
+
+We take advantage of this in our [public OSS projects](https://github.com/ServiceStackApps/Chat) when we want to override [public appSettings with production settings](https://github.com/ServiceStackApps/HttpBenchmarks/blob/master/src/BenchmarksAnalyzer/Global.asax.cs#L29-L32) or in our [stand-alone Applications](https://github.com/ServiceStack/ServiceStack.Gap) by allowing us to ship our applications with more end-user friendly **plain-text config file** whose defaults are embedded in the stand-alone **.exe**, exporting it if it doesn't exist - letting us achieve a single, portable **.exe** that can be xcopy'ed and run as-is.
+
+### First class AppSettings
+
+After proving its value over the years we've decided to make it a first-class property on `IAppHost.AppSettings` which defaults to looking at .NET's App/Web.config's. 
+
+The new [Chat.zip](https://github.com/ServiceStack/ServiceStack.Gap/raw/master/deploy/Chat.zip) App explores different ways AppSettings can be used: 
+
+If there's an existing `appsettings.txt` file where the **.exe** is run it will use that, otherwise it falls back to **Web.config** appSettings:
+
+```csharp
+public AppHost() : base("Chat", typeof (ServerEventsServices).Assembly)
+{
+    var customSettings = new FileInfo("appsettings.txt");
+    AppSettings = customSettings.Exists
+        ? (IAppSettings)new TextFileSettings(customSettings.FullName)
+        : new AppSettings();
+}
+```
+
+As a normal property in your AppHost, AppSettings can be accessed directly in `AppHost.Configure()`:
+
+```csharp
+public void Configure(Container container)
+{
+    ...
+    var redisHost = AppSettings.GetString("RedisHost");
+    if (redisHost != null)
+    {
+        container.Register<IServerEvents>(c => 
+            new RedisServerEvents(new PooledRedisClientManager(redisHost)));
+        
+        container.Resolve<IServerEvents>().Start();
+    }
+}
+```
+
+Inside your services or IOC dependencies, like any other auto-wired dependency:
+
+```csharp
+public class ServerEventsServices : Service
+{
+    public IAppSettings AppSettings { get; set; }
+
+    public void Any(PostRawToChannel request)
+    {
+        if (!IsAuthenticated && AppSettings.Get("LimitRemoteControlToAuthenticatedUsers", false))
+            throw new HttpError(HttpStatusCode.Forbidden, "You must be authenticated to use remote control.");
+        ...
+    }   
+}
+```
+
+Directly within Razor views:
+
+```html
+<style>
+    body {
+        background-image: url(@AppSettings.Get("background","/img/bg.jpg")) 
+    }
+</style>
+```
+
+As well as outside ServiceStack, via the `HostContext` static class:
+
+```csharp
+var redisHost = HostContext.AppSettings.GetString("redis");
+```
+
+### AppSettings are now writable
+
+A new `Set()` API was added to [IAppSettings](https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack.Interfaces/Configuration/IAppSettings.cs) letting you save any serializable property that works for all providers:
+
+```csharp
+public interface IAppSettings
+{
+    void Set<T>(string key, T value);
+    ...
+}
+
+AppSettings.Set("Poco", new MyConfig { Foo = "Baz" });
+```
+
+In providers that support writable configuration natively like `OrmLiteAppSettings` and `DictionarySettings`, the settings get written through to the underlying provider. For read-only providers like Web.config's `AppSettings` or `TextFileSettings` a **shadowed** cache is kept that works similar to prototypal shadowing in JavaScript where if a property doesn't exist, setting a property will be stored on the top-level object instance which also takes precedence on subsequent property access.
+
+## [Metadata Pages](https://github.com/ServiceStack/ServiceStack/wiki/Metadata-Page)
+
+The metadata pages have been expanded to include some of [Swagger API Attribute annotations](https://github.com/ServiceStack/ServiceStack/wiki/Swagger-API#swagger-attributes) which now shows the parameters for the Request and Response DTO's as well as any other DTO's used in each metadata operation page:
+
+![Metadata Type Info](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/metadata-swagger-api.png)
+
+When annotated the Description also shows any **allowable Enum values** or **range limits** when provided.
+
+#### HtmlFormat
+
+The humanize feature in [Auto HtmlFormat](https://github.com/ServiceStack/ServiceStack/wiki/HTML5ReportFormat) for splitting JoinedCase words with spaces can be disabled for all pages with:
+
+```csharp
+HtmlFormat.Humanize = false;
+``` 
+
+Or on adhoc pages by adding `#dehumanize` hash param.
+
+## [Authentication](https://github.com/ServiceStack/ServiceStack/wiki/Authentication-and-authorization)
+
+### Web Sudo
+
+A common UX in some websites is to add an extra layer of protection for **super protected** functionality by getting users to re-confirm their password verifying it's still them using the website, common in places like confirming a financial transaction. 
+
+**WebSudo** (by [@tvjames](https://github.com/tvjames)) is a new feature similar in spirit requiring users to re-authenticate when accessing Services annotated with the `[WebSudoRequired]` attribute. To make use of WebSudo, first register the plugin:
+
+```csharp
+Plugins.Add(new WebSudoFeature());
+```
+
+You can then apply WebSudo behavior to existing services by annotating them with `[WebSudoRequired]`:
+
+```csharp
+[WebSudoRequired]
+public class RequiresWebSudoService : Service
+{
+    public object Any(RequiresWebSudo request)
+    {
+        return request;
+    }
+}
+```
+
+Once enabled this will throw a **402 Web Sudo Required** HTTP Error the first time the service is called:
+
+```csharp
+var requiresWebSudo = new RequiresWebSudo { Name = "test" };
+try
+{
+    client.Send<RequiresWebSudoResponse>(requiresWebSudo); //throws
+}
+catch (WebServiceException)
+{
+    client.Send(authRequest); //re-authenticate
+    var response = client.Send(requiresWebSudo); //success!
+}
+```
+
+Re-authenticating afterwards will allow access to the WebSudo service.
+
+### Auth Events
+
+In order to enable functionality like **WebSudo** we've added additional hooks into the Authentication process with `IAuthEvents`:
+
+```csharp
+public interface IAuthEvents
+{
+    void OnRegistered(IRequest httpReq, IAuthSession session, IServiceBase registrationService);
+
+    void OnAuthenticated(IRequest httpReq, IAuthSession session, IServiceBase authService, 
+        IAuthTokens tokens, Dictionary<string, string> authInfo);
+
+    void OnLogout(IRequest httpReq, IAuthSession session, IServiceBase authService);
+
+    void OnCreated(IRequest httpReq, IAuthSession session);
+}
+```
+
+These are the same authentication hooks that were previously only available when creating a **Custom UserSession** by inheriting [AuthUserSession](https://github.com/ServiceStack/ServiceStack/wiki/Sessions#session-events). The new AuthEvents API provide a loose-typed way where plugins can tap into the same hooks by registering it with `AuthFeature.AuthEvents`, e.g:
+
+```csharp
+public class WebSudoFeature : IPlugin, IAuthEvents
+{
+    public void Register(IAppHost appHost)
+    {
+        ...
+        var authFeature = appHost.GetPlugin<AuthFeature>();
+        authFeature.AuthEvents.Add(this);
+    }
+
+    // Add implementations on `IAuthEvents` handlers
+    public void OnCreated(IRequest httpReq, IAuthSession session)
+    {
+        ...
+    }
+    ...
+}
+```
+
+An alternative way for accessing `IAuthEvents` is to register it like a normal dependency, e.g:
+
+```csharp
+container.RegisterAs<LogAuthEvents,IAuthEvents>();
+```
+
+To simplify custom implementations you can inherit from the empty concrete [AuthEvents](https://github.com/ServiceStack/ServiceStack/blob/7eb3a34a2e545a54c2591665328c16c5d398d37a/src/ServiceStack/Auth/AuthEvents.cs#L18-L25) and choose to only implement the callbacks you're interested in, e.g:
+
+```csharp
+public class LogAuthEvents : AuthEvents
+{
+    public static ILog Log = LogManager.GetLogger(typeof(LogAuthEvents));
+
+    public override void OnLogout(IRequest httpReq, IAuthSession session, IServiceBase authService) 
+    {
+        Log.DebugFormat("User #{0} {1} has logged out", session.UserAuthId, session.UserName);
+    }
+}
+```
+
+## OrmLite
+
+  - Added new `db.ColumnLazy` API for lazily fetching a column of data
+  - Added `db.TableExists<T>` for a typed API to detect whether a table exists
+  - Added `INamingStrategy.GetSequenceName()` to [override how sequence names in Oracle are generated](http://stackoverflow.com/a/25611452/85785)
+  - Upgraded PostgreSql Provider to **Npgsql 2.2.0** and Sqlite to **Sqlite.Core 1.0.93.0**
+
+## Text
+
+  - Added `JsConfig.ParsePrimitiveIntegerTypes` and `JsConfig.ParsePrimitiveFloatingPointTypes` to [change preferences on what primitive numeric types should be converted to](https://github.com/ServiceStack/ServiceStack.Text/pull/428).
+  - Added `JsConfig.IgnoreAttributesNamed` to [change what attributes are used to ignore properties](https://github.com/ServiceStack/ServiceStack.Text/commit/3b9972fbd61ce000f9af72d74d79b30eb0d2f45b)
+  - Added [string.CountOccurancesOf() extension method](https://github.com/ServiceStack/ServiceStack.Text/commit/d41d7fb879d68e5a4ccb529e3cc6ed7d3ce937a2)
+  - Added [Image MimeTypes](https://github.com/ServiceStack/ServiceStack.Text/commit/b07cf033d7b4735b0249850769b119be0c857b9d)
+
+## Community
+
+## [ServiceStack MiniProfiler Toolkit](https://bitbucket.org/migajek/miniprofilingtoolkit)
+
+From the wider ServiceStack Community, [Michał Gajek](https://plus.google.com/u/0/+Micha%C5%82Gajek/auto) has developed an alternative analyzer of ServiceStack's MiniProfiler results in a comprehensive UI that allows deep introspection of your running Services. From the Project's description:
+
+### Description
+
+This project intends to provide tools for collecting & analyzing profiling results of ServiceStack-based apps.
+Not only this makes profiling possible in the scenario when no built-in web-frontend is available (like Single Page Applications), but also has several advantages over it:
+
+ - collects & persists the results
+ - allows the "background" profiling (example: production environment)
+ - it's better to analyze large amounts of collected profiling results, not just focusing on single execution timings
+ - helps finding time-consuming queries
+
+### Screenshots
+
+![](http://i.imgur.com/Ybpx4xg.png)
+
+![](http://i.imgur.com/BA4Mc68.png)
+
+![](http://i.imgur.com/US4Gk6s.png)
+
+![](http://i.imgur.com/bILdbQc.png)
+
+
+### Install
+
+```
+PM> Install-Package Migajek.MiniProfiling.ServiceStack.RemoteStorage
+```
+
+### Register the Plugin:
+
+```csharp
+Plugins.Add(new Migajek.Profiling.ServiceStackProfiler.MiniProfilingToolkit("http://url/", "ProjectName"));
+```
+
+# v4.0.30 Release Notes
 
 ## [Add ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference)
 
