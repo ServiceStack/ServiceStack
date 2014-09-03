@@ -4,6 +4,88 @@
 
 The most requested feature since our last release was to expand our last releases support for [Server Sent Events](https://github.com/ServiceStackApps/Chat#server-sent-events) with both a **typed C# Client** as well as providing a scale-out **Redis ServerEvents back-end** which can be used in load-balanced App Servers scenarios - we're happy to announce we've been able to deliver both features in this release!
 
+### Major features in this release
+
+  - [Redis ServerEvents](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#redis-serverevents)
+  - [C# ServerEvents Client](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#c-serverevents-client)
+  - [Redis](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#servicestackredis)
+    - [Redis Pub/Sub Server](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#redis-pubsub-server)
+  - [AppSettings](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#app-settings)
+    - [First-class App Settings](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#first-class-appsettings)
+  - [Metadata Pages](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#metadata-pages)
+  - Authentication
+    - [WebSudo](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#web-sudo)
+    - [Auth Events](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#auth-events)
+  - [OrmLite](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#ormlite)
+  - [Text](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#text)
+  - [Community](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#community)
+    - [ServiceStack MiniProfiler Toolkit](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md#servicestack-miniprofiler-toolkit)
+
+## Redis ServerEvents
+
+One limitation our existing `MemoryServerEvents` implementation had was being limited for use within a single App Server. This is no longer a limitation when using the new **Redis ServerEvents back-end**, providing a scale-out option that can serve load-balanced App Server scenarios by utilizing a distributed redis-server back-end. If you're familiar with SignalR, this akin to [SignalR's scaleout with Redis back-end](http://www.asp.net/signalr/overview/signalr-20/performance-and-scaling/scaleout-with-redis).
+
+`RedisServerEvents` is a drop-in replacement for the built-in `MemoryServerEvents` that's effectively a transparent implementation detail, invisible to the Server or Client API's where both implementations even [share the Server Event integration Tests](https://github.com/ServiceStack/ServiceStack/blob/b9eb34eb80ff64fa1171d2f7f29ef359c3580eed/tests/ServiceStack.WebHost.Endpoints.Tests/ServerEventTests.cs#L169-L189).
+
+![Redis ServerEvents Scale Out](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/gap/Chat/redis-scaleout.png)
+
+### Enabling RedisServer Events
+
+RedisServer Events is a drop-in replacement that can easily be configured in just a few lines of code as seen in the updated Chat App which now supports both [Memory and Redis ServerEvents providers](https://github.com/ServiceStackApps/Chat/blob/326617e88272d7cc0a8b7513272cf055378957e2/src/Chat/Global.asax.cs#L46-L54):
+
+```csharp
+var redisHost = AppSettings.GetString("RedisHost");
+if (redisHost != null)
+{
+    container.Register<IRedisClientsManager>(new PooledRedisClientManager(redisHost));
+
+    container.Register<IServerEvents>(c => 
+        new RedisServerEvents(c.Resolve<IRedisClientsManager>()));
+    
+    container.Resolve<IServerEvents>().Start();
+}
+```
+
+The above configuration will use a Redis ServerEvents provider when the **appSetting** in Chat's [Web.config is un-commented](https://github.com/ServiceStackApps/Chat/blob/326617e88272d7cc0a8b7513272cf055378957e2/src/Chat/Web.config#L21):
+
+```xml
+<!--<add key="RedisHost" value="localhost:6379" />-->
+```
+
+### Cross-platform Memory and Redis ServerEvent Enabled Chat.exe
+
+To showcase Redis ServerEvents in action, we've developed a stand-alone [ServiceStack.Gap](https://github.com/ServiceStack/ServiceStack.Gap) version of [Chat](http://chat.servicestack.net) compiled down into a single **Chat.exe** that's runnable on both Windows and OSX with Mono. It can be downloaded from: 
+
+### [Chat.zip](https://github.com/ServiceStack/ServiceStack.Gap/raw/master/deploy/Chat.zip) (1.2MB)
+
+![Redis ServerEvents Preview](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/redis-server-events.gif)
+
+> As Chat only runs on **2 back-end Services**, it fits well within [ServiceStack's Free Quota's](https://servicestack.net/download#free-quotas) which can be further customized and enhanced without a ServiceStack commercial license.
+
+Running **Chat.exe** without any arguments will run Chat using the default **Memory ServerEvents**. You can change it to use **Redis ServerEvents** by [un-commenting this line in appsettings.txt](https://github.com/ServiceStack/ServiceStack.Gap/blob/master/src/Chat/Chat/appsettings.txt#L5):
+
+```
+#redis localhost
+```
+
+This will require a **redis-server** running on `localhost`. If you haven't got redis yet, [download redis-server for Windows](https://github.com/ServiceStack/redis-windows).
+
+Alternatively you can specify which **port** to run Chat on as well as getting it to use Redis ServerEvents by specifying which **redis** instance it should connect to on the command-line with:
+
+```
+Chat.exe /port=1337 /redis=localhost
+```
+
+Also included in `Chat.zip` are [test-fanout-redis-events.bat](https://github.com/ServiceStack/ServiceStack.Gap/blob/master/src/Chat/build/test-fanout-redis-events.bat) and equivalent [test-fanout-redis-events.sh](https://github.com/ServiceStack/ServiceStack.Gap/blob/master/src/Chat/build/test-fanout-redis-events.sh) helper scripts for **Windows or OSX** that **spawn multiple versions of Chat.exe** on different ports (and backgrounds) showing how multiple clients can send messages to each other whilst subscribed to different HTTP Servers connected to the same redis-server:
+
+```
+START Chat.exe /port=1337 /redis=localhost
+START Chat.exe /port=2337 /redis=localhost /background=http://bit.ly/1oQqhtm
+START Chat.exe /port=3337 /redis=localhost /background=http://bit.ly/1yIJOBH
+```
+
+This script is what the animated gif above uses to launch **3 self-hosting instances of Chat.exe** running on **different ports** that can communicate with each other via Redis. This enables some interesting peer-to-peer scenarios where users each run decentralized stand-alone HTTP Servers on their own machines, all able to communicate together via a remote redis server.
+
 ## C# ServerEvents Client
 
 Like ServiceStack's other [C# Service Clients](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client), the new `ServerEventsClient` is a [portable library](https://github.com/ServiceStackApps/HelloMobile) contained in the `ServiceStack.Client` NuGet package:
@@ -321,71 +403,6 @@ client.RegisterNamedReceiver<JavaScriptReceiver>("css");
 ```
 
 As can be seen with the example above the **target** names are **case-insensitive** and `-` are collapsed to cater for JavaScript conventions.
-
-## Redis ServerEvents
-
-One limitation our existing `MemoryServerEvents` implementation had was being limited for use within a single App Server. This is no longer a limitation when using the new **Redis ServerEvents back-end**, providing a scale-out option that can serve load-balanced App Server scenarios by utilizing a distributed redis-server back-end. If you're familiar with SignalR, this akin to [SignalR's scaleout with Redis back-end](http://www.asp.net/signalr/overview/signalr-20/performance-and-scaling/scaleout-with-redis).
-
-`RedisServerEvents` is a drop-in replacement for the built-in `MemoryServerEvents` that's effectively a transparent implementation detail, invisible to the Server or Client API's where both implementations even [share the Server Event integration Tests](https://github.com/ServiceStack/ServiceStack/blob/b9eb34eb80ff64fa1171d2f7f29ef359c3580eed/tests/ServiceStack.WebHost.Endpoints.Tests/ServerEventTests.cs#L169-L189).
-
-![Redis ServerEvents Scale Out](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/gap/Chat/redis-scaleout.png)
-
-### Enabling RedisServer Events
-
-RedisServer Events is a drop-in replacement that can easily be configured in just a few lines of code as seen in the updated Chat App which now supports both [Memory and Redis ServerEvents providers](https://github.com/ServiceStackApps/Chat/blob/326617e88272d7cc0a8b7513272cf055378957e2/src/Chat/Global.asax.cs#L46-L54):
-
-```csharp
-var redisHost = AppSettings.GetString("RedisHost");
-if (redisHost != null)
-{
-    container.Register<IRedisClientsManager>(new PooledRedisClientManager(redisHost));
-
-    container.Register<IServerEvents>(c => 
-        new RedisServerEvents(c.Resolve<IRedisClientsManager>()));
-    
-    container.Resolve<IServerEvents>().Start();
-}
-```
-
-The above configuration will use a Redis ServerEvents provider when the **appSetting** in Chat's [Web.config is un-commented](https://github.com/ServiceStackApps/Chat/blob/326617e88272d7cc0a8b7513272cf055378957e2/src/Chat/Web.config#L21):
-
-```xml
-<!--<add key="RedisHost" value="localhost:6379" />-->
-```
-
-### Cross-platform Memory and Redis ServerEvent Enabled Chat.exe
-
-To showcase Redis ServerEvents in action, we've developed a stand-alone [ServiceStack.Gap](https://github.com/ServiceStack/ServiceStack.Gap) version of [Chat](http://chat.servicestack.net) compiled down into a single **Chat.exe** that's runnable on both Windows and OSX with Mono. It can be downloaded from: 
-
-### [Chat.zip](https://github.com/ServiceStack/ServiceStack.Gap/raw/master/deploy/Chat.zip) (1.2MB)
-
-![Redis ServerEvents Preview](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/redis-server-events.gif)
-
-> As Chat only runs on **2 back-end Services**, it fits well within [ServiceStack's Free Quota's](https://servicestack.net/download#free-quotas) which can be further customized and enhanced without a ServiceStack commercial license.
-
-Running **Chat.exe** without any arguments will run Chat using the default **Memory ServerEvents**. You can change it to use **Redis ServerEvents** by [un-commenting this line in appsettings.txt](https://github.com/ServiceStack/ServiceStack.Gap/blob/master/src/Chat/Chat/appsettings.txt#L5):
-
-```
-#redis localhost
-```
-
-This will require a **redis-server** running on `localhost`. If you haven't got redis yet, [download redis-server for Windows](https://github.com/ServiceStack/redis-windows).
-
-Alternatively you can specify which **port** to run Chat on as well as getting it to use Redis ServerEvents by specifying which **redis** instance it should connect to on the command-line with:
-
-```
-Chat.exe /port=1337 /redis=localhost
-```
-
-Also included in `Chat.zip` are [test-fanout-redis-events.bat](https://github.com/ServiceStack/ServiceStack.Gap/blob/master/src/Chat/build/test-fanout-redis-events.bat) and equivalent [test-fanout-redis-events.sh](https://github.com/ServiceStack/ServiceStack.Gap/blob/master/src/Chat/build/test-fanout-redis-events.sh) helper scripts for **Windows or OSX** that **spawn multiple versions of Chat.exe** on different ports (and backgrounds) showing how multiple clients can send messages to each other whilst subscribed to different HTTP Servers connected to the same redis-server:
-
-```
-START Chat.exe /port=1337 /redis=localhost
-START Chat.exe /port=2337 /redis=localhost /background=http://bit.ly/1oQqhtm
-START Chat.exe /port=3337 /redis=localhost /background=http://bit.ly/1yIJOBH
-```
-
-This script is what the animated gif above uses to launch **3 self-hosting instances of Chat.exe** running on **different ports** that can communicate with each other via Redis. This enables some interesting peer-to-peer scenarios where users each run decentralized stand-alone HTTP Servers on their own machines, all able to communicate together via a remote redis server.
 
 ## ServiceStack.Redis
 
