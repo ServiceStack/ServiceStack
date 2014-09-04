@@ -273,6 +273,16 @@
             <para>db.Count(db.From&lt;Person&gt;().Where(x =&gt; x.Age &lt; 50))</para>
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.RowCount``1(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``0})">
+            <summary>
+            Return the number of rows returned by the supplied expression
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.RowCount(System.Data.IDbConnection,System.String)">
+            <summary>
+            Return the number of rows returned by the supplied sql
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.ReadConnectionExtensions.LoadSelect``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
             <summary>
             Returns results with references from using a LINQ Expression. E.g:
