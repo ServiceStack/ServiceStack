@@ -56,6 +56,18 @@ namespace Funq
 			AutoWire(this, instance);
 		}
 
+        public object GetLazyResolver(Type type) // returns Func<type>
+        {
+            var tryResolveGeneric = typeof(Container).GetMethods()
+                .First(x => x.Name == "LazyResolve" 
+                    && x.GetGenericArguments().Length == 1 
+                    && x.GetParameters().Length == 0);
+            
+            var tryResolveMethod = tryResolveGeneric.MakeGenericMethod(new[] { type });
+            var instance = tryResolveMethod.Invoke(this, new object[0]);
+            return instance;
+        }
+
         public bool Exists<TService>()
         {
             var entry = GetEntry<TService, Func<Container, TService>>(null, throwIfMissing:false);

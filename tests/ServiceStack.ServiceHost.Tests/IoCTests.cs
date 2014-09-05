@@ -97,5 +97,53 @@ namespace ServiceStack.ServiceHost.Tests
             Assert.That(test.String, Is.EqualTo("A String"));
             Assert.That(test.Age, Is.EqualTo(27));
 	    }
-	}
+
+        public class FunqTest
+        {
+            public FunqTest(Func<IFoo> ctorFoo)
+            {
+                this.ctorFoo = ctorFoo;
+            }
+
+            private Func<IFoo> ctorFoo;
+            public Func<IFoo> CtorFoo
+            {
+                get { return ctorFoo; }
+            }
+
+            public Func<IFoo> FunqFoo { get; set; }
+        }
+
+        [Test]
+        public void Does_Resolve_lazy_Func_types()
+        {
+            var container = new Container();
+
+            container.Register<Func<IFoo>>(c => () => new Foo());
+
+            container.RegisterAutoWired<FunqTest>();
+
+            var test = container.Resolve<FunqTest>();
+            Assert.That(test.CtorFoo, Is.Not.Null);
+            Assert.That(test.CtorFoo(), Is.Not.Null);
+            Assert.That(test.FunqFoo, Is.Not.Null);
+            Assert.That(test.FunqFoo(), Is.Not.Null);
+        }
+
+        [Test]
+        public void Does_AutoWire_Funq_types()
+        {
+            var container = new Container();
+
+            container.RegisterAutoWiredAs<Foo, IFoo>();
+
+            container.RegisterAutoWired<FunqTest>();
+
+            var test = container.Resolve<FunqTest>();
+            Assert.That(test.CtorFoo, Is.Not.Null);
+            Assert.That(test.CtorFoo(), Is.Not.Null);
+            Assert.That(test.FunqFoo, Is.Not.Null);
+            Assert.That(test.FunqFoo(), Is.Not.Null);
+        }
+    }
 }
