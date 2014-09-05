@@ -30,7 +30,7 @@ namespace ServiceStack.RabbitMq
 
         public static void RegisterTopicExchange(this IModel channel, string exchangeName = null)
         {
-            channel.ExchangeDeclare(exchangeName ?? QueueNames.ExchangeTopic, "fanout", durable: false, autoDelete: false, arguments:null);
+            channel.ExchangeDeclare(exchangeName ?? QueueNames.ExchangeTopic, "topic", durable: false, autoDelete: false, arguments:null);
         }
 
         public static void RegisterQueues<T>(this IModel channel)
