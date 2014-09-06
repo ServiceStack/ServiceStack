@@ -145,5 +145,49 @@ namespace ServiceStack.ServiceHost.Tests
             Assert.That(test.FunqFoo, Is.Not.Null);
             Assert.That(test.FunqFoo(), Is.Not.Null);
         }
+
+        public class MultiFunqTest
+        {
+            public MultiFunqTest(Func<IFoo, IBar> ctorFooBar)
+            {
+                this.ctorFooBar = ctorFooBar;
+            }
+
+            private Func<IFoo, IBar> ctorFooBar;
+            public Func<IFoo, IBar> CtorFooBar
+            {
+                get { return ctorFooBar; }
+            }
+
+            public Func<IFoo, IBar> FunqFooBar { get; set; }
+
+            public Func<Test, IFoo, IBar> FunqTestFooBar { get; set; }
+        }
+
+        [Test]
+        public void Does_AutoWire_MultiFunq_types()
+        {
+            var container = new Container();
+
+            container.RegisterAutoWiredAs<Foo, IFoo>();
+            container.RegisterAutoWiredAs<Bar, IBar>();
+            container.RegisterAutoWired<Test>();
+
+            var foo = container.Resolve<IFoo>();
+            Assert.That(foo, Is.Not.Null);
+            var bar = container.Resolve<IBar>();
+            Assert.That(bar, Is.Not.Null);
+
+            container.RegisterAutoWired<MultiFunqTest>();
+
+            var test = container.Resolve<MultiFunqTest>();
+            Assert.That(test.CtorFooBar, Is.Not.Null);
+            Assert.That(test.CtorFooBar(new Foo()), Is.Not.Null);
+            Assert.That(test.FunqFooBar, Is.Not.Null);
+            Assert.That(test.FunqFooBar(new Foo()), Is.Not.Null);
+            Assert.That(test.FunqTestFooBar, Is.Not.Null);
+            Assert.That(test.FunqTestFooBar(new Test(), new Foo()), Is.Not.Null);
+        }
+
     }
 }

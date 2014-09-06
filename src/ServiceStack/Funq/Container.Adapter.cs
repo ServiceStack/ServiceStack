@@ -56,16 +56,39 @@ namespace Funq
 			AutoWire(this, instance);
 		}
 
-        public object GetLazyResolver(Type type) // returns Func<type>
+        public object GetLazyResolver(params Type[] types) // returns Func<type>
         {
             var tryResolveGeneric = typeof(Container).GetMethods()
-                .First(x => x.Name == "LazyResolve" 
-                    && x.GetGenericArguments().Length == 1 
+                .First(x => x.Name == "ReverseLazyResolve" 
+                    && x.GetGenericArguments().Length == types.Length 
                     && x.GetParameters().Length == 0);
-            
-            var tryResolveMethod = tryResolveGeneric.MakeGenericMethod(new[] { type });
+
+            var tryResolveMethod = tryResolveGeneric.MakeGenericMethod(types);
             var instance = tryResolveMethod.Invoke(this, new object[0]);
             return instance;
+        }
+
+        public Func<TService> ReverseLazyResolve<TService>()
+        {
+            return LazyResolve<TService>(null);
+        }
+
+        public Func<TArg, TService> ReverseLazyResolve<TArg, TService>()
+        {
+            Register<Func<TArg, TService>>(c => a => c.TryResolve<TService>());
+            return TryResolve<Func<TArg, TService>>();
+        }
+
+        public Func<TArg1, TArg2, TService> ReverseLazyResolve<TArg1, TArg2, TService>()
+        {
+            Register<Func<TArg1, TArg2, TService>>(c => (a1, a2) => c.TryResolve<TService>());
+            return TryResolve<Func<TArg1, TArg2, TService>>();
+        }
+
+        public Func<TArg1, TArg2, TArg3, TService> ReverseLazyResolve<TArg1, TArg2, TArg3, TService>()
+        {
+            Register<Func<TArg1, TArg2, TArg3, TService>>(c => (a1, a2, a3) => c.TryResolve<TService>());
+            return TryResolve<Func<TArg1, TArg2, TArg3, TService>>();
         }
 
         public bool Exists<TService>()

@@ -403,20 +403,17 @@ namespace Funq
             if (entry == null)
             {
                 var genericDef = typeof(TService).FirstGenericTypeDefinition();
-                if (genericDef != null && genericDef == typeof(Func<>)) //Lazy Dependencies
+                if (genericDef != null && genericDef.Name.StartsWith("Func`")) //Lazy Dependencies
                 {
                     var argTypes = typeof(TService).GetTypeGenericArguments();
-                    if (argTypes.Length == 1)
+                    var lazyResolver = GetLazyResolver(argTypes);
+
+                    return new ServiceEntry<TService, TFunc>(
+                        (TFunc)(object)(Func<Container, TService>)(c => (TService)lazyResolver))
                     {
-                        var argType = argTypes[0];
-                        var lazyResolver = GetLazyResolver(argType);
-                        return new ServiceEntry<TService, TFunc>(
-                            (TFunc)(object)(Func<Container, TService>)(c => (TService)lazyResolver))
-                        {
-                            Owner = DefaultOwner,
-                            Container = this,
-                        };
-                    }
+                        Owner = DefaultOwner,
+                        Container = this,
+                    };
                 }
             }
 
