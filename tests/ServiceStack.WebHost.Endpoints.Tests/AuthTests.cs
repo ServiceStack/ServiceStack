@@ -607,6 +607,56 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Can_call_RequiredRole_service_with_CredentialsAuth_with_Role()
+        {
+            try
+            {
+                var client = GetClient();
+                var authResponse = client.Send(
+                    new Authenticate
+                    {
+                        provider = CredentialsAuthProvider.Name,
+                        UserName = UserName, // Has Role
+                        Password = Password,
+                        RememberMe = true,
+                    });
+
+                var request = new RequiresRole { Name = "test" };
+                var response = client.Send<RequiresRoleResponse>(request);
+                Assert.That(response.Result, Is.EqualTo(request.Name));
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.Fail(webEx.Message);
+            }
+        }
+
+        [Test]
+        public void Does_not_allow_RequiredRole_service_with_CredentialsAuth_without_Role()
+        {
+            try
+            {
+                var client = GetClient();
+                var authResponse = client.Send(
+                    new Authenticate
+                    {
+                        provider = CredentialsAuthProvider.Name,
+                        UserName = "user2", // Does not have Role
+                        Password = "p@55word2",
+                        RememberMe = true,
+                    });
+
+                var request = new RequiresRole { Name = "test" };
+                var response = client.Send<RequiresRoleResponse>(request);
+                Assert.Fail("Should Throw");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Forbidden));
+            }
+        }
+
+        [Test]
         public void RequiredRole_service_returns_unauthorized_if_no_basic_auth_header_exists()
         {
             try
