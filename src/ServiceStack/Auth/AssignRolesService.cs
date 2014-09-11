@@ -35,7 +35,6 @@ namespace ServiceStack.Auth
         public ResponseStatus ResponseStatus { get; set; }
     }
 
-    [RequiredRole(RoleNames.Admin)]
     [DefaultRequest(typeof(AssignRoles))]
     public class AssignRolesService : Service
     {
@@ -43,6 +42,8 @@ namespace ServiceStack.Auth
 
         public object Post(AssignRoles request)
         {
+            RequiredRoleAttribute.AssertRequiredRoles(Request, RoleNames.Admin);
+
             request.UserName.ThrowIfNullOrEmpty();
 
             var userAuth = UserAuthRepo.GetUserAuthByUserName(request.UserName);
