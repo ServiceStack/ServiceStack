@@ -70,7 +70,8 @@ namespace ServiceStack.Host.Handlers
                 Thread.CurrentThread.CurrentCulture = currentCulture;
                 Thread.CurrentThread.CurrentUICulture = currentUiCulture;
                 //HttpContext is not preserved in ThreadPool threads: http://stackoverflow.com/a/13558065/85785
-                HttpContext.Current = ctx;
+                if (HttpContext.Current == null)
+                    HttpContext.Current = ctx;
 
                 ProcessRequest(httpReq, httpRes, operationName);
             });
