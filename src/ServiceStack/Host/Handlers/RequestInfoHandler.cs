@@ -204,7 +204,9 @@ namespace ServiceStack.Host.Handlers
                     if (winUser != null)
                     {
                         response.LogonUserInfo["User"] = winUser.Value;
-                        response.LogonUserInfo["User.AccountDomainSid"] = winUser.AccountDomainSid.ToString();
+                        response.LogonUserInfo["User.AccountDomainSid"] = winUser.AccountDomainSid != null
+                            ? winUser.AccountDomainSid.ToString()
+                            : "null";
                         response.LogonUserInfo["User.IsAccountSid"] = winUser.IsAccountSid().ToString();
                     }
                 }
