@@ -940,7 +940,7 @@
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteConnectionExtensions.DeleteById``1(System.Data.IDbConnection,System.Object,System.UInt64)">
             <summary>
             Delete 1 row by the PrimaryKey where the rowVersion matches the optimistic concurrency field. 
-            Will throw <exception cref="!:RowModifiedException">RowModefiedExeption</exception> if the 
+            Will throw <exception cref="T:ServiceStack.Data.OptimisticConcurrencyException">RowModefiedExeption</exception> if the 
             row does not exist or has a different row version.
             E.g: <para>db.DeleteById&lt;Person&gt;(1)</para>
             </summary>
