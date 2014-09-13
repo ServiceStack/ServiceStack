@@ -216,5 +216,16 @@ namespace ServiceStack
         {
             cache.Remove(GetSessionKey(httpReq));
         }
+
+        public static ISession GetSessionBag(this IRequest request)
+        {
+            var factory = request.TryResolve<ISessionFactory>() ?? new SessionFactory(request.GetCacheClient());
+            return factory.GetOrCreateSession(request, request.Response);
+        }
+
+        public static ISession GetSessionBag(this IServiceBase service)
+        {
+            return service.Request.GetSessionBag();
+        }
     }
 }
