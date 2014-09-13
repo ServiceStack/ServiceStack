@@ -227,5 +227,15 @@ namespace ServiceStack
         {
             return service.Request.GetSessionBag();
         }
+
+        public static T Get<T>(this ISession session)
+        {
+            return session.Get<T>(typeof(T).Name);
+        }
+
+        public static void Set<T>(this ISession session, T value)
+        {
+            session.Set(typeof(T).Name, value);
+        }
     }
 }
