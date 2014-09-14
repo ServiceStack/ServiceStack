@@ -14,8 +14,10 @@ namespace ServiceStack.Mvc
 			var ssController = filterContext.Controller as ServiceStackController;
 			if (ssController == null) return;
 
+		    var authSession = ssController.GetSession();
+
 			var authAttrs = GetActionAndControllerAttributes<AuthenticateAttribute>(filterContext);
-			if (authAttrs.Count > 0 && (ssController.AuthSession==null || !ssController.AuthSession.IsAuthenticated))
+            if (authAttrs.Count > 0 && !(authSession == null || !authSession.IsAuthenticated))
 			{
 				filterContext.Result = ssController.AuthenticationErrorResult;
 				return;
@@ -31,28 +33,28 @@ namespace ServiceStack.Mvc
 			var httpReq = HttpContext.Current.ToRequest();
 			var userAuthRepo = httpReq.TryResolve<IAuthRepository>();
 
-			var hasRoles = roleAttrs.All(x => x.HasAllRoles(httpReq, ssController.AuthSession, userAuthRepo));
+            var hasRoles = roleAttrs.All(x => x.HasAllRoles(httpReq, authSession, userAuthRepo));
 			if (!hasRoles)
 			{
 				filterContext.Result = ssController.AuthorizationErrorResult;
 				return;
 			}
 
-			var hasAnyRole = anyRoleAttrs.All(x => x.HasAnyRoles(httpReq, ssController.AuthSession, userAuthRepo));
+            var hasAnyRole = anyRoleAttrs.All(x => x.HasAnyRoles(httpReq, authSession, userAuthRepo));
 			if (!hasAnyRole)
 			{
 				filterContext.Result = ssController.AuthorizationErrorResult;
 				return;
 			}
 
-			var hasPermssions = permAttrs.All(x => x.HasAllPermissions(httpReq, ssController.AuthSession, userAuthRepo));
+            var hasPermssions = permAttrs.All(x => x.HasAllPermissions(httpReq, authSession, userAuthRepo));
 			if (!hasPermssions)
 			{
 				filterContext.Result = ssController.AuthorizationErrorResult;
 				return;
 			}
 
-			var hasAnyPermission = anyPermAttrs.All(x => x.HasAnyPermissions(httpReq, ssController.AuthSession, userAuthRepo));
+            var hasAnyPermission = anyPermAttrs.All(x => x.HasAnyPermissions(httpReq, authSession, userAuthRepo));
 			if (!hasAnyPermission)
 			{
 				filterContext.Result = ssController.AuthorizationErrorResult;

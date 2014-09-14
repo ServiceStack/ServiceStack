@@ -1,11 +1,16 @@
 ﻿using System;
+using System.Data;
 using System.Text;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
+using ServiceStack.Host.AspNet;
+using ServiceStack.Messaging;
+using ServiceStack.Redis;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Mvc
 {
@@ -17,7 +22,7 @@ namespace ServiceStack.Mvc
             get { return SessionAs<T>(); }
         }
 
-        public override IAuthSession AuthSession
+        public IAuthSession AuthSession
         {
             get { return UserSession; }
         }
@@ -25,7 +30,7 @@ namespace ServiceStack.Mvc
 
 
     [ExecuteServiceStackFilters]
-    public abstract class ServiceStackController : Controller
+    public abstract class ServiceStackController : Controller, IHasServiceStackProvider
     {
         public static string DefaultAction = "Index";
         public static Func<System.Web.Routing.RequestContext, ServiceStackController> CatchAllController;
@@ -66,47 +71,6 @@ namespace ServiceStack.Mvc
                     action = "Unauthorized"
                 }));
             }
-        }
-
-        public ICacheClient Cache { get; set; }
-
-        private ISessionFactory sessionFactory;
-        public ISessionFactory SessionFactory
-        {
-            get { return sessionFactory ?? new SessionFactory(Cache); }
-            set { sessionFactory = value; }
-        }
-
-        /// <summary>
-        /// Typed UserSession
-        /// </summary>
-        private object userSession;
-        protected TUserSession SessionAs<TUserSession>()
-        {
-            return (TUserSession)(userSession ?? (userSession = Cache.SessionAs<TUserSession>()));
-        }
-
-        public virtual void ClearSession()
-        {
-            userSession = null;
-            Cache.ClearSession();
-        }
-
-        /// <summary>
-        /// Dynamic Session Bag
-        /// </summary>
-        private ISession session;
-        public new ISession Session
-        {
-            get
-            {
-                return session ?? (session = SessionFactory.GetOrCreateSession());
-            }
-        }
-
-        public virtual IAuthSession AuthSession
-        {
-            get { return (IAuthSession) (userSession ?? (userSession = Cache.GetUntypedSession())); }
         }
 
         protected override JsonResult Json(object data, string contentType, Encoding contentEncoding, JsonRequestBehavior behavior)
@@ -161,8 +125,91 @@ namespace ServiceStack.Mvc
             routeData.Values.Add("action", DefaultAction);
             routeData.Values.Add("url", httpContext.Request.Url.OriginalString);
             controller.Execute(new System.Web.Routing.RequestContext(httpContext, routeData));
-
         }
+
+        private IServiceStackProvider serviceStackProvider;
+        public virtual IServiceStackProvider ServiceStackProvider
+        {
+            get
+            {
+                return serviceStackProvider ?? (serviceStackProvider = 
+                    new ServiceStackProvider(new AspNetRequest(base.HttpContext, GetType().Name)));
+            }
+        }
+        public virtual IHttpRequest ServiceStackRequest
+        {
+            get { return ServiceStackProvider.Request; }
+        }
+        public virtual IHttpResponse ServiceStackResponse
+        {
+            get { return ServiceStackProvider.Response; }
+        }
+        public virtual ICacheClient Cache
+        {
+            get { return ServiceStackProvider.Cache; }
+        }
+        public virtual IDbConnection Db
+        {
+            get { return ServiceStackProvider.Db; }
+        }
+        public virtual IRedisClient Redis
+        {
+            get { return ServiceStackProvider.Redis; }
+        }
+        public virtual IMessageFactory MessageFactory
+        {
+            get { return ServiceStackProvider.MessageFactory; }
+        }
+        public virtual IMessageProducer MessageProducer
+        {
+            get { return ServiceStackProvider.MessageProducer; }
+        }
+        public virtual ISessionFactory SessionFactory
+        {
+            get { return ServiceStackProvider.SessionFactory; }
+        }
+        public virtual ISession SessionBag
+        {
+            get { return ServiceStackProvider.SessionBag; }
+        }
+        public virtual bool IsAuthenticated
+        {
+            get { return ServiceStackProvider.IsAuthenticated; }
+        }
+        public virtual T TryResolve<T>()
+        {
+            return ServiceStackProvider.TryResolve<T>();
+        }
+        public virtual T ResolveService<T>()
+        {
+            return ServiceStackProvider.ResolveService<T>();
+        }
+        public virtual IAuthSession GetSession(bool reload = true)
+        {
+            return ServiceStackProvider.GetSession(reload);
+        }
+        public virtual TUserSession SessionAs<TUserSession>()
+        {
+            return ServiceStackProvider.SessionAs<TUserSession>();
+        }
+        public virtual void ClearSession()
+        {
+            ServiceStackProvider.ClearSession();
+        }
+        public virtual void PublishMessage<T>(T message)
+        {
+            ServiceStackProvider.PublishMessage(message);
+        }
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if (serviceStackProvider != null)
+            {
+                serviceStackProvider.Dispose();
+                serviceStackProvider = null;
+            }
+        }    
     }
 
     public class ServiceStackJsonResult : JsonResult
