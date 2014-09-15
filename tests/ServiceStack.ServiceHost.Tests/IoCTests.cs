@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using ServiceStack.Commands;
 using ServiceStack.ServiceHost.Tests.Support;
 using Funq;
 
@@ -189,5 +190,38 @@ namespace ServiceStack.ServiceHost.Tests
             Assert.That(test.FunqTestFooBar(new Test(), new Foo()), Is.Not.Null);
         }
 
+        public class FooCommand : ICommand<Foo>
+        {
+            public Foo Foo { get; set; }
+            public Foo Execute()
+            {
+                return Foo;
+            }
+        }
+        public class BarCommand : ICommand<Bar>
+        {
+            public Bar Bar { get; set; }
+            public Bar Execute()
+            {
+                return Bar;
+            }
+        }
+
+	    [Test]
+	    public void Can_autowire_generic_type_definitions()
+	    {
+            var container = new Container();
+	        container.Register(c => new Foo());
+	        container.Register(c => new Bar());
+
+	        GetType().Assembly.GetTypes()
+                .Where(x => x.IsOrHasGenericInterfaceTypeOf(typeof(ICommand<>)))
+                .Each(x => container.RegisterAutoWiredType(x));
+
+	        var fooCmd = container.Resolve<FooCommand>();
+            Assert.That(fooCmd.Execute(), Is.EqualTo(container.Resolve<Foo>()));
+	        var barCmd = container.Resolve<BarCommand>();
+            Assert.That(barCmd.Execute(), Is.EqualTo(container.Resolve<Bar>()));
+        }
     }
 }
