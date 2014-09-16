@@ -18,7 +18,7 @@ namespace ServiceStack.MsgPack
 
         static MsgPackType()
         {
-            var genericType = typeof(T).GetGenericType();
+            var genericType = typeof(T).FirstGenericType();
 
             isGenericCollection = genericType != null
                 && typeof(T).IsOrHasGenericInterfaceTypeOf(typeof(ICollection<>));

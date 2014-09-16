@@ -52,7 +52,7 @@ namespace ServiceStack.Mvc
         {
             get
             {
-                var returnUrl = HttpContext.Request.Url.PathAndQuery;
+                var returnUrl = HttpContext.Request.GetPathAndQuery();
                 return new RedirectResult(LoginRedirectUrl.Fmt(HttpUtility.UrlEncode(returnUrl)));
             }
         }
@@ -228,6 +228,16 @@ namespace ServiceStack.Mvc
             {
                 response.Write(JsonSerializer.SerializeToString(Data));
             }
+        }
+    }
+
+    public static class ServiceStackControllerExtensions
+    {
+        public static string GetPathAndQuery(this HttpRequestBase request)
+        {
+            return request != null && request.Url != null
+                ? request.Url.PathAndQuery
+                : null;
         }
     }
 }

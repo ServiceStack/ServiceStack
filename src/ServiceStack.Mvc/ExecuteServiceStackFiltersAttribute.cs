@@ -16,12 +16,24 @@ namespace ServiceStack.Mvc
 
 		    var authSession = ssController.GetSession();
 
-			var authAttrs = GetActionAndControllerAttributes<AuthenticateAttribute>(filterContext);
-            if (authAttrs.Count > 0 && !(authSession == null || !authSession.IsAuthenticated))
+            var authError = ssController.AuthenticationErrorResult;
+            
+            var authAttrs = GetActionAndControllerAttributes<AuthenticateAttribute>(filterContext);
+            if (authAttrs.Count > 0)
 			{
-				filterContext.Result = ssController.AuthenticationErrorResult;
-				return;
+			    var htmlRedirect = authAttrs[0].HtmlRedirect;
+                if (htmlRedirect != null)
+                {
+                    authError = new RedirectResult(htmlRedirect
+                        .AddQueryParam("redirect", ssController.Request.GetPathAndQuery()));
+                }
 			}
+
+            if (authAttrs.Count > 0 && (authSession == null || !authSession.IsAuthenticated))
+            {
+                filterContext.Result = authError;
+                return;                
+            }
 
 			var roleAttrs = GetActionAndControllerAttributes<RequiredRoleAttribute>(filterContext);
 			var anyRoleAttrs = GetActionAndControllerAttributes<RequiresAnyRoleAttribute>(filterContext);
@@ -36,30 +48,30 @@ namespace ServiceStack.Mvc
             var hasRoles = roleAttrs.All(x => x.HasAllRoles(httpReq, authSession, userAuthRepo));
 			if (!hasRoles)
 			{
-				filterContext.Result = ssController.AuthorizationErrorResult;
+                filterContext.Result = authError;
 				return;
 			}
 
             var hasAnyRole = anyRoleAttrs.All(x => x.HasAnyRoles(httpReq, authSession, userAuthRepo));
 			if (!hasAnyRole)
 			{
-				filterContext.Result = ssController.AuthorizationErrorResult;
-				return;
-			}
+                filterContext.Result = authError;
+                return;
+            }
 
             var hasPermssions = permAttrs.All(x => x.HasAllPermissions(httpReq, authSession, userAuthRepo));
 			if (!hasPermssions)
 			{
-				filterContext.Result = ssController.AuthorizationErrorResult;
-				return;
-			}
+                filterContext.Result = authError;
+                return;
+            }
 
             var hasAnyPermission = anyPermAttrs.All(x => x.HasAnyPermissions(httpReq, authSession, userAuthRepo));
 			if (!hasAnyPermission)
 			{
-				filterContext.Result = ssController.AuthorizationErrorResult;
-				return;
-			}
+                filterContext.Result = authError;
+                return;
+            }
 		}
 
 		private static List<T> GetActionAndControllerAttributes<T>(ActionExecutingContext filterContext)
