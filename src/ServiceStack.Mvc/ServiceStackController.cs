@@ -32,6 +32,8 @@ namespace ServiceStack.Mvc
     [ExecuteServiceStackFilters]
     public abstract class ServiceStackController : Controller, IHasServiceStackProvider
     {
+        public static string LoginPath = "/login";
+
         public static string DefaultAction = "Index";
         public static Func<System.Web.Routing.RequestContext, ServiceStackController> CatchAllController;
 
@@ -40,7 +42,7 @@ namespace ServiceStack.Mvc
         /// </summary>
         public virtual string LoginRedirectUrl
         {
-            get { return "/login?redirect={0}"; }
+            get { return LoginPath + "?redirect={0}"; }
         }
 
         /// <summary>

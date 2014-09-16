@@ -29,20 +29,20 @@ namespace ServiceStack.Mvc
                 }
 			}
 
-            if (authAttrs.Count > 0 && (authSession == null || !authSession.IsAuthenticated))
-            {
-                filterContext.Result = authError;
-                return;                
-            }
-
 			var roleAttrs = GetActionAndControllerAttributes<RequiredRoleAttribute>(filterContext);
 			var anyRoleAttrs = GetActionAndControllerAttributes<RequiresAnyRoleAttribute>(filterContext);
 			var permAttrs = GetActionAndControllerAttributes<RequiredPermissionAttribute>(filterContext);
 			var anyPermAttrs = GetActionAndControllerAttributes<RequiresAnyPermissionAttribute>(filterContext);
 
-			if (roleAttrs.Count + anyRoleAttrs.Count + permAttrs.Count + anyPermAttrs.Count == 0) return;
+            if (authAttrs.Count + roleAttrs.Count + anyRoleAttrs.Count + permAttrs.Count + anyPermAttrs.Count == 0) return;
 
-			var httpReq = HttpContext.Current.ToRequest();
+            if (authSession == null || !authSession.IsAuthenticated)
+            {
+                filterContext.Result = authError;
+                return;
+            }
+
+            var httpReq = HttpContext.Current.ToRequest();
 			var userAuthRepo = httpReq.TryResolve<IAuthRepository>();
 
             var hasRoles = roleAttrs.All(x => x.HasAllRoles(httpReq, authSession, userAuthRepo));
