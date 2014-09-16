@@ -101,12 +101,12 @@ namespace ServiceStack.Common.Tests
         public void Does_work_with_ParseKeyValueText()
         {
             var textFile = @"
-EmptyKey: 
-RealKey: This is a real value
-ListKey: A,B,C,D,E
-IntKey: 42
-DictionaryKey: A:1,B:2,C:3,D:4,E:5
-ObjectKey: {SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}";
+EmptyKey  
+RealKey This is a real value
+ListKey A,B,C,D,E
+IntKey 42
+DictionaryKey A:1,B:2,C:3,D:4,E:5
+ObjectKey {SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}";
 
             var settings = textFile.ParseKeyValueText();
             var appSettings = new DictionarySettings(settings);
