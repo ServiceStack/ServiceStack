@@ -52,6 +52,15 @@ namespace ServiceStack.Configuration
             return settings.Get(name);
         }
 
+        public virtual List<string> GetAllKeys()
+        {
+            var keys = settings.GetAllKeys().ToHashSet();
+            if (settingsWriter != null)
+                settingsWriter.GetAllKeys().Each(x => keys.Add(x));
+
+            return keys.ToList();
+        }
+
         public virtual bool Exists(string key)
         {
             return GetNullableString(key) != null;

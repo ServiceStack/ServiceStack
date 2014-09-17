@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 
 namespace ServiceStack.Configuration
 {
@@ -12,6 +14,11 @@ namespace ServiceStack.Configuration
             public string Get(string key)
             {
                 return ConfigurationManager.AppSettings[key];
+            }
+
+            public List<string> GetAllKeys()
+            {
+                return new List<string>(ConfigurationManager.AppSettings.AllKeys);
             }
         }
 

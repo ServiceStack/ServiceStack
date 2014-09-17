@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace ServiceStack.Configuration
 {
@@ -19,6 +20,11 @@ namespace ServiceStack.Configuration
             {
                 string value;
                 return Map.TryGetValue(key, out value) ? value : null;
+            }
+
+            public List<string> GetAllKeys()
+            {
+                return Map.Keys.ToList();
             }
 
             public void Set<T>(string key, T value)

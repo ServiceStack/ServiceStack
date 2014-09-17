@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Configuration;
-using Funq;
+using System.Linq;
 using NUnit.Framework;
 using ServiceStack.Configuration;
 using ServiceStack.OrmLite;
@@ -13,6 +12,13 @@ namespace ServiceStack.Common.Tests
         public override AppSettingsBase GetAppSettings()
         {
             return new AppSettings();
+        }
+
+        public override Dictionary<string, string> GetConfigDictionary()
+        {
+            var configMap = base.GetConfigDictionary();
+            configMap.Remove("NullableKey");
+            return configMap;
         }
     }
 
@@ -138,7 +144,15 @@ ObjectKey {SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}";
     {
         public virtual AppSettingsBase GetAppSettings()
         {
-            return new DictionarySettings(new Dictionary<string, string>
+            return new DictionarySettings(GetConfigDictionary())
+            {
+                ParsingStrategy = null,   
+            };
+        }
+
+        public virtual Dictionary<string, string> GetConfigDictionary()
+        {
+            return new Dictionary<string, string>
             {
                 {"NullableKey", null},
                 {"EmptyKey", string.Empty},
@@ -150,8 +164,6 @@ ObjectKey {SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}";
                 {"BadDictionaryKey", "A1,B:"},
                 {"ObjectNoLineFeed", "{SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}"},
                 {"ObjectWithLineFeed", "{SomeSetting:Test,\r\nSomeOtherSetting:12,\r\nFinalSetting:Final}"},
-            }) {
-                ParsingStrategy = null,   
             };
         }
 
@@ -301,6 +313,25 @@ ObjectKey {SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}";
             public string SomeSetting { get; set; }
             public int SomeOtherSetting { get; set; }
             public string FinalSetting { get; set; }
+        }
+
+        [Test]
+        public void Can_get_all_keys()
+        {
+            var appSettings = GetAppSettings();
+            var allKeys = appSettings.GetAllKeys();
+            allKeys.Remove("servicestack:license");
+
+            Assert.That(allKeys, Is.EquivalentTo(GetConfigDictionary().Keys));
+        }
+
+        [Test]
+        public void Can_search_all_keys()
+        {
+            var appSettings = GetAppSettings();
+            var badKeys = appSettings.GetAllKeys().Where(x => x.Matches("Bad*"));
+
+            Assert.That(badKeys, Is.EquivalentTo(new[] { "BadIntegerKey", "BadDictionaryKey" }));
         }
     }
 }

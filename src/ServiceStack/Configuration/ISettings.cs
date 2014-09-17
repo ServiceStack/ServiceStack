@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace ServiceStack.Configuration
 {
     public interface ISettings
@@ -12,6 +14,12 @@ namespace ServiceStack.Configuration
         /// <returns>The string value of the specified key, or null if the key
         /// was invalid</returns>
         string Get(string key);
+
+        /// <summary>
+        /// Return all keys in this configuration source.
+        /// </summary>
+        /// <returns></returns>
+        List<string> GetAllKeys();
     }
 
     public interface ISettingsWriter : ISettings

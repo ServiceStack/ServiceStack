@@ -4,6 +4,8 @@ namespace ServiceStack.Configuration
 {
     public interface IAppSettings
     {
+        List<string> GetAllKeys(); 
+
         bool Exists(string key);
 
         void Set<T>(string key, T value);
