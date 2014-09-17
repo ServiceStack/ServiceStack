@@ -129,4 +129,15 @@ namespace ServiceStack
             }
         }
     }
+
+    public static class AuthFeatureExtensions
+    {
+        public static string GetHtmlRedirect(this AuthFeature feature)
+        {
+            if (feature != null)
+                return feature.HtmlRedirect;
+
+            return "~/" + HostContext.ResolveLocalizedString(LocalizedStrings.Login);
+        }
+    }
 }

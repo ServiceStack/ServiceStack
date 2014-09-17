@@ -32,30 +32,48 @@ namespace ServiceStack.Mvc
     [ExecuteServiceStackFilters]
     public abstract class ServiceStackController : Controller, IHasServiceStackProvider
     {
-        public static string LoginPath = "/login";
-
         public static string DefaultAction = "Index";
         public static Func<System.Web.Routing.RequestContext, ServiceStackController> CatchAllController;
 
         /// <summary>
         /// Default redirct URL if [Authenticate] attribute doesn't permit access.
         /// </summary>
-        public virtual string LoginRedirectUrl
+        public virtual string UnauthorizedRedirectUrl
         {
-            get { return LoginPath + "?redirect={0}"; }
+            get { return HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect() + "?redirect={0}#f=Unauthorized"; }
         }
 
         /// <summary>
-        /// To change the error result when authentication (<see cref="AuthenticateAttribute"/>) 
-        /// fails from redirection to something else, 
-        /// override this property and return the appropriate result.
+        /// To change the error result when authentication (<see cref="AuthenticateAttribute"/>) fails.
+        /// Override this property and return the appropriate result.
         /// </summary>
         public virtual ActionResult AuthenticationErrorResult
         {
             get
             {
                 var returnUrl = HttpContext.Request.GetPathAndQuery();
-                return new RedirectResult(LoginRedirectUrl.Fmt(HttpUtility.UrlEncode(returnUrl)));
+                return new RedirectResult(UnauthorizedRedirectUrl.Fmt(returnUrl.UrlEncode()));
+            }
+        }
+
+        /// <summary>
+        /// Default redirct URL if Required Role or Permission attributes doesn't permit access.
+        /// </summary>
+        public virtual string ForbiddenRedirectUrl
+        {
+            get { return HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect() + "?redirect={0}#f=Forbidden"; }
+        }
+
+        /// <summary>
+        /// To change the error result when user doesn't have required role or permissions (<see cref="RequiredRoleAttribute"/>).
+        /// Override this property and return the appropriate result.
+        /// </summary>
+        public virtual ActionResult ForbiddenErrorResult
+        {
+            get
+            {
+                var returnUrl = HttpContext.Request.GetPathAndQuery();
+                return new RedirectResult(ForbiddenRedirectUrl.Fmt(returnUrl.UrlEncode()));
             }
         }
 
@@ -230,16 +248,6 @@ namespace ServiceStack.Mvc
             {
                 response.Write(JsonSerializer.SerializeToString(Data));
             }
-        }
-    }
-
-    public static class ServiceStackControllerExtensions
-    {
-        public static string GetPathAndQuery(this HttpRequestBase request)
-        {
-            return request != null && request.Url != null
-                ? request.Url.PathAndQuery
-                : null;
         }
     }
 }

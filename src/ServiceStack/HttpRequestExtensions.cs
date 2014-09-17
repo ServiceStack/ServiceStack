@@ -901,5 +901,12 @@ namespace ServiceStack
             req.Items.TryGetValue("__route", out route);
             return route as RestPath;
         }
+
+        public static string GetPathAndQuery(this HttpRequestBase request)
+        {
+            return request != null && request.Url != null
+                ? request.Url.PathAndQuery
+                : null;
+        }
     }
 }

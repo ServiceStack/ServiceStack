@@ -18,17 +18,50 @@ namespace ServiceStack.AspNet
             this.PreLoad += ServiceStack_PreLoad;
         }
 
+        /// <summary>
+        /// Default redirct URL if [Authenticate] attribute doesn't permit access.
+        /// </summary>
+        public virtual string UnauthorizedRedirectUrl
+        {
+            get { return HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect() + "?redirect={0}#f=Unauthorized"; }
+        }
+
+        /// <summary>
+        /// Default redirct URL if Required Role or Permission attributes doesn't permit access.
+        /// </summary>
+        public virtual string ForbiddenRedirectUrl
+        {
+            get { return HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect() + "?redirect={0}#f=Forbidden"; }
+        }
+
         protected virtual void ServiceStack_PreLoad(object sender, EventArgs e)
         {
-            var auth = GetType().FirstAttribute<AuthenticateAttribute>();
-            if (auth == null) return;
-            if (IsAuthenticated) return;
+            var page = GetType();
 
-            var htmlRedirect = auth.HtmlRedirect ?? HostContext.GetPlugin<AuthFeature>().HtmlRedirect;
-            if (htmlRedirect == null)
-                throw new UnauthorizedAccessException("This page requires authentication");
+            var authAttr = page.FirstAttribute<AuthenticateAttribute>();
+            if (!this.IsAuthorized(authAttr))
+            {
+                var authError = authAttr != null && authAttr.HtmlRedirect != null
+                    ? authAttr.HtmlRedirect.AddQueryParam("redirect", Request.Url.PathAndQuery)
+                    : UnauthorizedRedirectUrl.Fmt(Request.Url.PathAndQuery.UrlEncode());
 
-            base.Response.Redirect(htmlRedirect);
+                base.Response.Redirect(authError);
+                return;
+            }
+
+            if (!this.HasAccess(
+                page.AllAttributes<RequiredRoleAttribute>(),
+                page.AllAttributes<RequiresAnyRoleAttribute>(),
+                page.AllAttributes<RequiredPermissionAttribute>(),
+                page.AllAttributes<RequiresAnyPermissionAttribute>()))
+            {
+                var authError = authAttr != null && authAttr.HtmlRedirect != null
+                    ? authAttr.HtmlRedirect.AddQueryParam("redirect", Request.Url.PathAndQuery)
+                    : ForbiddenRedirectUrl.Fmt(Request.Url.PathAndQuery.UrlEncode());
+
+                base.Response.Redirect(authError);
+                return;
+            }
         }
 
         private IServiceStackProvider serviceStackProvider;

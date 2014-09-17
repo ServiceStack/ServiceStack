@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
+using System.Net;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
@@ -41,6 +44,49 @@ namespace ServiceStack
     //Add extra functionality common to ASP.NET ServiceStackPage or ServiceStackController
     public static class ServiceStackProviderExtensions
     {
+        public static bool IsAuthorized(this IHasServiceStackProvider hasProvider, AuthenticateAttribute authAttr)
+        {
+            if (authAttr == null)
+                return true;
+
+            var authSession = hasProvider.ServiceStackProvider.GetSession();
+            return authSession != null && authSession.IsAuthenticated;
+        }
+
+        public static bool HasAccess(
+            this IHasServiceStackProvider hasProvider,
+            ICollection<RequiredRoleAttribute> roleAttrs,
+            ICollection<RequiresAnyRoleAttribute> anyRoleAttrs,
+            ICollection<RequiredPermissionAttribute> permAttrs,
+            ICollection<RequiresAnyPermissionAttribute> anyPermAttrs)
+        {
+            if (roleAttrs.Count + anyRoleAttrs.Count + permAttrs.Count + anyPermAttrs.Count == 0)
+                return true;
+
+            var authSession = hasProvider.ServiceStackProvider.GetSession();
+            if (authSession == null || !authSession.IsAuthenticated)
+                return false;
+
+            var httpReq = hasProvider.ServiceStackProvider.Request;
+            var userAuthRepo = httpReq.TryResolve<IAuthRepository>();
+            var hasRoles = roleAttrs.All(x => x.HasAllRoles(httpReq, authSession, userAuthRepo));
+            if (!hasRoles)
+                return false;
+
+            var hasAnyRole = anyRoleAttrs.All(x => x.HasAnyRoles(httpReq, authSession, userAuthRepo));
+            if (!hasAnyRole)
+                return false;
+
+            var hasPermssions = permAttrs.All(x => x.HasAllPermissions(httpReq, authSession, userAuthRepo));
+            if (!hasPermssions)
+                return false;
+
+            var hasAnyPermission = anyPermAttrs.All(x => x.HasAnyPermissions(httpReq, authSession, userAuthRepo));
+            if (!hasAnyPermission)
+                return false;
+
+            return true;
+        }
     }
 
     public class ServiceStackProvider : IServiceStackProvider
