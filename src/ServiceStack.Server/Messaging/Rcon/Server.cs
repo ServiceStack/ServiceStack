@@ -55,7 +55,7 @@ namespace ServiceStack.Messaging.Rcon
 
         protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessage<T>, Exception> processExceptionEx)
         {
-            return new MessageHandlerFactory<T>(this, processMessageFn, processExceptionEx);
+            return new MessageHandlerFactory<T>(this, processMessageFn, processExceptionEx, null);
         }
 
         public IMessageHandlerStats GetStats()

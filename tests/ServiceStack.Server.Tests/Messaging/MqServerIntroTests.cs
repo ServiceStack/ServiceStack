@@ -18,27 +18,11 @@ namespace ServiceStack.Server.Tests.Messaging
         }
     }
 
-    public class RabbitMqServerIntroWithRequestScopeTests : MqServerIntroTests
-    {
-        public override IMessageService CreateMqServer(int retryCount = 1)
-        {
-            return new RabbitMqServer { RetryCount = retryCount, ProcessEachMessageInRequestScope = true};
-        }
-    }
-
     public class RedisMqServerIntroTests : MqServerIntroTests
     {
         public override IMessageService CreateMqServer(int retryCount = 1)
         {
             return new RedisMqServer(new BasicRedisClientManager()) { RetryCount = retryCount };
-        }
-    }
-
-    public class RedisMqServerIntroWithRequestScopeTests : MqServerIntroTests
-    {
-        public override IMessageService CreateMqServer(int retryCount = 1)
-        {
-            return new RedisMqServer(new BasicRedisClientManager()) { RetryCount = retryCount, ProcessEachMessageInRequestScope = true};
         }
     }
 
