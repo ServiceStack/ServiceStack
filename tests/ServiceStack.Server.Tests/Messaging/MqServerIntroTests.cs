@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Messaging;
@@ -34,6 +35,30 @@ namespace ServiceStack.Server.Tests.Messaging
         }
     }
 
+    public class RabbitMqServerPostMessageTests : MqServerPostMessageTests
+    {
+        public override IMessageService CreateMqServer(IAppHost host, int retryCount = 1)
+        {
+            return new RabbitMqServer
+            {
+                RetryCount = retryCount,
+                PostMessageHandler = host.OnEndRequest
+            };
+        }
+    }
+
+    public class RedisMqServerPostMessageTests : MqServerPostMessageTests
+    {
+        public override IMessageService CreateMqServer(IAppHost host, int retryCount = 1)
+        {
+            return new RedisMqServer(new BasicRedisClientManager())
+            {
+                RetryCount = retryCount,
+                PostMessageHandler = host.OnEndRequest
+            };
+        }
+    }
+
     public class HelloIntro
     {
         public string Name { get; set; }
@@ -49,6 +74,42 @@ namespace ServiceStack.Server.Tests.Messaging
         public object Any(HelloIntro request)
         {
             return new HelloIntroResponse { Result = "Hello, {0}!".Fmt(request.Name) };
+        }
+    }
+
+    public class HelloIntroWithDep
+    {
+        public string Name { get; set; }
+    }
+
+    public class HelloWithDepService : Service
+    {
+        public IDisposableDependency Dependency { get; set; }
+
+        public object Any(HelloIntroWithDep request)
+        {
+            return new HelloIntroResponse { Result = "Hello, {0}!".Fmt(request.Name) };
+        }
+    }
+
+    public interface IDisposableDependency : IDisposable
+    {
+        
+    }
+
+    public class DisposableDependency : IDisposableDependency
+    {
+        private readonly Action onDispose;
+
+        public DisposableDependency(Action onDispose)
+        {
+            this.onDispose = onDispose;
+        }
+
+        public void Dispose()
+        {
+            if (this.onDispose != null)
+                this.onDispose();
         }
     }
 
@@ -214,6 +275,81 @@ namespace ServiceStack.Server.Tests.Messaging
                 }
             }
         }
+
+        [Test]
+        public void Does_dispose_request_scope_dependency_in_ExecuteMessageInRequestScope()
+        {
+            var disposeCount = 0;
+            using (var appHost = new BasicAppHost(typeof(HelloWithDepService).Assembly)
+            {
+                ConfigureAppHost = host =>
+                {
+                    RequestContext.UseThreadStatic = true;
+                    host.Container.Register<IDisposableDependency>(c => new DisposableDependency(() => disposeCount++))
+                        .ReusedWithin(ReuseScope.Request);
+                    host.Container.Register(c => CreateMqServer());
+
+                    var mqServer = host.Container.Resolve<IMessageService>();
+
+                    mqServer.RegisterHandler<HelloIntroWithDep>(host.ServiceController.ExecuteMessageInRequestScope);
+                    mqServer.Start();
+                }
+            }.Init())
+            {
+                using (var mqClient = appHost.Resolve<IMessageService>().CreateMessageQueueClient())
+                {
+                    mqClient.Publish(new HelloIntroWithDep { Name = "World" });
+
+                    IMessage<HelloIntroResponse> responseMsg = mqClient.Get<HelloIntroResponse>(QueueNames<HelloIntroResponse>.In);
+                    mqClient.Ack(responseMsg);
+
+                    Assert.That(disposeCount, Is.EqualTo(1));
+                }
+            }
+        }
     }
 
+    [TestFixture]
+    public abstract class MqServerPostMessageTests
+    {
+        public abstract IMessageService CreateMqServer(IAppHost host, int retryCount = 1);
+
+        [Test]
+        public void Does_dispose_request_scope_dependency_in_PostMessageHandler()
+        {
+            var mutex = new Semaphore(0, 1);
+            var disposeCount = 0;
+            using (var appHost = new BasicAppHost(typeof(HelloWithDepService).Assembly)
+            {
+                ConfigureAppHost = host =>
+                {
+                    RequestContext.UseThreadStatic = true;
+                    host.Container.Register<IDisposableDependency>(c => new DisposableDependency(() =>
+                    {
+                        disposeCount++;
+                        mutex.Release(1);
+                    }))
+                        .ReusedWithin(ReuseScope.Request);
+                    host.Container.Register(c => CreateMqServer(host));
+
+                    var mqServer = host.Container.Resolve<IMessageService>();
+
+                    mqServer.RegisterHandler<HelloIntroWithDep>(host.ServiceController.ExecuteMessage);
+                    mqServer.Start();
+                }
+            }.Init())
+            {
+                using (var mqClient = appHost.Resolve<IMessageService>().CreateMessageQueueClient())
+                {
+                    mqClient.Publish(new HelloIntroWithDep { Name = "World" });
+
+                    IMessage<HelloIntroResponse> responseMsg = mqClient.Get<HelloIntroResponse>(QueueNames<HelloIntroResponse>.In);
+                    mqClient.Ack(responseMsg);
+
+                    mutex.WaitOne(TimeSpan.FromSeconds(1));
+                    Assert.That(disposeCount, Is.EqualTo(1));
+                }
+            }
+        }
+    }
 }
