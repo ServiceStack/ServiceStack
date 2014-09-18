@@ -14,16 +14,18 @@ namespace ServiceStack.Messaging
 
         private readonly Func<IMessage<T>, object> processMessageFn;
         private readonly Action<IMessage<T>, Exception> processExceptionFn;
+        private readonly Action processFinallyFn;
         public int RetryCount { get; set; }
 
         public MessageHandlerFactory(IMessageService messageService, Func<IMessage<T>, object> processMessageFn)
-            : this(messageService, processMessageFn, null)
+            : this(messageService, processMessageFn, null, null)
         {
         }
 
         public MessageHandlerFactory(IMessageService messageService,
             Func<IMessage<T>, object> processMessageFn,
-            Action<IMessage<T>, Exception> processExceptionEx)
+            Action<IMessage<T>, Exception> processExceptionEx,
+            Action processFinallyFn)
         {
             if (messageService == null)
                 throw new ArgumentNullException("messageService");
@@ -34,6 +36,7 @@ namespace ServiceStack.Messaging
             this.messageService = messageService;
             this.processMessageFn = processMessageFn;
             this.processExceptionFn = processExceptionEx;
+            this.processFinallyFn = processFinallyFn;
             this.RetryCount = DefaultRetryCount;
         }
 
@@ -41,7 +44,7 @@ namespace ServiceStack.Messaging
         {
             if (this.RequestFilter == null && this.ResponseFilter == null)
             {
-                return new MessageHandler<T>(messageService, processMessageFn, processExceptionFn, this.RetryCount)
+                return new MessageHandler<T>(messageService, processMessageFn, processExceptionFn, processFinallyFn, this.RetryCount)
                 {
                     PublishResponsesWhitelist = PublishResponsesWhitelist,
                 };
@@ -59,7 +62,7 @@ namespace ServiceStack.Messaging
 
                     return result;
                 },
-                processExceptionFn, this.RetryCount)
+                processExceptionFn, processFinallyFn, this.RetryCount)
             {
                 PublishResponsesWhitelist = PublishResponsesWhitelist,
             };

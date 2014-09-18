@@ -64,6 +64,11 @@ namespace ServiceStack.Messaging.Redis
         public Action<Exception> ErrorHandler { get; set; }
 
         /// <summary>
+        /// Execute for each message after all message processing has taken place, including sending replies
+        /// </summary>
+        public Action PostMessageHandler { get; set; }
+
+        /// <summary>
         /// If you only want to enable priority queue handlers (and threads) for specific msg types
         /// </summary>
         public string[] PriortyQueuesWhitelist { get; set; }
@@ -150,25 +155,30 @@ namespace ServiceStack.Messaging.Redis
 
         public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessage<T>, Exception> processExceptionEx)
         {
-            RegisterHandler(processMessageFn, processExceptionEx, noOfThreads: 1);
+            RegisterHandler(processMessageFn, processExceptionEx, null, noOfThreads: 1);
         }
 
         public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessage<T>, Exception> processExceptionEx, int noOfThreads)
+        {
+            RegisterHandler(processMessageFn, processExceptionEx, null, noOfThreads);
+        }
+
+        public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessage<T>, Exception> processExceptionEx, Action processFinallyFn, int noOfThreads)
         {
             if (handlerMap.ContainsKey(typeof(T)))
             {
                 throw new ArgumentException("Message handler has already been registered for type: " + typeof(T).Name);
             }
 
-            handlerMap[typeof(T)] = CreateMessageHandlerFactory(processMessageFn, processExceptionEx);
+            handlerMap[typeof(T)] = CreateMessageHandlerFactory(processMessageFn, processExceptionEx, processFinallyFn ?? this.PostMessageHandler);
             handlerThreadCountMap[typeof(T)] = noOfThreads;
 
             LicenseUtils.AssertValidUsage(LicenseFeature.ServiceStack, QuotaType.Operations, handlerMap.Count);
         }
 
-        protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessage<T>, Exception> processExceptionEx)
+        protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessage<T>, Exception> processExceptionEx, Action processFinallyFn)
         {
-            return new MessageHandlerFactory<T>(this, processMessageFn, processExceptionEx) {
+            return new MessageHandlerFactory<T>(this, processMessageFn, processExceptionEx, processFinallyFn) {
                 RequestFilter = this.RequestFilter,
                 ResponseFilter = this.ResponseFilter,
                 PublishResponsesWhitelist = PublishResponsesWhitelist,

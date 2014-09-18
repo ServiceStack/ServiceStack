@@ -19,6 +19,7 @@ namespace ServiceStack.Messaging
         private readonly IMessageService messageService;
         private readonly Func<IMessage<T>, object> processMessageFn;
         private readonly Action<IMessage<T>, Exception> processInExceptionFn;
+        private readonly Action processInFinallyFn;
         public Func<string, IOneWayClient> ReplyClientFactory { get; set; }
         public string[] PublishResponsesWhitelist { get; set; }
         private readonly int retryCount;
@@ -35,13 +36,14 @@ namespace ServiceStack.Messaging
 
         public MessageHandler(IMessageService messageService,
             Func<IMessage<T>, object> processMessageFn)
-            : this(messageService, processMessageFn, null, DefaultRetryCount) { }
+            : this(messageService, processMessageFn, null, null, DefaultRetryCount) { }
 
         private IMessageQueueClient MqClient { get; set; }
 
         public MessageHandler(IMessageService messageService,
             Func<IMessage<T>, object> processMessageFn,
             Action<IMessage<T>, Exception> processInExceptionFn,
+            Action processInFinallyFn,
             int retryCount)
         {
             if (messageService == null)
@@ -53,6 +55,7 @@ namespace ServiceStack.Messaging
             this.messageService = messageService;
             this.processMessageFn = processMessageFn;
             this.processInExceptionFn = processInExceptionFn ?? DefaultInExceptionHandler;
+            this.processInFinallyFn = processInFinallyFn ?? (() => {});
             this.retryCount = retryCount;
             this.ReplyClientFactory = ClientFactory.Create;
             this.ProcessQueueNames = new[] { QueueNames<T>.Priority, QueueNames<T>.In };
@@ -245,6 +248,8 @@ namespace ServiceStack.Messaging
             {
                 if (!msgHandled)
                     mqClient.Ack(message);
+
+                processInFinallyFn();
 
                 this.TotalNormalMessagesReceived++;
                 LastMessageProcessed = DateTime.UtcNow;

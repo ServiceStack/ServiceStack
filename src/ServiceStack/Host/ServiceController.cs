@@ -458,6 +458,21 @@ namespace ServiceStack.Host
         }
 
         /// <summary>
+        /// Execute MQ
+        /// </summary>
+        public object ExecuteMessageInRequestScope(IMessage mqMessage)
+        {
+            try
+            {
+                return ExecuteMessage(mqMessage);
+            }
+            finally
+            {
+                HostContext.CompleteRequest();
+            }
+        }
+
+        /// <summary>
         /// Execute MQ with requestContext
         /// </summary>
         public object ExecuteMessage(IMessage dto, IRequest req)

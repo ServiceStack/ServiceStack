@@ -14,6 +14,7 @@ namespace ServiceStack.Messaging
         public const int DefaultRetryCount = 1; //Will be a total of 2 attempts
 
         public int RetryCount { get; set; }
+        public Action DefaultPerformAfterEachMessage { get; set; }
         public TimeSpan? RequestTimeOut { get; protected set; }
 
         public int PoolSize { get; protected set; } //use later
@@ -41,15 +42,22 @@ namespace ServiceStack.Messaging
             RegisterHandler(processMessageFn, null);
         }
 
-        public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn,
+        public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, 
             Action<IMessage<T>, Exception> processExceptionEx)
+        {
+            RegisterHandler(processMessageFn, processExceptionEx, null);
+        }
+
+        public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn,
+            Action<IMessage<T>, Exception> processExceptionEx,
+            Action processFinallyEx)
         {
             if (handlerMap.ContainsKey(typeof(T)))
             {
                 throw new ArgumentException("Message handler has already been registered for type: " + typeof(T).GetOperationName());
             }
 
-            handlerMap[typeof(T)] = CreateMessageHandlerFactory(processMessageFn, processExceptionEx);
+            handlerMap[typeof(T)] = CreateMessageHandlerFactory(processMessageFn, processExceptionEx, processFinallyEx ?? DefaultPerformAfterEachMessage);
         }
 
         public IMessageHandlerStats GetStats()
@@ -81,11 +89,10 @@ namespace ServiceStack.Messaging
             return sb.ToString();
         }
 
-        protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(
-            Func<IMessage<T>, object> processMessageFn, 
-            Action<IMessage<T>, Exception> processExceptionEx)
+        protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessage<T>, Exception> processExceptionEx, Action processFinallyEx)
         {
-            return new MessageHandlerFactory<T>(this, processMessageFn, processExceptionEx) {
+            return new MessageHandlerFactory<T>(this, processMessageFn, processExceptionEx, processFinallyEx)
+            {
                 RetryCount = RetryCount,
             };
         }
