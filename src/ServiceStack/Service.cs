@@ -47,6 +47,11 @@ namespace ServiceStack
             return service;
         }
 
+        public object ExecuteRequest(object requestDto)
+        {
+            return HostContext.ServiceController.Execute(requestDto, Request);
+        }
+
         public IRequest Request { get; set; }
 
         protected virtual IResponse Response

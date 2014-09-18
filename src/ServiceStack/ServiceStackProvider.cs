@@ -35,6 +35,7 @@ namespace ServiceStack
         bool IsAuthenticated { get; }
         T TryResolve<T>();
         T ResolveService<T>();
+        object ExecuteRequest(object requestDto);
         IAuthSession GetSession(bool reload = false);
         TUserSession SessionAs<TUserSession>();
         void ClearSession();
@@ -135,6 +136,11 @@ namespace ServiceStack
                 requiresContext.Request = Request;
             }
             return service;
+        }
+
+        public object ExecuteRequest(object requestDto)
+        {
+            return HostContext.ServiceController.Execute(requestDto, Request);
         }
 
         private ICacheClient cache;

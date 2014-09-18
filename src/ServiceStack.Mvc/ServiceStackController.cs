@@ -204,6 +204,10 @@ namespace ServiceStack.Mvc
         {
             return ServiceStackProvider.ResolveService<T>();
         }
+        public virtual object ExecuteRequest(object requestDto)
+        {
+            return ServiceStackProvider.ExecuteRequest(requestDto);
+        }
         public virtual IAuthSession GetSession(bool reload = true)
         {
             return ServiceStackProvider.GetSession(reload);
