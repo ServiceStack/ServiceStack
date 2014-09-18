@@ -111,6 +111,15 @@
         <input type="submit"/>
     </form>
     
+    <h3>Register New User</h3>
+    <form action="/register" method="POST">
+        <input type="text" name="Username"  placeholder="UserName"  value="NewUser"/>
+        <input type="text" name="Password"  placeholder="Password"  value="test"/>
+        <input type="text" name="FirstName" placeholder="FirstName" value="New"/>
+        <input type="text" name="LastName"  placeholder="LastName"  value="User"/>
+        <input type="submit"/>
+    </form>
+    
     <hr/>
     <h3>Reset UserAuth tables and Session</h3>
     <a href="/reset-userauth">/reset-userauth</a>

@@ -118,7 +118,7 @@ namespace ServiceStack.AuthWeb.Tests
             Plugins.Add(new RegistrationFeature());
 
             //override the default registration validation with your own custom implementation
-            container.RegisterAs<CustomRegistrationValidator, IValidator<Register>>();
+            Plugins.Add(new CustomRegisterPlugin());
 
             //Store User Data into the referenced SqlServer database
             container.Register<IAuthRepository>(c =>
@@ -198,14 +198,23 @@ namespace ServiceStack.AuthWeb.Tests
     }
 
     //Provide extra validation for the registration process
-    public class CustomRegistrationValidator : RegistrationValidator
+    public class CustomRegisterPlugin : IPlugin
     {
-        public CustomRegistrationValidator()
+        public class CustomRegistrationValidator : RegistrationValidator
         {
-            RuleSet(ApplyTo.Post, () =>
+            public CustomRegistrationValidator()
             {
-                RuleFor(x => x.DisplayName).NotEmpty();
-            });
+                RuleSet(ApplyTo.Post, () =>
+                {
+                    RuleFor(x => x.UserName).Must(x => false)
+                        .WithMessage("CustomRegistrationValidator is fired");
+                });
+            }
+        }
+
+        public void Register(IAppHost appHost)
+        {
+            appHost.RegisterAs<CustomRegistrationValidator, IValidator<Register>>();
         }
     }
 
