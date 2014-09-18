@@ -99,6 +99,11 @@ namespace ServiceStack.Messaging.Redis
         /// </summary>
         public string[] PublishResponsesWhitelist { get; set; }
 
+        /// <summary>
+        /// Gets or sets a flag that will, if true, dispose any request scoped resources allocated
+        /// </summary>
+        public bool ProcessEachMessageInRequestScope { get; set; }
+
         public bool DisablePublishingResponses
         {
             set { PublishResponsesWhitelist = value ? new string[0] : null; }
@@ -173,6 +178,7 @@ namespace ServiceStack.Messaging.Redis
                 ResponseFilter = this.ResponseFilter,
                 PublishResponsesWhitelist = PublishResponsesWhitelist,
                 RetryCount = RetryCount,
+                ProcessEachMessageInRequestScope = ProcessEachMessageInRequestScope,
             };
         }
 

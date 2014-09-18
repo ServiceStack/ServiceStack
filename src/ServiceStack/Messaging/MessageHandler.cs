@@ -23,6 +23,8 @@ namespace ServiceStack.Messaging
         public string[] PublishResponsesWhitelist { get; set; }
         private readonly int retryCount;
 
+        public bool ProcessEachMessageInRequestScope { get; set; }
+
         public int TotalMessagesProcessed { get; private set; }
         public int TotalMessagesFailed { get; private set; }
         public int TotalRetries { get; private set; }
@@ -245,6 +247,9 @@ namespace ServiceStack.Messaging
             {
                 if (!msgHandled)
                     mqClient.Ack(message);
+
+                if (this.ProcessEachMessageInRequestScope)
+                    HostContext.AppHost.OnEndRequest();
 
                 this.TotalNormalMessagesReceived++;
                 LastMessageProcessed = DateTime.UtcNow;

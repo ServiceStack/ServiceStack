@@ -83,6 +83,11 @@ namespace ServiceStack.RabbitMq
         public string[] PriortyQueuesWhitelist { get; set; }
 
         /// <summary>
+        /// Gets or sets a flag that will, if true, dispose any request scoped resources allocated
+        /// </summary>
+        public bool ProcessEachMessageInRequestScope { get; set; }
+
+        /// <summary>
         /// Don't listen on any Priority Queues
         /// </summary>
         public bool DisablePriorityQueues
@@ -183,6 +188,7 @@ namespace ServiceStack.RabbitMq
                 ResponseFilter = this.ResponseFilter,
                 PublishResponsesWhitelist = PublishResponsesWhitelist,               
                 RetryCount = RetryCount,
+                ProcessEachMessageInRequestScope = ProcessEachMessageInRequestScope,
             };
         }
 

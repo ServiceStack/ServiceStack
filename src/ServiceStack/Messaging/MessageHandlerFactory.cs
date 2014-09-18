@@ -11,6 +11,7 @@ namespace ServiceStack.Messaging
         public Func<IMessage, IMessage> RequestFilter { get; set; }
         public Func<object, object> ResponseFilter { get; set; }
         public string[] PublishResponsesWhitelist { get; set; }
+        public bool ProcessEachMessageInRequestScope { get; set; }
 
         private readonly Func<IMessage<T>, object> processMessageFn;
         private readonly Action<IMessage<T>, Exception> processExceptionFn;
@@ -44,6 +45,7 @@ namespace ServiceStack.Messaging
                 return new MessageHandler<T>(messageService, processMessageFn, processExceptionFn, this.RetryCount)
                 {
                     PublishResponsesWhitelist = PublishResponsesWhitelist,
+                    ProcessEachMessageInRequestScope = ProcessEachMessageInRequestScope,
                 };
             }
 
@@ -62,6 +64,7 @@ namespace ServiceStack.Messaging
                 processExceptionFn, this.RetryCount)
             {
                 PublishResponsesWhitelist = PublishResponsesWhitelist,
+                ProcessEachMessageInRequestScope = ProcessEachMessageInRequestScope,
             };
         }
     }
