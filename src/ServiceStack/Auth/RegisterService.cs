@@ -107,6 +107,7 @@ namespace ServiceStack.Auth
                 {
                     var authResponse = authService.Post(
                         new Authenticate {
+                            provider = CredentialsAuthProvider.Name,
                             UserName = request.UserName ?? request.Email,
                             Password = request.Password,
                             Continue = request.Continue
