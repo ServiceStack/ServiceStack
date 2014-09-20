@@ -171,7 +171,7 @@ namespace ServiceStack
                         response.Dto = response.Dto ?? httpResult.GetDto();
 
                         response.StatusCode = httpResult.Status;
-                        response.StatusDescription = httpResult.StatusDescription ?? httpResult.StatusCode.ToString();
+                        response.StatusDescription = (httpResult.StatusDescription ?? httpResult.StatusCode.ToString()).Localize(request);
                         if (string.IsNullOrEmpty(httpResult.ContentType))
                         {
                             httpResult.ContentType = defaultContentType;

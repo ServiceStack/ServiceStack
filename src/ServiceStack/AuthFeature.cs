@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using ServiceStack.Auth;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {
@@ -59,7 +60,7 @@ namespace ServiceStack
             this.sessionFactory = sessionFactory;
             this.authProviders = authProviders;
 
-            Func<string,string> localize = HostContext.ResolveLocalizedString;
+            Func<string,string> localize = s => HostContext.AppHost.ResolveLocalizedString(s, null);
 
             ServiceRoutes = new Dictionary<Type, string[]> {
                 { typeof(AuthenticateService), new[]

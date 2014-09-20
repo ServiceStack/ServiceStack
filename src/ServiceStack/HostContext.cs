@@ -239,9 +239,9 @@ namespace ServiceStack
                 "Request with '{0}' is not allowed".Fmt(requestAttrs));
         }
 
-        public static string ResolveLocalizedString(string text)
+        public static string ResolveLocalizedString(string text, IRequest request=null)
         {
-            return AssertAppHost().ResolveLocalizedString(text);
+            return AssertAppHost().ResolveLocalizedString(text, request);
         }
 
         public static string ResolveAbsoluteUrl(string virtualPath, IRequest httpReq)
