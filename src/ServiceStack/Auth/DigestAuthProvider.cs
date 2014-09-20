@@ -95,7 +95,7 @@ namespace ServiceStack.Auth
                 };
             }
 
-            throw HttpError.Unauthorized("Invalid UserName or Password");
+            throw HttpError.Unauthorized(ErrorMessages.InvalidUsernameOrPassword);
         }
 
         public override IHttpResult OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)

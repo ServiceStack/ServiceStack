@@ -201,7 +201,7 @@ namespace ServiceStack
         {
             var subscription = ServerEvents.GetSubscriptionInfo(request.Id);
             if (subscription == null)
-                throw HttpError.NotFound("Subscription '{0}' does not exist.".Fmt(request.Id));
+                throw HttpError.NotFound(ErrorMessages.SubscriptionNotExistsFmt.Fmt(request.Id));
 
             ServerEvents.UnRegister(subscription.SubscriptionId);
 

@@ -122,7 +122,7 @@ namespace ServiceStack.Host.Handlers
 
                         if (file == null)
                         {
-                            var msg = "Static File '" + request.PathInfo + "' not found.";
+                            var msg = ErrorMessages.FileNotExistsFmt.Fmt(request.PathInfo);
                             log.WarnFormat("{0} in path: {1}", msg, originalFileName);
                             throw HttpError.NotFound(msg);
                         }

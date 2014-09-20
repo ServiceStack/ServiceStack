@@ -192,7 +192,7 @@ namespace ServiceStack.Auth
 
             var existingUser = userAuthRepo.GetUserAuth(session, null);
             if (existingUser == null)
-                throw HttpError.NotFound("User does not exist");
+                throw HttpError.NotFound(ErrorMessages.UserNotExists);
 
             var newUserAuth = ToUserAuth(request);
             userAuthRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);

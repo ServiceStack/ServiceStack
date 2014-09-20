@@ -45,7 +45,7 @@ namespace ServiceStack
             if (DoHtmlRedirectIfConfigured(req, res)) return;
 
             res.StatusCode = (int)HttpStatusCode.Forbidden;
-            res.StatusDescription = "Invalid Role";
+            res.StatusDescription = ErrorMessages.InvalidRole.Localize(req);
             res.EndRequest();
         }
 
@@ -102,7 +102,7 @@ namespace ServiceStack
                 ? (int)HttpStatusCode.Forbidden
                 : (int)HttpStatusCode.Unauthorized;
 
-            throw new HttpError(statusCode, "Invalid Role");
+            throw new HttpError(statusCode, ErrorMessages.InvalidRole);
         }
 
         public static bool HasRequiredRoles(IRequest req, string[] requiredRoles)

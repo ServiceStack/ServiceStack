@@ -45,7 +45,7 @@ namespace ServiceStack
             if (DoHtmlRedirectIfConfigured(req, res)) return;
 
             res.StatusCode = (int)HttpStatusCode.Forbidden;
-            res.StatusDescription = "Invalid Permission";
+            res.StatusDescription = ErrorMessages.InvalidPermission.Localize(req);
             res.EndRequest();
         }
 
