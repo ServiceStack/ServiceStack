@@ -16,8 +16,10 @@ namespace ServiceStack.Auth
             this.AuthRealm = appSettings.Get("OAuthRealm", authRealm);
 
             this.Provider = oAuthProvider;
-            this.RedirectUrl = appSettings.GetString("oauth.{0}.RedirectUrl".Fmt(oAuthProvider));
-            this.CallbackUrl = appSettings.GetString("oauth.{0}.CallbackUrl".Fmt(oAuthProvider));
+            this.RedirectUrl = appSettings.GetString("oauth.{0}.RedirectUrl".Fmt(oAuthProvider))
+                ?? FallbackConfig(appSettings.GetString("oauth.RedirectUrl"));
+            this.CallbackUrl = appSettings.GetString("oauth.{0}.CallbackUrl".Fmt(oAuthProvider))
+                ?? FallbackConfig(appSettings.GetString("oauth.CallbackUrl"));
             this.ConsumerKey = appSettings.GetString("oauth.{0}.{1}".Fmt(oAuthProvider, consumerKeyName));
             this.ConsumerSecret = appSettings.GetString("oauth.{0}.{1}".Fmt(oAuthProvider, consumerSecretName));
 
