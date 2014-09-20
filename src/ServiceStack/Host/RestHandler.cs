@@ -131,7 +131,7 @@ namespace ServiceStack.Host
             return ExecuteService(requestDto, request);
         }
 
-        private static object GetRequest(IRequest httpReq, IRestPath restPath)
+        public static object GetRequest(IRequest httpReq, IRestPath restPath)
         {
             var requestType = restPath.RequestType;
             using (Profiler.Current.Step("Deserialize Request"))
