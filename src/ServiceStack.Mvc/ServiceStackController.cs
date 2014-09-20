@@ -6,6 +6,7 @@ using System.Web.Mvc;
 using System.Web.Routing;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
+using ServiceStack.Configuration;
 using ServiceStack.Host.AspNet;
 using ServiceStack.Messaging;
 using ServiceStack.Redis;
@@ -156,6 +157,10 @@ namespace ServiceStack.Mvc
                     new ServiceStackProvider(new AspNetRequest(base.HttpContext, GetType().Name)));
             }
         }
+        public virtual IAppSettings AppSettings
+        {
+            get { return ServiceStackProvider.AppSettings; }
+        }
         public virtual IHttpRequest ServiceStackRequest
         {
             get { return ServiceStackProvider.Request; }
@@ -204,9 +209,13 @@ namespace ServiceStack.Mvc
         {
             return ServiceStackProvider.ResolveService<T>();
         }
-        public virtual object ExecuteRequest(object requestDto)
+        public virtual object Execute(object requestDto)
         {
-            return ServiceStackProvider.ExecuteRequest(requestDto);
+            return ServiceStackProvider.Execute(requestDto);
+        }
+        public virtual object ForwardRequestToServiceStack(IRequest request = null)
+        {
+            return ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);
         }
         public virtual IAuthSession GetSession(bool reload = true)
         {
