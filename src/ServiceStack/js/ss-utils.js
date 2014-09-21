@@ -295,9 +295,20 @@
     };
 
     $.ss.eventReceivers = {};
+    $.ss.reconnectServerEvents = function(opt) {
+        opt = opt || {};
+        var hold = $.ss.eventSource;
+        var es = new EventSource(opt.url || hold.url);
+        es.onerror = opt.onerror || hold.onerror;
+        es.onmessage = opt.onmessage || hold.onmessage;
+        var fn = $.ss.handlers["onReconnect"];
+        if (fn != null)
+            fn.apply(es, opt.errorArgs);
+        hold.close();
+        return $.ss.eventSource = es;
+    };
     $.fn.handleServerEvents = function (opt) {
-        var $this = this;
-        var source = this[0];
+        $.ss.eventSource = this[0];
         opt = opt || {};
         if (opt.handlers) {
             $.extend($.ss.handlers, opt.handlers);
@@ -331,11 +342,8 @@
                                 url: opt.heartbeatUrl,
                                 data: null,
                                 success: function (r) { },
-                                error: function (r) { //reconnect
-                                    var hold = source;
-                                    $this[0] = source = new EventSource(source.url);
-                                    source.onerror = hold.onerror;
-                                    source.addEventListener('message', onMessage, false);
+                                error: function () {
+                                    $.ss.reconnectServerEvents({errorArgs:arguments});
                                 }
                             });
                         }, parseInt(opt.heartbeatIntervalMs) || 10000);
@@ -372,7 +380,7 @@
                 opt.success(selector, msg, e);
             }
         }
-        source.addEventListener('message', onMessage, false);
+        $.ss.eventSource.onmessage = onMessage;
     };
 
 })(window.jQuery);
