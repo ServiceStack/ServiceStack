@@ -22,10 +22,12 @@ namespace ServiceStack
         public TimeSpan Timeout { get; set; }
         public TimeSpan HeartbeatInterval { get; set; }
 
+        public Action<IRequest> OnInit { get; set; }
         public Action<IEventSubscription, IRequest> OnCreated { get; set; }
         public Action<IEventSubscription, Dictionary<string, string>> OnConnect { get; set; }
         public Action<IEventSubscription> OnSubscribe { get; set; }
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
+        public Action<IResponse, string> OnPublish { get; set; }
         public bool NotifyChannelOfSubscriptions { get; set; }
 
         public ServerEventsFeature()
@@ -83,20 +85,25 @@ namespace ServiceStack
 
         public override Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
         {
+            var feature = HostContext.GetPlugin<ServerEventsFeature>();
+
             res.ContentType = MimeTypes.ServerSentEvents;
             res.AddHeader(HttpHeaders.CacheControl, "no-cache");
+            res.UseBufferedStream = false;
             res.KeepAlive = true;
+
+            if (feature.OnInit != null)
+                feature.OnInit(req);
+
             res.Flush();
 
             var serverEvents = req.TryResolve<IServerEvents>();
-            IAuthSession session = req.GetSession();
+            var session = req.GetSession();
             var userAuthId = session != null ? session.UserAuthId : null;
             var anonUserId = serverEvents.GetNextSequence("anonUser");
             var userId = userAuthId ?? ("-" + anonUserId);
             var displayName = session.GetSafeDisplayName()
                 ?? "user" + anonUserId;
-
-            var feature = HostContext.GetPlugin<ServerEventsFeature>();
 
             var now = DateTime.UtcNow;
             var subscriptionId = SessionExtensions.CreateRandomSessionId();
@@ -111,6 +118,7 @@ namespace ServiceStack
                 DisplayName = displayName,
                 SessionId = req.GetPermanentSessionId(),
                 IsAuthenticated = session != null && session.IsAuthenticated,
+                OnPublish = feature.OnPublish,
                 Meta = {
                     { "userId", userId },
                     { "displayName", displayName },
@@ -254,6 +262,7 @@ namespace ServiceStack
 
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
         public Action<IEventSubscription> OnDispose { get; set; }
+        public Action<IResponse, string> OnPublish { get; set; }
 
         public void Publish(string selector)
         {
@@ -272,6 +281,9 @@ namespace ServiceStack
                 {
                     response.OutputStream.Write(frame);
                     response.Flush();
+
+                    if (OnPublish != null)
+                        OnPublish(response, frame);
                 }
             }
             catch (Exception ex)
