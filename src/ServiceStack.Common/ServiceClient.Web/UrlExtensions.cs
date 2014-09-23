@@ -32,7 +32,7 @@ namespace ServiceStack.ServiceClient.Web
             return RequestToUrl(request, httpMethod, formatFallbackToPredefinedRoute);
         }
 
-        // TODO Move RequestToUrl() to a different file, because it is not an extension.
+        // NOTE: RequestToUrl() is not an extension. It remains in 'UrlExtensions.cs' to minimize code skew with upstream branches.
         public static string RequestToUrl(object request, string httpMethod, string formatFallbackToPredefinedRoute = null)
         {
             httpMethod = httpMethod.ToUpper();
