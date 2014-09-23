@@ -177,6 +177,11 @@ namespace ServiceStack.ServiceInterface.Testing
                 throw new NotImplementedException();
             }
 
+            public TResponse Post<TResponse>(object request)
+            {
+                throw new NotImplementedException();
+            }
+
             public void Post(IReturnVoid request)
             {
                 throw new NotImplementedException();

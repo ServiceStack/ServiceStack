@@ -950,6 +950,11 @@ namespace ServiceStack.ServiceClient.Web
             return Send<TResponse>(HttpMethods.Post, request.ToUrl(HttpMethods.Post, Format), request);
         }
 
+        public virtual TResponse Post<TResponse>(object request)
+        {
+            return Send<TResponse>(HttpMethods.Post, UrlExtensions.RequestToUrl(request, HttpMethods.Post, Format), request);
+        }
+
         public virtual void Post(IReturnVoid request)
         {
             SendOneWay(HttpMethods.Post, request.ToUrl(HttpMethods.Post, Format), request);
