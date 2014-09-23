@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
-    <id>ServiceStack.Common</id>
+    <id>ServiceStack-ZocDoc.Common</id>
     <title>Service Clients and Common libs for ServiceStack projects</title>
     <version>3.9.60</version>
     <authors>Demis Bellot</authors>
