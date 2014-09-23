@@ -264,10 +264,6 @@
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
       <Name>ServiceStack</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj">
-      <Project>{3FA9197A-462D-44CC-9AB3-61AF414D0B45}</Project>
-      <Name>ServiceStack.Common.Tests</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.ServiceModel.Tests\ServiceStack.ServiceModel.Tests.csproj">
       <Project>{A5646013-C243-453F-A2B6-3B6870A9637D}</Project>
       <Name>ServiceStack.ServiceModel.Tests</Name>
