@@ -151,6 +151,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 	        throw new NotImplementedException();
 	    }
 
+	    public TResponse Post<TResponse>(object request)
+	    {
+	        throw new NotImplementedException();
+	    }
+
 	    public void Post(IReturnVoid request)
 	    {
 	        throw new NotImplementedException();
@@ -295,6 +300,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 	    }
 
 	    public void PostAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+	    {
+	        throw new NotImplementedException();
+	    }
+
+	    public void PostAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
 	    {
 	        throw new NotImplementedException();
 	    }

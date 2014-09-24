@@ -14,7 +14,8 @@ namespace ServiceStack.Service
         void Delete(IReturnVoid request);
         TResponse Delete<TResponse>(string relativeOrAbsoluteUrl);
 
-	    TResponse Post<TResponse>(IReturn<TResponse> request);
+        TResponse Post<TResponse>(IReturn<TResponse> request);
+        TResponse Post<TResponse>(object request);
         void Post(IReturnVoid request);
         TResponse Post<TResponse>(string relativeOrAbsoluteUrl, object request);
 

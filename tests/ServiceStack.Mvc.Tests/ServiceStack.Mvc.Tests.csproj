@@ -56,10 +56,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ServiceStack.FluentValidation.Mvc3\ServiceStack.FluentValidation.Mvc3.csproj">
-      <Project>{672f2dfe-4ee8-498b-b449-23e9e7f6961c}</Project>
-      <Name>ServiceStack.FluentValidation.Mvc3</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
       <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>
       <Name>ServiceStack</Name>

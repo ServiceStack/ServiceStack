@@ -847,6 +847,11 @@ namespace ServiceStack.ServiceClient.Web
             PostAsync(request.ToUrl(HttpMethods.Post, Format), request, onSuccess, onError);
         }
 
+        public virtual void PostAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            PostAsync(UrlExtensions.RequestToUrl(request, HttpMethods.Post, Format), request, onSuccess, onError);
+        }
+
         public virtual void PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             asyncClient.SendAsync(HttpMethods.Post, GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
@@ -948,6 +953,11 @@ namespace ServiceStack.ServiceClient.Web
         public virtual TResponse Post<TResponse>(IReturn<TResponse> request)
         {
             return Send<TResponse>(HttpMethods.Post, request.ToUrl(HttpMethods.Post, Format), request);
+        }
+
+        public virtual TResponse Post<TResponse>(object request)
+        {
+            return Send<TResponse>(HttpMethods.Post, UrlExtensions.RequestToUrl(request, HttpMethods.Post, Format), request);
         }
 
         public virtual void Post(IReturnVoid request)
