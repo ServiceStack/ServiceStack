@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>ServiceStack-ZocDoc</id>
-    <version>3.0.12</version>
+    <version>0.0.0</version>
     <title>ServiceStack webservice framework: Faster, Cleaner, Modern WCF alternative</title>
     <authors>ZocDoc, Inc.</authors>
     <owners>ZocDoc, Inc.</owners>
