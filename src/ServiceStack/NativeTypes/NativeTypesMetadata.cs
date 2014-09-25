@@ -137,6 +137,20 @@ namespace ServiceStack.NativeTypes
                     .Where(pi => !ignoreTypeFn(pi.PropertyType)))
                 {
                     registerTypeFn(pi.PropertyType);
+
+                    //Register Property Array Element Types 
+                    if (pi.PropertyType.IsArray && !ignoreTypeFn(pi.PropertyType.GetElementType()))
+                    {
+                        registerTypeFn(pi.PropertyType.GetElementType());
+                    }
+
+                    //Register Property Generic Arg Types 
+                    if (!pi.PropertyType.IsGenericType()) continue;
+                    var propArgs = pi.PropertyType.GetGenericArguments();
+                    foreach (var arg in propArgs.Where(arg => !ignoreTypeFn(arg)))
+                    {
+                        registerTypeFn(arg);
+                    }
                 }
 
                 if (!ignoreTypeFn(type.BaseType))
@@ -145,7 +159,8 @@ namespace ServiceStack.NativeTypes
                 }
 
                 if (!type.IsGenericType()) continue;
-                
+
+                //Register Generic Arg Types 
                 var args = type.GetGenericArguments();
                 foreach (var arg in args.Where(arg => !ignoreTypeFn(arg)))
                 {
@@ -342,6 +357,7 @@ namespace ServiceStack.NativeTypes
                 Name = pi.Name,
                 Attributes = ToAttributes(pi.GetCustomAttributes(false)),
                 Type = pi.PropertyType.GetOperationName(),
+                IsValueType = pi.PropertyType.IsValueType ? true : (bool?) null,
                 TypeNamespace = pi.PropertyType.Namespace,
                 DataMember = ToDataMember(pi.GetDataMember()),
                 GenericArgs = pi.PropertyType.IsGenericType
@@ -404,6 +420,7 @@ namespace ServiceStack.NativeTypes
                 Name = pi.Name,
                 Attributes = ToAttributes(propertyAttrs),
                 Type = pi.ParameterType.GetOperationName(),
+                IsValueType = pi.ParameterType.IsValueType ? true : (bool?)null,
                 TypeNamespace = pi.ParameterType.Namespace,
                 Description = pi.GetDescription(),
             };
