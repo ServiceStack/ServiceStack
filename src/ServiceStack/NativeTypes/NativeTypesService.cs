@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using ServiceStack.DataAnnotations;
 using ServiceStack.NativeTypes.CSharp;
+using ServiceStack.NativeTypes.FSharp;
 using ServiceStack.Web;
 
 namespace ServiceStack.NativeTypes
@@ -12,6 +13,10 @@ namespace ServiceStack.NativeTypes
     [Exclude(Feature.Soap)]
     [Route("/types/csharp")]
     public class TypesCSharp : NativeTypesBase { }
+
+    [Exclude(Feature.Soap)]
+    [Route("/types/fsharp")]
+    public class TypesFSharp : NativeTypesBase { }
 
     public class NativeTypesBase
     {
@@ -62,6 +67,18 @@ namespace ServiceStack.NativeTypes
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
             var csharp = new CSharpGenerator(typesConfig).GetCode(metadataTypes);
+            return csharp;
+        }
+
+        [AddHeader(ContentType = MimeTypes.PlainText)]
+        public object Any(TypesFSharp request)
+        {
+            if (request.BaseUrl == null)
+                request.BaseUrl = Request.GetBaseUrl();
+
+            var typesConfig = NativeTypesMetadata.GetConfig(request);
+            var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
+            var csharp = new FSharpGenerator(typesConfig).GetCode(metadataTypes);
             return csharp;
         }
     }

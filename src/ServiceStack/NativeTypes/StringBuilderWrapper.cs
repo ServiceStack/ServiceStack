@@ -43,5 +43,10 @@ namespace ServiceStack.NativeTypes
         {
             return sb.ToString();
         }
+
+        public int Length
+        {
+            get { return sb.Length; }
+        }
     }
 }

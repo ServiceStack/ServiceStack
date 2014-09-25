@@ -134,6 +134,7 @@ namespace ServiceStack
     {
         public string Name { get; set; }
         public string Type { get; set; }
+        public bool? IsValueType { get; set; }
         public string TypeNamespace { get; set; }
         public string[] GenericArgs { get; set; }
         public string Value { get; set; }
