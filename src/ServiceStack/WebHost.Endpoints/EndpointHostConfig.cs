@@ -9,7 +9,7 @@ using System.Runtime.Serialization;
 using System.Web;
 using System.Web.Configuration;
 using System.Xml.Linq;
-using MarkdownSharp;
+using ServiceStack.MarkdownSharp;
 using ServiceStack.Common.ServiceModel;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
