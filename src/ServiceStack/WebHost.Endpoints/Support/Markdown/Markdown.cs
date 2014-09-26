@@ -92,7 +92,7 @@ using System.Text.RegularExpressions;
 namespace ServiceStack.MarkdownSharp
 {
 
-    public class MarkdownOptions
+    internal class MarkdownOptions
     {
         /// <summary>
         /// when true, (most) bare plain URLs are auto-hyperlinked  
@@ -131,7 +131,7 @@ namespace ServiceStack.MarkdownSharp
     /// Markdown allows you to write using an easy-to-read, easy-to-write plain text format, 
     /// then convert it to structurally valid XHTML (or HTML).
     /// </summary>
-    public class Markdown
+    internal class Markdown
     {
         //Mono's RegEx is very limited and can't support avg-sized Markdown documents
         public static bool UseMarkdownDeep = ServiceStack.Text.Env.IsMono || true; 

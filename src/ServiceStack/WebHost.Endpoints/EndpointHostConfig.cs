@@ -432,7 +432,7 @@ namespace ServiceStack.WebHost.Endpoints
         public bool ReturnsInnerException { get; set; }
         public bool WriteErrorsToResponse { get; set; }
 
-        public MarkdownOptions MarkdownOptions { get; set; }
+        internal MarkdownOptions MarkdownOptions { get; set; }
         public Type MarkdownBaseType { get; set; }
         public Dictionary<string, Type> MarkdownGlobalHelpers { get; set; }
         public Dictionary<string, string> HtmlReplaceTokens { get; set; }
