@@ -41,6 +41,7 @@ namespace ServiceStack.NativeTypes
                 IgnoreTypes = defaults.IgnoreTypes,
                 IgnoreTypesInNamespaces = defaults.IgnoreTypesInNamespaces,
                 TypeAlias = defaults.TypeAlias,
+                GlobalNamespace = defaults.GlobalNamespace,
             };
         }
 
@@ -178,6 +179,7 @@ namespace ServiceStack.NativeTypes
             return new MetadataTypeName
             {
                 Name = type.GetOperationName(),
+                Namespace = type.Namespace,
                 GenericArgs = type.IsGenericType
                     ? type.GetGenericArguments().Select(x => x.GetOperationName()).ToArray()
                     : null,
@@ -204,6 +206,7 @@ namespace ServiceStack.NativeTypes
                 metaType.Inherits = new MetadataTypeName 
                 {
                     Name = type.BaseType.GetOperationName(),
+                    Namespace = type.BaseType.Namespace,
                     GenericArgs = type.BaseType.IsGenericType
                         ? type.BaseType.GetGenericArguments().Select(x => x.GetOperationName()).ToArray()
                         : null

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using ServiceStack.Host;
 
 namespace ServiceStack.NativeTypes.CSharp
 {
@@ -223,7 +224,7 @@ namespace ServiceStack.NativeTypes.CSharp
 
             var collectionProps = new List<MetadataPropertyType>();
             if (type.Properties != null && Config.InitializeCollections)
-                collectionProps = type.Properties.Where(IsCollection).ToList();
+                collectionProps = type.Properties.Where(x => x.IsCollection()).ToList();
 
             var addVersionInfo = Config.AddImplicitVersion != null && options.IsOperation;
             if (!addVersionInfo && collectionProps.Count <= 0) return;
@@ -252,20 +253,6 @@ namespace ServiceStack.NativeTypes.CSharp
             sb = sb.UnIndent();
             sb.AppendLine("}");
             sb.AppendLine();
-        }
-
-        public static HashSet<string> CollectionTypes = new HashSet<string> {
-            "List`1",
-            "HashSet`1",
-            "Dictionary`2",
-            "Queue`1",
-            "Stack`1",
-        };
-
-        public static bool IsCollection(MetadataPropertyType prop)
-        {
-            return CollectionTypes.Contains(prop.Type)
-                || prop.Type.SplitOnFirst('[').Length > 1;
         }
 
         public void AddProperties(StringBuilderWrapper sb, MetadataType type)
