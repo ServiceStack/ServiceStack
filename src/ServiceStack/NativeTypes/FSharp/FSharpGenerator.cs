@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using ServiceStack.Host;
 using ServiceStack.NativeTypes.CSharp;
 
 namespace ServiceStack.NativeTypes.FSharp
@@ -37,9 +38,9 @@ namespace ServiceStack.NativeTypes.FSharp
             metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
 
             // Look first for shortest Namespace ending with `ServiceModel` convention, else shortest ns
-            var globalNamespace = typeNamespaces
-                .Where(x => x.EndsWith("ServiceModel"))
-                .OrderBy(x => x).FirstOrDefault()
+            var globalNamespace = Config.GlobalNamespace
+                ?? typeNamespaces.Where(x => x.EndsWith("ServiceModel"))
+                    .OrderBy(x => x).FirstOrDefault()
                 ?? typeNamespaces.OrderBy(x => x).First();
 
             var sb = new StringBuilderWrapper(new StringBuilder());
@@ -228,25 +229,6 @@ namespace ServiceStack.NativeTypes.FSharp
             return lastNS;
         }
 
-        public static HashSet<string> CollectionTypes = new HashSet<string> {
-            "List`1",
-            "HashSet`1",
-            "Dictionary`2",
-            "Queue`1",
-            "Stack`1",
-        };
-
-        public static bool IsCollection(MetadataPropertyType prop)
-        {
-            return CollectionTypes.Contains(prop.Type)
-                || IsArray(prop);
-        }
-
-        private static bool IsArray(MetadataPropertyType prop)
-        {
-            return prop.Type.SplitOnFirst('[').Length > 1;
-        }
-
         public void AddProperties(StringBuilderWrapper sb, MetadataType type)
         {
             var makeExtensible = Config.MakeDataContractsExtensible && type.Inherits == null;
@@ -292,9 +274,9 @@ namespace ServiceStack.NativeTypes.FSharp
         private string GetDefaultLiteral(MetadataPropertyType prop)
         {
             var propType = Type(prop.Type, prop.GenericArgs);
-            if (Config.InitializeCollections && IsCollection(prop))
+            if (Config.InitializeCollections && prop.IsCollection())
             {
-                return IsArray(prop)
+                return prop.IsArray()
                     ? "[||]" 
                     : "new {0}()".Fmt(propType);
             }

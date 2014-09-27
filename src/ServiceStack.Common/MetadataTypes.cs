@@ -48,6 +48,8 @@ namespace ServiceStack
         public bool InitializeCollections { get; set; }
         public List<string> DefaultNamespaces { get; set; }
 
+        public string GlobalNamespace { get; set; }
+
         public Dictionary<string, string> TypeAlias { get; set; }
         public HashSet<Type> IgnoreTypes { get; set; }
         public HashSet<Type> ExportAttributes { get; set; }
@@ -83,6 +85,7 @@ namespace ServiceStack
         public string Namespace { get; set; }
         public string[] GenericArgs { get; set; }
         public MetadataTypeName Inherits { get; set; }
+        public string DisplayType { get; set; }
         public string Description { get; set; }
         public bool ReturnVoidMarker { get; set; }
 
@@ -105,6 +108,7 @@ namespace ServiceStack
     public class MetadataTypeName
     {
         public string Name { get; set; }
+        public string Namespace { get; set; }
         public string[] GenericArgs { get; set; }
     }
 
