@@ -143,6 +143,16 @@ namespace ServiceStack.RabbitMq
             return ex.Message.Contains("code=404");
         }
 
+        public static bool IsServerNamedQueue(this string queueName)
+        {
+            if (string.IsNullOrEmpty(queueName))
+            {
+                throw new ArgumentNullException("queueName");
+            }
+
+            return queueName.ToLower().StartsWith("amq.");
+        }	
+
         public static void PopulateFromMessage(this IBasicProperties props, IMessage message)
         {
             props.MessageId = message.Id.ToString();
