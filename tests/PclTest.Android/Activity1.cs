@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
 using Android.App;
-using Android.Content;
-using Android.Runtime;
-using Android.Views;
 using Android.Widget;
 using Android.OS;
 using PclTest.ServiceModel;
@@ -14,16 +9,6 @@ using ServiceStack.Text;
 
 namespace PclTest.Android
 {
-    public class Test
-    {
-        public string Name { get; set; }
-    }
-
-    public class TestModel
-    {
-        public string Name { get; set; }
-    }
-
     [Activity(Label = "PclTest.Android", MainLauncher = true, Icon = "@drawable/icon")]
     public class Activity1 : Activity
     {
@@ -82,16 +67,8 @@ namespace PclTest.Android
             {
                 try
                 {
-                    //PclExport.Instance.SupportsExpression = false;
-                    var test = new Test { Name = "Name" };
-                    var testModel = test.ConvertTo<TestModel>();
-                    lblResults.Text = testModel.Dump();
-
-                    //var test = TestPropertySetter();
-                    lblResults.Text = test.Dump();
-
-                    //var greeting = await gateway.SayHello(txtName.Text);
-                    //lblResults.Text = greeting;
+                    var greeting = await gateway.SayHello(txtName.Text);
+                    lblResults.Text = greeting;
                 }
                 catch (Exception ex)
                 {
@@ -103,24 +80,6 @@ namespace PclTest.Android
             };
         }
 
-        private static Test TestPropertySetter()
-        {
-            var nameProperty = typeof (Test).GetProperty("Name");
-
-            var instance = Expression.Parameter(typeof (object), "i");
-            var argument = Expression.Parameter(typeof (object), "a");
-
-            var instanceParam = Expression.Convert(instance, nameProperty.ReflectedType());
-            var valueParam = Expression.Convert(argument, nameProperty.PropertyType);
-
-            var setterCall = Expression.Call(instanceParam, nameProperty.SetMethod(), valueParam);
-
-            var fn = Expression.Lambda<Action<object, object>>(setterCall, instance, argument).Compile();
-
-            var test = new Test();
-            fn(test, "Foo");
-            return test;
-        }
     }
 }
 
