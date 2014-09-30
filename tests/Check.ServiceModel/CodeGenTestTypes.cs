@@ -30,6 +30,28 @@ namespace Check.ServiceModel.Operations
         }
     }
 
+    public class HelloWithEnum
+    {
+        public EnumType EnumProp { get; set; }
+        public EnumType? NullableEnumProp { get; set; }
+
+        public EnumFlags EnumFlags { get; set; }
+    }
+
+    public enum EnumType
+    {
+        Value1,
+        Value2
+    }
+
+    [Flags]
+    public enum EnumFlags
+    {
+        Value1 = 1,
+        Value2 = 2,
+        Value3 = 4,
+    }
+
     [Restrict(InternalOnly = true)]
     [System.ComponentModel.Description("Description on HelloAll type")]
     [DataContract]

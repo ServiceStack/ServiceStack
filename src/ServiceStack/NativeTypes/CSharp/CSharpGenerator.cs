@@ -183,46 +183,70 @@ namespace ServiceStack.NativeTypes.CSharp
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
 
-            var partial = Config.MakePartial ? "partial " : "";
-            sb.AppendLine("public {0}class {1}".Fmt(partial, Type(type.Name, type.GenericArgs)));
-
-            //: BaseClass, Interfaces
-            var inheritsList = new List<string>();
-            if (type.Inherits != null)
-                inheritsList.Add(Type(type.Inherits));
-            if (options.ImplementsFn != null)
+            if (type.IsEnum.GetValueOrDefault())
             {
-                var implStr = options.ImplementsFn();
-                if (!string.IsNullOrEmpty(implStr))
-                    inheritsList.Add(implStr);
-            }
+                sb.AppendLine("public enum {0}".Fmt(Type(type.Name, type.GenericArgs)));
+                sb.AppendLine("{");
+                sb = sb.Indent();
 
-            var makeExtensible = Config.MakeDataContractsExtensible && type.Inherits == null;
-            if (makeExtensible)
-                inheritsList.Add("IExtensibleDataObject");
-            if (inheritsList.Count > 0)
-                sb.AppendLine("    : {0}".Fmt(string.Join(", ", inheritsList.ToArray())));
-
-            sb.AppendLine("{");
-            sb = sb.Indent();
-
-            AddConstuctor(sb, type, options);
-            AddProperties(sb, type);
-
-            foreach (var innerTypeRef in type.InnerTypes.Safe())
-            {
-                var innerType = allTypes.FirstOrDefault(x => x.Name == innerTypeRef.Name);
-                if (innerType == null) 
-                    continue;
+                if (type.EnumNames != null)
+                {
+                    for (var i = 0; i < type.EnumNames.Count; i++)
+                    {
+                        var name = type.EnumNames[i];
+                        var value = type.EnumValues != null ? type.EnumValues[i] : null;
+                        sb.AppendLine(value == null 
+                            ? "{0},".Fmt(name) 
+                            : "{0} = {1},".Fmt(name, value));
+                    }
+                }
 
                 sb = sb.UnIndent();
-                AppendType(ref sb, innerType, lastNS, allTypes,
-                    new CreateTypeOptions { IsNestedType = true });
-                sb = sb.Indent();
+                sb.AppendLine("}");
             }
+            else
+            {
+                var partial = Config.MakePartial ? "partial " : "";
+                sb.AppendLine("public {0}class {1}".Fmt(partial, Type(type.Name, type.GenericArgs)));
 
-            sb = sb.UnIndent();
-            sb.AppendLine("}");
+                //: BaseClass, Interfaces
+                var inheritsList = new List<string>();
+                if (type.Inherits != null)
+                    inheritsList.Add(Type(type.Inherits));
+                if (options.ImplementsFn != null)
+                {
+                    var implStr = options.ImplementsFn();
+                    if (!string.IsNullOrEmpty(implStr))
+                        inheritsList.Add(implStr);
+                }
+
+                var makeExtensible = Config.MakeDataContractsExtensible && type.Inherits == null;
+                if (makeExtensible)
+                    inheritsList.Add("IExtensibleDataObject");
+                if (inheritsList.Count > 0)
+                    sb.AppendLine("    : {0}".Fmt(string.Join(", ", inheritsList.ToArray())));
+
+                sb.AppendLine("{");
+                sb = sb.Indent();
+
+                AddConstuctor(sb, type, options);
+                AddProperties(sb, type);
+
+                foreach (var innerTypeRef in type.InnerTypes.Safe())
+                {
+                    var innerType = allTypes.FirstOrDefault(x => x.Name == innerTypeRef.Name);
+                    if (innerType == null)
+                        continue;
+
+                    sb = sb.UnIndent();
+                    AppendType(ref sb, innerType, lastNS, allTypes,
+                        new CreateTypeOptions { IsNestedType = true });
+                    sb = sb.Indent();
+                }
+
+                sb = sb.UnIndent();
+                sb.AppendLine("}");
+            }
 
             sb = sb.UnIndent();
             return lastNS;

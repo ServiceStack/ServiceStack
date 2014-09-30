@@ -21,6 +21,11 @@ namespace Check.ServiceInterface
             return new HelloResponse { Result = request.Name };
         }
 
+        public object Any(HelloWithEnum request)
+        {
+            return request;
+        }
+
         public object Any(HelloExternal request)
         {
             return request;

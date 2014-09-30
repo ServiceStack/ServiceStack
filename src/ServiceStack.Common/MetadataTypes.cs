@@ -89,6 +89,7 @@ namespace ServiceStack
         public string Description { get; set; }
         public bool ReturnVoidMarker { get; set; }
         public bool? IsNested { get; set; }
+        public bool? IsEnum { get; set; }
 
         public MetadataTypeName ReturnMarkerTypeName { get; set; }
 
@@ -101,6 +102,9 @@ namespace ServiceStack
         public List<MetadataAttribute> Attributes { get; set; }
 
         public List<MetadataTypeName> InnerTypes { get; set; }
+
+        public List<string> EnumNames { get; set; }
+        public List<string> EnumValues { get; set; } 
 
         public string GetFullName()
         {

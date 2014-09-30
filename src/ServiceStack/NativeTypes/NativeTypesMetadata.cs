@@ -127,10 +127,9 @@ namespace ServiceStack.NativeTypes
                 considered.Add(t);
                 queue.Enqueue(t);
 
-                if (t.IsUserType())
+                if (t.IsUserType() || t.IsUserEnum())
                 {
-                    var metaType = ToType(t);
-                    metadata.Types.Add(metaType);
+                    metadata.Types.Add(ToType(t));
                 }
             };
 
@@ -204,10 +203,11 @@ namespace ServiceStack.NativeTypes
                     : null,
                 Attributes = ToAttributes(type),
                 Properties = ToProperties(type),
-                IsNested = type.IsNested ? true : (bool?) null,
+                IsNested = type.IsNested ? true : (bool?)null,
+                IsEnum = type.IsEnum ? true : (bool?)null,
             };
 
-            if (type.BaseType != null && type.BaseType != typeof(object))
+            if (type.BaseType != null && type.BaseType != typeof(object) && !type.IsEnum)
             {
                 metaType.Inherits = new MetadataTypeName 
                 {
@@ -257,6 +257,30 @@ namespace ServiceStack.NativeTypes
                 };
             }
 
+            if (type.IsEnum)
+            {
+                metaType.EnumNames = new List<string>();
+                metaType.EnumValues = new List<string>();
+
+                var isDefaultLayout = true;
+                var values = Enum.GetValues(type);
+                for (var i = 0; i < values.Length; i++)
+                {
+                    var value = values.GetValue(i);
+                    var name = value.ToString();
+                    var enumValue = Convert.ChangeType(value, Type.GetTypeCode(type)).ToString();
+
+                    if (enumValue != i.ToString())
+                        isDefaultLayout = false;
+
+                    metaType.EnumNames.Add(name);
+                    metaType.EnumValues.Add(enumValue);
+                }
+
+                if (isDefaultLayout)
+                    metaType.EnumValues = null; 
+            }
+
             var innerTypes = type.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic);
             foreach (var innerType in innerTypes)
             {
@@ -278,7 +302,7 @@ namespace ServiceStack.NativeTypes
 
         public List<MetadataAttribute> ToAttributes(Type type)
         {
-            return !type.IsUserType() || type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>))
+            return !(type.IsUserType() || type.IsUserEnum()) || type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>))
                 ? null
                 : ToAttributes(type.GetCustomAttributes(false));
         }

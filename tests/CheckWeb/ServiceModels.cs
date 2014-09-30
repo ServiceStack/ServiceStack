@@ -375,13 +375,26 @@ namespace Check.ServiceModel.Operations
         public virtual int Id { get; set; }
 
         [DataMember(Name="Aliased")]
-        [ApiMember(ParameterType="path", Description="Range Description", DataType="double", IsRequired=true)]
+        [ApiMember(Description="Range Description", ParameterType="path", DataType="double", IsRequired=true)]
         public virtual double Range { get; set; }
 
-        [Meta("Foo", "Bar")]
         [References(typeof(Check.ServiceModel.Operations.Hello))]
         [StringLength(20)]
+        [Meta("Foo", "Bar")]
         public virtual string Name { get; set; }
+    }
+
+    public enum EnumFlags
+    {
+        Value1 = 1,
+        Value2 = 2,
+        Value3 = 4,
+    }
+
+    public enum EnumType
+    {
+        Value1,
+        Value2,
     }
 
     public partial class Hello
@@ -480,6 +493,13 @@ namespace Check.ServiceModel.Operations
     public partial class HelloWithDescriptionResponse
     {
         public virtual string Result { get; set; }
+    }
+
+    public partial class HelloWithEnum
+    {
+        public virtual EnumType EnumProp { get; set; }
+        public virtual EnumType? NullableEnumProp { get; set; }
+        public virtual EnumFlags EnumFlags { get; set; }
     }
 
     public partial class HelloWithInheritance
