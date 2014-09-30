@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Funq;
+//using Funq;
 using ServiceStack.Common.Utils;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
@@ -51,6 +51,7 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
+        /*
         /// <summary>
         /// Get an IAppHost container. 
         /// Note: Registering dependencies should only be done during setup/configuration 
@@ -63,6 +64,7 @@ namespace ServiceStack.WebHost.Endpoints
             var hasContainer = appHost as IHasContainer;
             return hasContainer != null ? hasContainer.Container : null;
         }
+        */
 	}
 
 }

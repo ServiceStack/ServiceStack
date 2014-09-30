@@ -1,4 +1,4 @@
-﻿using Funq;
+﻿using Funke;
 using NUnit.Framework;
 using ServiceStack.Messaging.Tests.Services;
 

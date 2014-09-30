@@ -21,7 +21,7 @@ namespace Funke
 	    public void RegisterAutoWiredTypes(HashSet<Type> types) { }
 
 	    public void Register<T>(T instance) { }
-	    public void Register(Func<object,object> f) { }
+	    public void Register(Func<Container, object> f) { }
 
 	    public T TryResolve<T>() { throw new NotImplementedException(); }
 	    public T Resolve<T>() { throw new NotImplementedException(); }

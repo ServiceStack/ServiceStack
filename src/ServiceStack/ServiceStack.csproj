@@ -175,11 +175,6 @@
     <Compile Include="HttpExtensions.cs" />
     <Compile Include="MetadataTypesHandler.cs" />
     <Compile Include="PredefinedRoutesFeature.cs" />
-    <Compile Include="Funq\Action.cs" />
-    <Compile Include="Funq\Container.cs" />
-    <Compile Include="Funq\Container.Overloads.cs">
-      <DependentUpon>Container.cs</DependentUpon>
-    </Compile>
     <Compile Include="Html\HtmlExtensions.cs" />
     <Compile Include="Html\IViewEngine.cs">
       <SubType>Code</SubType>
@@ -187,16 +182,6 @@
     <Compile Include="MetadataFeature.cs" />
     <Compile Include="RequestInfoFeature.cs" />
     <Compile Include="ServiceHost\ContainerTypeExtensions.cs" />
-    <Compile Include="Funq\Func.cs" />
-    <Compile Include="Funq\IFluentInterface.cs" />
-    <Compile Include="Funq\IFunqlet.cs" />
-    <Compile Include="Funq\Owner.cs" />
-    <Compile Include="Funq\ResolutionException.cs" />
-    <Compile Include="Funq\ReuseScope.cs" />
-    <Compile Include="Funq\ServiceEntry.cs" />
-    <Compile Include="Funq\ServiceEntry.Generic.cs" />
-    <Compile Include="Funq\ServiceKey.cs" />
-    <Compile Include="Funq\Syntax.cs" />
     <Compile Include="MiniProfiler\BaseProfilerProvider.cs" />
     <Compile Include="MiniProfiler\Data\ExecuteType.cs" />
     <Compile Include="MiniProfiler\Data\IDbProfiler.cs" />
@@ -404,15 +389,12 @@
     <Compile Include="WebHost.Endpoints\Support\MarkdownDeep\Utils.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Funq\Container.Adapter.cs" />
-    <None Include="Funq\Container.xdoc" />
     <EmbeddedResource Include="MiniProfiler\UI\includes.tmpl">
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="MiniProfiler\UI\includes.tmpl.orig" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Funq\License.txt" />
     <EmbeddedResource Include="WebHost.Endpoints\Support\Templates\Html\OperationControl.html" />
     <EmbeddedResource Include="WebHost.Endpoints\Support\Templates\Html\OperationsControl.html" />
     <EmbeddedResource Include="WebHost.Endpoints\Support\Templates\Html\IndexOperations.html" />
