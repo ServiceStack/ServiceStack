@@ -119,14 +119,19 @@ namespace ServiceStack.NativeTypes
                 || skipTypes.Contains(t)
                 || ignoreNamespaces.Contains(t.Namespace);
 
-            Action<Type> registerTypeFn = t => {
+            Action<Type> registerTypeFn = null;
+            registerTypeFn = t => {
                 if (t.IsArray || t == typeof(Array))
                     return;
 
                 considered.Add(t);
                 queue.Enqueue(t);
+
                 if (t.IsUserType())
-                    metadata.Types.Add(ToType(t));
+                {
+                    var metaType = ToType(t);
+                    metadata.Types.Add(metaType);
+                }
             };
 
             while (queue.Count > 0)
@@ -199,6 +204,7 @@ namespace ServiceStack.NativeTypes
                     : null,
                 Attributes = ToAttributes(type),
                 Properties = ToProperties(type),
+                IsNested = type.IsNested ? true : (bool?) null,
             };
 
             if (type.BaseType != null && type.BaseType != typeof(object))
@@ -249,6 +255,22 @@ namespace ServiceStack.NativeTypes
                     Name = dcAttr.Name,
                     Namespace = dcAttr.Namespace,
                 };
+            }
+
+            var innerTypes = type.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic);
+            foreach (var innerType in innerTypes)
+            {
+                if (metaType.InnerTypes == null)
+                    metaType.InnerTypes = new List<MetadataTypeName>();
+
+                metaType.InnerTypes.Add(new MetadataTypeName
+                {
+                    Name = innerType.GetOperationName(),
+                    Namespace = innerType.Namespace,
+                    GenericArgs = innerType.IsGenericType
+                        ? innerType.GetGenericArguments().Select(x => x.GetOperationName()).ToArray()
+                        : null,
+                });
             }
 
             return metaType;

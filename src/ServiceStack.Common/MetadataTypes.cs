@@ -88,6 +88,7 @@ namespace ServiceStack
         public string DisplayType { get; set; }
         public string Description { get; set; }
         public bool ReturnVoidMarker { get; set; }
+        public bool? IsNested { get; set; }
 
         public MetadataTypeName ReturnMarkerTypeName { get; set; }
 
@@ -98,6 +99,8 @@ namespace ServiceStack
         public List<MetadataPropertyType> Properties { get; set; }
 
         public List<MetadataAttribute> Attributes { get; set; }
+
+        public List<MetadataTypeName> InnerTypes { get; set; }
 
         public string GetFullName()
         {

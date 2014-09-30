@@ -18,6 +18,18 @@ namespace Check.ServiceModel.Operations
         public string Result { get; set; }
     }
 
+    public class HelloWithNestedClass : IReturn<HelloResponse>
+    {
+        public string Name { get; set; }
+        public NestedClass NestedClassProp { get; set; }
+
+        // This will generate a class definition "public partial class Hello.NestedClass"
+        public class NestedClass
+        {
+            public string Value { get; set; }
+        }
+    }
+
     [Restrict(InternalOnly = true)]
     [System.ComponentModel.Description("Description on HelloAll type")]
     [DataContract]

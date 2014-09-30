@@ -16,6 +16,11 @@ namespace Check.ServiceInterface
             return new HelloAnnotatedResponse { Result = request.Name };
         }
 
+        public object Any(HelloWithNestedClass request)
+        {
+            return new HelloResponse { Result = request.Name };
+        }
+
         public object Any(HelloExternal request)
         {
             return request;

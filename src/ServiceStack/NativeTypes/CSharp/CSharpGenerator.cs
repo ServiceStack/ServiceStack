@@ -25,6 +25,7 @@ namespace ServiceStack.NativeTypes.CSharp
             public bool IsResponse { get; set; }
             public bool IsOperation { get { return IsRequest || IsResponse; } }
             public bool IsType { get; set; }
+            public bool IsNestedType { get; set; }
         }
 
         public string GetCode(MetadataTypes metadata)
@@ -103,24 +104,24 @@ namespace ServiceStack.NativeTypes.CSharp
                             response = operation.Response;
                         }
 
-                        lastNS = AppendType(ref sb, type, lastNS,
+                        lastNS = AppendType(ref sb, type, lastNS, allTypes, 
                             new CreateTypeOptions
                             {
                                 ImplementsFn = () =>
-                                {
-                                    if (!Config.AddReturnMarker
-                                        && !type.ReturnVoidMarker
-                                        && type.ReturnMarkerTypeName == null)
-                                        return null;
+                                    {
+                                        if (!Config.AddReturnMarker
+                                            && !type.ReturnVoidMarker
+                                            && type.ReturnMarkerTypeName == null)
+                                            return null;
 
-                                    if (type.ReturnVoidMarker)
-                                        return "IReturnVoid";
-                                    if (type.ReturnMarkerTypeName != null)
-                                        return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName) });
-                                    return response != null
-                                        ? Type("IReturn`1", new[] { Type(type.Name, type.GenericArgs) })
-                                        : null;
-                                },
+                                        if (type.ReturnVoidMarker)
+                                            return "IReturnVoid";
+                                        if (type.ReturnMarkerTypeName != null)
+                                            return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName) });
+                                        return response != null
+                                                    ? Type("IReturn`1", new[] { Type(type.Name, type.GenericArgs) })
+                                                    : null;
+                                    },
                                 IsRequest = true,
                             });
 
@@ -132,18 +133,15 @@ namespace ServiceStack.NativeTypes.CSharp
                     if (!existingOps.Contains(fullTypeName)
                         && !Config.IgnoreTypesInNamespaces.Contains(type.Namespace))
                     {
-                        lastNS = AppendType(ref sb, type, lastNS,
-                            new CreateTypeOptions
-                            {
-                                IsResponse = true,
-                            });
+                        lastNS = AppendType(ref sb, type, lastNS, allTypes, 
+                            new CreateTypeOptions { IsResponse = true, });
 
                         existingOps.Add(fullTypeName);
                     }
                 }
                 else if (types.Contains(type) && !existingOps.Contains(fullTypeName))
                 {
-                    lastNS = AppendType(ref sb, type, lastNS,
+                    lastNS = AppendType(ref sb, type, lastNS, allTypes, 
                         new CreateTypeOptions { IsType = true });
                 }
             }
@@ -155,10 +153,11 @@ namespace ServiceStack.NativeTypes.CSharp
             return sb.ToString();
         }
 
-        private string AppendType(ref StringBuilderWrapper sb, MetadataType type, string lastNS,
-            CreateTypeOptions options)
+        private string AppendType(ref StringBuilderWrapper sb, MetadataType type, string lastNS, List<MetadataType> allTypes, CreateTypeOptions options)
         {
-            if (type == null || (type.Namespace != null && type.Namespace.StartsWith("System")))
+            if (type == null || 
+                (type.IsNested.GetValueOrDefault() && !options.IsNestedType) || 
+                (type.Namespace != null && type.Namespace.StartsWith("System")))
                 return lastNS;
 
             if (type.Namespace != lastNS)
@@ -209,6 +208,18 @@ namespace ServiceStack.NativeTypes.CSharp
 
             AddConstuctor(sb, type, options);
             AddProperties(sb, type);
+
+            foreach (var innerTypeRef in type.InnerTypes.Safe())
+            {
+                var innerType = allTypes.FirstOrDefault(x => x.Name == innerTypeRef.Name);
+                if (innerType == null) 
+                    continue;
+
+                sb = sb.UnIndent();
+                AppendType(ref sb, innerType, lastNS, allTypes,
+                    new CreateTypeOptions { IsNestedType = true });
+                sb = sb.Indent();
+            }
 
             sb = sb.UnIndent();
             sb.AppendLine("}");
@@ -372,7 +383,7 @@ namespace ServiceStack.NativeTypes.CSharp
                         args.Append(TypeAlias(arg));
                     }
 
-                    return "{0}<{1}>".Fmt(typeName.SafeToken(), args);
+                    return "{0}<{1}>".Fmt(NameOnly(type), args);
                 }
             }
 
@@ -388,12 +399,12 @@ namespace ServiceStack.NativeTypes.CSharp
             string typeAlias;
             Config.TypeAlias.TryGetValue(type, out typeAlias);
 
-            return typeAlias ?? type.SafeToken();
+            return typeAlias ?? NameOnly(type);
         }
 
         public string NameOnly(string type)
         {
-            return type.SplitOnFirst('`')[0].SafeToken();
+            return type.SplitOnFirst('`')[0].SplitOnLast('.').Last().SafeToken();
         }
 
         public void AppendComments(StringBuilderWrapper sb, string desc)

@@ -23,9 +23,9 @@ using System.Runtime.Serialization;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
 using Check.ServiceModel;
+using Check.ServiceModel.Operations;
 using Check.ServiceModel.Types;
 using Check.ServiceInterface;
-using Check.ServiceModel.Operations;
 
 
 namespace Check.ServiceInterface
@@ -342,12 +342,6 @@ namespace Check.ServiceModel
         public virtual string Sentence { get; set; }
     }
 
-    [Route("/rockstars")]
-    public partial class QueryRockstars
-        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
-    {
-    }
-
     public partial class Rockstar
     {
         public virtual int Id { get; set; }
@@ -376,8 +370,8 @@ namespace Check.ServiceModel.Operations
     [DataContract]
     public partial class AllowedAttributes
     {
-        [Required]
         [Default(5)]
+        [Required]
         public virtual int Id { get; set; }
 
         [DataMember(Name="Aliased")]
@@ -401,12 +395,14 @@ namespace Check.ServiceModel.Operations
     {
         public virtual string Name { get; set; }
         public virtual AllTypes AllTypes { get; set; }
+        public virtual AllCollectionTypes AllCollectionTypes { get; set; }
     }
 
     public partial class HelloAllTypesResponse
     {
         public virtual string Result { get; set; }
         public virtual AllTypes AllTypes { get; set; }
+        public virtual AllCollectionTypes AllCollectionTypes { get; set; }
     }
 
     ///<summary>
@@ -498,6 +494,18 @@ namespace Check.ServiceModel.Operations
         public virtual string Result { get; set; }
     }
 
+    public partial class HelloWithNestedClass
+        : IReturn<HelloResponse>
+    {
+        public virtual string Name { get; set; }
+        public virtual NestedClass NestedClassProp { get; set; }
+
+        public partial class NestedClass
+        {
+            public virtual string Value { get; set; }
+        }
+    }
+
     public partial class HelloWithReturn
         : IReturn<HelloWithAlternateReturnResponse>
     {
@@ -537,6 +545,26 @@ namespace Check.ServiceModel.Operations
 
 namespace Check.ServiceModel.Types
 {
+
+    public partial class AllCollectionTypes
+    {
+        public AllCollectionTypes()
+        {
+            IntArray = new int[]{};
+            IntList = new List<int>{};
+            StringArray = new string[]{};
+            StringList = new List<string>{};
+            PocoArray = new Poco[]{};
+            PocoList = new List<Poco>{};
+        }
+
+        public virtual int[] IntArray { get; set; }
+        public virtual List<int> IntList { get; set; }
+        public virtual string[] StringArray { get; set; }
+        public virtual List<string> StringList { get; set; }
+        public virtual Poco[] PocoArray { get; set; }
+        public virtual List<Poco> PocoList { get; set; }
+    }
 
     public partial class AllTypes
     {
@@ -590,6 +618,11 @@ namespace Check.ServiceModel.Types
     public partial class HelloWithReturnResponse
     {
         public virtual string Result { get; set; }
+    }
+
+    public partial class Poco
+    {
+        public virtual string Name { get; set; }
     }
 
     public partial class SubType
