@@ -7,7 +7,7 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using Funq;
+using Funke;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
@@ -363,6 +363,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
         {
             try
             {
+                /*
                 var iocAdapterReleases = Container.Adapter as IRelease;
                 if (iocAdapterReleases != null)
                 {
@@ -370,10 +371,13 @@ namespace ServiceStack.WebHost.Endpoints.Support
                 }
                 else 
                 {
+                */
                     var disposable = instance as IDisposable;
                     if (disposable != null)
                         disposable.Dispose();
+                /*
                 }
+                */
             }
             catch {/*ignore*/}
         }

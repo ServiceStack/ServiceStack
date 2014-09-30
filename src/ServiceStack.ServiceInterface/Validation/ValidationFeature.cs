@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using Funq;
+using Funke;
 using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Results;
 using ServiceStack.Logging;

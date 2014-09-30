@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using ServiceStack.Logging;
-using Funq;
+using Funke;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceHost

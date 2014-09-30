@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ServiceStack.Configuration;
-using Funq;
+using Funke;
 using System.Linq.Expressions;
 using System.Threading;
 

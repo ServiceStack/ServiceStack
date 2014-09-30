@@ -4,7 +4,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Web;
-using Funq;
+using Funke;
 using ServiceStack.Text;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;

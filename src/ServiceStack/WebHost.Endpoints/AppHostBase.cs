@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Web;
-using Funq;
+using Funke;
 using ServiceStack.Common;
 using ServiceStack.Configuration;
 using ServiceStack.Html;
@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.Endpoints
 	/// ASP.NET application.
 	/// </summary>
 	public abstract class AppHostBase
-        : IFunqlet, IDisposable, IAppHost, IHasContainer
+        : IFunkelet, IDisposable, IAppHost, IHasContainer
 	{
 		private readonly ILog log = LogManager.GetLogger(typeof(AppHostBase));
 
@@ -108,6 +108,7 @@ namespace ServiceStack.WebHost.Endpoints
         {
             try
             {
+                /*
                 var iocAdapterReleases = Container.Adapter as IRelease;
                 if (iocAdapterReleases != null)
                 {
@@ -115,10 +116,13 @@ namespace ServiceStack.WebHost.Endpoints
                 }
                 else
                 {
+                */
                     var disposable = instance as IDisposable;
                     if (disposable != null)
                         disposable.Dispose();
+                /*
                 }
+                */
             }
             catch {/*ignore*/}
         }

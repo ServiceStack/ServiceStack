@@ -6,7 +6,9 @@ using ServiceStack.Common.Web;
 using ServiceStack.Redis;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Auth;
+/*
 using ServiceStack.ServiceInterface.Testing;
+*/
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 
@@ -215,6 +217,7 @@ namespace ServiceStack.ServiceInterface
             }
         }
 
+        /*
         public static object RunAction<TService, TRequest>(
             this TService service, TRequest request, Func<TService, TRequest, object> invokeAction,
             IRequestContext requestContext = null)
@@ -234,5 +237,6 @@ namespace ServiceStack.ServiceInterface
             var response = runner.Execute(requestContext, service, request);
             return response;
         }
+        */
     }
 }
