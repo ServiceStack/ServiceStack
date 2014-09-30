@@ -114,7 +114,8 @@ namespace ServiceStack.NativeTypes
             var queue = new Queue<Type>(opTypes);
 
             Func<Type, bool> ignoreTypeFn = t => 
-                t == null 
+                t == null
+                || t.IsGenericParameter
                 || considered.Contains(t)
                 || skipTypes.Contains(t)
                 || ignoreNamespaces.Contains(t.Namespace);
@@ -160,7 +161,16 @@ namespace ServiceStack.NativeTypes
 
                 if (!ignoreTypeFn(type.BaseType))
                 {
-                    registerTypeFn(type.BaseType);
+                    if (type.BaseType.IsGenericType)
+                    {
+                        var genericDef = type.BaseType.GetGenericTypeDefinition();
+                        if (!ignoreTypeFn(genericDef))
+                            registerTypeFn(genericDef);
+                    }
+                    else
+                    {
+                        registerTypeFn(type.BaseType);
+                    }
                 }
 
                 if (!type.IsGenericType()) continue;

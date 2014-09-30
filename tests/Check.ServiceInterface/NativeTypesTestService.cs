@@ -75,6 +75,16 @@ namespace Check.ServiceInterface
             return new HelloWithInheritanceResponse { Result = request.Name };
         }
 
+        public object Any(HelloWithGenericInheritance request)
+        {
+            return request;
+        }
+
+        public object Any(HelloWithGenericInheritance2 request)
+        {
+            return request;
+        }
+
         public object Any(HelloWithReturn request)
         {
             return new HelloWithAlternateReturnResponse { Result = request.Name };

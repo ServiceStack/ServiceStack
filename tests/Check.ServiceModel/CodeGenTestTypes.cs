@@ -180,6 +180,21 @@ namespace Check.ServiceModel.Operations
         public string Result { get; set; }
     }
 
+    public class HelloWithGenericInheritance : HelloBase<Poco>
+    {
+        public string Result { get; set; }
+    }
+
+    public class HelloWithGenericInheritance2 : HelloBase<Hello>
+    {
+        public string Result { get; set; }
+    }
+
+    public abstract class HelloBase<T>
+    {
+        public List<T> Items { get; set; }
+    }
+
     public class HelloWithReturn
         : IReturn<HelloWithAlternateReturnResponse>
     {

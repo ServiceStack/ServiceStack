@@ -370,20 +370,21 @@ namespace Check.ServiceModel.Operations
     [DataContract]
     public partial class AllowedAttributes
     {
-        [Default(5)]
         [Required]
+        [Default(5)]
         public virtual int Id { get; set; }
 
         [DataMember(Name="Aliased")]
         [ApiMember(Description="Range Description", ParameterType="path", DataType="double", IsRequired=true)]
         public virtual double Range { get; set; }
 
-        [References(typeof(Check.ServiceModel.Operations.Hello))]
         [StringLength(20)]
         [Meta("Foo", "Bar")]
+        [References(typeof(Check.ServiceModel.Operations.Hello))]
         public virtual string Name { get; set; }
     }
 
+    [Flags]
     public enum EnumFlags
     {
         Value1 = 1,
@@ -437,6 +438,16 @@ namespace Check.ServiceModel.Operations
     {
         [DataMember]
         public virtual string Result { get; set; }
+    }
+
+    public partial class HelloBase<T>
+    {
+        public HelloBase()
+        {
+            Items = new List<T>{};
+        }
+
+        public virtual List<T> Items { get; set; }
     }
 
     public partial class HelloResponse
@@ -500,6 +511,18 @@ namespace Check.ServiceModel.Operations
         public virtual EnumType EnumProp { get; set; }
         public virtual EnumType? NullableEnumProp { get; set; }
         public virtual EnumFlags EnumFlags { get; set; }
+    }
+
+    public partial class HelloWithGenericInheritance
+        : HelloBase<Poco>
+    {
+        public virtual string Result { get; set; }
+    }
+
+    public partial class HelloWithGenericInheritance2
+        : HelloBase<Hello>
+    {
+        public virtual string Result { get; set; }
     }
 
     public partial class HelloWithInheritance
