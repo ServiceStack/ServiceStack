@@ -198,6 +198,13 @@ namespace Check.ServiceModel.Operations
         }
     }
 
+    public class HelloWithListInheritance : List<InheritedItem> {}
+
+    public class InheritedItem
+    {
+        public string Name { get; set; }
+    }
+
     public abstract class HelloBase<T>
     {
         public List<T> Items { get; set; }

@@ -90,6 +90,11 @@ namespace Check.ServiceInterface
             return request;
         }
 
+        public object Any(HelloWithListInheritance request)
+        {
+            return request;
+        }
+
         public object Any(HelloWithReturn request)
         {
             return new HelloWithAlternateReturnResponse { Result = request.Name };

@@ -166,6 +166,12 @@ namespace ServiceStack.NativeTypes
                         var genericDef = type.BaseType.GetGenericTypeDefinition();
                         if (!ignoreTypeFn(genericDef))
                             registerTypeFn(genericDef);
+                        
+                        foreach (var arg in type.BaseType.GetGenericArguments()
+                            .Where(arg => !ignoreTypeFn(arg)))
+                        {
+                            registerTypeFn(arg);
+                        }
                     }
                     else
                     {

@@ -365,17 +365,17 @@ namespace Check.ServiceModel.Operations
     ///AllowedAttributes Description
     ///</summary>
     [Route("/allowed-attributes", "GET")]
-    [ApiResponse(400, "Your request was not understood")]
     [Api("AllowedAttributes Description")]
+    [ApiResponse(400, "Your request was not understood")]
     [DataContract]
     public partial class AllowedAttributes
     {
-        [Default(5)]
         [Required]
+        [Default(5)]
         public virtual int Id { get; set; }
 
         [DataMember(Name="Aliased")]
-        [ApiMember(Description="Range Description", ParameterType="path", DataType="double", IsRequired=true)]
+        [ApiMember(ParameterType="path", Description="Range Description", DataType="double", IsRequired=true)]
         public virtual double Range { get; set; }
 
         [References(typeof(Check.ServiceModel.Operations.Hello))]
@@ -537,6 +537,11 @@ namespace Check.ServiceModel.Operations
         public virtual string Result { get; set; }
     }
 
+    public partial class HelloWithListInheritance
+        : List<InheritedItem>
+    {
+    }
+
     public partial class HelloWithNestedClass
         : IReturn<HelloResponse>
     {
@@ -586,6 +591,11 @@ namespace Check.ServiceModel.Operations
     public partial class HelloWithTypeResponse
     {
         public virtual HelloType Result { get; set; }
+    }
+
+    public partial class InheritedItem
+    {
+        public virtual string Name { get; set; }
     }
 
     public partial class RestrictedAttributes
