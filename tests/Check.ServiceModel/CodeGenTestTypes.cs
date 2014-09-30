@@ -29,7 +29,7 @@ namespace Check.ServiceModel.Operations
             public string Value { get; set; }
         }
     }
-
+    
     public class HelloWithEnum
     {
         public EnumType EnumProp { get; set; }
@@ -188,6 +188,14 @@ namespace Check.ServiceModel.Operations
     public class HelloWithGenericInheritance2 : HelloBase<Hello>
     {
         public string Result { get; set; }
+    }
+
+    public class HelloWithNestedInheritance : HelloBase<HelloWithNestedInheritance.Item>
+    {
+        public class Item
+        {
+            public string Value { get; set; }
+        }
     }
 
     public abstract class HelloBase<T>

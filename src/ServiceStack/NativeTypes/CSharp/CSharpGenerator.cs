@@ -212,7 +212,10 @@ namespace ServiceStack.NativeTypes.CSharp
                 //: BaseClass, Interfaces
                 var inheritsList = new List<string>();
                 if (type.Inherits != null)
-                    inheritsList.Add(Type(type.Inherits));
+                {
+                    inheritsList.Add(Type(type.Inherits, includeNested:true));
+                }
+
                 if (options.ImplementsFn != null)
                 {
                     var implStr = options.ImplementsFn();
@@ -382,53 +385,58 @@ namespace ServiceStack.NativeTypes.CSharp
             return value;
         }
 
-        public string Type(MetadataTypeName typeName)
+        public string Type(MetadataTypeName typeName, bool includeNested = false)
         {
-            return Type(typeName.Name, typeName.GenericArgs);
+            return Type(typeName.Name, typeName.GenericArgs, includeNested: includeNested);
         }
 
-        public string Type(string type, string[] genericArgs)
+        public string Type(string type, string[] genericArgs, bool includeNested=false)
         {
             if (genericArgs != null)
             {
                 if (type == "Nullable`1")
-                    return "{0}?".Fmt(TypeAlias(genericArgs[0]));
+                    return "{0}?".Fmt(TypeAlias(genericArgs[0], includeNested: includeNested));
 
                 var parts = type.Split('`');
                 if (parts.Length > 1)
                 {
-                    var typeName = parts[0];
                     var args = new StringBuilder();
                     foreach (var arg in genericArgs)
                     {
                         if (args.Length > 0)
                             args.Append(", ");
 
-                        args.Append(TypeAlias(arg));
+                        args.Append(TypeAlias(arg, includeNested: includeNested));
                     }
 
-                    return "{0}<{1}>".Fmt(NameOnly(type), args);
+                    var typeName = NameOnly(type, includeNested: includeNested);
+                    return "{0}<{1}>".Fmt(typeName, args);
                 }
             }
 
-            return TypeAlias(type);
+            return TypeAlias(type, includeNested: includeNested);
         }
 
-        private string TypeAlias(string type)
+        private string TypeAlias(string type, bool includeNested = false)
         {
             var arrParts = type.SplitOnFirst('[');
             if (arrParts.Length > 1)
-                return "{0}[]".Fmt(TypeAlias(arrParts[0]));
+                return "{0}[]".Fmt(TypeAlias(arrParts[0], includeNested: includeNested));
 
             string typeAlias;
             Config.TypeAlias.TryGetValue(type, out typeAlias);
 
-            return typeAlias ?? NameOnly(type);
+            return typeAlias ?? NameOnly(type, includeNested: includeNested);
         }
 
-        public string NameOnly(string type)
+        public string NameOnly(string type, bool includeNested = false)
         {
-            return type.SplitOnFirst('`')[0].SplitOnLast('.').Last().SafeToken();
+            var name = type.SplitOnFirst('`')[0];
+
+            if (!includeNested)
+                name = name.SplitOnLast('.').Last();
+
+            return name.SafeToken();
         }
 
         public void AppendComments(StringBuilderWrapper sb, string desc)
