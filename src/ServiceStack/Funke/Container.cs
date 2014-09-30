@@ -12,11 +12,11 @@ namespace Funke
 
 	public class Container : IDisposable
 	{
-	    private static ContainerBuilder _builder = new ContainerBuilder();
-	    private IContainer _autofacContainer;
+	    private readonly static ContainerBuilder _builder = new ContainerBuilder();
+	    public IContainer AutofacContainer { get; set; }
         public Container()
         {
-            _autofacContainer = _builder.Build();
+            AutofacContainer = _builder.Build();
         }
 
 	    public void AutoWire(object instance){ }
