@@ -32,6 +32,8 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <TargetFrameworkProfile />
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -82,6 +84,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Autofac">
+      <HintPath>..\packages\Autofac.3.5.2\lib\net40\Autofac.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core">
@@ -118,7 +123,6 @@
     <Compile Include="Configuration\DictionarySettings.cs" />
     <Compile Include="Configuration\ISettings.cs" />
     <Compile Include="Funke\Container.cs" />
-    <Compile Include="Funke\ReuseScope.cs" />
     <Compile Include="Html\AntiXsrf\AntiForgery.cs" />
     <Compile Include="Html\AntiXsrf\AntiForgeryConfig.cs" />
     <Compile Include="Html\AntiXsrf\AntiForgeryConfigWrapper.cs" />
@@ -393,6 +397,7 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="MiniProfiler\UI\includes.tmpl.orig" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="WebHost.Endpoints\Support\Templates\Html\OperationControl.html" />
@@ -445,4 +450,5 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
 </Project>
