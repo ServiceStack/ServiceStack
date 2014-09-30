@@ -108,21 +108,38 @@ namespace ServiceStack.RabbitMq
         {
             try
             {
-                if (!Queues.Contains(routingKey))
+                // In case of server named queues (client declared queue with channel.declare()), assume queue already exists (redeclaration would result in error anyway since queue was marked as exclusive) and publish to default exchange
+                if (routingKey.IsServerNamedQueue()) 
                 {
-                    Channel.RegisterQueueByName(routingKey);
-                    Queues = new HashSet<string>(Queues) { routingKey };
+                    Channel.BasicPublish("", routingKey, basicProperties, body);
+                }
+                else
+                {
+                    if (!Queues.Contains(routingKey))
+                    {
+                        Channel.RegisterQueueByName(routingKey);
+                        Queues = new HashSet<string>(Queues) { routingKey };
+                    }
+
+                    Channel.BasicPublish(exchange, routingKey, basicProperties, body);
                 }
 
-                Channel.BasicPublish(exchange, routingKey, basicProperties, body);
             }
             catch (OperationInterruptedException ex)
             {
                 if (ex.Is404())
                 {
-                    Channel.RegisterExchangeByName(exchange);
+                    // In case of server named queues (client declared queue with channel.declare()), assume queue already exists (redeclaration would result in error anyway since queue was marked as exclusive) and publish to default exchange
+                    if (routingKey.IsServerNamedQueue())
+                    {
+                        Channel.BasicPublish("", routingKey, basicProperties, body);
+                    }
+                    else
+                    {
+                        Channel.RegisterExchangeByName(exchange);
 
-                    Channel.BasicPublish(exchange, routingKey, basicProperties, body);
+                        Channel.BasicPublish(exchange, routingKey, basicProperties, body);
+                    }
                 }
                 throw;
             }
