@@ -375,12 +375,12 @@ namespace Check.ServiceModel.Operations
         public virtual int Id { get; set; }
 
         [DataMember(Name="Aliased")]
-        [ApiMember(ParameterType="path", Description="Range Description", DataType="double", IsRequired=true)]
+        [ApiMember(Description="Range Description", ParameterType="path", DataType="double", IsRequired=true)]
         public virtual double Range { get; set; }
 
-        [References(typeof(Check.ServiceModel.Operations.Hello))]
         [StringLength(20)]
         [Meta("Foo", "Bar")]
+        [References(typeof(Check.ServiceModel.Operations.Hello))]
         public virtual string Name { get; set; }
     }
 
@@ -398,6 +398,7 @@ namespace Check.ServiceModel.Operations
         Value2,
     }
 
+    [Route("/hello/{Name}")]
     public partial class Hello
         : IReturn<Hello>
     {
@@ -445,9 +446,11 @@ namespace Check.ServiceModel.Operations
         public HelloBase()
         {
             Items = new List<T>{};
+            Counts = new List<int>{};
         }
 
         public virtual List<T> Items { get; set; }
+        public virtual List<int> Counts { get; set; }
     }
 
     public partial class HelloResponse

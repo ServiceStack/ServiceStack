@@ -406,7 +406,7 @@ namespace ServiceStack.NativeTypes.CSharp
                         if (args.Length > 0)
                             args.Append(", ");
 
-                        args.Append(TypeAlias(arg, includeNested: includeNested));
+                        args.Append(TypeAlias(arg.TrimStart('\''), includeNested: includeNested));
                     }
 
                     var typeName = NameOnly(type, includeNested: includeNested);

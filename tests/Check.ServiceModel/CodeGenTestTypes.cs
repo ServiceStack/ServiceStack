@@ -209,6 +209,7 @@ namespace Check.ServiceModel.Operations
     public abstract class HelloBase<T>
     {
         public List<T> Items { get; set; }
+        public List<int> Counts { get; set; }
     }
 
     public class HelloWithReturn
