@@ -49,8 +49,6 @@ namespace ServiceStack.NativeTypes.FSharp
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
             sb.AppendLine("ServerVersion: {0}".Fmt(metadata.Version));
-            //sb.AppendLine("MakePartial: {0}".Fmt(Config.MakePartial));
-            //sb.AppendLine("MakeVirtual: {0}".Fmt(Config.MakeVirtual));
             sb.AppendLine("MakeDataContractsExtensible: {0}".Fmt(Config.MakeDataContractsExtensible));
             sb.AppendLine("AddReturnMarker: {0}".Fmt(Config.AddReturnMarker));
             sb.AppendLine("AddDescriptionAsComments: {0}".Fmt(Config.AddDescriptionAsComments));
@@ -187,43 +185,63 @@ namespace ServiceStack.NativeTypes.FSharp
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
 
-            //sb.AppendLine("[<CLIMutable>]"); // only for Record Types
-            sb.AppendLine("[<AllowNullLiteral>]");            
-            sb.AppendLine("type {0}() = ".Fmt(Type(type.Name, type.GenericArgs)));
-            sb = sb.Indent();
-            var startLen = sb.Length;
-
-            //: BaseClass, Interfaces
-            if (type.Inherits != null)
-                sb.AppendLine("inherit {0}()".Fmt(Type(type.Inherits)));
-
-            if (options.ImplementsFn != null)
+            if (type.IsEnum.GetValueOrDefault())
             {
-                var implStr = options.ImplementsFn();
-                if (!string.IsNullOrEmpty(implStr))
-                    sb.AppendLine("interface {0}".Fmt(implStr));
-            }
+                sb.AppendLine("type {0} =".Fmt(Type(type.Name, type.GenericArgs)));
+                sb = sb.Indent();
 
-            var makeExtensible = Config.MakeDataContractsExtensible && type.Inherits == null;
-            if (makeExtensible)
+                if (type.EnumNames != null)
+                {
+                    for (var i = 0; i < type.EnumNames.Count; i++)
+                    {
+                        var name = type.EnumNames[i];
+                        var value = type.EnumValues != null ? type.EnumValues[i] : i.ToString();
+                        sb.AppendLine("| {0} = {1}".Fmt(name, value));
+                    }
+                }
+
+                sb = sb.UnIndent();
+            }
+            else
             {
-                sb.AppendLine("interface IExtensibleDataObject with");
-                sb.AppendLine("    member val ExtensionData:ExtensionDataObject = null with get, set");
-                sb.AppendLine("end");
+                //sb.AppendLine("[<CLIMutable>]"); // only for Record Types
+                sb.AppendLine("[<AllowNullLiteral>]");
+                sb.AppendLine("type {0}() = ".Fmt(Type(type.Name, type.GenericArgs)));
+                sb = sb.Indent();
+                var startLen = sb.Length;
+
+                //: BaseClass, Interfaces
+                if (type.Inherits != null)
+                    sb.AppendLine("inherit {0}()".Fmt(Type(type.Inherits)));
+
+                if (options.ImplementsFn != null)
+                {
+                    var implStr = options.ImplementsFn();
+                    if (!string.IsNullOrEmpty(implStr))
+                        sb.AppendLine("interface {0}".Fmt(implStr));
+                }
+
+                var makeExtensible = Config.MakeDataContractsExtensible && type.Inherits == null;
+                if (makeExtensible)
+                {
+                    sb.AppendLine("interface IExtensibleDataObject with");
+                    sb.AppendLine("    member val ExtensionData:ExtensionDataObject = null with get, set");
+                    sb.AppendLine("end");
+                }
+
+                var addVersionInfo = Config.AddImplicitVersion != null && options.IsOperation;
+                if (addVersionInfo)
+                {
+                    sb.AppendLine("member val Version:int = {0} with get, set".Fmt(Config.AddImplicitVersion));
+                }
+
+                AddProperties(sb, type);
+
+                if (sb.Length == startLen)
+                    sb.AppendLine("class end");
+
+                sb = sb.UnIndent();
             }
-
-            var addVersionInfo = Config.AddImplicitVersion != null && options.IsOperation;
-            if (addVersionInfo)
-            {
-                sb.AppendLine("member val Version:int = {0} with get, set".Fmt(Config.AddImplicitVersion));
-            }
-
-            AddProperties(sb, type);
-
-            if (sb.Length == startLen)
-                sb.AppendLine("class end");
-
-            sb = sb.UnIndent();
 
             sb = sb.UnIndent();
             return lastNS;
@@ -354,7 +372,6 @@ namespace ServiceStack.NativeTypes.FSharp
                 var parts = type.Split('`');
                 if (parts.Length > 1)
                 {
-                    var typeName = parts[0];
                     var args = new StringBuilder();
                     foreach (var arg in genericArgs)
                     {
@@ -364,7 +381,8 @@ namespace ServiceStack.NativeTypes.FSharp
                         args.Append(TypeAlias(arg));
                     }
 
-                    return "{0}<{1}>".Fmt(typeName.SafeToken(), args);
+                    var typeName = NameOnly(type);
+                    return "{0}<{1}>".Fmt(typeName, args);
                 }
             }
 
@@ -377,12 +395,12 @@ namespace ServiceStack.NativeTypes.FSharp
             if (arrParts.Length > 1)
                 return "{0}[]".Fmt(TypeAlias(arrParts[0]));
 
-            return type.SafeToken();
+            return NameOnly(type);
         }
 
         public string NameOnly(string type)
         {
-            return type.SplitOnFirst('`')[0].SafeToken();
+            return type.SplitOnFirst('`')[0].SplitOnLast('.').Last().SafeToken();
         }
 
         public void AppendComments(StringBuilderWrapper sb, string desc)
