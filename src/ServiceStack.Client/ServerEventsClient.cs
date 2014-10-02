@@ -503,11 +503,12 @@ namespace ServiceStack
 
     public static class ServerEventClientExtensions
     {
+#if !SL5
         public static AuthenticateResponse Authenticate(this ServerEventsClient client, Authenticate request)
         {
             return client.ServiceClient.Post(request);
         }
-
+#endif
         public static Task<AuthenticateResponse> AuthenticateAsync(this ServerEventsClient client, Authenticate request)
         {
             return client.ServiceClient.PostAsync(request);
