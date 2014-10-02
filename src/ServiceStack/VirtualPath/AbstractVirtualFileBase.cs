@@ -6,6 +6,7 @@ using System.Text;
 using ServiceStack.Common;
 using ServiceStack.IO;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.VirtualPath
 {
@@ -99,6 +100,22 @@ namespace ServiceStack.VirtualPath
         public override string ToString()
         {
             return string.Format("{0} -> {1}", RealPath, VirtualPath);
+        }
+    }
+}
+
+namespace ServiceStack
+{
+    public static class VirtualFileExtensions
+    {
+        public static bool ShouldSkipPath(this IVirtualNode node)
+        {
+            foreach (var skipPath in EndpointHostConfig.Instance.ScanSkipPaths)
+            {
+                if (node.VirtualPath.StartsWith(skipPath, StringComparison.InvariantCultureIgnoreCase))
+                    return true;
+            }
+            return false;
         }
     }
 }

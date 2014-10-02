@@ -47,7 +47,8 @@ namespace ServiceStack.VirtualPath
         public override IEnumerator<IVirtualNode> GetEnumerator()
         {
             var directoryNodes = BackingDirInfo.GetDirectories()
-                .Select(dInfo => new FileSystemVirtualDirectory(VirtualPathProvider, this, dInfo));
+                .Select(dInfo => new FileSystemVirtualDirectory(VirtualPathProvider, this, dInfo))
+                .Where(x => !x.ShouldSkipPath());
 
             var fileNodes = BackingDirInfo.GetFiles()
                 .Select(fInfo => new FileSystemVirtualFile(VirtualPathProvider, this, fInfo));

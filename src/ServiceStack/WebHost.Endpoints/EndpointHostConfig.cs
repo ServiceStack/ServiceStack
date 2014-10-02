@@ -120,6 +120,11 @@ namespace ServiceStack.WebHost.Endpoints
                         Return204NoContentForEmptyResponse = true,
                         AllowPartialResponses = true,
                         AllowAclUrlReservation = true,
+                        StripApplicationVirtualPath = true,
+                        ScanSkipPaths = new List<string> {
+                            "/obj/", 
+                            "/bin/",
+                        },
                         IgnoreWarningsOnPropertyNames = new List<string> {
                             "format", "callback", "debug", "_", "authsecret"
                         }
@@ -197,6 +202,8 @@ namespace ServiceStack.WebHost.Endpoints
             this.PostExecuteServiceFilter = instance.PostExecuteServiceFilter;
             this.FallbackRestPath = instance.FallbackRestPath;
             this.AllowAclUrlReservation = instance.AllowAclUrlReservation;
+            this.StripApplicationVirtualPath = instance.StripApplicationVirtualPath;
+            this.ScanSkipPaths = instance.ScanSkipPaths;
             this.AdminAuthSecret = instance.AdminAuthSecret;
         }
 
@@ -457,6 +464,10 @@ namespace ServiceStack.WebHost.Endpoints
         public bool AllowPartialResponses { get; set; }
         public bool AllowNonHttpOnlyCookies { get; set; }
         public bool AllowAclUrlReservation { get; set; }
+        public bool StripApplicationVirtualPath { get; set; }
+
+        //Skip scanning common VS.NET extensions
+        public List<string> ScanSkipPaths { get; private set; }
 
         public bool UseHttpsLinks { get; set; }
 
