@@ -29,6 +29,7 @@ namespace ServiceStack
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
         public Action<IResponse, string> OnPublish { get; set; }
         public bool NotifyChannelOfSubscriptions { get; set; }
+        public bool LimitToAuthenticatedUsers { get; set; }
 
         public ServerEventsFeature()
         {
@@ -87,6 +88,13 @@ namespace ServiceStack
         {
             var feature = HostContext.GetPlugin<ServerEventsFeature>();
 
+            var session = req.GetSession();
+            if (feature.LimitToAuthenticatedUsers && !session.IsAuthenticated)
+            {
+                session.ReturnFailedAuthentication(req);
+                return EmptyTask;
+            }
+
             res.ContentType = MimeTypes.ServerSentEvents;
             res.AddHeader(HttpHeaders.CacheControl, "no-cache");
             res.UseBufferedStream = false;
@@ -98,7 +106,6 @@ namespace ServiceStack
             res.Flush();
 
             var serverEvents = req.TryResolve<IServerEvents>();
-            var session = req.GetSession();
             var userAuthId = session != null ? session.UserAuthId : null;
             var anonUserId = serverEvents.GetNextSequence("anonUser");
             var userId = userAuthId ?? ("-" + anonUserId);

@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Web;
+using ServiceStack.Auth;
 using ServiceStack.Host.AspNet;
 using ServiceStack.Logging;
 using ServiceStack.Text;
@@ -108,6 +110,21 @@ namespace ServiceStack
 		{
 			httpRes.AddHeader(HttpHeaders.Location, url);
             httpRes.EndRequest();
+        }
+
+        public static void ReturnFailedAuthentication(this IAuthSession session, IRequest request)
+        {
+            var authFeature = HostContext.GetPlugin<AuthFeature>();
+            if (authFeature != null)
+            {
+                var defaultAuth = AuthenticateService.AuthProviders.FirstOrDefault() as AuthProvider;
+                if (defaultAuth != null)
+                {
+                    defaultAuth.OnFailedAuthentication(session, request, request.Response);
+                    return;
+                }
+            }
+            request.Response.ReturnAuthRequired();
         }
 
         public static void ReturnAuthRequired(this IResponse httpRes)
