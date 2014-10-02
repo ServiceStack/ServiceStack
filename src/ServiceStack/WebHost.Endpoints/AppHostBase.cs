@@ -52,6 +52,15 @@ namespace ServiceStack.WebHost.Endpoints
 			get { return EndpointHost.Config.ServiceController.Routes; }
 		}
 
+		public DependencyInjector DependencyInjector
+		{
+			get
+			{
+				return EndpointHost.Config.ServiceManager != null
+					? EndpointHost.Config.ServiceManager.DependencyInjector : null;
+			}
+		}
+
 		public Container Container
 		{
 			get
@@ -78,13 +87,15 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 			else
 			{
-				Configure(null);
+				Configure((Container)null);
 			}
 
 			EndpointHost.AfterInit();
 		}
 
-		public abstract void Configure(Container container);
+	    public void Configure(Container container) { }
+
+	    public abstract void Configure(DependencyInjector dependencyInjector);
 
 		public void SetConfig(EndpointHostConfig config)
 		{

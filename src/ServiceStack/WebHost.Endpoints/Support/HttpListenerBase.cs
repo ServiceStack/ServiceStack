@@ -43,6 +43,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public static HttpListenerBase Instance { get; protected set; }
 
+        public DependencyInjector DependencyInjector { get; private set; }
+
 		private readonly AutoResetEvent ListenForNextRequest = new AutoResetEvent(false);
 
 		public event DelReceiveWebRequest ReceiveWebRequest;

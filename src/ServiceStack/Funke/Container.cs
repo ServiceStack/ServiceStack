@@ -5,6 +5,12 @@ using Autofac.Core;
 
 namespace Funke
 {
+    public class DependencyInjector
+    {
+        public IContainer Container { get; set;  }
+        public ContainerBuilder Builder { get; set;  }
+    }
+
     public interface IHasContainer
     {
         Container Container { get; }

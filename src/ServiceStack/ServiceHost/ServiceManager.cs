@@ -13,6 +13,7 @@ namespace ServiceStack.ServiceHost
 		private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceManager));
 
 		public Container Container { get; private set; }
+		public DependencyInjector DependencyInjector { get; private set; }
 		public ServiceController ServiceController { get; private set; }
         public ServiceMetadata Metadata { get; internal set; }
 
