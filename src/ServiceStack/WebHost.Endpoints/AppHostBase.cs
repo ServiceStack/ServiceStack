@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Web;
+using DependencyInjection;
 using Funke;
 using ServiceStack.Common;
 using ServiceStack.Configuration;

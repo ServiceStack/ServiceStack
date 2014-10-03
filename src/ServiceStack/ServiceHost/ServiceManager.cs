@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using DependencyInjection;
 using ServiceStack.Logging;
 using Funke;
 using ServiceStack.Text;

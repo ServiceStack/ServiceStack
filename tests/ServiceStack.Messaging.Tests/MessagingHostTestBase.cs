@@ -1,4 +1,5 @@
-﻿using Funke;
+﻿using DependencyInjection;
+using Funke;
 using NUnit.Framework;
 using ServiceStack.Messaging.Tests.Services;
 
@@ -12,17 +13,18 @@ namespace ServiceStack.Messaging.Tests
 		protected abstract TransientMessageServiceBase CreateMessagingService();
 
 		protected Container Container { get; set; }
+        protected DependencyInjector DependencyInjector { get; set; }
 
 		[SetUp]
 		public virtual void OnBeforeEachTest()
 		{
-			if (Container != null)
+			if (DependencyInjector != null)
 			{
-				Container.Dispose();
+				DependencyInjector.Dispose();
 			}
 
-			Container = new Container();
-			Container.Register(CreateMessageFactory());
+			DependencyInjector = new DependencyInjector();
+			DependencyInjector.Register(CreateMessageFactory());
 		}
 
 	}

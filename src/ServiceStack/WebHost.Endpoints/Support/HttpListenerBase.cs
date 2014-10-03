@@ -7,6 +7,7 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using DependencyInjection;
 using Funke;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
