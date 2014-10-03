@@ -225,7 +225,7 @@
     <Compile Include="MiniProfiler\UI\MiniProfilerHandler.cs" />
     <Compile Include="MiniProfiler\WebRequestProfilerProvider.cs" />
     <Compile Include="MiniProfiler\WebRequestProfilerProvider.Settings.cs" />
-    <Compile Include="ServiceHost\ContainerResolveCache.cs" />
+    <Compile Include="ServiceHost\DependencyInjectorResolveCache.cs" />
     <Compile Include="ServiceHost\Cookies.cs" />
     <Compile Include="ServiceHost\DefaultRequestAttribute.cs" />
     <Compile Include="ServiceHost\DtoUtils.cs" />

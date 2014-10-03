@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using DependencyInjection;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
@@ -313,7 +314,6 @@ namespace ServiceStack.ServiceHost
 
             ServiceExecFn handlerFn = (requestContext, dto) => {
                 var service = serviceFactoryFn.CreateInstance(serviceType);
-
                 var endpointAttrs = requestContext != null
                     ? requestContext.EndpointAttributes
                     : EndpointAttributes.None;

@@ -181,6 +181,7 @@ namespace ServiceStack.WebHost.Endpoints
 
             AfterPluginsLoaded(specifiedContentType);
 
+            /* DAC fix and restore
             var registeredCacheClient = AppHost.TryResolve<ICacheClient>();
             using (registeredCacheClient)
             {
@@ -196,6 +197,7 @@ namespace ServiceStack.WebHost.Endpoints
             {
                 DependencyInjector.Register(c => registeredMqService.MessageFactory);
             }
+            */
 
             ReadyAt = DateTime.UtcNow;
         }

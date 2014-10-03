@@ -108,7 +108,7 @@ namespace ServiceStack.WebHost.Endpoints
         {
             try
             {
-                /*
+                /* DAC cleanup
                 var iocAdapterReleases = DependencyInjector.Adapter as IRelease;
                 if (iocAdapterReleases != null)
                 {

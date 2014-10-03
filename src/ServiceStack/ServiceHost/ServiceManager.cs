@@ -77,11 +77,11 @@ namespace ServiceStack.ServiceHost
 			}
 		}
 
-		private ContainerResolveCache typeFactory;
+		private DependencyInjectorResolveCache typeFactory;
 
 		public ServiceManager Init()
 		{
-			typeFactory = new ContainerResolveCache(this.DependencyInjector.FunkeContainer);
+			typeFactory = new DependencyInjectorResolveCache(this.DependencyInjector);
 
 			this.ServiceController.Register(typeFactory);
 
