@@ -5,7 +5,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Web;
-using Funke;
+using DependencyInjection;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
@@ -18,7 +18,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
     {
         private static readonly string physicalFilePath;
         private readonly HttpListenerRequest request;
-        public Container Container { get; set; }
+        public DependencyInjector DependencyInjector { get; set; }
 
         static HttpListenerRequestWrapper()
         {
@@ -47,9 +47,9 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
         public T TryResolve<T>()
         {
-            return Container == null
+            return DependencyInjector == null
                 ? EndpointHost.AppHost.TryResolve<T>()
-                : Container.TryResolve<T>();
+                : DependencyInjector.TryResolve<T>();
         }
 
         public string OperationName { get; set; }

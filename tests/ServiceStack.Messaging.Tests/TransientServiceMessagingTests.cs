@@ -1,4 +1,5 @@
-using Funke;
+using Autofac;
+using DependencyInjection;
 using NUnit.Framework;
 using ServiceStack.Messaging.Tests.Services;
 
@@ -11,13 +12,13 @@ namespace ServiceStack.Messaging.Tests
 		{
 			base.OnBeforeEachTest();
 
-			Container.Register(c => new GreetService {
+			DependencyInjector.Register(c => new GreetService {
 				MessageFactory = c.Resolve<IMessageFactory>()
 			});
-			Container.Register(c => new AlwaysFailService {
+			DependencyInjector.Register(c => new AlwaysFailService {
 				MessageFactory = c.Resolve<IMessageFactory>()
 			});
-			Container.Register(c => new UnRetryableFailService {
+			DependencyInjector.Register(c => new UnRetryableFailService {
 				MessageFactory = c.Resolve<IMessageFactory>()
 			});
 		}
@@ -25,7 +26,7 @@ namespace ServiceStack.Messaging.Tests
 		[Test]
 		public void Normal_GreetService_client_and_server_example()
 		{
-			var service = Container.Resolve<GreetService>();
+			var service = DependencyInjector.Resolve<GreetService>();
 			using (var serviceHost = CreateMessagingService())
 			{
 				serviceHost.RegisterHandler<Greet>(service.ExecuteAsync);
@@ -45,7 +46,7 @@ namespace ServiceStack.Messaging.Tests
 		[Test]
 		public void Publish_before_starting_host_GreetService_client_and_server_example()
 		{
-			var service = Container.Resolve<GreetService>();
+			var service = DependencyInjector.Resolve<GreetService>();
 			using (var serviceHost = CreateMessagingService())
 			{
 				using (var client = serviceHost.MessageFactory.CreateMessageQueueClient())
@@ -64,7 +65,7 @@ namespace ServiceStack.Messaging.Tests
 		[Test]
 		public void AlwaysFailsService_ends_up_in_dlq_after_3_attempts()
 		{
-			var service = Container.Resolve<AlwaysFailService>();
+			var service = DependencyInjector.Resolve<AlwaysFailService>();
 			var request = new AlwaysFail { Name = "World!" };
 			using (var serviceHost = CreateMessagingService())
 			{
@@ -93,7 +94,7 @@ namespace ServiceStack.Messaging.Tests
 		[Test]
 		public void UnRetryableFailService_ends_up_in_dlq_after_1_attempt()
 		{
-			var service = Container.Resolve<UnRetryableFailService>();
+			var service = DependencyInjector.Resolve<UnRetryableFailService>();
 			var request = new UnRetryableFail { Name = "World!" };
 			using (var serviceHost = CreateMessagingService())
 			{

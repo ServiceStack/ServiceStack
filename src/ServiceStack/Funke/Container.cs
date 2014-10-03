@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using Autofac;
 using Autofac.Core;
+using DependencyInjection;
+using DependencyInjection.Funq;
 
 namespace DependencyInjection
 {
@@ -9,13 +11,13 @@ namespace DependencyInjection
     {
         public IContainer Container { get; set; }
         public ContainerBuilder Builder { get; set; }
-        public Funke.Container FunkeContainer { get; set; }
+        public Funkee.Container FunkeContainer { get; set; }
 
         public DependencyInjector()
         {
             Builder = new ContainerBuilder();
             Container = Builder.Build();
-            FunkeContainer = new Funke.Container();
+            FunkeContainer = new Funkee.Container();
         }
 
         public void AutoWire(object instance) // ServiceRunner, EndPointHost
@@ -33,16 +35,20 @@ namespace DependencyInjection
             { throw new NotImplementedException(); }
 
         public T Resolve<T>() // AppHostBase, HttpListenerBase
-            { throw new NotImplementedException(); }
-        public T TryResolve<T>() // HttpListenerRequestWrapper, HttpRequestWrapper, AppHostBase, HttpListenerBase, ValidationFeature [ServiceInterface]
-            { throw new NotImplementedException(); }
+        {
+            return Container.Resolve<T>();
+        }
+
+        public T TryResolve<T>()
+            // HttpListenerRequestWrapper, HttpRequestWrapper, AppHostBase, HttpListenerBase, ValidationFeature [ServiceInterface]
+        {
+            return Container.Resolve<T>();
+        }
 
         public void Register(Func<Container, object> f)// ValidationFeature [ServiceStack.erviceInterface], EndpointHost
             { throw new NotImplementedException(); }
-        public void RegisterAutoWiredType(Type serviceType, Type inFunqAsType, Funke.ReuseScope scope) // ValidationFeature [ServiceInterface]
+        public void RegisterAutoWiredType(Type serviceType, Type inFunqAsType, Funq.ReuseScope scope) // ValidationFeature [ServiceInterface]
             { throw new NotImplementedException(); }
-
-        public Funke.Owner DefaultOwner { get; set; } // Not really used. can be tracked down and deleted.
 
         public void Dispose()
         {
@@ -54,15 +60,27 @@ namespace DependencyInjection
     {
         DependencyInjector DependencyInjector { get; }
     }
+
+	public interface IConfigureDependencyInjector
+	{
+		void Configure(DependencyInjector dependencyInjector);
+	}
+
+    namespace Funq
+    {
+        public enum ReuseScope
+        {
+            Hierarchy,
+            Container,
+            None,
+            Request,
+            Default = Hierarchy,
+        }
+    }
 }
 
-namespace Funke
+namespace Funkee
 {
-    public interface IHasContainer
-    {
-        Container Container { get; }
-    }
-
 	public class Container : IDisposable
 	{
 	    private readonly static ContainerBuilder _builder = new ContainerBuilder();
@@ -81,31 +99,9 @@ namespace Funke
 	    public void Register(Func<Container, object> f) { } // ValidationFeature [ServiceStack.erviceInterface], EndpointHost
 		public void RegisterAutoWiredType(Type serviceType, Type inFunqAsType, ReuseScope scope) { } // ValidationFeature [ServiceInterface]
 
-	    public Owner DefaultOwner { get; set; } // Not really used. can be tracked down and deleted.
-
 	    public void Dispose()
 	    {
 	    }
 	}
 
-	public enum Owner
-	{
-		Container,
-		External,
-		Default,
-	}
-
-	public interface IFunkelet
-	{
-		void Configure(Container container);
-	}
-
-	public enum ReuseScope
-	{
-		Hierarchy, 
-		Container, 
-		None,
-        Request,
-		Default = Hierarchy,
-	}
 }

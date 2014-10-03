@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using DependencyInjection;
 using ServiceStack.Logging;
-using Funke;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceHost
@@ -13,7 +12,6 @@ namespace ServiceStack.ServiceHost
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceManager));
 
-		public Container Container { get; private set; }
 		public DependencyInjector DependencyInjector { get; private set; }
 		public ServiceController ServiceController { get; private set; }
         public ServiceMetadata Metadata { get; internal set; }
@@ -28,26 +26,26 @@ namespace ServiceStack.ServiceHost
 					"No Assemblies provided in your AppHost's base constructor.\n"
 					+ "To register your services, please provide the assemblies where your web services are defined.");
 
-			this.Container = new Container { DefaultOwner = Owner.External };
+		    this.DependencyInjector = new DependencyInjector();
             this.Metadata = new ServiceMetadata();
             this.ServiceController = new ServiceController(() => GetAssemblyTypes(assembliesWithServices), this.Metadata);
 		}
 
-        public ServiceManager(Container container, params Assembly[] assembliesWithServices)
+        public ServiceManager(DependencyInjector dependencyInjector, params Assembly[] assembliesWithServices)
             : this(assembliesWithServices)
         {
-            this.Container = container ?? new Container();
+            this.DependencyInjector = dependencyInjector ?? new DependencyInjector();
         }
 
         /// <summary>
-        /// Inject alternative container and strategy for resolving Service Types
+        /// Inject alternative dependencyInjector and strategy for resolving Service Types
         /// </summary>
-        public ServiceManager(Container container, ServiceController serviceController)
+        public ServiceManager(DependencyInjector dependencyInjector, ServiceController serviceController)
         {
             if (serviceController == null)
                 throw new ArgumentNullException("serviceController");
 
-            this.Container = container ?? new Container();
+            this.DependencyInjector = dependencyInjector ?? new DependencyInjector();
             this.Metadata = serviceController.Metadata; //always share the same metadata
             this.ServiceController = serviceController;
         }
@@ -83,11 +81,11 @@ namespace ServiceStack.ServiceHost
 
 		public ServiceManager Init()
 		{
-			typeFactory = new ContainerResolveCache(this.Container);
+			typeFactory = new ContainerResolveCache(this.DependencyInjector.FunkeContainer);
 
 			this.ServiceController.Register(typeFactory);
 
-			this.Container.RegisterAutoWiredTypes(this.Metadata.ServiceTypes);
+			this.DependencyInjector.RegisterAutoWiredTypes(this.Metadata.ServiceTypes);
 
 		    return this;
 		}
@@ -99,7 +97,7 @@ namespace ServiceStack.ServiceHost
 				throw new ArgumentException("Type {0} is not a Web Service that inherits IService<>".Fmt(typeof(T).FullName));
 
 			this.ServiceController.RegisterGService(typeFactory, typeof(T));
-			this.Container.RegisterAutoWired<T>();
+			this.DependencyInjector.RegisterAutoWired<T>();
 		}
 
 		public Type RegisterService(Type serviceType)
@@ -110,7 +108,7 @@ namespace ServiceStack.ServiceHost
                 if (genericServiceType != null)
                 {
                     this.ServiceController.RegisterGService(typeFactory, serviceType);
-                    this.Container.RegisterAutoWiredType(serviceType);
+                    this.DependencyInjector.RegisterAutoWiredType(serviceType);
                     return genericServiceType;
                 }
 
@@ -118,7 +116,7 @@ namespace ServiceStack.ServiceHost
                 if (isNService)
                 {
                     this.ServiceController.RegisterNService(typeFactory, serviceType);
-                    this.Container.RegisterAutoWiredType(serviceType);
+                    this.DependencyInjector.RegisterAutoWiredType(serviceType);
                     return null;
                 }
 
@@ -138,9 +136,9 @@ namespace ServiceStack.ServiceHost
 
 		public void Dispose()
 		{
-			if (this.Container != null)
+			if (this.DependencyInjector != null)
 			{
-				this.Container.Dispose();
+				this.DependencyInjector.Dispose();
 			}
 		}
 

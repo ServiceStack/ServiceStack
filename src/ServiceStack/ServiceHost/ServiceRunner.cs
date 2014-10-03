@@ -97,7 +97,7 @@ namespace ServiceStack.ServiceHost
                 BeforeEachRequest(requestContext, request);
 
                 var appHost = GetAppHost();
-                var container = appHost != null ? appHost.Config.ServiceManager.Container : null;
+                var dependencyInjector = appHost != null ? appHost.Config.ServiceManager.DependencyInjector : null;
                 var httpReq = requestContext != null ? requestContext.Get<IHttpRequest>() : null;
                 var httpRes = requestContext != null ? requestContext.Get<IHttpResponse>() : null;
 
@@ -106,8 +106,8 @@ namespace ServiceStack.ServiceHost
                     foreach (var requestFilter in RequestFilters)
                     {
                         var attrInstance = requestFilter.Copy();
-                        if (container != null)
-                            container.AutoWire(attrInstance);
+                        if (dependencyInjector != null)
+                            dependencyInjector.AutoWire(attrInstance);
                         attrInstance.RequestFilter(httpReq, httpRes, request);
                         if (appHost != null)
                             appHost.Release(attrInstance);
@@ -122,8 +122,8 @@ namespace ServiceStack.ServiceHost
                     foreach (var responseFilter in ResponseFilters)
                     {
                         var attrInstance = responseFilter.Copy();
-                        if (container != null)
-                            container.AutoWire(attrInstance);
+                        if (dependencyInjector != null)
+                            dependencyInjector.AutoWire(attrInstance);
                         attrInstance.ResponseFilter(httpReq, httpRes, response);
                         if (appHost != null)
                             appHost.Release(attrInstance);

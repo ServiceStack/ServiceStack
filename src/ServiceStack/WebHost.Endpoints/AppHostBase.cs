@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using System.Web;
 using DependencyInjection;
-using Funke;
 using ServiceStack.Common;
 using ServiceStack.Configuration;
 using ServiceStack.Html;
@@ -21,7 +20,7 @@ namespace ServiceStack.WebHost.Endpoints
 	/// ASP.NET application.
 	/// </summary>
 	public abstract class AppHostBase
-        : IFunkelet, IDisposable, IAppHost, IHasContainer
+        : IConfigureDependencyInjector, IDisposable, IAppHost, IHasDependencyInjector
 	{
 		private readonly ILog log = LogManager.GetLogger(typeof(AppHostBase));
 
@@ -35,8 +34,8 @@ namespace ServiceStack.WebHost.Endpoints
 		protected virtual ServiceManager CreateServiceManager(params Assembly[] assembliesWithServices)
 		{
 			return new ServiceManager(assembliesWithServices);
-			//Alternative way to inject Container + Service Resolver strategy
-			//return new ServiceManager(new Container(),
+			//Alternative way to inject DependencyInjector + Service Resolver strategy
+			//return new ServiceManager(new DependencyInjector(),
 			//    new ServiceController(() => assembliesWithServices.ToList().SelectMany(x => x.GetTypes())));
 		}
 
@@ -62,15 +61,6 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
-		public Container Container
-		{
-			get
-			{
-				return EndpointHost.Config.ServiceManager != null
-					? EndpointHost.Config.ServiceManager.Container : null;
-			}
-		}
-
 		public void Init()
 		{
 			if (Instance != null)
@@ -84,17 +74,15 @@ namespace ServiceStack.WebHost.Endpoints
 			if (serviceManager != null)
 			{
 				serviceManager.Init();
-				Configure(EndpointHost.Config.ServiceManager.Container);
+				Configure(EndpointHost.Config.ServiceManager.DependencyInjector);
 			}
 			else
 			{
-				Configure((Container)null);
+				Configure(null);
 			}
 
 			EndpointHost.AfterInit();
 		}
-
-	    public void Configure(Container container) { }
 
 	    public abstract void Configure(DependencyInjector dependencyInjector);
 
@@ -113,7 +101,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public void RegisterAs<T, TAs>() where T : TAs
 		{
-			this.Container.RegisterAutoWiredAs<T, TAs>();
+			this.DependencyInjector.RegisterAutoWiredAs<T, TAs>();
 		}
 
         public virtual void Release(object instance)
@@ -121,7 +109,7 @@ namespace ServiceStack.WebHost.Endpoints
             try
             {
                 /*
-                var iocAdapterReleases = Container.Adapter as IRelease;
+                var iocAdapterReleases = DependencyInjector.Adapter as IRelease;
                 if (iocAdapterReleases != null)
                 {
                     iocAdapterReleases.Release(instance);
@@ -151,23 +139,23 @@ namespace ServiceStack.WebHost.Endpoints
 
 	    public void Register<T>(T instance)
 		{
-			this.Container.Register(instance);
+			this.DependencyInjector.Register(instance);
 		}
 
 		public T TryResolve<T>()
 		{
-			return this.Container.TryResolve<T>();
+			return this.DependencyInjector.TryResolve<T>();
 		}
 
         /// <summary>
-        /// Resolves from IoC container a specified type instance.
+        /// Resolves from IoC dependencyInjector a specified type instance.
         /// </summary>
         /// <typeparam name="T">Type to be resolved.</typeparam>
         /// <returns>Instance of <typeparamref name="T"/>.</returns>
         public static T Resolve<T>()
         {
             if (Instance == null) throw new InvalidOperationException("AppHostBase is not initialized.");
-            return Instance.Container.Resolve<T>();
+            return Instance.DependencyInjector.Resolve<T>();
         }
 
         /// <summary>
@@ -178,7 +166,7 @@ namespace ServiceStack.WebHost.Endpoints
         public static T ResolveService<T>(HttpContext httpCtx) where T : class, IRequiresRequestContext
         {
             if (Instance == null) throw new InvalidOperationException("AppHostBase is not initialized.");
-            var service = Instance.Container.Resolve<T>();
+            var service = Instance.DependencyInjector.Resolve<T>();
             if (service == null) return null;
             service.RequestContext = httpCtx.ToRequestContext();
             return service;

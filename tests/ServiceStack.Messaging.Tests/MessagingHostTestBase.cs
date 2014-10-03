@@ -1,5 +1,4 @@
 ﻿using DependencyInjection;
-using Funke;
 using NUnit.Framework;
 using ServiceStack.Messaging.Tests.Services;
 
@@ -12,7 +11,6 @@ namespace ServiceStack.Messaging.Tests
 
 		protected abstract TransientMessageServiceBase CreateMessagingService();
 
-		protected Container Container { get; set; }
         protected DependencyInjector DependencyInjector { get; set; }
 
 		[SetUp]

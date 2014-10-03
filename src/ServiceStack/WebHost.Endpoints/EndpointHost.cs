@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Funke;
+using DependencyInjection;
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common;
@@ -72,7 +72,7 @@ namespace ServiceStack.WebHost.Endpoints
             //Default Config for projects that want to use components but not WebFramework (e.g. MVC)
             Config = new EndpointHostConfig(
                 "Empty Config",
-                new ServiceManager(new Container(), new ServiceController(null)));
+                new ServiceManager(new DependencyInjector(), new ServiceController(null)));
         }
 
         // Pre user config
@@ -186,7 +186,7 @@ namespace ServiceStack.WebHost.Endpoints
             {
                 if (registeredCacheClient == null)
                 {
-                    Container.Register<ICacheClient>(new MemoryCacheClient());
+                    DependencyInjector.Register<ICacheClient>(new MemoryCacheClient());
                 }
             }
 
@@ -194,7 +194,7 @@ namespace ServiceStack.WebHost.Endpoints
             var registeredMqFactory = AppHost.TryResolve<IMessageFactory>();
             if (registeredMqService != null && registeredMqFactory == null)
             {
-                Container.Register(c => registeredMqService.MessageFactory);
+                DependencyInjector.Register(c => registeredMqService.MessageFactory);
             }
 
             ReadyAt = DateTime.UtcNow;
@@ -206,17 +206,17 @@ namespace ServiceStack.WebHost.Endpoints
         }
 
         /// <summary>
-        /// The AppHost.Container. Note: it is not thread safe to register dependencies after AppStart.
+        /// The AppHost.DependencyInjector. Note: it is not thread safe to register dependencies after AppStart.
         /// </summary>
-        public static Container Container
+        public static DependencyInjector DependencyInjector
         {
             get
             {
                 var aspHost = AppHost as AppHostBase;
                 if (aspHost != null)
-                    return aspHost.Container;
+                    return aspHost.DependencyInjector;
                 var listenerHost = AppHost as HttpListenerBase;
-                return listenerHost != null ? listenerHost.Container : new Container(); //testing may use alt AppHost
+                return listenerHost != null ? listenerHost.DependencyInjector : new DependencyInjector(); //testing may use alt AppHost
             }
         }
 
@@ -344,7 +344,7 @@ namespace ServiceStack.WebHost.Endpoints
                 for (; i < attributes.Length && attributes[i].Priority < 0; i++)
                 {
                     var attribute = attributes[i];
-                    ServiceManager.Container.AutoWire(attribute);
+                    ServiceManager.DependencyInjector.AutoWire(attribute);
                     attribute.RequestFilter(httpReq, httpRes, requestDto);
                     if (AppHost != null) //tests
                         AppHost.Release(attribute);
@@ -362,7 +362,7 @@ namespace ServiceStack.WebHost.Endpoints
                 for (; i < attributes.Length && attributes[i].Priority >= 0; i++)
                 {
                     var attribute = attributes[i];
-                    ServiceManager.Container.AutoWire(attribute);
+                    ServiceManager.DependencyInjector.AutoWire(attribute);
                     attribute.RequestFilter(httpReq, httpRes, requestDto);
                     if (AppHost != null) //tests
                         AppHost.Release(attribute);
@@ -397,7 +397,7 @@ namespace ServiceStack.WebHost.Endpoints
                     for (; i < attributes.Length && attributes[i].Priority < 0; i++)
                     {
                         var attribute = attributes[i];
-                        ServiceManager.Container.AutoWire(attribute);
+                        ServiceManager.DependencyInjector.AutoWire(attribute);
                         attribute.ResponseFilter(httpReq, httpRes, response);
                         if (AppHost != null) //tests
                             AppHost.Release(attribute);
@@ -418,7 +418,7 @@ namespace ServiceStack.WebHost.Endpoints
                     for (; i < attributes.Length; i++)
                     {
                         var attribute = attributes[i];
-                        ServiceManager.Container.AutoWire(attribute);
+                        ServiceManager.DependencyInjector.AutoWire(attribute);
                         attribute.ResponseFilter(httpReq, httpRes, response);
                         if (AppHost != null) //tests
                             AppHost.Release(attribute);
