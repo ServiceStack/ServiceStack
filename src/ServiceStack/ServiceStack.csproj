@@ -64,6 +64,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="ServiceStack.Interfaces">
       <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
@@ -99,6 +100,7 @@
     </Compile>
     <Compile Include="Configuration\EnvironmentVariableSettings.cs" />
     <Compile Include="Configuration\MultiAppSettings.cs" />
+    <Compile Include="NativeTypes\VbNet\VbNetGenerator.cs" />
     <Compile Include="ServiceStackProvider.cs" />
     <Compile Include="AsyncExtensions.cs" />
     <Compile Include="Auth\AspNetWindowsAuthProvider.cs" />
