@@ -15,7 +15,7 @@ namespace ServiceStack
             MetadataTypesConfig = new MetadataTypesConfig
             {
                 AddDefaultXmlNamespace = HostConfig.DefaultWsdlNamespace,
-                TypeAlias = new Dictionary<string, string> 
+                CSharpTypeAlias = new Dictionary<string, string> 
                 {
                     { "String", "string" },    
                     { "Boolean", "bool" },    
@@ -29,6 +29,16 @@ namespace ServiceStack
                     { "Single", "float" },    
                     { "Double", "double" },    
                     { "Decimal", "decimal" },    
+                },
+                FSharpTypeAlias = new Dictionary<string, string>
+                {
+                },
+                VbNetTypeAlias = new Dictionary<string, string>
+                {
+                    { "Int16", "Short" },    
+                    { "Int32", "Integer" },    
+                    { "Int64", "Long" },    
+                    { "DateTime", "Date" },    
                 },
                 ExportAttributes = new HashSet<Type>
                 {
