@@ -19,12 +19,14 @@
         public static string WindowsAuthFailed = "Windows Auth Failed";
         public static string NotAuthenticated = "Not Authenticated";
         public static string InvalidUsernameOrPassword = "Invalid UserName or Password";
+        public static string UsernameOrEmailRequired = "UserName or Email is required";
 
         public static string InvalidRole = "Invalid Role";
         public static string InvalidPermission = "Invalid Permission";
 
         //Register
         public static string UserNotExists = "User does not exist";
+        public static string AuthRepositoryNotExists = "No IAuthRepository registered or failed to resolve. Check your IoC registrations.";
 
         //StaticFileHandler
         public static string FileNotExistsFmt = "Static File '{0}' not found";
