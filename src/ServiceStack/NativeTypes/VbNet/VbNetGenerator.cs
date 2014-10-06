@@ -422,8 +422,10 @@ namespace ServiceStack.NativeTypes.VbNet
             if (arrParts.Length > 1)
                 return "{0}()".Fmt(TypeAlias(arrParts[0], includeNested: includeNested));
 
-            return Microsoft.VisualBasic.Information.VbTypeName(type) 
-                ?? NameOnly(type, includeNested: includeNested);
+            string typeAlias;
+            Config.VbNetTypeAlias.TryGetValue(type, out typeAlias);
+
+            return typeAlias ?? NameOnly(type, includeNested: includeNested);
         }
 
         public string NameOnly(string type, bool includeNested = false)

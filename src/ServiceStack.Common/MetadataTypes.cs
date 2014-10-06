@@ -50,7 +50,9 @@ namespace ServiceStack
 
         public string GlobalNamespace { get; set; }
 
-        public Dictionary<string, string> TypeAlias { get; set; }
+        public Dictionary<string, string> CSharpTypeAlias { get; set; }
+        public Dictionary<string, string> FSharpTypeAlias { get; set; }
+        public Dictionary<string, string> VbNetTypeAlias { get; set; }
         public HashSet<Type> IgnoreTypes { get; set; }
         public HashSet<Type> ExportAttributes { get; set; }
         public List<string> IgnoreTypesInNamespaces { get; set; }

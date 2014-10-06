@@ -40,7 +40,9 @@ namespace ServiceStack.NativeTypes
                 ExportAttributes = defaults.ExportAttributes,
                 IgnoreTypes = defaults.IgnoreTypes,
                 IgnoreTypesInNamespaces = defaults.IgnoreTypesInNamespaces,
-                TypeAlias = defaults.TypeAlias,
+                CSharpTypeAlias = defaults.CSharpTypeAlias,
+                FSharpTypeAlias = defaults.FSharpTypeAlias,
+                VbNetTypeAlias = defaults.VbNetTypeAlias,
                 GlobalNamespace = defaults.GlobalNamespace,
             };
         }

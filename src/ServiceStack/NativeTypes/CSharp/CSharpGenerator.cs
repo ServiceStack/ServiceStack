@@ -424,7 +424,7 @@ namespace ServiceStack.NativeTypes.CSharp
                 return "{0}[]".Fmt(TypeAlias(arrParts[0], includeNested: includeNested));
 
             string typeAlias;
-            Config.TypeAlias.TryGetValue(type, out typeAlias);
+            Config.CSharpTypeAlias.TryGetValue(type, out typeAlias);
 
             return typeAlias ?? NameOnly(type, includeNested: includeNested);
         }
