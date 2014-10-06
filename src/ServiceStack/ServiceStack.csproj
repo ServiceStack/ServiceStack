@@ -185,7 +185,6 @@
     </Compile>
     <Compile Include="MetadataFeature.cs" />
     <Compile Include="RequestInfoFeature.cs" />
-    <Compile Include="ServiceHost\ContainerTypeExtensions.cs" />
     <Compile Include="MiniProfiler\BaseProfilerProvider.cs" />
     <Compile Include="MiniProfiler\Data\ExecuteType.cs" />
     <Compile Include="MiniProfiler\Data\IDbProfiler.cs" />
