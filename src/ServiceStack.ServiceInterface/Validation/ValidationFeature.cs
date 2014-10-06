@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using DependencyInjection;
-using DependencyInjection.Funq;
+using ServiceStack.DependencyInjection;
 using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Results;
 using ServiceStack.Logging;
@@ -57,24 +56,19 @@ namespace ServiceStack.ServiceInterface.Validation
         /// </summary>
         /// <param name="dependencyInjector">The IoC dependencyInjector</param>
         /// <param name="assemblies">The assemblies to scan for a validator</param>
-        public static void RegisterValidators(this DependencyInjector dependencyInjector, params Assembly[] assemblies)
-        {
-            RegisterValidators(dependencyInjector, ReuseScope.None, assemblies);
-        }
-
-        public static void RegisterValidators(this DependencyInjector dependencyInjector, ReuseScope scope, params Assembly[] assemblies)
+        public static void RegisterValidators(this DependencyService dependencyService, params Assembly[] assemblies)
         {
             foreach (var assembly in assemblies)
             {
                 foreach (var validator in assembly.GetTypes()
                 .Where(t => t.IsOrHasGenericInterfaceTypeOf(typeof(IValidator<>))))
                 {
-                    RegisterValidator(dependencyInjector, validator, scope);
+                    RegisterValidator(dependencyService, validator);
                 }
             }
         }
 
-        public static void RegisterValidator(this DependencyInjector dependencyInjector, Type validator, ReuseScope scope = ReuseScope.None)
+        public static void RegisterValidator(this DependencyService dependencyService, Type validator)
         {
             var baseType = validator.BaseType;
             while (!baseType.IsGenericType)
@@ -85,7 +79,7 @@ namespace ServiceStack.ServiceInterface.Validation
             var dtoType = baseType.GetGenericArguments()[0];
             var validatorType = typeof(IValidator<>).MakeGenericType(dtoType);
 
-            dependencyInjector.RegisterAutoWiredType(validator, validatorType, scope);
+            dependencyService.RegisterAutoWiredType(validator, validatorType);
         }
     }
 }

@@ -7,10 +7,10 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using DependencyInjection;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
+using ServiceStack.DependencyInjection;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
@@ -29,7 +29,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 	/// server, for start and stop management and event routing of the actual
 	/// inbound requests.
 	/// </summary>
-    public abstract class HttpListenerBase : IDisposable, IAppHost, IHasDependencyInjector
+    public abstract class HttpListenerBase : IDisposable, IAppHost, IHasDependencyService
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(HttpListenerBase));
 
@@ -79,7 +79,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			if (serviceManager != null)
 			{
 				serviceManager.Init();
-				Configure(EndpointHost.Config.ServiceManager.DependencyInjector);
+				Configure(EndpointHost.Config.ServiceManager.DependencyService);
 			}
 			else
 			{
@@ -93,7 +93,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			Log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
 		}
 
-		public abstract void Configure(DependencyInjector dependencyInjector);
+		public abstract void Configure(DependencyService dependencyService);
 
         public virtual void SetAppDomainData()
         {
@@ -346,17 +346,17 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;
 		}
 
-		public DependencyInjector DependencyInjector
+		public DependencyService DependencyService
 		{
 			get
 			{
-				return EndpointHost.Config.ServiceManager.DependencyInjector;
+				return EndpointHost.Config.ServiceManager.DependencyService;
 			}
 		}
 
 		public void RegisterAs<T, TAs>() where T : TAs
 		{
-			this.DependencyInjector.RegisterAutoWiredAs<T, TAs>();
+			this.DependencyService.RegisterAutoWiredAs<T, TAs>();
 		}
 
         public virtual void Release(object instance)
@@ -394,12 +394,12 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 	    public void Register<T>(T instance)
 		{
-			this.DependencyInjector.Register(instance);
+			this.DependencyService.Register(instance);
 		}
 
 		public T TryResolve<T>()
 		{
-			return this.DependencyInjector.TryResolve<T>();
+			return this.DependencyService.TryResolve<T>();
         }
 
         /// <summary>
@@ -410,7 +410,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
         public static T Resolve<T>()
         {
             if (Instance == null) throw new InvalidOperationException("AppHostBase is not initialized.");
-            return Instance.DependencyInjector.Resolve<T>();
+            return Instance.DependencyService.Resolve<T>();
         }
 
         /// <summary>
@@ -421,7 +421,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
         public static T ResolveService<T>(HttpListenerContext httpCtx) where T : class, IRequiresRequestContext
         {
             if (Instance == null) throw new InvalidOperationException("AppHostBase is not initialized.");
-            var service = Instance.DependencyInjector.Resolve<T>();
+            var service = Instance.DependencyService.Resolve<T>();
             if (service == null) return null;
             service.RequestContext = httpCtx.ToRequestContext();
             return service;
@@ -436,7 +436,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
         public static T ResolveService<T>(IHttpRequest httpReq, IHttpResponse httpRes) where T : class, IRequiresRequestContext
         {
             if (Instance == null) throw new InvalidOperationException("AppHostBase is not initialized.");
-            var service = Instance.DependencyInjector.Resolve<T>();
+            var service = Instance.DependencyService.Resolve<T>();
             if (service == null) return null;
             service.RequestContext = new HttpRequestContext(httpReq, httpRes, null);
             return service;

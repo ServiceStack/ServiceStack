@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Autofac;
-using DependencyInjection;
+using ServiceStack.DependencyInjection;
 using ServiceStack.Configuration;
-using Funkee;
 using System.Linq.Expressions;
 using System.Threading;
 
@@ -13,12 +12,12 @@ namespace ServiceStack.ServiceHost
 {
     public class DependencyInjectorResolveCache : ITypeFactory
     {
-        private DependencyInjector dependencyInjector;
+        private DependencyService dependencyService;
         // DAC confirm: Honey I blew up the cache.
 
-        public DependencyInjectorResolveCache(DependencyInjector dependencyInjector)
+        public DependencyInjectorResolveCache(DependencyService dependencyService)
         {
-            this.dependencyInjector = dependencyInjector;
+            this.dependencyService = dependencyService;
         }
 
         /// <summary>
@@ -39,7 +38,7 @@ namespace ServiceStack.ServiceHost
             {
                 try
                 {
-                    return dependencyInjector.Resolve(type);
+                    return DependencyService.Resolve(type);
                 }
                 catch
                 {
@@ -48,7 +47,7 @@ namespace ServiceStack.ServiceHost
             }
             else
             {
-                return dependencyInjector.Resolve(type);
+                return DependencyService.Resolve(type);
             }
         }
     }

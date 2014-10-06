@@ -5,9 +5,9 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Web;
-using DependencyInjection;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
+using ServiceStack.DependencyInjection;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 
@@ -18,7 +18,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
     {
         private static readonly string physicalFilePath;
         private readonly HttpListenerRequest request;
-        public DependencyInjector DependencyInjector { get; set; }
+        public DependencyService DependencyService { get; set; }
 
         static HttpListenerRequestWrapper()
         {
@@ -47,9 +47,9 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
         public T TryResolve<T>()
         {
-            return DependencyInjector == null
+            return DependencyService == null
                 ? EndpointHost.AppHost.TryResolve<T>()
-                : DependencyInjector.TryResolve<T>();
+                : DependencyService.TryResolve<T>();
         }
 
         public string OperationName { get; set; }

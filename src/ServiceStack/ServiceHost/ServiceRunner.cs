@@ -98,7 +98,7 @@ namespace ServiceStack.ServiceHost
                 BeforeEachRequest(requestContext, request);
 
                 var appHost = GetAppHost();
-                var dependencyInjector = appHost != null ? appHost.Config.ServiceManager.DependencyInjector : null;
+                var dependencyInjector = appHost != null ? appHost.Config.ServiceManager.DependencyService : null;
                 var httpReq = requestContext != null ? requestContext.Get<IHttpRequest>() : null;
                 var httpRes = requestContext != null ? requestContext.Get<IHttpResponse>() : null;
 

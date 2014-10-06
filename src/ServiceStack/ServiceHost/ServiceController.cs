@@ -5,8 +5,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using DependencyInjection;
 using ServiceStack.Configuration;
+using ServiceStack.DependencyInjection;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.ServiceModel.Serialization;
@@ -313,7 +313,9 @@ namespace ServiceStack.ServiceHost
             var typeFactoryFn = CallServiceExecuteGeneric(requestType, serviceType);
 
             ServiceExecFn handlerFn = (requestContext, dto) => {
-                var service = serviceFactoryFn.CreateInstance(serviceType);
+                var lifetimeScope = DependencyService.RootLifetimeScope.BeginLifetimeScope();
+                Common.HostContext.Instance.TrackDisposable(lifetimeScope);
+                var service = DependencyService.Resolve(serviceType, lifetimeScope);
                 var endpointAttrs = requestContext != null
                     ? requestContext.EndpointAttributes
                     : EndpointAttributes.None;
@@ -333,7 +335,9 @@ namespace ServiceStack.ServiceHost
             var iserviceExec = (INServiceExec)serviceExecDef.CreateInstance();
 
             ServiceExecFn handlerFn = (requestContext, dto) => {
-                var service = serviceFactoryFn.CreateInstance(serviceType);
+                var lifetimeScope = DependencyService.RootLifetimeScope.BeginLifetimeScope();
+                Common.HostContext.Instance.TrackDisposable(lifetimeScope);
+                var service = DependencyService.Resolve(serviceType, lifetimeScope);
 
                 ServiceExecFn serviceExec = (reqCtx, req) =>
                     iserviceExec.Execute(reqCtx, service, req);

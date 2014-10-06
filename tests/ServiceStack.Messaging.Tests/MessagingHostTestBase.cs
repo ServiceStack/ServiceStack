@@ -1,5 +1,5 @@
-﻿using DependencyInjection;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using ServiceStack.DependencyInjection;
 using ServiceStack.Messaging.Tests.Services;
 
 namespace ServiceStack.Messaging.Tests
@@ -11,18 +11,13 @@ namespace ServiceStack.Messaging.Tests
 
 		protected abstract TransientMessageServiceBase CreateMessagingService();
 
-        protected DependencyInjector DependencyInjector { get; set; }
+        protected DependencyService DependencyService { get; set; }
 
 		[SetUp]
 		public virtual void OnBeforeEachTest()
 		{
-			if (DependencyInjector != null)
-			{
-				DependencyInjector.Dispose();
-			}
-
-			DependencyInjector = new DependencyInjector();
-			DependencyInjector.Register(CreateMessageFactory());
+			DependencyService = new DependencyService();
+			DependencyService.Register(CreateMessageFactory());
 		}
 
 	}

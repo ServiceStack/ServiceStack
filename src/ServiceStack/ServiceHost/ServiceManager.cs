@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using DependencyInjection;
+using ServiceStack.DependencyInjection;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 
@@ -12,7 +12,7 @@ namespace ServiceStack.ServiceHost
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceManager));
 
-		public DependencyInjector DependencyInjector { get; private set; }
+		public DependencyService DependencyService { get; private set; }
 		public ServiceController ServiceController { get; private set; }
         public ServiceMetadata Metadata { get; internal set; }
 
@@ -26,26 +26,26 @@ namespace ServiceStack.ServiceHost
 					"No Assemblies provided in your AppHost's base constructor.\n"
 					+ "To register your services, please provide the assemblies where your web services are defined.");
 
-		    this.DependencyInjector = new DependencyInjector();
+		    this.DependencyService = new DependencyService();
             this.Metadata = new ServiceMetadata();
             this.ServiceController = new ServiceController(() => GetAssemblyTypes(assembliesWithServices), this.Metadata);
 		}
 
-        public ServiceManager(DependencyInjector dependencyInjector, params Assembly[] assembliesWithServices)
+        public ServiceManager(DependencyService dependencyService, params Assembly[] assembliesWithServices)
             : this(assembliesWithServices)
         {
-            this.DependencyInjector = dependencyInjector ?? new DependencyInjector();
+            this.DependencyService = dependencyService ?? new DependencyService();
         }
 
         /// <summary>
         /// Inject alternative dependencyInjector and strategy for resolving Service Types
         /// </summary>
-        public ServiceManager(DependencyInjector dependencyInjector, ServiceController serviceController)
+        public ServiceManager(DependencyService dependencyService, ServiceController serviceController)
         {
             if (serviceController == null)
                 throw new ArgumentNullException("serviceController");
 
-            this.DependencyInjector = dependencyInjector ?? new DependencyInjector();
+            this.DependencyService = dependencyService ?? new DependencyService();
             this.Metadata = serviceController.Metadata; //always share the same metadata
             this.ServiceController = serviceController;
         }
@@ -77,15 +77,16 @@ namespace ServiceStack.ServiceHost
 			}
 		}
 
-		private DependencyInjectorResolveCache typeFactory;
+        private DependencyInjectorResolveCache typeFactory;
 
 		public ServiceManager Init()
 		{
-			typeFactory = new DependencyInjectorResolveCache(this.DependencyInjector);
 
-			this.ServiceController.Register(typeFactory);
+            typeFactory = new DependencyInjectorResolveCache(this.DependencyService);
 
-			this.DependencyInjector.RegisterAutoWiredTypes(this.Metadata.ServiceTypes);
+		    this.ServiceController.Register(typeFactory);
+
+			this.DependencyService.RegisterAutoWiredTypes(this.Metadata.ServiceTypes);
 
 		    return this;
 		}
@@ -97,7 +98,7 @@ namespace ServiceStack.ServiceHost
 				throw new ArgumentException("Type {0} is not a Web Service that inherits IService<>".Fmt(typeof(T).FullName));
 
 			this.ServiceController.RegisterGService(typeFactory, typeof(T));
-			this.DependencyInjector.RegisterAutoWired<T>();
+			this.DependencyService.RegisterAutoWired<T>();
 		}
 
 		public Type RegisterService(Type serviceType)
@@ -108,7 +109,7 @@ namespace ServiceStack.ServiceHost
                 if (genericServiceType != null)
                 {
                     this.ServiceController.RegisterGService(typeFactory, serviceType);
-                    this.DependencyInjector.RegisterAutoWiredType(serviceType);
+                    this.DependencyService.RegisterAutoWiredType(serviceType);
                     return genericServiceType;
                 }
 
@@ -116,7 +117,7 @@ namespace ServiceStack.ServiceHost
                 if (isNService)
                 {
                     this.ServiceController.RegisterNService(typeFactory, serviceType);
-                    this.DependencyInjector.RegisterAutoWiredType(serviceType);
+                    this.DependencyService.RegisterAutoWiredType(serviceType);
                     return null;
                 }
 
@@ -136,10 +137,6 @@ namespace ServiceStack.ServiceHost
 
 		public void Dispose()
 		{
-			if (this.DependencyInjector != null)
-			{
-				this.DependencyInjector.Dispose();
-			}
 		}
 
 		public void AfterInit()

@@ -4,10 +4,10 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Web;
-using DependencyInjection;
 using ServiceStack.Text;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
+using ServiceStack.DependencyInjection;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Extensions
@@ -16,7 +16,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
         : IHttpRequest
     {
         private static readonly string physicalFilePath;
-        public DependencyInjector DependencyInjector { get; set; }
+        public DependencyService DependencyService { get; set; }
         private readonly HttpRequest request;
 
         static HttpRequestWrapper()
@@ -43,14 +43,14 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
         {
             this.OperationName = operationName;
             this.request = request;
-            this.DependencyInjector = DependencyInjector;
+            this.DependencyService = DependencyService;
         }
 
         public T TryResolve<T>()
         {
-            return DependencyInjector == null
+            return DependencyService == null
                 ? EndpointHost.AppHost.TryResolve<T>()
-                : DependencyInjector.TryResolve<T>();
+                : DependencyService.TryResolve<T>();
         }
 
         public string OperationName { get; set; }

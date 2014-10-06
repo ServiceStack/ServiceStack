@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Web;
-using DependencyInjection;
 using ServiceStack.Common;
 using ServiceStack.Configuration;
+using ServiceStack.DependencyInjection;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.Endpoints
 	/// ASP.NET application.
 	/// </summary>
 	public abstract class AppHostBase
-        : IConfigureDependencyInjector, IDisposable, IAppHost, IHasDependencyInjector
+        : IConfigureDependencyService, IDisposable, IAppHost, IHasDependencyService
 	{
 		private readonly ILog log = LogManager.GetLogger(typeof(AppHostBase));
 
@@ -52,12 +52,12 @@ namespace ServiceStack.WebHost.Endpoints
 			get { return EndpointHost.Config.ServiceController.Routes; }
 		}
 
-		public DependencyInjector DependencyInjector
+		public DependencyService DependencyService
 		{
 			get
 			{
 				return EndpointHost.Config.ServiceManager != null
-					? EndpointHost.Config.ServiceManager.DependencyInjector : null;
+					? EndpointHost.Config.ServiceManager.DependencyService : null;
 			}
 		}
 
@@ -74,7 +74,7 @@ namespace ServiceStack.WebHost.Endpoints
 			if (serviceManager != null)
 			{
 				serviceManager.Init();
-				Configure(EndpointHost.Config.ServiceManager.DependencyInjector);
+				Configure(EndpointHost.Config.ServiceManager.DependencyService);
 			}
 			else
 			{
@@ -84,7 +84,7 @@ namespace ServiceStack.WebHost.Endpoints
 			EndpointHost.AfterInit();
 		}
 
-	    public abstract void Configure(DependencyInjector dependencyInjector);
+	    public abstract void Configure(DependencyService dependencyService);
 
 		public void SetConfig(EndpointHostConfig config)
 		{
@@ -101,7 +101,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public void RegisterAs<T, TAs>() where T : TAs
 		{
-			this.DependencyInjector.RegisterAutoWiredAs<T, TAs>();
+			this.DependencyService.RegisterAutoWiredAs<T, TAs>();
 		}
 
         public virtual void Release(object instance)
@@ -139,12 +139,12 @@ namespace ServiceStack.WebHost.Endpoints
 
 	    public void Register<T>(T instance)
 		{
-			this.DependencyInjector.Register(instance);
+			this.DependencyService.Register(instance);
 		}
 
 		public T TryResolve<T>()
 		{
-			return this.DependencyInjector.TryResolve<T>();
+			return this.DependencyService.TryResolve<T>();
 		}
 
         /// <summary>
@@ -155,7 +155,7 @@ namespace ServiceStack.WebHost.Endpoints
         public static T Resolve<T>()
         {
             if (Instance == null) throw new InvalidOperationException("AppHostBase is not initialized.");
-            return Instance.DependencyInjector.Resolve<T>();
+            return Instance.DependencyService.Resolve<T>();
         }
 
         /// <summary>
@@ -166,7 +166,7 @@ namespace ServiceStack.WebHost.Endpoints
         public static T ResolveService<T>(HttpContext httpCtx) where T : class, IRequiresRequestContext
         {
             if (Instance == null) throw new InvalidOperationException("AppHostBase is not initialized.");
-            var service = Instance.DependencyInjector.Resolve<T>();
+            var service = Instance.DependencyService.Resolve<T>();
             if (service == null) return null;
             service.RequestContext = httpCtx.ToRequestContext();
             return service;
