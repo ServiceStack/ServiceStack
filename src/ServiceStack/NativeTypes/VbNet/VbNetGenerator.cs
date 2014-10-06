@@ -268,7 +268,7 @@ namespace ServiceStack.NativeTypes.VbNet
 
             if (addVersionInfo)
             {
-                var @virtual = Config.MakeVirtual ? "Overridable " : "";
+                var @virtual = Config.MakeVirtual ? "Overrides " : "";
                 sb.AppendLine("Public {0}Property Version As Integer".Fmt(@virtual));
                 sb.AppendLine();
             }
@@ -296,7 +296,7 @@ namespace ServiceStack.NativeTypes.VbNet
         {
             var makeExtensible = Config.MakeDataContractsExtensible && type.Inherits == null;
 
-            var @virtual = Config.MakeVirtual ? "Overridable " : "";
+            var @virtual = Config.MakeVirtual ? "Overrides " : "";
             var wasAdded = false;
 
             var dataMemberIndex = 1;
