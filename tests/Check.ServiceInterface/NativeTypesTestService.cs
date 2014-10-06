@@ -16,6 +16,16 @@ namespace Check.ServiceInterface
             return new HelloAnnotatedResponse { Result = request.Name };
         }
 
+        public object Any(HelloWithNestedClass request)
+        {
+            return new HelloResponse { Result = request.Name };
+        }
+
+        public object Any(HelloWithEnum request)
+        {
+            return request;
+        }
+
         public object Any(HelloExternal request)
         {
             return request;
@@ -63,6 +73,26 @@ namespace Check.ServiceInterface
         public object Any(HelloWithInheritance request)
         {
             return new HelloWithInheritanceResponse { Result = request.Name };
+        }
+
+        public object Any(HelloWithGenericInheritance request)
+        {
+            return request;
+        }
+
+        public object Any(HelloWithGenericInheritance2 request)
+        {
+            return request;
+        }
+
+        public object Any(HelloWithNestedInheritance request)
+        {
+            return request;
+        }
+
+        public object Any(HelloWithListInheritance request)
+        {
+            return request;
         }
 
         public object Any(HelloWithReturn request)

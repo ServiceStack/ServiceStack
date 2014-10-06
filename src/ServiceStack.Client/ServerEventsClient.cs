@@ -74,6 +74,9 @@ namespace ServiceStack
         public Action OnHeartbeat;
         public Action<Exception> OnException;
 
+        public Action<WebRequest> EventStreamRequestFilter { get; set; }
+        public Action<WebRequest> HeartbeatRequestFilter { get; set; } 
+
         public static readonly Task<object> EmptyTask;
 
         static ServerEventsClient()
@@ -105,7 +108,11 @@ namespace ServiceStack
                 log.DebugFormat("Start()");
 
             httpReq = (HttpWebRequest)WebRequest.Create(EventStreamUri);
+            httpReq.CookieContainer = ((ServiceClientBase)ServiceClient).CookieContainer; //share auth cookies
             //httpReq.AllowReadStreamBuffering = false; //.NET v4.5
+
+            if (EventStreamRequestFilter != null)
+                EventStreamRequestFilter(httpReq);
 
             var response = PclExport.Instance.GetResponse(httpReq);
             var stream = response.GetResponseStream();
@@ -186,7 +193,7 @@ namespace ServiceStack
 
             EnsureSynchronizationContext();
 
-            ConnectionInfo.HeartbeatUrl.GetStringFromUrlAsync()
+            ConnectionInfo.HeartbeatUrl.GetStringFromUrlAsync(requestFilter:HeartbeatRequestFilter)
                 .Success(t => {
                     if (cancel.IsCancellationRequested)
                         return;
@@ -471,7 +478,8 @@ namespace ServiceStack
             if (log.IsDebugEnabled)
                 log.DebugFormat("Stop()");
 
-            cancel.Cancel();
+            if (cancel != null)
+                cancel.Cancel();
 
             if (ConnectionInfo != null && ConnectionInfo.UnRegisterUrl != null)
             {
@@ -495,6 +503,17 @@ namespace ServiceStack
 
     public static class ServerEventClientExtensions
     {
+#if !SL5
+        public static AuthenticateResponse Authenticate(this ServerEventsClient client, Authenticate request)
+        {
+            return client.ServiceClient.Post(request);
+        }
+#endif
+        public static Task<AuthenticateResponse> AuthenticateAsync(this ServerEventsClient client, Authenticate request)
+        {
+            return client.ServiceClient.PostAsync(request);
+        }
+
         public static T Populate<T>(this T dst, ServerEventMessage src, JsonObject msg) where T : ServerEventMessage
         {
             dst.EventId = src.EventId;

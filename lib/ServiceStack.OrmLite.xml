@@ -1196,9 +1196,94 @@
               DELETE FROM "Person" WHERE Age = 27
             </summary>
         </member>
+        <member name="T:ServiceStack.OrmLite.Dapper.CommandFlags">
+            <summary>
+            Additional state flags that control command behaviour
+            </summary>
+        </member>
+        <member name="F:ServiceStack.OrmLite.Dapper.CommandFlags.None">
+            <summary>
+            No additonal flags
+            </summary>
+        </member>
+        <member name="F:ServiceStack.OrmLite.Dapper.CommandFlags.Buffered">
+            <summary>
+            Should data be buffered before returning?
+            </summary>
+        </member>
+        <member name="F:ServiceStack.OrmLite.Dapper.CommandFlags.Pipelined">
+            <summary>
+            Can async queries be pipelined?
+            </summary>
+        </member>
+        <member name="F:ServiceStack.OrmLite.Dapper.CommandFlags.NoCache">
+            <summary>
+            Should the plan cache be bypassed?
+            </summary>
+        </member>
+        <member name="T:ServiceStack.OrmLite.Dapper.CommandDefinition">
+            <summary>
+            Represents the key aspects of a sql operation
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.CommandDefinition.#ctor(System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType},ServiceStack.OrmLite.Dapper.CommandFlags)">
+            <summary>
+            Initialize the command definition
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.CommandDefinition.CommandText">
+            <summary>
+            The command (sql or a stored-procedure name) to execute
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.CommandDefinition.Parameters">
+            <summary>
+            The parameters associated with the command
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.CommandDefinition.Transaction">
+            <summary>
+            The active transaction for the command
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.CommandDefinition.CommandTimeout">
+            <summary>
+            The effective timeout for the command
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.CommandDefinition.CommandType">
+            <summary>
+            The type of command that the command-text represents
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.CommandDefinition.Buffered">
+            <summary>
+            Should data be buffered before returning?
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.CommandDefinition.AddToCache">
+            <summary>
+            Should the plan for this query be cached?
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.CommandDefinition.Flags">
+            <summary>
+            Additional state flags against this command
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.CommandDefinition.Pipelined">
+            <summary>
+            Can async queries be pipelined?
+            </summary>
+        </member>
         <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper">
             <summary>
             Dapper, a light weight object mapper for ADO.NET
+            </summary>
+        </member>
+        <member name="F:ServiceStack.OrmLite.Dapper.SqlMapper.DataTableTypeNameKey">
+            <summary>
+            Key used to indicate the type name associated with a DataTable
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.PurgeQueryCache">
@@ -1225,23 +1310,116 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ResetTypeHandlers">
+            <summary>
+            Clear the registered type handlers
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.AddTypeMap(System.Type,System.Data.DbType)">
             <summary>
             Configire the specified type to be mapped to a given db-type
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteDapper(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.AddTypeHandler(System.Type,ServiceStack.OrmLite.Dapper.SqlMapper.ITypeHandler)">
+            <summary>
+            Configire the specified type to be processed by a custom handler
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.AddTypeHandlerImpl(System.Type,ServiceStack.OrmLite.Dapper.SqlMapper.ITypeHandler,System.Boolean)">
+            <summary>
+            Configire the specified type to be processed by a custom handler
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.AddTypeHandler``1(ServiceStack.OrmLite.Dapper.SqlMapper.TypeHandler{``0})">
+            <summary>
+            Configire the specified type to be processed by a custom handler
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GetDbType(System.Object)">
+            <summary>
+            Get the DbType that maps to a given value
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Execute(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
             Execute parameterized SQL  
             </summary>
             <returns>Number of rows affected</returns>
         </member>
-        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Dapper(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Boolean,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Execute(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute parameterized SQL  
+            </summary>
+            <returns>Number of rows affected</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteScalar(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute parameterized SQL that selects a single value
+            </summary>
+            <returns>The first cell selected</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteScalar``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute parameterized SQL that selects a single value
+            </summary>
+            <returns>The first cell selected</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteScalar(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute parameterized SQL that selects a single value
+            </summary>
+            <returns>The first cell selected</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteScalar``1(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute parameterized SQL that selects a single value
+            </summary>
+            <returns>The first cell selected</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteReader(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute parameterized SQL and return an <see cref="T:System.Data.IDataReader"/>
+            </summary>
+            <returns>An <see cref="T:System.Data.IDataReader"/> that can be used to iterate over the results of the SQL query.</returns>
+            <remarks>
+            This is typically used when the results of a query are not processed by Dapper, for example, used to fill a DataTable or DataSet.
+            </remarks>
+            <example>
+            <code>
+            <![CDATA[
+            DataTable table = new DataTable("MyTable");
+            using (var reader = ExecuteReader(cnn, sql, param))
+            {
+                table.Load(reader);
+            }
+            ]]>
+            </code>
+            </example>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteReader(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute parameterized SQL and return an <see cref="T:System.Data.IDataReader"/>
+            </summary>
+            <returns>An <see cref="T:System.Data.IDataReader"/> that can be used to iterate over the results of the SQL query.</returns>
+            <remarks>
+            This is typically used when the results of a query are not processed by Dapper, for example, used to fill a DataTable or DataSet.
+            </remarks>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteReader(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition,System.Data.CommandBehavior)">
+            <summary>
+            Execute parameterized SQL and return an <see cref="T:System.Data.IDataReader"/>
+            </summary>
+            <returns>An <see cref="T:System.Data.IDataReader"/> that can be used to iterate over the results of the SQL query.</returns>
+            <remarks>
+            This is typically used when the results of a query are not processed by Dapper, for example, used to fill a DataTable or DataSet.
+            </remarks>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Query(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Boolean,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
             Return a list of dynamic objects, reader is closed after the call
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Dapper``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Boolean,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Query``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Boolean,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
             Executes a query, returning the data typed as per T
             </summary>
@@ -1250,17 +1428,34 @@
             created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
             </returns>
         </member>
-        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.DapperMultiple(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Query(System.Data.IDbConnection,System.Type,System.String,System.Object,System.Data.IDbTransaction,System.Boolean,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Executes a query, returning the data typed as per the Type suggested
+            </summary>
+            <returns>A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
+            created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
+            </returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Query``1(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Executes a query, returning the data typed as per T
+            </summary>
+            <remarks>the dynamic param may seem a bit odd, but this works around a major usability issue in vs, if it is Object vs completion gets annoying. Eg type new [space] get new object</remarks>
+            <returns>A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
+            created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
+            </returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryMultiple(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
             Execute a command that returns multiple result sets, and access each in turn
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.DapperInternal``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryMultiple(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
-            Return a typed list of objects, reader is closed after the call
+            Execute a command that returns multiple result sets, and access each in turn
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Dapper``3(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Query``3(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
             Maps a query to objects
             </summary>
@@ -1278,7 +1473,7 @@
             <param name="commandType">Is it a stored proc or a batch?</param>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Dapper``4(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Query``4(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
             Maps a query to objects
             </summary>
@@ -1297,7 +1492,7 @@
             <param name="commandType"></param>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Dapper``5(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Query``5(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
             Perform a multi mapping query with 4 input parameters
             </summary>
@@ -1317,7 +1512,7 @@
             <param name="commandType"></param>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Dapper``6(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4,``5},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Query``6(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4,``5},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
             Perform a multi mapping query with 5 input parameters
             </summary>
@@ -1338,7 +1533,7 @@
             <param name="commandType"></param>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Dapper``7(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4,``5,``6},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Query``7(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4,``5,``6},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
             Perform a multi mapping query with 6 input parameters
             </summary>
@@ -1360,7 +1555,7 @@
             <param name="commandType"></param>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Dapper``8(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4,``5,``6,``7},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Query``8(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4,``5,``6,``7},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
             Perform a multi mapping query with 7 input parameters
             </summary>
@@ -1383,6 +1578,23 @@
             <param name="commandType"></param>
             <returns></returns>
         </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Query``1(System.Data.IDbConnection,System.String,System.Type[],System.Func{System.Object[],``0},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Perform a multi mapping query with arbitrary input parameters
+            </summary>
+            <typeparam name="TReturn">The return type</typeparam>
+            <param name="cnn"></param>
+            <param name="sql"></param>
+            <param name="types">array of types in the recordset</param>
+            <param name="map"></param>
+            <param name="param"></param>
+            <param name="transaction"></param>
+            <param name="buffered"></param>
+            <param name="splitOn">The Field we should split and read the second object from (default: id)</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
+            <returns></returns>
+        </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ReadChar(System.Object)">
             <summary>
             Internal use only
@@ -1403,6 +1615,16 @@
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.PackListParameters(System.Data.IDbCommand,System.String,System.Object)">
             <summary>
             Internal use only
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ReplaceLiterals(ServiceStack.OrmLite.Dapper.SqlMapper.IParameterLookup,System.Data.IDbCommand)">
+            <summary>
+            Replace all literal tokens with their text form
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Format(System.Object)">
+            <summary>
+            Convert numeric values to their string form for SQL literal purposes
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.CreateParamInfoGenerator(ServiceStack.OrmLite.Dapper.SqlMapper.Identity,System.Boolean,System.Boolean)">
@@ -1434,13 +1656,10 @@
             <param name="returnNullIfFirstMissing"></param>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ThrowDataException(System.Exception,System.Int32,System.Data.IDataReader)">
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ThrowDataException(System.Exception,System.Int32,System.Data.IDataReader,System.Object)">
             <summary>
             Throws a data exception, only used internally
             </summary>
-            <param name="ex"></param>
-            <param name="index"></param>
-            <param name="reader"></param>
         </member>
         <member name="E:ServiceStack.OrmLite.Dapper.SqlMapper.QueryCachePurged">
             <summary>
@@ -1467,6 +1686,26 @@
             <param name="command">The raw command prior to execution</param>
             <param name="identity">Information about the query</param>
         </member>
+        <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.IParameterLookup">
+            <summary>
+            Extends IDynamicParameters providing by-name lookup of parameter values
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.SqlMapper.IParameterLookup.Item(System.String)">
+            <summary>
+            Get the value of the specified parameter (return null if not found)
+            </summary>
+        </member>
+        <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.IParameterCallbacks">
+            <summary>
+            Extends IDynamicParameters with facitilies for executing callbacks after commands have completed
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.IParameterCallbacks.OnCompleted">
+            <summary>
+            Invoked when the command has executed
+            </summary>
+        </member>
         <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.ICustomQueryParameter">
             <summary>
             Implement this interface to pass an arbitrary db specific parameter to Dapper
@@ -1478,6 +1717,56 @@
             </summary>
             <param name="command">The raw command prior to execution</param>
             <param name="name">Parameter name</param>
+        </member>
+        <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.ITypeHandler">
+            <summary>
+            Implement this interface to perform custom type-based parameter handling and value parsing
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ITypeHandler.SetValue(System.Data.IDbDataParameter,System.Object)">
+            <summary>
+            Assign the value of a parameter before a command executes
+            </summary>
+            <param name="parameter">The parameter to configure</param>
+            <param name="value">Parameter value</param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ITypeHandler.Parse(System.Type,System.Object)">
+            <summary>
+            Parse a database value back to a typed value
+            </summary>
+            <param name="value">The value from the database</param>
+            <param name="destinationType">The type to parse to</param>
+            <returns>The typed value</returns>
+        </member>
+        <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.UdtTypeHandler">
+            <summary>
+            A type handler for data-types that are supported by the underlying provider, but which need
+            a well-known UdtTypeName to be specified
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.UdtTypeHandler.#ctor(System.String)">
+            <summary>
+            Creates a new instance of UdtTypeHandler with the specified UdtTypeName
+            </summary>
+        </member>
+        <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.TypeHandler`1">
+            <summary>
+            Base-class for simple type-handlers
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.TypeHandler`1.SetValue(System.Data.IDbDataParameter,`0)">
+            <summary>
+            Assign the value of a parameter before a command executes
+            </summary>
+            <param name="parameter">The parameter to configure</param>
+            <param name="value">Parameter value</param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.TypeHandler`1.Parse(System.Object)">
+            <summary>
+            Parse a database value back to a typed value
+            </summary>
+            <param name="value">The value from the database</param>
+            <returns>The typed value</returns>
         </member>
         <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.ITypeMap">
             <summary>
@@ -1542,6 +1831,21 @@
             This is a micro-cache; suitable when the number of terms is controllable (a few hundred, for example),
             and strictly append-only; you cannot change existing values. All key matches are on **REFERENCE**
             equality. The type is fully thread-safe.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.TypeHandlerCache`1">
+            <summary>
+            Not intended for direct usage
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.TypeHandlerCache`1.Parse(System.Object)">
+            <summary>
+            Not intended for direct usage
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.TypeHandlerCache`1.SetValue(System.Data.IDbDataParameter,System.Object)">
+            <summary>
+            Not intended for direct usage
             </summary>
         </member>
         <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.Identity">
@@ -1611,6 +1915,21 @@
             <param name="other"></param>
             <returns></returns>
         </member>
+        <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.LiteralToken">
+            <summary>
+            Represents a placeholder for a value that should be replaced as a literal value in the resulting sql
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.SqlMapper.LiteralToken.Token">
+            <summary>
+            The text in the original command that should be replaced
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.SqlMapper.LiteralToken.Member">
+            <summary>
+            The name of the member referred to by the token
+            </summary>
+        </member>
         <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader">
             <summary>
             The grid reader provides interfaces for reading multiple result sets from a Dapper query 
@@ -1622,6 +1941,11 @@
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.Read``1(System.Boolean)">
+            <summary>
+            Read the next grid of results
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.Read(System.Type,System.Boolean)">
             <summary>
             Read the next grid of results
             </summary>
@@ -1659,6 +1983,11 @@
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.Dispose">
             <summary>
             Dispose the grid, closing and disposing both the underlying reader and command.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.IsConsumed">
+            <summary>
+            Has the underlying reader been consumed?
             </summary>
         </member>
         <member name="T:ServiceStack.OrmLite.Dapper.DynamicParameters">
@@ -1709,6 +2038,18 @@
             <param name="name"></param>
             <returns>The value, note DBNull.Value is not returned, instead the value is returned as null</returns>
         </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.DynamicParameters.Output``1(``0,System.Linq.Expressions.Expression{System.Func{``0,System.Object}},System.Nullable{System.Data.DbType},System.Nullable{System.Int32})">
+            <summary>
+            Allows you to automatically populate a target property/field from output parameters. It actually
+            creates an InputOutput parameter, so you can still pass data in. 
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="target">The object whose property/field you wish to populate.</param>
+            <param name="expression">A MemberExpression targeting a property/field of the target (or descendant thereof.)</param>
+            <param name="dbType"></param>
+            <param name="size">The size to set on the parameter. Defaults to 0, or DbString.DefaultLength in case of strings.</param>
+            <returns>The DynamicParameters instance</returns>
+        </member>
         <member name="P:ServiceStack.OrmLite.Dapper.DynamicParameters.RemoveUnused">
             <summary>
             If true, the command-text is inspected and only values that are clearly used are included on the connection
@@ -1722,6 +2063,13 @@
         <member name="T:ServiceStack.OrmLite.Dapper.DbString">
             <summary>
             This class represents a SQL string, it can be used if you need to denote your parameter is a Char vs VarChar vs nVarChar vs nChar
+            </summary>
+        </member>
+        <member name="F:ServiceStack.OrmLite.Dapper.DbString.DefaultLength">
+            <summary>
+            A value to set the default value of strings
+            going through Dapper. Default is 4000, any value larger than this
+            field will not have the default value applied.
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.DbString.#ctor">
@@ -1759,11 +2107,6 @@
         <member name="T:ServiceStack.OrmLite.Dapper.FeatureSupport">
             <summary>
             Handles variances in features per DBMS
-            </summary>
-        </member>
-        <member name="F:ServiceStack.OrmLite.Dapper.FeatureSupport.FeatureList">
-            <summary>
-            Dictionary of supported features index by connection type name
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.FeatureSupport.Get(System.Data.IDbConnection)">
@@ -1860,6 +2203,11 @@
             </summary>
             <param name="columnName">DataReader column name</param>
             <returns>Mapping implementation</returns>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.DefaultTypeMap.MatchNamesWithUnderscores">
+            <summary>
+            Should column names like User_Id be allowed to match properties/fields like UserId ?
+            </summary>
         </member>
         <member name="T:ServiceStack.OrmLite.Dapper.CustomPropertyTypeMap">
             <summary>

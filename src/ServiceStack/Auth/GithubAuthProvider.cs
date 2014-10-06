@@ -49,7 +49,7 @@ namespace ServiceStack.Auth
             if (hasError)
             {
                 Log.Error("GitHub error callback. {0}".Fmt(httpRequest.QueryString));
-                return authService.Redirect(session.ReferrerUrl);
+                throw HttpError.Unauthorized(error);
             }
 
             var code = httpRequest.QueryString["code"];

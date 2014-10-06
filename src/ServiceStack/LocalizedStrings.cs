@@ -9,4 +9,31 @@
         public const string AssignRoles = "assignroles";
         public const string UnassignRoles = "unassignroles";
     }
+
+    public static class ErrorMessages
+    {
+        //Auth Errors
+        public static string UnknownAuthProviderFmt = "No configuration was added for OAuth provider '{0}'";
+        
+        public static string InvalidBasicAuthCredentials = "Invalid BasicAuth Credentials";
+        public static string WindowsAuthFailed = "Windows Auth Failed";
+        public static string NotAuthenticated = "Not Authenticated";
+        public static string InvalidUsernameOrPassword = "Invalid UserName or Password";
+
+        public static string InvalidRole = "Invalid Role";
+        public static string InvalidPermission = "Invalid Permission";
+
+        //Register
+        public static string UserNotExists = "User does not exist";
+
+        //StaticFileHandler
+        public static string FileNotExistsFmt = "Static File '{0}' not found";
+
+        //Server Events
+        public static string SubscriptionNotExistsFmt = "Subscription '{0}' does not exist";
+
+        //Validation
+        public static string RequestAlreadyProcessedFmt = "Request '{0}' has already been processed";
+        
+    }
 }

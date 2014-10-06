@@ -308,15 +308,7 @@ namespace ServiceStack.Host
             {
                 types.Add(reqType);
 
-                if (reqType.Properties != null)
-                {
-                    var propertyTypes = reqType.Properties
-                        .Select(p => FindMetadataType(metadataTypes, p.Type, p.TypeNamespace))
-                        .Where(type => type != null)
-                        .ToList();
-
-                    types.AddRange(propertyTypes);
-                }
+                AddReferencedTypes(reqType, metadataTypes, types);
             }
 
             var resType = FindMetadataType(metadataTypes, op.ResponseType);
@@ -324,22 +316,65 @@ namespace ServiceStack.Host
             {
                 types.Add(resType);
 
-                if (resType.Properties != null)
-                {
-                    var propertyTypes = resType.Properties
-                        .Select(p => FindMetadataType(metadataTypes, p.Type, p.TypeNamespace))
-                        .Where(type => type != null && !types.Contains(type))
-                        .ToList();
-
-                    types.AddRange(propertyTypes);
-                }
+                AddReferencedTypes(resType, metadataTypes, types);
             }
 
             var generator = new CSharpGenerator(new NativeTypesFeature().MetadataTypesConfig);
-            types.Each(x => x.Properties.Each(p => 
-                p.DisplayType = p.DisplayType ?? generator.Type(p.Type, p.GenericArgs)));
+            types.Each(x =>
+            {
+                x.DisplayType = x.DisplayType ?? generator.Type(x.Name, x.GenericArgs);
+                x.Properties.Each(p =>
+                    p.DisplayType = p.DisplayType ?? generator.Type(p.Type, p.GenericArgs));
+            });
 
             return types;
+        }
+
+        private static void AddReferencedTypes(MetadataType metadataType, MetadataTypes metadataTypes, List<MetadataType> types)
+        {
+            if (metadataType.Inherits != null)
+            {
+                var type = FindMetadataType(metadataTypes, metadataType.Inherits.Name, metadataType.Inherits.Namespace);
+                if (type != null && !types.Contains(type))
+                    types.Add(type);
+
+                if (!metadataType.Inherits.GenericArgs.IsEmpty())
+                {
+                    foreach (var arg in metadataType.Inherits.GenericArgs)
+                    {
+                        type = FindMetadataType(metadataTypes, arg);
+                        if (type != null && !types.Contains(type))
+                            types.Add(type);
+                    }
+                }
+            }
+
+            if (metadataType.Properties != null)
+            {
+                foreach (var p in metadataType.Properties)
+                {
+                    var type = FindMetadataType(metadataTypes, p.Type, p.TypeNamespace);
+                    if (type != null && !types.Contains(type))
+                        types.Add(type);
+
+                    if (!p.GenericArgs.IsEmpty())
+                    {
+                        foreach (var arg in p.GenericArgs)
+                        {
+                            type = FindMetadataType(metadataTypes, arg);
+                            if (type != null && !types.Contains(type))
+                                types.Add(type);     
+                        }
+                    }
+                    else if (p.IsArray())
+                    {
+                        var elType = p.Type.SplitOnFirst('[')[0];
+                        type = FindMetadataType(metadataTypes, elType);
+                        if (type != null && !types.Contains(type))
+                            types.Add(type);
+                    }
+                }
+            }
         }
 
         static MetadataType FindMetadataType(MetadataTypes metadataTypes, Type type)
@@ -347,9 +382,9 @@ namespace ServiceStack.Host
             return type == null ? null : FindMetadataType(metadataTypes, type.Name, type.Namespace);
         }
 
-        static MetadataType FindMetadataType(MetadataTypes metadataTypes, string name, string @namespace)
+        static MetadataType FindMetadataType(MetadataTypes metadataTypes, string name, string @namespace = null)
         {
-            if (@namespace.StartsWith("System"))
+            if (@namespace != null && @namespace.StartsWith("System"))
                 return null;
 
             var reqType = metadataTypes.Operations.FirstOrDefault(x => x.Request.Name == name);
@@ -362,7 +397,8 @@ namespace ServiceStack.Host
             if (resType != null)
                 return resType.Response;
 
-            return metadataTypes.Types.FirstOrDefault(x => x.Name == name && x.Namespace == @namespace);
+            return metadataTypes.Types.FirstOrDefault(x => x.Name == name
+                && (@namespace == null || x.Namespace == @namespace));
         }
     }
 
@@ -546,6 +582,25 @@ namespace ServiceStack.Host
             return !op.Routes.Any(x => x.Verbs.Contains(HttpMethods.Post) || x.Verbs.Contains(HttpMethods.Put))
                        ? "query"
                        : defaultType;
+        }
+
+        public static HashSet<string> CollectionTypes = new HashSet<string> {
+            "List`1",
+            "HashSet`1",
+            "Dictionary`2",
+            "Queue`1",
+            "Stack`1",
+        };
+
+        public static bool IsCollection(this MetadataPropertyType prop)
+        {
+            return CollectionTypes.Contains(prop.Type)
+                || IsArray(prop);
+        }
+
+        public static bool IsArray(this MetadataPropertyType prop)
+        {
+            return prop.Type.SplitOnFirst('[').Length > 1;
         }
     }
 }

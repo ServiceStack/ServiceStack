@@ -146,7 +146,7 @@ namespace ServiceStack.Metadata
             if (metadataType.Properties.IsEmpty()) return;
             
             sb.Append("<table class='params'>");
-            sb.Append("<caption><b>{0}</b> Parameters:</caption>".Fmt(metadataType.Name));
+            sb.Append("<caption><b>{0}</b> Parameters:</caption>".Fmt(ConvertToHtml(metadataType.DisplayType ?? metadataType.Name)));
             sb.Append("<thead><tr>");
             sb.Append("<th>Name</th>");
             sb.Append("<th>Parameter</th>");

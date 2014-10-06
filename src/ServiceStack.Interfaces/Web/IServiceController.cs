@@ -32,5 +32,10 @@ namespace ServiceStack.Web
         /// Executes the DTO request with an empty RequestContext.
         /// </summary>
         object Execute(object requestDto);
+
+        /// <summary>
+        /// Executes the DTO request with the current HttpRequest.
+        /// </summary>
+        object Execute(IRequest request);
     }
 }

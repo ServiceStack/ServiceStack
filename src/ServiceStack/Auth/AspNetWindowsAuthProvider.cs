@@ -137,7 +137,7 @@ namespace ServiceStack.Auth
                 };
             }
 
-            throw HttpError.Unauthorized("Windows Auth failed");
+            throw HttpError.Unauthorized(ErrorMessages.WindowsAuthFailed);
         }
 
         public static void AuthenticateIfWindowsAuth(IRequest req, IResponse res)

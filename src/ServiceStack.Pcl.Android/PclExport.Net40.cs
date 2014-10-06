@@ -238,15 +238,23 @@ namespace ServiceStack
                     propertySetMethod.Invoke(o, new[] { convertedValue });
             }
 
-            var instance = Expression.Parameter(typeof(object), "i");
-            var argument = Expression.Parameter(typeof(object), "a");
+            try
+            {
+                var instance = Expression.Parameter(typeof(object), "i");
+                var argument = Expression.Parameter(typeof(object), "a");
 
-            var instanceParam = Expression.Convert(instance, propertyInfo.ReflectedType());
-            var valueParam = Expression.Convert(argument, propertyInfo.PropertyType);
+                var instanceParam = Expression.Convert(instance, propertyInfo.ReflectedType());
+                var valueParam = Expression.Convert(argument, propertyInfo.PropertyType);
 
-            var setterCall = Expression.Call(instanceParam, propertyInfo.SetMethod(), valueParam);
+                var setterCall = Expression.Call(instanceParam, propertySetMethod, valueParam);
 
-            return Expression.Lambda<PropertySetterDelegate>(setterCall, instance, argument).Compile();
+                return Expression.Lambda<PropertySetterDelegate>(setterCall, instance, argument).Compile();
+            }
+            catch //fallback for Android
+            {
+                return (o, convertedValue) =>
+                    propertySetMethod.Invoke(o, new[] { convertedValue });
+            }
         }
 
         public override PropertyGetterDelegate GetPropertyGetterFn(PropertyInfo propertyInfo)

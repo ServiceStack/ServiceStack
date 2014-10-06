@@ -591,7 +591,7 @@ namespace ServiceStack
             return new ServiceRunner<TRequest>(this, actionContext);
         }
 
-        public virtual string ResolveLocalizedString(string text)
+        public virtual string ResolveLocalizedString(string text, IRequest request)
         {
             return text;
         }

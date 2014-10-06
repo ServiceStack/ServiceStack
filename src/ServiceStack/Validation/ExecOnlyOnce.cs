@@ -34,7 +34,7 @@ namespace ServiceStack.Validation
                 redis = redisManager.GetClient();
                 var exists = !redis.SetEntryInHashIfNotExists(hashKey, correlationId, Flag);
                 if (exists)
-                    throw HttpError.Conflict("Request {0} has already been processed".Fmt(correlationId));
+                    throw HttpError.Conflict(ErrorMessages.RequestAlreadyProcessedFmt.Fmt(correlationId));
             }
         }
 

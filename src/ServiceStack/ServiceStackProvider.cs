@@ -23,6 +23,7 @@ namespace ServiceStack
     {
         void SetResolver(IResolver resolver);
         IResolver GetResolver();
+        IAppSettings AppSettings { get; }
         IHttpRequest Request { get; }
         IHttpResponse Response { get; }
         ICacheClient Cache { get; }
@@ -35,7 +36,8 @@ namespace ServiceStack
         bool IsAuthenticated { get; }
         T TryResolve<T>();
         T ResolveService<T>();
-        object ExecuteRequest(object requestDto);
+        object Execute(object requestDto);
+        object Execute(IRequest request);
         IAuthSession GetSession(bool reload = false);
         TUserSession SessionAs<TUserSession>();
         void ClearSession();
@@ -109,6 +111,11 @@ namespace ServiceStack
             return resolver;
         }
 
+        public IAppSettings AppSettings
+        {
+            get { return HostContext.AppSettings; }
+        }
+
         private readonly IHttpRequest request;
         public virtual IHttpRequest Request
         {
@@ -138,9 +145,19 @@ namespace ServiceStack
             return service;
         }
 
-        public object ExecuteRequest(object requestDto)
+        public object Execute(object requestDto)
         {
             return HostContext.ServiceController.Execute(requestDto, Request);
+        }
+
+        public object Execute(IRequest request)
+        {
+            return HostContext.ServiceController.Execute(Request);
+        }
+
+        public object ForwardRequest()
+        {
+            return HostContext.ServiceController.Execute(Request);
         }
 
         private ICacheClient cache;

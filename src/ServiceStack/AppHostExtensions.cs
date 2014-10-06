@@ -91,6 +91,11 @@ namespace ServiceStack
             }
             return !ssHost.HasStarted;
         }
+
+        public static string Localize(this string text, IRequest request)
+        {
+            return HostContext.AppHost.ResolveLocalizedString(text, request);
+        }
 	}
 
 }

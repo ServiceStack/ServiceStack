@@ -66,7 +66,7 @@ where not exists (select 1 from MiniProfilers where Id = @Id)"; // this syntax w
 
             using (var conn = GetOpenConnection())
             {
-                var insertCount = conn.ExecuteDapper(sql, new
+                var insertCount = conn.Execute(sql, new
                 {
                     Id = profiler.Id,
                     Name = profiler.Name.Truncate(200),
@@ -113,7 +113,7 @@ where not exists (select 1 from MiniProfilers where Id = @Id)"; // this syntax w
                     // loading a profiler means we've viewed it
                     if (!result.HasUserViewed)
                     {
-                        conn.ExecuteDapper("update MiniProfilers set HasUserViewed = 1 where Id = @id", idParameter);
+                        conn.Execute("update MiniProfilers set HasUserViewed = 1 where Id = @id", idParameter);
                     }
                 }
 
@@ -138,7 +138,7 @@ where not exists (select 1 from MiniProfilers where Id = @Id)"; // this syntax w
 
         private List<T> LoadFor<T>(DbConnection conn, object idParameter)
         {
-            return conn.Dapper<T>(LoadSqlStatements[typeof(T)], idParameter).ToList();
+            return conn.Query<T>(LoadSqlStatements[typeof(T)], idParameter).ToList();
         }
 
 
@@ -157,7 +157,7 @@ order  by Started";
 
             using (var conn = GetOpenConnection())
             {
-                return conn.Dapper<Guid>(sql, new { user }).ToList();
+                return conn.Query<Guid>(sql, new { user }).ToList();
             }
         }
 

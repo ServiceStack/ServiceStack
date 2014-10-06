@@ -506,6 +506,25 @@ namespace ServiceStack.Host
             return handlerFn(request, requestDto);
         }
 
+        public object Execute(IRequest req)
+        {
+            string contentType;
+            var restPath = RestHandler.FindMatchingRestPath(req.Verb, req.PathInfo, out contentType);
+            req.SetRoute(restPath as RestPath);
+            req.OperationName = restPath.RequestType.GetOperationName();
+            var request = RestHandler.GetRequest(req, restPath);
+
+            if (appHost.ApplyRequestFilters(req, req.Response, request))
+                return null;
+
+            var response = Execute(request, req);
+
+            if (appHost.ApplyResponseFilters(req, req.Response, response))
+                return null;
+
+            return response;
+        }
+
         public Task<object> ExecuteAsync(object requestDto, IRequest request)
         {
             var requestType = requestDto.GetType();

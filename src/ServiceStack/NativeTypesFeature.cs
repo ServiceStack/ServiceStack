@@ -32,6 +32,7 @@ namespace ServiceStack
                 },
                 ExportAttributes = new HashSet<Type>
                 {
+                    typeof(FlagsAttribute),
                     typeof(ApiAttribute),
                     typeof(ApiResponseAttribute),
                     typeof(ApiMemberAttribute),

@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
@@ -146,12 +148,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             : base(typeof(ServerEventsAppHost).Name, typeof(ServerEventsAppHost).Assembly) { }
 
         public bool UseRedisServerEvents { get; set; }
+        public bool LimitToAuthenticatedUsers { get; set; }
 
         public override void Configure(Container container)
         {
-            Plugins.Add(new ServerEventsFeature
-            {
+            Plugins.Add(new ServerEventsFeature {
                 HeartbeatInterval = TimeSpan.FromMilliseconds(200),
+                LimitToAuthenticatedUsers = LimitToAuthenticatedUsers,
             });
 
             if (UseRedisServerEvents)
@@ -163,8 +166,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 container.Resolve<IServerEvents>().Start();
             }
+
+            if (LimitToAuthenticatedUsers)
+            {
+                Plugins.Add(new AuthFeature(() => new AuthUserSession(), 
+                    new IAuthProvider[] {
+                        new CustomCredentialsAuthProvider(), 
+                    }));
+            }
         }
     }
+
+    public class CustomCredentialsAuthProvider : CredentialsAuthProvider
+    {
+        public override bool TryAuthenticate(IServiceBase authService, string userName, string password)
+        {
+            return userName == "user" && password == "pass";
+        }
+    }
+
 
     [TestFixture]
     public class MemoryServerEventsTests : ServerEventsTests
@@ -718,6 +738,97 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
     }
+
+    [TestFixture]
+    public class AuthMemoryServerEventsTests 
+    {
+        protected virtual ServiceStackHost CreateAppHost()
+        {
+            return new ServerEventsAppHost { LimitToAuthenticatedUsers = true }
+                .Init()
+                .Start(Config.AbsoluteBaseUri);
+        }
+
+        private static ServerEventsClient CreateServerEventsClient()
+        {
+            var client = new ServerEventsClient(Config.AbsoluteBaseUri);
+            return client;
+        }
+
+        private ServiceStackHost appHost;
+
+        public AuthMemoryServerEventsTests()
+        {
+            //LogManager.LogFactory = new ConsoleLogFactory();
+            appHost = CreateAppHost();
+        }
+
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
+
+        [SetUp]
+        public void SetUp()
+        {
+            var serverEvents = appHost.TryResolve<IServerEvents>();
+            serverEvents.Reset();
+        }
+
+        [Test]
+        public void UnAuthenticated_User_throws_UnAuthorized()
+        {
+            using (var client = CreateServerEventsClient())
+            {
+                try
+                {
+                    client.Start();
+                    Assert.Fail("Should Throw");
+                }
+                catch (WebException ex)
+                {
+                    Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.Unauthorized));
+                }
+            }
+        }
+
+        [Test]
+        public async Task Can_send_and_receive_messages_with_Authenticated_user()
+        {
+            using (var client = CreateServerEventsClient())
+            {
+                await client.AuthenticateAsync(new Authenticate {
+                    provider = CustomCredentialsAuthProvider.Name,
+                    UserName = "user",
+                    Password = "pass",
+                });
+
+                await client.Connect();
+
+                ChatMessage chatMsg = null;
+                client.Handlers["chat"] = (c, msg) => 
+                {
+                    chatMsg = msg.Json.FromJson<ChatMessage>();
+                };
+
+                var msgTask = client.WaitForNextMessage();
+                client.PostChat("msg1");
+                await msgTask.WaitAsync();
+
+                Assert.That(chatMsg, Is.Not.Null);
+                Assert.That(chatMsg.Message, Is.EqualTo("msg1"));
+
+                msgTask = client.WaitForNextMessage();
+                client.PostChat("msg2");
+                await msgTask.WaitAsync();
+
+                Assert.That(chatMsg, Is.Not.Null);
+                Assert.That(chatMsg.Message, Is.EqualTo("msg2"));
+            }
+        }
+    }
+
 
     public class TestNamedReceiver : ServerEventReceiver
     {

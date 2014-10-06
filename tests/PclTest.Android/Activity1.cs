@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Android.App;
-using Android.Content;
-using Android.Runtime;
-using Android.Views;
 using Android.Widget;
 using Android.OS;
 using PclTest.ServiceModel;
@@ -76,10 +72,14 @@ namespace PclTest.Android
                 }
                 catch (Exception ex)
                 {
+                    var lbl = ex.ToString();
+                    lbl.Print();
+
                     lblResults.Text = ex.ToString();
                 }
             };
         }
+
     }
 }
 

@@ -164,8 +164,9 @@ namespace ServiceStack
 
         /// <summary>
         /// Resolve localized text, returns itself by default.
+        /// The Request is provided when exists.
         /// </summary>
-        string ResolveLocalizedString(string text);
+        string ResolveLocalizedString(string text, IRequest request);
     }
 
     public interface IHasAppHost

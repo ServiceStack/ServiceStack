@@ -2,9 +2,6 @@
 
 namespace Check.ServiceModel
 {
-    [Route("/rockstars")]
-    public class QueryRockstars : QueryBase<Rockstar> {}
-
     public class Rockstar
     {
         public int Id { get; set; }

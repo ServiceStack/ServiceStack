@@ -23,9 +23,9 @@ using System.Runtime.Serialization;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
 using Check.ServiceModel;
+using Check.ServiceModel.Operations;
 using Check.ServiceModel.Types;
 using Check.ServiceInterface;
-using Check.ServiceModel.Operations;
 
 
 namespace Check.ServiceInterface
@@ -342,12 +342,6 @@ namespace Check.ServiceModel
         public virtual string Sentence { get; set; }
     }
 
-    [Route("/rockstars")]
-    public partial class QueryRockstars
-        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
-    {
-    }
-
     public partial class Rockstar
     {
         public virtual int Id { get; set; }
@@ -381,15 +375,30 @@ namespace Check.ServiceModel.Operations
         public virtual int Id { get; set; }
 
         [DataMember(Name="Aliased")]
-        [ApiMember(ParameterType="path", Description="Range Description", DataType="double", IsRequired=true)]
+        [ApiMember(Description="Range Description", ParameterType="path", DataType="double", IsRequired=true)]
         public virtual double Range { get; set; }
 
+        [StringLength(20)]
         [Meta("Foo", "Bar")]
         [References(typeof(Check.ServiceModel.Operations.Hello))]
-        [StringLength(20)]
         public virtual string Name { get; set; }
     }
 
+    [Flags]
+    public enum EnumFlags
+    {
+        Value1 = 1,
+        Value2 = 2,
+        Value3 = 4,
+    }
+
+    public enum EnumType
+    {
+        Value1,
+        Value2,
+    }
+
+    [Route("/hello/{Name}")]
     public partial class Hello
         : IReturn<Hello>
     {
@@ -401,12 +410,14 @@ namespace Check.ServiceModel.Operations
     {
         public virtual string Name { get; set; }
         public virtual AllTypes AllTypes { get; set; }
+        public virtual AllCollectionTypes AllCollectionTypes { get; set; }
     }
 
     public partial class HelloAllTypesResponse
     {
         public virtual string Result { get; set; }
         public virtual AllTypes AllTypes { get; set; }
+        public virtual AllCollectionTypes AllCollectionTypes { get; set; }
     }
 
     ///<summary>
@@ -428,6 +439,18 @@ namespace Check.ServiceModel.Operations
     {
         [DataMember]
         public virtual string Result { get; set; }
+    }
+
+    public partial class HelloBase<T>
+    {
+        public HelloBase()
+        {
+            Items = new List<T>{};
+            Counts = new List<int>{};
+        }
+
+        public virtual List<T> Items { get; set; }
+        public virtual List<int> Counts { get; set; }
     }
 
     public partial class HelloResponse
@@ -486,6 +509,25 @@ namespace Check.ServiceModel.Operations
         public virtual string Result { get; set; }
     }
 
+    public partial class HelloWithEnum
+    {
+        public virtual EnumType EnumProp { get; set; }
+        public virtual EnumType? NullableEnumProp { get; set; }
+        public virtual EnumFlags EnumFlags { get; set; }
+    }
+
+    public partial class HelloWithGenericInheritance
+        : HelloBase<Poco>
+    {
+        public virtual string Result { get; set; }
+    }
+
+    public partial class HelloWithGenericInheritance2
+        : HelloBase<Hello>
+    {
+        public virtual string Result { get; set; }
+    }
+
     public partial class HelloWithInheritance
         : HelloBase, IReturn<HelloWithInheritance>
     {
@@ -496,6 +538,33 @@ namespace Check.ServiceModel.Operations
         : HelloResponseBase
     {
         public virtual string Result { get; set; }
+    }
+
+    public partial class HelloWithListInheritance
+        : List<InheritedItem>
+    {
+    }
+
+    public partial class HelloWithNestedClass
+        : IReturn<HelloResponse>
+    {
+        public virtual string Name { get; set; }
+        public virtual NestedClass NestedClassProp { get; set; }
+
+        public partial class NestedClass
+        {
+            public virtual string Value { get; set; }
+        }
+    }
+
+    public partial class HelloWithNestedInheritance
+        : HelloBase<HelloWithNestedInheritance.Item>
+    {
+
+        public partial class Item
+        {
+            public virtual string Value { get; set; }
+        }
     }
 
     public partial class HelloWithReturn
@@ -527,6 +596,11 @@ namespace Check.ServiceModel.Operations
         public virtual HelloType Result { get; set; }
     }
 
+    public partial class InheritedItem
+    {
+        public virtual string Name { get; set; }
+    }
+
     public partial class RestrictedAttributes
     {
         public virtual int Id { get; set; }
@@ -537,6 +611,26 @@ namespace Check.ServiceModel.Operations
 
 namespace Check.ServiceModel.Types
 {
+
+    public partial class AllCollectionTypes
+    {
+        public AllCollectionTypes()
+        {
+            IntArray = new int[]{};
+            IntList = new List<int>{};
+            StringArray = new string[]{};
+            StringList = new List<string>{};
+            PocoArray = new Poco[]{};
+            PocoList = new List<Poco>{};
+        }
+
+        public virtual int[] IntArray { get; set; }
+        public virtual List<int> IntList { get; set; }
+        public virtual string[] StringArray { get; set; }
+        public virtual List<string> StringList { get; set; }
+        public virtual Poco[] PocoArray { get; set; }
+        public virtual List<Poco> PocoList { get; set; }
+    }
 
     public partial class AllTypes
     {
@@ -590,6 +684,11 @@ namespace Check.ServiceModel.Types
     public partial class HelloWithReturnResponse
     {
         public virtual string Result { get; set; }
+    }
+
+    public partial class Poco
+    {
+        public virtual string Name { get; set; }
     }
 
     public partial class SubType

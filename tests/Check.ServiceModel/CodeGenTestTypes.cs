@@ -8,6 +8,7 @@ using ServiceStack.DataAnnotations;
 
 namespace Check.ServiceModel.Operations
 {
+    [Route("/hello/{Name}")]
     public class Hello
     {
         public string Name { get; set; }
@@ -16,6 +17,40 @@ namespace Check.ServiceModel.Operations
     public class HelloResponse
     {
         public string Result { get; set; }
+    }
+
+    public class HelloWithNestedClass : IReturn<HelloResponse>
+    {
+        public string Name { get; set; }
+        public NestedClass NestedClassProp { get; set; }
+
+        // This will generate a class definition "public partial class Hello.NestedClass"
+        public class NestedClass
+        {
+            public string Value { get; set; }
+        }
+    }
+    
+    public class HelloWithEnum
+    {
+        public EnumType EnumProp { get; set; }
+        public EnumType? NullableEnumProp { get; set; }
+
+        public EnumFlags EnumFlags { get; set; }
+    }
+
+    public enum EnumType
+    {
+        Value1,
+        Value2
+    }
+
+    [Flags]
+    public enum EnumFlags
+    {
+        Value1 = 1,
+        Value2 = 2,
+        Value3 = 4,
     }
 
     [Restrict(InternalOnly = true)]
@@ -144,6 +179,37 @@ namespace Check.ServiceModel.Operations
         : HelloResponseBase
     {
         public string Result { get; set; }
+    }
+
+    public class HelloWithGenericInheritance : HelloBase<Poco>
+    {
+        public string Result { get; set; }
+    }
+
+    public class HelloWithGenericInheritance2 : HelloBase<Hello>
+    {
+        public string Result { get; set; }
+    }
+
+    public class HelloWithNestedInheritance : HelloBase<HelloWithNestedInheritance.Item>
+    {
+        public class Item
+        {
+            public string Value { get; set; }
+        }
+    }
+
+    public class HelloWithListInheritance : List<InheritedItem> {}
+
+    public class InheritedItem
+    {
+        public string Name { get; set; }
+    }
+
+    public abstract class HelloBase<T>
+    {
+        public List<T> Items { get; set; }
+        public List<int> Counts { get; set; }
     }
 
     public class HelloWithReturn

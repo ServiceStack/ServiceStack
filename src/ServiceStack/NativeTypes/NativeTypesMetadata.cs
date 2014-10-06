@@ -41,6 +41,7 @@ namespace ServiceStack.NativeTypes
                 IgnoreTypes = defaults.IgnoreTypes,
                 IgnoreTypesInNamespaces = defaults.IgnoreTypesInNamespaces,
                 TypeAlias = defaults.TypeAlias,
+                GlobalNamespace = defaults.GlobalNamespace,
             };
         }
 
@@ -113,19 +114,24 @@ namespace ServiceStack.NativeTypes
             var queue = new Queue<Type>(opTypes);
 
             Func<Type, bool> ignoreTypeFn = t => 
-                t == null 
+                t == null
+                || t.IsGenericParameter
                 || considered.Contains(t)
                 || skipTypes.Contains(t)
                 || ignoreNamespaces.Contains(t.Namespace);
 
-            Action<Type> registerTypeFn = t => {
+            Action<Type> registerTypeFn = null;
+            registerTypeFn = t => {
                 if (t.IsArray || t == typeof(Array))
                     return;
 
                 considered.Add(t);
                 queue.Enqueue(t);
-                if (t.IsUserType())
+
+                if (t.IsUserType() || t.IsUserEnum())
+                {
                     metadata.Types.Add(ToType(t));
+                }
             };
 
             while (queue.Count > 0)
@@ -137,15 +143,45 @@ namespace ServiceStack.NativeTypes
                     .Where(pi => !ignoreTypeFn(pi.PropertyType)))
                 {
                     registerTypeFn(pi.PropertyType);
+
+                    //Register Property Array Element Types 
+                    if (pi.PropertyType.IsArray && !ignoreTypeFn(pi.PropertyType.GetElementType()))
+                    {
+                        registerTypeFn(pi.PropertyType.GetElementType());
+                    }
+
+                    //Register Property Generic Arg Types 
+                    if (!pi.PropertyType.IsGenericType()) continue;
+                    var propArgs = pi.PropertyType.GetGenericArguments();
+                    foreach (var arg in propArgs.Where(arg => !ignoreTypeFn(arg)))
+                    {
+                        registerTypeFn(arg);
+                    }
                 }
 
                 if (!ignoreTypeFn(type.BaseType))
                 {
-                    registerTypeFn(type.BaseType);
+                    if (type.BaseType.IsGenericType)
+                    {
+                        var genericDef = type.BaseType.GetGenericTypeDefinition();
+                        if (!ignoreTypeFn(genericDef))
+                            registerTypeFn(genericDef);
+                        
+                        foreach (var arg in type.BaseType.GetGenericArguments()
+                            .Where(arg => !ignoreTypeFn(arg)))
+                        {
+                            registerTypeFn(arg);
+                        }
+                    }
+                    else
+                    {
+                        registerTypeFn(type.BaseType);
+                    }
                 }
 
                 if (!type.IsGenericType()) continue;
-                
+
+                //Register Generic Arg Types 
                 var args = type.GetGenericArguments();
                 foreach (var arg in args.Where(arg => !ignoreTypeFn(arg)))
                 {
@@ -163,6 +199,7 @@ namespace ServiceStack.NativeTypes
             return new MetadataTypeName
             {
                 Name = type.GetOperationName(),
+                Namespace = type.Namespace,
                 GenericArgs = type.IsGenericType
                     ? type.GetGenericArguments().Select(x => x.GetOperationName()).ToArray()
                     : null,
@@ -182,13 +219,16 @@ namespace ServiceStack.NativeTypes
                     : null,
                 Attributes = ToAttributes(type),
                 Properties = ToProperties(type),
+                IsNested = type.IsNested ? true : (bool?)null,
+                IsEnum = type.IsEnum ? true : (bool?)null,
             };
 
-            if (type.BaseType != null && type.BaseType != typeof(object))
+            if (type.BaseType != null && type.BaseType != typeof(object) && !type.IsEnum)
             {
                 metaType.Inherits = new MetadataTypeName 
                 {
                     Name = type.BaseType.GetOperationName(),
+                    Namespace = type.BaseType.Namespace,
                     GenericArgs = type.BaseType.IsGenericType
                         ? type.BaseType.GetGenericArguments().Select(x => x.GetOperationName()).ToArray()
                         : null
@@ -233,12 +273,52 @@ namespace ServiceStack.NativeTypes
                 };
             }
 
+            if (type.IsEnum)
+            {
+                metaType.EnumNames = new List<string>();
+                metaType.EnumValues = new List<string>();
+
+                var isDefaultLayout = true;
+                var values = Enum.GetValues(type);
+                for (var i = 0; i < values.Length; i++)
+                {
+                    var value = values.GetValue(i);
+                    var name = value.ToString();
+                    var enumValue = Convert.ChangeType(value, Type.GetTypeCode(type)).ToString();
+
+                    if (enumValue != i.ToString())
+                        isDefaultLayout = false;
+
+                    metaType.EnumNames.Add(name);
+                    metaType.EnumValues.Add(enumValue);
+                }
+
+                if (isDefaultLayout)
+                    metaType.EnumValues = null; 
+            }
+
+            var innerTypes = type.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic);
+            foreach (var innerType in innerTypes)
+            {
+                if (metaType.InnerTypes == null)
+                    metaType.InnerTypes = new List<MetadataTypeName>();
+
+                metaType.InnerTypes.Add(new MetadataTypeName
+                {
+                    Name = innerType.GetOperationName(),
+                    Namespace = innerType.Namespace,
+                    GenericArgs = innerType.IsGenericType
+                        ? innerType.GetGenericArguments().Select(x => x.GetOperationName()).ToArray()
+                        : null,
+                });
+            }
+
             return metaType;
         }
 
         public List<MetadataAttribute> ToAttributes(Type type)
         {
-            return !type.IsUserType() || type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>))
+            return !(type.IsUserType() || type.IsUserEnum()) || type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>))
                 ? null
                 : ToAttributes(type.GetCustomAttributes(false));
         }
@@ -342,6 +422,7 @@ namespace ServiceStack.NativeTypes
                 Name = pi.Name,
                 Attributes = ToAttributes(pi.GetCustomAttributes(false)),
                 Type = pi.PropertyType.GetOperationName(),
+                IsValueType = pi.PropertyType.IsValueType ? true : (bool?) null,
                 TypeNamespace = pi.PropertyType.Namespace,
                 DataMember = ToDataMember(pi.GetDataMember()),
                 GenericArgs = pi.PropertyType.IsGenericType
@@ -404,6 +485,7 @@ namespace ServiceStack.NativeTypes
                 Name = pi.Name,
                 Attributes = ToAttributes(propertyAttrs),
                 Type = pi.ParameterType.GetOperationName(),
+                IsValueType = pi.ParameterType.IsValueType ? true : (bool?)null,
                 TypeNamespace = pi.ParameterType.Namespace,
                 Description = pi.GetDescription(),
             };

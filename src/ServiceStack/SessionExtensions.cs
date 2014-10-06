@@ -23,18 +23,20 @@ namespace ServiceStack
             var sessionOptions = GetSessionOptions(httpReq);
 
             return sessionOptions.Contains(SessionOptions.Permanent)
-                ? httpReq.GetItemOrCookie(SessionFeature.PermanentSessionId)
-                : httpReq.GetItemOrCookie(SessionFeature.SessionId);
+                ? httpReq.GetPermanentSessionId()
+                : httpReq.GetTemporarySessionId();
         }
 
         public static string GetPermanentSessionId(this IRequest httpReq)
         {
-            return httpReq.GetItemOrCookie(SessionFeature.PermanentSessionId);
+            return httpReq.GetItemOrCookie(SessionFeature.PermanentSessionId)
+                ?? httpReq.GetHeader("X-" + SessionFeature.PermanentSessionId);
         }
 
         public static string GetTemporarySessionId(this IRequest httpReq)
         {
-            return httpReq.GetItemOrCookie(SessionFeature.SessionId);
+            return httpReq.GetItemOrCookie(SessionFeature.SessionId)
+                ?? httpReq.GetHeader("X-" + SessionFeature.SessionId);
         }
 
         /// <summary>
@@ -117,6 +119,13 @@ namespace ServiceStack
         public static HashSet<string> GetSessionOptions(this IRequest httpReq)
         {
             var sessionOptions = httpReq.GetItemOrCookie(SessionFeature.SessionOptionsKey);
+            var headerOptions = httpReq.GetHeader("X-" + SessionFeature.SessionOptionsKey);
+            if (headerOptions != null)
+            {
+                sessionOptions = sessionOptions.IsNullOrEmpty()
+                    ? headerOptions
+                    : headerOptions + "," + sessionOptions;
+            }                
             return sessionOptions.IsNullOrEmpty()
                 ? new HashSet<string>()
                 : sessionOptions.Split(',').ToHashSet();

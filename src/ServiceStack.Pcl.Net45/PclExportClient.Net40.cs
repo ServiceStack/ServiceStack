@@ -70,6 +70,8 @@ namespace ServiceStack
 
         public void Cancel()
         {
+            if (Timer == null) return;
+            
             this.Timer.Change(Timeout.Infinite, Timeout.Infinite);
             this.Dispose();
         }

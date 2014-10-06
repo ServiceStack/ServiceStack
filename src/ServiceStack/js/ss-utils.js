@@ -52,6 +52,7 @@
     function splitCase(t) {
         return typeof t != 'string' ? t : t.replace( /([A-Z]|[0-9]+)/g , ' $1').replace( /_/g , ' ');
     };
+    $.ss.humanize = function(s) { return !s || s.indexOf(' ') >= 0 ? s : splitCase(s); };
 
     function toCamelCase(key) {
         return !key ? key : key.charAt(0).toLowerCase() + key.substring(1);
@@ -294,13 +295,25 @@
     };
 
     $.ss.eventReceivers = {};
+    $.ss.reconnectServerEvents = function(opt) {
+        opt = opt || {};
+        var hold = $.ss.eventSource;
+        var es = new EventSource(opt.url || hold.url);
+        es.onerror = opt.onerror || hold.onerror;
+        es.onmessage = opt.onmessage || hold.onmessage;
+        var fn = $.ss.handlers["onReconnect"];
+        if (fn != null)
+            fn.apply(es, opt.errorArgs);
+        hold.close();
+        return $.ss.eventSource = es;
+    };
     $.fn.handleServerEvents = function (opt) {
-        var source = this[0];
+        $.ss.eventSource = this[0];
         opt = opt || {};
         if (opt.handlers) {
             $.extend($.ss.handlers, opt.handlers);
         }
-        source.addEventListener('message', function (e) {
+        function onMessage(e) {
             var parts = $.ss.splitOnFirst(e.data, ' ');
             var selector = parts[0];
             var json = parts[1];
@@ -324,7 +337,15 @@
                             window.clearInterval(opt.heartbeat);
                         }
                         opt.heartbeat = window.setInterval(function () {
-                            $.post(opt.heartbeatUrl, null, function(r) {});
+                            $.ajax({
+                                type: "POST",
+                                url: opt.heartbeatUrl,
+                                data: null,
+                                success: function (r) { },
+                                error: function () {
+                                    $.ss.reconnectServerEvents({errorArgs:arguments});
+                                }
+                            });
                         }, parseInt(opt.heartbeatIntervalMs) || 10000);
                     }
                     if (opt.unRegisterUrl) {
@@ -358,7 +379,8 @@
             if (opt.success) {
                 opt.success(selector, msg, e);
             }
-        }, false);
+        }
+        $.ss.eventSource.onmessage = onMessage;
     };
 
 })(window.jQuery);

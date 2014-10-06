@@ -4,9 +4,48 @@ using System.Linq;
 using NUnit.Framework;
 using ServiceStack.Configuration;
 using ServiceStack.OrmLite;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests
 {
+    [TestFixture]
+    public class EnvironmentAppSettingsTests
+    {
+        [Test]
+        public void Can_get_environment_variable()
+        {
+            var env = new EnvironmentVariableSettings();
+            var path = env.Get("PATH");
+            Assert.That(path, Is.Not.Null);
+            path.Print();
+
+            var unknown = env.Get("UNKNOWN");
+            Assert.That(unknown, Is.Null);
+
+            var envVars = env.GetAllKeys();
+            Assert.That(envVars.Count, Is.GreaterThan(0));
+
+            envVars.PrintDump();
+        }
+    }
+
+    public class MultiAppSettingsTest : AppSettingsTest
+    {
+        public override AppSettingsBase GetAppSettings()
+        {
+            return new MultiAppSettings(
+                new DictionarySettings(GetConfigDictionary()),
+                new AppSettings());
+        }
+
+        public override Dictionary<string, string> GetConfigDictionary()
+        {
+            var configMap = base.GetConfigDictionary();
+            configMap.Remove("NullableKey");
+            return configMap;
+        }
+    }
+
     public class AppConfigAppSettingsTest : AppSettingsTest
     {
         public override AppSettingsBase GetAppSettings()
