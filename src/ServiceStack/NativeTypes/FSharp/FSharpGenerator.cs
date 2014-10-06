@@ -395,7 +395,10 @@ namespace ServiceStack.NativeTypes.FSharp
             if (arrParts.Length > 1)
                 return "{0}[]".Fmt(TypeAlias(arrParts[0]));
 
-            return NameOnly(type);
+            string typeAlias;
+            Config.FSharpTypeAlias.TryGetValue(type, out typeAlias);
+
+            return typeAlias ?? NameOnly(type);
         }
 
         public string NameOnly(string type)
