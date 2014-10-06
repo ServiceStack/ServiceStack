@@ -38,7 +38,7 @@ namespace ServiceStack.ServiceHost
         }
 
         /// <summary>
-        /// Inject alternative dependencyInjector and strategy for resolving Service Types
+        /// Inject alternative dependencyService and strategy for resolving Service Types
         /// </summary>
         public ServiceManager(DependencyService dependencyService, ServiceController serviceController)
         {
@@ -77,14 +77,9 @@ namespace ServiceStack.ServiceHost
 			}
 		}
 
-        private DependencyInjectorResolveCache typeFactory;
-
 		public ServiceManager Init()
 		{
-
-            typeFactory = new DependencyInjectorResolveCache(this.DependencyService);
-
-		    this.ServiceController.Register(typeFactory);
+		    this.ServiceController.Register();
 
 			this.DependencyService.RegisterAutoWiredTypes(this.Metadata.ServiceTypes);
 
@@ -97,7 +92,7 @@ namespace ServiceStack.ServiceHost
 				|| typeof(T).GetGenericTypeDefinition() != typeof(IService<>))
 				throw new ArgumentException("Type {0} is not a Web Service that inherits IService<>".Fmt(typeof(T).FullName));
 
-			this.ServiceController.RegisterGService(typeFactory, typeof(T));
+			this.ServiceController.RegisterGService(typeof(T));
 			this.DependencyService.RegisterAutoWired<T>();
 		}
 
@@ -108,7 +103,7 @@ namespace ServiceStack.ServiceHost
 			{
                 if (genericServiceType != null)
                 {
-                    this.ServiceController.RegisterGService(typeFactory, serviceType);
+                    this.ServiceController.RegisterGService(serviceType);
                     this.DependencyService.RegisterAutoWiredType(serviceType);
                     return genericServiceType;
                 }
@@ -116,7 +111,7 @@ namespace ServiceStack.ServiceHost
                 var isNService = typeof(IService).IsAssignableFrom(serviceType);
                 if (isNService)
                 {
-                    this.ServiceController.RegisterNService(typeFactory, serviceType);
+                    this.ServiceController.RegisterNService(serviceType);
                     this.DependencyService.RegisterAutoWiredType(serviceType);
                     return null;
                 }

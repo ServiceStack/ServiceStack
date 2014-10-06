@@ -76,16 +76,16 @@ namespace ServiceStack.ServiceHost
             requestExecMap.Add(requestType, handlerFn);
         }
 
-        public void Register(ITypeFactory serviceFactoryFn)
+        public void Register()
         {
             foreach (var serviceType in ResolveServicesFn())
             {
-                RegisterGService(serviceFactoryFn, serviceType);
-                RegisterNService(serviceFactoryFn, serviceType);
+                RegisterGService(serviceType);
+                RegisterNService(serviceType);
             }
         }
 
-        public void RegisterGService(ITypeFactory serviceFactoryFn, Type serviceType)
+        public void RegisterGService(Type serviceType)
         {
             if (serviceType.IsAbstract || serviceType.ContainsGenericParameters) return;
 
@@ -98,7 +98,7 @@ namespace ServiceStack.ServiceHost
 
                 var requestType = service.GetGenericArguments()[0];
 
-                RegisterGServiceExecutor(requestType, serviceType, serviceFactoryFn);
+                RegisterGServiceExecutor(requestType, serviceType);
 
                 var responseTypeName = requestType.FullName + ResponseDtoSuffix;
                 var responseType = AssemblyUtils.FindType(responseTypeName);
@@ -107,7 +107,7 @@ namespace ServiceStack.ServiceHost
             }
         }
 
-        public void RegisterNService(ITypeFactory serviceFactoryFn, Type serviceType)
+        public void RegisterNService(Type serviceType)
         {
             var processedReqs = new HashSet<Type>();
 
@@ -120,7 +120,7 @@ namespace ServiceStack.ServiceHost
                     if (processedReqs.Contains(requestType)) continue;
                     processedReqs.Add(requestType);
 
-                    RegisterNServiceExecutor(requestType, serviceType, serviceFactoryFn);
+                    RegisterNServiceExecutor(requestType, serviceType);
 
                     var returnMarker = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
                     var responseType = returnMarker != null ?
@@ -277,38 +277,12 @@ namespace ServiceStack.ServiceHost
             return null;
         }
 
-        internal class TypeFactoryWrapper : ITypeFactory
-        {
-            private readonly Func<Type, object> typeCreator;
-
-            public TypeFactoryWrapper(Func<Type, object> typeCreator)
-            {
-                this.typeCreator = typeCreator;
-            }
-
-            public object CreateInstance(Type type)
-            {
-                return typeCreator(type);
-            }
-        }
-
         public void Register(Type requestType, Type serviceType)
         {
-            var handlerFactoryFn = Expression.Lambda<Func<Type, object>>
-                (
-                    Expression.New(serviceType),
-                    Expression.Parameter(typeof(Type), "serviceType")
-                ).Compile();
-
-            RegisterGServiceExecutor(requestType, serviceType, new TypeFactoryWrapper(handlerFactoryFn));
+            RegisterGServiceExecutor(requestType, serviceType);
         }
 
-        public void Register(Type requestType, Type serviceType, Func<Type, object> handlerFactoryFn)
-        {
-            RegisterGServiceExecutor(requestType, serviceType, new TypeFactoryWrapper(handlerFactoryFn));
-        }
-
-        public void RegisterGServiceExecutor(Type requestType, Type serviceType, ITypeFactory serviceFactoryFn)
+        public void RegisterGServiceExecutor(Type requestType, Type serviceType)
         {
             var typeFactoryFn = CallServiceExecuteGeneric(requestType, serviceType);
 
@@ -329,7 +303,7 @@ namespace ServiceStack.ServiceHost
             AddToRequestExecMap(requestType, serviceType, handlerFn);
         }
 
-        public void RegisterNServiceExecutor(Type requestType, Type serviceType, ITypeFactory serviceFactoryFn)
+        public void RegisterNServiceExecutor(Type requestType, Type serviceType)
         {
             var serviceExecDef = typeof(NServiceRequestExec<,>).MakeGenericType(serviceType, requestType);
             var iserviceExec = (INServiceExec)serviceExecDef.CreateInstance();

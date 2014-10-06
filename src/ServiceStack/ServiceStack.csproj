@@ -227,7 +227,6 @@
     <Compile Include="MiniProfiler\WebRequestProfilerProvider.Settings.cs" />
     <Compile Include="ServiceHost\Cookies.cs" />
     <Compile Include="ServiceHost\DefaultRequestAttribute.cs" />
-    <Compile Include="ServiceHost\DependencyInjectorResolveCache.cs" />
     <Compile Include="ServiceHost\DtoUtils.cs" />
     <Compile Include="ServiceHost\IRequiresSoapMessage.cs" />
     <Compile Include="ServiceHost\MetadataPagesConfig.cs" />

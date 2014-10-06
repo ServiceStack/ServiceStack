@@ -52,9 +52,9 @@ namespace ServiceStack.ServiceInterface.Validation
     {
         /// <summary>
         /// Auto-scans the provided assemblies for a <see cref="IValidator"/>
-        /// and registers it in the provided IoC dependencyInjector.
+        /// and registers it in the provided IoC dependencyService.
         /// </summary>
-        /// <param name="dependencyInjector">The IoC dependencyInjector</param>
+        /// <param name="dependencyService">The IoC dependencyService</param>
         /// <param name="assemblies">The assemblies to scan for a validator</param>
         public static void RegisterValidators(this DependencyService dependencyService, params Assembly[] assemblies)
         {

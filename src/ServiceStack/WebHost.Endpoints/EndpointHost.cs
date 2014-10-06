@@ -187,7 +187,7 @@ namespace ServiceStack.WebHost.Endpoints
             {
                 if (registeredCacheClient == null)
                 {
-                    DependencyInjector.Register<ICacheClient>(new MemoryCacheClient());
+                    DependencyService.Register<ICacheClient>(new MemoryCacheClient());
                 }
             }
 
@@ -195,7 +195,7 @@ namespace ServiceStack.WebHost.Endpoints
             var registeredMqFactory = AppHost.TryResolve<IMessageFactory>();
             if (registeredMqService != null && registeredMqFactory == null)
             {
-                DependencyInjector.Register(c => registeredMqService.MessageFactory);
+                DependencyService.Register(c => registeredMqService.MessageFactory);
             }
             */
 
@@ -208,7 +208,7 @@ namespace ServiceStack.WebHost.Endpoints
         }
 
         /// <summary>
-        /// The AppHost.DependencyInjector. Note: it is not thread safe to register dependencies after AppStart.
+        /// The AppHost.DependencyService. Note: it is not thread safe to register dependencies after AppStart.
         /// </summary>
         public static DependencyService DependencyService
         {

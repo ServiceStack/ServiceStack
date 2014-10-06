@@ -34,8 +34,8 @@ namespace ServiceStack.WebHost.Endpoints
 		protected virtual ServiceManager CreateServiceManager(params Assembly[] assembliesWithServices)
 		{
 			return new ServiceManager(assembliesWithServices);
-			//Alternative way to inject DependencyInjector + Service Resolver strategy
-			//return new ServiceManager(new DependencyInjector(),
+			//Alternative way to inject DependencyService + Service Resolver strategy
+			//return new ServiceManager(new DependencyService(),
 			//    new ServiceController(() => assembliesWithServices.ToList().SelectMany(x => x.GetTypes())));
 		}
 
@@ -108,21 +108,9 @@ namespace ServiceStack.WebHost.Endpoints
         {
             try
             {
-                /* DAC cleanup
-                var iocAdapterReleases = DependencyInjector.Adapter as IRelease;
-                if (iocAdapterReleases != null)
-                {
-                    iocAdapterReleases.Release(instance);
-                }
-                else
-                {
-                */
-                    var disposable = instance as IDisposable;
-                    if (disposable != null)
-                        disposable.Dispose();
-                /*
-                }
-                */
+                var disposable = instance as IDisposable;
+                if (disposable != null)
+                    disposable.Dispose();
             }
             catch {/*ignore*/}
         }
@@ -148,7 +136,7 @@ namespace ServiceStack.WebHost.Endpoints
 		}
 
         /// <summary>
-        /// Resolves from IoC dependencyInjector a specified type instance.
+        /// Resolves from IoC dependencyService a specified type instance.
         /// </summary>
         /// <typeparam name="T">Type to be resolved.</typeparam>
         /// <returns>Instance of <typeparamref name="T"/>.</returns>

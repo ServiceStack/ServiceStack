@@ -92,13 +92,12 @@ namespace ServiceStack.ServiceHost
 
         public virtual object Execute(IRequestContext requestContext, object instance, TRequest request)
         {
-            // DAC this is execute I think !! ??
             try
             {
                 BeforeEachRequest(requestContext, request);
 
                 var appHost = GetAppHost();
-                var dependencyInjector = appHost != null ? appHost.Config.ServiceManager.DependencyService : null;
+                var dependencyService = appHost != null ? appHost.Config.ServiceManager.DependencyService : null;
                 var httpReq = requestContext != null ? requestContext.Get<IHttpRequest>() : null;
                 var httpRes = requestContext != null ? requestContext.Get<IHttpResponse>() : null;
 
@@ -107,8 +106,8 @@ namespace ServiceStack.ServiceHost
                     foreach (var requestFilter in RequestFilters)
                     {
                         var attrInstance = requestFilter.Copy();
-                        if (dependencyInjector != null)
-                            dependencyInjector.AutoWire(attrInstance);
+                        if (dependencyService != null)
+                            dependencyService.AutoWire(attrInstance);
                         attrInstance.RequestFilter(httpReq, httpRes, request);
                         if (appHost != null)
                             appHost.Release(attrInstance);
@@ -123,8 +122,8 @@ namespace ServiceStack.ServiceHost
                     foreach (var responseFilter in ResponseFilters)
                     {
                         var attrInstance = responseFilter.Copy();
-                        if (dependencyInjector != null)
-                            dependencyInjector.AutoWire(attrInstance);
+                        if (dependencyService != null)
+                            dependencyService.AutoWire(attrInstance);
                         attrInstance.ResponseFilter(httpReq, httpRes, response);
                         if (appHost != null)
                             appHost.Release(attrInstance);

@@ -363,21 +363,9 @@ namespace ServiceStack.WebHost.Endpoints.Support
         {
             try
             {
-                /*
-                var iocAdapterReleases = DependencyInjector.Adapter as IRelease;
-                if (iocAdapterReleases != null)
-                {
-                    iocAdapterReleases.Release(instance);
-                }
-                else 
-                {
-                */
-                    var disposable = instance as IDisposable;
-                    if (disposable != null)
-                        disposable.Dispose();
-                /*
-                }
-                */
+                var disposable = instance as IDisposable;
+                if (disposable != null)
+                    disposable.Dispose();
             }
             catch {/*ignore*/}
         }
@@ -403,7 +391,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
         }
 
         /// <summary>
-        /// Resolves from IoC dependencyInjector a specified type instance.
+        /// Resolves from IoC dependencyService a specified type instance.
         /// </summary>
         /// <typeparam name="T">Type to be resolved.</typeparam>
         /// <returns>Instance of <typeparamref name="T"/>.</returns>
