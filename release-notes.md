@@ -1,3 +1,488 @@
+# v4.0.32 Release Notes
+
+## FSharp Add ServiceStack Reference!
+
+We're happy to announce that the next language supported by [Add ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference) is F#!
+
+For a quick overview, [Add ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference) is a simple solution to WCF's Add Service Reference that provides a flexible alternative to sharing your compiled server DTO's assembly with clients. Now F# clients can easily add a reference to a remote ServiceStack instance and update typed DTO's directly from within VS.NET - reducing the burden and effort required to consume ServiceStack Services. 
+
+### Example Usage
+
+The easiest way to Add a ServiceStack reference to your project is to right-click on your project to bring up [ServiceStackVS's](https://github.com/ServiceStack/ServiceStack/wiki/Creating-your-first-project) **Add ServiceStack Reference** context-menu item. This opens a dialog where you can add the url of the ServiceStack instance you want to typed DTO's for, as well as the name of the T4 template that's added to your project.
+
+[![Add ServiceStack Reference](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/apps/StackApis/add-service-ref-flow.png)](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/apps/StackApis/add-service-ref-flow.png)
+
+After clicking OK, the servers DTO's and [ServiceStack.Client](https://www.nuget.org/packages/ServiceStack.Client) NuGet package are added to the project, providing an instant typed API:
+
+[![Calling ServiceStack Service with FSharp](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/fsharp-add-servicestack-reference.png)](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/fsharp-add-servicestack-reference.png)
+
+### Updating a ServiceStack Reference
+
+Updating a ServiceStack reference works intuitively where you can right-click on the DTO's you want to update and click **Update ServiceStack Reference** on the context menu:
+
+[![Calling ServiceStack Service with FSharp](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/fsharp-update-servicestack-reference.png)](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/fsharp-update-servicestack-reference.png)
+
+### F# Client Example
+
+Just like with C#, F# Native Types can be used in ServiceStack's [Generic Service Clients](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client) providing and end-to-end Typed API whose PCL support also allows F# to be used in [mobile clients apps](https://github.com/ServiceStackApps/HelloMobile) as well. The basic [stackapis.servicestack.net](http://stackapis.servicestack.net/) Services example in F# looks like:
+
+```fsharp
+let client = new JsonServiceClient("http://stackapis.servicestack.net")
+let response = client.Get(new SearchQuestions(
+    Tags = new List<string>([ "redis"; "ormlite" ])))        
+
+TypeSerializer.PrintDump(response)
+```
+
+## FSharp Native Types Notes 
+
+Add ServiceStack Reference in FSharp projects works a little different to C# projects which [utilizes VS.NET's built-in T4 support](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference#add-servicestack-reference) to provide customization of DTO's on the client that auto-runs the T4 template implicitly on **Save** or explicitly with the **Run Custom Tool** context menu item.
+
+Since there's no support for T4 templates in F# Projects, clicking **Add ServiceStack Reference** skips the T4 template and just adds the generated F# Types using the server defaults. This ends up providing a simpler experience for F# clients in the default case. Customization of default behavior can still be done on the Server:
+
+### Change Default Server Configuration
+
+The above defaults are also overridable on the ServiceStack Server by modifying the default config on the `NativeTypesFeature` Plugin, e.g:
+
+```csharp
+var typesConfig = this.GetPlugin<NativeTypesFeature>().MetadataTypesConfig;
+typesConfig.AddDataContractAttributes = false;
+...
+```
+
+## F# Native Types Constraints
+
+As the ordering constraint in F# conflicted with the ordering of types by C# namespaces, the cleanest approach was to add all DTO's under a single namespace. By default the namespace used will be the base **ServiceModel** namespace which is overridable with the `GlobalNamespace` Config:
+
+```csharp
+typesConfig.GlobalNamespace = "Client.Namespace";
+```
+
+This does mean that each DTO type name needs to be unique which is a best-practice that's now a requirement in order to make use of F# native types. Another semantic difference is that any C# partial classes are converted into top-level classes in F#.  
+
+For more documentation about F# Native Types including info on each of the config options supported checkout the [F# Add ServiceStack Reference wiki](https://github.com/ServiceStack/ServiceStack/wiki/FSharp-Add-ServiceStack-Reference).
+
+### [Upgrade ServiceStackVS](https://github.com/ServiceStack/ServiceStack/wiki/Creating-your-first-project)
+
+To take advantage of this F# Add ServiceStack Reference [Upgrade or Install ServiceStackVS](https://github.com/ServiceStack/ServiceStack/wiki/Creating-your-first-project) VS.NET Extension. If you already have **ServiceStackVS** installed, uninstall it first from `Tools -> Extensions and Updates... -> ServiceStackVS -> Uninstall`.
+
+### Nested classes and Enums
+
+Support for Enums and Nested classes are now supported on both C# and F# Native Types. 
+
+## Improved integration with MVC and ASP.NET
+
+We've improved integration for making use of ServiceStack components in existing ASP.NET MVC and WebForms Web Applications. The internals of `ServiceStackController` have been rewritten to share a common code-base with the new WebForms `ServiceStackPage` WebForms base page, both provide easy access to the same clean, high-performance components found in ServiceStack's `Service` base class, directly from within your MVC Controllers and WebForm pages.
+
+This is an outline of the API's found in MVC's `ServiceStackController` and WebForms `ServiceStackPage`:
+
+```csharp
+public class ServiceStackController : Controller
+{
+    //...
+    IServiceStackProvider ServiceStackProvider { get; set; }
+    IAppSettings AppSettings { get; set; }
+    IHttpRequest ServiceStackRequest { get; set; }
+    IHttpResponse ServiceStackResponse { get; set; }
+    ICacheClient Cache { get; set; }
+    IDbConnection Db { get; set; }
+    IRedisClient Redis { get; set; }
+    IMessageFactory MessageFactory { get; set; }
+    IMessageProducer MessageProducer { get; set; }
+    ISessionFactory SessionFactory { get; set; }
+    ISession SessionBag { get; set; }
+    bool IsAuthenticated { get; set; }
+
+    T TryResolve<T>();
+    T ResolveService<T>();
+    object Execute(object requestDto);
+    object ForwardRequestToServiceStack(IRequest request=null);
+    IAuthSession GetSession(bool reload = true);
+    TUserSession SessionAs<TUserSession>();
+    void ClearSession();
+    void PublishMessage<T>(T message);
+}
+```
+
+### Use ServiceStack Authentication
+
+One benefit of integration with ServiceStack is to be able to make use of ServiceStack's simple and flexible [Authentication Providers](https://github.com/ServiceStack/ServiceStack/wiki/Authentication-and-authorization) which require minimal configuration and supports a number of different [Session Providers](https://github.com/ServiceStack/ServiceStack/wiki/Caching) and persistent [Data Store back-ends](https://github.com/ServiceStack/ServiceStack/wiki/Authentication-and-authorization#userauth-persistence---the-iuserauthrepository) to make it easy to integrate with an existing environment.
+
+### New MVC and WebForms Examples
+
+To illustrate the seamless integration with ServiceStack, we've created 2 new authentication-enabled example websites:
+
+ - **ASP.NET MVC** Live Demo: [mvc.servicestack.net](http://mvc.servicestack.net/) and [source code](https://github.com/ServiceStack/Test/tree/master/src/Mvc)
+ - **ASP.NET WebForms** Live Demo: [webforms.servicestack.net](http://webforms.servicestack.net/) and [source code](https://github.com/ServiceStack/Test/tree/master/src/WebForms)
+
+![MVC with ServiceStack Authentication](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/mvc-integration.png)
+
+### Integrating with ServiceStack from MVC or WebForms
+
+We'll go through the MVC example to showcase the different ways you can integrate with ServiceStack from an external Web Framework. 
+
+#### Using ResolveService to call Services directly
+
+The `Login` Action is a standard MVC Action handling HTML Form input accepting 3 parameters, a `userName`, `password` as well as a relative `redirect` url to redirect to when authentication is successful. Login uses the `ResolveService<TService>` API which just resolves an auto-wired instance of the ServiceStack `AuthenticateService` from the IOC and injects the current HTTP Request context, which we then use to call a method on the Service directly:
+
+```csharp
+public ActionResult Login(string userName, string password, string redirect=null)
+{
+    if (ModelState.IsValid)
+    {
+        try
+        {
+            using (var authService = ResolveService<AuthenticateService>())
+            {
+                var response = authService.Authenticate(new Authenticate {
+                    provider = CredentialsAuthProvider.Name,
+                    UserName = userName,
+                    Password = password,
+                    RememberMe = true,
+                });
+
+                // add ASP.NET auth cookie
+                FormsAuthentication.SetAuthCookie(userName, true);
+
+                return Redirect(string.IsNullOrEmpty(redirect) ? "/" : redirect);
+            }
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+        }
+    }
+
+    return View("Index", GetViewModel());
+}
+```
+
+> Since the above example calls the Service method directly any exceptions raised by the Service implementation are thrown and caught as normal.
+
+#### Using Execute to process Request DTO's
+
+The `Logout()` MVC Action uses ServiceStack's `Execute()` API which can call the desired ServiceStack Service with just a populated Request DTO:
+
+```csharp
+public ActionResult Logout()
+{
+    Execute(new Authenticate { provider = "logout" });
+    FormsAuthentication.SignOut(); 
+
+    return Redirect("/");
+}
+```
+
+#### Using ForwardRequestToServiceStack to proxy HTTP Requests
+
+The `ForwardingController` handles OAuth callbacks that have been configured to callback to `/auth/*` route which is handled by MVC as ServiceStack is mounted at and only configured to handle `/api` requests. 
+
+Instead of creating new OAuth Applications with each provider to use the new `/api/auth/*` callback url so ServiceStack can handle the OAuth callback, we can use just use the new `ForwardRequestToServiceStack()` which just forwards the incoming HTTP Request from MVC to ServiceStack to process, effectively acting as a proxy:
+
+```csharp
+routes.MapRoute("Forwarding", "auth/{*pathinfo}", 
+    new { controller = "Forwarding", action = "Index" });
+...
+
+public class ForwardingController : ServiceStackController
+{
+    public ActionResult Index()
+    {
+        var response = ForwardRequestToServiceStack();
+        if (ServiceStackResponse.IsClosed) return new EmptyResult();
+
+        string redirectUrl;
+        var httpResult = response as IHttpResult;
+        if (httpResult != null && httpResult.Headers.TryGetValue(HttpHeaders.Location, out redirectUrl))
+            return Redirect(redirectUrl);
+
+        return Redirect("/");
+    }
+}
+```
+
+The `Execute()` and `ForwardRequestToServiceStack()` are high-level API's that call into ServiceStack's internal Request pipeline, executing any Action Filters and also converts any exceptions into a populated serializable Response DTO with a populated `ResponseStatus` as would be returned to Service Clients.
+
+### Authentication Attributes
+
+Since we're using ServiceStack for Authentication, we're also able to re-use ServiceStack's Authentication Attribute Filters directly on MVC Controllers and WebForm Pages just as if they were ServiceStack Services, e.g:
+
+```csharp
+[Authenticate]
+public class AuthOnlyController : ServiceStackController 
+{
+    public ActionResult Index()
+    {
+        return View(SessionAs<CustomUserSession>());
+    }         
+}
+```
+
+The above controller hanldes the [mvc.servicestack.net/AuthOnly](http://mvc.servicestack.net/AuthOnly) route which only allows access to Authorized users. If a user is not authenticated they're automatically redirected to [/?redirect=/AuthOnly#f=Unauthorized](http://mvc.servicestack.net/?redirect=%2fAuthOnly#f=Unauthorized) to prompt the user to login, after successfully logging in it will redirect back to the original `/AuthOnly` url.
+
+### Required Role or Permission
+
+The `[RequiredRole]` and `[RequiredPermission]` attributes work similar to the `[Authentication]` attribute except they also assert that the user is a member of the specified role:
+
+```csharp
+[RequiredRole("TheRole")]
+public class RequiresRoleController : ServiceStackController 
+{
+    public ActionResult Index()
+    {
+        return View(SessionAs<CustomUserSession>());
+    }
+}
+```
+
+The above Controller handles the [/RequiresRole](http://mvc.servicestack.net/RequiresRole) Route and will only grant access if the Authenticated User is also a member of the **TheRole**.
+
+### Calling ServiceStack Services Directly
+
+The simplest way to consume ServiceStack Services requiring the least effort and moving parts is to call them directly: 
+
+#### Using ServiceStack OAuth in MVC
+
+Integrating with ServiceStack's OAuth providers requires the least effort as they're linkable directly in the format `/api/auth/{provider}` which is handled by ServiceStack's OAuth Service who initiates the Authentication process by redirecting to the selected OAuth provider:
+
+![MVC OAuth with HTML](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/mvc-auth.png)
+
+#### Calling ServiceStack with Ajax in MVC
+
+Posting HTML Forms directly to ServiceStack Services isn't that much more effort, Start with a plain HTML Form with field names that match with the Services property names:
+
+![MVC Register with HTML](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/mvc-register.png)
+
+We can then use ServiceStack's built-in [ss-utils.js JavaScript Libraray](https://github.com/ServiceStack/ServiceStack/wiki/ss-utils.js-JavaScript-Client-Library) to take care of Ajaxifying, auto-binding and submitting the form via Ajax. It also has built-in support for [Bootstrap Forms Field Validation conventions](https://github.com/ServiceStack/ServiceStack/wiki/ss-utils.js-JavaScript-Client-Library#bootstrap-forms) to automatically bind errors to the appropriate fields. The only custom code required is to bind the form is then:
+
+```javascript
+$("#form-register").bindForm({
+    success: function (r) { location.href = '/'; }
+});
+```
+
+In this case we've added a success callback to redirect to the home page if the registration was successful which will either be authenticated with the newly registered user if **Auto Login** was checked, otherwise you can use the login form to Sign in as the newly registered user.
+
+## [Server Events](https://github.com/ServiceStack/ServiceStack/wiki/Server-Events)
+
+There are new custom hooks on `ServerEventsFeature` to allow for further customization and deeper introspection of ServiceStack's Server Events:
+
+  - `OnInit` - Invoked when clients first connect to the `event-stream`, can be used to add additional HTTP Headers back to the client
+  - `OnPublish` - Fired after each message is published with the active Response and the raw message that was published
+
+### Add Authentication support to .NET ServerEvents Client
+
+There are new explicit `Authenticate` and `AuthenticateAsync` API's which can be used to authenticate the ServerEvents ServiceClient which now **shares cookies** with the WebRequest that connects to the `/event-stream` so authenticating with the Server Events ServiceClient will also authenticate the `/event-stream` HTTP Connection:
+
+```csharp
+client.Authenticate(new Authenticate {
+    provider = CredentialsAuthProvider.Name,
+    UserName = "user",
+    Password = "pass",
+    RememberMe = true,
+});
+
+client.Start();
+```
+
+Which is also equivalent to:
+
+```csharp
+client.ServiceClient.Post(new Authenticate {
+    provider = CredentialsAuthProvider.Name,
+    UserName = "user",
+    Password = "pass",
+    RememberMe = true,
+});
+```
+
+### Limiting Server Events to Authenticated Clients Only
+
+There's a new `LimitToAuthenticatedUsers` option in `ServerEventsFeature` to limit access to authenticated clients only:
+
+```csharp
+Plugins.Add(new ServerEventsFeature {
+    LimitToAuthenticatedUsers = true,
+});
+```
+
+When enabled it will return a `401 Unauthorized` for non-authenticated clients.
+
+### JavaScript ServerEvents Client
+
+The [Server Events JavaScript Client](https://github.com/ServiceStack/ServiceStack/wiki/JavaScript-Server-Events-Client) now auto-reconnects when a heartbeat request fails by calling the new `$.ss.reconnectServerEvents()` API.
+
+## Funq IOC
+
+Funq now supports Lazy dependencies where you can `Func<T>` factories to delay the resolution of dependencies to only when the Service is needed. The factories also support Multiple lazy arguments (up to 3 args):
+
+```csharp
+container.RegisterAutoWiredAs<Foo, IFoo>();
+container.RegisterAutoWiredAs<Bar, IBar>();
+container.RegisterAutoWiredAs<Baz, IBaz>();
+
+container.RegisterAutoWired<Dependency>();
+
+public class Dependency
+{
+    Func<IFoo> ctorFoo;
+    public Dependency(Func<IFoo> ctorFoo)
+    {
+        this.ctorFoo = ctorFoo;
+    }
+
+    public Func<IFoo> Foo { get; set; }
+
+    public Func<IFoo, IBar> FooBar { get; set; }
+
+    public Func<IFoo, IBar, IBaz> FooBarBaz { get; set; }
+
+    public object Execute()
+    {
+        int total = 0;
+        var foo = ctorFoo();
+        var bar = FooBar(foo);
+        var baz = FooBarBaz(foo, bar);
+        return bax.Execute();
+    }
+}
+```
+
+An alternative approach to resolving lazy dependency is to use a Lazy Property which is our preferred approach since allows the call-site to be transparent and retain a clean API, e.g:
+
+```csharp
+public virtual IDbConnectionFactory DbFactory { get; set; }
+
+IDbConnection db;
+public virtual IDbConnection Db
+{
+    get { return db ?? (db = DbFactory.OpenDbConnection()); }
+}
+```
+
+This technique is used in the built-in [Repository Base](https://github.com/ServiceStack/ServiceStack/blob/8dcbbdb7dbe20fd3201cde100370564e8577a019/src/ServiceStack/ILogic.cs#L38) and [Logic Base](https://github.com/ServiceStack/ServiceStack/blob/8dcbbdb7dbe20fd3201cde100370564e8577a019/src/ServiceStack/ILogic.cs#L55) base classes which your dependencies can inherit from to enable lazy access to common ServiceStack providers.
+
+## App Settings
+
+### New Providers
+
+There's a new `EnvironmentVariableSettings` AppSettings provider to source configuration from Environment variables as well as a new `MultiAppSettings` AppSettings provider that enables reading configuration from multiple configuration sources.
+
+With these new providers we can setup a cascading configuration that first checks Environment variables, then looks in a local `~/appsettings.txt` plain-text file before falling back to `Web.config`: 
+
+```csharp
+AppSettings = new MultiAppSettings(
+    new EnvironmentVariableSettings(),
+    new TextFileSettings("~/appsettings.txt".MapHostAbsolutePath()),
+    new AppSettings());
+```
+
+### New Apis
+
+New `GetAllKeys()` and `Exists()` were added to all `IAppSettings` providers:
+
+```csharp
+public interface IAppSettings
+{
+    List<string> GetAllKeys(); 
+    bool Exists(string key);
+    //...
+}
+```
+
+This makes it easy to scan and retrieve all related keys, e.g:
+
+```csharp
+var devKeys = appSettings.GetAllKeys().Where(x => x.Matches("Dev.*"));
+```
+
+## [Session](https://github.com/ServiceStack/ServiceStack/wiki/Sessions)
+
+### Use HTTP Headers to Send Session Cookies
+
+You can now make a Session-enabled request with HTTP Headers instead of Cookies. The Session HTTP Headers have a `X-` prefix before the Session Id, i.e: `X-ss-id`, `X-ss-pid` and `X-ss-opts`
+
+### New API's for Session Bag
+
+New API's for storing and retrieving POCO's in a session bag without specifying a key (key defaults to Type Name):
+
+```csharp
+SessionBag.Set(unAuthInfo);
+var unAuthInfo = SessionBag.Get<UnAuthInfo>();
+```
+
+New `GetSessionBag()` extension methods on `IRequest` and `IServiceBase` make it easier to access the users dynamic Session Bag from outside of a Service. E.g the example below shows how to copy any Anonymous User Session info into the Users typed Session when they Sign In:
+
+```csharp
+public class CustomUserSession : AuthUserSession
+{
+    [DataMember]
+    public string UnAuthInfo { get; set; }
+
+    public override void OnAuthenticated(IServiceBase authService, IAuthSession session, 
+        IAuthTokens tokens, Dictionary<string, string> authInfo)
+    {
+        UnAuthInfo = authService.GetSessionBag().Get<UnAuthInfo>();
+    }
+}
+```
+
+## OrmLite
+
+### New OrderBy API's for Joined Tables
+
+You can now Order By fields from Joined Tables in an SqlExpression:
+
+```csharp
+var q = db.From<TableA>()
+    .Join<TableB>()
+    .OrderBy<TableB>(x => x.Name);
+```
+
+### Count Queries
+
+ - New `RowCount()` API added to return the number of rows in a query
+ - Aggregate `Count()` queries that return more than a single row are summed together
+
+### SelectInto Mapping
+
+ - You no longer need to repeat `[Alias]` attributes when projecting results into different types with `db.SelectInto<T>` API's as fields are now mapped by POCO Property names
+
+## ServiceStack.Text
+
+ - Default delimiter of `ParseKeyValueText` changed from `:` to ` ` (space)
+ - New `string.Matches()` extension method to perform Glob-style matches
+ - `GetGenericType()` extension has been renamed to the more appropriate `FirstGenericType()`
+ - The `__type` info for late-bound types is no longer affected by white-space
+
+## Other
+
+ - Metadata detail pages now include any types referenced in the Request and Response DTOs 
+ - Rabbit MQ Clients no longer auto-declare Server Named Queues `amq.*`
+
+## Community
+
+### New [ServiceStack Succinctly](http://www.agile-code.com/blog/servicestack-succinctly-free-e-book/) Free e-book!
+
+[ServiceStack Succinctly](http://www.agile-code.com/blog/servicestack-succinctly-free-e-book/) is a new free e-book by [Zoran Maksimovic](https://twitter.com/zoranmax) which runs through the basics of creating and implementing a simple order management system with ServiceStack:
+
+<a href="http://www.agile-code.com/blog/servicestack-succinctly-free-e-book/"><img src="https://raw.githubusercontent.com/ServiceStack/Assets/master/img/community/servicestack-succinctly.png" width="299" align="right" hspace="20" alt="Free ServiceStack Succinctly e-book"></a>
+
+### Table of Contents
+
+ 1. ServiceStack Overview
+ 2. ServiceStack Basics
+ 3. Order Management System
+ 4. Solution Configuration
+ 5. Service Implementation
+ 6. Pagination
+ 7. Authentication
+ 8. Caching
+ 9. Logging
+ 10. Profiling
+ 11. Extending ServiceStack
+ 12. Documenting Web Services
+
 # v4.0.31 Release Notes
 
 The most requested feature since our last release was to expand our last releases support for [Server Sent Events](https://github.com/ServiceStackApps/Chat#server-sent-events) with both a scale-out **Redis ServerEvents back-end** for use in load-balanced App Servers scenarios as well as a **typed C# ServerEvents Client** - we're happy to announce we've been able to deliver both features in this release!
