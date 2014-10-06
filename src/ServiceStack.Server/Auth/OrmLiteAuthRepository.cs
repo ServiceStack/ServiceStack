@@ -27,6 +27,7 @@ namespace ServiceStack.Auth
 
         private readonly IDbConnectionFactory dbFactory;
         private readonly IHashProvider passwordHasher;
+        private bool hasBeenInitialized;
 
         public bool UseDistinctRoleTables { get; set; }
 
@@ -41,6 +42,7 @@ namespace ServiceStack.Auth
 
         public void InitSchema()
         {
+            hasBeenInitialized = true;
             using (var db = dbFactory.Open())
             {
                 db.CreateTable<TUserAuth>();
@@ -187,6 +189,14 @@ namespace ServiceStack.Auth
 
         public IUserAuth GetUserAuthByUserName(string userNameOrEmail)
         {
+            if (!hasBeenInitialized)
+            {
+                using (var db = dbFactory.Open())
+                {
+                    hasBeenInitialized = db.TableExists<TUserAuth>();
+                }
+                if (!hasBeenInitialized) throw new Exception("OrmLiteAuthRepository Db tables have not been initialized. Try calling 'InitSchema()' in your AppHost Configure method.");
+            }
             using (var db = dbFactory.Open())
             {
                 return GetUserAuthByUserName(db, userNameOrEmail);

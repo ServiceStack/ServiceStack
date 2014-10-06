@@ -17,6 +17,11 @@ namespace ServiceStack.Auth
 
         public RegistrationValidator()
         {
+            if (UserAuthRepo == null)
+            {
+                throw new ArgumentNullException("No IAuthRepository registered or failed to resolve. Check your IoC registrations.");
+            }
+
             RuleSet(
                 ApplyTo.Post,
                 () =>
