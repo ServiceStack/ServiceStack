@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using ServiceStack.Host;
 using ServiceStack.NativeTypes.CSharp;
+using ServiceStack.Web;
 
 namespace ServiceStack.NativeTypes.FSharp
 {
@@ -25,7 +26,7 @@ namespace ServiceStack.NativeTypes.FSharp
             public bool IsType { get; set; }
         }
 
-        public string GetCode(MetadataTypes metadata)
+        public string GetCode(MetadataTypes metadata, IRequest request)
         {
             var namespaces = new HashSet<string>();
             Config.DefaultNamespaces.Each(x => namespaces.Add(x));
@@ -40,21 +41,24 @@ namespace ServiceStack.NativeTypes.FSharp
                     .OrderBy(x => x).FirstOrDefault()
                 ?? typeNamespaces.OrderBy(x => x).First();
 
+            Func<string, string> defaultValue = k =>
+                request.QueryString[k].IsNullOrEmpty() ? "//" : "";
+
             var sb = new StringBuilderWrapper(new StringBuilder());
             sb.AppendLine("(* Options:");
             sb.AppendLine("Version: {0}".Fmt(metadata.Version));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
-            sb.AppendLine("MakeDataContractsExtensible: {0}".Fmt(Config.MakeDataContractsExtensible));
-            sb.AppendLine("AddReturnMarker: {0}".Fmt(Config.AddReturnMarker));
-            sb.AppendLine("AddDescriptionAsComments: {0}".Fmt(Config.AddDescriptionAsComments));
-            sb.AppendLine("AddDataContractAttributes: {0}".Fmt(Config.AddDataContractAttributes));
-            sb.AppendLine("AddIndexesToDataMembers: {0}".Fmt(Config.AddIndexesToDataMembers));
-            sb.AppendLine("AddResponseStatus: {0}".Fmt(Config.AddResponseStatus));
-            sb.AppendLine("AddImplicitVersion: {0}".Fmt(Config.AddImplicitVersion));
-            sb.AppendLine("InitializeCollections: {0}".Fmt(Config.InitializeCollections));
-            //sb.AppendLine("AddDefaultXmlNamespace: {0}".Fmt(Config.AddDefaultXmlNamespace));
-            //sb.AppendLine("DefaultNamespaces: {0}".Fmt(Config.DefaultNamespaces.ToArray().Join(", ")));
+            sb.AppendLine("{0}MakeDataContractsExtensible: {1}".Fmt(defaultValue("MakeDataContractsExtensible"), Config.MakeDataContractsExtensible));
+            sb.AppendLine("{0}AddReturnMarker: {1}".Fmt(defaultValue("AddReturnMarker"), Config.AddReturnMarker));
+            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
+            sb.AppendLine("{0}AddDataContractAttributes: {1}".Fmt(defaultValue("AddDataContractAttributes"), Config.AddDataContractAttributes));
+            sb.AppendLine("{0}AddIndexesToDataMembers: {1}".Fmt(defaultValue("AddIndexesToDataMembers"), Config.AddIndexesToDataMembers));
+            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
+            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
+            sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
+            //sb.AppendLine("{0}AddDefaultXmlNamespace: {1}".Fmt(defaultValue("AddDefaultXmlNamespace"), Config.AddDefaultXmlNamespace));
+            //sb.AppendLine("{0}DefaultNamespaces: {1}".Fmt(defaultValue("DefaultNamespaces"), Config.DefaultNamespaces.ToArray().Join(", ")));
             sb.AppendLine("*)");
             sb.AppendLine();
 

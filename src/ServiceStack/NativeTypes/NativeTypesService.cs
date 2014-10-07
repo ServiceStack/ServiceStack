@@ -71,7 +71,7 @@ namespace ServiceStack.NativeTypes
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
-            var csharp = new CSharpGenerator(typesConfig).GetCode(metadataTypes);
+            var csharp = new CSharpGenerator(typesConfig).GetCode(metadataTypes, base.Request);
             return csharp;
         }
 
@@ -83,7 +83,7 @@ namespace ServiceStack.NativeTypes
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
-            var csharp = new FSharpGenerator(typesConfig).GetCode(metadataTypes);
+            var csharp = new FSharpGenerator(typesConfig).GetCode(metadataTypes, base.Request);
             return csharp;
         }
 
@@ -95,7 +95,7 @@ namespace ServiceStack.NativeTypes
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
-            var vbnet = new VbNetGenerator(typesConfig).GetCode(metadataTypes);
+            var vbnet = new VbNetGenerator(typesConfig).GetCode(metadataTypes, base.Request);
             return vbnet;
         }
 
