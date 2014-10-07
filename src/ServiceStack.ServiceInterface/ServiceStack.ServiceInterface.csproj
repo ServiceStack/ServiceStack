@@ -229,7 +229,6 @@
     <Compile Include="SessionFeature.cs" />
     <Compile Include="SetStatusAttribute.cs" />
     <Compile Include="SuppressFormsAuthenticationRedirectModule.cs" />
-    <Compile Include="Testing\BasicAppHost.cs" />
     <Compile Include="Testing\BasicResolver.cs" />
     <Compile Include="Testing\MockHttpRequest.cs">
       <SubType>Code</SubType>
