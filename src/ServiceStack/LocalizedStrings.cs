@@ -20,6 +20,7 @@
         public static string NotAuthenticated = "Not Authenticated";
         public static string InvalidUsernameOrPassword = "Invalid UserName or Password";
         public static string UsernameOrEmailRequired = "UserName or Email is required";
+        public static string IllegalUsername = "UserName contains invalid characters";
 
         public static string InvalidRole = "Invalid Role";
         public static string InvalidPermission = "Invalid Permission";

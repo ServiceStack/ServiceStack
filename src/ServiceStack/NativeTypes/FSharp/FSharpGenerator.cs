@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using ServiceStack.Host;
@@ -10,8 +9,6 @@ namespace ServiceStack.NativeTypes.FSharp
 {
     public class FSharpGenerator
     {
-        private const int Version = 1;
-
         readonly MetadataTypesConfig Config;
 
         public FSharpGenerator(MetadataTypesConfig config)
@@ -45,10 +42,9 @@ namespace ServiceStack.NativeTypes.FSharp
 
             var sb = new StringBuilderWrapper(new StringBuilder());
             sb.AppendLine("(* Options:");
-            sb.AppendLine("Version: {0}".Fmt(Version));
+            sb.AppendLine("Version: {0}".Fmt(metadata.Version));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
-            sb.AppendLine("ServerVersion: {0}".Fmt(metadata.Version));
             sb.AppendLine("MakeDataContractsExtensible: {0}".Fmt(Config.MakeDataContractsExtensible));
             sb.AppendLine("AddReturnMarker: {0}".Fmt(Config.AddReturnMarker));
             sb.AppendLine("AddDescriptionAsComments: {0}".Fmt(Config.AddDescriptionAsComments));

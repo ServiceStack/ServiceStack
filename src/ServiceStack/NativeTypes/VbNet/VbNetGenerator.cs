@@ -9,8 +9,6 @@ namespace ServiceStack.NativeTypes.VbNet
 {
     public class VbNetGenerator
     {
-        private const int Version = 1;
-
         readonly MetadataTypesConfig Config;
 
         public VbNetGenerator(MetadataTypesConfig config)
@@ -37,10 +35,9 @@ namespace ServiceStack.NativeTypes.VbNet
 
             var sb = new StringBuilderWrapper(new StringBuilder());
             sb.AppendLine("' Options:");
-            sb.AppendLine("'Version: {0}".Fmt(Version));
+            sb.AppendLine("'Version: {0}".Fmt(metadata.Version));
             sb.AppendLine("'BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
-            sb.AppendLine("'ServerVersion: {0}".Fmt(metadata.Version));
             sb.AppendLine("'MakePartial: {0}".Fmt(Config.MakePartial));
             sb.AppendLine("'MakeOverridable: {0}".Fmt(Config.MakeVirtual));
             sb.AppendLine("'MakeDataContractsExtensible: {0}".Fmt(Config.MakeDataContractsExtensible));
