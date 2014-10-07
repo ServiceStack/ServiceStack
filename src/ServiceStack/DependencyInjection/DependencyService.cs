@@ -64,8 +64,7 @@ namespace ServiceStack.DependencyInjection
                     registration.InstancePerDependency();
                     break;
                 case Sharing.PerRequest:
-                    //registration.InstancePerRequest();
-                    throw new ApplicationException("Per Request DI not currentnly supported in MSA");
+                    registration.InstancePerMatchingLifetimeScope("httpRequest");
                     break;
                 case Sharing.Singleton:
                     registration.RegistrationData.Sharing = InstanceSharing.Shared;
