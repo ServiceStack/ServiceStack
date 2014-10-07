@@ -1,3 +1,4 @@
+/*
 using System.IO;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -59,3 +60,4 @@ namespace ServiceStack.ServiceInterface.Testing
         public void SetContentLength(long contentLength) {}
     }
 }
+*/

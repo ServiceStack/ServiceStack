@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using ServiceStack.DependencyInjection;
 using ServiceStack.Logging;
-using Funq;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceHost
@@ -12,7 +12,7 @@ namespace ServiceStack.ServiceHost
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceManager));
 
-		public Container Container { get; private set; }
+		public DependencyService DependencyService { get; private set; }
 		public ServiceController ServiceController { get; private set; }
         public ServiceMetadata Metadata { get; internal set; }
 
@@ -26,26 +26,26 @@ namespace ServiceStack.ServiceHost
 					"No Assemblies provided in your AppHost's base constructor.\n"
 					+ "To register your services, please provide the assemblies where your web services are defined.");
 
-			this.Container = new Container { DefaultOwner = Owner.External };
+		    this.DependencyService = new DependencyService();
             this.Metadata = new ServiceMetadata();
             this.ServiceController = new ServiceController(() => GetAssemblyTypes(assembliesWithServices), this.Metadata);
 		}
 
-        public ServiceManager(Container container, params Assembly[] assembliesWithServices)
+        public ServiceManager(DependencyService dependencyService, params Assembly[] assembliesWithServices)
             : this(assembliesWithServices)
         {
-            this.Container = container ?? new Container();
+            this.DependencyService = dependencyService ?? new DependencyService();
         }
 
         /// <summary>
-        /// Inject alternative container and strategy for resolving Service Types
+        /// Inject alternative dependencyService and strategy for resolving Service Types
         /// </summary>
-        public ServiceManager(Container container, ServiceController serviceController)
+        public ServiceManager(DependencyService dependencyService, ServiceController serviceController)
         {
             if (serviceController == null)
                 throw new ArgumentNullException("serviceController");
 
-            this.Container = container ?? new Container();
+            this.DependencyService = dependencyService ?? new DependencyService();
             this.Metadata = serviceController.Metadata; //always share the same metadata
             this.ServiceController = serviceController;
         }
@@ -77,15 +77,14 @@ namespace ServiceStack.ServiceHost
 			}
 		}
 
-		private ContainerResolveCache typeFactory;
-
 		public ServiceManager Init()
 		{
-			typeFactory = new ContainerResolveCache(this.Container);
+		    this.ServiceController.Register();
 
-			this.ServiceController.Register(typeFactory);
-
-			this.Container.RegisterAutoWiredTypes(this.Metadata.ServiceTypes);
+            foreach (var type in this.Metadata.ServiceTypes)
+		    {
+		        this.DependencyService.RegisterType(type);
+		    }
 
 		    return this;
 		}
@@ -96,8 +95,8 @@ namespace ServiceStack.ServiceHost
 				|| typeof(T).GetGenericTypeDefinition() != typeof(IService<>))
 				throw new ArgumentException("Type {0} is not a Web Service that inherits IService<>".Fmt(typeof(T).FullName));
 
-			this.ServiceController.RegisterGService(typeFactory, typeof(T));
-			this.Container.RegisterAutoWired<T>();
+			this.ServiceController.RegisterGService(typeof(T), this.DependencyService);
+			this.DependencyService.RegisterAutoWired<T>();
 		}
 
 		public Type RegisterService(Type serviceType)
@@ -107,16 +106,16 @@ namespace ServiceStack.ServiceHost
 			{
                 if (genericServiceType != null)
                 {
-                    this.ServiceController.RegisterGService(typeFactory, serviceType);
-                    this.Container.RegisterAutoWiredType(serviceType);
+                    this.ServiceController.RegisterGService(serviceType, DependencyService);
+                    this.DependencyService.RegisterAutoWiredType(serviceType);
                     return genericServiceType;
                 }
 
                 var isNService = typeof(IService).IsAssignableFrom(serviceType);
                 if (isNService)
                 {
-                    this.ServiceController.RegisterNService(typeFactory, serviceType);
-                    this.Container.RegisterAutoWiredType(serviceType);
+                    this.ServiceController.RegisterNService(serviceType, DependencyService);
+                    this.DependencyService.RegisterAutoWiredType(serviceType);
                     return null;
                 }
 
@@ -136,10 +135,6 @@ namespace ServiceStack.ServiceHost
 
 		public void Dispose()
 		{
-			if (this.Container != null)
-			{
-				this.Container.Dispose();
-			}
 		}
 
 		public void AfterInit()

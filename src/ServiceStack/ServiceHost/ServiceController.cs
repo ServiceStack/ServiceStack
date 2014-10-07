@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using ServiceStack.Configuration;
+using ServiceStack.DependencyInjection;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.ServiceModel.Serialization;
@@ -75,16 +76,17 @@ namespace ServiceStack.ServiceHost
             requestExecMap.Add(requestType, handlerFn);
         }
 
-        public void Register(ITypeFactory serviceFactoryFn)
+        public void Register()
         {
+            var dependencyService = new DependencyService();
             foreach (var serviceType in ResolveServicesFn())
             {
-                RegisterGService(serviceFactoryFn, serviceType);
-                RegisterNService(serviceFactoryFn, serviceType);
+                RegisterGService(serviceType, dependencyService);
+                RegisterNService(serviceType, dependencyService);
             }
         }
 
-        public void RegisterGService(ITypeFactory serviceFactoryFn, Type serviceType)
+        public void RegisterGService(Type serviceType, DependencyService dependencyService)
         {
             if (serviceType.IsAbstract || serviceType.ContainsGenericParameters) return;
 
@@ -97,7 +99,7 @@ namespace ServiceStack.ServiceHost
 
                 var requestType = service.GetGenericArguments()[0];
 
-                RegisterGServiceExecutor(requestType, serviceType, serviceFactoryFn);
+                RegisterGServiceExecutor(requestType, serviceType, dependencyService);
 
                 var responseTypeName = requestType.FullName + ResponseDtoSuffix;
                 var responseType = AssemblyUtils.FindType(responseTypeName);
@@ -106,7 +108,7 @@ namespace ServiceStack.ServiceHost
             }
         }
 
-        public void RegisterNService(ITypeFactory serviceFactoryFn, Type serviceType)
+        public void RegisterNService(Type serviceType, DependencyService dependencyService)
         {
             var processedReqs = new HashSet<Type>();
 
@@ -119,7 +121,7 @@ namespace ServiceStack.ServiceHost
                     if (processedReqs.Contains(requestType)) continue;
                     processedReqs.Add(requestType);
 
-                    RegisterNServiceExecutor(requestType, serviceType, serviceFactoryFn);
+                    RegisterNServiceExecutor(requestType, serviceType, dependencyService);
 
                     var returnMarker = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
                     var responseType = returnMarker != null ?
@@ -276,44 +278,15 @@ namespace ServiceStack.ServiceHost
             return null;
         }
 
-        internal class TypeFactoryWrapper : ITypeFactory
-        {
-            private readonly Func<Type, object> typeCreator;
-
-            public TypeFactoryWrapper(Func<Type, object> typeCreator)
-            {
-                this.typeCreator = typeCreator;
-            }
-
-            public object CreateInstance(Type type)
-            {
-                return typeCreator(type);
-            }
-        }
-
-        public void Register(Type requestType, Type serviceType)
-        {
-            var handlerFactoryFn = Expression.Lambda<Func<Type, object>>
-                (
-                    Expression.New(serviceType),
-                    Expression.Parameter(typeof(Type), "serviceType")
-                ).Compile();
-
-            RegisterGServiceExecutor(requestType, serviceType, new TypeFactoryWrapper(handlerFactoryFn));
-        }
-
-        public void Register(Type requestType, Type serviceType, Func<Type, object> handlerFactoryFn)
-        {
-            RegisterGServiceExecutor(requestType, serviceType, new TypeFactoryWrapper(handlerFactoryFn));
-        }
-
-        public void RegisterGServiceExecutor(Type requestType, Type serviceType, ITypeFactory serviceFactoryFn)
+        public void RegisterGServiceExecutor(Type requestType, Type serviceType, DependencyService dependencyService)
         {
             var typeFactoryFn = CallServiceExecuteGeneric(requestType, serviceType);
 
-            ServiceExecFn handlerFn = (requestContext, dto) => {
-                var service = serviceFactoryFn.CreateInstance(serviceType);
-
+            ServiceExecFn handlerFn = (requestContext, dto) =>
+                {
+                var dependencyResolver = dependencyService.CreateResolver();
+                Common.HostContext.Instance.TrackDisposable(dependencyResolver);
+                var service = dependencyResolver.Resolve(serviceType);
                 var endpointAttrs = requestContext != null
                     ? requestContext.EndpointAttributes
                     : EndpointAttributes.None;
@@ -327,13 +300,15 @@ namespace ServiceStack.ServiceHost
             AddToRequestExecMap(requestType, serviceType, handlerFn);
         }
 
-        public void RegisterNServiceExecutor(Type requestType, Type serviceType, ITypeFactory serviceFactoryFn)
+        public void RegisterNServiceExecutor(Type requestType, Type serviceType, DependencyService dependencyService)
         {
             var serviceExecDef = typeof(NServiceRequestExec<,>).MakeGenericType(serviceType, requestType);
             var iserviceExec = (INServiceExec)serviceExecDef.CreateInstance();
 
             ServiceExecFn handlerFn = (requestContext, dto) => {
-                var service = serviceFactoryFn.CreateInstance(serviceType);
+                var dependencyResolver = dependencyService.CreateResolver();
+                Common.HostContext.Instance.TrackDisposable(dependencyResolver);
+                var service = dependencyResolver.Resolve(serviceType);
 
                 ServiceExecFn serviceExec = (reqCtx, req) =>
                     iserviceExec.Execute(reqCtx, service, req);

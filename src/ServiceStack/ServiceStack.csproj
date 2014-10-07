@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ServiceStack</RootNamespace>
     <AssemblyName>ServiceStack</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -31,6 +31,9 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -81,6 +84,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Autofac, Version=3.5.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\zocdoc.web\zocdoc_web\bin\Dependencies\Autofac.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core">
@@ -116,6 +123,8 @@
     <Compile Include="Configuration\ConfigUtils.cs" />
     <Compile Include="Configuration\DictionarySettings.cs" />
     <Compile Include="Configuration\ISettings.cs" />
+    <Compile Include="DependencyInjection\DependencyResolver.cs" />
+    <Compile Include="DependencyInjection\DependencyService.cs" />
     <Compile Include="Html\AntiXsrf\AntiForgery.cs" />
     <Compile Include="Html\AntiXsrf\AntiForgeryConfig.cs" />
     <Compile Include="Html\AntiXsrf\AntiForgeryConfigWrapper.cs" />
@@ -172,28 +181,12 @@
     <Compile Include="HttpExtensions.cs" />
     <Compile Include="MetadataTypesHandler.cs" />
     <Compile Include="PredefinedRoutesFeature.cs" />
-    <Compile Include="Funq\Action.cs" />
-    <Compile Include="Funq\Container.cs" />
-    <Compile Include="Funq\Container.Overloads.cs">
-      <DependentUpon>Container.cs</DependentUpon>
-    </Compile>
     <Compile Include="Html\HtmlExtensions.cs" />
     <Compile Include="Html\IViewEngine.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="MetadataFeature.cs" />
     <Compile Include="RequestInfoFeature.cs" />
-    <Compile Include="ServiceHost\ContainerTypeExtensions.cs" />
-    <Compile Include="Funq\Func.cs" />
-    <Compile Include="Funq\IFluentInterface.cs" />
-    <Compile Include="Funq\IFunqlet.cs" />
-    <Compile Include="Funq\Owner.cs" />
-    <Compile Include="Funq\ResolutionException.cs" />
-    <Compile Include="Funq\ReuseScope.cs" />
-    <Compile Include="Funq\ServiceEntry.cs" />
-    <Compile Include="Funq\ServiceEntry.Generic.cs" />
-    <Compile Include="Funq\ServiceKey.cs" />
-    <Compile Include="Funq\Syntax.cs" />
     <Compile Include="MiniProfiler\BaseProfilerProvider.cs" />
     <Compile Include="MiniProfiler\Data\ExecuteType.cs" />
     <Compile Include="MiniProfiler\Data\IDbProfiler.cs" />
@@ -233,7 +226,6 @@
     <Compile Include="MiniProfiler\UI\MiniProfilerHandler.cs" />
     <Compile Include="MiniProfiler\WebRequestProfilerProvider.cs" />
     <Compile Include="MiniProfiler\WebRequestProfilerProvider.Settings.cs" />
-    <Compile Include="ServiceHost\ContainerResolveCache.cs" />
     <Compile Include="ServiceHost\Cookies.cs" />
     <Compile Include="ServiceHost\DefaultRequestAttribute.cs" />
     <Compile Include="ServiceHost\DtoUtils.cs" />
@@ -401,15 +393,13 @@
     <Compile Include="WebHost.Endpoints\Support\MarkdownDeep\Utils.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Funq\Container.Adapter.cs" />
-    <None Include="Funq\Container.xdoc" />
     <EmbeddedResource Include="MiniProfiler\UI\includes.tmpl">
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="MiniProfiler\UI\includes.tmpl.orig" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Funq\License.txt" />
     <EmbeddedResource Include="WebHost.Endpoints\Support\Templates\Html\OperationControl.html" />
     <EmbeddedResource Include="WebHost.Endpoints\Support\Templates\Html\OperationsControl.html" />
     <EmbeddedResource Include="WebHost.Endpoints\Support\Templates\Html\IndexOperations.html" />
@@ -460,4 +450,5 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
 </Project>

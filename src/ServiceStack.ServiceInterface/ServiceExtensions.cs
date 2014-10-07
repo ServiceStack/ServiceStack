@@ -6,7 +6,9 @@ using ServiceStack.Common.Web;
 using ServiceStack.Redis;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Auth;
+/*
 using ServiceStack.ServiceInterface.Testing;
+*/
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 
@@ -213,26 +215,6 @@ namespace ServiceStack.ServiceInterface
                 httpReq.Items.Add(RequestItemsSessionKey, session);
                 return session;
             }
-        }
-
-        public static object RunAction<TService, TRequest>(
-            this TService service, TRequest request, Func<TService, TRequest, object> invokeAction,
-            IRequestContext requestContext = null)
-            where TService : IService
-        {
-            var actionCtx = new ActionContext
-            {
-                RequestFilters = new IHasRequestFilter[0],
-                ResponseFilters = new IHasResponseFilter[0],
-                ServiceType = typeof(TService),
-                RequestType = typeof(TRequest),                
-                ServiceAction = (instance, req) => invokeAction(service, request)
-            };
-
-            requestContext = requestContext ?? new MockRequestContext();
-            var runner = new ServiceRunner<TRequest>(EndpointHost.AppHost, actionCtx);
-            var response = runner.Execute(requestContext, service, request);
-            return response;
         }
     }
 }
