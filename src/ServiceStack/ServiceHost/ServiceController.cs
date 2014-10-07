@@ -78,14 +78,15 @@ namespace ServiceStack.ServiceHost
 
         public void Register()
         {
+            var dependencyService = new DependencyService();
             foreach (var serviceType in ResolveServicesFn())
             {
-                RegisterGService(serviceType);
-                RegisterNService(serviceType);
+                RegisterGService(serviceType, dependencyService);
+                RegisterNService(serviceType, dependencyService);
             }
         }
 
-        public void RegisterGService(Type serviceType)
+        public void RegisterGService(Type serviceType, DependencyService dependencyService)
         {
             if (serviceType.IsAbstract || serviceType.ContainsGenericParameters) return;
 
@@ -98,7 +99,7 @@ namespace ServiceStack.ServiceHost
 
                 var requestType = service.GetGenericArguments()[0];
 
-                RegisterGServiceExecutor(requestType, serviceType);
+                RegisterGServiceExecutor(requestType, serviceType, dependencyService);
 
                 var responseTypeName = requestType.FullName + ResponseDtoSuffix;
                 var responseType = AssemblyUtils.FindType(responseTypeName);
@@ -107,7 +108,7 @@ namespace ServiceStack.ServiceHost
             }
         }
 
-        public void RegisterNService(Type serviceType)
+        public void RegisterNService(Type serviceType, DependencyService dependencyService)
         {
             var processedReqs = new HashSet<Type>();
 
@@ -120,7 +121,7 @@ namespace ServiceStack.ServiceHost
                     if (processedReqs.Contains(requestType)) continue;
                     processedReqs.Add(requestType);
 
-                    RegisterNServiceExecutor(requestType, serviceType);
+                    RegisterNServiceExecutor(requestType, serviceType, dependencyService);
 
                     var returnMarker = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
                     var responseType = returnMarker != null ?
@@ -277,19 +278,15 @@ namespace ServiceStack.ServiceHost
             return null;
         }
 
-        public void Register(Type requestType, Type serviceType)
-        {
-            RegisterGServiceExecutor(requestType, serviceType);
-        }
-
-        public void RegisterGServiceExecutor(Type requestType, Type serviceType)
+        public void RegisterGServiceExecutor(Type requestType, Type serviceType, DependencyService dependencyService)
         {
             var typeFactoryFn = CallServiceExecuteGeneric(requestType, serviceType);
 
-            ServiceExecFn handlerFn = (requestContext, dto) => {
-                var lifetimeScope = DependencyService.RootLifetimeScope.BeginLifetimeScope();
-                Common.HostContext.Instance.TrackDisposable(lifetimeScope);
-                var service = DependencyService.Resolve(serviceType, lifetimeScope);
+            ServiceExecFn handlerFn = (requestContext, dto) =>
+                {
+                var dependencyResolver = dependencyService.CreateResolver();
+                Common.HostContext.Instance.TrackDisposable(dependencyResolver);
+                var service = dependencyResolver.Resolve(serviceType);
                 var endpointAttrs = requestContext != null
                     ? requestContext.EndpointAttributes
                     : EndpointAttributes.None;
@@ -303,15 +300,15 @@ namespace ServiceStack.ServiceHost
             AddToRequestExecMap(requestType, serviceType, handlerFn);
         }
 
-        public void RegisterNServiceExecutor(Type requestType, Type serviceType)
+        public void RegisterNServiceExecutor(Type requestType, Type serviceType, DependencyService dependencyService)
         {
             var serviceExecDef = typeof(NServiceRequestExec<,>).MakeGenericType(serviceType, requestType);
             var iserviceExec = (INServiceExec)serviceExecDef.CreateInstance();
 
             ServiceExecFn handlerFn = (requestContext, dto) => {
-                var lifetimeScope = DependencyService.RootLifetimeScope.BeginLifetimeScope();
-                Common.HostContext.Instance.TrackDisposable(lifetimeScope);
-                var service = DependencyService.Resolve(serviceType, lifetimeScope);
+                var dependencyResolver = dependencyService.CreateResolver();
+                Common.HostContext.Instance.TrackDisposable(dependencyResolver);
+                var service = dependencyResolver.Resolve(serviceType);
 
                 ServiceExecFn serviceExec = (reqCtx, req) =>
                     iserviceExec.Execute(reqCtx, service, req);

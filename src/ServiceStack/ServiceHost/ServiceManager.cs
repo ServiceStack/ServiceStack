@@ -81,7 +81,10 @@ namespace ServiceStack.ServiceHost
 		{
 		    this.ServiceController.Register();
 
-			this.DependencyService.RegisterAutoWiredTypes(this.Metadata.ServiceTypes);
+            foreach (var type in this.Metadata.ServiceTypes)
+		    {
+		        this.DependencyService.RegisterType(type);
+		    }
 
 		    return this;
 		}
@@ -92,7 +95,7 @@ namespace ServiceStack.ServiceHost
 				|| typeof(T).GetGenericTypeDefinition() != typeof(IService<>))
 				throw new ArgumentException("Type {0} is not a Web Service that inherits IService<>".Fmt(typeof(T).FullName));
 
-			this.ServiceController.RegisterGService(typeof(T));
+			this.ServiceController.RegisterGService(typeof(T), this.DependencyService);
 			this.DependencyService.RegisterAutoWired<T>();
 		}
 
@@ -103,7 +106,7 @@ namespace ServiceStack.ServiceHost
 			{
                 if (genericServiceType != null)
                 {
-                    this.ServiceController.RegisterGService(serviceType);
+                    this.ServiceController.RegisterGService(serviceType, DependencyService);
                     this.DependencyService.RegisterAutoWiredType(serviceType);
                     return genericServiceType;
                 }
@@ -111,7 +114,7 @@ namespace ServiceStack.ServiceHost
                 var isNService = typeof(IService).IsAssignableFrom(serviceType);
                 if (isNService)
                 {
-                    this.ServiceController.RegisterNService(serviceType);
+                    this.ServiceController.RegisterNService(serviceType, DependencyService);
                     this.DependencyService.RegisterAutoWiredType(serviceType);
                     return null;
                 }

@@ -1,64 +1,89 @@
 ﻿using System;
 using System.Collections.Generic;
 using Autofac;
+using Autofac.Builder;
 using Autofac.Core;
+using Autofac.Core.Lifetime;
 
 namespace ServiceStack.DependencyInjection
 {
+    // Any of several 
+    public interface IHasDependencyService
+    {
+        DependencyService DependencyService { get; }
+    }
+
+	public interface IConfigureDependencyService
+	{
+		void Configure(DependencyService dependencyService);
+	}
+
     public class DependencyService
     {
-        // DAC clean up this static/singleton mess
-        private readonly static Lazy<ContainerBuilder> _containerBuilder = new Lazy<ContainerBuilder>();
-        private static IContainer _container = null;
-        private static ILifetimeScope _rootLifetimeScope = null;
-        public static IContainer Container {
-            get
-            {
-                _container = _container ?? _containerBuilder.Value.Build();
-                return _container;
-            } 
+        public enum Sharing { Singleton, PerRequest, None };
+
+        // Autofac has three singleton objects, whose construction is a little tricky.
+        // Specifically, the Container can't be constructed until all calls to "RegisterType()" have completed.
+        // To make matters worse, the initial requests for these objects may occur in any order
+        // (a.k.a. "The Principal of Maximum Surprise").
+
+        // This cascade of Lazy<> lamda constructors implements these requirements.
+
+        private static readonly Lazy<ContainerBuilder> ContainerBuilder = new Lazy<ContainerBuilder>();
+        private static readonly Lazy<IContainer> Container = new Lazy<IContainer>(() => ContainerBuilder.Value.Build());
+        private static readonly Lazy<ILifetimeScope> RootLifetimeScope =
+            new Lazy<ILifetimeScope>(() => Container.Value.BeginLifetimeScope());
+
+        public void RegisterType(Type type, Sharing sharing = Sharing.None)
+        {
+            var registration = ContainerBuilder.Value.RegisterType(type);
+            SetSharing(registration, sharing);
         }
 
-        public static ILifetimeScope RootLifetimeScope
+        public ContainerBuilder GetContainerBuilderObsolete()
         {
-            get
+            return ContainerBuilder.Value;
+        }
+
+        public void RegisterTypeAsInterface(
+            Type classType,
+            Type interfaceType,
+            Sharing sharing = Sharing.None)
+        {
+            var registration = ContainerBuilder.Value.RegisterType(classType).As(interfaceType);
+            SetSharing(registration, sharing);
+        }
+
+        private void SetSharing(
+            IRegistrationBuilder<object, ConcreteReflectionActivatorData, SingleRegistrationStyle> registration,
+            Sharing sharing)
+        {
+            switch (sharing)
             {
-                // DAC fixme; not thread safe.
-                _rootLifetimeScope = _rootLifetimeScope ?? Container.BeginLifetimeScope();
-                return _rootLifetimeScope;
+                case Sharing.None:
+                    registration.InstancePerDependency();
+                    break;
+                case Sharing.PerRequest:
+                    //registration.InstancePerRequest();
+                    throw new ApplicationException("Per Request DI not currentnly supported in MSA");
+                    break;
+                case Sharing.Singleton:
+                    registration.RegistrationData.Sharing = InstanceSharing.Shared;
+                    registration.RegistrationData.Lifetime = new RootScopeLifetime();
+                    break;
             }
         }
 
-        public ILifetimeScope GetRootLifetimeScope()
+        public DependencyResolver CreateResolver()
         {
-            return RootLifetimeScope;
+            return new DependencyResolver(RootLifetimeScope.Value.BeginLifetimeScope());
         }
 
-        public ContainerBuilder ContainerBuilder 
+        public T TryResolve<T>()
         {
-            get { return _containerBuilder.Value; }
-        }
-
-        public void RegisterAutoWiredTypes(HashSet<Type> types)
-        {
-            foreach (var t in types)
-            {
-                _containerBuilder.Value.RegisterType(t);
-            }
-        }
-
-        public static object Resolve(Type type, ILifetimeScope lifetimeScope = null)
-        {
-            lifetimeScope = lifetimeScope ?? RootLifetimeScope;
-            return lifetimeScope.Resolve(type);
-        }
-
-        public T TryResolve<T>(ILifetimeScope lifetimeScope = null)
-        {
-            lifetimeScope = lifetimeScope ?? RootLifetimeScope;
             try
             {
-                return lifetimeScope.Resolve<T>();
+                return RootLifetimeScope.Value.Resolve<T>();
             }
             catch (DependencyResolutionException unusedException)
             {
@@ -66,7 +91,8 @@ namespace ServiceStack.DependencyInjection
             }
         }
 
-        // Old funq calls. Called in code branches that are expected to be dead.
+        // These methods are obsolete. They are called in code branches that are believed to be dead.
+        // If any of that code ever becomes active, we need to know that, so the code 'throws' here.
         public void AutoWire(object instance) // ServiceRunner, EndPointHost
             { throw new NotImplementedException("AutoWire(object)"); }
         public void RegisterAutoWiredType(Type type) // ServiceManager
@@ -83,16 +109,5 @@ namespace ServiceStack.DependencyInjection
             { throw new NotImplementedException("Register(Func<Container, object>)"); }
         public void RegisterAutoWiredType(Type serviceType, Type inFunqAsType) // ValidationFeature [ServiceInterface]
             { throw new NotImplementedException(""); }
-
     }
-
-    public interface IHasDependencyService
-    {
-        DependencyService DependencyService { get; }
-    }
-
-	public interface IConfigureDependencyService
-	{
-		void Configure(DependencyService dependencyService);
-	}
 }

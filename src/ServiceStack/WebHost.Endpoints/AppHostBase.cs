@@ -34,9 +34,6 @@ namespace ServiceStack.WebHost.Endpoints
 		protected virtual ServiceManager CreateServiceManager(params Assembly[] assembliesWithServices)
 		{
 			return new ServiceManager(assembliesWithServices);
-			//Alternative way to inject DependencyService + Service Resolver strategy
-			//return new ServiceManager(new DependencyService(),
-			//    new ServiceController(() => assembliesWithServices.ToList().SelectMany(x => x.GetTypes())));
 		}
 
 		protected IServiceController ServiceController
