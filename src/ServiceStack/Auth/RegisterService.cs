@@ -17,9 +17,6 @@ namespace ServiceStack.Auth
 
         public RegistrationValidator()
         {
-            if (UserAuthRepo == null)
-                throw new ArgumentNullException(ErrorMessages.AuthRepositoryNotExists);
-
             RuleSet(
                 ApplyTo.Post,
                 () =>
