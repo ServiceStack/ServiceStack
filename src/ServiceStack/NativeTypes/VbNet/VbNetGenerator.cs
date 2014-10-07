@@ -41,7 +41,7 @@ namespace ServiceStack.NativeTypes.VbNet
             sb.AppendLine("' Options:");
             sb.AppendLine("'Version: {0}".Fmt(metadata.Version));
             sb.AppendLine("'BaseUrl: {0}".Fmt(Config.BaseUrl));
-            sb.AppendLine();
+            sb.AppendLine("'");
             sb.AppendLine("{0}MakePartial: {1}".Fmt(defaultValue("MakePartial"), Config.MakePartial));
             sb.AppendLine("{0}MakeVirtual: {1}".Fmt(defaultValue("MakeVirtual"), Config.MakeVirtual));
             sb.AppendLine("{0}MakeDataContractsExtensible: {1}".Fmt(defaultValue("MakeDataContractsExtensible"), Config.MakeDataContractsExtensible));
