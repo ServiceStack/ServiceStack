@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Reflection;
@@ -491,8 +492,11 @@ namespace ServiceStack
                     var webEx = ex as WebException;
                     if (webEx != null && webEx.Response != null)
                     {
-                        WebHeaderCollection headers = ((HttpWebResponse)webEx.Response).Headers;
-                        var doAuthHeader = headers[HttpHeaders.WwwAuthenticate];
+                        var headers = ((HttpWebResponse)webEx.Response).Headers;
+                        var doAuthHeaders = headers.GetValues(HttpHeaders.WwwAuthenticate);
+                        var doAuthHeader = doAuthHeaders != null
+                            ? doAuthHeaders.FirstOrDefault(x => x.Contains("realm"))
+                            : null;
                         // check value of WWW-Authenticate header
                         if (doAuthHeader == null)
                         {
