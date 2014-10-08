@@ -67,6 +67,14 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public long ForNumber { get; set; }
     }
 
+    [Route("/voidasync")]
+    [DataContract]
+    public class VoidAsync : IReturnVoid
+    {
+        [DataMember]
+        public string Message { get; set; }
+    }
+
     public class GetFactorialAsyncService : IService
     {
         public object Any(GetFactorialSync request)
@@ -125,6 +133,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
             {
                 return new GetFactorialResponse { Result = GetFactorial(request.ForNumber) };
             });
+        }
+
+        public async Task Any(VoidAsync request)
+        {
+            await Task.Delay(1);
         }
 
         public static long GetFactorial(long n)

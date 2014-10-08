@@ -29,7 +29,14 @@ namespace ServiceStack
 
         public static object GetResult(this Task task)
         {
-            return TypeAccessor.Create(task.GetType())[task, "Result"];
+            try
+            {
+                return TypeAccessor.Create(task.GetType())[task, "Result"];
+            }
+            catch (TypeAccessException)
+            {
+                return null; //return null for void Task's
+            }
         }
     }
 

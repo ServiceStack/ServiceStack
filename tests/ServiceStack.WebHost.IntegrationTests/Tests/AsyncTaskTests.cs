@@ -114,6 +114,13 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             Assert.That(response.Result, Is.EqualTo(GetFactorialAsyncService.GetFactorial(Param)));
         }
 
+        [Test]
+        public async Task VoidAsync()
+        {
+            var response = await CreateServiceClient()
+                .GetAsync(new VoidAsync { Message = "VoidAsync" });
+        }
+
 
         [TestFixture]
         public class JsonAsyncTaskTests : AsyncTaskTests

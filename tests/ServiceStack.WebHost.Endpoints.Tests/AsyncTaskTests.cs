@@ -137,6 +137,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }            
         }
 
+        [Test]
+        public async Task VoidAsync()
+        {
+            var response = await CreateServiceClient()
+                .GetAsync(new VoidAsync { Message = "VoidAsync" });
+        }
+
         [TestFixture]
         public class JsonAsyncTaskTests : AsyncTaskTests
         {
@@ -236,6 +243,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Message { get; set; }
     }
 
+    [Route("/voidasync")]
+    [DataContract]
+    public class VoidAsync : IReturnVoid
+    {
+        [DataMember]
+        public string Message { get; set; }
+    }
+
     public class GetFactorialAsyncService : IService
     {
         public object Any(GetFactorialSync request)
@@ -291,6 +306,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public async Task<GetFactorialResponse> Any(ThrowErrorAwaitAsync request)
         {
             throw new HttpError(System.Net.HttpStatusCode.Forbidden, request.Message ?? "Request is forbidden");
+        }
+
+        public async Task Any(VoidAsync request)
+        {
+            await Task.Delay(1);
         }
 
         public static long GetFactorial(long n)
