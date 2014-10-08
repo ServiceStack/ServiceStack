@@ -46,6 +46,7 @@ namespace ServiceStack.NativeTypes.FSharp
 
             var sb = new StringBuilderWrapper(new StringBuilder());
             sb.AppendLine("(* Options:");
+            sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
             sb.AppendLine("Version: {0}".Fmt(metadata.Version));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
