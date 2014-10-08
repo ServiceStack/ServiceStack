@@ -40,11 +40,6 @@ namespace ServiceStack.DependencyInjection
             SetSharing(registration, sharing);
         }
 
-        public ContainerBuilder GetContainerBuilderObsolete()
-        {
-            return ContainerBuilder.Value;
-        }
-
         public void RegisterTypeAsInterface(
             Type classType,
             Type interfaceType,
