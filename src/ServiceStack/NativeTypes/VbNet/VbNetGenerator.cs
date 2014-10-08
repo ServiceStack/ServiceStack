@@ -72,6 +72,9 @@ namespace ServiceStack.NativeTypes.VbNet
 
             sb.AppendLine();
 
+            sb.AppendLine("Namespace Global");
+            sb = sb.Indent();
+
             string lastNS = null;
 
             var existingOps = new HashSet<string>();
@@ -149,6 +152,10 @@ namespace ServiceStack.NativeTypes.VbNet
 
             if (lastNS != null)
                 sb.AppendLine("End Namespace");
+
+            sb = sb.UnIndent();
+            sb.AppendLine("End Namespace");
+
             sb.AppendLine();
 
             return sb.ToString();
@@ -197,8 +204,8 @@ namespace ServiceStack.NativeTypes.VbNet
                         var name = type.EnumNames[i];
                         var value = type.EnumValues != null ? type.EnumValues[i] : null;
                         sb.AppendLine(value == null
-                            ? "{0},".Fmt(name)
-                            : "{0} = {1},".Fmt(name, value));
+                            ? "{0}".Fmt(name)
+                            : "{0} = {1}".Fmt(name, value));
                     }
                 }
 
@@ -211,24 +218,30 @@ namespace ServiceStack.NativeTypes.VbNet
                 sb.AppendLine("Public {0}Class {1}".Fmt(partial, Type(type.Name, type.GenericArgs)));
 
                 //: BaseClass, Interfaces
-                var inheritsList = new List<string>();
                 if (type.Inherits != null)
                 {
-                    inheritsList.Add(Type(type.Inherits, includeNested: true));
+                    sb.AppendLine("    Inherits {0}".Fmt(Type(type.Inherits, includeNested: true)));
                 }
 
+                var implements = new List<string>();
                 if (options.ImplementsFn != null)
                 {
                     var implStr = options.ImplementsFn();
                     if (!string.IsNullOrEmpty(implStr))
-                        inheritsList.Add(implStr);
+                        implements.Add(implStr);
                 }
 
                 var makeExtensible = Config.MakeDataContractsExtensible && type.Inherits == null;
                 if (makeExtensible)
-                    inheritsList.Add("IExtensibleDataObject");
-                if (inheritsList.Count > 0)
-                    sb.AppendLine("    Inherits {0}".Fmt(string.Join(", ", inheritsList.ToArray())));
+                    implements.Add("IExtensibleDataObject");
+
+                if (implements.Count > 0)
+                {
+                    foreach (var x in implements)
+                    {
+                        sb.AppendLine("    Implements {0}".Fmt(x));
+                    }
+                }
 
                 //sb.AppendLine("{");
                 sb = sb.Indent();
@@ -284,9 +297,11 @@ namespace ServiceStack.NativeTypes.VbNet
 
             foreach (var prop in collectionProps)
             {
-                sb.AppendLine("{0} = New {1}".Fmt(
+                var suffix = prop.IsArray() ? "{}" : "";
+                sb.AppendLine("{0} = New {1}{2}".Fmt(
                 prop.Name.SafeToken(),
-                Type(prop.Type, prop.GenericArgs)));
+                Type(prop.Type, prop.GenericArgs),
+                suffix));
             }
 
             sb = sb.UnIndent();
@@ -311,7 +326,10 @@ namespace ServiceStack.NativeTypes.VbNet
                     var propType = Type(prop.Type, prop.GenericArgs);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
-                    sb.AppendLine("Public {0}Property {1} As {2}".Fmt(@virtual, prop.Name.SafeToken(), propType));
+                    sb.AppendLine("Public {0}Property {1} As {2}".Fmt(
+                        @virtual,
+                        EscapeKeyword(prop.Name).SafeToken(), 
+                        propType));
                 }
             }
 
@@ -343,10 +361,12 @@ namespace ServiceStack.NativeTypes.VbNet
 
             foreach (var attr in attributes)
             {
+                var attrName = EscapeKeyword(attr.Name);
+
                 if ((attr.Args == null || attr.Args.Count == 0)
                     && (attr.ConstructorArgs == null || attr.ConstructorArgs.Count == 0))
                 {
-                    sb.AppendLine("<{0}>".Fmt(attr.Name));
+                    sb.AppendLine("<{0}>".Fmt(attrName));
                 }
                 else
                 {
@@ -369,7 +389,7 @@ namespace ServiceStack.NativeTypes.VbNet
                             args.Append("{0}:={1}".Fmt(attrArg.Name, TypeValue(attrArg.Type, attrArg.Value)));
                         }
                     }
-                    sb.AppendLine("<{0}({1})>".Fmt(attr.Name, args));
+                    sb.AppendLine("<{0}({1})>".Fmt(attrName, args));
                 }
             }
 
@@ -383,6 +403,14 @@ namespace ServiceStack.NativeTypes.VbNet
                 return "Nothing";
             if (alias == "String")
                 return value.QuotedSafeValue();
+
+            if (value.StartsWith("typeof("))
+            {
+                //Only emit type as Namespaces are merged
+                var typeNameOnly = value.Substring(7, value.Length - 8).SplitOnLast('.').Last();
+                return "GetType(" + typeNameOnly + ")";
+            }
+
             return value;
         }
 
@@ -438,6 +466,11 @@ namespace ServiceStack.NativeTypes.VbNet
                 name = name.SplitOnLast('.').Last();
 
             return name.SafeToken();
+        }
+
+        public string EscapeKeyword(string name)
+        {
+            return Config.VbNetKeyWords.Contains(name) ? "[{0}]".Fmt(name) : name;
         }
 
         public void AppendComments(StringBuilderWrapper sb, string desc)

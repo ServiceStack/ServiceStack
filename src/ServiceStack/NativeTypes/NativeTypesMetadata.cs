@@ -43,6 +43,7 @@ namespace ServiceStack.NativeTypes
                 CSharpTypeAlias = defaults.CSharpTypeAlias,
                 FSharpTypeAlias = defaults.FSharpTypeAlias,
                 VbNetTypeAlias = defaults.VbNetTypeAlias,
+                VbNetKeyWords = defaults.VbNetKeyWords,
                 GlobalNamespace = defaults.GlobalNamespace,
             };
         }

@@ -40,6 +40,19 @@ namespace ServiceStack
                     { "Int64", "Long" },    
                     { "DateTime", "Date" },    
                 },
+                VbNetKeyWords = new HashSet<string>
+                {
+                    "Default",
+                    "Catch",
+                    "Byte",
+                    "Short",
+                    "Long",
+                    "UShort",
+                    "ULong",
+                    "Double",
+                    "Decimal",
+                    "String",
+                },
                 ExportAttributes = new HashSet<Type>
                 {
                     typeof(FlagsAttribute),
