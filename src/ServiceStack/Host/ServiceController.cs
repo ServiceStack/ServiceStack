@@ -164,10 +164,13 @@ namespace ServiceStack.Host
 
                     if (typeof(IRequiresRequestStream).IsAssignableFrom(requestType))
                     {
-                        this.RequestTypeFactoryMap[requestType] = httpReq =>
+                        this.RequestTypeFactoryMap[requestType] = req =>
                         {
-                            var rawReq = (IRequiresRequestStream)requestType.CreateInstance();
-                            rawReq.RequestStream = httpReq.InputStream;
+                            var restPath = req.GetRoute();
+                            var request = RestHandler.CreateRequest(req, restPath, req.GetRequestParams());
+
+                            var rawReq = (IRequiresRequestStream)request;
+                            rawReq.RequestStream = req.InputStream;
                             return rawReq;
                         };
                     }
@@ -512,7 +515,7 @@ namespace ServiceStack.Host
             var restPath = RestHandler.FindMatchingRestPath(req.Verb, req.PathInfo, out contentType);
             req.SetRoute(restPath as RestPath);
             req.OperationName = restPath.RequestType.GetOperationName();
-            var request = RestHandler.GetRequest(req, restPath);
+            var request = RestHandler.CreateRequest(req, restPath);
 
             if (appHost.ApplyRequestFilters(req, req.Response, request))
                 return null;

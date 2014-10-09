@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using ServiceStack.Host.Handlers;
@@ -92,7 +93,7 @@ namespace ServiceStack.Host
                 var responseContentType = httpReq.ResponseContentType;
                 appHost.AssertContentType(responseContentType);
 
-                var request = GetRequest(httpReq, restPath);
+                var request = CreateRequest(httpReq, restPath);
                 if (appHost.ApplyRequestFilters(httpReq, httpRes, request)) 
                     return EmptyTask;
 
@@ -131,25 +132,18 @@ namespace ServiceStack.Host
             return ExecuteService(requestDto, request);
         }
 
-        public static object GetRequest(IRequest httpReq, IRestPath restPath)
+        public static object CreateRequest(IRequest httpReq, IRestPath restPath)
         {
-            var requestType = restPath.RequestType;
             using (Profiler.Current.Step("Deserialize Request"))
             {
                 try
                 {
-                    var requestDto = GetCustomRequestFromBinder(httpReq, requestType);
-                    if (requestDto != null) return requestDto;
+                    var dtoFromBinder = GetCustomRequestFromBinder(httpReq, restPath.RequestType);
+                    if (dtoFromBinder != null) 
+                        return dtoFromBinder;
 
                     var requestParams = httpReq.GetRequestParams();
-                    requestDto = CreateContentTypeRequest(httpReq, requestType, httpReq.ContentType);
-
-                    string contentType;
-                    var pathInfo = !restPath.IsWildCardPath 
-                        ? GetSanitizedPathInfo(httpReq.PathInfo, out contentType)
-                        : httpReq.PathInfo;
-
-                    return restPath.CreateRequest(pathInfo, requestParams, requestDto);
+                    return CreateRequest(httpReq, restPath, requestParams);
                 }
                 catch (SerializationException e)
                 {
@@ -162,6 +156,18 @@ namespace ServiceStack.Host
             }
         }
 
+        public static object CreateRequest(IRequest httpReq, IRestPath restPath, Dictionary<string, string> requestParams)
+        {
+            var requestDto = CreateContentTypeRequest(httpReq, restPath.RequestType, httpReq.ContentType);
+
+            string contentType;
+            var pathInfo = !restPath.IsWildCardPath
+                ? GetSanitizedPathInfo(httpReq.PathInfo, out contentType)
+                : httpReq.PathInfo;
+
+            return restPath.CreateRequest(pathInfo, requestParams, requestDto);
+        }
+
         /// <summary>
         /// Used in Unit tests
         /// </summary>
@@ -171,7 +177,7 @@ namespace ServiceStack.Host
             if (this.RestPath == null)
                 throw new ArgumentNullException("No RestPath found");
 
-            return GetRequest(httpReq, this.RestPath);
+            return CreateRequest(httpReq, this.RestPath);
         }
     }
 
