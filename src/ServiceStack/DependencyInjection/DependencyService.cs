@@ -52,9 +52,8 @@ namespace ServiceStack.DependencyInjection
             SetSharing(registration, Sharing.Singleton);
         }
 
-        private void SetSharing(
-            IRegistrationBuilder<object, object, SingleRegistrationStyle> registration,
-            Sharing sharing)
+        private void SetSharing(IRegistrationBuilder<object, object, SingleRegistrationStyle> registration,
+                                Sharing sharing)
         {
             switch (sharing)
             {
