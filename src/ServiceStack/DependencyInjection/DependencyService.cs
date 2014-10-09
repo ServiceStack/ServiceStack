@@ -34,24 +34,26 @@ namespace ServiceStack.DependencyInjection
         private static readonly Lazy<ILifetimeScope> RootLifetimeScope =
             new Lazy<ILifetimeScope>(() => Container.Value.BeginLifetimeScope());
 
-        public void RegisterType(Type type, Sharing sharing = Sharing.None)
+        public void RegisterTypeAsItself(Type classType, Sharing sharing = Sharing.None)
         {
-            var registration = ContainerBuilder.Value.RegisterType(type);
+            var registration = ContainerBuilder.Value.RegisterType(classType);
             SetSharing(registration, sharing);
         }
 
-        public void RegisterTypeAsInterface(
-            Type classType,
-            Type interfaceType,
-            Sharing sharing = Sharing.None)
+        public void RegisterTypeAsInterface(Type classType, Type interfaceType, Sharing sharing = Sharing.None)
         {
             var registration = ContainerBuilder.Value.RegisterType(classType).As(interfaceType);
             SetSharing(registration, sharing);
         }
 
-        private void SetSharing(
-            IRegistrationBuilder<object, ConcreteReflectionActivatorData, SingleRegistrationStyle> registration,
-            Sharing sharing)
+        public void RegisterSingletonInstance(object classInstance, Type classOrInterfaceType)
+        {
+            var registration = ContainerBuilder.Value.Register(c => classInstance).As(classOrInterfaceType);
+            SetSharing(registration, Sharing.Singleton);
+        }
+
+        private void SetSharing(IRegistrationBuilder<object, object, SingleRegistrationStyle> registration,
+                                Sharing sharing)
         {
             switch (sharing)
             {

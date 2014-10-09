@@ -83,7 +83,7 @@ namespace ServiceStack.ServiceHost
 
             foreach (var type in this.Metadata.ServiceTypes)
 		    {
-		        this.DependencyService.RegisterType(type);
+		        this.DependencyService.RegisterTypeAsItself(type);
 		    }
 
 		    return this;
