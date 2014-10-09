@@ -493,11 +493,9 @@ namespace ServiceStack
                     if (webEx != null && webEx.Response != null)
                     {
                         var headers = ((HttpWebResponse)webEx.Response).Headers;
-                        var doAuthHeaders = headers.GetValues(HttpHeaders.WwwAuthenticate);
-                        var doAuthHeader = doAuthHeaders != null
-                            ? doAuthHeaders.FirstOrDefault(x => x.Contains("realm"))
-                            : null;
-                        // check value of WWW-Authenticate header
+                        var doAuthHeader = PclExportClient.Instance.GetHeader(headers,
+                            HttpHeaders.WwwAuthenticate, x => x.Contains("realm"));
+
                         if (doAuthHeader == null)
                         {
                             client.AddBasicAuth(this.UserName, this.Password);

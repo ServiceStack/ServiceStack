@@ -1696,6 +1696,13 @@ namespace ServiceStack
             }
         }
 
+        public virtual string GetHeader(WebHeaderCollection headers, string name, Func<string, bool> valuePredicate)
+        {
+            return null;
+            var header = headers[name];
+            return valuePredicate(header) ? header : null;
+        }
+
         public virtual void SetCookieContainer(HttpWebRequest webRequest, ServiceClientBase client)
         {
             webRequest.CookieContainer = client.CookieContainer;
