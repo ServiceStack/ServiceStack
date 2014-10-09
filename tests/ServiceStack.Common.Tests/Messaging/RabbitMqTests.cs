@@ -23,6 +23,7 @@ namespace ServiceStack.Common.Tests.Messaging
         private const string Exchange = "mq:tests";
         private const string ExchangeDlq = "mq:tests.dlq";
         private const string ExchangeTopic = "mq:tests.topic";
+        private const string ExchangeFanout = "mq:tests.fanout";
 
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
@@ -201,15 +202,21 @@ namespace ServiceStack.Common.Tests.Messaging
             using (IConnection connection = mqFactory.CreateConnection())
             using (IModel channel = connection.CreateModel())
             {
+                channel.RegisterFanoutExchange(ExchangeFanout);
+
+                RegisterQueue(channel, QueueNames<HelloRabbit>.In, exchange: ExchangeFanout);
+                RegisterQueue(channel, QueueNames<HelloRabbit>.Priority, exchange: ExchangeFanout);
+
                 byte[] payload = new HelloRabbit { Name = "World!" }.ToJson().ToUtf8Bytes();
                 var props = channel.CreateBasicProperties();
                 props.SetPersistent(true);
-                channel.BasicPublish(ExchangeTopic, QueueNames<HelloRabbit>.In, props, payload);
+
+                channel.BasicPublish(ExchangeFanout, QueueNames<HelloRabbit>.In, props, payload);
 
                 var basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.In, noAck: true);
                 Assert.That(basicGetMsg, Is.Not.Null);
 
-                basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.Out, noAck: true);
+                basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.Priority, noAck: true);
                 Assert.That(basicGetMsg, Is.Not.Null);
             }
         }
@@ -334,12 +341,6 @@ namespace ServiceStack.Common.Tests.Messaging
 
                 "EOF...".Print();
             }
-        }
-
-        [Test]
-        public void Can_()
-        {
-            
         }
 
         [Test]
