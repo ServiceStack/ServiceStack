@@ -708,14 +708,29 @@ namespace ServiceStack
                 if (pos >= 0)
                 {
                     baseUrl = absoluteUri.Substring(0, pos + handlerPath.Length);
-                    return baseUrl;
+                    return baseUrl.NormalizeScheme();
                 }
                 return "/" + handlerPath;
             }
 
             return new Uri(httpReq.AbsoluteUri).GetLeftPart(UriPartial.Authority)
+                .NormalizeScheme()
                 .CombineWith(handlerPath)
                 .TrimEnd('/');
+        }
+
+        public static string NormalizeScheme(this string url)
+        {
+            if (url == null)
+                return null;
+            if (!HostContext.Config.UseHttpsLinks)
+                return url;
+
+            url = url.TrimStart();
+            if (url.StartsWith("http://"))
+                return "https://" + url.Substring("http://".Length);
+
+            return url;
         }
 
         public static RequestAttributes ToRequestAttributes(string[] attrNames)

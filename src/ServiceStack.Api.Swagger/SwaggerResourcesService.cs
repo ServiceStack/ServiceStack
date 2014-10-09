@@ -47,13 +47,8 @@ namespace ServiceStack.Api.Swagger
 
         public object Get(Resources request)
         {
-            var basePath = HostContext.Config.WebHostUrl;
-            if (basePath == null)
-            {
-                basePath = HostContext.Config.UseHttpsLinks
-                    ? Request.GetParentPathUrl().ToHttps()
-                    : Request.GetParentPathUrl();
-            }
+            var basePath = HostContext.Config.WebHostUrl 
+                ?? Request.GetParentPathUrl().NormalizeScheme();
 
             var result = new ResourcesResponse
             {

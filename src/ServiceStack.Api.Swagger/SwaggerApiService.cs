@@ -155,13 +155,8 @@ namespace ServiceStack.Api.Swagger
             var map = HostContext.ServiceController.RestPathMap;
             var paths = new List<RestPath>();
 
-            var basePath = HostContext.Config.WebHostUrl;
-            if (basePath == null)
-            {
-                basePath = HostContext.Config.UseHttpsLinks
-                    ? httpReq.GetParentPathUrl().ToHttps()
-                    : httpReq.GetParentPathUrl();
-            }
+            var basePath = HostContext.Config.WebHostUrl 
+                ?? httpReq.GetParentPathUrl().NormalizeScheme();
 
             if (basePath.EndsWith(SwaggerResourcesService.RESOURCE_PATH, StringComparison.OrdinalIgnoreCase))
             {
