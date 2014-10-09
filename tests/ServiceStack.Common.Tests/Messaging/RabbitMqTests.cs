@@ -350,6 +350,7 @@ namespace ServiceStack.Common.Tests.Messaging
                 Exchange,
                 ExchangeDlq,
                 ExchangeTopic,
+                ExchangeFanout,
                 QueueNames.Exchange,
                 QueueNames.ExchangeDlq,
                 QueueNames.ExchangeTopic,
