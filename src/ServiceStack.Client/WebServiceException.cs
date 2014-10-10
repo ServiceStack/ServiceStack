@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Runtime.Serialization;
 using ServiceStack.Text;
 
@@ -21,6 +22,8 @@ namespace ServiceStack
         public int StatusCode { get; set; }
 
         public string StatusDescription { get; set; }
+
+        public WebHeaderCollection ResponseHeaders { get; set; }
 
         public object ResponseDto { get; set; }
         
