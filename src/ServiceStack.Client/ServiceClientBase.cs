@@ -577,6 +577,7 @@ namespace ServiceStack
                 {
                     StatusCode = (int)errorResponse.StatusCode,
                     StatusDescription = errorResponse.StatusDescription,
+                    ResponseHeaders = errorResponse.Headers
                 };
 
                 try
