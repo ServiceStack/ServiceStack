@@ -113,6 +113,10 @@ namespace ServiceStack.Auth
                     }
                 };
 
+                session.ReferrerUrl = GetReferrerUrl(authService, session, request);
+
+                var response = OnAuthenticated(authService, session, tokens, new Dictionary<string, string>());
+
                 if (session.Roles == null)
                     session.Roles = new List<string>();
 
@@ -121,10 +125,7 @@ namespace ServiceStack.Auth
                     if (user.IsInRole(role))
                         session.Roles.AddIfNotExists(role);
                 }
-
-                session.ReferrerUrl = GetReferrerUrl(authService, session, request);
-
-                var response = OnAuthenticated(authService, session, tokens, new Dictionary<string, string>());
+                
                 if (response != null)
                     return response;
 
