@@ -269,7 +269,8 @@ var doc = document, win = window,
 
 $.each = function(arr, fn) { $each.call(arr, fn); };
 
-var splitCase = function(t) { return typeof t != 'string' ? t : t.replace(/([A-Z]|[0-9]+)/g, ' $1'); },
+var splitCase = function (t) { return typeof t != 'string' ? t : titleCase(t.replace(/([a-z0-9])([A-Z])/g, '$1 $2')); },
+    titleCase = function (s) { return s.replace(/\w\S*/g, function (t) { return t.charAt(0).toUpperCase() + t.substr(1).toLowerCase(); }); },
     uniqueKeys = function(m){ var h={}; for (var i=0,len=m.length; i<len; i++) for (var k in m[i]) if (show(k)) h[k] = k; return h; },
     keys = function(o){ var a=[]; for (var k in o) if (show(k)) a.push(k); return a; }
 var tbls = [];
