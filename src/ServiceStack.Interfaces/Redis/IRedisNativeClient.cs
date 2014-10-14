@@ -47,6 +47,9 @@ namespace ServiceStack.Redis
         long ObjectIdleTime(string key);
         RedisText Role();
 
+        RedisData RawCommand(params object[] cmdWithArgs);
+        RedisData RawCommand(params byte[][] cmdWithBinaryArgs);
+
         string ClientGetName();
         void ClientSetName(string client);
         void ClientKill(string host);
