@@ -293,9 +293,13 @@
     <Compile Include="Redis\Pipeline\IRedisQueueCompletableOperation.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Redis\RedisClientType.cs" />
     <Compile Include="Redis\RedisKeyType.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Redis\RedisServerRole.cs" />
+    <Compile Include="Redis\RedisData.cs" />
+    <Compile Include="Redis\RedisText.cs" />
     <Compile Include="Redis\ScanResult.cs" />
     <Compile Include="Redis\SortOptions.cs">
       <SubType>Code</SubType>
