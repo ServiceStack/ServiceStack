@@ -44,6 +44,19 @@ namespace ServiceStack.Redis
         void RewriteAppendOnlyFileAsync();
         void FlushDb();
 
+        RedisText GetServerRoleInfo();
+        string GetConfig(string item);
+        void SetConfig(string item, string value);
+        void SaveConfig();
+        void ResetInfoStats();
+
+        string GetClient();
+        void SetClient(string name);
+        void KillClient(string address);
+        long KillClients(string fromAddress = null, string withId = null, RedisClientType? ofType = null, bool? skipMe = null);
+        List<Dictionary<string, string>> GetClientsInfo();
+        void PauseAllClients(TimeSpan duration);
+
         //Basic Redis Connection Info
         string this[string key] { get; set; }
 

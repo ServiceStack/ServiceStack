@@ -37,6 +37,7 @@ namespace ServiceStack.Redis
         byte[][] ConfigGet(string pattern);
         void ConfigSet(string item, byte[] value);
         void ConfigResetStat();
+        void ConfigRewrite();
         byte[][] Time();
         void DebugSegfault();
         byte[] Dump(string key);
@@ -44,6 +45,14 @@ namespace ServiceStack.Redis
         void Migrate(string host, int port, int destinationDb, long timeoutMs);
         bool Move(string key, int db);
         long ObjectIdleTime(string key);
+        RedisText Role();
+
+        string ClientGetName();
+        void ClientSetName(string client);
+        void ClientKill(string host);
+        long ClientKill(string addr = null, string id = null, string type = null, string skipMe = null);
+        byte[] ClientList();
+        void ClientPause(int timeOutMs);
 
         //Common key-value Redis operations
         byte[][] Keys(string pattern);
