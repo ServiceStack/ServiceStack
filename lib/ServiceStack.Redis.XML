@@ -53,67 +53,28 @@
             http://code.google.com/p/protobuf-net/source/browse/trunk/protobuf-net/BufferPool.cs
             </summary>
         </member>
-        <member name="T:ServiceStack.Redis.Generic.QueuedRedisTypedCommand`1">
+        <member name="T:ServiceStack.Redis.RedisManagerPool">
             <summary>
-            A complete redis command, with method to send command, receive response, and run callback on success or failure
+            Provides thread-safe pooling of redis client connections.
             </summary>
         </member>
-        <member name="T:ServiceStack.Redis.Generic.RedisTypedClient`1">
+        <member name="M:ServiceStack.Redis.RedisManagerPool.GetClient">
             <summary>
-            Allows you to get Redis value operations to operate against POCO types.
+            Returns a Read/Write client (The default) using the hosts defined in ReadWriteHosts
             </summary>
-            <typeparam name="T"></typeparam>
+            <returns></returns>
         </member>
-        <member name="M:ServiceStack.Redis.Generic.RedisTypedClient`1.#ctor(ServiceStack.Redis.RedisClient)">
+        <member name="M:ServiceStack.Redis.RedisManagerPool.GetInActiveClient">
             <summary>
-            Use this to share the same redis connection with another
+            Called within a lock
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisManagerPool.DisposeWriteClient(ServiceStack.Redis.RedisNativeClient)">
+            <summary>
+            Disposes the write client.
             </summary>
             <param name="client">The client.</param>
-        </member>
-        <member name="T:ServiceStack.Redis.RedisTypedPipeline`1">
-            <summary>
-            Pipeline for redis typed client
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="T:ServiceStack.Redis.Generic.RedisTypedCommandQueue`1">
-            <summary>
-            Queue of commands for redis typed client
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="T:ServiceStack.Redis.RedisQueueCompletableOperation">
-            <summary>
-            Redis operation (transaction/pipeline) that allows queued commands to be completed
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Redis.RedisClientManagerCacheClient.Dispose">
-            <summary>
-            Ignore dispose on RedisClientsManager, which should be registered as a singleton
-            </summary>
-        </member>
-        <member name="T:ServiceStack.Redis.RedisClientsManagerExtensions">
-            <summary>
-            Useful wrapper IRedisClientsManager to cut down the boiler plate of most IRedisClient access
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Redis.RedisClientsManagerExtensions.CreatePubSubServer(ServiceStack.Redis.IRedisClientsManager,System.String,System.Action{System.String,System.String},System.Action{System.Exception},System.Action,System.Action,System.Action)">
-            <summary>
-            Creates a PubSubServer that uses a background thread to listen and process for
-            Redis Pub/Sub messages published to the specified channel. 
-            Use optional callbacks to listen for message, error and life-cycle events.
-            Callbacks can be assigned later, then call Start() for PubSubServer to start listening for messages
-            </summary>
-        </member>
-        <member name="T:ServiceStack.Redis.Pipeline.QueuedRedisCommand">
-            <summary>
-            A complete redis command, with method to send command, receive response, and run callback on success or failure
-            </summary>
-        </member>
-        <member name="T:ServiceStack.Redis.RedisCommand">
-            <summary>
-            Redis command that does not get queued
-            </summary>
         </member>
         <member name="T:ServiceStack.Redis.RedisClient">
             <summary>
@@ -192,6 +153,78 @@
             <param name="id"></param>
             <returns></returns>
         </member>
+        <member name="T:ServiceStack.Redis.Generic.QueuedRedisTypedCommand`1">
+            <summary>
+            A complete redis command, with method to send command, receive response, and run callback on success or failure
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Generic.RedisTypedClient`1">
+            <summary>
+            Allows you to get Redis value operations to operate against POCO types.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:ServiceStack.Redis.Generic.RedisTypedClient`1.#ctor(ServiceStack.Redis.RedisClient)">
+            <summary>
+            Use this to share the same redis connection with another
+            </summary>
+            <param name="client">The client.</param>
+        </member>
+        <member name="T:ServiceStack.Redis.RedisTypedPipeline`1">
+            <summary>
+            Pipeline for redis typed client
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:ServiceStack.Redis.Generic.RedisTypedCommandQueue`1">
+            <summary>
+            Queue of commands for redis typed client
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:ServiceStack.Redis.RedisQueueCompletableOperation">
+            <summary>
+            Redis operation (transaction/pipeline) that allows queued commands to be completed
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.RedisClientManagerCacheClient">
+            <summary>
+            For interoperabilty GetCacheClient() and GetReadOnlyCacheClient()
+            return an ICacheClient wrapper around the redis manager which has the affect of calling 
+            GetClient() for all write operations and GetReadOnlyClient() for the read ones.
+            
+            This works well for master-slave replication scenarios where you have 
+            1 master that replicates to multiple read slaves.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisClientManagerCacheClient.Dispose">
+            <summary>
+            Ignore dispose on RedisClientsManager, which should be registered as a singleton
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.RedisClientsManagerExtensions">
+            <summary>
+            Useful wrapper IRedisClientsManager to cut down the boiler plate of most IRedisClient access
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisClientsManagerExtensions.CreatePubSubServer(ServiceStack.Redis.IRedisClientsManager,System.String,System.Action{System.String,System.String},System.Action{System.Exception},System.Action,System.Action,System.Action)">
+            <summary>
+            Creates a PubSubServer that uses a background thread to listen and process for
+            Redis Pub/Sub messages published to the specified channel. 
+            Use optional callbacks to listen for message, error and life-cycle events.
+            Callbacks can be assigned later, then call Start() for PubSubServer to start listening for messages
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.Pipeline.QueuedRedisCommand">
+            <summary>
+            A complete redis command, with method to send command, receive response, and run callback on success or failure
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.RedisCommand">
+            <summary>
+            Redis command that does not get queued
+            </summary>
+        </member>
         <member name="M:ServiceStack.Redis.RedisSentinel.Setup">
             <summary>
             Initialize channel and register client manager
@@ -244,14 +277,6 @@
             </summary>
         </member>
         <member name="T:ServiceStack.Redis.PooledRedisClientManager">
-            <summary>
-            For interoperabilty GetCacheClient() and GetReadOnlyCacheClient()
-            return an ICacheClient wrapper around the redis manager which has the affect of calling 
-            GetClient() for all write operations and GetReadOnlyClient() for the read ones.
-            
-            This works well for master-slave replication scenarios where you have 
-            1 master that replicates to multiple read slaves.
-            </summary>
             <summary>
             Provides thread-safe pooling of redis client connections.
             Allows load-balancing of master-write and read-slave hosts, ideal for
