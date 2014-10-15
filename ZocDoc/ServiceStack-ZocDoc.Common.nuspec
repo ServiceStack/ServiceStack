@@ -19,5 +19,7 @@
     <file src="..\src\ServiceStack.Common\bin\$configuration$\ServiceStack.Common.xml" target="lib\net35" />
     <file src="..\lib\ServiceStack.Text.dll" target="lib\net35" />
     <file src="..\lib\ServiceStack.Text.xml" target="lib\net35" />
+    <file src="..\src\ServiceStack.Common\**\*.cs" exclude="**\obj\**" target="src\ServiceStack.Common" />
+    <file src="..\src\ServiceStack.Interfaces\**\*.cs" exclude="**\obj\**" target="src\ServiceStack.Interfaces" />
   </files>
 </package>
