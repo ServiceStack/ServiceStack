@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Funq;
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
+using ServiceStack.DependencyInjection;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Messaging;
@@ -72,7 +72,7 @@ namespace ServiceStack.WebHost.Endpoints
             //Default Config for projects that want to use components but not WebFramework (e.g. MVC)
             Config = new EndpointHostConfig(
                 "Empty Config",
-                new ServiceManager(new Container(), new ServiceController(null)));
+                new ServiceManager(new DependencyService(), new ServiceController(null)));
         }
 
         // Pre user config
@@ -181,12 +181,13 @@ namespace ServiceStack.WebHost.Endpoints
 
             AfterPluginsLoaded(specifiedContentType);
 
+            /* DAC fix and restore
             var registeredCacheClient = AppHost.TryResolve<ICacheClient>();
             using (registeredCacheClient)
             {
                 if (registeredCacheClient == null)
                 {
-                    Container.Register<ICacheClient>(new MemoryCacheClient());
+                    DependencyService.Register<ICacheClient>(new MemoryCacheClient());
                 }
             }
 
@@ -194,8 +195,9 @@ namespace ServiceStack.WebHost.Endpoints
             var registeredMqFactory = AppHost.TryResolve<IMessageFactory>();
             if (registeredMqService != null && registeredMqFactory == null)
             {
-                Container.Register(c => registeredMqService.MessageFactory);
+                DependencyService.Register(c => registeredMqService.MessageFactory);
             }
+            */
 
             ReadyAt = DateTime.UtcNow;
         }
@@ -206,17 +208,17 @@ namespace ServiceStack.WebHost.Endpoints
         }
 
         /// <summary>
-        /// The AppHost.Container. Note: it is not thread safe to register dependencies after AppStart.
+        /// The AppHost.DependencyService. Note: it is not thread safe to register dependencies after AppStart.
         /// </summary>
-        public static Container Container
+        public static DependencyService DependencyService
         {
             get
             {
                 var aspHost = AppHost as AppHostBase;
                 if (aspHost != null)
-                    return aspHost.Container;
+                    return aspHost.DependencyService;
                 var listenerHost = AppHost as HttpListenerBase;
-                return listenerHost != null ? listenerHost.Container : new Container(); //testing may use alt AppHost
+                return listenerHost != null ? listenerHost.DependencyService : new DependencyService(); //testing may use alt AppHost
             }
         }
 
@@ -344,7 +346,7 @@ namespace ServiceStack.WebHost.Endpoints
                 for (; i < attributes.Length && attributes[i].Priority < 0; i++)
                 {
                     var attribute = attributes[i];
-                    ServiceManager.Container.AutoWire(attribute);
+                    ServiceManager.DependencyService.AutoWire(attribute);
                     attribute.RequestFilter(httpReq, httpRes, requestDto);
                     if (AppHost != null) //tests
                         AppHost.Release(attribute);
@@ -362,7 +364,7 @@ namespace ServiceStack.WebHost.Endpoints
                 for (; i < attributes.Length && attributes[i].Priority >= 0; i++)
                 {
                     var attribute = attributes[i];
-                    ServiceManager.Container.AutoWire(attribute);
+                    ServiceManager.DependencyService.AutoWire(attribute);
                     attribute.RequestFilter(httpReq, httpRes, requestDto);
                     if (AppHost != null) //tests
                         AppHost.Release(attribute);
@@ -397,7 +399,7 @@ namespace ServiceStack.WebHost.Endpoints
                     for (; i < attributes.Length && attributes[i].Priority < 0; i++)
                     {
                         var attribute = attributes[i];
-                        ServiceManager.Container.AutoWire(attribute);
+                        ServiceManager.DependencyService.AutoWire(attribute);
                         attribute.ResponseFilter(httpReq, httpRes, response);
                         if (AppHost != null) //tests
                             AppHost.Release(attribute);
@@ -418,7 +420,7 @@ namespace ServiceStack.WebHost.Endpoints
                     for (; i < attributes.Length; i++)
                     {
                         var attribute = attributes[i];
-                        ServiceManager.Container.AutoWire(attribute);
+                        ServiceManager.DependencyService.AutoWire(attribute);
                         attribute.ResponseFilter(httpReq, httpRes, response);
                         if (AppHost != null) //tests
                             AppHost.Release(attribute);

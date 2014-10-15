@@ -1,3 +1,4 @@
+/*
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -129,3 +130,4 @@ namespace ServiceStack.ServiceInterface.Testing
         public Uri UrlReferrer { get { return null; } }
     }
 }
+*/

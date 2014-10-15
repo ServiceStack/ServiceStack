@@ -7,10 +7,10 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using Funq;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
+using ServiceStack.DependencyInjection;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
@@ -29,7 +29,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 	/// server, for start and stop management and event routing of the actual
 	/// inbound requests.
 	/// </summary>
-    public abstract class HttpListenerBase : IDisposable, IAppHost, IHasContainer
+    public abstract class HttpListenerBase : IDisposable, IAppHost, IHasDependencyService
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(HttpListenerBase));
 
@@ -79,7 +79,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			if (serviceManager != null)
 			{
 				serviceManager.Init();
-				Configure(EndpointHost.Config.ServiceManager.Container);
+				Configure(EndpointHost.Config.ServiceManager.DependencyService);
 			}
 			else
 			{
@@ -93,7 +93,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			Log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
 		}
 
-		public abstract void Configure(Container container);
+		public abstract void Configure(DependencyService dependencyService);
 
         public virtual void SetAppDomainData()
         {
@@ -346,34 +346,26 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;
 		}
 
-		public Container Container
+		public DependencyService DependencyService
 		{
 			get
 			{
-				return EndpointHost.Config.ServiceManager.Container;
+				return EndpointHost.Config.ServiceManager.DependencyService;
 			}
 		}
 
 		public void RegisterAs<T, TAs>() where T : TAs
 		{
-			this.Container.RegisterAutoWiredAs<T, TAs>();
+			this.DependencyService.RegisterAutoWiredAs<T, TAs>();
 		}
 
         public virtual void Release(object instance)
         {
             try
             {
-                var iocAdapterReleases = Container.Adapter as IRelease;
-                if (iocAdapterReleases != null)
-                {
-                    iocAdapterReleases.Release(instance);
-                }
-                else 
-                {
-                    var disposable = instance as IDisposable;
-                    if (disposable != null)
-                        disposable.Dispose();
-                }
+                var disposable = instance as IDisposable;
+                if (disposable != null)
+                    disposable.Dispose();
             }
             catch {/*ignore*/}
         }
@@ -390,23 +382,23 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 	    public void Register<T>(T instance)
 		{
-			this.Container.Register(instance);
+			this.DependencyService.Register(instance);
 		}
 
 		public T TryResolve<T>()
 		{
-			return this.Container.TryResolve<T>();
+			return this.DependencyService.TryResolve<T>();
         }
 
         /// <summary>
-        /// Resolves from IoC container a specified type instance.
+        /// Resolves from IoC dependencyService a specified type instance.
         /// </summary>
         /// <typeparam name="T">Type to be resolved.</typeparam>
         /// <returns>Instance of <typeparamref name="T"/>.</returns>
         public static T Resolve<T>()
         {
             if (Instance == null) throw new InvalidOperationException("AppHostBase is not initialized.");
-            return Instance.Container.Resolve<T>();
+            return Instance.DependencyService.Resolve<T>();
         }
 
         /// <summary>
@@ -417,7 +409,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
         public static T ResolveService<T>(HttpListenerContext httpCtx) where T : class, IRequiresRequestContext
         {
             if (Instance == null) throw new InvalidOperationException("AppHostBase is not initialized.");
-            var service = Instance.Container.Resolve<T>();
+            var service = Instance.DependencyService.Resolve<T>();
             if (service == null) return null;
             service.RequestContext = httpCtx.ToRequestContext();
             return service;
@@ -432,7 +424,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
         public static T ResolveService<T>(IHttpRequest httpReq, IHttpResponse httpRes) where T : class, IRequiresRequestContext
         {
             if (Instance == null) throw new InvalidOperationException("AppHostBase is not initialized.");
-            var service = Instance.Container.Resolve<T>();
+            var service = Instance.DependencyService.Resolve<T>();
             if (service == null) return null;
             service.RequestContext = new HttpRequestContext(httpReq, httpRes, null);
             return service;

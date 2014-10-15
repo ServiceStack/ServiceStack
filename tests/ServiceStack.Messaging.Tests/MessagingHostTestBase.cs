@@ -1,5 +1,5 @@
-﻿using Funq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using ServiceStack.DependencyInjection;
 using ServiceStack.Messaging.Tests.Services;
 
 namespace ServiceStack.Messaging.Tests
@@ -11,18 +11,13 @@ namespace ServiceStack.Messaging.Tests
 
 		protected abstract TransientMessageServiceBase CreateMessagingService();
 
-		protected Container Container { get; set; }
+        protected DependencyService DependencyService { get; set; }
 
 		[SetUp]
 		public virtual void OnBeforeEachTest()
 		{
-			if (Container != null)
-			{
-				Container.Dispose();
-			}
-
-			Container = new Container();
-			Container.Register(CreateMessageFactory());
+			DependencyService = new DependencyService();
+			DependencyService.Register(CreateMessageFactory());
 		}
 
 	}

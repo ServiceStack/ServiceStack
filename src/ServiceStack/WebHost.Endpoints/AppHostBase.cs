@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Web;
-using Funq;
 using ServiceStack.Common;
 using ServiceStack.Configuration;
+using ServiceStack.DependencyInjection;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.Endpoints
 	/// ASP.NET application.
 	/// </summary>
 	public abstract class AppHostBase
-        : IFunqlet, IDisposable, IAppHost, IHasContainer
+        : IConfigureDependencyService, IDisposable, IAppHost, IHasDependencyService
 	{
 		private readonly ILog log = LogManager.GetLogger(typeof(AppHostBase));
 
@@ -34,9 +34,6 @@ namespace ServiceStack.WebHost.Endpoints
 		protected virtual ServiceManager CreateServiceManager(params Assembly[] assembliesWithServices)
 		{
 			return new ServiceManager(assembliesWithServices);
-			//Alternative way to inject Container + Service Resolver strategy
-			//return new ServiceManager(new Container(),
-			//    new ServiceController(() => assembliesWithServices.ToList().SelectMany(x => x.GetTypes())));
 		}
 
 		protected IServiceController ServiceController
@@ -52,12 +49,12 @@ namespace ServiceStack.WebHost.Endpoints
 			get { return EndpointHost.Config.ServiceController.Routes; }
 		}
 
-		public Container Container
+		public DependencyService DependencyService
 		{
 			get
 			{
 				return EndpointHost.Config.ServiceManager != null
-					? EndpointHost.Config.ServiceManager.Container : null;
+					? EndpointHost.Config.ServiceManager.DependencyService : null;
 			}
 		}
 
@@ -74,7 +71,7 @@ namespace ServiceStack.WebHost.Endpoints
 			if (serviceManager != null)
 			{
 				serviceManager.Init();
-				Configure(EndpointHost.Config.ServiceManager.Container);
+				Configure(EndpointHost.Config.ServiceManager.DependencyService);
 			}
 			else
 			{
@@ -84,7 +81,7 @@ namespace ServiceStack.WebHost.Endpoints
 			EndpointHost.AfterInit();
 		}
 
-		public abstract void Configure(Container container);
+	    public abstract void Configure(DependencyService dependencyService);
 
 		public void SetConfig(EndpointHostConfig config)
 		{
@@ -101,24 +98,16 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public void RegisterAs<T, TAs>() where T : TAs
 		{
-			this.Container.RegisterAutoWiredAs<T, TAs>();
+			this.DependencyService.RegisterAutoWiredAs<T, TAs>();
 		}
 
         public virtual void Release(object instance)
         {
             try
             {
-                var iocAdapterReleases = Container.Adapter as IRelease;
-                if (iocAdapterReleases != null)
-                {
-                    iocAdapterReleases.Release(instance);
-                }
-                else
-                {
-                    var disposable = instance as IDisposable;
-                    if (disposable != null)
-                        disposable.Dispose();
-                }
+                var disposable = instance as IDisposable;
+                if (disposable != null)
+                    disposable.Dispose();
             }
             catch {/*ignore*/}
         }
@@ -135,23 +124,23 @@ namespace ServiceStack.WebHost.Endpoints
 
 	    public void Register<T>(T instance)
 		{
-			this.Container.Register(instance);
+			this.DependencyService.Register(instance);
 		}
 
 		public T TryResolve<T>()
 		{
-			return this.Container.TryResolve<T>();
+			return this.DependencyService.TryResolve<T>();
 		}
 
         /// <summary>
-        /// Resolves from IoC container a specified type instance.
+        /// Resolves from IoC dependencyService a specified type instance.
         /// </summary>
         /// <typeparam name="T">Type to be resolved.</typeparam>
         /// <returns>Instance of <typeparamref name="T"/>.</returns>
         public static T Resolve<T>()
         {
             if (Instance == null) throw new InvalidOperationException("AppHostBase is not initialized.");
-            return Instance.Container.Resolve<T>();
+            return Instance.DependencyService.Resolve<T>();
         }
 
         /// <summary>
@@ -162,7 +151,7 @@ namespace ServiceStack.WebHost.Endpoints
         public static T ResolveService<T>(HttpContext httpCtx) where T : class, IRequiresRequestContext
         {
             if (Instance == null) throw new InvalidOperationException("AppHostBase is not initialized.");
-            var service = Instance.Container.Resolve<T>();
+            var service = Instance.DependencyService.Resolve<T>();
             if (service == null) return null;
             service.RequestContext = httpCtx.ToRequestContext();
             return service;

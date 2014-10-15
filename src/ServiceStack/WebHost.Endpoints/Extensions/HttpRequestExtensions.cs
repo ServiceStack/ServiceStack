@@ -530,7 +530,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 	    {
 	        return new HttpRequestWrapper(aspnetHttpReq) {
                 OperationName = operationName,
-                Container = AppHostBase.Instance != null ? AppHostBase.Instance.Container : null
+                DependencyService = AppHostBase.Instance != null ? AppHostBase.Instance.DependencyService : null
             };
 	    }
 
@@ -538,7 +538,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 	    {
 	        return new HttpListenerRequestWrapper(listenerHttpReq) {
                 OperationName = operationName,
-                Container = AppHostBase.Instance != null ? AppHostBase.Instance.Container : null
+                DependencyService = AppHostBase.Instance != null ? AppHostBase.Instance.DependencyService : null
             };
 	    }
 

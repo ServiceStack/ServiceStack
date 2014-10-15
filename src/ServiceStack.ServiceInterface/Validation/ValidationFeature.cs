@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using Funq;
+using ServiceStack.DependencyInjection;
 using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Results;
 using ServiceStack.Logging;
@@ -52,28 +52,23 @@ namespace ServiceStack.ServiceInterface.Validation
     {
         /// <summary>
         /// Auto-scans the provided assemblies for a <see cref="IValidator"/>
-        /// and registers it in the provided IoC container.
+        /// and registers it in the provided IoC dependencyService.
         /// </summary>
-        /// <param name="container">The IoC container</param>
+        /// <param name="dependencyService">The IoC dependencyService</param>
         /// <param name="assemblies">The assemblies to scan for a validator</param>
-        public static void RegisterValidators(this Container container, params Assembly[] assemblies)
-        {
-            RegisterValidators(container, ReuseScope.None, assemblies);
-        }
-
-        public static void RegisterValidators(this Container container, ReuseScope scope, params Assembly[] assemblies)
+        public static void RegisterValidators(this DependencyService dependencyService, params Assembly[] assemblies)
         {
             foreach (var assembly in assemblies)
             {
                 foreach (var validator in assembly.GetTypes()
                 .Where(t => t.IsOrHasGenericInterfaceTypeOf(typeof(IValidator<>))))
                 {
-                    RegisterValidator(container, validator, scope);
+                    RegisterValidator(dependencyService, validator);
                 }
             }
         }
 
-        public static void RegisterValidator(this Container container, Type validator, ReuseScope scope=ReuseScope.None)
+        public static void RegisterValidator(this DependencyService dependencyService, Type validator)
         {
             var baseType = validator.BaseType;
             while (!baseType.IsGenericType)
@@ -84,7 +79,7 @@ namespace ServiceStack.ServiceInterface.Validation
             var dtoType = baseType.GetGenericArguments()[0];
             var validatorType = typeof(IValidator<>).MakeGenericType(dtoType);
 
-            container.RegisterAutoWiredType(validator, validatorType, scope);
+            dependencyService.RegisterAutoWiredType(validator, validatorType);
         }
     }
 }
