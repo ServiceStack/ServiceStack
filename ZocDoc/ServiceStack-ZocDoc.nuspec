@@ -2,31 +2,22 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>ServiceStack-ZocDoc</id>
-    <version>0.0.0</version>
+    <version>$version$</version>
     <title>ServiceStack webservice framework: Faster, Cleaner, Modern WCF alternative</title>
     <authors>ZocDoc, Inc.</authors>
     <owners>ZocDoc, Inc.</owners>
-	<projectUrl>https://github.com/ZocDoc/ServiceStack</projectUrl>
+    <projectUrl>https://github.com/ZocDoc/ServiceStack</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Binaries for the ZocDoc fork of the ServiceStack web framework. </description>
+        <dependencies>
+            <dependency id="ServiceStack-ZocDoc.Common" version="$version$" />
+        </dependencies>
   </metadata>
   <files>
-    <file src="..\src\ServiceStack.Interfaces\bin\Release\ServiceStack.Interfaces.dll" target="lib\net35" />
-    <file src="..\src\ServiceStack.Interfaces\bin\Release\ServiceStack.Interfaces.pdb" target="lib\net35" />
-    <file src="..\src\ServiceStack.Interfaces\bin\Release\ServiceStack.Interfaces.XML" target="lib\net35" />
-
-    <file src="..\src\ServiceStack.Common\bin\Release\ServiceStack.Common.dll" target="lib\net35" />
-    <file src="..\src\ServiceStack.Common\bin\Release\ServiceStack.Common.pdb" target="lib\net35" />
-    <file src="..\src\ServiceStack.Common\bin\Release\ServiceStack.Common.xml" target="lib\net35" />
-
-    <file src="..\src\ServiceStack.ServiceInterface\bin\Release\ServiceStack.ServiceInterface.dll" target="lib\net35" />
-    <file src="..\src\ServiceStack.ServiceInterface\bin\Release\ServiceStack.ServiceInterface.pdb" target="lib\net35" />
-
-    <file src="..\src\ServiceStack\bin\Release\ServiceStack.dll" target="lib\net35" />
-    <file src="..\src\ServiceStack\bin\Release\ServiceStack.pdb" target="lib\net35" />
-    <file src="..\src\ServiceStack\bin\Release\ServiceStack.xml" target="lib\net35" />
-
-    <file src="..\lib\ServiceStack.Text.dll" target="lib\net35" />
-    <file src="..\lib\ServiceStack.Text.xml" target="lib\net35" />
+    <file src="..\src\ServiceStack.ServiceInterface\bin\$configuration$\ServiceStack.ServiceInterface.dll" target="lib\net35" />
+    <file src="..\src\ServiceStack.ServiceInterface\bin\$configuration$\ServiceStack.ServiceInterface.pdb" target="lib\net35" />
+    <file src="..\src\ServiceStack\bin\$configuration$\ServiceStack.dll" target="lib\net35" />
+    <file src="..\src\ServiceStack\bin\$configuration$\ServiceStack.pdb" target="lib\net35" />
+    <file src="..\src\ServiceStack\bin\$configuration$\ServiceStack.xml" target="lib\net35" />
   </files>
 </package>
