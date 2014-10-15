@@ -144,16 +144,9 @@ namespace ServiceStack.ServiceHost
         {
             var serviceType = serviceImplementation.GetType();
 
-            this.ServiceController.RegisterNService(typeFactory, serviceType);
-            
-            //Container.Register<TService>(TService instance)
-            var containerType = typeof(Container);
-            var registrationMethodGeneric = containerType.GetMethods()
-                .Where(x => x.Name == "Register")
-                .Select(y => new { Method = y, Parameters = y.GetParameters() })
-                .Single(z => z.Parameters.Length == 1 && !z.Parameters[0].ParameterType.IsGenericType);
-            var registrationMethod = registrationMethodGeneric.Method.MakeGenericMethod(serviceType);
-            registrationMethod.Invoke(this.Container, new object[] { serviceImplementation });
+            DependencyService.RegisterSingletonInstance(serviceImplementation, serviceType);
+
+            this.ServiceController.RegisterNService(serviceType, DependencyService);
         }
 
 		public object Execute(object dto)
