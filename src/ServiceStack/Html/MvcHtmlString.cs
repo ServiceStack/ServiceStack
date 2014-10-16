@@ -2,26 +2,29 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Web;
 
-public sealed class MvcHtmlString : HtmlString
+namespace ServiceStack.Html
 {
-    private readonly string _value;
-
-    public MvcHtmlString(string value)
-        : base(value ?? String.Empty)
+    public sealed class MvcHtmlString : HtmlString
     {
-        _value = value ?? String.Empty;
-    }
+        private readonly string _value;
 
-    [SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "MvcHtmlString is immutable")]
-    public static readonly MvcHtmlString Empty = Create(String.Empty);
+        public MvcHtmlString(string value)
+            : base(value ?? String.Empty)
+        {
+            _value = value ?? String.Empty;
+        }
 
-    public static MvcHtmlString Create(string value)
-    {
-        return new MvcHtmlString(value);
-    }
+        [SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "MvcHtmlString is immutable")]
+        public static readonly MvcHtmlString Empty = Create(String.Empty);
 
-    public static bool IsNullOrEmpty(MvcHtmlString value)
-    {
-        return (value == null || value._value.Length == 0);
+        public static MvcHtmlString Create(string value)
+        {
+            return new MvcHtmlString(value);
+        }
+
+        public static bool IsNullOrEmpty(MvcHtmlString value)
+        {
+            return (value == null || value._value.Length == 0);
+        }
     }
 }

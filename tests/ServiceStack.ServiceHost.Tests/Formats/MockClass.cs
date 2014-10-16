@@ -2,6 +2,7 @@
 using System.IO;
 using NUnit.Framework;
 using ServiceStack;
+using ServiceStack.Html;
 
 namespace CSharpEval
 {
