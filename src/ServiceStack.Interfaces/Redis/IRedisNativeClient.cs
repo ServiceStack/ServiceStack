@@ -42,7 +42,7 @@ namespace ServiceStack.Redis
         void DebugSegfault();
         byte[] Dump(string key);
         byte[] Restore(string key, long expireMs, byte[] dumpValue);
-        void Migrate(string host, int port, int destinationDb, long timeoutMs);
+        void Migrate(string host, int port, string key, int destinationDb, long timeoutMs);
         bool Move(string key, int db);
         long ObjectIdleTime(string key);
         RedisText Role();
