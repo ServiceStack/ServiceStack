@@ -147,6 +147,8 @@ namespace ServiceStack.ServiceHost
             DependencyService.RegisterSingletonInstance(serviceImplementation, serviceType);
 
             this.ServiceController.RegisterNService(serviceType, DependencyService);
+
+            DependencyService.UpdateRegistrations();
         }
 
 		public object Execute(object dto)
