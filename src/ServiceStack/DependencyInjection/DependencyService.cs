@@ -27,11 +27,13 @@ namespace ServiceStack.DependencyInjection
         // To make matters worse, the initial requests for these objects may occur in any order
         // (a.k.a. "The Principal of Maximum Surprise").
 
-        private readonly ContainerBuilder _containerBuilder;
+        private readonly object _lockObject;
+        private ContainerBuilder _containerBuilder;
         private IContainer _container;
 
         public DependencyService()
         {
+            _lockObject = new object();
             _containerBuilder = new ContainerBuilder();
         }
 
@@ -55,9 +57,17 @@ namespace ServiceStack.DependencyInjection
 
         public void UpdateRegistrations()
         {
-            if (_container != null)
+            lock (_lockObject)
             {
-                _containerBuilder.Update(_container);
+                if (_container != null)
+                {
+                    _containerBuilder.Update(_container);
+                }
+                else
+                {
+                    _container = _containerBuilder.Build();
+                }
+                _containerBuilder = new ContainerBuilder();
             }
         }
 
@@ -83,15 +93,9 @@ namespace ServiceStack.DependencyInjection
         {
             if (_container == null)
             {
-                lock (_containerBuilder)
-                {
-                    if (_container == null)
-                    {
-                        _container = _containerBuilder.Build();
-                    }
-                }
+                UpdateRegistrations();
             }
-            return new DependencyResolver(_container);
+            return new DependencyResolver(_container.BeginLifetimeScope());
         }
 
         public T TryResolve<T>()
