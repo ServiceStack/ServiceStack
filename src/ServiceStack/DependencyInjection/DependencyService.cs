@@ -53,6 +53,14 @@ namespace ServiceStack.DependencyInjection
             SetSharing(registration, Sharing.Singleton);
         }
 
+        public void UpdateRegistrations()
+        {
+            if (_container != null)
+            {
+                _containerBuilder.Update(_container);
+            }
+        }
+
         private void SetSharing(IRegistrationBuilder<object, object, SingleRegistrationStyle> registration,
                                 Sharing sharing)
         {
