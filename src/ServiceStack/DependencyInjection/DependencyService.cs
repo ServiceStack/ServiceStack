@@ -27,28 +27,29 @@ namespace ServiceStack.DependencyInjection
         // To make matters worse, the initial requests for these objects may occur in any order
         // (a.k.a. "The Principal of Maximum Surprise").
 
-        // This cascade of Lazy<> lamda constructors implements these requirements.
+        private readonly ContainerBuilder _containerBuilder;
+        private IContainer _container;
 
-        private static readonly Lazy<ContainerBuilder> ContainerBuilder = new Lazy<ContainerBuilder>();
-        private static readonly Lazy<IContainer> Container = new Lazy<IContainer>(() => ContainerBuilder.Value.Build());
-        private static readonly Lazy<ILifetimeScope> RootLifetimeScope =
-            new Lazy<ILifetimeScope>(() => Container.Value.BeginLifetimeScope());
+        public DependencyService()
+        {
+            _containerBuilder = new ContainerBuilder();
+        }
 
         public void RegisterTypeAsItself(Type classType, Sharing sharing = Sharing.None)
         {
-            var registration = ContainerBuilder.Value.RegisterType(classType);
+            var registration = _containerBuilder.RegisterType(classType);
             SetSharing(registration, sharing);
         }
 
         public void RegisterTypeAsInterface(Type classType, Type interfaceType, Sharing sharing = Sharing.None)
         {
-            var registration = ContainerBuilder.Value.RegisterType(classType).As(interfaceType);
+            var registration = _containerBuilder.RegisterType(classType).As(interfaceType);
             SetSharing(registration, sharing);
         }
 
         public void RegisterSingletonInstance(object classInstance, Type classOrInterfaceType)
         {
-            var registration = ContainerBuilder.Value.Register(c => classInstance).As(classOrInterfaceType);
+            var registration = _containerBuilder.Register(c => classInstance).As(classOrInterfaceType);
             SetSharing(registration, Sharing.Singleton);
         }
 
@@ -72,19 +73,22 @@ namespace ServiceStack.DependencyInjection
 
         public DependencyResolver CreateResolver()
         {
-            return new DependencyResolver(RootLifetimeScope.Value.BeginLifetimeScope());
+            if (_container == null)
+            {
+                lock (_containerBuilder)
+                {
+                    if (_container == null)
+                    {
+                        _container = _containerBuilder.Build();
+                    }
+                }
+            }
+            return new DependencyResolver(_container);
         }
 
         public T TryResolve<T>()
         {
-            try
-            {
-                return RootLifetimeScope.Value.Resolve<T>();
-            }
-            catch (DependencyResolutionException unusedException)
-            {
-                return default(T);
-            }
+            return CreateResolver().TryResolve<T>();
         }
 
         // These methods are obsolete. They are called in code branches that are believed to be dead.

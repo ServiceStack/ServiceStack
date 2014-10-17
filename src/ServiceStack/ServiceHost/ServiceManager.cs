@@ -80,7 +80,7 @@ namespace ServiceStack.ServiceHost
 
 		public ServiceManager Init()
 		{
-		    this.ServiceController.Register();
+            this.ServiceController.Register(DependencyService);
 
             foreach (var type in this.Metadata.ServiceTypes)
 		    {

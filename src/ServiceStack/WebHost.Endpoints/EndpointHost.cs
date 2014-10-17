@@ -218,7 +218,7 @@ namespace ServiceStack.WebHost.Endpoints
                 if (aspHost != null)
                     return aspHost.DependencyService;
                 var listenerHost = AppHost as HttpListenerBase;
-                return listenerHost != null ? listenerHost.DependencyService : new DependencyService(); //testing may use alt AppHost
+                return listenerHost != null ? listenerHost.DependencyService : null; //testing may use alt AppHost
             }
         }
 

@@ -14,6 +14,11 @@ namespace ServiceStack.DependencyInjection
             _lifetimeScope = lifetimeScope;
         }
 
+        public T Resolve<T>()
+        {
+            return _lifetimeScope.Resolve<T>();
+        }
+
         public object Resolve(Type type)
         {
             return _lifetimeScope.Resolve(type);
