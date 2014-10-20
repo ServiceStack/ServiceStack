@@ -47,6 +47,7 @@ namespace CheckWeb
 #endif
                 // Disable SOAP endpoints
                 //EnableFeatures = Feature.All.Remove(Feature.Soap)
+                //EnableFeatures = Feature.All.Remove(Feature.Metadata)
             });
 
             container.Register<IServiceClient>(c =>
