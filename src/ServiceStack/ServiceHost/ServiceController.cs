@@ -76,9 +76,8 @@ namespace ServiceStack.ServiceHost
             requestExecMap.Add(requestType, handlerFn);
         }
 
-        public void Register()
+        public void Register(DependencyService dependencyService)
         {
-            var dependencyService = new DependencyService();
             foreach (var serviceType in ResolveServicesFn())
             {
                 RegisterGService(serviceType, dependencyService);

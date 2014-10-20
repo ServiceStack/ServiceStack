@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using ServiceStack.DependencyInjection;
 using ServiceStack.Logging;
@@ -79,7 +80,7 @@ namespace ServiceStack.ServiceHost
 
 		public ServiceManager Init()
 		{
-		    this.ServiceController.Register();
+            this.ServiceController.Register(DependencyService);
 
             foreach (var type in this.Metadata.ServiceTypes)
 		    {
@@ -127,6 +128,28 @@ namespace ServiceStack.ServiceHost
 			    return genericServiceType;
 			}
 		}
+
+        /// <summary>
+        /// Registers the given service instance to be reused for each request that would route to 
+        /// its service type.
+        /// </summary>
+        /// <remarks>
+        /// This method should not be used in production.  Because it reuses a single instance for 
+        /// each request, it can't really do dependency injection safely.  This method is only 
+        /// useful by the functional testing harness, which self-hosts a ServiceStack with mock 
+        /// implementations.
+        /// </remarks>
+        /// <param name="serviceImplementation">The singleton instance of a service to use.</param>
+	    public void RegisterService(IService serviceImplementation)
+        {
+            var serviceType = serviceImplementation.GetType();
+
+            DependencyService.RegisterSingletonInstance(serviceImplementation, serviceType);
+
+            this.ServiceController.RegisterNService(serviceType, DependencyService);
+
+            DependencyService.UpdateRegistrations();
+        }
 
 		public object Execute(object dto)
 		{

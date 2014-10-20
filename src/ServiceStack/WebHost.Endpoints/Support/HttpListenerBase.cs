@@ -571,6 +571,22 @@ namespace ServiceStack.WebHost.Endpoints.Support
             }
         }
 
+	    /// <summary>
+	    /// Registers the given service instance to be reused for each request that would route to 
+	    /// its service type.
+	    /// </summary>
+	    /// <remarks>
+	    /// This method should not be used in production.  Because it reuses a single instance for 
+	    /// each request, it can't really do dependency injection safely.  This method is only 
+	    /// useful by the functional testing harness, which self-hosts a ServiceStack with mock 
+	    /// implementations.
+	    /// </remarks>
+	    /// <param name="serviceImplementation">The singleton instance of a service to use.</param>
+	    public void RegisterService(IService serviceImplementation)
+	    {
+	        EndpointHost.Config.ServiceManager.RegisterService(serviceImplementation);
+	    }
+
         /// <summary>
         /// Reserves the specified URL for non-administrator users and accounts. 
         /// http://msdn.microsoft.com/en-us/library/windows/desktop/cc307223(v=vs.85).aspx
