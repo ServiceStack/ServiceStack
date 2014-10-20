@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>ServiceStack-ZocDoc.Interfaces</id>
+    <version>$version$</version>
+    <title>ServiceStack-ZocDoc.Interfaces</title>
+    <authors>ZocDoc, Inc.</authors>
+    <owners>ZocDoc, Inc.</owners>
+    <projectUrl>https://github.com/ZocDoc/ServiceStack</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Contract and interface library for the ZocDoc fork of ServiceStack projects.</description>
+  </metadata>
+  <files>
+    <file src="..\src\ServiceStack.Interfaces\bin\$configuration$\ServiceStack.Interfaces.dll" target="lib\net35" />
+    <file src="..\src\ServiceStack.Interfaces\bin\$configuration$\ServiceStack.Interfaces.pdb" target="lib\net35" />
+    <file src="..\src\ServiceStack.Interfaces\bin\$configuration$\ServiceStack.Interfaces.XML" target="lib\net35" />
+    <file src="..\src\ServiceStack.Interfaces\**\*.cs" exclude="**\obj\**" target="src\ServiceStack.Interfaces" />
+  </files>
+</package>

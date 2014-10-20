@@ -9,9 +9,10 @@
     <projectUrl>https://github.com/ZocDoc/ServiceStack</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Binaries for the ZocDoc fork of the ServiceStack web framework. </description>
-        <dependencies>
-            <dependency id="ServiceStack-ZocDoc.Common" version="$version$" />
-        </dependencies>
+	<dependencies>
+		<dependency id="ServiceStack-ZocDoc.Interfaces" version="$version$" />
+		<dependency id="ServiceStack-ZocDoc.Common" version="$version$" />
+	</dependencies>
   </metadata>
   <files>
     <file src="..\src\ServiceStack.ServiceInterface\bin\$configuration$\ServiceStack.ServiceInterface.dll" target="lib\net35" />

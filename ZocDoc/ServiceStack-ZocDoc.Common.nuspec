@@ -9,17 +9,16 @@
     <projectUrl>https://github.com/ZocDoc/ServiceStack</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Common base library for the ZocDoc fork of ServiceStack projects.</description>
+	<dependencies>
+		<dependency id="ServiceStack-ZocDoc.Interfaces" version="$version$" />
+	</dependencies>
   </metadata>
   <files>
-    <file src="..\src\ServiceStack.Interfaces\bin\$configuration$\ServiceStack.Interfaces.dll" target="lib\net35" />
-    <file src="..\src\ServiceStack.Interfaces\bin\$configuration$\ServiceStack.Interfaces.pdb" target="lib\net35" />
-    <file src="..\src\ServiceStack.Interfaces\bin\$configuration$\ServiceStack.Interfaces.XML" target="lib\net35" />
     <file src="..\src\ServiceStack.Common\bin\$configuration$\ServiceStack.Common.dll" target="lib\net35" />
     <file src="..\src\ServiceStack.Common\bin\$configuration$\ServiceStack.Common.pdb" target="lib\net35" />
     <file src="..\src\ServiceStack.Common\bin\$configuration$\ServiceStack.Common.xml" target="lib\net35" />
     <file src="..\lib\ServiceStack.Text.dll" target="lib\net35" />
     <file src="..\lib\ServiceStack.Text.xml" target="lib\net35" />
     <file src="..\src\ServiceStack.Common\**\*.cs" exclude="**\obj\**" target="src\ServiceStack.Common" />
-    <file src="..\src\ServiceStack.Interfaces\**\*.cs" exclude="**\obj\**" target="src\ServiceStack.Interfaces" />
   </files>
 </package>
