@@ -14,6 +14,7 @@ using ServiceStack.OrmLite;
 using ServiceStack.Razor;
 using ServiceStack.Text;
 using ServiceStack.Validation;
+using ServiceStack.Web;
 
 namespace CheckWeb
 {
@@ -82,6 +83,14 @@ namespace CheckWeb
                 db.DropAndCreateTable<Rockstar>();
                 db.InsertAll(SeedRockstars);
             }
+
+            //this.GlobalResponseFilters.Add((req, res, dto) =>
+            //{
+            //    if (req.ResponseContentType.Matches(MimeTypes.Json) && !(dto is IHttpResult))
+            //    {
+            //        res.Write(")]}',\n");
+            //    }
+            //});
         }
 
         public static Rockstar[] SeedRockstars = new[] {
