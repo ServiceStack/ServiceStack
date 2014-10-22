@@ -72,6 +72,7 @@ namespace ServiceStack
             ServiceExceptionHandlers = new List<HandleServiceExceptionDelegate>();
             UncaughtExceptionHandlers = new List<HandleUncaughtExceptionDelegate>();
             AfterInitCallbacks = new List<Action<IAppHost>>();
+            OnDisposeCallbacks = new List<Action<IAppHost>>();
             RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>> {
                  HttpHandlerFactory.ReturnRequestInfo,
                  MiniProfilerHandler.MatchesRequest,
@@ -242,6 +243,8 @@ namespace ServiceStack
         public List<HandleUncaughtExceptionDelegate> UncaughtExceptionHandlers { get; set; }
 
         public List<Action<IAppHost>> AfterInitCallbacks { get; set; }
+
+        public List<Action<IAppHost>> OnDisposeCallbacks { get; set; }
 
         public List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers { get; set; }
 
@@ -709,6 +712,11 @@ namespace ServiceStack
 
         public virtual void Dispose()
         {
+            foreach (var callback in OnDisposeCallbacks)
+            {
+                callback(this);
+            }
+
             if (Container != null)
             {
                 Container.Dispose();

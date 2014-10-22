@@ -95,7 +95,12 @@ namespace ServiceStack
         /// <summary>
         /// Provide callbacks to be fired after the AppHost has finished initializing
         /// </summary>
-        List<Action<IAppHost>> AfterInitCallbacks { get; set; }
+        List<Action<IAppHost>> AfterInitCallbacks { get; }
+
+        /// <summary>
+        /// Provide callbacks to be fired when AppHost is being disposed
+        /// </summary>
+        List<Action<IAppHost>> OnDisposeCallbacks { get; }
 
         /// <summary>
         /// Skip the ServiceStack Request Pipeline and process the returned IHttpHandler instead
