@@ -113,5 +113,29 @@ namespace ServiceStack
 
             return "?" + queryStringCollection.ToFormUrlEncoded();
         }
+
+        protected bool Equals(AuthenticateAttribute other)
+        {
+            return base.Equals(other) && string.Equals(Provider, other.Provider) && string.Equals(HtmlRedirect, other.HtmlRedirect);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((AuthenticateAttribute) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = base.GetHashCode();
+                hashCode = (hashCode*397) ^ (Provider != null ? Provider.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (HtmlRedirect != null ? HtmlRedirect.GetHashCode() : 0);
+                return hashCode;
+            }
+        }
     }
 }

@@ -70,6 +70,28 @@ namespace ServiceStack
 
             return this.RequiredPermissions.All(session.HasPermission);
         }
+
+        protected bool Equals(RequiredPermissionAttribute other)
+        {
+            return base.Equals(other) 
+                && Equals(RequiredPermissions, other.RequiredPermissions);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((RequiredPermissionAttribute) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (base.GetHashCode()*397) ^ (RequiredPermissions != null ? RequiredPermissions.GetHashCode() : 0);
+            }
+        }
     }
 
 }
