@@ -351,7 +351,7 @@ namespace ServiceStack.NativeTypes.VbNet
                 if (wasAdded) sb.AppendLine();
                 wasAdded = true;
 
-                sb.AppendLine("Public {0}Property ExtensionData As ExtensionDataObject".Fmt(@virtual));
+                sb.AppendLine("Public {0}Property ExtensionData As ExtensionDataObject Implements IExtensibleDataObject.ExtensionData".Fmt(@virtual));
             }
         }
 
