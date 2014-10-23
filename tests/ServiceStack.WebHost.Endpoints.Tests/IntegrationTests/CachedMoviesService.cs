@@ -29,6 +29,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
         public string Genre { get; set; }
     }
 
+    [Route("/cached-string/{Id}")]
+    public class CachedString : IReturn<string>
+    {
+        public string Id { get; set; }
+    }
+
     public class CachedMoviesService : Service
 	{
         public object Get(CachedMovies request)
@@ -65,6 +71,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
                         return (MoviesResponse)service.Get(new Movies { Genre = request.Genre });
                     });
             }
+        }
+
+        public object Get(CachedString request)
+        {
+            return base.Request.ToOptimizedResultUsingCache(
+                new RedisClient(), UrnId.Create<CachedString>(request.Id ?? "all"), TimeSpan.FromMinutes(1), () =>
+                {
+                    return request.Id;
+                });
         }
     }
 }

@@ -69,6 +69,12 @@ namespace ServiceStack
             return null;
         }
 
+        static string SerializeToString(IRequest request, object responseDto)
+        {
+            var str = responseDto as string;
+            return str ?? HostContext.ContentTypes.SerializeToString(request, responseDto);
+        }
+
         public static object Cache(this ICacheClient cacheClient,
             string cacheKey,
             object responseDto,
@@ -79,7 +85,7 @@ namespace ServiceStack
 
             if (!request.ResponseContentType.IsBinary())
             {
-                string serializedDto = HostContext.ContentTypes.SerializeToString(request, responseDto);
+                string serializedDto = SerializeToString(request, responseDto);
 
                 string modifiers = null;
                 if (request.ResponseContentType.MatchesContentType(MimeTypes.Json))

@@ -753,7 +753,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var client = GetClient();
 
-                var authResponse = client.Send<AuthenticateResponse>(new Authenticate
+                var authResponse = client.Send(new Authenticate
                 {
                     provider = CredentialsAuthProvider.Name,
                     UserName = "user",

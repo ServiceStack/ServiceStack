@@ -34,6 +34,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Can_call_Cached_WebService_with_JSON_string()
+        {
+            var client = new JsonServiceClient(Config.ServiceStackBaseUri);
+
+            var response = client.Get<string>("/cached-string/TEXT");
+
+            Assert.That(response, Is.EqualTo("TEXT"));
+        }
+
+        [Test]
         public void Can_call_CachedWithTimeout_WebService_with_JSON()
         {
             var client = new JsonServiceClient(Config.ServiceStackBaseUri);
@@ -64,11 +74,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-		public void Can_call_Cached_WebService_with_JSONP()
-		{
-			var url = Config.ServiceStackBaseUri.CombineWith("/cached/movies?callback=cb");
-			var jsonp = url.GetJsonFromUrl();
-			Assert.That(jsonp.StartsWith("cb("));
-		}
-	}
+        public void Can_call_Cached_WebService_with_JSONP()
+        {
+            var url = Config.ServiceStackBaseUri.CombineWith("/cached/movies?callback=cb");
+            var jsonp = url.GetJsonFromUrl();
+            Assert.That(jsonp.StartsWith("cb("));
+        }
+    }
 }
