@@ -44,6 +44,8 @@ namespace ServiceStack.Host.Handlers
         private static readonly ILog log = LogManager.GetLogger(typeof(StaticFileHandler));
         public static int DefaultBufferSize = 1024 * 1024;
 
+        public static Action<IRequest, IResponse, IVirtualFile> ResponseFilter { get; set; } 
+
         public StaticFileHandler()
         {
             BufferSize = DefaultBufferSize;
@@ -146,6 +148,14 @@ namespace ServiceStack.Host.Handlers
                 {
                     r.AddHeaderLastModified(file.LastModified);
                     r.ContentType = MimeTypes.GetMimeType(file.Name);
+
+                    if (ResponseFilter != null)
+                    {
+                        ResponseFilter(request, r, file);
+
+                        if (r.IsClosed)
+                            return;
+                    }
 
                     if (file.VirtualPath.EqualsIgnoreCase(this.DefaultFilePath))
                     {
