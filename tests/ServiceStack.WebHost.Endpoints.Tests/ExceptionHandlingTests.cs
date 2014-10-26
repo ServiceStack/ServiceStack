@@ -125,6 +125,41 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class CustomHttpError { }
+    public class CustomHttpErrorResponse
+    {
+        public string Custom { get; set; }
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+    public class CustomHttpErrorService : Service
+    {
+        public object Any(CustomHttpError request)
+        {
+            throw new HttpError(new CustomHttpErrorResponse
+            {
+                Custom = "Ignored",
+                ResponseStatus = new ResponseStatus("StatusErrorCode", "StatusErrorMessage")
+            },
+            500,
+            "HeaderErrorCode");
+        }
+    }
+
+    public class DirectHttpError { }
+    public class DirectResponseService : Service
+    {
+        public object Any(DirectHttpError request)
+        {
+            base.Response.StatusCode = 500;
+            base.Response.StatusDescription = "HeaderErrorCode";
+
+            return new CustomHttpErrorResponse
+            {
+                Custom = "Not Ignored",
+                ResponseStatus = new ResponseStatus("StatusErrorCode", "StatusErrorMessage")
+            };
+        }
+    }
 
     [TestFixture]
     public class ExceptionHandlingTests
@@ -320,6 +355,52 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
                 Assert.That(body, Is.StringStarting("{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
+            }
+        }
+
+        [Test]
+        public void Returns_custom_ResponseStatus_with_CustomHttpError()
+        {
+            try
+            {
+                var json = PredefinedJsonUrl<CustomHttpError>().GetJsonFromUrl();
+                Assert.Fail("Should throw");
+            }
+            catch (WebException webEx)
+            {
+                var errorResponse = ((HttpWebResponse)webEx.Response);
+                Assert.That((int)errorResponse.StatusCode, Is.EqualTo(500));
+                Assert.That(errorResponse.StatusDescription, Is.EqualTo("HeaderErrorCode"));
+
+                var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
+                var customResponse = body.FromJson<CustomHttpErrorResponse>();
+                var errorStatus = customResponse.ResponseStatus;
+                Assert.That(errorStatus.ErrorCode, Is.EqualTo("StatusErrorCode"));
+                Assert.That(errorStatus.Message, Is.EqualTo("StatusErrorMessage"));
+                Assert.That(customResponse.Custom, Is.Null);
+            }
+        }
+
+        [Test]
+        public void Returns_custom_ResponseStatus_with_DirectHttpError()
+        {
+            try
+            {
+                var json = PredefinedJsonUrl<DirectHttpError>().GetJsonFromUrl();
+                Assert.Fail("Should throw");
+            }
+            catch (WebException webEx)
+            {
+                var errorResponse = ((HttpWebResponse)webEx.Response);
+                Assert.That((int)errorResponse.StatusCode, Is.EqualTo(500));
+                Assert.That(errorResponse.StatusDescription, Is.EqualTo("HeaderErrorCode"));
+
+                var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
+                var customResponse = body.FromJson<CustomHttpErrorResponse>();
+                var errorStatus = customResponse.ResponseStatus;
+                Assert.That(errorStatus.ErrorCode, Is.EqualTo("StatusErrorCode"));
+                Assert.That(errorStatus.Message, Is.EqualTo("StatusErrorMessage"));
+                Assert.That(customResponse.Custom, Is.EqualTo("Not Ignored"));
             }
         }
 

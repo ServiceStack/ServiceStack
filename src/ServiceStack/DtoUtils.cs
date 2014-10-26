@@ -20,15 +20,9 @@ namespace ServiceStack
 
         public static ResponseStatus ToResponseStatus(this Exception exception)
         {
-            var responseStatusConverter = exception as IResponseStatusConvertible;
-            if (responseStatusConverter != null)
-            {
-                return responseStatusConverter.ToResponseStatus();
-            }
-
-            var httpError = exception as IHttpError;
-            return httpError != null
-                ? CreateResponseStatus(httpError.ErrorCode, httpError.Message)
+            var customStatus = exception as IResponseStatusConvertible;
+            return customStatus != null 
+                ? customStatus.ToResponseStatus() 
                 : CreateResponseStatus(exception.GetType().Name, exception.Message);
         }
 

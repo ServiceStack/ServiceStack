@@ -306,6 +306,10 @@ namespace ServiceStack
             if (response == null)
                 return null;
 
+            var status = response as ResponseStatus;
+            if (status != null)
+                return status;
+
             var hasResponseStatus = response as IHasResponseStatus;
             if (hasResponseStatus != null)
                 return hasResponseStatus.ResponseStatus;
