@@ -67,7 +67,7 @@ public class Customer
 }
 ```
 
-Once defined, it can be saved and loaded via the normal Reference API's, e.g:
+Once defined, it can be saved and loaded via OrmLite's normal Reference and Select API's, e.g:
 
 ```csharp
 var customer = new Customer
@@ -79,7 +79,7 @@ var customer = new Customer
     },
     WorkAddress = new CustomerAddress {
         Address = "2 Work Road",
-        Country = "Australia"
+        Country = "UK"
     },
 };
 
@@ -87,6 +87,9 @@ db.Save(customer, references:true);
 
 var c = db.LoadSelect<Customer>(q => q.Name == "Z Customer");
 c.WorkAddress.Address.Print(); // 2 Work Road
+
+var ukAddress = db.Single<CustomerAddress>(q => q.Country == "UK");
+ukAddress.Address.Print();     // 2 Work Road
 ```
 
 ## [ServiceStack.Redis SSL Support](https://github.com/ServiceStack/ServiceStack/wiki/Secure-SSL-Redis-connections-to-Azure-Redis)
