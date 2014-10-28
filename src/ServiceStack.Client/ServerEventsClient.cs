@@ -489,9 +489,8 @@ namespace ServiceStack
                     .Error(ex => { /*ignore*/});
             }
 
-            if (response != null)
+            using (response)
             {
-                response.Close();
                 response = null;
             }
 
