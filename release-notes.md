@@ -38,6 +38,57 @@ The **Sqlite** and **SqlServer** Async API examples below further illustrate thi
 
 Only when these Async API's are run on an RDBMS provider with native async support like **SQL Server .NET 4.5** will you benefit from true non-blocking Async I/O, otherwise (inc SQL Server .NET 4.0) it fallsback to *pseudo async* support, i.e. synchronous I/O datasets wrapped in `Task` Results.
 
+### Multiple Self References
+
+OrmLite's [POCO Reference conventions](https://github.com/ServiceStack/ServiceStack.OrmLite#reference-conventions) 
+has been expanded to include support for multiple Self References. 
+
+The example below shows a customer with multiple `CustomerAddress` references which are able to be matched with 
+the `{PropertyReference}Id` naming convention, e.g:
+
+```csharp
+public class Customer
+{
+    [AutoIncrement]
+    public int Id { get; set; }
+    public string Name { get; set; }
+
+    [References(typeof(CustomerAddress))]
+    public int? HomeAddressId { get; set; }
+
+    [References(typeof(CustomerAddress))]
+    public int? WorkAddressId { get; set; }
+
+    [Reference]
+    public CustomerAddress HomeAddress { get; set; }
+
+    [Reference]
+    public CustomerAddress WorkAddress { get; set; }
+}
+```
+
+Once defined, it can be saved and loaded via the normal Reference API's, e.g:
+
+```csharp
+var customer = new Customer
+{
+    Name = "Z Customer",
+    HomeAddress = new CustomerAddress {
+        Address = "1 Home Street",
+        Country = "US"
+    },
+    WorkAddress = new CustomerAddress {
+        Address = "2 Work Road",
+        Country = "Australia"
+    },
+};
+
+db.Save(customer, references:true);
+
+var c = db.LoadSelect<Customer>(q => q.Name == "Z Customer");
+c.WorkAddress.Address.Print(); // 2 Work Road
+```
+
 ## [ServiceStack.Redis SSL Support](https://github.com/ServiceStack/ServiceStack/wiki/Secure-SSL-Redis-connections-to-Azure-Redis)
 
 The [most requested feature for ServiceStack.Redis](http://servicestack.uservoice.com/forums/176786-feature-requests/suggestions/6093693-support-ssl-connection-to-redis-instances-hosted-a) has also been realized in this release with **ServiceStack.Redis** now supporting **SSL connections** making it suitable for accessing remote Redis server instances over a **secure SSL connection**.
