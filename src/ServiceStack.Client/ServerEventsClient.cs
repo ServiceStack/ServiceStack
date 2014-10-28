@@ -54,6 +54,7 @@ namespace ServiceStack
         Encoding encoding = new UTF8Encoding();
 
         HttpWebRequest httpReq;
+        HttpWebResponse response;
         CancellationTokenSource cancel;
         private ITimer heartbeatTimer;
 
@@ -114,7 +115,7 @@ namespace ServiceStack
             if (EventStreamRequestFilter != null)
                 EventStreamRequestFilter(httpReq);
 
-            var response = PclExport.Instance.GetResponse(httpReq);
+            response = (HttpWebResponse)PclExport.Instance.GetResponse(httpReq);
             var stream = response.GetResponseStream();
 
             buffer = new byte[BufferSize];
@@ -486,6 +487,12 @@ namespace ServiceStack
                 EnsureSynchronizationContext();
                 ConnectionInfo.UnRegisterUrl.GetStringFromUrlAsync()
                     .Error(ex => { /*ignore*/});
+            }
+
+            if (response != null)
+            {
+                response.Close();
+                response = null;
             }
 
             ConnectionInfo = null;
