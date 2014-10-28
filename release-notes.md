@@ -356,7 +356,8 @@ This allows us to implement a custom type that can support full round-trip when 
  - `ToOptimizedResultUsingCache` no longer double-encodes raw `string` responses
  - `MvcHtmlString` was moved to `ServiceStack.Html` namespace
  - New `StaticFileHandler.ResponseFilter` added to be able to modify custom headers returned on static files
- - Many of OrmLite's static Extension method classes were renamed into a more logical grouping. Should not cause any breaking source changes in normal usage when referenced as extension methods.
+ - Many of OrmLite's static Extension method classes were renamed into a more logical grouping. 
+   These changes are source compatible for typical usage of OrmLite API's, i.e. referenced as extension methods
 
 
 # v4.0.32 Release Notes
