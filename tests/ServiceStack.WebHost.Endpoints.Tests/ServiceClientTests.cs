@@ -1,3 +1,4 @@
+using System.Net;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
@@ -75,6 +76,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             await client.PostAsync(new ReturnsVoid { Message = "Foo" });
             Assert.That(TestAsyncService.ReturnVoidMessage, Is.EqualTo("Foo"));
+
+            using (client.Post<HttpWebResponse>(new ReturnsVoid { Message = "Bar" })) { }
+            Assert.That(TestAsyncService.ReturnVoidMessage, Is.EqualTo("Bar"));
+        }
+
+        [Test]
+        public async Task Can_call_return_HttpWebResponse()
+        {
+            client.Post(new ReturnsWebResponse { Message = "Foo" });
+            Assert.That(TestAsyncService.ReturnWebResponseMessage, Is.EqualTo("Foo"));
+
+            await client.PostAsync(new ReturnsWebResponse { Message = "Foo" });
+            Assert.That(TestAsyncService.ReturnWebResponseMessage, Is.EqualTo("Foo"));
+
+            using (client.Post<HttpWebResponse>(new ReturnsWebResponse { Message = "Bar" })) { }
+            Assert.That(TestAsyncService.ReturnWebResponseMessage, Is.EqualTo("Bar"));
         }
     }
 

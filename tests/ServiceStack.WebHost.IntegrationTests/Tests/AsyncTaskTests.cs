@@ -117,7 +117,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         [Test]
         public async Task VoidAsync()
         {
-            var response = await CreateServiceClient()
+            await CreateServiceClient()
                 .GetAsync(new VoidAsync { Message = "VoidAsync" });
         }
 

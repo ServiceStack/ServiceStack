@@ -1,3 +1,4 @@
+using System.Net;
 using System.Runtime.Serialization;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
@@ -27,13 +28,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         public string Message { get; set; }
     }
 
-	public class TestAsyncService : IService
+    [Route("/returnswebresponse")]
+    [DataContract]
+    public class ReturnsWebResponse : IReturn<HttpWebResponse>
+    {
+        [DataMember]
+        public string Message { get; set; }
+    }
+
+    public class TestAsyncService : IService
 	{
 		private readonly IFoo foo;
 
 		public static int ExecuteTimes { get; private set; }
 		public static int ExecuteAsyncTimes { get; private set; }
-	    public static string ReturnVoidMessage;
+        public static string ReturnVoidMessage;
+        public static string ReturnWebResponseMessage;
 		
 		public static void ResetStats()
 		{
@@ -55,5 +65,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         {
             ReturnVoidMessage = request.Message;
         }
-	}
+
+        public void Any(ReturnsWebResponse request)
+        {
+            ReturnWebResponseMessage = request.Message;
+        }
+    }
 }

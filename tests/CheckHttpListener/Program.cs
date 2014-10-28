@@ -51,7 +51,7 @@ namespace CheckHttpListener
                 var request = new UpdateAddressVoid();
                 request.ToGetUrl().Print();
                 request.ToPostUrl().Print();
-                var response = await client.PostAsync(request);
+                await client.PostAsync(request);
                 //var response = client.Post(request);
             }
             catch (WebServiceException ex)

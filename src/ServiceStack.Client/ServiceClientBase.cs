@@ -843,9 +843,9 @@ namespace ServiceStack
             return asyncClient.SendAsync<TResponse>(HttpMethods.Get, GetUrl(relativeOrAbsoluteUrl), null);
         }
 
-        public virtual Task<HttpWebResponse> GetAsync(IReturnVoid requestDto)
+        public virtual Task GetAsync(IReturnVoid requestDto)
         {
-            return GetAsync<HttpWebResponse>(requestDto.ToUrl(HttpMethods.Get, Format));
+            return GetAsync<byte[]>(requestDto.ToUrl(HttpMethods.Get, Format));
         }
 
 
@@ -864,9 +864,9 @@ namespace ServiceStack
             return asyncClient.SendAsync<TResponse>(HttpMethods.Delete, GetUrl(relativeOrAbsoluteUrl), null);
         }
 
-        public virtual Task<HttpWebResponse> DeleteAsync(IReturnVoid requestDto)
+        public virtual Task DeleteAsync(IReturnVoid requestDto)
         {
-            return DeleteAsync<HttpWebResponse>(requestDto.ToUrl(HttpMethods.Delete, Format));
+            return DeleteAsync<byte[]>(requestDto.ToUrl(HttpMethods.Delete, Format));
         }
 
 
@@ -885,9 +885,9 @@ namespace ServiceStack
             return asyncClient.SendAsync<TResponse>(HttpMethods.Post, GetUrl(relativeOrAbsoluteUrl), request);
         }
 
-        public virtual Task<HttpWebResponse> PostAsync(IReturnVoid requestDto)
+        public virtual Task PostAsync(IReturnVoid requestDto)
         {
-            return PostAsync<HttpWebResponse>(requestDto.ToUrl(HttpMethods.Post, Format), requestDto);
+            return PostAsync<byte[]>(requestDto.ToUrl(HttpMethods.Post, Format), requestDto);
         }
 
 
@@ -906,9 +906,9 @@ namespace ServiceStack
             return asyncClient.SendAsync<TResponse>(HttpMethods.Put, GetUrl(relativeOrAbsoluteUrl), request);
         }
 
-        public virtual Task<HttpWebResponse> PutAsync(IReturnVoid requestDto)
+        public virtual Task PutAsync(IReturnVoid requestDto)
         {
-            return PutAsync<HttpWebResponse>(requestDto.ToUrl(HttpMethods.Put, Format), requestDto);
+            return PutAsync<byte[]>(requestDto.ToUrl(HttpMethods.Put, Format), requestDto);
         }
 
 
@@ -927,9 +927,9 @@ namespace ServiceStack
             return asyncClient.SendAsync<TResponse>(HttpMethods.Patch, GetUrl(relativeOrAbsoluteUrl), request);
         }
 
-        public virtual Task<HttpWebResponse> PatchAsync(IReturnVoid requestDto)
+        public virtual Task PatchAsync(IReturnVoid requestDto)
         {
-            return PatchAsync<HttpWebResponse>(requestDto.ToUrl(HttpMethods.Patch, Format), requestDto);
+            return PatchAsync<byte[]>(requestDto.ToUrl(HttpMethods.Patch, Format), requestDto);
         }
 
 
@@ -951,13 +951,13 @@ namespace ServiceStack
             return asyncClient.SendAsync<TResponse>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestBody);
         }
 
-        public virtual Task<HttpWebResponse> CustomMethodAsync(string httpVerb, IReturnVoid requestDto)
+        public virtual Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto)
         {
             if (!HttpMethods.HasVerb(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
             var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
-            return asyncClient.SendAsync<HttpWebResponse>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestBody);
+            return asyncClient.SendAsync<byte[]>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestBody);
         }
 
 
@@ -996,9 +996,9 @@ namespace ServiceStack
         }
 
 
-        public virtual HttpWebResponse Get(IReturnVoid requestDto)
+        public virtual void Get(IReturnVoid requestDto)
         {
-            return Get<HttpWebResponse>(requestDto.ToUrl(HttpMethods.Get, Format));
+            Get<byte[]>(requestDto.ToUrl(HttpMethods.Get, Format));
         }
 
         public virtual HttpWebResponse Get(object requestDto)
@@ -1042,9 +1042,9 @@ namespace ServiceStack
             while (response.Results.Count + response.Offset < response.Total);
         }
 
-        public virtual HttpWebResponse Delete(IReturnVoid requestDto)
+        public virtual void Delete(IReturnVoid requestDto)
         {
-            return Delete(requestDto.ToUrl(HttpMethods.Delete, Format));
+            Delete<byte[]>(requestDto.ToUrl(HttpMethods.Delete, Format));
         }
 
         public virtual HttpWebResponse Delete(object requestDto)
@@ -1073,9 +1073,9 @@ namespace ServiceStack
         }
 
 
-        public virtual HttpWebResponse Post(IReturnVoid requestDto)
+        public virtual void Post(IReturnVoid requestDto)
         {
-            return Post<HttpWebResponse>(requestDto.ToUrl(HttpMethods.Post, Format), requestDto);
+            Post<byte[]>(requestDto.ToUrl(HttpMethods.Post, Format), requestDto);
         }
 
         public virtual HttpWebResponse Post(object requestDto)
@@ -1099,9 +1099,9 @@ namespace ServiceStack
         }
 
 
-        public virtual HttpWebResponse Put(IReturnVoid requestDto)
+        public virtual void Put(IReturnVoid requestDto)
         {
-            return Put<HttpWebResponse>(requestDto.ToUrl(HttpMethods.Put, Format), requestDto);
+            Put<byte[]>(requestDto.ToUrl(HttpMethods.Put, Format), requestDto);
         }
 
         public virtual HttpWebResponse Put(object requestDto)
@@ -1125,9 +1125,9 @@ namespace ServiceStack
         }
 
 
-        public virtual HttpWebResponse Patch(IReturnVoid requestDto)
+        public virtual void Patch(IReturnVoid requestDto)
         {
-            return Patch<HttpWebResponse>(requestDto.ToUrl(HttpMethods.Patch, Format), requestDto);
+            Patch<byte[]>(requestDto.ToUrl(HttpMethods.Patch, Format), requestDto);
         }
 
         public virtual HttpWebResponse Patch(object requestDto)
@@ -1151,9 +1151,9 @@ namespace ServiceStack
         }
 
 
-        public virtual HttpWebResponse CustomMethod(string httpVerb, IReturnVoid requestDto)
+        public virtual void CustomMethod(string httpVerb, IReturnVoid requestDto)
         {
-            return CustomMethod<HttpWebResponse>(httpVerb, requestDto.ToUrl(httpVerb, Format), requestDto);
+            CustomMethod<byte[]>(httpVerb, requestDto.ToUrl(httpVerb, Format), requestDto);
         }
 
         public virtual HttpWebResponse CustomMethod(string httpVerb, object requestDto)

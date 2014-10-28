@@ -105,7 +105,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public HttpWebResponse CustomMethod(string httpVerb, IReturnVoid requestDto)
+        public void CustomMethod(string httpVerb, IReturnVoid requestDto)
         {
             throw new NotImplementedException();
         }
@@ -171,7 +171,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public HttpWebResponse Get(IReturnVoid request)
+        public void Get(IReturnVoid request)
         {
             throw new NotImplementedException();
         }
@@ -202,7 +202,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public HttpWebResponse Delete(IReturnVoid requestDto)
+        public void Delete(IReturnVoid requestDto)
         {
             throw new NotImplementedException();
         }
@@ -227,7 +227,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public HttpWebResponse Post(IReturnVoid requestDto)
+        public void Post(IReturnVoid requestDto)
         {
             throw new NotImplementedException();
         }
@@ -252,7 +252,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public HttpWebResponse Put(IReturnVoid requestDto)
+        public void Put(IReturnVoid requestDto)
         {
             throw new NotImplementedException();
         }
@@ -277,7 +277,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public HttpWebResponse Patch(IReturnVoid requestDto)
+        public void Patch(IReturnVoid requestDto)
         {
             throw new NotImplementedException();
         }
@@ -365,7 +365,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public Task<HttpWebResponse> GetAsync(IReturnVoid requestDto)
+        public Task GetAsync(IReturnVoid requestDto)
         {
             throw new NotImplementedException();
         }
@@ -385,7 +385,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public Task<HttpWebResponse> DeleteAsync(IReturnVoid requestDto)
+        public Task DeleteAsync(IReturnVoid requestDto)
         {
             throw new NotImplementedException();
         }
@@ -405,7 +405,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public Task<HttpWebResponse> PostAsync(IReturnVoid requestDto)
+        public Task PostAsync(IReturnVoid requestDto)
         {
             throw new NotImplementedException();
         }
@@ -425,7 +425,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public Task<HttpWebResponse> PutAsync(IReturnVoid requestDto)
+        public Task PutAsync(IReturnVoid requestDto)
         {
             throw new NotImplementedException();
         }
@@ -440,7 +440,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public Task<HttpWebResponse> CustomMethodAsync(string httpVerb, IReturnVoid requestDto)
+        public Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto)
         {
             throw new NotImplementedException();
         }
