@@ -359,6 +359,23 @@ This allows us to implement a custom type that can support full round-trip when 
  - Many of OrmLite's static Extension method classes were renamed into a more logical grouping. 
    These changes are source compatible for typical usage of OrmLite API's, i.e. referenced as extension methods
 
+### IReturnVoid now returns void
+
+All `IReturnVoid` API's on Service Clients have been changed to return `void` instead of 
+`HttpWebResponse` which needed to be explicitly disposed by the callee. 
+
+To access the `HttpWebResponse`, Request DTO's can be changed to `IReturn<HttpWebResponse>` 
+
+```csharp
+public class EmptyResponse : IReturn<HttpWebResponse> { ... }
+```
+
+Alternatively the Response can be specified on the call-site:
+
+```csharp
+HttpWebResponse response = client.Get<HttpWebResponse>(new EmptyResponse());
+```
+
 
 # v4.0.32 Release Notes
 
