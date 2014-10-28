@@ -96,6 +96,8 @@ ukAddress.Address.Print();     // 2 Work Road
 
 The [most requested feature for ServiceStack.Redis](http://servicestack.uservoice.com/forums/176786-feature-requests/suggestions/6093693-support-ssl-connection-to-redis-instances-hosted-a) has also been realized in this release with **ServiceStack.Redis** now supporting **SSL connections** making it suitable for accessing remote Redis server instances over a **secure SSL connection**.
 
+![Azure Redis Cache](https://github.com/ServiceStack/Assets/raw/master/img/wikis/redis/azure-redis-instance.png)
+
 ### Redis Use Cases
 
 Redis is normally used as a back-end datastore whose access is typically limited to Internal networks or authorized networks protected via firewalls. The new SSL Support in the Redis Client also enables secure access to a redis-server instance over the Internet and public networks as well, a scenario that's been recently popularized by Cloud hosting environments like Azure Redis Cache.
