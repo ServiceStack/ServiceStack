@@ -25,6 +25,7 @@ var SIGN_PROJS = [
     '../../ServiceStack.Redis/src/ServiceStack.Redis/ServiceStack.Redis.csproj',
     '../../ServiceStack.OrmLite/src/ServiceStack.OrmLite/ServiceStack.OrmLite.csproj',
     '../../ServiceStack.OrmLite/src/ServiceStack.OrmLite.SqlServer/ServiceStack.OrmLite.SqlServer.csproj',
+    '../../ServiceStack.OrmLite/src/ServiceStack.OrmLite.SqlServer/ServiceStack.OrmLite.SqlServerV45.csproj',
     '../../ServiceStack.OrmLite/src/ServiceStack.OrmLite.Oracle/ServiceStack.OrmLite.Oracle.csproj',
     '../../ServiceStack.OrmLite/src/ServiceStack.OrmLite.Sqlite.Windows/ServiceStack.OrmLite.Sqlite.Windows.csproj',
     '../src/ServiceStack.Common/ServiceStack.Common.csproj',
