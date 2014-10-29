@@ -81,6 +81,7 @@
       <ServiceStackFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/ServiceStack.xml"></ServiceStackFiles>
 
       <ServerFiles Include="$(SrcDir)/ServiceStack.Server/bin/$(Configuration)/ServiceStack.Server.*"></ServerFiles>
+      <ServerFilesV45 Include="$(SrcDir)/ServiceStack.Server/bin/$(Configuration)/ServiceStack.Server.*"></ServerFilesV45>
 
       <RazorFiles Include="$(SrcDir)/ServiceStack.Razor/bin/$(Configuration)/ServiceStack.Razor.*"></RazorFiles>
       <RazorFiles Include="$(BuildSolutionDir)/lib/System.Web.Razor.*"></RazorFiles>
@@ -159,6 +160,13 @@
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Server.Signed/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Server.Signed/lib/net40')" />
     <Copy SourceFiles="%(ServerFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Server.Signed/lib/net40" />
+
+    <!-- ServiceStack.Server .NET 4.5 -->
+    <MSBuild Projects="../src/ServiceStack.ServerV45/ServiceStack.ServerV45.Signed.csproj" Properties="Configuration=$(Configuration)"/>
+    <Copy SourceFiles="%(ServerFilesV45.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/net45/signed" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Server.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Server.Signed/lib/net45')" />
+    <Copy SourceFiles="%(ServerFilesV45.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Server.Signed/lib/net45" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Server.Signed/servicestack.server.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
