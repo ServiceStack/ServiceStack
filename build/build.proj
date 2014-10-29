@@ -453,7 +453,7 @@
     <Copy SourceFiles="%(ServerFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Server/lib/net40" />
 
     <!-- ServiceStack.Server .NET 4.5 -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Server/ServiceStack.ServerV45.csproj"
+    <MSBuild Projects="$(SrcDir)/ServiceStack.ServerV45/ServiceStack.ServerV45.csproj"
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
