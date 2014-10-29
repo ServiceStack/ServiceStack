@@ -192,6 +192,12 @@
             If set to true, Interface types will be prefered over concrete types when serializing.
             </summary>
         </member>
+        <member name="F:ServiceStack.Text.JsConfig.sReuseStringBuffer">
+            <summary>
+            For extra serialization performance you can re-use a ThreadStatic StringBuilder
+            when serializing to a JSON String.
+            </summary>
+        </member>
         <member name="F:ServiceStack.Text.JsConfig.sMaxDepth">
             <summary>
             Sets the maximum depth to avoid circular dependencies
@@ -240,6 +246,11 @@
         <member name="F:ServiceStack.Text.JsConfig`1.onSerializingFn">
             <summary>
             Define custom serialization hook
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Text.JsConfig`1.onSerializedFn">
+            <summary>
+            Define custom after serialization hook
             </summary>
         </member>
         <member name="F:ServiceStack.Text.JsConfig`1.DeSerializeFn">
