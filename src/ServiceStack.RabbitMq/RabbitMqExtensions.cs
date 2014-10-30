@@ -164,6 +164,11 @@ namespace ServiceStack.RabbitMq
             props.Timestamp = new AmqpTimestamp(message.CreatedDate.ToUnixTime());
             props.Priority = (byte)message.Priority;
             props.ContentType = MimeTypes.Json;
+            
+            if (message.Body != null)
+            {
+                props.Type = message.Body.GetType().Name;
+            }
 
             if (message.ReplyTo != null)
             {

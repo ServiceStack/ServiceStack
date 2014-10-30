@@ -13,6 +13,8 @@ namespace ServiceStack.RabbitMq
         protected readonly RabbitMqMessageFactory msgFactory;
         public int RetryCount { get; set; }
         public Action OnPublishedCallback { get; set; }
+        public Action<string, IBasicProperties, IMessage> PublishMessageFilter { get; set; }
+        public Action<string, BasicGetResult> GetMessageFilter { get; set; }
 
         private IConnection connection;
         public IConnection Connection
@@ -89,6 +91,11 @@ namespace ServiceStack.RabbitMq
                 props.SetPersistent(true);
                 props.PopulateFromMessage(message);
 
+                if (PublishMessageFilter != null)
+                {
+                    PublishMessageFilter(queueName, props, message);
+                }
+
                 var messageBytes = message.Body.ToJson().ToUtf8Bytes();
 
                 PublishMessage(exchange ?? QueueNames.Exchange,
@@ -155,7 +162,14 @@ namespace ServiceStack.RabbitMq
                     Queues = new HashSet<string>(Queues) { queueName };
                 }
 
-                return Channel.BasicGet(queueName, noAck: noAck);
+                var basicMsg = Channel.BasicGet(queueName, noAck: noAck);
+
+                if (GetMessageFilter != null)
+                {
+                    GetMessageFilter(queueName, basicMsg);
+                }
+
+                return basicMsg;
             }
             catch (OperationInterruptedException ex)
             {

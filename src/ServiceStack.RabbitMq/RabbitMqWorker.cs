@@ -235,6 +235,12 @@ namespace ServiceStack.RabbitMq
                 try
                 {
                     var e = consumer.Queue.Dequeue();
+
+                    if (mqFactory.GetMessageFilter != null)
+                    {
+                        mqFactory.GetMessageFilter(QueueName, e);
+                    }
+
                     messageHandler.ProcessMessage(mqClient, e);
                 }
                 catch (Exception ex)

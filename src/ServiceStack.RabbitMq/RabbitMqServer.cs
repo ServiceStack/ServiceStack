@@ -60,6 +60,18 @@ namespace ServiceStack.RabbitMq
             get { return messageFactory; }
         }
 
+        public Action<string, IBasicProperties, IMessage> PublishMessageFilter
+        {
+            get { return messageFactory.PublishMessageFilter; }
+            set { messageFactory.PublishMessageFilter = value; }
+        }
+
+        public Action<string, BasicGetResult> GetMessageFilter
+        {
+            get { return messageFactory.GetMessageFilter; }
+            set { messageFactory.GetMessageFilter = value; }
+        }
+
         /// <summary>
         /// Execute global transformation or custom logic before a request is processed.
         /// Must be thread-safe.

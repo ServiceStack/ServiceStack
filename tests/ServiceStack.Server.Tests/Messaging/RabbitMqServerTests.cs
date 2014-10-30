@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using NUnit.Framework;
+using RabbitMQ.Client;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Messaging.Redis;
@@ -420,5 +422,58 @@ namespace ServiceStack.Server.Tests.Messaging
             }
         }
 
+        [Test]
+        public void Can_filter_published_and_received_messages()
+        {
+            string receivedMsgApp = null;
+            string receivedMsgType = null;
+
+            var mqServer = CreateMqServer();
+            mqServer.PublishMessageFilter = (queueName, properties, msg) =>
+            {
+                properties.AppId = "app:{0}".Fmt(queueName);
+            };
+            mqServer.GetMessageFilter = (queueName, basicMsg) =>
+            {
+                var props = basicMsg.BasicProperties;
+                receivedMsgType = props.Type; //automatically added by RabbitMqProducer
+                receivedMsgApp = props.AppId;
+            };
+
+            mqServer.RegisterHandler<Hello>(m => {
+                return new HelloResponse { Result = "Hello, {0}!".Fmt(m.GetBody().Name) };
+            });
+
+            mqServer.Start();
+
+            using (var mqClient = mqServer.CreateMessageQueueClient())
+            {
+                mqClient.Publish(new Hello { Name = "Bugs Bunny" });
+            }
+
+            Thread.Sleep(100);
+
+            mqServer.Dispose();
+
+            Assert.That(receivedMsgApp, Is.EqualTo("app:{0}".Fmt(QueueNames<Hello>.In)));
+            Assert.That(receivedMsgType, Is.EqualTo(typeof(Hello).Name));
+
+            using (IConnection connection = mqServer.ConnectionFactory.CreateConnection())
+            using (IModel channel = connection.CreateModel())
+            {
+                var queueName = QueueNames<HelloResponse>.In;
+                channel.RegisterQueue(queueName);
+
+                var basicMsg = channel.BasicGet(queueName, noAck: true);
+                var props = basicMsg.BasicProperties;
+
+                Assert.That(props.Type, Is.EqualTo(typeof(HelloResponse).Name));
+                Assert.That(props.AppId, Is.EqualTo("app:{0}".Fmt(queueName)));
+
+                var msg = basicMsg.ToMessage<HelloResponse>();
+                Assert.That(msg.GetBody().Result, Is.EqualTo("Hello, Bugs Bunny!"));
+            }
+
+        }
     }
 }
