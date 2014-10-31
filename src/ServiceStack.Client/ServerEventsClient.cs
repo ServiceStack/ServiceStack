@@ -199,9 +199,6 @@ namespace ServiceStack
                     if (cancel.IsCancellationRequested)
                         return;
 
-                    if (OnHeartbeat != null)
-                        OnHeartbeat(); //mainly for testing
-
                     if (log.IsDebugEnabled)
                         log.DebugFormat("Heartbeat sent to: " + ConnectionInfo.HeartbeatUrl);
 
@@ -416,6 +413,9 @@ namespace ServiceStack
                         case "onLeave":
                             ProcessOnLeaveMessage(e);
                             return;
+                        case "onHeartbeat":
+                            ProcessOnHeartbeatMessage(e);
+                            return;
                         default:
                             ServerEventCallback cb;
                             if (Handlers.TryGetValue(e.Target, out cb))
@@ -472,6 +472,17 @@ namespace ServiceStack
             var leaveMsg = new ServerEventLeave().Populate(e, msg);
 
             OnCommandReceived(leaveMsg);
+        }
+
+        private void ProcessOnHeartbeatMessage(ServerEventMessage e)
+        {
+            var msg = JsonObject.Parse(e.Json);
+            var heartbeatMsg = new ServerEventLeave().Populate(e, msg);
+
+            if (OnHeartbeat != null)
+                OnHeartbeat();
+
+            OnCommandReceived(heartbeatMsg);
         }
 
         public virtual void Stop()
