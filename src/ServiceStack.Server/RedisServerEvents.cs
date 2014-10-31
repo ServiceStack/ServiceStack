@@ -73,6 +73,7 @@ namespace ServiceStack
             {
                 NotifyJoin = HandleOnJoin,
                 NotifyLeave = HandleOnLeave,
+                NotifyHeartbeat = HandleOnHeartbeat,
                 Serialize = HandleSerialize, 
             };
 
@@ -134,6 +135,11 @@ namespace ServiceStack
             RemoveSubscriptionFromRedis(info);
 
             NotifyChannel(sub.Channel, "cmd.onLeave", sub.Meta);
+        }
+
+        void HandleOnHeartbeat(IEventSubscription sub)
+        {
+            NotifyChannel(sub.Channel, "cmd.onHeartbeat", sub.Meta);
         }
 
         private void RemoveSubscriptionFromRedis(SubscriptionInfo info)

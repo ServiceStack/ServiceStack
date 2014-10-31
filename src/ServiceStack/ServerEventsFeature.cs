@@ -381,6 +381,7 @@ namespace ServiceStack
 
         public Action<IEventSubscription> NotifyJoin { get; set; }
         public Action<IEventSubscription> NotifyLeave { get; set; }
+        public Action<IEventSubscription> NotifyHeartbeat { get; set; }
         public Func<object,string> Serialize { get; set; }
 
         
@@ -398,6 +399,7 @@ namespace ServiceStack
 
             NotifyJoin = s => NotifyChannel(s.Channel, "cmd.onJoin", s.Meta);
             NotifyLeave = s => NotifyChannel(s.Channel, "cmd.onLeave", s.Meta);
+            NotifyHeartbeat = s => NotifyChannel(s.Channel, "cmd.onHeartbeat", s.Meta);
             Serialize = o => o != null ? o.ToJson() : null;
         }
 
@@ -489,6 +491,10 @@ namespace ServiceStack
             if (sub == null) 
                 return false;
             sub.Pulse();
+   
+            if (NotifyHeartbeat != null)
+                NotifyHeartbeat(sub);
+            
             return true;
         }
 
