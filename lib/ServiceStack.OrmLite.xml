@@ -197,11 +197,6 @@
             Open a Transaction in OrmLite
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.GetDialectProvider(System.Data.IDbConnection)">
-            <summary>
-            Return the IOrmLiteDialectProvider on this connection.
-            </summary>
-        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.Select``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
             <summary>
             Returns results from using a LINQ Expression. E.g:
@@ -493,11 +488,6 @@
         <member name="M:ServiceStack.OrmLite.JoinSqlBuilder`2.Limit">
             <summary>
             Clear Sql Limit clause
-            </summary>
-        </member>
-        <member name="T:ServiceStack.OrmLite.OrmLiteConnectionWrapper">
-            <summary>
-            Wrapper IDbConnection class to manage db connection events
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.Select``1(System.Data.IDbConnection)">

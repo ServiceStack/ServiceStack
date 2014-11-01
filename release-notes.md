@@ -2,7 +2,9 @@
 
 ## OrmLite now supports Async!
 
-Another [major feature request](http://servicestack.uservoice.com/forums/176786-feature-requests/suggestions/6217167-provider-async-support-for-ormlite) is ticked off in this release with the new **Async support available in OrmLite!** where most of OrmLite's public API's now have async versions with the same name and conventional `Async` suffix. 
+Another [major feature request](http://servicestack.uservoice.com/forums/176786-feature-requests/suggestions/6217167-provider-async-support-for-ormlite) 
+is ticked off in this release with the new **Async support available in OrmLite!** where most of OrmLite's 
+public API's now have async versions with the same name and conventional `Async` suffix. 
 
 A quick overview of the new Async API's added can be seen in the class diagram below:
 
@@ -10,17 +12,18 @@ A quick overview of the new Async API's added can be seen in the class diagram b
 
 Checkout [ApiSqlServerTestsAsync.cs](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/tests/ServiceStack.OrmLite.Tests/ApiSqlServerTestsAsync.cs) for a quick preview of many of the new Async API's in action.
 
-Basically the only Data Access API's that doesn't have async equivalents are `*Lazy` APIs yielding a lazy sequence (incompatible with async) as well as **Schema** DDL API's which are typically not used at runtime.
-
-### Accessing Async APIs
-
-To minimize API pollution the Async APIs are all extension methods under the `ServiceStack.OrmLite.Async` namespace, this way the Async API versions only appear in the intelli-sense for developers wanting to use Async.  
-
-Each Async API includes an optional `CancellationToken` that by default is the last argument, except for API's which contains `params` arguments, in which case it's added as the first argument.
+> Effectively the only Data Access API's that doesn't have async equivalents are `*Lazy` APIs yielding a lazy 
+> sequence (incompatible with async) as well as **Schema** DDL API's which are typically not used at runtime.
 
 ### Async RDBMS Providers
 
-Currently the number of underlying .NET RDBMS providers that offer Async API's is limited. To further compound the issue there are no standard ADO.NET interfaces that DB Providers offering Async API's are able to implement, i.e. the common ADO.NET [IDbConnection](http://msdn.microsoft.com/en-us/library/system.data.idbconnection(v=vs.110).aspx) and [IDbCommand](http://msdn.microsoft.com/en-us/library/system.data.idbcommand(v=vs.110).aspx) interfaces do not offer Async versions of their sync API's which Data Access Layers (DAL's) can bind to provide a genericized abstraction. 
+Currently only a limited number of RDBMS providers offer 
+
+Currently the number of underlying .NET RDBMS providers that offer Async API's is limited. 
+To further compound the issue there are no standard ADO.NET interfaces that DB Providers offering Async API's are able to implement, 
+i.e. the common ADO.NET [IDbConnection](http://msdn.microsoft.com/en-us/library/system.data.idbconnection(v=vs.110).aspx) and 
+[IDbCommand](http://msdn.microsoft.com/en-us/library/system.data.idbcommand(v=vs.110).aspx) interfaces do not offer Async versions of their 
+sync API's which Data Access Layers (DAL's) can bind to provide a genericized abstraction. 
 
 In practice this means we have to bind to the concrete DB provider behind the scenes to enable *true* async support. Currently this is only enabled for the .NET RDBMS provider builds that offer Async API's which at this time are only:
 
@@ -221,7 +224,10 @@ public class RedisData
 }
 ```
 
-These API's take a flexible `object[]` arguments which accepts any serializable value e.g. `byte[]`, `string`, `int` as well as any user-defined Complex Types which are transparently serialized as JSON and send across the wire as UTF-8 bytes. 
+These Custom API's take a flexible `object[]` arguments which accepts any serializable value e.g. 
+`byte[]`, `string`, `int` as well as any user-defined Complex Types which are transparently serialized 
+as JSON and send across the wire as UTF-8 bytes. 
+
 ```csharp
 var ret = Redis.Custom("SET", "foo", 1);          // ret.Text = "OK"
 
@@ -251,11 +257,10 @@ weekDays.PrintDump(); // ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"
 and some more examples using Complex Types with the Custom API's:
 
 ```csharp
-var ret = Redis.Custom(Commands.Set, "foo", new Poco { Name = "Bar" });
-Assert.That(ret.Text, Is.EqualTo("OK"));
+var ret = Redis.Custom(Commands.Set, "foo", new Poco { Name = "Bar" }); // ret.Text = "OK"
 
-ret = Redis.Custom(Commands.Get, "foo");
-var dto = ret.GetResult<Poco>();
+ret = Redis.Custom(Commands.Get, "foo");          // ret.Text =  {"Name":"Bar"}
+Poco dto = ret.GetResult<Poco>();
 
 dto.Name.Print(); // Bar
 ```
