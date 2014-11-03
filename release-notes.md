@@ -3,43 +3,44 @@
 ## OrmLite now supports Async!
 
 Another [major feature request](http://servicestack.uservoice.com/forums/176786-feature-requests/suggestions/6217167-provider-async-support-for-ormlite) 
-is ticked off in this release with the new **Async support available in OrmLite!** where most of OrmLite's 
-public API's now have async versions with the same name and conventional `Async` suffix. 
+is ticked off in this release with the new **Async support available in OrmLite!**
 
 A quick overview of the new Async API's added can be seen in the class diagram below:
 
 ![OrmLite Async APIs](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/ormlite/OrmLiteApiAsync.png) 
 
-Checkout [ApiSqlServerTestsAsync.cs](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/tests/ServiceStack.OrmLite.Tests/ApiSqlServerTestsAsync.cs) for a quick preview of many of the new Async API's in action.
+Basically most of OrmLite public API's now have async equivalents of the same name and an additional conventional `*Async` suffix. 
+The Async API's also take an optional `CancellationToken` making converting sync code trivial, where you just need to
+add the `Async` suffix and **await** keyword, as can be seen in the 
+[Customer Orders UseCase upgrade to Async diff](https://github.com/ServiceStack/ServiceStack.OrmLite/commit/c1ce6f0eac99133fc232b263c26c42379d4c5f48).
 
 > Effectively the only Data Access API's that doesn't have async equivalents are `*Lazy` APIs yielding a lazy 
 > sequence (incompatible with async) as well as **Schema** DDL API's which are typically not used at runtime.
 
+For a quick preview of many of the new Async API's in action, checkout 
+[ApiSqlServerTestsAsync.cs](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/tests/ServiceStack.OrmLiteV45.Tests/ApiSqlServerTestsAsync.cs).
+
 ### Async RDBMS Providers
 
-Currently only a limited number of RDBMS providers offer 
+Currently only a limited number of RDBMS providers offer async API's which are only available in their **.NET 4.5** builds, which at this time are only:
 
-Currently the number of underlying .NET RDBMS providers that offer Async API's is limited. 
-To further compound the issue there are no standard ADO.NET interfaces that DB Providers offering Async API's are able to implement, 
-i.e. the common ADO.NET [IDbConnection](http://msdn.microsoft.com/en-us/library/system.data.idbconnection(v=vs.110).aspx) and 
-[IDbCommand](http://msdn.microsoft.com/en-us/library/system.data.idbcommand(v=vs.110).aspx) interfaces do not offer Async versions of their 
-sync API's which Data Access Layers (DAL's) can bind to provide a genericized abstraction. 
+  - [SQL Server .NET 4.5+](https://www.nuget.org/packages/ServiceStack.OrmLite.SqlServer)
+  - [MySQL .NET 4.5+](https://www.nuget.org/packages/ServiceStack.OrmLite.MySql)
 
-In practice this means we have to bind to the concrete DB provider behind the scenes to enable *true* async support. Currently this is only enabled for the .NET RDBMS provider builds that offer Async API's which at this time are only:
+We've also added a 
+[.NET 4.5 build for Sqlite](https://www.nuget.org/packages/ServiceStack.OrmLite.Sqlite.Mono) 
+as it's a common use-case to swapout to use Sqlite's in-memory provider for faster tests. 
+But as Sqlite doesn't provide async API's under-the-hood we fallback to *pseudo async* support where we just wrap its synchronous responses in `Task` results. 
 
-  - SQL Server .NET 4.5+
-  - MySQL .NET 4.5+
+Regardless of whether the RDBMS provider offers Async API's, you still can use the same OrmLite async API's with all providers as seen with the Async API 
+examples below where the same Async API's can also be used in DB Providers that doesn't natively support Async (i.e. Sqlite):
 
-Meaning you'll only get the benefits of async I/O in **.NET 4.5+** projects that use either SQL Server or MySql. 
+ - [ApiSqlServerTestsAsync.cs](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/tests/ServiceStack.OrmLiteV45.Tests/ApiSqlServerTestsAsync.cs)
+ - [ApiMySqlTestsAsync.cs](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/tests/ServiceStack.OrmLiteV45.Tests/ApiMySqlTestsAsync.cs)
+ - [ApiSqliteTestsAsync.cs](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/tests/ServiceStack.OrmLiteV45.Tests/ApiSqliteTestsAsync.cs)
 
-For all other RDBMS versions we fallback to *pseudo async* support where we just wrap synchronous results in `Task` results. This also means that OrmLite's Async API's are **future proofed** in that you can still use Async API's in RDBMS providers that don't natively support async and then be transparently upgraded to use *true async* support enabled in a future version of OrmLite when async supported are added to the underlying RDBMS .NET providers.
-
-The **Sqlite** and **SqlServer** Async API examples below further illustrate this where the same Async API's can also be used in DB Providers that doesn't natively support Async (i.e. Sqlite):
-
- - [ApiSqlServerTestsAsync.cs](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/tests/ServiceStack.OrmLite.Tests/ApiSqlServerTestsAsync.cs)
- - [ApiSqliteTestsAsync.cs](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/tests/ServiceStack.OrmLite.Tests/ApiSqliteTestsAsync.cs)
-
-Only when these Async API's are run on an RDBMS provider with native async support like **SQL Server .NET 4.5** will you benefit from true non-blocking Async I/O, otherwise (inc SQL Server .NET 4.0) it fallsback to *pseudo async* support, i.e. synchronous I/O datasets wrapped in `Task` Results.
+Only when these Async API's are run on an RDBMS provider with native async support (i.e. .NET 4.5 SqlServer or MySql) will you benefit from true 
+non-blocking Async I/O, otherwise it fallsback to *pseudo async* support, i.e. synchronous I/O datasets wrapped in `Task` Results.
 
 ### Multiple Self References
 
@@ -97,23 +98,32 @@ ukAddress.Address.Print();     // 2 Work Road
 
 ## [ServiceStack.Redis SSL Support](https://github.com/ServiceStack/ServiceStack/wiki/Secure-SSL-Redis-connections-to-Azure-Redis)
 
-The [most requested feature for ServiceStack.Redis](http://servicestack.uservoice.com/forums/176786-feature-requests/suggestions/6093693-support-ssl-connection-to-redis-instances-hosted-a) has also been realized in this release with **ServiceStack.Redis** now supporting **SSL connections** making it suitable for accessing remote Redis server instances over a **secure SSL connection**.
+The [most requested feature for ServiceStack.Redis](http://servicestack.uservoice.com/forums/176786-feature-requests/suggestions/6093693-support-ssl-connection-to-redis-instances-hosted-a) 
+has also been realized in this release with **ServiceStack.Redis** now supporting **SSL connections** making it suitable for accessing 
+remote Redis server instances over a **secure SSL connection**.
 
 ![Azure Redis Cache](https://github.com/ServiceStack/Assets/raw/master/img/wikis/redis/azure-redis-instance.png)
 
 ### Redis Use Cases
 
-Redis is normally used as a back-end datastore whose access is typically limited to Internal networks or authorized networks protected via firewalls. The new SSL Support in the Redis Client also enables secure access to a redis-server instance over the Internet and public networks as well, a scenario that's been recently popularized by Cloud hosting environments like Azure Redis Cache.
+Redis is normally used as a back-end datastore whose access is typically limited to Internal networks or authorized networks protected via firewalls. 
+The new SSL Support in the Redis Client also enables secure access to a redis-server instance over the Internet and public networks as well, 
+a scenario that's been recently popularized by Cloud hosting environments like Azure Redis Cache.
 
 ### [Connecting to Azure Redis](https://github.com/ServiceStack/ServiceStack/wiki/Secure-SSL-Redis-connections-to-Azure-Redis)
 
-As connecting to [Azure Redis Cache](http://azure.microsoft.com/en-us/services/cache/) via SSL was the primary use-case for this feature, we've added a new [Getting connected to Azure Redis via SSL](https://github.com/ServiceStack/ServiceStack/wiki/Secure-SSL-Redis-connections-to-Azure-Redis) to help you get started.
+As connecting to [Azure Redis Cache](http://azure.microsoft.com/en-us/services/cache/) via SSL was the primary use-case for this feature, 
+we've added a new 
+[Getting connected to Azure Redis via SSL](https://github.com/ServiceStack/ServiceStack/wiki/Secure-SSL-Redis-connections-to-Azure-Redis) 
+to help you get started.
 
 ### Redis Connection Strings
 
-Redis Connection strings have been expanded to support the more versatile URI format which is now able to capture most of Redis Client settings in a single connection string (akin to DB Connection strings).
+Redis Connection strings have been expanded to support the more versatile URI format which is now able to capture most of Redis Client settings in a 
+single connection string (akin to DB Connection strings).
 
-Redis Connection Strings supports multiple URI-like formats, from a simple **hostname** or **IP Address and port** pair to a fully-qualified **URL** with multiple options specified on the QueryString. 
+Redis Connection Strings supports multiple URI-like formats, from a simple **hostname** or **IP Address and port** pair to a fully-qualified **URL** 
+with multiple options specified on the QueryString. 
 
 Some examples of supported formats:
 
@@ -124,7 +134,8 @@ Some examples of supported formats:
     clientid:password@localhost:6379
     redis://clientid:password@localhost:6380?ssl=true&db=1
 
-> More examples can be seen in [ConfigTests.cs](https://github.com/ServiceStack/ServiceStack.Redis/blob/master/tests/ServiceStack.Redis.Tests/ConfigTests.cs)
+> More examples can be seen in 
+[ConfigTests.cs](https://github.com/ServiceStack/ServiceStack.Redis/blob/master/tests/ServiceStack.Redis.Tests/ConfigTests.cs)
 
 Any additional configuration can be specified as QueryString parameters. The full list of options that can be specified include:
 
@@ -178,7 +189,10 @@ Any additional configuration can be specified as QueryString parameters. The ful
 
 ### New `RedisManagerPool` Client Manager
 
-With the introduction of Redis URI Connection Strings we've been able to simplify and streamline the existing `PooledRedisClientManager` implementation that's been extracted out into clients manager called `RedisManagerPool`. In addition to removing all above options on the Client Manager itself, we've also removed readonly connection strings so the configuration is much simpler and more aligned with the common use-case.
+With the introduction of Redis URI Connection Strings we've been able to simplify and streamline the existing `PooledRedisClientManager` 
+implementation that's been extracted out into clients manager called `RedisManagerPool`. 
+In addition to removing all above options on the Client Manager itself, we've also removed readonly connection strings so the configuration is 
+much simpler and more aligned with the common use-case.
 
 In most cases, `PooledRedisClientManager` is substitutable with `RedisManagerPool` e.g:
 
@@ -189,9 +203,12 @@ container.Register<IRedisClientsManager>(c =>
 
 ### New Generic API's for calling Custom Redis commands
 
-Most of the time when waiting to use a new [Redis Command](http://redis.io/commands) you'll need to wait for an updated version of **ServiceStack.Redis** to add support for the new commands likewise there are times when the Redis Client doesn't offer every permutation that redis-server supports. 
+Most of the time when waiting to use a new [Redis Command](http://redis.io/commands) you'll need to wait for an updated version of 
+**ServiceStack.Redis** to add support for the new commands likewise there are times when the Redis Client doesn't offer every permutation 
+that redis-server supports. 
 
-With the new `Custom` and `RawCommand` API's on `IRedisClient` and `IRedisNativeClient` you can now use the RedisClient to send your own custom commands that can call 
+With the new `Custom` and `RawCommand` API's on `IRedisClient` and `IRedisNativeClient` you can now use the RedisClient to send your own 
+custom commands that can call adhoc Redis commands:
 
 ```csharp
 public interface IRedisClient
@@ -237,7 +254,9 @@ ret = Redis.Custom(cmdSet, "bar", "b");           // ret.Text = "OK"
 ret = Redis.Custom("GET", "foo");                 // ret.Text = "1"
 ```
 
-There are also [convenient extension methods](https://github.com/ServiceStack/ServiceStack.Redis/blob/master/src/ServiceStack.Redis/RedisDataExtensions.cs) on `RedisData` and `RedisText` that make it easy to access structured data, e.g:
+There are also 
+[convenient extension methods](https://github.com/ServiceStack/ServiceStack.Redis/blob/master/src/ServiceStack.Redis/RedisDataExtensions.cs) 
+on `RedisData` and `RedisText` that make it easy to access structured data, e.g:
 
 ```csharp
 var ret = Redis.Custom(Commands.Keys, "*");
@@ -304,9 +323,12 @@ public interface IRedisNativeClient
 
 ## [New VB.NET Add ServiceStack Reference!](https://github.com/ServiceStack/ServiceStack/wiki/VB.Net-Add-ServiceStack-Reference)
 
-This release also adds [Add ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference) support for the last remaining major .NET language with the new first-class support for [VB.NET Add ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/VB.Net-Add-ServiceStack-Reference)! 
+This release also adds [Add ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference) 
+support for the last remaining major .NET language with the new first-class support for 
+[VB.NET Add ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/VB.Net-Add-ServiceStack-Reference)! 
 
-This now allows any C#, F# or VB.NET client project to be able generate and end-to-end typed API for your services by just providing the url of your remote ServiceStack instance, directly from within VS.NET!
+This now allows any C#, F# or VB.NET client project to be able generate and end-to-end typed API for your services by just providing the 
+url of your remote ServiceStack instance, directly from within VS.NET!
 
 ![Add ServiceStack Reference](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/apps/StackApis/add-service-ref-flow.png)
 
@@ -314,31 +336,46 @@ After clicking OK, the servers DTO's and **ServiceStack.Client** NuGet package a
 
 ![Calling a ServiceStack Service from VB.NET](https://github.com/ServiceStack/Assets/raw/master/img/apps/StackApis/call-service-vb.png)
 
-Thanks to the close semantics between the C# and VB.NET languages, we're able to add support for all C# [customization options in VB.NET](https://github.com/ServiceStack/ServiceStack/wiki/VB.Net-Add-ServiceStack-Reference#dto-customization-options).
+Thanks to the close semantics between the C# and VB.NET languages, we're able to add support for all C# 
+[customization options in VB.NET](https://github.com/ServiceStack/ServiceStack/wiki/VB.Net-Add-ServiceStack-Reference#dto-customization-options).
 
-Much of VB.NET NativeTypesFeature is thanks to the efforts of [@KevinHoward](https://github.com/KevinHoward).
+Much of the new VB.NET NativeTypes provider is thanks to the efforts of [@KevinHoward](https://github.com/KevinHoward).
 
 ### [Upgrade ServiceStackVS](https://github.com/ServiceStack/ServiceStack/wiki/Creating-your-first-project)
 
-To take advantage of VB.NET Add ServiceStack Reference feature, [Upgrade or Install ServiceStackVS](https://github.com/ServiceStack/ServiceStack/wiki/Creating-your-first-project) VS.NET Extension. If you already have **ServiceStackVS** installed, uninstall it first from `Tools -> Extensions and Updates... -> ServiceStackVS -> Uninstall`.
+To take advantage of VB.NET Add ServiceStack Reference feature, 
+[Upgrade or Install ServiceStackVS](https://github.com/ServiceStack/ServiceStack/wiki/Creating-your-first-project) VS.NET Extension. 
+If you already have **ServiceStackVS** installed, uninstall it first from `Tools -> Extensions and Updates... -> ServiceStackVS -> Uninstall`.
 
 ## Simplified Add ServiceStack Reference UX for all languages
 
-In our first iteration of **Add ServiceStack Reference** for C# we used a **T4 Template** to make it easy for clients to view all the Customization options available and to be able to auto-generate the Server DTO's by modifying and saving (or re-running) the T4 template. 
+In our first iteration of **Add ServiceStack Reference** for C# we used a **T4 Template** to make it easy for clients to view all the Customization 
+options available and to be able to auto-generate the Server DTO's by modifying and saving (or re-running) the T4 template. 
 
-Since F# projects doesn't support T4 Templates, when adding support for [F# Add ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/FSharp-Add-ServiceStack-Reference) we had to skip the T4 template and add the server-generated DTO's source file directly to the project. Ditching the T4 Template ended up having a nice benefit as there was less moving parts and the UX ended up being simpler and more user-friendly and transparent for the default case of generating client DTO's using the [Default Server Configuration](https://github.com/ServiceStack/ServiceStack/wiki/CSharp-Add-ServiceStack-Reference#change-default-server-configuration).
+Since F# projects doesn't support T4 Templates, when adding support for 
+[F# Add ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/FSharp-Add-ServiceStack-Reference) 
+we had to skip the T4 template and add the server-generated DTO's source file directly to the project. 
+Ditching the T4 Template ended up having a nice benefit as there was less moving parts and the UX ended up being simpler and more user-friendly 
+and transparent for the default case of generating client DTO's using the 
+[Default Server Configuration](https://github.com/ServiceStack/ServiceStack/wiki/CSharp-Add-ServiceStack-Reference#change-default-server-configuration).
 
-With the latest **ServiceStackVS** you can now update the Server DTO's in all projects by clicking on `Update ServiceStack Reference` on the context-menu, e.g:
+With the latest **ServiceStackVS** you can now update the Server DTO's in all projects by clicking on `Update ServiceStack Reference` 
+on the context-menu, e.g:
 
 ![Update ServiceStack Reference](https://github.com/ServiceStack/Assets/raw/master/img/servicestackvs/servicestack%20reference/updateref-vbnet.gif)
 
 ### Single Generated DTOs Source File
 
-We've decided to embrace and provide a better user story around the single source file approach and use it for all C#, F# and VB.NET projects, which resulted in a more consistent and simpler UX for all project types.
+We've decided to embrace and provide a better user story around the single source file approach and use it for all C#, F# and VB.NET projects, 
+which resulted in a more consistent and simpler UX for all project types.
 
-Now to [customize the generated DTO's](https://github.com/ServiceStack/ServiceStack/wiki/CSharp-Add-ServiceStack-Reference#dto-customization-options) on the client you can just uncomment the option you want to change in the **header comments** and hit save. **ServiceStackVS** automatically watches for any changes to the generated dto source files (i.e. ending with `.dtos.cs`) and will automatically send the uncommented options to the remote server referenced by the `BaseUrl` and replace the existing file with the updated DTOs instantly!
+Now to [customize the generated DTO's](https://github.com/ServiceStack/ServiceStack/wiki/CSharp-Add-ServiceStack-Reference#dto-customization-options) 
+on the client you can just uncomment the option you want to change in the **header comments** and hit save. **ServiceStackVS** automatically watches 
+for any changes to the generated dto source files (i.e. ending with `.dtos.cs`) and will automatically send the uncommented options to the 
+remote server referenced by the `BaseUrl` and replace the existing file with the updated DTOs instantly!
 
-Taking the example below once we uncomment the `MakePartial` option and save the file, **ServiceStackVS** automatically sends a new request for updated to the remote ServiceStack instance, passing in the `?MakePartial=False` option:
+Taking the example below once we uncomment the `MakePartial` option and save the file, **ServiceStackVS** automatically sends a new request for 
+updated to the remote ServiceStack instance, passing in the `?MakePartial=False` option:
 
 ```csharp
 /* Options:
@@ -360,11 +397,13 @@ MakePartial: False
 */
 ```
 
-After saving you'll be able to notice the DTO's are updated instantly with the `Date:` changing to reflect the current time and the new generated DTO's no longer containing `partial` classes.
+After saving you'll be able to notice the DTO's are updated instantly with the `Date:` changing to reflect the current time and the new 
+generated DTO's no longer containing `partial` classes.
 
 ### ServiceStack.Text
 
-New `JsConfig<T>.OnDeserializing` and dynamic `ShouldSerialize(string field)` customization options were added to ServiceStack's JSON and JSV Text serializers by [@pavelsavara](https://twitter.com/pavelsavara). An example of these new customization options in action is visible below:
+New `JsConfig<T>.OnDeserializing` and dynamic `ShouldSerialize(string field)` customization options were added to ServiceStack's JSON and JSV 
+Text serializers by [@pavelsavara](https://twitter.com/pavelsavara). An example of these new customization options in action is visible below:
 
 ```csharp
 [DataContract]
@@ -396,22 +435,54 @@ public class CustomSerializedPoco
 }
 ```
 
-This change makes it possible to create dynamic POCO's that behave in a similar way that dynamic languages can, e.g. After deserialization you can detect which fields were deserialized by inspecting the `hasAttribute` collection.
+This change makes it possible to create dynamic POCO's that behave in a similar way that dynamic languages can, 
+e.g. After deserialization you can detect which fields were deserialized by inspecting the `hasAttribute` collection.
 
-The `ShouldSerialize` API, closely follows the existing `ShouldSerialize{X}` convention but instead allows for a single API to handle all serializable properties. 
+The `ShouldSerialize` API, closely follows the existing `ShouldSerialize{X}` convention but instead allows for a single API 
+to handle all serializable properties. 
 
 The API returns a `bool?` which has the following meaning: 
  - `true` - Should be emitted  
  - `false` - Should not be emitted 
  - `null` - Use default behavior
 
-This allows us to implement a custom type that can support full round-trip when the field on the original JSON payload allowing use to implement a custom type with similar functionality to `IExtensibleDataObject` which allows survival and forwarding of unknown properties, but for JSON.
+This allows us to implement a custom type that can support full round-trip when the field on the original JSON payload allowing use to 
+implement a custom type with similar functionality to `IExtensibleDataObject` which allows survival and forwarding of unknown properties, but for JSON.
+
+## RabbitMQ
+
+RabbitMQ Server and Client now have optional `PublishMessageFilter` and `GetMessageFilter` callbacks which can be used to intercept
+outgoing and incoming messages, the `IBasicProperties.Type` is also pre-populated with the Type name of the message body that was published, e.g:
+
+```csharp
+var mqServer = new RabbitMqServer("localhost") 
+{
+    PublishMessageFilter = (queueName, properties, msg) => {
+        properties.AppId = "app:{0}".Fmt(queueName);
+    },
+    GetMessageFilter = (queueName, basicMsg) => {
+        var props = basicMsg.BasicProperties;
+        receivedMsgType = props.Type; //automatically added by RabbitMqProducer
+        receivedMsgApp = props.AppId;
+    }
+};
+
+using (var mqClient = mqServer.CreateMessageQueueClient())
+{
+    mqClient.Publish(new Hello { Name = "Bugs Bunny" });
+}
+
+receivedMsgApp.Print();   // app:mq:Hello.In
+receivedMsgType.Print();  // Hello
+```
 
 ## Other Minor Changes
 
- - `Config.UseHttpsLinks` now modifies generated BaseUrl of all links to use `https`
+ - ServerEvents Server now echoes heartbeat messages through the listening connection, 
+   `ServerEventsClient` only fires the `OnHeartbeat` callback when it's receives the `cmd.Heartbeat` command message
  -  Request binding for `Path` and `QueryString` variables are added to DTO's with Request DTO's providing their own [custom body deserialization](https://github.com/ServiceStack/ServiceStack/wiki/Serialization-deserialization) by implementing `IRequiresRequestStream`
  - New `IAppHost.OnDisposeCallbacks` available allowing **Plugins** to register callbacks when `AppHost` is disposed
+ - `Config.UseHttpsLinks` now modifies generated BaseUrl of all links to use `https`
  - The `ResponseStatus` on Custom DTO's are now preserved when thrown inside a custom `HttpError` response
  - Equality members added to `[Route]`, `[Authenticate]`, `[RequiredRole]` and `[RequiredPermission]` attributes
  - `ToOptimizedResultUsingCache` no longer double-encodes raw `string` responses
@@ -419,6 +490,61 @@ This allows us to implement a custom type that can support full round-trip when 
  - New `StaticFileHandler.ResponseFilter` added to be able to modify custom headers returned on static files
  - Many of OrmLite's static Extension method classes were renamed into a more logical grouping. 
    These changes are source compatible for typical usage of OrmLite API's, i.e. referenced as extension methods
+
+## Breaking changes
+
+### Added new .NET 4.5 Builds
+
+In preparation for introducing Async API's we've added new .NET 4.5 builds for the following packages:
+
+  - ServiceStack.OrmLite
+  - ServiceStack.OrmLite.Sqlite.Mono
+  - ServiceStack.OrmLite.SqlServer
+  - ServiceStack.OrmLite.MySql
+  - ServiceStack.Server
+
+When adding ServiceStack NuGet Packages to a **.NET 4.5** project you will now get these .NET 4.5 builds instead.
+You could run into issues if mixing .NET v4.0 and v4.5 builds as all dependencies need to reference the same build version.
+The easiest way to fix any versioning issues is to make sure all projects use the same .NET Framework version (e.g. .NET 4.5)
+and then just uninstall and re-install the ServiceStack NuGet packages.
+
+### Removed ThreadStatic OrmLite Configuration
+
+We've also removed our existing ThreadStatic config variables (used to temporarily override global configuration).
+Most per-connection state is now stored on the connection e.g. `CommandTimeout` was previously overridden with:
+
+```csharp
+var hold = OrmLiteConfig.TSCommandTimeout;
+try {
+	OrmLiteConfig.TSCommandTimeout = 60;
+	db.Select(...);
+} finally {
+	OrmLiteConfig.TSCommandTimeout = hold;
+}
+```
+
+Is now set directly on the connection (and only applies to that connection), e.g:
+
+```csharp
+using (var db = DbFactory.Open())
+{
+	db.SetCommandTimeout(60);
+	db.Select(...);
+}
+```
+
+Likewise if you ever need to access the current `OrmLiteConfig.DialectProvider`, it should now be retrieved from the `IDbConnection`, i.e:
+
+```csharp
+db.GetDialectProvider();
+``` 
+
+and if you ever need to access the underlying ADO.NET `IDbConnection` or `IDbCommand` you can use the following APIs:
+
+```csharp
+IDbConnection adoDb = db.ToDbConnection();
+IDbCommand adoDbCmd = dmCmd.ToDbCommand();
+```
 
 ### IReturnVoid now returns void
 
@@ -436,7 +562,6 @@ Alternatively the Response can be specified on the call-site:
 ```csharp
 HttpWebResponse response = client.Get<HttpWebResponse>(new EmptyResponse());
 ```
-
 
 # v4.0.32 Release Notes
 
