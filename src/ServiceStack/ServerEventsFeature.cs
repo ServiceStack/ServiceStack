@@ -98,6 +98,7 @@ namespace ServiceStack
 
             res.ContentType = MimeTypes.ServerSentEvents;
             res.AddHeader(HttpHeaders.CacheControl, "no-cache");
+            res.ApplyGlobalResponseHeaders();
             res.UseBufferedStream = false;
             res.KeepAlive = true;
 
@@ -176,6 +177,12 @@ namespace ServiceStack
 
         public override Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
         {
+            res.ApplyGlobalResponseHeaders();
+
+            var feature = HostContext.GetPlugin<ServerEventsFeature>();
+            if (feature.OnHeartbeatInit != null)
+                feature.OnHeartbeatInit(req);
+
             var subscriptionId = req.QueryString["id"];
             if (!req.TryResolve<IServerEvents>().Pulse(subscriptionId))
             {
