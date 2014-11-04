@@ -70,6 +70,7 @@ namespace ServiceStack
         public string EventStreamUri { get; set; }
         public string Channel { get; set; }
         public IServiceClient ServiceClient { get; set; }
+        public DateTime LastPulseAt { get; set; }
 
         public Action<ServerEventConnect> OnConnect;
         public Action<ServerEventMessage> OnCommand;
@@ -130,6 +131,8 @@ namespace ServiceStack
                 commandTcs = new TaskCompletionSource<ServerEventCommand>();
             if (messageTcs == null || messageTcs.Task.IsCompleted)
                 messageTcs = new TaskCompletionSource<ServerEventMessage>();
+
+            LastPulseAt = DateTime.UtcNow;
 
             ProcessResponse(stream);
 
@@ -193,6 +196,13 @@ namespace ServiceStack
         {
             if (cancel.IsCancellationRequested)
                 return;
+
+            var elapsedMs = (DateTime.UtcNow - LastPulseAt).TotalMilliseconds;
+            if (elapsedMs > ConnectionInfo.IdleTimeoutMs)
+            {
+                OnExceptionReceived(new TimeoutException("Last Heartbeat Pulse was {0}ms ago".Fmt(elapsedMs)));
+                return;
+            }
 
             EnsureSynchronizationContext();
 
@@ -480,6 +490,7 @@ namespace ServiceStack
 
         private void ProcessOnHeartbeatMessage(ServerEventMessage e)
         {
+            LastPulseAt = DateTime.UtcNow;
             var msg = JsonObject.Parse(e.Json);
             var heartbeatMsg = new ServerEventLeave().Populate(e, msg);
 

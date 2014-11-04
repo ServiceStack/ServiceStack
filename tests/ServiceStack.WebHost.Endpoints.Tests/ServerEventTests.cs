@@ -8,7 +8,6 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
-using ServiceStack.Logging;
 using ServiceStack.Redis;
 using ServiceStack.Text;
 
