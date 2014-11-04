@@ -250,6 +250,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(connectMsg.HeartbeatUrl, Is.StringStarting(Config.AbsoluteBaseUri));
                 Assert.That(connectMsg.UnRegisterUrl, Is.StringStarting(Config.AbsoluteBaseUri));
                 Assert.That(connectMsg.HeartbeatIntervalMs, Is.GreaterThan(0));
+                Assert.That(connectMsg.IdleTimeoutMs, Is.EqualTo(TimeSpan.FromSeconds(30).TotalMilliseconds));
             }
         }
 

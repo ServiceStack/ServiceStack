@@ -17,6 +17,7 @@ namespace ServiceStack
         public string UnRegisterUrl { get; set; }
         public string HeartbeatUrl { get; set; }
         public long HeartbeatIntervalMs { get; set; }
+        public long IdleTimeoutMs { get; set; }
     }
 
     public class ServerEventJoin : ServerEventCommand
@@ -49,6 +50,7 @@ namespace ServiceStack
 
         public static int BufferSize = 1024 * 64;
         static int DefaultHeartbeatMs = 10 * 1000;
+        static int DefaultIdleTimeoutMs = 30 * 1000;
 
         byte[] buffer;
         Encoding encoding = new UTF8Encoding();
@@ -442,11 +444,13 @@ namespace ServiceStack
             var msg = JsonObject.Parse(e.Json);
             ConnectionInfo = new ServerEventConnect {
                 HeartbeatIntervalMs = DefaultHeartbeatMs,
+                IdleTimeoutMs = DefaultIdleTimeoutMs,
             }.Populate(e, msg);
 
             ConnectionInfo.Id = msg.Get("id");
             ConnectionInfo.HeartbeatUrl = msg.Get("heartbeatUrl");
             ConnectionInfo.HeartbeatIntervalMs = msg.Get<long>("heartbeatIntervalMs");
+            ConnectionInfo.IdleTimeoutMs = msg.Get<long>("idleTimeoutMs");
             ConnectionInfo.UnRegisterUrl = msg.Get("unRegisterUrl");
             ConnectionInfo.UserId = msg.Get("userId");
             ConnectionInfo.DisplayName = msg.Get("displayName");

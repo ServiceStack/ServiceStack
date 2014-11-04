@@ -15,8 +15,8 @@ namespace ServiceStack
 
         public TimeSpan Timeout
         {
-            get { return local.Timeout; }
-            set { local.Timeout = value; }
+            get { return local.IdleTimeout; }
+            set { local.IdleTimeout = value; }
         }
 
         public Action<IEventSubscription> OnSubscribe
@@ -81,7 +81,7 @@ namespace ServiceStack
             var feature = appHost != null ? appHost.GetPlugin<ServerEventsFeature>() : null;
             if (feature != null)
             {
-                Timeout = feature.Timeout;
+                Timeout = feature.IdleTimeout;
                 OnSubscribe = feature.OnSubscribe;
                 OnUnsubscribe = feature.OnUnsubscribe;
                 NotifyChannelOfSubscriptions = feature.NotifyChannelOfSubscriptions;

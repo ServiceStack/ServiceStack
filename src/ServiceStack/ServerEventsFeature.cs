@@ -19,10 +19,11 @@ namespace ServiceStack
         public string SubscribersPath { get; set; }
         public string UnRegisterPath { get; set; }
 
-        public TimeSpan Timeout { get; set; }
+        public TimeSpan IdleTimeout { get; set; }
         public TimeSpan HeartbeatInterval { get; set; }
 
         public Action<IRequest> OnInit { get; set; }
+        public Action<IRequest> OnHeartbeatInit { get; set; }
         public Action<IEventSubscription, IRequest> OnCreated { get; set; }
         public Action<IEventSubscription, Dictionary<string, string>> OnConnect { get; set; }
         public Action<IEventSubscription> OnSubscribe { get; set; }
@@ -38,7 +39,7 @@ namespace ServiceStack
             UnRegisterPath = "/event-unregister";
             SubscribersPath = "/event-subscribers";
 
-            Timeout = TimeSpan.FromSeconds(30);
+            IdleTimeout = TimeSpan.FromSeconds(30);
             HeartbeatInterval = TimeSpan.FromSeconds(10);
 
             NotifyChannelOfSubscriptions = true;
@@ -48,7 +49,7 @@ namespace ServiceStack
         {
             var broker = new MemoryServerEvents
             {
-                Timeout = Timeout,
+                IdleTimeout = IdleTimeout,
                 OnSubscribe = OnSubscribe,
                 OnUnsubscribe = OnUnsubscribe,
                 NotifyChannelOfSubscriptions = NotifyChannelOfSubscriptions,
@@ -144,7 +145,9 @@ namespace ServiceStack
                 {"id", subscriptionId },
                 {"unRegisterUrl", unRegisterUrl},
                 {"heartbeatUrl", heartbeatUrl},
-                {"heartbeatIntervalMs", ((long)feature.HeartbeatInterval.TotalMilliseconds).ToString(CultureInfo.InvariantCulture) }};
+                {"heartbeatIntervalMs", ((long)feature.HeartbeatInterval.TotalMilliseconds).ToString(CultureInfo.InvariantCulture) },
+                {"idleTimeoutMs", ((long)feature.IdleTimeout.TotalMilliseconds).ToString(CultureInfo.InvariantCulture)}
+            };
 
             if (feature.OnConnect != null)
                 feature.OnConnect(subscription, privateArgs);
@@ -179,7 +182,7 @@ namespace ServiceStack
                 res.StatusCode = 404;
                 res.StatusDescription = "Subscription {0} does not exist".Fmt(subscriptionId);
             }
-            res.EndHttpHandlerRequest(skipHeaders: true);
+            res.EndHttpHandlerRequest(skipHeaders:true);
             return EmptyTask;
         }
     }
@@ -374,7 +377,7 @@ namespace ServiceStack
         public static int ReSizeMultiplier = 2;
         public static int ReSizeBuffer = 20;
 
-        public TimeSpan Timeout { get; set; }
+        public TimeSpan IdleTimeout { get; set; }
 
         public Action<IEventSubscription> OnSubscribe { get; set; }
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
@@ -471,7 +474,7 @@ namespace ServiceStack
             {
                 if (subscription != null && (channel == null || subscription.Channel == channel))
                 {
-                    if (now - subscription.LastPulseAt > Timeout)
+                    if (now - subscription.LastPulseAt > IdleTimeout)
                     {
                         expired.Add(subscription);
                     }
