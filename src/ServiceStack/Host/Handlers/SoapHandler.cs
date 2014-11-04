@@ -258,7 +258,7 @@ namespace ServiceStack.Host.Handlers
             var responseMsg = CreateResponseMessage(response, msgVersion, req.Dto.GetType(), noMsgVersion);
             SetErrorStatusIfAny(req.Response, responseMsg, req.Response.StatusCode);
 
-            using (var writer = XmlWriter.Create(stream))
+            using (var writer = CreateXmlWriter(stream))
             {
                 responseMsg.WriteMessage(writer);
             }
@@ -380,6 +380,11 @@ namespace ServiceStack.Host.Handlers
         public override object GetResponse(IRequest httpReq, object request)
         {
             throw new NotImplementedException();
+        }
+
+        public static XmlWriter CreateXmlWriter(Stream stream)
+        {
+            return XmlWriter.Create(stream, HostContext.Config.XmlWriterSettings);
         }
     }
 }

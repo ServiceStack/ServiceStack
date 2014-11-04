@@ -269,6 +269,7 @@
     <Compile Include="Tests\RestsTestBase.cs" />
     <Compile Include="Tests\RestWebServiceTests.cs" />
     <Compile Include="Tests\SessionTests.cs" />
+    <Compile Include="Tests\SoapTests.cs" />
     <Compile Include="Tests\UniqueRequestTests.cs" />
     <Compile Include="Tests\VirtualPathTests.cs" />
     <Compile Include="Tests\WebServicesTests.cs" />
