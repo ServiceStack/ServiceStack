@@ -255,7 +255,7 @@ namespace ServiceStack.Host.HttpListener
             get
             {
                 return httpMethod
-                    ?? (httpMethod = Param(HttpHeaders.XHttpMethodOverride)
+                    ?? (httpMethod = this.GetParamInRequestHeader(HttpHeaders.XHttpMethodOverride)
                     ?? request.HttpMethod);
             }
         }

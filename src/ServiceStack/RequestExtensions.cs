@@ -28,6 +28,16 @@ namespace ServiceStack
             return request.Headers.Get(headerName);
         }
 
+        public static string GetParamInRequestHeader(this IRequest request, string name)
+        {
+            //Avoid reading request body for non x-www-form-urlencoded requests
+            return request.Headers[name]
+                ?? request.QueryString[name]
+                ?? (request.ContentType.MatchesContentType(MimeTypes.FormUrlEncoded)
+                        ? request.FormData[name]
+                        : null);
+        }
+
 		/// <summary>
 		/// Returns the optimized result for the IRequestContext. 
 		/// Does not use or store results in any cache.
