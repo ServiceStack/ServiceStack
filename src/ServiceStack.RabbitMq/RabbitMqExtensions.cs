@@ -155,7 +155,9 @@ namespace ServiceStack.RabbitMq
                 throw new ArgumentNullException("queueName");
             }
 
-            return queueName.ToLower().StartsWith("amq.");
+            var lowerCaseQueue = queueName.ToLower();
+            return lowerCaseQueue.StartsWith("amq.")
+                || lowerCaseQueue.StartsWith(QueueNames.TempMqPrefix);
         }	
 
         public static void PopulateFromMessage(this IBasicProperties props, IMessage message)

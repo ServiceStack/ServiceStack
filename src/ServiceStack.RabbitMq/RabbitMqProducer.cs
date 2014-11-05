@@ -115,7 +115,8 @@ namespace ServiceStack.RabbitMq
         {
             try
             {
-                // In case of server named queues (client declared queue with channel.declare()), assume queue already exists (redeclaration would result in error anyway since queue was marked as exclusive) and publish to default exchange
+                // In case of server named queues (client declared queue with channel.declare()), assume queue already exists 
+                //(redeclaration would result in error anyway since queue was marked as exclusive) and publish to default exchange
                 if (routingKey.IsServerNamedQueue()) 
                 {
                     Channel.BasicPublish("", routingKey, basicProperties, body);
