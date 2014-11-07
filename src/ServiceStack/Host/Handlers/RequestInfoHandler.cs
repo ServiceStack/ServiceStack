@@ -58,6 +58,9 @@ namespace ServiceStack.Host.Handlers
         public string AbsoluteUri { get; set; }
 
         [DataMember]
+        public string WebHostUrl { get; set; }
+
+        [DataMember]
         public string ApplicationBaseUrl { get; set; }
 
         [DataMember]
@@ -251,6 +254,8 @@ namespace ServiceStack.Host.Handlers
                 UserHostAddress = httpReq.UserHostAddress,
                 HttpMethod = httpReq.Verb,
                 AbsoluteUri = httpReq.AbsoluteUri,
+                WebHostUrl = HostContext.Config.WebHostUrl,
+                ApplicationBaseUrl = httpReq.GetBaseUrl(),
                 ResolveAbsoluteUrl = HostContext.AppHost.ResolveAbsoluteUrl("~/resolve", httpReq),
                 StripApplicationVirtualPath = HostContext.Config.StripApplicationVirtualPath,
                 RawUrl = httpReq.RawUrl,
