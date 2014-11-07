@@ -700,18 +700,19 @@ namespace ServiceStack
             var baseUrl = HttpHandlerFactory.GetBaseUrl();
             if (baseUrl != null) return baseUrl;
 
-            var handlerPath = HostContext.Config.HandlerFactoryPath;
-            if (handlerPath != null)
+            var pathInfo = httpReq.PathInfo;
+            if (pathInfo != null)
             {
                 var absoluteUri = httpReq.AbsoluteUri;
-                var pos = absoluteUri.IndexOf(handlerPath, StringComparison.OrdinalIgnoreCase);
+                var pos = absoluteUri.IndexOf(pathInfo, StringComparison.OrdinalIgnoreCase);
                 if (pos >= 0)
                 {
-                    baseUrl = absoluteUri.Substring(0, pos + handlerPath.Length);
+                    baseUrl = absoluteUri.Substring(0, pos);
                     return baseUrl.NormalizeScheme();
                 }
-                return "/" + handlerPath;
             }
+
+            var handlerPath = HostContext.Config.HandlerFactoryPath;
 
             return new Uri(httpReq.AbsoluteUri).GetLeftPart(UriPartial.Authority)
                 .NormalizeScheme()
