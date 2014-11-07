@@ -184,6 +184,7 @@
     <Compile Include="Config.cs" />
     <Compile Include="CustomFormatTests.cs" />
     <Compile Include="HttpErrorSyncTests.cs" />
+    <Compile Include="MultiTennantAppHostTests.cs" />
     <Compile Include="RequestPipelineTests.cs" />
     <Compile Include="NestedServiceTests.cs" />
     <Compile Include="CorsFeaturePluginTests.cs" />
