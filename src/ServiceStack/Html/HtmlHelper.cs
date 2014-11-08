@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Web;
 using ServiceStack.Formats;
+using ServiceStack.Host;
 using ServiceStack.Html.AntiXsrf;
 using ServiceStack.Support.Markdown;
 using ServiceStack.Text;
@@ -18,6 +19,9 @@ namespace ServiceStack.Html
 {
 	public class HtmlHelper
     {
+        public const string DefaultTemplate = null;
+        public const string EmptyTemplate = "";
+
         public static string ValidationMessageCssClassNames = "help-block error";
         public static string ValidationSummaryCssClassNames = "error-summary alert alert-danger";
         public static string ValidationSuccessCssClassNames = "alert alert-success";
@@ -122,6 +126,31 @@ namespace ServiceStack.Html
             {
                 this.viewData = masterModel;
             }
+        }
+
+        public MvcHtmlString RenderAction(string route, string viewName = null)
+        {
+            var req = new BasicRequest {
+                Verb = HttpMethods.Get,
+                PathInfo = route,
+                ContentType = MimeTypes.Html,
+                ResponseContentType = MimeTypes.Html,
+            };
+    
+            req.SetTemplate(EmptyTemplate);
+
+            if (viewName != null)
+                req.SetView(viewName);
+
+            var response = HostContext.ServiceController.Execute(req);
+
+            req.Response.WriteToResponse(req, response)
+                .Wait(); //unnecessary as results are sync anyway
+
+            var resBytes = ((MemoryStream)req.Response.OutputStream).ToArray();
+            var html = resBytes.FromUtf8Bytes();
+
+            return MvcHtmlString.Create(html);
         }
 
         public string Debug(object model)
