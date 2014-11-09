@@ -392,6 +392,15 @@ namespace ServiceStack.Razor
             return service;
         }
 
+        public virtual object ExecuteService<T>(Func<T, object> fn)
+        {
+            var service = ResolveService<T>();
+            using (service as IDisposable)
+            {
+                return fn(service);
+            }
+        }
+
         public bool IsError
         {
             get { return ModelError != null; }
