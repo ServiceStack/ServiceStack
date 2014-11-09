@@ -20,7 +20,7 @@
     <copyright>ServiceStack 2014 and contributors</copyright>
     <dependencies>
       <dependency id="ServiceStack" version="4.0" />
-      <dependency id="RavenDB.Client" version="2.5.2851" />
+      <dependency id="RavenDB.Client" version="2.5.2939" />
     </dependencies> 
   </metadata> 
   <files>
