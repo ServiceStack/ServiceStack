@@ -950,6 +950,17 @@ namespace RazorRockstars.Console.Files
             var request = (IgnoreRoute3) restPath.CreateRequest("/ignore/AnyThing/with/foo");
             Assert.That(request.Name, Is.EqualTo("foo"));
         }
+
+        [Test]
+        public void Does_RenderPartial_and_RenderAction()
+        {
+            var html = "{0}/Pages/PartialExamples".Fmt(Host)
+                .GetStringFromUrl();
+
+            Assert.That(html, Is.StringContaining("<!--view:PartialExamples.cshtml-->"));
+            Assert.That(html, Is.StringContaining("<!--view:GetReqstar.cshtml-->"));
+            Assert.That(html, Is.StringContaining("<!--view:CustomReqstar.cshtml-->"));
+        }
     }
     
 }

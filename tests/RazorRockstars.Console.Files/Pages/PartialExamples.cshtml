@@ -1,0 +1,18 @@
+﻿@inherits ViewPage
+
+<h1>Render Partial Examples</h1>
+    
+<h2>GetReqstar from Partial</h2>
+   
+@Html.Partial("GetReqstar", 
+    base.ExecuteService<ReqstarsService>(s => s.Get(new GetReqstar { Id = 1 })))
+    
+<h2>GetReqstar from RenderAction</h2>
+    
+@Html.RenderAction("/reqstars/1")
+    
+<h2>GetReqstar from RenderAction (View: CustomReqstar)</h2>
+    
+@Html.RenderAction("/reqstars/1", "CustomReqstar")
+
+<!--view:PartialExamples.cshtml-->

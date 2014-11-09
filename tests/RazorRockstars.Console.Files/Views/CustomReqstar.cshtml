@@ -1,0 +1,23 @@
+﻿@inherits ViewPage<Reqstar>
+
+@{
+    ViewBag.Title = "Viewing {0}yo {1} {2} profile".Fmt(Model.Age, Model.FirstName, Model.LastName);
+    Layout = "HtmlReport";
+}
+<div>
+    <h2>Custom Reqstar View</h2>
+
+    <h3>@Model.FirstName Details</h3>
+    <dl>
+        <dt>Id</dt>
+        <dd>@Model.Id</dd>
+        <dt>Age</dt>
+        <dd>@Model.Age</dd>
+        <dt>First Name</dt>
+        <dd>@Model.FirstName</dd>
+        <dt>LastName</dt>
+        <dd>@Model.LastName</dd>
+    </dl>
+</div>
+
+<!--view:CustomReqstar.cshtml-->
