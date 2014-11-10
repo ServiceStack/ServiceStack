@@ -191,26 +191,30 @@ namespace ServiceStack.Host.Handlers
                 response.ApplicationVirtualPath = HostingEnvironment.ApplicationVirtualPath;
                 response.VirtualAbsolutePathRoot = VirtualPathUtility.ToAbsolute("/");
                 response.VirtualAppRelativePathRoot = VirtualPathUtility.ToAppRelative("/");
-                var userIdentity = aspReq.LogonUserIdentity;
-                if (userIdentity != null)
+
+                if (!Env.IsMono)
                 {
-                    response.LogonUserInfo = new Dictionary<string, string> {
-                        { "Name", userIdentity.Name },
-                        { "AuthenticationType", userIdentity.AuthenticationType },
-                        { "IsAuthenticated", userIdentity.IsAuthenticated.ToString() },
-                        { "IsAnonymous", userIdentity.IsAnonymous.ToString() },
-                        { "IsGuest", userIdentity.IsGuest.ToString() },
-                        { "IsSystem", userIdentity.IsSystem.ToString() },
-                        { "Groups", userIdentity.Groups.Map(x => x.Value).Join(", ") },
-                    };
-                    var winUser = userIdentity.User;
-                    if (winUser != null)
+                    var userIdentity = aspReq.LogonUserIdentity;
+                    if (userIdentity != null)
                     {
-                        response.LogonUserInfo["User"] = winUser.Value;
-                        response.LogonUserInfo["User.AccountDomainSid"] = winUser.AccountDomainSid != null
-                            ? winUser.AccountDomainSid.ToString()
-                            : "null";
-                        response.LogonUserInfo["User.IsAccountSid"] = winUser.IsAccountSid().ToString();
+                        response.LogonUserInfo = new Dictionary<string, string> {
+                            { "Name", userIdentity.Name },
+                            { "AuthenticationType", userIdentity.AuthenticationType },
+                            { "IsAuthenticated", userIdentity.IsAuthenticated.ToString() },
+                            { "IsAnonymous", userIdentity.IsAnonymous.ToString() },
+                            { "IsGuest", userIdentity.IsGuest.ToString() },
+                            { "IsSystem", userIdentity.IsSystem.ToString() },
+                            { "Groups", userIdentity.Groups.Map(x => x.Value).Join(", ") },
+                        };
+                        var winUser = userIdentity.User;
+                        if (winUser != null)
+                        {
+                            response.LogonUserInfo["User"] = winUser.Value;
+                            response.LogonUserInfo["User.AccountDomainSid"] = winUser.AccountDomainSid != null
+                                ? winUser.AccountDomainSid.ToString()
+                                : "null";
+                            response.LogonUserInfo["User.IsAccountSid"] = winUser.IsAccountSid().ToString();
+                        }
                     }
                 }
             }
