@@ -109,6 +109,7 @@ namespace ServiceStack.Host.Handlers
                     : Serialization.DataContractSerializer.Instance.DeserializeFromString(requestXml, requestType);
 
                 httpReq.Dto = request;
+                httpReq.OperationType = requestType;
 
                 var requiresSoapMessage = request as IRequiresSoapMessage;
                 if (requiresSoapMessage != null)

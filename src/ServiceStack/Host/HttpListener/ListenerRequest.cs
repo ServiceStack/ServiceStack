@@ -68,6 +68,8 @@ namespace ServiceStack.Host.HttpListener
 
         public string OperationName { get; set; }
 
+        public Type OperationType { get; set; }
+
         public object Dto { get; set; }
 
         public string GetRawBody()

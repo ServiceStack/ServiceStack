@@ -126,6 +126,7 @@ namespace ServiceStack
             this.BaseUri = baseUri;
             this.asyncClient.BaseUri = baseUri;
             this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + Format + "/reply/";
+            this.SyncReplyAllBaseUri = baseUri.WithTrailingSlash() + Format + "/reply-all/";
             this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + Format + "/oneway/";
         }
 
@@ -196,6 +197,8 @@ namespace ServiceStack
         public abstract string Format { get; }
 
         public string SyncReplyBaseUri { get; set; }
+
+        public string SyncReplyAllBaseUri { get; set; }
 
         public string AsyncOneWayBaseUri { get; set; }
 
@@ -427,6 +430,37 @@ namespace ServiceStack
             using (var ms = new MemoryStream(text.ToUtf8Bytes()))
             {
                 return DeserializeFromStream<T>(ms);
+            }
+        }
+
+        public virtual List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        {
+            var elType = requests.GetType().GetElementType()
+                ?? requests.GetType().GetGenericArguments().First();
+
+            var requestUri = this.SyncReplyAllBaseUri.WithTrailingSlash() + elType.Name;
+            var client = SendRequest(requestUri, requests);
+
+            try
+            {
+                var webResponse = PclExport.Instance.GetResponse(client);
+                return HandleResponse<List<TResponse>>(webResponse);
+            }
+            catch (Exception ex)
+            {
+                List<TResponse> response;
+
+                if (!HandleResponseException(ex,
+                    requests,
+                    requestUri,
+                    () => SendRequest(HttpMethods.Post, requestUri, requests),
+                    c => PclExport.Instance.GetResponse(c),
+                    out response))
+                {
+                    throw;
+                }
+
+                return response;
             }
         }
 

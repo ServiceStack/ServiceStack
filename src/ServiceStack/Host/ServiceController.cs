@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -413,6 +414,9 @@ namespace ServiceStack.Host
                     requestDto = appHost.OnPreExecuteServiceFilter(service, requestDto, request, request.Response);
                     request.Dto = requestDto;
 
+                    if (request.OperationType == null)
+                        request.OperationType = request.GetType();
+
                     //Executes the service and returns the result
                     response = serviceExec(request, requestDto);
 
@@ -497,7 +501,7 @@ namespace ServiceStack.Host
         /// </summary>
         public object Execute(object requestDto, IRequest request)
         {
-            var requestType = requestDto.GetType();
+            var requestType = request != null ? request.OperationType : requestDto.GetType();
 
             if (appHost.Config.EnableAccessRestrictions)
             {
@@ -506,7 +510,11 @@ namespace ServiceStack.Host
             }
 
             var handlerFn = GetService(requestType);
-            return handlerFn(request, requestDto);
+
+            if (!requestDto.GetType().IsArray)
+                return handlerFn(request, requestDto);
+
+            return (from object dto in (IEnumerable)requestDto select handlerFn(request, dto)).ToArray();
         }
 
         public object Execute(IRequest req)

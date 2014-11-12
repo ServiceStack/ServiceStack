@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
@@ -13,10 +15,13 @@ namespace ServiceStack.Host.Handlers
 			this.ContentTypeAttribute = ContentFormat.GetEndpointAttributes(contentType);
 			this.HandlerAttributes = handlerAttributes;
 			this.format = format;
+		    this.appHost = HostContext.AppHost;
 		}
 
+	    private ServiceStackHost appHost;
         private readonly Feature format;
 		public string HandlerContentType { get; set; }
+        public bool IsMutltiRequest { get; set; }
 
 		public RequestAttributes ContentTypeAttribute { get; set; }
 
@@ -35,10 +40,14 @@ namespace ServiceStack.Host.Handlers
 
 		public object GetRequest(IRequest httpReq, string operationName)
 		{
-			var requestType = GetOperationType(operationName);
-			AssertOperationExists(operationName, requestType);
+            httpReq.OperationType = GetOperationType(operationName);
+			AssertOperationExists(operationName, httpReq.OperationType);
 
-			using (Profiler.Current.Step("Deserialize Request"))
+            var requestType = IsMutltiRequest
+                ? httpReq.OperationType.MakeArrayType()
+                : httpReq.OperationType;
+
+            using (Profiler.Current.Step("Deserialize Request"))
 			{
 				var requestDto = GetCustomRequestFromBinder(httpReq, requestType);
 				return requestDto ?? DeserializeHttpRequest(requestType, httpReq, HandlerContentType)
@@ -51,7 +60,35 @@ namespace ServiceStack.Host.Handlers
             return true;
         }
 
-        public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
+        public virtual bool ApplyRequestFilters(IRequest req, IResponse res, object requestDto)
+        {
+            if (!IsMutltiRequest)
+                return appHost.ApplyRequestFilters(req, res, requestDto);
+
+            var dtos = (IEnumerable)requestDto;
+            foreach (var dto in dtos)
+            {
+                if (appHost.ApplyRequestFilters(req, res, dto))
+                    return true;
+            }
+            return false;
+        }
+
+        public virtual bool ApplyResponseFilters(IRequest req, IResponse res, object responseDto)
+        {
+            if (!IsMutltiRequest)
+                return appHost.ApplyResponseFilters(req, res, responseDto);
+
+            var dtos = (IEnumerable)responseDto;
+            foreach (var dto in dtos)
+            {
+                if (appHost.ApplyResponseFilters(req, res, dto))
+                    return true;
+            }
+            return false;
+        }
+
+	    public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
 			try
             {
@@ -67,13 +104,13 @@ namespace ServiceStack.Host.Handlers
                               && !string.IsNullOrEmpty(callback);
 
                 var request = CreateRequest(httpReq, operationName);
-                if (appHost.ApplyRequestFilters(httpReq, httpRes, request))
+                if (ApplyRequestFilters(httpReq, httpRes, request))
                     return EmptyTask;
 
                 var rawResponse = GetResponse(httpReq, request);
                 return HandleResponse(rawResponse, response => 
                 {
-                    if (appHost.ApplyResponseFilters(httpReq, httpRes, response))
+                    if (ApplyResponseFilters(httpReq, httpRes, response))
                         return EmptyTask;
 
                     if (doJsonp && !(response is CompressedResult))
