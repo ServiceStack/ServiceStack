@@ -41,7 +41,7 @@ namespace ServiceStack
             if (string.IsNullOrEmpty(context.Request.RawUrl)) 
                 return ((object)null).AsTaskResult();
 
-            var operationName = context.Request.GetOperationName();
+            var operationName = context.Request.GetOperationName().UrlDecode();
 
             var httpReq = context.ToRequest(operationName);
             var httpRes = httpReq.Response;

@@ -66,7 +66,6 @@ namespace ServiceStack.Testing
         }
 
         public string OperationName { get; set; }
-        public Type OperationType { get; set; }
         public RequestAttributes RequestAttributes { get; set; }
 
         private IRequestPreferences requestPreferences;

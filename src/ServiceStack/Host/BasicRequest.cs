@@ -60,8 +60,6 @@ namespace ServiceStack.Host
             set { operationName = value; }
         }
 
-        public Type OperationType { get; set; }
-
         public T TryResolve<T>()
         {
             return Resolver.TryResolve<T>();

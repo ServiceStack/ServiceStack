@@ -83,8 +83,6 @@ namespace ServiceStack.Host.AspNet
 
         public string OperationName { get; set; }
 
-        public Type OperationType { get; set; }
-
         public object Dto { get; set; }
 
         public string ContentType

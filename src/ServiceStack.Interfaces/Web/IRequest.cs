@@ -26,11 +26,6 @@ namespace ServiceStack.Web
         string OperationName { get; set; }
 
         /// <summary>
-        /// The type of the service being called (e.g. Request DTO Type)
-        /// </summary>
-        Type OperationType { get; set; }
-
-        /// <summary>
         /// The Verb / HttpMethod or Action for this request
         /// </summary>
         string Verb { get; }
