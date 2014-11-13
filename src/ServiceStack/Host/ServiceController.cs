@@ -495,6 +495,7 @@ namespace ServiceStack.Host
         /// </summary>
         public object Execute(object requestDto, IRequest req)
         {
+            req.Dto = requestDto;
             var requestType = req.GetOperationType();
 
             if (appHost.Config.EnableAccessRestrictions)

@@ -37,7 +37,6 @@ namespace ServiceStack.Common.Tests
             {
                 ConfigureContainer = container =>
                 {
-
                     container.Register<IDbConnectionFactory>(c =>
                         new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
 

@@ -79,6 +79,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
         public TResponse Send<TResponse>(object request)
         {
             httpReq.HttpMethod = HttpMethods.Post;
+            httpReq.Dto = request;
 
             if (ApplyRequestFilters<TResponse>(request)) return default(TResponse);
 
