@@ -149,6 +149,14 @@ namespace ServiceStack
             return HostContext.ResolveVirtualNode(httpReq.PathInfo, httpReq);
         }
 
+        public static string GetDirectoryPath(this IRequest request)
+        {
+            var path = request.PathInfo;
+            return string.IsNullOrEmpty(path) || path[path.Length - 1] == '/'
+                ? path
+                : path.Substring(0, path.LastIndexOf('/') + 1);
+        }
+
         //http://stackoverflow.com/a/757251/85785
         static readonly string[] VirtualPathPrefixes = HostingEnvironment.ApplicationVirtualPath == null || HostingEnvironment.ApplicationVirtualPath == "/"
             ? new string[0]

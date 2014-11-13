@@ -272,7 +272,7 @@ namespace ServiceStack.Razor.Managers
         public virtual string RenderPartial(string pageName, object model, bool renderHtml, StreamWriter writer, HtmlHelper htmlHelper)
         {
             var httpReq = htmlHelper.HttpRequest;
-            var razorPage = viewManager.GetPartialPage(pageName);
+            var razorPage = viewManager.GetPartialPage(httpReq, pageName);
             if (razorPage != null)
             {
                 var page = CreateRazorPageInstance(httpReq, htmlHelper.HttpResponse, model, razorPage);

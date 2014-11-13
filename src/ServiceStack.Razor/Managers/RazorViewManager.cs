@@ -251,10 +251,14 @@ namespace ServiceStack.Razor.Managers
                    ?? GetPage(CombinePaths("/views/", layoutFile)); //backwards compatibility fallback
         }
 
-        public virtual RazorPage GetPartialPage(string partialName)
+        public virtual RazorPage GetPartialPage(IHttpRequest httpReq, string partialName)
         {
-            // Same resolution as view pages.
-            return GetViewPage(partialName);
+            // Look for partial from same directory or view page
+            var virtualDirPath = httpReq.GetDirectoryPath();
+            var partialPath = virtualDirPath.CombineWith(partialName);
+
+            return GetContentPage(partialPath) 
+                ?? GetViewPage(partialName);
         }
 
         public virtual bool IsWatchedFile(IVirtualFile file)

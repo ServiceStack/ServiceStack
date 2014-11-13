@@ -161,6 +161,8 @@ namespace RazorRockstars.Console.Files
         static string ViewMarkdownPartial = "<!--view:MarkdownPartial.md-->";
         static string ViewRazorPartialModel = "<!--view:RazorPartialModel.cshtml-->";
         static string ViewPartialChildModel = "<!--view:PartialChildModel.cshtml-->";
+        static string ViewContentPartialModel = "<!--view:ContentPartialModel.cshtml-->";
+        static string ViewPagesPartialModel = "<!--view:PagesPartialModel.cshtml-->";
 
         static string SectionPartialHeaderSection = "<!--section:PartialHeaderSection-->";
 
@@ -281,11 +283,18 @@ namespace RazorRockstars.Console.Files
         public void Can_get_default_razor_pages()
         {
             Assert200(Host + "/",
-                View_Default, Template_SimpleLayout, ViewRazorPartial, ViewMarkdownPartial, ViewRazorPartialModel);
+                View_Default, Template_SimpleLayout, ViewRazorPartial, ViewMarkdownPartial, ViewRazorPartialModel, ViewContentPartialModel, ViewPagesPartialModel);
             Assert200(Host + "/Pages/",
-                View_Pages_Default, Template_Pages_Layout, ViewRazorPartial, ViewMarkdownPartial, ViewRazorPartialModel);
+                View_Pages_Default, Template_Pages_Layout, ViewRazorPartial, ViewMarkdownPartial, ViewRazorPartialModel, ViewPagesPartialModel);
             Assert200(Host + "/Pages/Dir/",
                 View_Pages_Dir_Default, Template_SimpleLayout, ViewRazorPartial, ViewMarkdownPartial, ViewRazorPartialModel);
+        }
+
+        [Test]
+        public void Can_get_default_file()
+        {
+            Assert200(Host + "/default_file",
+                View_Default, Template_SimpleLayout, ViewRazorPartial, ViewMarkdownPartial, ViewRazorPartialModel, ViewContentPartialModel, ViewPagesPartialModel);
         }
 
         [Test]
