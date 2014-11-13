@@ -131,7 +131,19 @@ namespace ServiceStack.Host
         public Type GetOperationType(string operationTypeName)
         {
             Operation operation;
-            OperationNamesMap.TryGetValue(operationTypeName.ToLower(), out operation);
+            var opName = operationTypeName.ToLower();
+            if (!OperationNamesMap.TryGetValue(opName, out operation))
+            {
+                var arrayPos = opName.LastIndexOf('[');
+                if (arrayPos >= 0)
+                {
+                    opName = opName.Substring(0, arrayPos);
+                    OperationNamesMap.TryGetValue(opName, out operation);
+                    return operation != null
+                        ? operation.RequestType.MakeArrayType()
+                        : null;
+                }
+            }
             return operation != null ? operation.RequestType : null;
         }
 

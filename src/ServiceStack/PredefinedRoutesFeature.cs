@@ -32,30 +32,29 @@ namespace ServiceStack
 
             var pathAction = string.Intern(pathParts[1].ToLower());
             var requestName = pathParts.Length > 2 ? pathParts[2] : null;
-            var isMultiRequest = pathAction == "reply-all" || pathAction == "oneway-all";
-            var isReply = pathAction == "reply" || pathAction == "reply-all";
-            var isOneWay = pathAction == "oneway" || pathAction == "oneway-all";
+            var isReply = pathAction == "reply";
+            var isOneWay = pathAction == "oneway";
             switch (pathController)
             {
                 case "json":
                     if (isReply)
-                        return new JsonReplyHandler { RequestName = requestName, IsMutltiRequest = isMultiRequest };
+                        return new JsonReplyHandler { RequestName = requestName };
                     if (isOneWay)
-                        return new JsonOneWayHandler { RequestName = requestName, IsMutltiRequest = isMultiRequest };
+                        return new JsonOneWayHandler { RequestName = requestName };
                     break;
 
                 case "xml":
                     if (isReply)
-                        return new XmlReplyHandler { RequestName = requestName, IsMutltiRequest = isMultiRequest };
+                        return new XmlReplyHandler { RequestName = requestName };
                     if (isOneWay)
-                        return new XmlOneWayHandler { RequestName = requestName, IsMutltiRequest = isMultiRequest };
+                        return new XmlOneWayHandler { RequestName = requestName };
                     break;
 
                 case "jsv":
                     if (isReply)
-                        return new JsvReplyHandler { RequestName = requestName, IsMutltiRequest = isMultiRequest };
+                        return new JsvReplyHandler { RequestName = requestName };
                     if (isOneWay)
-                        return new JsvOneWayHandler { RequestName = requestName, IsMutltiRequest = isMultiRequest };
+                        return new JsvOneWayHandler { RequestName = requestName };
                     break;
 
                 default:
@@ -68,12 +67,10 @@ namespace ServiceStack
                         if (isReply)
                             return new GenericHandler(contentType, RequestAttributes.Reply, feature) {
                                 RequestName = requestName,
-                                IsMutltiRequest = isMultiRequest
                             };
                         if (isOneWay)
                             return new GenericHandler(contentType, RequestAttributes.OneWay, feature) {
                                 RequestName = requestName,
-                                IsMutltiRequest = isMultiRequest
                             };
                     }
                     break;

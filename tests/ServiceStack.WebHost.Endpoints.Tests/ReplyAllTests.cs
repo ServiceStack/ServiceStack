@@ -12,7 +12,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public override void Configure(Container container)
         {
-
         }
     }
 
@@ -26,11 +25,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Result { get; set; }
     }
 
+    public class HelloAllCustom : IReturn<HelloAllCustomResponse>
+    {
+        public string Name { get; set; }
+    }
+
+    public class HelloAllCustomResponse
+    {
+        public string Result { get; set; }
+    }
+
     public class ReplyAllService : Service
     {
         public object Any(HelloAll request)
         {
             return new HelloAllResponse { Result = "Hello, {0}!".Fmt(request.Name) };
+        }
+
+        public object Any(HelloAllCustom request)
+        {
+            return new HelloAllCustomResponse { Result = "Hello, {0}!".Fmt(request.Name) };
+        }
+
+        public object Any(HelloAllCustom[] requests)
+        {
+            return requests.Map(x => new HelloAllCustomResponse
+            {
+                Result = "Custom, {0}!".Fmt(x.Name)
+            });
         }
     }
 
@@ -54,7 +76,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Can_send_multi_reply_request()
+        public void Can_send_single_HelloAll_request()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var request = new HelloAll { Name = "Foo" };
+            var response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo("Hello, Foo!"));
+        }
+
+        [Test]
+        public void Can_send_multi_reply_HelloAll_requests()
         {
             var client = new JsonServiceClient(Config.AbsoluteBaseUri);
 
@@ -72,6 +104,38 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(results, Is.EquivalentTo(new[] {
                 "Hello, Foo!", "Hello, Bar!", "Hello, Baz!"
+            }));
+        }
+
+        [Test]
+        public void Can_send_single_HelloAllCustom_request()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var request = new HelloAllCustom { Name = "Foo" };
+            var response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo("Hello, Foo!"));
+        }
+
+        [Test]
+        public void Can_send_multi_reply_HelloAllCustom_requests()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var requests = new[]
+            {
+                new HelloAllCustom { Name = "Foo" },
+                new HelloAllCustom { Name = "Bar" },
+                new HelloAllCustom { Name = "Baz" },
+            };
+
+            var responses = client.SendAll(requests);
+            responses.PrintDump();
+
+            var results = responses.Map(x => x.Result);
+
+            Assert.That(results, Is.EquivalentTo(new[] {
+                "Custom, Foo!", "Custom, Bar!", "Custom, Baz!"
             }));
         }
     }

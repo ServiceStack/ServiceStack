@@ -497,20 +497,13 @@ namespace ServiceStack.Host
         public object Execute(object requestDto, IRequest req)
         {
             req.Dto = requestDto;
-            var requestType = req.GetOperationType();
+            var requestType = requestDto.GetType();
 
             if (appHost.Config.EnableAccessRestrictions)
-            {
-                AssertServiceRestrictions(requestType,
-                    req != null ? req.RequestAttributes : RequestAttributes.None);
-            }
+                AssertServiceRestrictions(requestType, req.RequestAttributes);
 
             var handlerFn = GetService(requestType);
-
-            if (!req.IsMultiRequest())
-                return handlerFn(req, requestDto);
-
-            return (from object dto in (IEnumerable)requestDto select handlerFn(req, dto));
+            return handlerFn(req, requestDto);
         }
 
         public object Execute(IRequest req)
@@ -544,7 +537,7 @@ namespace ServiceStack.Host
                     req != null ? req.RequestAttributes : RequestAttributes.None);
             }
 
-            ServiceExecFn handlerFn = GetService(requestType);
+            var handlerFn = GetService(requestType);
             var response = handlerFn(req, requestDto);
 
             var taskResponse = response as Task;
@@ -561,6 +554,17 @@ namespace ServiceStack.Host
             ServiceExecFn handlerFn;
             if (!requestExecMap.TryGetValue(requestType, out handlerFn))
             {
+                if (requestType.IsArray)
+                {
+                    var elType = requestType.GetElementType();
+                    if (requestExecMap.TryGetValue(elType, out handlerFn))
+                    {
+                        return (req, dtos) => 
+                            from object dto in (IEnumerable)dtos 
+                            select handlerFn(req, dto);
+                    }
+                }
+
                 throw new NotImplementedException(string.Format("Unable to resolve service '{0}'", requestType.GetOperationName()));
             }
 

@@ -914,20 +914,22 @@ namespace ServiceStack
 
         public static Type GetOperationType(this IRequest req)
         {
-            if (req.OperationType != null)
-                return req.OperationType;
             if (req.Dto != null)
-                return req.Dto.GetType();
-            if (req.OperationName != null)
-                return HostContext.Metadata.GetOperationType(req.OperationName);
-            return null;
+            {
+                var dtoType = req.Dto.GetType();
+                return dtoType.IsArray
+                    ? dtoType.GetElementType()
+                    : dtoType;
+            }
+            return req.OperationName != null 
+                ? HostContext.Metadata.GetOperationType(req.OperationName) 
+                : null;
         }
 
         public static bool IsMultiRequest(this IRequest req)
         {
-            //Both Dto and OperationType is set on Multi Requests 
-            //req.Dto = T[], req.OperationType = typeof(T)
-            return req.Dto != null && req.OperationType != null && req.Dto.GetType().IsArray;
+            //Only way to send T[] is via /reply/operation[] predefined route
+            return req.Dto != null && req.Dto.GetType().IsArray;
         }
 
         public static System.ServiceModel.Channels.Message GetSoapMessage(this IRequest httpReq)

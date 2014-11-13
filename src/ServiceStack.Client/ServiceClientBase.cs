@@ -126,7 +126,6 @@ namespace ServiceStack
             this.BaseUri = baseUri;
             this.asyncClient.BaseUri = baseUri;
             this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + Format + "/reply/";
-            this.SyncReplyAllBaseUri = baseUri.WithTrailingSlash() + Format + "/reply-all/";
             this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + Format + "/oneway/";
         }
 
@@ -197,8 +196,6 @@ namespace ServiceStack
         public abstract string Format { get; }
 
         public string SyncReplyBaseUri { get; set; }
-
-        public string SyncReplyAllBaseUri { get; set; }
 
         public string AsyncOneWayBaseUri { get; set; }
 
@@ -438,7 +435,7 @@ namespace ServiceStack
             var elType = requests.GetType().GetElementType()
                 ?? requests.GetType().GetGenericArguments().First();
 
-            var requestUri = this.SyncReplyAllBaseUri.WithTrailingSlash() + elType.Name;
+            var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
             var client = SendRequest(requestUri, requests);
 
             try
