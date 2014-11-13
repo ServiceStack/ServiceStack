@@ -463,6 +463,7 @@ namespace ServiceStack.Host
         /// </summary>
         public object ExecuteMessage(IMessage dto, IRequest req)
         {
+            req.Dto = dto.Body;
             if (HostContext.ApplyMessageRequestFilters(req, req.Response, dto.Body))
                 return req.Response.Dto;
 
@@ -519,6 +520,7 @@ namespace ServiceStack.Host
             req.SetRoute(restPath as RestPath);
             req.OperationName = restPath.RequestType.GetOperationName();
             var request = RestHandler.CreateRequest(req, restPath);
+            req.Dto = request;
 
             if (appHost.ApplyRequestFilters(req, req.Response, request))
                 return null;
@@ -531,18 +533,19 @@ namespace ServiceStack.Host
             return response;
         }
 
-        public Task<object> ExecuteAsync(object requestDto, IRequest request)
+        public Task<object> ExecuteAsync(object requestDto, IRequest req)
         {
+            req.Dto = requestDto;
             var requestType = requestDto.GetType();
 
             if (appHost.Config.EnableAccessRestrictions)
             {
                 AssertServiceRestrictions(requestType,
-                    request != null ? request.RequestAttributes : RequestAttributes.None);
+                    req != null ? req.RequestAttributes : RequestAttributes.None);
             }
 
             ServiceExecFn handlerFn = GetService(requestType);
-            var response = handlerFn(request, requestDto);
+            var response = handlerFn(req, requestDto);
 
             var taskResponse = response as Task;
             if (taskResponse != null)
