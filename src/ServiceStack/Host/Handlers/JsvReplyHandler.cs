@@ -25,7 +25,7 @@ namespace ServiceStack.Host.Handlers
 
             try
             {
-                var request = CreateRequest(httpReq, operationName);
+                var request = httpReq.Dto = CreateRequest(httpReq, operationName);
 
                 httpReq.RequestAttributes |= HandlerAttributes;
                 var response = ExecuteService(request, httpReq);

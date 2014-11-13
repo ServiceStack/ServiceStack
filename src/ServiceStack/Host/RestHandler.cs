@@ -93,7 +93,8 @@ namespace ServiceStack.Host
                 var responseContentType = httpReq.ResponseContentType;
                 appHost.AssertContentType(responseContentType);
 
-                var request = CreateRequest(httpReq, restPath);
+                var request = httpReq.Dto = CreateRequest(httpReq, restPath);
+
                 if (appHost.ApplyRequestFilters(httpReq, httpRes, request)) 
                     return EmptyTask;
 

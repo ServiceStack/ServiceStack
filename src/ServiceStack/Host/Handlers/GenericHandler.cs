@@ -41,10 +41,10 @@ namespace ServiceStack.Host.Handlers
 		public object GetRequest(IRequest httpReq, string operationName)
 		{
             httpReq.OperationType = GetOperationType(operationName);
-			AssertOperationExists(operationName, httpReq.OperationType);
+            AssertOperationExists(operationName, httpReq.OperationType);
 
-            var requestType = IsMutltiRequest
-                ? httpReq.OperationType.MakeArrayType()
+		    var requestType = IsMutltiRequest 
+                ? httpReq.OperationType.MakeArrayType() 
                 : httpReq.OperationType;
 
             using (Profiler.Current.Step("Deserialize Request"))
@@ -103,7 +103,8 @@ namespace ServiceStack.Host.Handlers
                 var doJsonp = HostContext.Config.AllowJsonpRequests
                               && !string.IsNullOrEmpty(callback);
 
-                var request = CreateRequest(httpReq, operationName);
+                var request = httpReq.Dto = CreateRequest(httpReq, operationName);
+
                 if (ApplyRequestFilters(httpReq, httpRes, request))
                     return EmptyTask;
 

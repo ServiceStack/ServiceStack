@@ -254,10 +254,7 @@ namespace ServiceStack.Razor.Managers
         public virtual RazorPage GetPartialPage(IHttpRequest httpReq, string partialName)
         {
             // Look for partial from same directory or view page
-            var virtualDirPath = httpReq.GetDirectoryPath();
-            var partialPath = virtualDirPath.CombineWith(partialName);
-
-            return GetContentPage(partialPath) 
+            return GetContentPage(httpReq.GetDirectoryPath().CombineWith(partialName)) 
                 ?? GetViewPage(partialName);
         }
 

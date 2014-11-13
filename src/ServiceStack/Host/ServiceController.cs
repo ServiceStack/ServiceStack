@@ -409,13 +409,7 @@ namespace ServiceStack.Host
                 object response = null;
                 try
                 {
-                    request.Dto = requestDto;
-
-                    requestDto = appHost.OnPreExecuteServiceFilter(service, requestDto, request, request.Response);
-                    request.Dto = requestDto;
-
-                    if (request.OperationType == null)
-                        request.OperationType = request.GetType();
+                    requestDto = request.Dto = appHost.OnPreExecuteServiceFilter(service, requestDto, request, request.Response);
 
                     //Executes the service and returns the result
                     response = serviceExec(request, requestDto);
@@ -499,22 +493,22 @@ namespace ServiceStack.Host
         /// <summary>
         /// Execute HTTP
         /// </summary>
-        public object Execute(object requestDto, IRequest request)
+        public object Execute(object requestDto, IRequest req)
         {
-            var requestType = request != null ? request.OperationType : requestDto.GetType();
+            var requestType = req.GetOperationType();
 
             if (appHost.Config.EnableAccessRestrictions)
             {
                 AssertServiceRestrictions(requestType,
-                    request != null ? request.RequestAttributes : RequestAttributes.None);
+                    req != null ? req.RequestAttributes : RequestAttributes.None);
             }
 
             var handlerFn = GetService(requestType);
 
-            if (!requestDto.GetType().IsArray)
-                return handlerFn(request, requestDto);
+            if (!req.IsMultiRequest())
+                return handlerFn(req, requestDto);
 
-            return (from object dto in (IEnumerable)requestDto select handlerFn(request, dto)).ToArray();
+            return (from object dto in (IEnumerable)requestDto select handlerFn(req, dto));
         }
 
         public object Execute(IRequest req)
