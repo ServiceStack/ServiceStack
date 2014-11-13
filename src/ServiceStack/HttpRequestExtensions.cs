@@ -151,6 +151,9 @@ namespace ServiceStack
 
         public static string GetDirectoryPath(this IRequest request)
         {
+            if (request == null)
+                return null;
+
             var path = request.PathInfo;
             return string.IsNullOrEmpty(path) || path[path.Length - 1] == '/'
                 ? path
