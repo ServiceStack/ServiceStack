@@ -17,6 +17,8 @@ namespace ServiceStack.ServiceHost.Tests
 
         public string OperationName { get; set; }
 
+        public Type OperationType { get; set; }
+
 	    public string Verb { get; private set; }
 	    public RequestAttributes RequestAttributes { get; set; }
 	    public IRequestPreferences RequestPreferences { get; private set; }
