@@ -6,9 +6,9 @@
     <version>4.0.0</version>
     <authors>Service Stack</authors>
     <owners>Service Stack</owners>
-    <summary>Opensource .NET and Mono REST Web Services framework</summary>
+    <summary>ServiceStack.Interfaces.Pcl (deprecated)</summary>
     <description>
-      Lightweight and implementation-free interfaces for DTO's, providers and adapters.
+      This package is no longer maintained as the PCL builds have been merged into the main "ServiceStack.Interfaces" NuGet package.
     </description>
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://servicestack.net/terms</licenseUrl>

@@ -6,9 +6,9 @@
     <version>4.0.0</version>
     <authors>Service Stack</authors>
     <owners>Service Stack</owners>
-    <summary>Opensource .NET and Mono REST Web Services framework</summary>
+    <summary>ServiceStack.Client.Pcl (deprecated)</summary>
     <description>
-      JSON, XML, JSV, SOAP and MQ Generic Service Clients.
+      This package is no longer maintained as the PCL builds have been merged into the main "ServiceStack.Client" NuGet package.
     </description>
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://servicestack.net/terms</licenseUrl>
