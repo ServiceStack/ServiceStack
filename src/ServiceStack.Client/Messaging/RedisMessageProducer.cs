@@ -2,6 +2,7 @@
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
+using System.Collections.Generic;
 using ServiceStack.Redis;
 using ServiceStack.Text;
 
@@ -63,7 +64,12 @@ namespace ServiceStack.Messaging
             Publish(queueName, MessageFactory.Create(requestDto));
         }
 
-        public void Publish(string queueName, IMessage message)
+	    public void SendAllOneWay<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+	    {
+	        throw new NotImplementedException();
+	    }
+
+	    public void Publish(string queueName, IMessage message)
         {
             using (__requestAccess())
             {

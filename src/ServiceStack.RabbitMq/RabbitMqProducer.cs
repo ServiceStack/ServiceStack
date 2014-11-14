@@ -83,6 +83,11 @@ namespace ServiceStack.RabbitMq
             Publish(queueName, MessageFactory.Create(requestDto));
         }
 
+        public void SendAllOneWay<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        {
+            throw new NotImplementedException();
+        }
+
         public void Publish(string queueName, IMessage message, string exchange)
         {
             using (__requestAccess())

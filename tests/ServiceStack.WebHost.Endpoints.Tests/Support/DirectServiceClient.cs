@@ -32,6 +32,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             ServiceController.Execute(requestDto);
         }
 
+        public void SendAllOneWay<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        {
+            throw new NotImplementedException();
+        }
+
         private bool ApplyRequestFilters<TResponse>(object request)
         {
             if (HostContext.ApplyRequestFilters(httpReq, httpRes, request))
@@ -97,6 +102,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
         }
 
         public void Send(IReturnVoid request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
         {
             throw new NotImplementedException();
         }
@@ -344,6 +354,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
                 tcs.SetException(ex);
                 return tcs.Task;
             }
+        }
+
+        public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        {
+            throw new NotImplementedException();
         }
 
         public void SetCredentials(string userName, string password)

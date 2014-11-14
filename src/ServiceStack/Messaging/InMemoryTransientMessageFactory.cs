@@ -1,4 +1,5 @@
 #if !SL5
+using System.Collections.Generic;
 using ServiceStack.Logging;
 
 namespace ServiceStack.Messaging
@@ -82,6 +83,11 @@ namespace ServiceStack.Messaging
             public void SendOneWay(string queueName, object requestDto)
             {
                 Publish(queueName, MessageFactory.Create(requestDto));
+            }
+
+            public void SendAllOneWay<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+            {
+                throw new System.NotImplementedException();
             }
 
             public void Dispose()

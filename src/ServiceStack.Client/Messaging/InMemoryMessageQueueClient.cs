@@ -2,6 +2,7 @@
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
+using System.Collections.Generic;
 
 namespace ServiceStack.Messaging
 {
@@ -47,6 +48,11 @@ namespace ServiceStack.Messaging
         public void SendOneWay(string queueName, object requestDto)
         {
             Publish(queueName, MessageFactory.Create(requestDto));
+        }
+
+        public void SendAllOneWay<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        {
+            throw new NotImplementedException();
         }
 
         public void Notify(string queueName, IMessage message)

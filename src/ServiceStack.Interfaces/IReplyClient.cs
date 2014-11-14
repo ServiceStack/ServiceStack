@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 
 namespace ServiceStack
@@ -12,5 +13,7 @@ namespace ServiceStack
 		TResponse Send<TResponse>(object request);
         TResponse Send<TResponse>(IReturn<TResponse> request);
 	    void Send(IReturnVoid request);
-	}
+    
+        List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests);
+    }
 }

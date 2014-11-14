@@ -111,6 +111,11 @@ namespace ServiceStack.Common.Tests
                 ServiceManager.Execute(requestDto);
             }
 
+            public void SendAllOneWay<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+            {
+                throw new NotImplementedException();
+            }
+
             public TResponse Send<TResponse>(object request)
             {
                 var message = MessageFactory.Create(request);
@@ -152,6 +157,11 @@ namespace ServiceStack.Common.Tests
             }
 
             public void Send(IReturnVoid request)
+            {
+                throw new NotImplementedException();
+            }
+
+            public List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
             {
                 throw new NotImplementedException();
             }
@@ -365,6 +375,11 @@ namespace ServiceStack.Common.Tests
                     HandleException(ex, (TResponse r, Exception rex) => tcs.SetException(rex));
                 }
                 return tcs.Task;
+            }
+
+            public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+            {
+                throw new NotImplementedException();
             }
 
             private static void HandleException<TResponse>(Exception exception, Action<TResponse, Exception> onError)
