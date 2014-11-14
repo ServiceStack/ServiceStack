@@ -1,7 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Data;
+using ServiceStack.OrmLite;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -12,6 +16,72 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public override void Configure(Container container)
         {
+            GlobalRequestFilters.Add((rew, res, dto) =>
+                ReplyAllRequestAttribute.AssertSingleDto(dto));
+
+            GlobalResponseFilters.Add((rew, res, dto) =>
+                ReplyAllResponseAttribute.AssertSingleDto(dto));
+
+            container.Register<IDbConnectionFactory>(c =>
+                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
+        }
+    }
+
+    public class ReplyAllRequestAttribute : RequestFilterAttribute
+    {
+        public override void Execute(IRequest req, IResponse res, object requestDto)
+        {
+            AssertSingleDto(requestDto);
+        }
+
+        public static void AssertSingleDto(object dto)
+        {
+            if (!(dto is HelloAll || dto is HelloAllCustom || dto is HelloAllTransaction))
+                throw new Exception("Invalid " + dto.GetType().Name);
+        }
+    }
+
+    public class ReplyAllResponseAttribute : ResponseFilterAttribute
+    {
+        public override void Execute(IRequest req, IResponse res, object responseDto)
+        {
+            AssertSingleDto(responseDto);
+        }
+
+        public static void AssertSingleDto(object dto)
+        {
+            if (!(dto is HelloAllResponse || dto is HelloAllCustomResponse 
+               || dto is HelloAllTransactionResponse || dto is IHttpResult))
+                throw new Exception("Invalid " + dto.GetType().Name);
+        }
+    }
+
+    public class ReplyAllArrayRequestAttribute : RequestFilterAttribute
+    {
+        public override void Execute(IRequest req, IResponse res, object requestDto)
+        {
+            AssertSingleDto(requestDto);
+        }
+
+        public static void AssertSingleDto(object dto)
+        {
+            if (dto.GetType() != typeof(HelloAllCustom[]))
+                throw new Exception("Invalid " + dto.GetType().Name);
+        }
+    }
+
+    public class ReplyAllArrayResponseAttribute : ResponseFilterAttribute
+    {
+        public override void Execute(IRequest req, IResponse res, object responseDto)
+        {
+            AssertSingleDto(responseDto);
+        }
+
+        public static void AssertSingleDto(object dto)
+        {
+            //still based on Response of Service
+            if (dto.GetType() != typeof(List<HelloAllCustomResponse>))
+                throw new Exception("Invalid " + dto.GetType().Name);
         }
     }
 
@@ -35,24 +105,62 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Result { get; set; }
     }
 
+    public class HelloAllTransaction : IReturn<HelloAllTransactionResponse>
+    {
+        public string Name { get; set; }
+    }
+
+    public class HelloAllTransactionResponse
+    {
+        public string Result { get; set; }
+    }
+
     public class ReplyAllService : Service
     {
+        [ReplyAllRequest]
+        [ReplyAllResponse]
         public object Any(HelloAll request)
         {
             return new HelloAllResponse { Result = "Hello, {0}!".Fmt(request.Name) };
         }
 
+        [ReplyAllRequest]
+        [ReplyAllResponse]
         public object Any(HelloAllCustom request)
         {
             return new HelloAllCustomResponse { Result = "Hello, {0}!".Fmt(request.Name) };
         }
 
+        [ReplyAllArrayRequest]
+        [ReplyAllArrayResponse]
         public object Any(HelloAllCustom[] requests)
         {
             return requests.Map(x => new HelloAllCustomResponse
             {
                 Result = "Custom, {0}!".Fmt(x.Name)
             });
+        }
+
+        public object Any(HelloAllTransaction request)
+        {
+            if (request.Name == "Bar")
+                throw new ArgumentException("No Bar allowed here");
+
+            Db.Insert(request);
+
+            return new HelloAllTransactionResponse { Result = "Hello, {0}!".Fmt(request.Name) };
+        }
+
+        public object Any(HelloAllTransaction[] requests)
+        {
+            using (var trans = Db.OpenTransaction())
+            {
+                var response = requests.Map(Any);
+
+                trans.Commit();
+
+                return response;
+            }
         }
     }
 
@@ -137,6 +245,74 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(results, Is.EquivalentTo(new[] {
                 "Custom, Foo!", "Custom, Bar!", "Custom, Baz!"
             }));
+        }
+
+        [Test]
+        public void Can_send_multiple_single_HelloAllTransaction()
+        {
+            using (var db = appHost.Resolve<IDbConnectionFactory>().Open())
+            {
+                db.DropAndCreateTable<HelloAllTransaction>();
+            }
+
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var names = new[] { "Foo", "Bar", "Baz" };
+
+            try
+            {
+                foreach (var name in names)
+                {
+                    client.Send(new HelloAllTransaction { Name = name });
+                }
+
+                Assert.Fail("Should throw on Bar");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.ErrorCode, Is.EqualTo(typeof(ArgumentException).Name));
+            }
+
+            using (var db = appHost.Resolve<IDbConnectionFactory>().Open())
+            {
+                var allRequests = db.Select<HelloAllTransaction>();
+                Assert.That(allRequests.Count, Is.EqualTo(1));
+                Assert.That(allRequests[0].Name, Is.EqualTo("Foo"));
+            }
+        }
+
+        [Test]
+        public void Sending_multiple_HelloAllTransaction_does_rollback_transaction()
+        {
+            using (var db = appHost.Resolve<IDbConnectionFactory>().Open())
+            {
+                db.DropAndCreateTable<HelloAllTransaction>();
+            }
+
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var requests = new[]
+            {
+                new HelloAllTransaction { Name = "Foo" },
+                new HelloAllTransaction { Name = "Bar" },
+                new HelloAllTransaction { Name = "Baz" },
+            };
+
+            try
+            {
+                var responses = client.SendAll(requests);
+
+                Assert.Fail("Should throw on Bar");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.ErrorCode, Is.EqualTo(typeof(ArgumentException).Name));
+            }
+
+            using (var db = appHost.Resolve<IDbConnectionFactory>().Open())
+            {
+                var allRequests = db.Select<HelloAllTransaction>();
+                Assert.That(allRequests.Count, Is.EqualTo(0));
+            }
         }
     }
 }

@@ -118,7 +118,7 @@ namespace ServiceStack
 
             using (Profiler.Current.Step("Executing Response Filters"))
             {
-                if (!req.IsMultiRequest())
+                if (!req.IsMultiRequest() || !(response is IEnumerable))
                     return ApplyResponseFiltersSingle(req, res, response);
 
                 var dtos = (IEnumerable)response;
