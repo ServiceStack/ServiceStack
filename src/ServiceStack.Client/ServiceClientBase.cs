@@ -818,6 +818,15 @@ namespace ServiceStack
             SendOneWay(HttpMethods.Post, relativeOrAbsoluteUrl, request);
         }
 
+        public virtual void SendAllOneWay<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        {
+            var elType = requests.GetType().GetElementType()
+                ?? requests.GetType().GetGenericArguments().First();
+
+            var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + elType.Name + "[]";
+            SendOneWay(HttpMethods.Post, requestUri, requests);
+        }
+
         public virtual void SendOneWay(string httpMethod, string relativeOrAbsoluteUrl, object requestDto)
         {
             var requestUri = GetUrl(relativeOrAbsoluteUrl);
@@ -839,6 +848,8 @@ namespace ServiceStack
                 {
                     throw;
                 }
+
+                using(response){} //auto dispose
             }
         }
 
@@ -856,6 +867,16 @@ namespace ServiceStack
         public virtual Task<HttpWebResponse> SendAsync(IReturnVoid requestDto)
         {
             return SendAsync<HttpWebResponse>(requestDto);
+        }
+
+        public virtual Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        {
+            var elType = requests.GetType().GetElementType()
+                ?? requests.GetType().GetGenericArguments().First();
+
+            var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
+
+            return asyncClient.SendAsync<List<TResponse>>(HttpMethods.Post, requestUri, requests);
         }
 
 

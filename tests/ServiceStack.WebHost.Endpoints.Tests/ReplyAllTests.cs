@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Data;
@@ -245,6 +246,43 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(results, Is.EquivalentTo(new[] {
                 "Custom, Foo!", "Custom, Bar!", "Custom, Baz!"
             }));
+        }
+
+        [Test]
+        public async Task Can_send_async_multi_reply_HelloAllCustom_requests()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var requests = new[]
+            {
+                new HelloAllCustom { Name = "Foo" },
+                new HelloAllCustom { Name = "Bar" },
+                new HelloAllCustom { Name = "Baz" },
+            };
+
+            var responses = await client.SendAllAsync(requests);
+            responses.PrintDump();
+
+            var results = responses.Map(x => x.Result);
+
+            Assert.That(results, Is.EquivalentTo(new[] {
+                "Custom, Foo!", "Custom, Bar!", "Custom, Baz!"
+            }));
+        }
+
+        [Test]
+        public void Can_send_multi_oneway_HelloAllCustom_requests()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var requests = new[]
+            {
+                new HelloAllCustom { Name = "Foo" },
+                new HelloAllCustom { Name = "Bar" },
+                new HelloAllCustom { Name = "Baz" },
+            };
+
+            client.SendAllOneWay(requests);
         }
 
         [Test]
