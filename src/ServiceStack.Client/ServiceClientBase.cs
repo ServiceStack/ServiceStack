@@ -432,9 +432,7 @@ namespace ServiceStack
 
         public virtual List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
         {
-            var elType = requests.GetType().GetElementType()
-                ?? requests.GetType().GetGenericArguments().First();
-
+            var elType = requests.GetType().GetCollectionType();
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
             var client = SendRequest(requestUri, requests);
 
@@ -820,9 +818,7 @@ namespace ServiceStack
 
         public virtual void SendAllOneWay<TResponse>(IEnumerable<IReturn<TResponse>> requests)
         {
-            var elType = requests.GetType().GetElementType()
-                ?? requests.GetType().GetGenericArguments().First();
-
+            var elType = requests.GetType().GetCollectionType();
             var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + elType.Name + "[]";
             SendOneWay(HttpMethods.Post, requestUri, requests);
         }
@@ -871,9 +867,7 @@ namespace ServiceStack
 
         public virtual Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests)
         {
-            var elType = requests.GetType().GetElementType()
-                ?? requests.GetType().GetGenericArguments().First();
-
+            var elType = requests.GetType().GetCollectionType();
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
 
             return asyncClient.SendAsync<List<TResponse>>(HttpMethods.Post, requestUri, requests);

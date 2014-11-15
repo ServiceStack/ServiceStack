@@ -52,7 +52,11 @@ namespace ServiceStack.Messaging
 
         public void SendAllOneWay<TResponse>(IEnumerable<IReturn<TResponse>> requests)
         {
-            throw new NotImplementedException();
+            if (requests == null) return;
+            foreach (var request in requests)
+            {
+                SendOneWay(request);
+            }
         }
 
         public void Notify(string queueName, IMessage message)

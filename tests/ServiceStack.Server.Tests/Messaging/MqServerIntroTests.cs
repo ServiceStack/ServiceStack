@@ -34,7 +34,7 @@ namespace ServiceStack.Server.Tests.Messaging
         }
     }
 
-    public class HelloIntro
+    public class HelloIntro : IReturn<HelloIntroResponse>
     {
         public string Name { get; set; }
     }
@@ -184,6 +184,33 @@ namespace ServiceStack.Server.Tests.Messaging
                     IMessage<HelloIntroResponse> responseMsg = mqClient.Get<HelloIntroResponse>(QueueNames<HelloIntroResponse>.In);
                     mqClient.Ack(responseMsg);
                     Assert.That(responseMsg.GetBody().Result, Is.EqualTo("Hello, World!"));
+                }
+            }
+        }
+
+        [Test]
+        public void Does_process_multi_messages_in_HttpListener_AppHost()
+        {
+            using (var appHost = new AppHost(() => CreateMqServer()).Init())
+            {
+                using (var mqClient = appHost.Resolve<IMessageService>().CreateMessageQueueClient())
+                {
+                    var requests = new[]
+                    {
+                        new HelloIntro { Name = "Foo" },
+                        new HelloIntro { Name = "Bar" },
+                    };
+
+                    var client = (IOneWayClient)mqClient;
+                    client.SendAllOneWay(requests);
+
+                    var responseMsg = mqClient.Get<HelloIntroResponse>(QueueNames<HelloIntroResponse>.In);
+                    mqClient.Ack(responseMsg);
+                    Assert.That(responseMsg.GetBody().Result, Is.EqualTo("Hello, Foo!"));
+
+                    responseMsg = mqClient.Get<HelloIntroResponse>(QueueNames<HelloIntroResponse>.In);
+                    mqClient.Ack(responseMsg);
+                    Assert.That(responseMsg.GetBody().Result, Is.EqualTo("Hello, Bar!"));
                 }
             }
         }

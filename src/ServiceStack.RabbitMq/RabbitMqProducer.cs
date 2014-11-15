@@ -85,7 +85,11 @@ namespace ServiceStack.RabbitMq
 
         public void SendAllOneWay<TResponse>(IEnumerable<IReturn<TResponse>> requests)
         {
-            throw new NotImplementedException();
+            if (requests == null) return;
+            foreach (var request in requests)
+            {
+                SendOneWay(request);
+            }
         }
 
         public void Publish(string queueName, IMessage message, string exchange)

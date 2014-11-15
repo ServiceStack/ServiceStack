@@ -48,7 +48,11 @@ namespace ServiceStack.Messaging.Rcon
 
         public void SendAllOneWay<TResponse>(IEnumerable<IReturn<TResponse>> requests)
         {
-            throw new NotImplementedException();
+            if (requests == null) return;
+            foreach (var request in requests)
+            {
+                SendOneWay(request);
+            }
         }
 
         /// <summary>
