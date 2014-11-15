@@ -74,6 +74,9 @@ namespace ServiceStack.Auth
 
         public bool VerifyHashString(string Data, string Hash, string Salt)
         {
+            if (Hash == null || Salt == null)
+                return false;
+            
             byte[] HashToVerify = Convert.FromBase64String(Hash);
             byte[] SaltToVerify = Convert.FromBase64String(Salt);
             byte[] DataToVerify = Encoding.UTF8.GetBytes(Data);
