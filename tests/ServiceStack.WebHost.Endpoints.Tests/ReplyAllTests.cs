@@ -61,13 +61,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public override void Execute(IRequest req, IResponse res, object requestDto)
         {
-            AssertSingleDto(requestDto);
-        }
-
-        public static void AssertSingleDto(object dto)
-        {
-            if (dto.GetType() != typeof(HelloAllCustom[]))
-                throw new Exception("Invalid " + dto.GetType().Name);
+            if (requestDto.GetType() != typeof(HelloAllCustom[]))
+                throw new Exception("Invalid " + requestDto.GetType().Name);
         }
     }
 
@@ -75,14 +70,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public override void Execute(IRequest req, IResponse res, object responseDto)
         {
-            AssertSingleDto(responseDto);
-        }
-
-        public static void AssertSingleDto(object dto)
-        {
             //still based on Response of Service
-            if (dto.GetType() != typeof(List<HelloAllCustomResponse>))
-                throw new Exception("Invalid " + dto.GetType().Name);
+            if (responseDto.GetType() != typeof(List<HelloAllCustomResponse>))
+                throw new Exception("Invalid " + responseDto.GetType().Name);
         }
     }
 
