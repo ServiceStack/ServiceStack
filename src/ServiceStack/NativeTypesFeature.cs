@@ -40,6 +40,23 @@ namespace ServiceStack
                     { "Int64", "Long" },    
                     { "DateTime", "Date" },    
                 },
+                TypeScriptTypeAlias = new Dictionary<string, string>
+                {
+                    { "String", "string" },    
+                    { "Boolean", "boolean" },    
+                    { "DateTime", "string" },    
+                    { "TimeSpan", "string" },    
+                    { "Byte", "number" },    
+                    { "Int16", "number" },    
+                    { "Int32", "number" },    
+                    { "Int64", "number" },    
+                    { "UInt16", "number" },    
+                    { "UInt32", "number" },    
+                    { "UInt64", "number" },    
+                    { "Single", "number" },    
+                    { "Double", "number" },    
+                    { "Decimal", "number" },    
+                },
                 VbNetKeyWords = new HashSet<string>
                 {
                     "Default",

@@ -35,6 +35,7 @@ namespace ServiceStack.NativeTypes
                 InitializeCollections = req.InitializeCollections ?? defaults.InitializeCollections,
                 AddImplicitVersion = req.AddImplicitVersion ?? defaults.AddImplicitVersion,
                 AddResponseStatus = req.AddResponseStatus ?? defaults.AddResponseStatus,
+                AddServiceStackTypes = req.AddServiceStackTypes ?? defaults.AddServiceStackTypes,
                 AddDefaultXmlNamespace = req.AddDefaultXmlNamespace ?? defaults.AddDefaultXmlNamespace,
                 DefaultNamespaces = req.DefaultNamespaces ?? defaults.DefaultNamespaces,
                 ExportAttributes = defaults.ExportAttributes,
@@ -43,6 +44,7 @@ namespace ServiceStack.NativeTypes
                 CSharpTypeAlias = defaults.CSharpTypeAlias,
                 FSharpTypeAlias = defaults.FSharpTypeAlias,
                 VbNetTypeAlias = defaults.VbNetTypeAlias,
+                TypeScriptTypeAlias = defaults.TypeScriptTypeAlias,
                 VbNetKeyWords = defaults.VbNetKeyWords,
                 GlobalNamespace = defaults.GlobalNamespace,
             };

@@ -2,6 +2,7 @@
 using ServiceStack.DataAnnotations;
 using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.NativeTypes.FSharp;
+using ServiceStack.NativeTypes.TypeScript;
 using ServiceStack.NativeTypes.VbNet;
 using ServiceStack.Web;
 
@@ -23,6 +24,10 @@ namespace ServiceStack.NativeTypes
     [Route("/types/vbnet")]
     public class TypesVbNet : NativeTypesBase { }
 
+    [Exclude(Feature.Soap)]
+    [Route("/types/typescript")]
+    public class TypesTypeScript : NativeTypesBase { }
+
     public class NativeTypesBase
     {
         public string BaseUrl { get; set; }
@@ -36,6 +41,7 @@ namespace ServiceStack.NativeTypes
         public bool? InitializeCollections { get; set; }
         public int? AddImplicitVersion { get; set; }
         public bool? AddResponseStatus { get; set; }
+        public bool? AddServiceStackTypes { get; set; }
         public string AddDefaultXmlNamespace { get; set; }
         public List<string> DefaultNamespaces { get; set; }
     }
@@ -97,6 +103,18 @@ namespace ServiceStack.NativeTypes
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
             var vbnet = new VbNetGenerator(typesConfig).GetCode(metadataTypes, base.Request);
             return vbnet;
+        }
+
+        [AddHeader(ContentType = MimeTypes.PlainText)]
+        public object Any(TypesTypeScript request)
+        {
+            if (request.BaseUrl == null)
+                request.BaseUrl = Request.GetBaseUrl();
+
+            var typesConfig = NativeTypesMetadata.GetConfig(request);
+            var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
+            var csharp = new TypeScriptGenerator(typesConfig).GetCode(metadataTypes, base.Request);
+            return csharp;
         }
 
     }
