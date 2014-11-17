@@ -77,8 +77,10 @@ namespace ServiceStack.NativeTypes.TypeScript
                 sb.AppendLine("declare module ServiceStack");
                 sb.AppendLine("{");
                 sb = sb.Indent();
+                
                 sb.AppendLine("interface IReturnVoid {}");
                 sb.AppendLine("interface IReturn<T> {}");
+
                 sb = sb.UnIndent();
                 sb.AppendLine("}");
                 sb.AppendLine();
@@ -86,12 +88,6 @@ namespace ServiceStack.NativeTypes.TypeScript
 
             sb.AppendLine("declare module {0}".Fmt(globalNamespace.SafeToken()));
             sb.AppendLine("{");
-
-            //sb.AppendLine();
-            //foreach (var ns in namespaces)
-            //{
-            //    sb.AppendLine("//import {0};".Fmt(ns));
-            //}
 
             //ServiceStack core interfaces
             foreach (var type in allTypes)
@@ -154,6 +150,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             }
 
             sb.AppendLine();
+            sb.AppendLine("}");
 
             return sb.ToString();
         }
@@ -202,7 +199,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
                 //: BaseClass, Interfaces
                 if (type.Inherits != null)
-                    extends.Add(Type(type.Inherits));
+                    extends.Add(Type(type.Inherits).InheritedType());
 
                 if (options.ImplementsFn != null)
                 {
@@ -334,16 +331,39 @@ namespace ServiceStack.NativeTypes.TypeScript
             return Type(typeName.Name, typeName.GenericArgs);
         }
 
+        public static HashSet<string> ArrayTypes = new HashSet<string>
+        {
+            "List`1",
+            "IEnumerable`1",
+            "ICollection`1",
+            "HashSet`1",
+            "Queue`1",
+            "Stack`1",
+            "IEnumerable",
+        };
+
+        public static HashSet<string> DictionaryTypes = new HashSet<string>
+        {
+            "Dictionary`2",
+            "IDictionary`2",
+            "IOrderedDictionary`2",
+            "OrderedDictionary",
+            "StringDictionary",
+            "IDictionary",
+            "IOrderedDictionary",
+        };
+
         public string Type(string type, string[] genericArgs)
         {
+            IDictionary<string, string> d;
             if (genericArgs != null)
             {
                 if (type == "Nullable`1")
-                    return "{0}?".Fmt(TypeAlias(genericArgs[0].TrimStart('\'')));
-                if (type == "List`1" || type == "IEnumerable`1" || type == "ICollection`1")
-                    return "{0}[]".Fmt(TypeAlias(genericArgs[0].TrimStart('\'')));
-                if (type == "Dictionary`2" || type == "IDictionary`2")
-                    return "{{ [index:{0}]: {1}; }}".Fmt(TypeAlias(genericArgs[0].TrimStart('\'')), TypeAlias(genericArgs[1].TrimStart('\'')));
+                    return "{0}?".Fmt(TypeAlias(genericArgs[0].GenericArg()));
+                if (ArrayTypes.Contains(type))
+                    return "{0}[]".Fmt(TypeAlias(genericArgs[0].GenericArg()));
+                if (DictionaryTypes.Contains(type))
+                    return "{{ [index:{0}]: {1}; }}".Fmt(TypeAlias(genericArgs[0].GenericArg()), TypeAlias(genericArgs[1].TrimStart('\'')));
 
                 var parts = type.Split('`');
                 if (parts.Length > 1)
@@ -354,7 +374,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                         if (args.Length > 0)
                             args.Append(", ");
 
-                        args.Append(TypeAlias(arg.TrimStart('\'')));
+                        args.Append(TypeAlias(arg.GenericArg()));
                     }
 
                     var typeName = TypeAlias(type);
@@ -472,6 +492,23 @@ namespace ServiceStack.NativeTypes.TypeScript
             sb.AppendLine("// @DataMember{0}".Fmt(dmArgs));
 
             return true;
+        }
+    }
+
+    public static class TypeScriptGeneratorExtensions
+    {
+        public static string GenericArg(this string arg)
+        {
+            return arg.TrimStart('\'');
+        }
+
+        //TypeScript doesn't support short-hand T[] notation in extension list
+        public static string InheritedType(this string type)
+        {
+            var arrParts = type.SplitOnFirst('[');
+            return arrParts.Length > 1 
+                ? "Array<{0}>".Fmt(arrParts[0]) 
+                : type;
         }
     }
 }
