@@ -90,6 +90,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var lf = System.Environment.NewLine;
 			Assert.That(response, Is.EqualTo("Data{0}foo{0}".Fmt(lf)));
         }
+
+        [Test]
+        public void Can_download_route_with_dot_seperator()
+        {
+            var response = Config.AbsoluteBaseUri.CombineWith("/customdot/id.data")
+                .GetJsonFromUrl()
+                .FromJson<CustomRouteDot>();
+
+            Assert.That(response.Id, Is.EqualTo("id"));
+            Assert.That(response.Data, Is.EqualTo("data"));
+        }
     }
 
     public class RouteAppHost : AppHostHttpListenerBase
@@ -113,9 +124,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Data { get; set; }
     }
 
+    [Route("/customdot/{Id}.{Data}")]
+    public class CustomRouteDot : IReturn<CustomRouteDot>
+    {
+        public string Id { get; set; }
+        public string Data { get; set; }
+    }
+
     public class CustomRouteService : IService
     {
         public object Any(CustomRoute request)
+        {
+            return request;
+        }
+
+        public object Any(CustomRouteDot request)
         {
             return request;
         }
