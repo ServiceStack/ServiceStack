@@ -1,0 +1,137 @@
+﻿@using ServiceStack
+@using ServiceStack.Auth
+@using ServiceStack.OrmLite
+
+<script>
+    var $id = function(id) { return document.getElementById(id); };
+</script>
+<style>
+    body {
+        font-family: Arial;
+    }
+</style>
+
+<h2>Auth Data</h2>
+<div id="authadata" class="jsonviewer">
+    
+    <h3>Session</h3>
+    <div id="session"></div>
+    
+    <h3>User Auth</h3>
+    <div id="userAuth"></div>
+    
+    <h3>Auth Providers</h3>
+    <div id="authProviders"></div>
+    
+@{
+    var session = base.SessionAs<CustomUserSession>();
+    if (session.IsAuthenticated)
+    {
+        <h2 style="color:green">Authenticated!</h2>
+        
+        <script>
+            $id("session").innerHTML = jsonviewer(@session.AsRawJson());
+        </script>
+    }
+    else
+    {
+        <h2 style="color:red">Not Authenticated</h2>
+    }
+}
+</div>
+
+<h2>Login with Auth Providers</h2>
+<div id="login">
+
+    <div>
+        <h2>Twitter</h2>
+        <a href="/auth/twitter">/auth/twitter</a>
+    </div>
+
+    <div>
+        <h2>Facebook</h2>
+        <a href="/auth/facebook">/auth/facebook</a>
+    </div>
+
+    <div>
+        <h2>Google OpenId</h2>
+        <a href="/auth/GoogleOpenId">/auth/GoogleOpenId</a>
+    </div>
+
+    <div>
+        <h2>Yahoo</h2>
+        <a href="/auth/YahooOpenId">/auth/YahooOpenId</a>
+    </div>
+
+    <div>
+        <h2>Google OAuth</h2>
+        <a href="/auth/GoogleOAuth">/auth/GoogleOAuth</a>
+    </div>
+
+    <div>
+        <h2>LinkedIn</h2>
+        <a href="/auth/LinkedIn">/auth/LinkedIn</a>
+    </div>
+    
+    <div>
+        <h2>GitHub</h2>
+        <a href="/auth/github">/auth/github</a>
+    </div>
+
+    <div>
+        <h2>Yandex</h2>
+        <a href="/auth/Yandex">/auth/Yandex</a>
+    </div>
+    
+    <div>
+        <h2>VK.com</h2>
+        <a href="/auth/vkcom">/auth/vkcom</a>
+    </div>
+
+    <div>
+        <h2>Odnoklassniki.ru</h2>
+        <a href="/auth/Odnoklassniki">/auth/Odnoklassniki</a>
+    </div>
+
+    <div>
+        <h2>Windows Auth</h2>
+        <a href="/auth/windowsauth">/auth/windowsauth</a>
+    </div>
+    
+    <h3>Custom Credentials Auth</h3>
+    <form action="/auth/credentials">
+        <input type="text" name="Username" value="demis.bellot@gmail.com"/>
+        <input type="text" name="Password" value="test"/>
+        <input type="submit"/>
+    </form>
+    
+    <h3>Register New User</h3>
+    <form action="/register" method="POST">
+        <input type="text" name="Username"  placeholder="UserName"  value="NewUser"/>
+        <input type="text" name="Password"  placeholder="Password"  value="test"/>
+        <input type="text" name="FirstName" placeholder="FirstName" value="New"/>
+        <input type="text" name="LastName"  placeholder="LastName"  value="User"/>
+        <input type="submit"/>
+    </form>
+    
+    <hr/>
+    <h3>Reset UserAuth tables and Session</h3>
+    <a href="/reset-userauth">/reset-userauth</a>
+
+    <h3>Lock all Users</h3>
+    <a href="/lockallusers">/lockallusers</a>
+
+    <h3>Logout</h3>
+    <a href="/auth/logout">/auth/logout</a>
+</div>
+
+<h2>All AuthProviders</h2>
+<div id="allauthproviders" class="jsonviewer">
+    
+    <h3>All User Auths</h3>
+    <div id="allUserAuths"></div>
+    
+    <h3>All Auth Providers</h3>
+    <div id="allAuthProviders"></div>
+
+</div>

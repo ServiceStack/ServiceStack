@@ -126,7 +126,9 @@ namespace ServiceStack.AuthWeb.Tests
             var authRepo = CreateOrmLiteAuthRepo(container, appSettings);
             //var authRepo = CreateRavenDbAuthRepo(container, appSettings);
 
-            authRepo.CreateUserAuth(new CustomUserAuth
+            try
+            {
+                authRepo.CreateUserAuth(new CustomUserAuth
                 {
                     Custom = "CustomUserAuth",
                     DisplayName = "Credentials",
@@ -135,6 +137,8 @@ namespace ServiceStack.AuthWeb.Tests
                     FullName = "First Last",
                     Email = "demis.bellot@gmail.com",
                 }, "test");
+            }
+            catch (Exception ignoreExistingUser) {}
 
             Plugins.Add(new RequestLogsFeature());
         }
