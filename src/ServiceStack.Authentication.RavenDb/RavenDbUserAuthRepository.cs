@@ -355,7 +355,8 @@ namespace ServiceStack.Authentication.RavenDb
 
         public string CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
         {
-            var userAuth = GetUserAuth(authSession, tokens) ?? new UserAuth();
+            var userAuth = GetUserAuth(authSession, tokens)
+                ?? typeof(TUserAuth).CreateInstance<TUserAuth>();
 
             using (var session = documentStore.OpenSession())
             {
