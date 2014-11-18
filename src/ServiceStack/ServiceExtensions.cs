@@ -106,11 +106,18 @@ namespace ServiceStack
 
         public static void RemoveSession(this IRequest httpReq)
         {
+            RemoveSession(httpReq, httpReq.GetSessionId());
+        }
+
+        public static void RemoveSession(this IRequest httpReq, string sessionId)
+        {
             if (httpReq == null) return;
+            if (sessionId == null)
+                throw new ArgumentNullException("sessionId");
 
             using (var cache = httpReq.GetCacheClient())
             {
-                var sessionKey = SessionFeature.GetSessionKey(httpReq.GetSessionId());
+                var sessionKey = SessionFeature.GetSessionKey(sessionId);
                 cache.Remove(sessionKey);
             }
 
