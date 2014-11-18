@@ -76,6 +76,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class ExceptionReturnVoid : IReturnVoid { }
+    public class ExceptionReturnVoidService : Service
+    {
+        public void Any(ExceptionReturnVoid request)
+        {
+            throw new CustomException();
+        }
+    }
+
     public class CaughtException { }
     public class CaughtExceptionAsync { }
     public class CaughtExceptionService : Service
@@ -355,6 +364,37 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
                 Assert.That(body, Is.StringStarting("{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
+            }
+        }
+
+        [Test]
+        public void Returns_exception_when_ReturnVoid()
+        {
+            try
+            {
+                var json = PredefinedJsonUrl<ExceptionReturnVoid>().GetJsonFromUrl();
+                Assert.Fail("Should throw");
+            }
+            catch (WebException webEx)
+            {
+                var errorResponse = ((HttpWebResponse)webEx.Response);
+                var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
+                Assert.That(body, Is.StringStarting("{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
+            }
+
+            try
+            {
+                var client = new JsonServiceClient(ListeningOn);
+                client.Get(new ExceptionReturnVoid());
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo(400));
+                Assert.That(ex.StatusDescription, Is.EqualTo(typeof(CustomException).Name));
+                Assert.That(ex.ErrorCode, Is.EqualTo(typeof(CustomException).Name));
+                Assert.That(ex.ErrorMessage, Is.EqualTo("User Defined Error"));
+                Assert.That(ex.ResponseBody, Is.StringStarting("{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
             }
         }
 
