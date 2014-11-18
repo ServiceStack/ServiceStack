@@ -6,10 +6,13 @@ using System.DirectoryServices.AccountManagement;
 using System.Net;
 using System.Threading;
 using Funq;
+using Raven.Client;
+using Raven.Client.Document;
 using ServiceStack.Admin;
 using ServiceStack.Auth;
 using ServiceStack.Authentication.OAuth2;
 using ServiceStack.Authentication.OpenId;
+using ServiceStack.Authentication.RavenDb;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
@@ -120,18 +123,12 @@ namespace ServiceStack.AuthWeb.Tests
             //override the default registration validation with your own custom implementation
             Plugins.Add(new CustomRegisterPlugin());
 
-            //Store User Data into the referenced SqlServer database
-            container.Register<IAuthRepository>(c =>
-                new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>())); //Use OrmLite DB Connection to persist the UserAuth and AuthProvider info
+            var authRepo = CreateOrmLiteAuthRepo(container, appSettings);
+            //var authRepo = CreateRavenDbAuthRepo(container, appSettings);
 
-            var authRepo = (OrmLiteAuthRepository)container.Resolve<IAuthRepository>(); //If using and RDBMS to persist UserAuth, we must create required tables
-            if (appSettings.Get("RecreateAuthTables", false))
-                authRepo.DropAndReCreateTables(); //Drop and re-create all Auth and registration tables
-            else
-                authRepo.InitSchema();   //Create only the missing tables
-
-            authRepo.CreateUserAuth(new UserAuth
+            authRepo.CreateUserAuth(new CustomUserAuth
                 {
+                    Custom = "CustomUserAuth",
                     DisplayName = "Credentials",
                     FirstName = "First",
                     LastName = "Last",
@@ -140,6 +137,37 @@ namespace ServiceStack.AuthWeb.Tests
                 }, "test");
 
             Plugins.Add(new RequestLogsFeature());
+        }
+
+        private static IUserAuthRepository CreateRavenDbAuthRepo(Container container, AppSettings appSettings)
+        {
+            container.Register<IDocumentStore>(c =>
+                new DocumentStore { Url = "http://macbook:8080/" });
+
+            var documentStore = container.Resolve<IDocumentStore>();
+            documentStore.Initialize();
+
+            container.Register<IAuthRepository>(c =>
+                new RavenDbUserAuthRepository<CustomUserAuth,CustomUserAuthDetails>(c.Resolve<IDocumentStore>()));
+
+            return (IUserAuthRepository)container.Resolve<IAuthRepository>();
+        }
+
+        private static IUserAuthRepository CreateOrmLiteAuthRepo(Container container, AppSettings appSettings)
+        {
+            //Store User Data into the referenced SqlServer database
+            container.Register<IAuthRepository>(c =>
+                new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()));
+            
+            //Use OrmLite DB Connection to persist the UserAuth and AuthProvider info
+            var authRepo = (OrmLiteAuthRepository) container.Resolve<IAuthRepository>();
+                //If using and RDBMS to persist UserAuth, we must create required tables
+            if (appSettings.Get("RecreateAuthTables", false))
+                authRepo.DropAndReCreateTables(); //Drop and re-create all Auth and registration tables
+            else
+                authRepo.InitSchema(); //Create only the missing tables
+
+            return authRepo;
         }
 
         public void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
@@ -172,6 +200,16 @@ namespace ServiceStack.AuthWeb.Tests
                 Log.Error("Could not retrieve windows user info for '{0}'".Fmt(tokens.DisplayName), ex);
             }
         }
+    }
+
+    public class CustomUserAuth : UserAuth
+    {
+        public string Custom { get; set; }
+    }
+
+    public class CustomUserAuthDetails : UserAuthDetails
+    {
+        public string Custom { get; set; }
     }
 
     public class CustomCredentialsAuthProvider : CredentialsAuthProvider

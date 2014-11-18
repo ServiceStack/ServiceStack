@@ -27,6 +27,7 @@
     var session = base.SessionAs<CustomUserSession>();
     if (session.IsAuthenticated)
     {
+        //requires using OrmLiteAuthRepository 
         var userAuthId = session.UserAuthId.ToInt();
         var userAuth = Db.SingleById<UserAuth>(userAuthId);
         var authProviders = Db.Select<UserAuthDetails>(x => x.UserAuthId == userAuthId);
@@ -141,6 +142,7 @@
     <div id="allAuthProviders"></div>
 
 @{
+    //requires using OrmLiteAuthRepository 
     var allUserAuths = Db.Select<UserAuth>();
     var allAuthProviders = Db.Select<UserAuthDetails>();
         
