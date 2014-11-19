@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ServiceStack.NativeTypes.CSharp;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.NativeTypes.TypeScript
@@ -10,6 +11,7 @@ namespace ServiceStack.NativeTypes.TypeScript
     public class TypeScriptGenerator
     {
         readonly MetadataTypesConfig Config;
+        List<string> conflictTypeNames = new List<string>();
 
         public TypeScriptGenerator(MetadataTypesConfig config)
         {
@@ -25,7 +27,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             public bool IsType { get; set; }
         }
 
-        public string GetCode(MetadataTypes metadata, IRequest request)
+        public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
             var namespaces = new HashSet<string>();
             Config.DefaultNamespaces.Each(x => namespaces.Add(x));
@@ -72,19 +74,16 @@ namespace ServiceStack.NativeTypes.TypeScript
             allTypes.AddRange(responseTypes);
             allTypes.AddRange(requestTypes);
 
-            if (Config.AddServiceStackTypes)
-            {
-                sb.AppendLine("declare module ServiceStack");
-                sb.AppendLine("{");
-                sb = sb.Indent();
-                
-                sb.AppendLine("interface IReturnVoid {}");
-                sb.AppendLine("interface IReturn<T> {}");
+            //TypeScript doesn't support reusing same type name with different generic airity
+            var conflictPartialNames = allTypes.Map(x => x.Name).Distinct()
+                .GroupBy(g => g.SplitOnFirst('`')[0])
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key)
+                .ToList();
 
-                sb = sb.UnIndent();
-                sb.AppendLine("}");
-                sb.AppendLine();
-            }
+            this.conflictTypeNames = allTypes
+                .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
+                .Map(x => x.Name);
 
             sb.AppendLine("declare module {0}".Fmt(globalNamespace.SafeToken()));
             sb.AppendLine("{");
@@ -115,11 +114,11 @@ namespace ServiceStack.NativeTypes.TypeScript
                                         return null;
 
                                     if (type.ReturnVoidMarker)
-                                        return "ServiceStack.IReturnVoid";
+                                        return "IReturnVoid";
                                     if (type.ReturnMarkerTypeName != null)
-                                        return Type("ServiceStack.IReturn`1", new[] { Type(type.ReturnMarkerTypeName) });
+                                        return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName) });
                                     return response != null
-                                        ? Type("ServiceStack.IReturn`1", new[] { Type(type.Name, type.GenericArgs) })
+                                        ? Type("IReturn`1", new[] { Type(type.Name, type.GenericArgs) })
                                         : null;
                                 },
                                 IsRequest = true,
@@ -399,7 +398,11 @@ namespace ServiceStack.NativeTypes.TypeScript
 
         public string NameOnly(string type)
         {
-            return type.SplitOnFirst('`')[0].SplitOnLast('.').Last().SafeToken();
+            var name = conflictTypeNames.Contains(type)
+                ? type.Replace('`','_')
+                : type.SplitOnFirst('`')[0];
+
+            return name.SplitOnLast('.').Last().SafeToken();
         }
 
         public void AppendComments(StringBuilderWrapper sb, string desc)

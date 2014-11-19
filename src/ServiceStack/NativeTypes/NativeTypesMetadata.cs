@@ -52,7 +52,12 @@ namespace ServiceStack.NativeTypes
 
         public MetadataTypes GetMetadataTypes(IRequest req, MetadataTypesConfig config = null)
         {
-            return new MetadataTypesGenerator(meta, config ?? defaults).GetMetadataTypes(req);
+            return GetMetadataTypesGenerator(config).GetMetadataTypes(req);
+        }
+
+        internal MetadataTypesGenerator GetMetadataTypesGenerator(MetadataTypesConfig config)
+        {
+            return new MetadataTypesGenerator(meta, config ?? defaults);
         }
     }
 

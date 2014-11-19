@@ -112,8 +112,22 @@ namespace ServiceStack.NativeTypes
                 request.BaseUrl = Request.GetBaseUrl();
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
+    
+            //To include SS Types we just ignore the SS's ignored namespaces
+            if (typesConfig.AddServiceStackTypes)
+                typesConfig.IgnoreTypesInNamespaces.Clear();
+
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
-            var csharp = new TypeScriptGenerator(typesConfig).GetCode(metadataTypes, base.Request);
+
+            if (typesConfig.AddServiceStackTypes)
+            {
+                //IReturn markers are metadata properties that are not included as normal interfaces
+                var generator = ((NativeTypesMetadata)NativeTypesMetadata).GetMetadataTypesGenerator(typesConfig);
+                metadataTypes.Types.Insert(0, generator.ToType(typeof(IReturn<>)));
+                metadataTypes.Types.Insert(0, generator.ToType(typeof(IReturnVoid)));
+            }
+ 
+            var csharp = new TypeScriptGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
             return csharp;
         }
 
