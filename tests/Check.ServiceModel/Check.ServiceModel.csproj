@@ -51,6 +51,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ThrowHttpError.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
+      <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
+      <Name>ServiceStack</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

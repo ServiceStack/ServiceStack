@@ -316,4 +316,13 @@ namespace Check.ServiceModel.Types
         public int Id { get; set; }
         public string Name { get; set; }
     }
+
+    public class HelloSession : IReturn<HelloSessionResponse>
+    {        
+    }
+
+    public class HelloSessionResponse
+    {
+        public AuthUserSession Result { get; set; }
+    }
 }

@@ -108,9 +108,17 @@ namespace Check.ServiceInterface
         public object Any(HelloWithType request)
         {
             return new HelloWithTypeResponse
-                {
-                    Result = new HelloType { Result = request.Name }
-                };
+            {
+                Result = new HelloType { Result = request.Name }
+            };
+        }
+
+        public object Any(HelloSession request)
+        {
+            return new HelloSessionResponse
+            {
+                Result = base.SessionAs<AuthUserSession>()
+            };
         }
     }
 }
