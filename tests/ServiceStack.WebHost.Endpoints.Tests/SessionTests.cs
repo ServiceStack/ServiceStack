@@ -6,6 +6,9 @@ using System;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Auth;
+using ServiceStack.Caching;
+using ServiceStack.Data;
+using ServiceStack.OrmLite;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -90,6 +93,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public override void Configure(Container container)
             {
                 Plugins.Add(new SessionFeature());
+
+                const bool UseOrmLiteCache = false;
+                if (UseOrmLiteCache)
+                {
+                    container.Register<IDbConnectionFactory>(c =>
+                        new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
+
+                    container.RegisterAs<OrmLiteCacheClient, ICacheClient>();
+
+                    container.Resolve<ICacheClient>().InitSchema();
+                }
             }
         }
 
