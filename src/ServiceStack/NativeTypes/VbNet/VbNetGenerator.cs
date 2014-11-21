@@ -215,7 +215,8 @@ namespace ServiceStack.NativeTypes.VbNet
             else
             {
                 var partial = Config.MakePartial ? "Partial " : "";
-                sb.AppendLine("Public {0}Class {1}".Fmt(partial, Type(type.Name, type.GenericArgs)));
+                var defType = type.IsInterface() ? "Interface" : "Class";
+                sb.AppendLine("Public {0}{1} {2}".Fmt(partial, defType, Type(type.Name, type.GenericArgs)));
 
                 //: BaseClass, Interfaces
                 if (type.Inherits != null)
@@ -271,6 +272,8 @@ namespace ServiceStack.NativeTypes.VbNet
 
         private void AddConstuctor(StringBuilderWrapper sb, MetadataType type, CreateTypeOptions options)
         {
+            if (type.IsInterface())
+                return;
             if (Config.AddImplicitVersion == null && !Config.InitializeCollections)
                 return;
 
@@ -313,7 +316,7 @@ namespace ServiceStack.NativeTypes.VbNet
         {
             var makeExtensible = Config.MakeDataContractsExtensible && type.Inherits == null;
 
-            var @virtual = Config.MakeVirtual ? "Overridable " : "";
+            var @virtual = Config.MakeVirtual && !type.IsInterface() ? "Overridable " : "";
             var wasAdded = false;
 
             var dataMemberIndex = 1;
@@ -326,12 +329,17 @@ namespace ServiceStack.NativeTypes.VbNet
                     var propType = Type(prop.Type, prop.GenericArgs);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
-                    sb.AppendLine("Public {0}Property {1} As {2}".Fmt(
+                    var visibility = type.IsInterface() ? "" : "Public ";
+                    sb.AppendLine("{0}{1}Property {2} As {3}".Fmt(
+                        visibility,
                         @virtual,
                         EscapeKeyword(prop.Name).SafeToken(), 
                         propType));
                 }
             }
+
+            if (type.IsInterface())
+                return;
 
             if (Config.AddResponseStatus
                 && (type.Properties == null

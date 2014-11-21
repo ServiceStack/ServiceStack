@@ -97,6 +97,7 @@ namespace ServiceStack
         public bool ReturnVoidMarker { get; set; }
         public bool? IsNested { get; set; }
         public bool? IsEnum { get; set; }
+        public bool? IsInterface { get; set; }
 
         public MetadataTypeName ReturnMarkerTypeName { get; set; }
 

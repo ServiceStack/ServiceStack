@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using ServiceStack.Auth;
 using ServiceStack.Host;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.NativeTypes
@@ -138,7 +140,7 @@ namespace ServiceStack.NativeTypes
                 considered.Add(t);
                 queue.Enqueue(t);
 
-                if (t.IsUserType() || t.IsUserEnum())
+                if (t.IsUserType() || t.IsUserEnum() || t.IsInterface)
                 {
                     metadata.Types.Add(ToType(t));
                 }
@@ -147,7 +149,7 @@ namespace ServiceStack.NativeTypes
             while (queue.Count > 0)
             {
                 var type = queue.Dequeue();
-                if (!type.IsUserType()) continue;
+                if (!type.IsUserType() && !type.IsInterface) continue;
 
                 foreach (var pi in type.GetSerializableProperties()
                     .Where(pi => !ignoreTypeFn(pi.PropertyType)))
@@ -231,6 +233,7 @@ namespace ServiceStack.NativeTypes
                 Properties = ToProperties(type),
                 IsNested = type.IsNested ? true : (bool?)null,
                 IsEnum = type.IsEnum ? true : (bool?)null,
+                IsInterface = type.IsInterface ? true : (bool?)null,
             };
 
             if (type.BaseType != null && type.BaseType != typeof(object) && !type.IsEnum)
@@ -328,14 +331,14 @@ namespace ServiceStack.NativeTypes
 
         public List<MetadataAttribute> ToAttributes(Type type)
         {
-            return !(type.IsUserType() || type.IsUserEnum()) || type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>))
+            return !(type.IsUserType() || type.IsUserEnum() || type.IsInterface) || type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>))
                 ? null
                 : ToAttributes(type.GetCustomAttributes(false));
         }
 
         public List<MetadataPropertyType> ToProperties(Type type)
         {
-            var props = !type.IsUserType() || type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>))
+            var props = (!type.IsUserType() && !type.IsInterface) || type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>))
                 ? null
                 : GetInstancePublicProperties(type).Select(x => ToProperty(x)).ToList();
 

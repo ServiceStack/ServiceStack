@@ -210,7 +210,8 @@ namespace ServiceStack.NativeTypes.CSharp
             else
             {
                 var partial = Config.MakePartial ? "partial " : "";
-                sb.AppendLine("public {0}class {1}".Fmt(partial, Type(type.Name, type.GenericArgs)));
+                var defType = type.IsInterface() ? "interface" : "class";
+                sb.AppendLine("public {0}{1} {2}".Fmt(partial, defType, Type(type.Name, type.GenericArgs)));
 
                 //: BaseClass, Interfaces
                 var inheritsList = new List<string>();
@@ -260,6 +261,8 @@ namespace ServiceStack.NativeTypes.CSharp
 
         private void AddConstuctor(StringBuilderWrapper sb, MetadataType type, CreateTypeOptions options)
         {
+            if (type.IsInterface())
+                return;
             if (Config.AddImplicitVersion == null && !Config.InitializeCollections)
                 return;
 
@@ -300,7 +303,7 @@ namespace ServiceStack.NativeTypes.CSharp
         {
             var makeExtensible = Config.MakeDataContractsExtensible && type.Inherits == null;
 
-            var @virtual = Config.MakeVirtual ? "virtual " : "";
+            var @virtual = Config.MakeVirtual && !type.IsInterface() ? "virtual " : "";
             var wasAdded = false;
 
             var dataMemberIndex = 1;
@@ -313,9 +316,14 @@ namespace ServiceStack.NativeTypes.CSharp
                     var propType = Type(prop.Type, prop.GenericArgs);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
-                    sb.AppendLine("public {0}{1} {2} {{ get; set; }}".Fmt(@virtual, propType, prop.Name.SafeToken()));
+                    var visibility = type.IsInterface() ? "" : "public ";
+                    sb.AppendLine("{0}{1}{2} {3} {{ get; set; }}"
+                        .Fmt(visibility, @virtual, propType, prop.Name.SafeToken()));
                 }
             }
+
+            if (type.IsInterface())
+                return;
 
             if (Config.AddResponseStatus
                 && (type.Properties == null

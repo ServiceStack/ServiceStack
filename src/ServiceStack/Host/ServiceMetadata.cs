@@ -614,5 +614,10 @@ namespace ServiceStack.Host
         {
             return prop.Type.SplitOnFirst('[').Length > 1;
         }
+
+        public static bool IsInterface(this MetadataType type)
+        {
+            return type.IsInterface.GetValueOrDefault();
+        }
     }
 }
