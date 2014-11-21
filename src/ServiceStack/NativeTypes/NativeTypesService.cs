@@ -113,9 +113,9 @@ namespace ServiceStack.NativeTypes
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
     
-            //To include SS Types we just ignore the SS's ignored namespaces
+            //Include SS types by removing ServiceStack namespaces
             if (typesConfig.AddServiceStackTypes)
-                typesConfig.IgnoreTypesInNamespaces.Clear();
+                typesConfig.IgnoreTypesInNamespaces = new List<string>();
 
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
 
