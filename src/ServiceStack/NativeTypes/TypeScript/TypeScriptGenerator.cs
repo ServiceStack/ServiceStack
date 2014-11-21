@@ -184,8 +184,8 @@ namespace ServiceStack.NativeTypes.TypeScript
                         var name = type.EnumNames[i];
                         var value = type.EnumValues != null ? type.EnumValues[i] : null;
                         sb.AppendLine(value == null
-                            ? "{0},".Fmt(name)
-                            : "{0} = {1},".Fmt(name, value));
+                            ? "{0},".Fmt(name.PropertyStyle())
+                            : "{0} = {1},".Fmt(name.PropertyStyle(), value));
                     }
                 }
 
@@ -219,7 +219,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsOperation;
                 if (addVersionInfo)
                 {
-                    sb.AppendLine("Version:number; //{0}".Fmt(Config.AddImplicitVersion));
+                    sb.AppendLine("{0}:number; //{1}".Fmt("Version".PropertyStyle(), Config.AddImplicitVersion));
                 }
 
                 AddProperties(sb, type);
@@ -253,7 +253,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                     }
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
-                    sb.AppendLine("{1}{2}:{0};".Fmt(propType, prop.Name.SafeToken(), optional));
+                    sb.AppendLine("{1}{2}:{0};".Fmt(propType, prop.Name.SafeToken().PropertyStyle(), optional));
                 }
             }
 
@@ -264,7 +264,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine("ResponseStatus:ResponseStatus;");
+                sb.AppendLine("{0}:ResponseStatus;".Fmt("ResponseStatus".PropertyStyle()));
             }
         }
 
@@ -512,6 +512,15 @@ namespace ServiceStack.NativeTypes.TypeScript
             return arrParts.Length > 1 
                 ? "Array<{0}>".Fmt(arrParts[0]) 
                 : type;
+        }
+
+        public static string PropertyStyle(this string name)
+        {
+            return JsConfig.EmitCamelCaseNames
+                ? name.ToCamelCase()
+                : JsConfig.EmitLowercaseUnderscoreNames
+                    ? name.ToLowercaseUnderscore()
+                    : name;
         }
     }
 }
