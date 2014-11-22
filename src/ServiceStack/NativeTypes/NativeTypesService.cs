@@ -25,7 +25,7 @@ namespace ServiceStack.NativeTypes
     public class TypesVbNet : NativeTypesBase { }
 
     [Exclude(Feature.Soap)]
-    [Route("/types/typescript")]
+    [Route("/types/typescript.d")]
     public class TypesTypeScript : NativeTypesBase { }
 
     public class NativeTypesBase
