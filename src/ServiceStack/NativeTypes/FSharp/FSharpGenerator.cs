@@ -206,8 +206,9 @@ namespace ServiceStack.NativeTypes.FSharp
             else
             {
                 //sb.AppendLine("[<CLIMutable>]"); // only for Record Types
+                var classCtor = type.IsInterface() ? "" : "()";
                 sb.AppendLine("[<AllowNullLiteral>]");
-                sb.AppendLine("type {0}() = ".Fmt(Type(type.Name, type.GenericArgs)));
+                sb.AppendLine("type {0}{1} = ".Fmt(Type(type.Name, type.GenericArgs), classCtor));
                 sb = sb.Indent();
                 var startLen = sb.Length;
 
@@ -222,24 +223,27 @@ namespace ServiceStack.NativeTypes.FSharp
                         sb.AppendLine("interface {0}".Fmt(implStr));
                 }
 
-                var makeExtensible = Config.MakeDataContractsExtensible && type.Inherits == null;
-                if (makeExtensible)
+                if (!type.IsInterface())
                 {
-                    sb.AppendLine("interface IExtensibleDataObject with");
-                    sb.AppendLine("    member val ExtensionData:ExtensionDataObject = null with get, set");
-                    sb.AppendLine("end");
-                }
+                    var makeExtensible = Config.MakeDataContractsExtensible && type.Inherits == null;
+                    if (makeExtensible)
+                    {
+                        sb.AppendLine("interface IExtensibleDataObject with");
+                        sb.AppendLine("    member val ExtensionData:ExtensionDataObject = null with get, set");
+                        sb.AppendLine("end");
+                    }
 
-                var addVersionInfo = Config.AddImplicitVersion != null && options.IsOperation;
-                if (addVersionInfo)
-                {
-                    sb.AppendLine("member val Version:int = {0} with get, set".Fmt(Config.AddImplicitVersion));
+                    var addVersionInfo = Config.AddImplicitVersion != null && options.IsOperation;
+                    if (addVersionInfo)
+                    {
+                        sb.AppendLine("member val Version:int = {0} with get, set".Fmt(Config.AddImplicitVersion));
+                    }
                 }
 
                 AddProperties(sb, type);
 
                 if (sb.Length == startLen)
-                    sb.AppendLine("class end");
+                    sb.AppendLine(type.IsInterface() ? "interface end" : "class end");
 
                 sb = sb.UnIndent();
             }
@@ -264,9 +268,22 @@ namespace ServiceStack.NativeTypes.FSharp
                     var propType = Type(prop.Type, prop.GenericArgs);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
-                    sb.AppendLine("member val {1}:{0} = {2} with get,set".Fmt(propType, prop.Name.SafeToken(), GetDefaultLiteral(prop)));
+
+                    if (!type.IsInterface())
+                    {
+                        sb.AppendLine("member val {1}:{0} = {2} with get,set".Fmt(
+                            propType, prop.Name.SafeToken(), GetDefaultLiteral(prop)));
+                    }
+                    else
+                    {
+                        sb.AppendLine("abstract {1}:{0} with get,set".Fmt(
+                            propType, prop.Name.SafeToken()));                        
+                    }
                 }
             }
+
+            if (type.IsInterface())
+                return;
 
             if (Config.AddResponseStatus
                 && (type.Properties == null

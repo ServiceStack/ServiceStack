@@ -120,5 +120,10 @@ namespace Check.ServiceInterface
                 Result = base.SessionAs<AuthUserSession>()
             };
         }
+
+        public object Any(HelloInterface request)
+        {
+            return request;
+        }
     }
 }
