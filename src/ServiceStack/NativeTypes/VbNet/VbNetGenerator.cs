@@ -214,7 +214,7 @@ namespace ServiceStack.NativeTypes.VbNet
             }
             else
             {
-                var partial = Config.MakePartial ? "Partial " : "";
+                var partial = Config.MakePartial && !type.IsInterface() ? "Partial " : "";
                 var defType = type.IsInterface() ? "Interface" : "Class";
                 sb.AppendLine("Public {0}{1} {2}".Fmt(partial, defType, Type(type.Name, type.GenericArgs)));
 
@@ -263,7 +263,7 @@ namespace ServiceStack.NativeTypes.VbNet
                 }
 
                 sb = sb.UnIndent();
-                sb.AppendLine("End Class");
+                sb.AppendLine(type.IsInterface() ? "End Interface" : "End Class");
             }
 
             sb = sb.UnIndent();
