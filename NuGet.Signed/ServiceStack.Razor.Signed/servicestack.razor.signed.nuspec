@@ -30,7 +30,7 @@
     <copyright>Copyright 2014 Service Stack</copyright>
     <dependencies>
       <dependency id="ServiceStack.Signed" version="4.0" />
-      <dependency id="ServiceStack.OrmLite" version="4.0" />
+      <dependency id="ServiceStack.OrmLite.Signed" version="4.0" />
     </dependencies>
   </metadata>
   <files>
