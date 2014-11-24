@@ -48,7 +48,7 @@ namespace ServiceStack.NativeTypes
                 VbNetTypeAlias = defaults.VbNetTypeAlias,
                 TypeScriptTypeAlias = defaults.TypeScriptTypeAlias,
                 VbNetKeyWords = defaults.VbNetKeyWords,
-                GlobalNamespace = defaults.GlobalNamespace,
+                GlobalNamespace = req.GlobalNamespace ?? defaults.GlobalNamespace,
             };
         }
 
