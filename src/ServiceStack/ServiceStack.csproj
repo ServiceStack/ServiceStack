@@ -599,6 +599,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Funq\License.txt" />
+    <EmbeddedResource Include="js\ss-utils.d.ts" />
     <EmbeddedResource Include="js\ss-utils.js" />
     <EmbeddedResource Include="Templates\OperationControl.html" />
     <EmbeddedResource Include="Templates\IndexOperations.html" />
