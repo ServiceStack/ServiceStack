@@ -255,7 +255,17 @@ namespace ServiceStack.Host.AspNet
 
         public string UserHostAddress
         {
-            get { return request.UserHostAddress; }
+            get
+            {
+                try
+                {
+                    return request.UserHostAddress;
+                }
+                catch (Exception ignore)
+                {
+                    return null; //Can throw in Mono FastCGI Host
+                }
+            }
         }
 
         public string XForwardedFor
