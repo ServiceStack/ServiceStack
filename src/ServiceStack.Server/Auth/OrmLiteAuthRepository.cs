@@ -200,8 +200,8 @@ namespace ServiceStack.Auth
         {
             var isEmail = userNameOrEmail.Contains("@");
             var userAuth = isEmail
-                ? db.Select<TUserAuth>(q => q.Email == userNameOrEmail).FirstOrDefault()
-                : db.Select<TUserAuth>(q => q.UserName == userNameOrEmail).FirstOrDefault();
+                ? db.Select<TUserAuth>(q => q.Email.ToLower() == userNameOrEmail.ToLower()).FirstOrDefault()
+                : db.Select<TUserAuth>(q => q.UserName.ToLower() == userNameOrEmail.ToLower()).FirstOrDefault();
 
             return userAuth;
         }
