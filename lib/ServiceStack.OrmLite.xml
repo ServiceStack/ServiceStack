@@ -197,6 +197,11 @@
             Open a Transaction in OrmLite
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.OpenCommand(System.Data.IDbConnection)">
+            <summary>
+            Create a managed OrmLite IDbCommand
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.Select``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
             <summary>
             Returns results from using a LINQ Expression. E.g:
