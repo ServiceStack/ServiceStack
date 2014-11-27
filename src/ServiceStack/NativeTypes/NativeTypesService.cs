@@ -90,8 +90,8 @@ namespace ServiceStack.NativeTypes
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
-            var csharp = new FSharpGenerator(typesConfig).GetCode(metadataTypes, base.Request);
-            return csharp;
+            var fsharp = new FSharpGenerator(typesConfig).GetCode(metadataTypes, base.Request);
+            return fsharp;
         }
 
         [AddHeader(ContentType = MimeTypes.PlainText)]
@@ -128,8 +128,8 @@ namespace ServiceStack.NativeTypes
                 metadataTypes.Types.Insert(0, generator.ToType(typeof(IReturnVoid)));
             }
  
-            var csharp = new TypeScriptGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
-            return csharp;
+            var typeScript = new TypeScriptGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
+            return typeScript;
         }
 
     }
