@@ -376,6 +376,11 @@ namespace ServiceStack.Razor
             return this.AppHost.TryResolve<T>();
         }
 
+        public virtual T GetPlugin<T>() where T : class, IPlugin
+        {
+            return this.AppHost.GetPlugin<T>();
+        }
+
         public virtual T TryResolve<T>()
         {
             return this.AppHost.TryResolve<T>();
