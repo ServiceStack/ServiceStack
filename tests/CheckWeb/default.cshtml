@@ -1,6 +1,10 @@
-﻿﻿@{
+﻿@{
     Layout = "SimpleLayout";
     ViewBag.Title = "Page with typed 'Rockstars' model and no C# controller";
 }
 
 Test
+
+@(new MarkdownSharp.Markdown().Transform("## Heading").AsRaw())
+
+@Html.RenderMarkdownToHtml("## Heading 2")

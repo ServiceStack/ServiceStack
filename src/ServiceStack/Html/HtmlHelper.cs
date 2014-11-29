@@ -56,7 +56,7 @@ namespace ServiceStack.Html
 		private delegate string HtmlEncoder(object value);
 		private static readonly HtmlEncoder htmlEncoder = GetHtmlEncoder();
 
-		public bool RenderHtml { get; protected set; }
+		internal bool RenderHtml { get; private set; }
 
         public IHttpRequest HttpRequest { get; set; }
         public IHttpResponse HttpResponse { get; set; }
@@ -494,6 +494,13 @@ namespace ServiceStack.Html
             return errorStatus == null ? null : MvcHtmlString.Create(errorStatus.Message);
         }
 
+        public MvcHtmlString RenderMarkdownToHtml(string markdown)
+        {
+            var feature = HostContext.GetPlugin<MarkdownFormat>();
+            return feature != null
+                ? MvcHtmlString.Create(feature.Transform(markdown))
+                : new MvcHtmlString(new MarkdownSharp.Markdown().Transform(markdown));
+        }
     }
 
 	public static class HtmlHelperExtensions
