@@ -42,6 +42,16 @@ namespace ServiceStack.Host.AspNet
             }
 
             this.RequestPreferences = new RequestPreferences(httpContext);
+
+            if (httpContext.Items != null && httpContext.Items.Count > 0)
+            {
+                foreach (var key in httpContext.Items.Keys)
+                {
+                    var strKey = key as string;
+                    if (strKey == null) continue;
+                    Items[strKey] = httpContext.Items[key];
+                }
+            }
         }
 
         public HttpRequestBase HttpRequest
