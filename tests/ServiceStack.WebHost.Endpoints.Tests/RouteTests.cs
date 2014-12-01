@@ -95,6 +95,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Does_encode_route_with_backslash()
         {
             var request = new CustomRoute { Data = "D\\SN" };
+            Assert.That(request.ToUrl(), Is.EqualTo("/custom/D%5CSN"));
             Assert.That(request.ToUrl().UrlDecode(), Is.EqualTo("/custom/D\\SN"));
 
             //HttpListener and ASP.NET hosts doesn't support `\` or %5C in urls

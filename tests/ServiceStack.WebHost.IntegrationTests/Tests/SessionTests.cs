@@ -10,21 +10,21 @@ using ServiceStack.Testing;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
 {
-	[TestFixture]
-	public class SessionTests
-	{
-        [Test]		 
+    [TestFixture]
+    public class SessionTests
+    {
+        [Test]
         public void Adhoc()
         {
-        	var appliesTo = ApplyTo.Post | ApplyTo.Put;
-			Console.WriteLine(appliesTo.ToString());
-			Console.WriteLine(appliesTo.ToDescription());
-			Console.WriteLine(string.Join(", ", appliesTo.ToList().ToArray()));
+            var appliesTo = ApplyTo.Post | ApplyTo.Put;
+            Console.WriteLine(appliesTo.ToString());
+            Console.WriteLine(appliesTo.ToDescription());
+            Console.WriteLine(string.Join(", ", appliesTo.ToList().ToArray()));
         }
 
-	    [Test]
+        [Test]
         public void Can_mock_Session_when_accessed_via_HttpRequest_Context()
-	    {
+        {
             using (new BasicAppHost().Init())
             {
                 HttpContext.Current = new HttpContext(
@@ -32,7 +32,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
                     new HttpResponse(new StringWriter()));
 
                 HttpContext.Current.Items[ServiceExtensions.RequestItemsSessionKey] =
-                    new AuthUserSession {
+                    new AuthUserSession
+                    {
                         Id = "mock-session-id",
                     };
 
@@ -42,7 +43,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
                 Assert.That(session, Is.Not.Null);
                 Assert.That(session.Id, Is.EqualTo("mock-session-id"));
             }
-	    }
+        }
 
     }
 }
