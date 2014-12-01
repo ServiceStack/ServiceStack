@@ -92,6 +92,19 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
+        public void Can_access_ConfigSettings_directly()
+        {
+            GetAppSettings();
+            using (var db = settings.DbFactory.Open())
+            {
+                var value = db.Scalar<string>(
+                    "SELECT Value FROM ConfigSetting WHERE Id = @id", new { id = "RealKey"});
+
+                Assert.That(value, Is.EqualTo("This is a real value"));
+            }            
+        }
+
+        [Test]
         public void Can_preload_AppSettings()
         {
             GetAppSettings();
