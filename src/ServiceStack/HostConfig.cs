@@ -111,6 +111,8 @@ namespace ServiceStack
                 ScanSkipPaths = new List<string> {
                     "/obj/", 
                     "/bin/",
+                    "/node_modules/",
+                    "/bower_components/",
                 },
                 IgnoreWarningsOnPropertyNames = new List<string> {
                     "format", "callback", "debug", "_", "authsecret", "Version", "version"
