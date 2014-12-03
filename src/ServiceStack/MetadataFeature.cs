@@ -107,6 +107,9 @@ namespace ServiceStack
         {
             if (metadata != null)
             {
+                if (HostContext.Config.HandlerFactoryPath != null && href[0] == '/')
+                    href = "/" + HostContext.Config.HandlerFactoryPath + href;
+
                 metadata.PluginLinks[href] = title;
             }
             return metadata;
@@ -116,6 +119,9 @@ namespace ServiceStack
         {
             if (metadata != null)
             {
+                if (HostContext.Config.HandlerFactoryPath != null && href[0] == '/')
+                    href = "/" + HostContext.Config.HandlerFactoryPath + href;
+
                 metadata.DebugLinks[href] = title;
             }
             return metadata;
