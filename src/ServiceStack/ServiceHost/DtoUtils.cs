@@ -159,10 +159,20 @@ namespace ServiceStack.ServiceHost
 
             var responseStatus = ex.ToResponseStatus();
 
-            if (EndpointHost.DebugMode)
+            if (EndpointHost.DebugMode || EndpointHost.ReportExceptionStackTraces)
             {
                 // View stack trace in tests and on the client
-                responseStatus.StackTrace = GetRequestErrorBody(request) + "\n" + ex;
+                const int maxStackTraceLength = 10000;
+                string extendedStackTrace = GetRequestErrorBody(request) + "\n" + ex;
+                if (extendedStackTrace.Length < maxStackTraceLength)
+                {
+                    responseStatus.StackTrace = extendedStackTrace;
+                }
+                else
+                {
+                    // Reduce harm in case of overwhelming stack trace size.
+                    responseStatus.StackTrace = extendedStackTrace.Substring(0, maxStackTraceLength - 3) + "...";
+                }
             }
 
             Log.Error("ServiceBase<TRequest>::Service Exception", ex);
