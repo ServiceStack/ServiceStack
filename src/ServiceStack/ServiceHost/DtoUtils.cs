@@ -159,7 +159,7 @@ namespace ServiceStack.ServiceHost
 
             var responseStatus = ex.ToResponseStatus();
 
-            if (EndpointHost.ReportExceptionStackTraces)
+            if (EndpointHost.DebugMode || EndpointHost.ReportExceptionStackTraces)
             {
                 // View stack trace in tests and on the client
                 const int maxStackTraceLength = 10000;
