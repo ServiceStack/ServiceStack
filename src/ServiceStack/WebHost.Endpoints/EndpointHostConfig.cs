@@ -70,7 +70,7 @@ namespace ServiceStack.WebHost.Endpoints
                         AllowNonHttpOnlyCookies = false,
                         UseHttpsLinks = false,
                         DebugMode = false,
-                        ReportExceptionStackTraces = true,
+                        ReportExceptionStackTraces = false,
                         DefaultDocuments = new List<string> {
 							"default.htm",
 							"default.html",
