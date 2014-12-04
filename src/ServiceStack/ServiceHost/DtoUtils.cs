@@ -159,7 +159,7 @@ namespace ServiceStack.ServiceHost
 
             var responseStatus = ex.ToResponseStatus();
 
-            if (EndpointHost.DebugMode)
+            if (EndpointHost.ReportExceptionStackTraces)
             {
                 // View stack trace in tests and on the client
                 responseStatus.StackTrace = GetRequestErrorBody(request) + "\n" + ex;

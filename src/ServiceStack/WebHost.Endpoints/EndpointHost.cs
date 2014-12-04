@@ -310,6 +310,14 @@ namespace ServiceStack.WebHost.Endpoints
             get { return Config != null && Config.DebugMode; }
         }
 
+        public static bool ReportExceptionStackTraces
+        {
+            get
+            {
+                return Config != null && Config.ReportExceptionStackTraces;
+            }
+        }
+
         public static ServiceMetadata Metadata { get { return Config.Metadata; } }
 
         /// <summary>

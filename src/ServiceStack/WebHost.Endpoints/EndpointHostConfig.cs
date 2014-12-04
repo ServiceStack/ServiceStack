@@ -70,6 +70,7 @@ namespace ServiceStack.WebHost.Endpoints
                         AllowNonHttpOnlyCookies = false,
                         UseHttpsLinks = false,
                         DebugMode = false,
+                        ReportExceptionStackTraces = true,
                         DefaultDocuments = new List<string> {
 							"default.htm",
 							"default.html",
@@ -167,6 +168,7 @@ namespace ServiceStack.WebHost.Endpoints
             this.AllowJsonpRequests = instance.AllowJsonpRequests;
             this.AllowRouteContentTypeExtensions = instance.AllowRouteContentTypeExtensions;
             this.DebugMode = instance.DebugMode;
+            this.ReportExceptionStackTraces = instance.ReportExceptionStackTraces;
             this.DefaultDocuments = instance.DefaultDocuments;
             this.GlobalResponseHeaders = instance.GlobalResponseHeaders;
             this.IgnoreFormatsInMetadata = instance.IgnoreFormatsInMetadata;
@@ -406,6 +408,7 @@ namespace ServiceStack.WebHost.Endpoints
         public bool AllowJsonpRequests { get; set; }
         public bool AllowRouteContentTypeExtensions { get; set; }
         public bool DebugMode { get; set; }
+        public bool ReportExceptionStackTraces { get; set; }
         public bool DebugOnlyReturnRequestInfo { get; set; }
         public string DebugAspNetHostEnvironment { get; set; }
         public string DebugHttpListenerHostEnvironment { get; set; }
