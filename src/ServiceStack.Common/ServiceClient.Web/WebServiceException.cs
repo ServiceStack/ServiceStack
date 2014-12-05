@@ -50,6 +50,7 @@ namespace ServiceStack.ServiceClient.Web
             rsMap.TryGetValue("ErrorCode", out errorCode);
             rsMap.TryGetValue("Message", out errorMessage);
             rsMap.TryGetValue("StackTrace", out serverStackTrace);
+            rsMap.TryGetValue("RequestBody", out serverRequestBody);
         }
 
         private bool TryGetResponseStatusFromResponseDto(out string responseStatus)
@@ -122,6 +123,19 @@ namespace ServiceStack.ServiceClient.Web
                     ParseResponseDto();
                 }
                 return serverStackTrace;
+            }
+        }
+
+        private string serverRequestBody;
+        public string ServerRequestBody
+        {
+            get
+            {
+                if (serverRequestBody == null)
+                {
+                    ParseResponseDto();
+                }
+                return serverRequestBody;
             }
         }
 

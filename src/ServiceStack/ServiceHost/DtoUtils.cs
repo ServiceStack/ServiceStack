@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
@@ -159,20 +160,25 @@ namespace ServiceStack.ServiceHost
 
             var responseStatus = ex.ToResponseStatus();
 
-            if (EndpointHost.DebugMode || EndpointHost.ReportExceptionStackTraces)
+            if (EndpointHost.DebugMode)
             {
                 // View stack trace in tests and on the client
-                const int maxStackTraceLength = 10000;
-                string extendedStackTrace = GetRequestErrorBody(request) + "\n" + ex;
-                if (extendedStackTrace.Length < maxStackTraceLength)
+                responseStatus.StackTrace = GetRequestErrorBody(request) + "\n" + ex;
+            }
+            else if (EndpointHost.ReportExceptionStackTraces)
+            {
+                responseStatus.StackTrace = LengthLimitedDebugString(ex.StackTrace, 10000);
+                string serializedRequest;
+                try
                 {
-                    responseStatus.StackTrace = extendedStackTrace;
+                    serializedRequest = TypeSerializer.SerializeToString(request);
                 }
-                else
+                catch
                 {
-                    // Reduce harm in case of overwhelming stack trace size.
-                    responseStatus.StackTrace = extendedStackTrace.Substring(0, maxStackTraceLength - 3) + "...";
+                    serializedRequest = "<request serialization failure>";
                 }
+                responseStatus.RequestBody =
+                    LengthLimitedDebugString(request.GetType().Name + " " + serializedRequest, 10000);
             }
 
             Log.Error("ServiceBase<TRequest>::Service Exception", ex);
@@ -183,6 +189,23 @@ namespace ServiceStack.ServiceHost
             var errorResponse = CreateErrorResponse(request, ex, responseStatus);
 
             return errorResponse;
+        }
+
+        // Reduce harm in case of overwhelming debug string length.
+        private static string LengthLimitedDebugString(string debugString, int maxLength)
+        {
+            if (debugString.Length < maxLength)
+            {
+                return debugString;
+            }
+            else
+            {
+                const string separator = " ... ";
+                int prefixLength = maxLength/2;
+                int suffixLength = maxLength - prefixLength - separator.Length;
+                return debugString.Substring(0, prefixLength) + separator +
+                       debugString.Substring(debugString.Length - suffixLength);
+            }
         }
 
         /// <summary>
