@@ -75,5 +75,11 @@ namespace ServiceStack.ServiceInterface.ServiceModel
         /// </summary>
         [DataMember(Order = 4)]
         public List<ResponseError> Errors { get; set; }
+
+        /// <summary>
+        /// Body of the request.
+        /// </summary>
+        [DataMember(Order = 5)]
+        public string RequestBody { get; set; }
     }
 }
