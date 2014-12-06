@@ -73,6 +73,44 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         }
     }
 
+    public class CustomHttpError
+    {
+        public int StatusCode { get; set; }
+        public string StatusDescription { get; set; }
+    }
+    public class CustomHttpErrorResponse
+    {
+        public string Custom { get; set; }
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+    public class CustomHttpErrorService : Service
+    {
+        public object Any(CustomHttpError request)
+        {
+            throw new HttpError(request.StatusCode, request.StatusDescription);
+        }
+    }
+
+    public class CustomFieldHttpError { }
+    public class CustomFieldHttpErrorResponse
+    {
+        public string Custom { get; set; }
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+    public class CustomFieldHttpErrorService : Service
+    {
+        public object Any(CustomFieldHttpError request)
+        {
+            throw new HttpError(new CustomFieldHttpErrorResponse
+            {
+                Custom = "Ignored",
+                ResponseStatus = new ResponseStatus("StatusErrorCode", "StatusErrorMessage")
+            },
+            500,
+            "HeaderErrorCode");
+        }
+    }
+
     [TestFixture]
     public class ExceptionHandlingTests
     {
@@ -209,6 +247,50 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
                 Assert.That(body, Is.StringStarting("{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
+            }
+        }
+
+        [Test]
+        public void Returns_custom_ResponseStatus_with_CustomFieldHttpError()
+        {
+            try
+            {
+                var json = PredefinedJsonUrl<CustomFieldHttpError>().GetJsonFromUrl();
+                Assert.Fail("Should throw");
+            }
+            catch (WebException webEx)
+            {
+                var errorResponse = ((HttpWebResponse)webEx.Response);
+                Assert.That((int)errorResponse.StatusCode, Is.EqualTo(500));
+                //IIS doesn't allow overriding of StatusDescription
+                //Assert.That(errorResponse.StatusDescription, Is.EqualTo("HeaderErrorCode"));
+
+                var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
+                var customResponse = body.FromJson<CustomFieldHttpErrorResponse>();
+                var errorStatus = customResponse.ResponseStatus;
+                Assert.That(errorStatus.ErrorCode, Is.EqualTo("StatusErrorCode"));
+                Assert.That(errorStatus.Message, Is.EqualTo("StatusErrorMessage"));
+                Assert.That(customResponse.Custom, Is.Null);
+            }
+        }
+
+        [Test]
+        public void Returns_custom_Status_and_Description_with_CustomHttpError()
+        {
+            try
+            {
+                var json = PredefinedJsonUrl<CustomHttpError>()
+                    .AddQueryParam("StatusCode", 406)
+                    .AddQueryParam("StatusDescription", "CustomDescription")
+                    .GetJsonFromUrl();
+                Assert.Fail("Should throw");
+            }
+            catch (WebException webEx)
+            {
+                var errorResponse = ((HttpWebResponse)webEx.Response);
+                Assert.That((int)errorResponse.StatusCode, Is.EqualTo(406));
+                //IIS doesn't allow overriding of StatusDescription
+                //Assert.That(errorResponse.StatusDescription, Is.EqualTo("CustomDescription"));
             }
         }
     }

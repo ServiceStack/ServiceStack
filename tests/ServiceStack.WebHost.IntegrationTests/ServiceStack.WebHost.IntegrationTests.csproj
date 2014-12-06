@@ -359,7 +359,7 @@
           <AutoAssignPort>False</AutoAssignPort>
           <DevelopmentServerPort>50000</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:50095/</IISUrl>
+          <IISUrl>http://localhost:50000/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
