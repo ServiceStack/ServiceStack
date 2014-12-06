@@ -101,6 +101,7 @@
     <Compile Include="Caching\OrmLiteCacheClient.cs" />
     <Compile Include="Configuration\OrmLiteAppSettings.cs" />
     <Compile Include="AutoQueryFeature.cs" />
+    <Compile Include="Host\RedisRequestLogger.cs" />
     <Compile Include="Messaging\Redis\MessageHandlerWorker.cs" />
     <Compile Include="Messaging\Rcon\Client.cs" />
     <Compile Include="Messaging\Rcon\Packet.cs" />

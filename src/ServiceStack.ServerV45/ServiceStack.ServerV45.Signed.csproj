@@ -83,6 +83,9 @@
     <Compile Include="..\ServiceStack.Server\Configuration\OrmLiteAppSettings.cs">
       <Link>Configuration\OrmLiteAppSettings.cs</Link>
     </Compile>
+    <Compile Include="..\ServiceStack.Server\Host\RedisRequestLogger.cs">
+      <Link>Host\RedisRequestLogger.cs</Link>
+    </Compile>
     <Compile Include="..\ServiceStack.Server\Messaging\Rcon\Client.cs">
       <Link>Messaging\Rcon\Client.cs</Link>
     </Compile>

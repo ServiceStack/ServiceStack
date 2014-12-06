@@ -5,6 +5,7 @@ using ServiceStack.Authentication.OpenId;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
+using ServiceStack.Host;
 using ServiceStack.Messaging;
 using ServiceStack.Messaging.Redis;
 using ServiceStack.MiniProfiler;
@@ -94,10 +95,14 @@ namespace ServiceStack.WebHost.IntegrationTests
                 var resetMovies = this.Container.Resolve<ResetMoviesService>();
                 resetMovies.Post(null);
 
+                container.Register<IRedisClientsManager>(c => new RedisManagerPool());
+
                 Plugins.Add(new ValidationFeature());
                 Plugins.Add(new SessionFeature());
                 Plugins.Add(new ProtoBufFormat());
-                Plugins.Add(new RequestLogsFeature());
+                Plugins.Add(new RequestLogsFeature {
+                    RequestLogger = new RedisRequestLogger(container.Resolve<IRedisClientsManager>())
+                });
                 Plugins.Add(new SwaggerFeature { UseBootstrapTheme = true });
                 Plugins.Add(new PostmanFeature());
                 Plugins.Add(new CorsFeature());
