@@ -48,6 +48,29 @@
         }
         return map;
     };
+    $.ss.createUrl = function(route, args) {
+        if (!args) args = {};
+        var argKeys = {};
+        for (var k in args) {
+            argKeys[k.toLowerCase()] = k;
+        }
+        var parts = route.split('/');
+        var url = '';
+        for (var i = 0; i < parts.length; i++) {
+            var p = parts[i];
+            if (p == null) p = '';
+            if (p[0] == '{' && p[p.length - 1] == '}') {
+                var key = argKeys[p.substring(1, p.length - 1).toLowerCase()];
+                if (key) {
+                    p = args[key];
+                    delete args[key];
+                }
+            }
+            if (url.length > 0) url += '/';
+            url += p;
+        }
+        return url;
+    };
 
     function splitCase(t) {
         return typeof t != 'string' ? t : t.replace( /([A-Z]|[0-9]+)/g , ' $1').replace( /_/g , ' ');

@@ -71,6 +71,7 @@ interface SSUtilsStatic {
     splitOnLast: (s: string) => string[];
     getSelection: () => string;
     queryString: (url: string) => { [index: string]: string };
+    createUrl: (route: string, args?: any) => string;
     humanize: (s: string) => string;
 
     listenOn: string;
