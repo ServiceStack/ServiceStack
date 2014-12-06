@@ -37,6 +37,7 @@ namespace CheckWeb
             // Change ServiceStack configuration
             this.SetConfig(new HostConfig
             {
+                //UseHttpsLinks = true,
                 AppendUtf8CharsetOnContentTypes = new HashSet<string> { MimeTypes.Html },
 
                 // Set to return JSON if no request content type is defined
