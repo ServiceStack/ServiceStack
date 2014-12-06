@@ -13,8 +13,8 @@ namespace ServiceStack.Host
         private static int requestId = 0;
 
         public const int DefaultCapacity = 1000;
-        private readonly ConcurrentQueue<RequestLogEntry> logEntries = new ConcurrentQueue<RequestLogEntry>();
-        readonly int capacity;
+        protected readonly ConcurrentQueue<RequestLogEntry> logEntries = new ConcurrentQueue<RequestLogEntry>();
+        protected readonly int capacity;
 
         public bool EnableSessionTracking { get; set; }
 
@@ -30,21 +30,33 @@ namespace ServiceStack.Host
 
         public Type[] HideRequestBodyForRequestDtoTypes { get; set; }
 
+        protected InMemoryRollingRequestLogger() {}
+
         public InMemoryRollingRequestLogger(int? capacity = DefaultCapacity)
         {
             this.capacity = capacity.GetValueOrDefault(DefaultCapacity);
         }
 
-        public void Log(IRequest request, object requestDto, object response, TimeSpan requestDuration)
+        public virtual void Log(IRequest request, object requestDto, object response, TimeSpan requestDuration)
         {
             var requestType = requestDto != null ? requestDto.GetType() : null;
 
-            if (ExcludeRequestDtoTypes != null
-                && requestType != null
-                && ExcludeRequestDtoTypes.Contains(requestType))
+            if (ExcludeRequestType(requestType)) 
                 return;
-                
-            var entry = new RequestLogEntry {
+
+            var entry = CreateEntry(request, requestDto, response, requestDuration, requestType);
+
+            logEntries.Enqueue(entry);
+
+            RequestLogEntry dummy;
+            if (logEntries.Count > capacity)
+                logEntries.TryDequeue(out dummy);
+        }
+
+        protected RequestLogEntry CreateEntry(IRequest request, object requestDto, object response, TimeSpan requestDuration, Type requestType)
+        {
+            var entry = new RequestLogEntry
+            {
                 Id = Interlocked.Increment(ref requestId),
                 DateTime = DateTime.UtcNow,
                 RequestDuration = requestDuration,
@@ -68,7 +80,7 @@ namespace ServiceStack.Host
 
             if (HideRequestBodyForRequestDtoTypes != null
                 && requestType != null
-                && !HideRequestBodyForRequestDtoTypes.Contains(requestType)) 
+                && !HideRequestBodyForRequestDtoTypes.Contains(requestType))
             {
                 entry.RequestDto = requestDto;
                 if (request != null)
@@ -81,20 +93,25 @@ namespace ServiceStack.Host
                     }
                 }
             }
-            if (!response.IsErrorResponse()) {
+            if (!response.IsErrorResponse())
+            {
                 if (EnableResponseTracking)
                     entry.ResponseDto = response;
             }
-            else {
+            else
+            {
                 if (EnableErrorTracking)
                     entry.ErrorResponse = ToSerializableErrorResponse(response);
             }
 
-            logEntries.Enqueue(entry);
+            return entry;
+        }
 
-            RequestLogEntry dummy;
-            if (logEntries.Count > capacity)
-                logEntries.TryDequeue(out dummy);
+        protected bool ExcludeRequestType(Type requestType)
+        {
+            return ExcludeRequestDtoTypes != null
+                   && requestType != null
+                   && ExcludeRequestDtoTypes.Contains(requestType);
         }
 
         public Dictionary<string, string> SerializableItems(Dictionary<string, object> items)
@@ -105,17 +122,17 @@ namespace ServiceStack.Host
                 var value = item.Value == null
                     ? "(null)"
                     : item.Value.ToString();
-                
+
                 to[item.Key] = value;
             }
 
             return to;
         }
 
-        public List<RequestLogEntry> GetLatestLogs(int? take)
+        public virtual List<RequestLogEntry> GetLatestLogs(int? take)
         {
-            var requestLogEntries = logEntries.ToArray();			
-            return take.HasValue 
+            var requestLogEntries = logEntries.ToArray();
+            return take.HasValue
                 ? new List<RequestLogEntry>(requestLogEntries.Take(take.Value))
                 : new List<RequestLogEntry>(requestLogEntries);
         }
