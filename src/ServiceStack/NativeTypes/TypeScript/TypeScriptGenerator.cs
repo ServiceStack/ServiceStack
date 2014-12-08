@@ -52,6 +52,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
             sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
+            sb.AppendLine("{0}MakePropertiesOptional: {1}".Fmt(defaultValue("MakePropertiesOptional"), Config.MakePropertiesOptional));
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
@@ -252,6 +253,16 @@ namespace ServiceStack.NativeTypes.TypeScript
                         propType = propType.Substring(0, propType.Length - 1);
                         optional = "?";
                     }
+                    if (Config.MakePropertiesOptional)
+                    {
+                        optional = "?";
+                    }
+
+                    if (prop.Attributes.Safe().FirstOrDefault(x => x.Name == "Required") != null)
+                    {
+                        optional = "";
+                    }
+
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
                     sb.AppendLine("{1}{2}:{0};".Fmt(propType, prop.Name.SafeToken().PropertyStyle(), optional));

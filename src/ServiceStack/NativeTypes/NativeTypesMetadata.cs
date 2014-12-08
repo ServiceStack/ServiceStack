@@ -38,6 +38,7 @@ namespace ServiceStack.NativeTypes
                 AddImplicitVersion = req.AddImplicitVersion ?? defaults.AddImplicitVersion,
                 AddResponseStatus = req.AddResponseStatus ?? defaults.AddResponseStatus,
                 AddServiceStackTypes = req.AddServiceStackTypes ?? defaults.AddServiceStackTypes,
+                MakePropertiesOptional = req.MakePropertiesOptional ?? defaults.MakePropertiesOptional,
                 AddDefaultXmlNamespace = req.AddDefaultXmlNamespace ?? defaults.AddDefaultXmlNamespace,
                 DefaultNamespaces = req.DefaultNamespaces ?? defaults.DefaultNamespaces,
                 ExportAttributes = defaults.ExportAttributes,

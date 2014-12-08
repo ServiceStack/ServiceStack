@@ -17,6 +17,7 @@ namespace ServiceStack
             string addDefaultXmlNamespace = null,
             bool addResponseStatus = false,
             bool addServiceStackTypes = true,
+            bool makePropertiesOptional = true,
             bool makeDataContractsExtensible = false,
             bool initializeCollections = true,
             int? addImplicitVersion = null)
@@ -33,6 +34,7 @@ namespace ServiceStack
             InitializeCollections = initializeCollections;
             AddResponseStatus = addResponseStatus;
             AddServiceStackTypes = addServiceStackTypes;
+            MakePropertiesOptional = makePropertiesOptional;
             AddImplicitVersion = addImplicitVersion;
         }
 
@@ -46,6 +48,7 @@ namespace ServiceStack
         public int? AddImplicitVersion { get; set; }
         public bool AddResponseStatus { get; set; }
         public bool AddServiceStackTypes { get; set; }
+        public bool MakePropertiesOptional { get; set; }
         public string AddDefaultXmlNamespace { get; set; }
         public bool MakeDataContractsExtensible { get; set; }
         public bool InitializeCollections { get; set; }
