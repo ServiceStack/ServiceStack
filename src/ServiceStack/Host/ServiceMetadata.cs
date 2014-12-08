@@ -375,7 +375,10 @@ namespace ServiceStack.Host
                         {
                             type = FindMetadataType(metadataTypes, arg);
                             if (type != null && !types.Contains(type))
-                                types.Add(type);     
+                            {
+                                types.Add(type);
+                                AddReferencedTypes(type, metadataTypes, types);
+                            }
                         }
                     }
                     else if (p.IsArray())
@@ -383,7 +386,10 @@ namespace ServiceStack.Host
                         var elType = p.Type.SplitOnFirst('[')[0];
                         type = FindMetadataType(metadataTypes, elType);
                         if (type != null && !types.Contains(type))
+                        {
                             types.Add(type);
+                            AddReferencedTypes(type, metadataTypes, types);
+                        }
                     }
                 }
             }
