@@ -1,15 +1,16 @@
 /* Options:
-Date: 2014-11-28 22:17:06
+Date: 2014-12-08 15:41:51
 Version: 1
 BaseUrl: http://localhost:55799
 
-GlobalNamespace: dtos
+//GlobalNamespace: 
+//MakePropertiesOptional: True
 //AddServiceStackTypes: True
 //AddResponseStatus: False
 //AddImplicitVersion: 
 */
 
-declare module dtos
+declare module Check.ServiceModel
 {
 
     interface IReturnVoid
@@ -26,9 +27,9 @@ declare module dtos
 
     interface Rockstar
     {
-        id:number;
-        firstName:string;
-        lastName:string;
+        id?:number;
+        firstName?:string;
+        lastName?:string;
         age?:number;
     }
 
@@ -36,21 +37,27 @@ declare module dtos
     interface ResponseStatus
     {
         // @DataMember(Order=1)
-        errorCode:string;
+        errorCode?:string;
 
         // @DataMember(Order=2)
-        message:string;
+        message?:string;
 
         // @DataMember(Order=3)
-        stackTrace:string;
+        stackTrace?:string;
 
         // @DataMember(Order=4)
-        errors:ResponseError[];
+        errors?:ResponseError[];
+    }
+
+    interface MetadataTestChild
+    {
+        name?:string;
+        results?:MetadataTestNestedChild[];
     }
 
     interface NestedClass
     {
-        value:string;
+        value?:string;
     }
 
     enum EnumType
@@ -69,244 +76,208 @@ declare module dtos
 
     interface AllTypes
     {
-        id:number;
+        id?:number;
         nullableId?:number;
-        byte:number;
-        short:number;
-        int:number;
-        long:number;
-        uShort:number;
-        uInt:number;
-        uLong:number;
-        float:number;
-        double:number;
-        decimal:number;
-        string:string;
-        dateTime:string;
-        timeSpan:string;
+        byte?:number;
+        short?:number;
+        int?:number;
+        long?:number;
+        uShort?:number;
+        uInt?:number;
+        uLong?:number;
+        float?:number;
+        double?:number;
+        decimal?:number;
+        string?:string;
+        dateTime?:string;
+        timeSpan?:string;
         nullableDateTime?:string;
         nullableTimeSpan?:string;
-        stringList:string[];
-        stringArray:string[];
-        stringMap:{ [index:string]: string; };
-        intStringMap:{ [index:number]: string; };
-        subType:SubType;
+        stringList?:string[];
+        stringArray?:string[];
+        stringMap?:{ [index:string]: string; };
+        intStringMap?:{ [index:number]: string; };
+        subType?:SubType;
     }
 
     interface AllCollectionTypes
     {
-        intArray:number[];
-        intList:number[];
-        stringArray:string[];
-        stringList:string[];
-        pocoArray:Poco[];
-        pocoList:Poco[];
-    }
-
-    interface AllTypes
-    {
-        id:number;
-        nullableId?:number;
-        byte:number;
-        short:number;
-        int:number;
-        long:number;
-        uShort:number;
-        uInt:number;
-        uLong:number;
-        float:number;
-        double:number;
-        decimal:number;
-        string:string;
-        dateTime:string;
-        timeSpan:string;
-        nullableDateTime?:string;
-        nullableTimeSpan?:string;
-        stringList:string[];
-        stringArray:string[];
-        stringMap:{ [index:string]: string; };
-        intStringMap:{ [index:number]: string; };
-        subType:SubType;
-    }
-
-    interface AllCollectionTypes
-    {
-        intArray:number[];
-        intList:number[];
-        stringArray:string[];
-        stringList:string[];
-        pocoArray:Poco[];
-        pocoList:Poco[];
+        intArray?:number[];
+        intList?:number[];
+        stringArray?:string[];
+        stringList?:string[];
+        pocoArray?:Poco[];
+        pocoList?:Poco[];
     }
 
     interface HelloBase
     {
-        id:number;
+        id?:number;
     }
 
     interface HelloResponseBase
     {
-        refId:number;
+        refId?:number;
     }
 
     interface Poco
     {
-        name:string;
+        name?:string;
     }
 
     interface HelloBase_1<T>
     {
-        items:T[];
-        counts:number[];
+        items?:T[];
+        counts?:number[];
     }
 
     interface Item
     {
-        value:string;
+        value?:string;
     }
 
     interface InheritedItem
     {
-        name:string;
+        name?:string;
     }
 
     interface HelloWithReturnResponse
     {
-        result:string;
+        result?:string;
     }
 
     interface HelloType
     {
-        result:string;
+        result?:string;
     }
 
     // @DataContract
     interface AuthUserSession
     {
         // @DataMember(Order=1)
-        referrerUrl:string;
+        referrerUrl?:string;
 
         // @DataMember(Order=2)
-        id:string;
+        id?:string;
 
         // @DataMember(Order=3)
-        userAuthId:string;
+        userAuthId?:string;
 
         // @DataMember(Order=4)
-        userAuthName:string;
+        userAuthName?:string;
 
         // @DataMember(Order=5)
-        userName:string;
+        userName?:string;
 
         // @DataMember(Order=6)
-        twitterUserId:string;
+        twitterUserId?:string;
 
         // @DataMember(Order=7)
-        twitterScreenName:string;
+        twitterScreenName?:string;
 
         // @DataMember(Order=8)
-        facebookUserId:string;
+        facebookUserId?:string;
 
         // @DataMember(Order=9)
-        facebookUserName:string;
+        facebookUserName?:string;
 
         // @DataMember(Order=10)
-        firstName:string;
+        firstName?:string;
 
         // @DataMember(Order=11)
-        lastName:string;
+        lastName?:string;
 
         // @DataMember(Order=12)
-        displayName:string;
+        displayName?:string;
 
         // @DataMember(Order=13)
-        company:string;
+        company?:string;
 
         // @DataMember(Order=14)
-        email:string;
+        email?:string;
 
         // @DataMember(Order=15)
-        primaryEmail:string;
+        primaryEmail?:string;
 
         // @DataMember(Order=16)
-        phoneNumber:string;
+        phoneNumber?:string;
 
         // @DataMember(Order=17)
         birthDate?:string;
 
         // @DataMember(Order=18)
-        birthDateRaw:string;
+        birthDateRaw?:string;
 
         // @DataMember(Order=19)
-        address:string;
+        address?:string;
 
         // @DataMember(Order=20)
-        address2:string;
+        address2?:string;
 
         // @DataMember(Order=21)
-        city:string;
+        city?:string;
 
         // @DataMember(Order=22)
-        state:string;
+        state?:string;
 
         // @DataMember(Order=23)
-        country:string;
+        country?:string;
 
         // @DataMember(Order=24)
-        culture:string;
+        culture?:string;
 
         // @DataMember(Order=25)
-        fullName:string;
+        fullName?:string;
 
         // @DataMember(Order=26)
-        gender:string;
+        gender?:string;
 
         // @DataMember(Order=27)
-        language:string;
+        language?:string;
 
         // @DataMember(Order=28)
-        mailAddress:string;
+        mailAddress?:string;
 
         // @DataMember(Order=29)
-        nickname:string;
+        nickname?:string;
 
         // @DataMember(Order=30)
-        postalCode:string;
+        postalCode?:string;
 
         // @DataMember(Order=31)
-        timeZone:string;
+        timeZone?:string;
 
         // @DataMember(Order=32)
-        requestTokenSecret:string;
+        requestTokenSecret?:string;
 
         // @DataMember(Order=33)
-        createdAt:string;
+        createdAt?:string;
 
         // @DataMember(Order=34)
-        lastModified:string;
+        lastModified?:string;
 
         // @DataMember(Order=35)
-        providerOAuthAccess:IAuthTokens[];
+        providerOAuthAccess?:IAuthTokens[];
 
         // @DataMember(Order=36)
-        roles:string[];
+        roles?:string[];
 
         // @DataMember(Order=37)
-        permissions:string[];
+        permissions?:string[];
 
         // @DataMember(Order=38)
-        isAuthenticated:boolean;
+        isAuthenticated?:boolean;
 
         // @DataMember(Order=39)
-        sequence:string;
+        sequence?:string;
 
         // @DataMember(Order=40)
-        tag:number;
+        tag?:number;
     }
 
     interface IPoco
     {
-        name:string;
+        name?:string;
     }
 
     interface IEmptyInterface
@@ -321,10 +292,10 @@ declare module dtos
     interface RestService
     {
         // @DataMember(Name="path")
-        path:string;
+        path?:string;
 
         // @DataMember(Name="description")
-        description:string;
+        description?:string;
     }
 
     interface QueryBase_2<From, Into> extends QueryBase
@@ -333,70 +304,32 @@ declare module dtos
 
     interface CustomRockstar
     {
-        firstName:string;
-        lastName:string;
+        firstName?:string;
+        lastName?:string;
         age?:number;
-        rockstarAlbumName:string;
+        rockstarAlbumName?:string;
     }
 
     interface Movie
     {
-        id:number;
-        imdbId:string;
-        title:string;
-        rating:string;
-        score:number;
-        director:string;
-        releaseDate:string;
-        tagLine:string;
-        genres:string[];
+        id?:number;
+        imdbId?:string;
+        title?:string;
+        rating?:string;
+        score?:number;
+        director?:string;
+        releaseDate?:string;
+        tagLine?:string;
+        genres?:string[];
     }
 
     interface RockstarReference
     {
-        id:number;
-        firstName:string;
-        lastName:string;
+        id?:number;
+        firstName?:string;
+        lastName?:string;
         age?:number;
-        albums:RockstarAlbum[];
-    }
-
-    interface Rockstar
-    {
-        id:number;
-        firstName:string;
-        lastName:string;
-        age?:number;
-    }
-
-    interface CustomRockstar
-    {
-        firstName:string;
-        lastName:string;
-        age?:number;
-        rockstarAlbumName:string;
-    }
-
-    interface Movie
-    {
-        id:number;
-        imdbId:string;
-        title:string;
-        rating:string;
-        score:number;
-        director:string;
-        releaseDate:string;
-        tagLine:string;
-        genres:string[];
-    }
-
-    interface RockstarReference
-    {
-        id:number;
-        firstName:string;
-        lastName:string;
-        age?:number;
-        albums:RockstarAlbum[];
+        albums?:RockstarAlbum[];
     }
 
     interface QueryBase
@@ -408,100 +341,105 @@ declare module dtos
         take?:number;
 
         // @DataMember(Order=3)
-        orderBy:string;
+        orderBy?:string;
 
         // @DataMember(Order=4)
-        orderByDesc:string;
+        orderByDesc?:string;
     }
 
     // @DataContract
     interface ResponseError
     {
         // @DataMember(Order=1, EmitDefaultValue=false)
-        errorCode:string;
+        errorCode?:string;
 
         // @DataMember(Order=2, EmitDefaultValue=false)
-        fieldName:string;
+        fieldName?:string;
 
         // @DataMember(Order=3, EmitDefaultValue=false)
-        message:string;
+        message?:string;
+    }
+
+    interface MetadataTestNestedChild
+    {
+        name?:string;
     }
 
     interface SubType
     {
-        id:number;
-        name:string;
-    }
-
-    interface SubType
-    {
-        id:number;
-        name:string;
-    }
-
-    interface Poco
-    {
-        name:string;
+        id?:number;
+        name?:string;
     }
 
     interface IAuthTokens
     {
-        provider:string;
-        userId:string;
-        accessToken:string;
-        accessTokenSecret:string;
-        refreshToken:string;
+        provider?:string;
+        userId?:string;
+        accessToken?:string;
+        accessTokenSecret?:string;
+        refreshToken?:string;
         refreshTokenExpiry?:string;
-        requestToken:string;
-        requestTokenSecret:string;
-        items:{ [index:string]: string; };
+        requestToken?:string;
+        requestTokenSecret?:string;
+        items?:{ [index:string]: string; };
     }
 
     interface RockstarAlbum
     {
-        id:number;
-        rockstarId:number;
-        name:string;
-    }
-
-    interface RockstarAlbum
-    {
-        id:number;
-        rockstarId:number;
-        name:string;
+        id?:number;
+        rockstarId?:number;
+        name?:string;
     }
 
     // @DataContract
     interface QueryResponse<Rockstar>
     {
         // @DataMember(Order=1)
-        offset:number;
+        offset?:number;
 
         // @DataMember(Order=2)
-        total:number;
+        total?:number;
 
         // @DataMember(Order=3)
-        results:Rockstar[];
+        results?:Rockstar[];
 
         // @DataMember(Order=4)
-        meta:{ [index:string]: string; };
+        meta?:{ [index:string]: string; };
 
         // @DataMember(Order=5)
-        responseStatus:ResponseStatus;
+        responseStatus?:ResponseStatus;
     }
 
     interface ChangeRequestResponse
     {
-        contentType:string;
-        header:string;
-        queryString:string;
-        form:string;
-        responseStatus:ResponseStatus;
+        contentType?:string;
+        header?:string;
+        queryString?:string;
+        form?:string;
+        responseStatus?:ResponseStatus;
+    }
+
+    interface CustomHttpErrorResponse
+    {
+        custom?:string;
+        responseStatus?:ResponseStatus;
+    }
+
+    interface CustomFieldHttpErrorResponse
+    {
+        custom?:string;
+        responseStatus?:ResponseStatus;
+    }
+
+    interface MetadataTestResponse
+    {
+        id?:number;
+        results?:MetadataTestChild[];
     }
 
     interface HelloResponse
     {
-        result:string;
+        result?:string;
     }
 
     /**
@@ -511,77 +449,80 @@ declare module dtos
     interface HelloAnnotatedResponse
     {
         // @DataMember
-        result:string;
+        result?:string;
     }
 
     interface HelloAllTypesResponse
     {
-        result:string;
-        allTypes:AllTypes;
-        allCollectionTypes:AllCollectionTypes;
+        result?:string;
+        allTypes?:AllTypes;
+        allCollectionTypes?:AllCollectionTypes;
     }
 
     // @DataContract
     interface HelloWithDataContractResponse
     {
         // @DataMember(Name="result", Order=1, IsRequired=true, EmitDefaultValue=false)
-        result:string;
+        result?:string;
     }
 
+    /**
+    * Description on HelloWithDescriptionResponse type
+    */
     interface HelloWithDescriptionResponse
     {
-        result:string;
+        result?:string;
     }
 
     interface HelloWithInheritanceResponse extends HelloResponseBase
     {
-        result:string;
+        result?:string;
     }
 
     interface HelloWithAlternateReturnResponse extends HelloWithReturnResponse
     {
-        altResult:string;
+        altResult?:string;
     }
 
     interface HelloWithRouteResponse
     {
-        result:string;
+        result?:string;
     }
 
     interface HelloWithTypeResponse
     {
-        result:HelloType;
+        result?:HelloType;
     }
 
     interface HelloSessionResponse
     {
-        result:AuthUserSession;
+        result?:AuthUserSession;
     }
 
     interface Echo
     {
-        sentence:string;
+        sentence?:string;
     }
 
     interface acsprofileResponse
     {
-        profileId:string;
+        profileId?:string;
     }
 
     // @DataContract
     interface ResourcesResponse
     {
         // @DataMember(Name="swaggerVersion")
-        swaggerVersion:string;
+        swaggerVersion?:string;
 
         // @DataMember(Name="apiVersion")
-        apiVersion:string;
+        apiVersion?:string;
 
         // @DataMember(Name="basePath")
-        basePath:string;
+        basePath?:string;
 
         // @DataMember(Name="apis")
-        apis:RestService[];
+        apis?:RestService[];
     }
 
     // @Route("/anontype")
@@ -598,20 +539,35 @@ declare module dtos
     // @Route("/changerequest/{Id}")
     interface ChangeRequest extends IReturn<ChangeRequest>
     {
-        id:string;
+        id?:string;
     }
 
     // @Route("/Routing/LeadPost.aspx")
     interface LegacyLeadPost
     {
-        leadType:string;
-        myId:number;
+        leadType?:string;
+        myId?:number;
+    }
+
+    interface CustomHttpError extends IReturn<CustomHttpError>
+    {
+        statusCode?:number;
+        statusDescription?:string;
+    }
+
+    interface CustomFieldHttpError extends IReturn<CustomFieldHttpError>
+    {
+    }
+
+    interface MetadataTest extends IReturn<MetadataTestResponse>
+    {
+        id?:number;
     }
 
     // @Route("/hello/{Name}")
     interface Hello extends IReturn<Hello>
     {
-        name:string;
+        name?:string;
     }
 
     /**
@@ -621,35 +577,35 @@ declare module dtos
     interface HelloAnnotated extends IReturn<HelloAnnotatedResponse>
     {
         // @DataMember
-        name:string;
+        name?:string;
     }
 
     interface HelloWithNestedClass extends IReturn<HelloResponse>
     {
-        name:string;
-        nestedClassProp:NestedClass;
+        name?:string;
+        nestedClassProp?:NestedClass;
     }
 
     interface HelloWithEnum
     {
-        enumProp:EnumType;
+        enumProp?:EnumType;
         nullableEnumProp?:EnumType;
-        enumFlags:EnumFlags;
+        enumFlags?:EnumFlags;
     }
 
     interface RestrictedAttributes
     {
-        id:number;
-        name:string;
-        hello:Hello;
+        id?:number;
+        name?:string;
+        hello?:Hello;
     }
 
     /**
     * AllowedAttributes Description
     */
     // @Route("/allowed-attributes", "GET")
-    // @ApiResponse(400, "Your request was not understood")
     // @Api("AllowedAttributes Description")
+    // @ApiResponse(400, "Your request was not understood")
     // @DataContract
     interface AllowedAttributes
     {
@@ -659,39 +615,39 @@ declare module dtos
 
         // @DataMember(Name="Aliased")
         // @ApiMember(Description="Range Description", ParameterType="path", DataType="double", IsRequired=true)
-        range:number;
+        range?:number;
 
-        // @References(typeof(Hello))
-        // @StringLength(20)
         // @Meta("Foo", "Bar")
-        name:string;
+        // @StringLength(20)
+        // @References(typeof(Hello))
+        name?:string;
     }
 
     interface HelloAllTypes extends IReturn<HelloAllTypes>
     {
-        name:string;
-        allTypes:AllTypes;
-        allCollectionTypes:AllCollectionTypes;
+        name?:string;
+        allTypes?:AllTypes;
+        allCollectionTypes?:AllCollectionTypes;
     }
 
     interface HelloString
     {
-        name:string;
+        name?:string;
     }
 
     interface HelloVoid
     {
-        name:string;
+        name?:string;
     }
 
     // @DataContract
     interface HelloWithDataContract extends IReturn<HelloWithDataContract>
     {
         // @DataMember(Name="name", Order=1, IsRequired=true, EmitDefaultValue=false)
-        name:string;
+        name?:string;
 
         // @DataMember(Name="id", Order=2, EmitDefaultValue=false)
-        id:number;
+        id?:number;
     }
 
     /**
@@ -699,22 +655,22 @@ declare module dtos
     */
     interface HelloWithDescription extends IReturn<HelloWithDescription>
     {
-        name:string;
+        name?:string;
     }
 
     interface HelloWithInheritance extends HelloBase, IReturn<HelloWithInheritance>
     {
-        name:string;
+        name?:string;
     }
 
     interface HelloWithGenericInheritance extends HelloBase_1<Poco>
     {
-        result:string;
+        result?:string;
     }
 
     interface HelloWithGenericInheritance2 extends HelloBase_1<Hello>
     {
-        result:string;
+        result?:string;
     }
 
     interface HelloWithNestedInheritance extends HelloBase_1<Item>
@@ -727,18 +683,18 @@ declare module dtos
 
     interface HelloWithReturn extends IReturn<HelloWithAlternateReturnResponse>
     {
-        name:string;
+        name?:string;
     }
 
     // @Route("/helloroute")
     interface HelloWithRoute extends IReturn<HelloWithRoute>
     {
-        name:string;
+        name?:string;
     }
 
     interface HelloWithType extends IReturn<HelloWithType>
     {
-        name:string;
+        name?:string;
     }
 
     interface HelloSession extends IReturn<HelloSessionResponse>
@@ -747,9 +703,9 @@ declare module dtos
 
     interface HelloInterface
     {
-        poco:IPoco;
-        emptyInterface:IEmptyInterface;
-        emptyClass:EmptyClass;
+        poco?:IPoco;
+        emptyInterface?:IEmptyInterface;
+        emptyClass?:EmptyClass;
     }
 
     /**
@@ -760,7 +716,7 @@ declare module dtos
     interface Echoes extends IReturn<Echo>
     {
         // @ApiMember(Description="The sentence to echo.", ParameterType="form", DataType="string", IsRequired=true, Name="Sentence")
-        sentence:string;
+        sentence?:string;
     }
 
     interface AsyncTest extends IReturn<Echo>
@@ -770,33 +726,33 @@ declare module dtos
     // @Route("/throwhttperror/{Status}")
     interface ThrowHttpError
     {
-        status:number;
-        message:string;
+        status?:number;
+        message?:string;
     }
 
     // @Route("/api/acsprofiles/{profileId}")
     // @Route("/api/acsprofiles", "POST,PUT,PATCH,DELETE")
     interface ACSProfile extends IReturn<acsprofileResponse>
     {
-        profileId:string;
+        profileId?:string;
         // @StringLength(20)
         // @Required()
         shortName:string;
 
         // @StringLength(60)
-        longName:string;
+        longName?:string;
 
         // @StringLength(20)
-        regionId:string;
+        regionId?:string;
 
         // @StringLength(20)
-        groupId:string;
+        groupId?:string;
 
         // @StringLength(12)
-        deviceID:string;
+        deviceID?:string;
 
-        lastUpdated:string;
-        enabled:boolean;
+        lastUpdated?:string;
+        enabled?:boolean;
     }
 
     // @Route("/resources")
@@ -804,7 +760,7 @@ declare module dtos
     interface Resources extends IReturn<Resources>
     {
         // @DataMember(Name="apiKey")
-        apiKey:string;
+        apiKey?:string;
     }
 
     // @Route("/resource/{Name*}")
@@ -812,33 +768,33 @@ declare module dtos
     interface ResourceRequest
     {
         // @DataMember(Name="apiKey")
-        apiKey:string;
+        apiKey?:string;
 
         // @DataMember(Name="name")
-        name:string;
+        name?:string;
     }
 
     // @Route("/postman")
     interface Postman
     {
-        label:string[];
-        exportSession:boolean;
-        ssid:string;
-        sspid:string;
-        ssopt:string;
+        label?:string[];
+        exportSession?:boolean;
+        ssid?:string;
+        sspid?:string;
+        ssopt?:string;
     }
 
     interface QueryRockstarsConventions extends QueryBase_1<Rockstar>, IReturn<QueryResponse<Rockstar>>
     {
-        ids:number[];
+        ids?:number[];
         ageOlderThan?:number;
         ageGreaterThanOrEqualTo?:number;
         ageGreaterThan?:number;
         greaterThanAge?:number;
-        firstNameStartsWith:string;
-        lastNameEndsWith:string;
-        lastNameContains:string;
-        rockstarAlbumNameContains:string;
+        firstNameStartsWith?:string;
+        lastNameEndsWith?:string;
+        lastNameContains?:string;
+        rockstarAlbumNameContains?:string;
         rockstarIdAfter?:number;
         rockstarIdOnOrAfter?:number;
     }
@@ -852,7 +808,7 @@ declare module dtos
     interface QueryRockstarAlbums extends QueryBase_2<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
     {
         age?:number;
-        rockstarAlbumName:string;
+        rockstarAlbumName?:string;
     }
 
     interface QueryRockstarAlbumsImplicit extends QueryBase_2<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
@@ -862,7 +818,7 @@ declare module dtos
     interface QueryRockstarAlbumsLeftJoin extends QueryBase_2<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
     {
         age?:number;
-        albumName:string;
+        albumName?:string;
     }
 
     interface QueryOverridedRockstars extends QueryBase_1<Rockstar>, IReturn<QueryResponse<Rockstar>>
@@ -877,14 +833,14 @@ declare module dtos
 
     interface QueryFieldRockstars extends QueryBase_1<Rockstar>, IReturn<QueryResponse<Rockstar>>
     {
-        firstName:string;
-        firstNames:string[];
+        firstName?:string;
+        firstNames?:string[];
         age?:number;
-        firstNameCaseInsensitive:string;
-        firstNameStartsWith:string;
-        lastNameEndsWith:string;
-        firstNameBetween:string[];
-        orLastName:string;
+        firstNameCaseInsensitive?:string;
+        firstNameStartsWith?:string;
+        lastNameEndsWith?:string;
+        firstNameBetween?:string[];
+        orLastName?:string;
     }
 
     interface QueryFieldRockstarsDynamic extends QueryBase_1<Rockstar>, IReturn<QueryResponse<Rockstar>>
@@ -911,15 +867,15 @@ declare module dtos
     interface QueryOrRockstars extends QueryBase_1<Rockstar>, IReturn<QueryResponse<Rockstar>>
     {
         age?:number;
-        firstName:string;
+        firstName?:string;
     }
 
     interface QueryGetRockstars extends QueryBase_1<Rockstar>, IReturn<QueryResponse<Rockstar>>
     {
-        ids:number[];
-        ages:number[];
-        firstNames:string[];
-        idsBetween:number[];
+        ids?:number[];
+        ages?:number[];
+        firstNames?:string[];
+        idsBetween?:number[];
     }
 
     interface QueryGetRockstarsDynamic extends QueryBase_1<Rockstar>, IReturn<QueryResponse<Rockstar>>
@@ -934,20 +890,20 @@ declare module dtos
     // @Route("/movies")
     interface QueryMovies extends QueryBase_1<Movie>, IReturn<QueryResponse<Movie>>
     {
-        ids:number[];
-        imdbIds:string[];
-        ratings:string[];
+        ids?:number[];
+        imdbIds?:string[];
+        ratings?:string[];
     }
 
     interface StreamMovies extends QueryBase_1<Movie>, IReturn<QueryResponse<Movie>>
     {
-        ratings:string[];
+        ratings?:string[];
     }
 
     interface QueryUnknownRockstars extends QueryBase_1<Rockstar>, IReturn<QueryResponse<Rockstar>>
     {
-        unknownInt:number;
-        unknownProperty:string;
+        unknownInt?:number;
+        unknownProperty?:string;
     }
 
     // @Route("/query/rockstar-references")

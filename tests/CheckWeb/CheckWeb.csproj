@@ -77,8 +77,8 @@
       <Link>sqlite3.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="CheckWeb.dtos.d.ts" />
     <Content Include="Global.asax" />
+    <Content Include="Test.dtos.d.ts" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
