@@ -11,7 +11,9 @@ namespace Check.ServiceModel.Operations
     [Route("/hello/{Name}")]
     public class Hello
     {
+        [Required]
         public string Name { get; set; }
+        public string Title { get; set; }
     }
 
     public class HelloResponse
