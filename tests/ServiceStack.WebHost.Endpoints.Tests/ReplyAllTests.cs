@@ -41,7 +41,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public static void AssertSingleDto(object dto)
         {
-            if (!(dto is HelloAll || dto is HelloAllCustom || dto is HelloAllTransaction || dto is Request))
+            if (!(dto is HelloAll || dto is HelloGet || dto is HelloAllCustom || dto is HelloAllTransaction || dto is Request))
                 throw new Exception("Invalid " + dto.GetType().Name);
         }
     }
@@ -85,6 +85,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Name { get; set; }
     }
 
+    public class HelloGet : IReturn<HelloAllResponse>
+    {
+        public string Name { get; set; }
+    }
+
     public class HelloAllResponse
     {
         public string Result { get; set; }
@@ -121,6 +126,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [ReplyAllRequest]
         [ReplyAllResponse]
         public object Any(HelloAll request)
+        {
+            return new HelloAllResponse { Result = "Hello, {0}!".Fmt(request.Name) };
+        }
+
+        public object Get(HelloGet request)
         {
             return new HelloAllResponse { Result = "Hello, {0}!".Fmt(request.Name) };
         }
@@ -215,6 +225,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 new HelloAll { Name = "Bar" },
                 new HelloAll { Name = "Baz" },
             };
+
+            var responses = client.SendAll(requests);
+            responses.PrintDump();
+
+            var results = responses.Map(x => x.Result);
+
+            Assert.That(results, Is.EquivalentTo(new[] {
+                "Hello, Foo!", "Hello, Bar!", "Hello, Baz!"
+            }));
+        }
+
+        [Test]
+        public void Can_send_multi_reply_HelloGet_requests()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri)
+            {
+                RequestFilter = req =>
+                    req.Headers[HttpHeaders.XHttpMethodOverride] = HttpMethods.Get
+            };
+
+            var requests = new[]
+            {
+                new HelloGet { Name = "Foo" },
+                new HelloGet { Name = "Bar" },
+                new HelloGet { Name = "Baz" },
+            };
+
+            client.Get(new HelloGet { Name = "aaa" });
 
             var responses = client.SendAll(requests);
             responses.PrintDump();

@@ -87,8 +87,10 @@ namespace ServiceStack.Host.Handlers
         {
             var httpMethod = httpReq.Verb;
             var queryString = httpReq.QueryString;
+            var hasRequestBody = httpReq.ContentType != null && httpReq.ContentLength > 0;
 
-            if (httpMethod == HttpMethods.Get || httpMethod == HttpMethods.Delete || httpMethod == HttpMethods.Options)
+            if (!hasRequestBody
+                && (httpMethod == HttpMethods.Get || httpMethod == HttpMethods.Delete || httpMethod == HttpMethods.Options))
             {
                 try
                 {
