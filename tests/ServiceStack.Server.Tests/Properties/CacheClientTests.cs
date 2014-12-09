@@ -265,6 +265,33 @@ namespace ServiceStack.Server.Tests.Properties
         }
 
         [Test]
+        public void Can_retrieve_TimeToLive_on_IAuthSession()
+        {
+            IAuthSession session = new CustomAuthSession
+            {
+                Id = "sess-1",
+                UserAuthId = "1",
+                Custom = "custom"
+            };
+
+            var sessionKey = SessionFeature.GetSessionKey(session.Id);
+            Cache.Remove(sessionKey);
+
+            var ttl = Cache.GetTimeToLive(sessionKey);
+            Assert.That(ttl, Is.Null);
+
+            Cache.Set(sessionKey, session);
+            ttl = Cache.GetTimeToLive(sessionKey);
+            Assert.That(ttl.Value, Is.EqualTo(TimeSpan.MaxValue));
+
+            var sessionExpiry = HostContext.GetDefaultSessionExpiry();
+            Cache.Set(sessionKey, session, sessionExpiry);
+            ttl = Cache.GetTimeToLive(sessionKey);
+            Assert.That(ttl.Value, Is.GreaterThan(TimeSpan.FromSeconds(0)));
+            Assert.That(ttl.Value, Is.LessThanOrEqualTo(sessionExpiry));
+        }
+
+        [Test]
         public void Can_retrieve_IAuthSession_with_global_ExcludeTypeInfo_set()
         {
             JsConfig.ExcludeTypeInfo = true;

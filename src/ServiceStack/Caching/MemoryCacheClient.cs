@@ -6,7 +6,7 @@ using ServiceStack.Logging;
 
 namespace ServiceStack.Caching
 {
-	public class MemoryCacheClient : ICacheClient, IRemoveByPattern
+    public class MemoryCacheClient : ICacheClientExtended, IRemoveByPattern
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(MemoryCacheClient));
 
@@ -22,7 +22,7 @@ namespace ServiceStack.Caching
 			/// <summary>
 			/// Create new instance of CacheEntry.
 			/// </summary>
-			public CacheEntry(object value, DateTime expiresAt)
+			public CacheEntry(object value, DateTime? expiresAt)
 			{
 				Value = value;
 				ExpiresAt = expiresAt;
@@ -30,7 +30,7 @@ namespace ServiceStack.Caching
 			}
 
 			/// <summary>UTC time at which CacheEntry expires.</summary>
-			internal DateTime ExpiresAt { get; set; }
+			internal DateTime? ExpiresAt { get; set; }
 			
 			internal object Value
 			{
@@ -51,15 +51,7 @@ namespace ServiceStack.Caching
 			this.counters = new ConcurrentDictionary<string, int>();
 		}
 
-		/// <summary>
-		/// Add value with specified key to the cache, and set the cache entry to never expire.
-		/// </summary>
-		private bool CacheAdd(string key, object value)
-		{
-			return CacheAdd(key, value, DateTime.MaxValue);
-		}
-
-		private bool TryGetValue(string key, out CacheEntry entry)
+	    private bool TryGetValue(string key, out CacheEntry entry)
 		{
 			return this.memory.TryGetValue(key, out entry);
 		}
@@ -72,7 +64,7 @@ namespace ServiceStack.Caching
 		/// <summary>
 		/// Stores The value with key only if such key doesn't exist at the server yet. 
 		/// </summary>
-		private bool CacheAdd(string key, object value, DateTime expiresAt)
+		private bool CacheAdd(string key, object value, DateTime? expiresAt = null)
 		{
 			CacheEntry entry;
 			if (this.TryGetValue(key, out entry)) return false;
@@ -83,15 +75,7 @@ namespace ServiceStack.Caching
 			return true;
 		}
 
-		/// <summary>
-		/// Adds or replaces the value with key, and sets the cache entry to never expire.
-		/// </summary>
-		private bool CacheSet(string key, object value)
-		{
-			return CacheSet(key, value, DateTime.MaxValue);
-		}
-
-		/// <summary>
+	    /// <summary>
 		/// Adds or replaces the value with key.
 		/// </summary>
 		private bool CacheSet(string key, object value, DateTime expiresAt)
@@ -102,7 +86,7 @@ namespace ServiceStack.Caching
 		/// <summary>
 		/// Adds or replaces the value with key. 
 		/// </summary>
-		private bool CacheSet(string key, object value, DateTime expiresAt, long? checkLastModified)
+		private bool CacheSet(string key, object value, DateTime? expiresAt = null, long? checkLastModified = null)
 		{
 			CacheEntry entry;
 			if (!this.TryGetValue(key, out entry))
@@ -121,18 +105,10 @@ namespace ServiceStack.Caching
 			return true;
 		}
 
-		/// <summary>
-		/// Replace the value with specified key if it exists, and set the cache entry to never expire.
-		/// </summary>
-		private bool CacheReplace(string key, object value)
-		{
-			return CacheReplace(key, value, DateTime.MaxValue);
-		}
-
-		/// <summary>
+	    /// <summary>
 		/// Replace the value with specified key if it exists.
 		/// </summary>
-		private bool CacheReplace(string key, object value, DateTime expiresAt)
+		private bool CacheReplace(string key, object value, DateTime? expiresAt = null)
 		{
 			return !CacheSet(key, value, expiresAt);
 		}
@@ -353,5 +329,18 @@ namespace ServiceStack.Caching
 				Log.Error(string.Format("Error trying to remove items from cache with this {0} pattern", pattern), ex);
 			}
 		}
+
+	    public TimeSpan? GetTimeToLive(string key)
+	    {
+			CacheEntry cacheEntry;
+			if (this.memory.TryGetValue(key, out cacheEntry))
+			{
+			    if (cacheEntry.ExpiresAt == null)
+			        return TimeSpan.MaxValue;
+
+                return cacheEntry.ExpiresAt - DateTime.UtcNow;
+			}
+	        return null;
+	    }
 	}
 }

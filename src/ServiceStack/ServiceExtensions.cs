@@ -166,6 +166,15 @@ namespace ServiceStack
             }
         }
 
+        public static TimeSpan? GetSessionTimeToLive(this IRequest httpReq)
+        {
+            using (var cache = httpReq.GetCacheClient())
+            {
+                var sessionId = httpReq.GetSessionId();
+                return cache.GetTimeToLive(sessionId);
+            }
+        }
+
         public static object RunAction<TService, TRequest>(
             this TService service, TRequest request, Func<TService, TRequest, object> invokeAction,
             IRequest requestContext = null)

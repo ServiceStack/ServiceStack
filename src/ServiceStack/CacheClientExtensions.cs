@@ -193,7 +193,7 @@ namespace ServiceStack
         {
             var canRemoveByPattern = cacheClient as IRemoveByPattern;
             if (canRemoveByPattern == null)
-                throw new NotImplementedException("IRemoveByPattern is not implemented by the cache client: " + cacheClient.GetType().FullName);
+                throw new NotImplementedException("IRemoveByPattern is not implemented by: " + cacheClient.GetType().FullName);
 
             canRemoveByPattern.RemoveByRegex(regex);
         }
@@ -222,5 +222,13 @@ namespace ServiceStack
             return value;
         }
 
+        public static TimeSpan? GetTimeToLive(this ICacheClient cache, string key)
+        {
+            var extendedCache = cache as ICacheClientExtended;
+            if (extendedCache == null)
+                throw new NotFiniteNumberException("GetTimeToLive is not implemented by: " + cache.GetType().FullName);
+
+            return extendedCache.GetTimeToLive(key);
+        }
     }
 }

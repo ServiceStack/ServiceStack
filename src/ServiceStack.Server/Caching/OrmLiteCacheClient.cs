@@ -10,7 +10,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Caching
 {
-    public class OrmLiteCacheClient : ICacheClient, IRequiresSchema
+    public class OrmLiteCacheClient : ICacheClient, IRequiresSchema, ICacheClientExtended
     {
         CacheEntry CreateEntry(string id, string data = null,
             DateTime? created = null, DateTime? expires = null)
@@ -376,6 +376,21 @@ namespace ServiceStack.Caching
                 return null;
             }
             return entry;
+        }
+
+        public TimeSpan? GetTimeToLive(string key)
+        {
+            return Exec(db =>
+            {
+                var cache = db.SingleById<CacheEntry>(key);
+                if (cache == null)
+                    return null;
+
+                if (cache.ExpiryDate == null)
+                    return TimeSpan.MaxValue;
+
+                return cache.ExpiryDate - DateTime.UtcNow;
+            });
         }
 
         public void Dispose() { }
