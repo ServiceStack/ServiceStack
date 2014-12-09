@@ -534,7 +534,7 @@ namespace ServiceStack
             SendOneWay(Message.CreateMessage(MessageVersion, relativeOrAbsoluteUrl, request));
         }
 
-        public void SendAllOneWay<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        public void SendAllOneWay(IEnumerable<object> requests)
         {
             throw new NotImplementedException();
         }

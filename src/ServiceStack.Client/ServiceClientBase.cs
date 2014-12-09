@@ -816,7 +816,7 @@ namespace ServiceStack
             SendOneWay(HttpMethods.Post, relativeOrAbsoluteUrl, request);
         }
 
-        public virtual void SendAllOneWay<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        public virtual void SendAllOneWay(IEnumerable<object> requests)
         {
             var elType = requests.GetType().GetCollectionType();
             var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + elType.Name + "[]";

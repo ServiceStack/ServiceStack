@@ -32,7 +32,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             ServiceController.Execute(requestDto);
         }
 
-        public void SendAllOneWay<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        public void SendAllOneWay(IEnumerable<object> requests)
         {
             throw new NotImplementedException();
         }

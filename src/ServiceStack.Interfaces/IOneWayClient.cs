@@ -8,6 +8,6 @@ namespace ServiceStack
 
         void SendOneWay(string relativeOrAbsoluteUri, object requestDto);
 
-        void SendAllOneWay<TResponse>(IEnumerable<IReturn<TResponse>> requests);
+        void SendAllOneWay(IEnumerable<object> requests);
     }
 }
