@@ -166,12 +166,17 @@ namespace ServiceStack
             }
         }
 
+        public static TimeSpan? GetSessionTimeToLive(this ICacheClient cache, string sessionId)
+        {
+            var sessionKey = SessionFeature.GetSessionKey(sessionId);
+            return cache.GetTimeToLive(sessionKey);
+        }
+
         public static TimeSpan? GetSessionTimeToLive(this IRequest httpReq)
         {
             using (var cache = httpReq.GetCacheClient())
             {
-                var sessionId = httpReq.GetSessionId();
-                return cache.GetTimeToLive(sessionId);
+                return cache.GetSessionTimeToLive(httpReq.GetSessionId());
             }
         }
 
