@@ -16,7 +16,7 @@ namespace ServiceStack.Redis
         IRedisClientsManager ClientsManager { get; }
         string[] Channels { get; }
 
-        int? KeepAliveRetryAfterMs { get; set; }
+        TimeSpan? WaitBeforeNextRestart { get; set; }
         DateTime CurrentServerTime { get; }
 
         string GetStatus();
