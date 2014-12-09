@@ -177,8 +177,8 @@ namespace ServiceStack.ServiceHost
                 {
                     serializedRequest = "<request serialization failure>";
                 }
-                responseStatus.RequestBody =
-                    LengthLimitedDebugString(request.GetType().Name + " " + serializedRequest, 10000);
+                responseStatus.RequestTypeName = request.GetType().Name;
+                responseStatus.RequestContents = LengthLimitedDebugString(serializedRequest, 10000);
             }
 
             Log.Error("ServiceBase<TRequest>::Service Exception", ex);

@@ -77,9 +77,15 @@ namespace ServiceStack.ServiceInterface.ServiceModel
         public List<ResponseError> Errors { get; set; }
 
         /// <summary>
-        /// Body of the request.
+        /// Name of the type of the request DTO.
         /// </summary>
         [DataMember(Order = 5)]
-        public string RequestBody { get; set; }
+        public string RequestTypeName { get; set; }
+
+        /// <summary>
+        /// Serialized contents of the request DTO.
+        /// </summary>
+        [DataMember(Order = 6)]
+        public string RequestContents { get; set; }
     }
 }
