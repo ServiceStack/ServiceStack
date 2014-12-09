@@ -68,9 +68,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public IDbConnection OpenTenant(string tenantId = null)
         {
             return tenantId != null
-                ? new OrmLiteConnectionFactory(
-                        "~/App_Data/tenant-{0}.sqlite".Fmt(tenantId).MapAbsolutePath())
-                        .OpenDbConnection()
+                ? dbFactory.OpenDbConnectionString(
+                    "~/App_Data/tenant-{0}.sqlite".Fmt(tenantId).MapAbsolutePath())
                 : dbFactory.OpenDbConnection();
         }
 
