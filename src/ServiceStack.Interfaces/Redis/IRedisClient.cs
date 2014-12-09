@@ -21,7 +21,7 @@ using ServiceStack.Redis.Pipeline;
 namespace ServiceStack.Redis
 {
     public interface IRedisClient
-        : IEntityStore, ICacheClient
+        : IEntityStore, ICacheClientExtended
     {
         //Basic Redis Connection operations
         long Db { get; set; }
@@ -98,7 +98,6 @@ namespace ServiceStack.Redis
         string GetRandomKey();
         bool ExpireEntryIn(string key, TimeSpan expireIn);
         bool ExpireEntryAt(string key, DateTime expireAt);
-        TimeSpan GetTimeToLive(string key);
         List<string> GetSortedEntryValues(string key, int startingFrom, int endingAt);
 
         //Store entities without registering entity ids
