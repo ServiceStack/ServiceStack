@@ -37,10 +37,10 @@ namespace ServiceStack
             set { local.NotifyChannelOfSubscriptions = value; }
         }
 
-        public int? KeepAliveRetryAfterMs
+        public TimeSpan? WaitBeforeNextRestart
         {
-            get { return RedisPubSub.KeepAliveRetryAfterMs; }
-            set { RedisPubSub.KeepAliveRetryAfterMs = value; }
+            get { return RedisPubSub.WaitBeforeNextRestart; }
+            set { RedisPubSub.WaitBeforeNextRestart = value; }
         }
 
         public static string Topic = "sse:topic";
@@ -67,7 +67,7 @@ namespace ServiceStack
             redisPubSub.OnError = ex => Log.Error("Exception in RedisServerEvents: " + ex.Message, ex);
             redisPubSub.OnMessage = HandleMessage;
 
-            KeepAliveRetryAfterMs = 2000;
+            WaitBeforeNextRestart = TimeSpan.FromMilliseconds(2000);
 
             local = new MemoryServerEvents
             {

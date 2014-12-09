@@ -47,6 +47,7 @@
     <Compile Include="Caching\ICacheClient.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Caching\ICacheClientExtended.cs" />
     <Compile Include="Caching\IRemoveByPattern.cs" />
     <Compile Include="Caching\IDeflateProvider.cs">
       <SubType>Code</SubType>
