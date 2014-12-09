@@ -5,6 +5,7 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
+using ServiceStack.Redis;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -25,6 +26,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             container.Register<IDbConnectionFactory>(c =>
                 new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
+
+            container.Register<IRedisClientsManager>(c =>
+                new RedisManagerPool());
         }
     }
 
@@ -37,7 +41,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public static void AssertSingleDto(object dto)
         {
-            if (!(dto is HelloAll || dto is HelloAllCustom || dto is HelloAllTransaction))
+            if (!(dto is HelloAll || dto is HelloAllCustom || dto is HelloAllTransaction || dto is Request))
                 throw new Exception("Invalid " + dto.GetType().Name);
         }
     }
@@ -51,7 +55,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public static void AssertSingleDto(object dto)
         {
-            if (!(dto is HelloAllResponse || dto is HelloAllCustomResponse 
+            if (!(dto == null || dto is HelloAllResponse || dto is HelloAllCustomResponse
                || dto is HelloAllTransactionResponse || dto is IHttpResult))
                 throw new Exception("Invalid " + dto.GetType().Name);
         }
@@ -106,6 +110,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Result { get; set; }
     }
 
+    public class Request : IReturnVoid
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+
     public class ReplyAllService : Service
     {
         [ReplyAllRequest]
@@ -152,6 +162,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 return response;
             }
+        }
+
+        public void Any(Request request)
+        {
+            Redis.Store(request);
+        }
+
+        public void Any(Request[] requests)
+        {
+            Redis.StoreAll(requests);
         }
     }
 
@@ -340,6 +360,31 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var allRequests = db.Select<HelloAllTransaction>();
                 Assert.That(allRequests.Count, Is.EqualTo(0));
+            }
+        }
+
+        [Test]
+        public void Can_store_multiple_requests_with_SendAllOneWay()
+        {
+            using (var redis = appHost.Resolve<IRedisClientsManager>().GetClient())
+            {
+                redis.FlushAll();
+
+                var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+                var requests = new[]
+                {
+                    new Request { Id = 1, Name = "Foo" },
+                    new Request { Id = 2, Name = "Bar" },
+                    new Request { Id = 3, Name = "Baz" },
+                };
+
+                client.SendAllOneWay(requests);
+
+                var savedRequests = redis.As<Request>().GetAll();
+
+                Assert.That(savedRequests.Map(x => x.Name), Is.EquivalentTo(new[] {
+                    "Foo", "Bar", "Baz"
+                }));
             }
         }
     }
