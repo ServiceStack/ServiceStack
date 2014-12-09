@@ -196,18 +196,23 @@ namespace ServiceStack.Server.Tests.Properties
             var key = 1.ToUrn<Item>();
 
             Cache.Set(key, new Item { Id = 1, Name = "Foo" }, DateTime.UtcNow.AddSeconds(-1));
-
             Assert.That(Cache.Get<Item>(key), Is.Null);
+
+            Cache.Remove(key);
 
             Cache.Set(key, new Item { Id = 1, Name = "Foo" }, TimeSpan.FromMilliseconds(100));
-            Assert.That(Cache.Get<Item>(key), Is.Not.Null);
+            var entry = Cache.Get<Item>(key);
+            Assert.That(entry, Is.Not.Null);
             Thread.Sleep(200);
 
             Assert.That(Cache.Get<Item>(key), Is.Null);
 
+            Cache.Remove(key);
+
             Cache.Set(key, new Item { Id = 1, Name = "Foo" }, DateTime.UtcNow.AddMilliseconds(200));
-            Assert.That(Cache.Get<Item>(key), Is.Not.Null);
-            Thread.Sleep(200);
+            entry = Cache.Get<Item>(key);
+            Assert.That(entry, Is.Not.Null);
+            Thread.Sleep(300);
 
             Assert.That(Cache.Get<Item>(key), Is.Null);
         }
