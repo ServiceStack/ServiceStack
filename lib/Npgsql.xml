@@ -2834,6 +2834,11 @@
             Returns oid of inserted row. This is only updated when using executenonQuery and when command inserts just a single row. If table is created without oids, this will always be 0.
             </summary>
         </member>
+        <member name="P:Npgsql.NpgsqlCommand.IsPrepared">
+            <summary>
+            Returns whether this query will execute as a prepared (compiled) query.
+            </summary>
+        </member>
         <member name="P:Npgsql.NpgsqlCommand.DesignTimeVisible">
             <summary>
             Design time visible.
