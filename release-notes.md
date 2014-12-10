@@ -1,3 +1,511 @@
+# v4.0.34 Release Notes
+
+## [Add TypeScript Reference!](https://github.com/ServiceStack/ServiceStack/wiki/TypeScript-Add-ServiceStack-Reference)
+
+The next typed client supported in [Add ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference) is [TypeScript](http://www.typescriptlang.org/)!
+
+![Add TypeScript Reference](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/servicestackvs/add-typescript-reference.png)
+
+[TypeScript](http://www.typescriptlang.org/) is a superset of JavaScript that enhances it with an optional type system for annotating JavaScript source code - bringing many of the code-analysis, insights and tooling benefits that we get to enjoy developing in a typed language like C#/VS.NET. We're excited to also be able to bring these benefits to TypeScript Client Apps consuming ServiceStack Services! 
+
+### TypeScript DTO Interface Declarations
+
+The TypeScript Native Types feature takes a non-invasive approach in that they're made available in the form of a `.d.ts` [TypeScript declaration file](http://www.typescriptlang.org/Handbook#writing-dts-files). TypeScript declarations are pure static type annotations, i.e. they don't generate any code or otherwise have any effect on runtime behavior. This makes them useful as a non-invasive drop-in into existing JavaScript code where it's used to provide type annotations and intelli-sense on existing JavaScript objects, letting you continue using your existing data types and Ajax libraries.
+
+### TypeScript Reference Example
+
+Lets walk through a simple example to see how we can use ServiceStack's TypeScript DTO annotations in our JavaScript clients. Firstly we'll need to add a **TypeScript Reference** to the remote ServiceStack Service by **right-clicking** on your project and clicking on `Add > TypeScript Reference...` (as seen in the above screenshot).
+
+This will import the remote Services dtos into your local project which ends up looking similar to:
+
+```typescript
+/* Options:
+Date: 2014-12-08 17:24:02
+Version: 1
+BaseUrl: http://api.example.com
+
+GlobalNamespace: dtos
+//MakePropertiesOptional: True
+//AddServiceStackTypes: True
+//AddResponseStatus: False
+*/
+
+declare module dtos
+{
+    // @Route("/hello")
+    // @Route("/hello/{Name}")
+    interface Hello extends IReturn<HelloResponse>
+    {
+        // @Required()
+        name:string;
+        title?:string;
+    }
+
+    interface HelloResponse
+    {
+        result?:string;
+    }
+
+    interface IReturn<T> {}
+    ...
+}
+```
+
+Initially the single TypeScript module that contains all the DTO definitions will default to the C#/.NET `ServiceModel` namespace, but this can be made more readable in client apps by uncommenting in the header properties:
+
+`GlobalNamespace: dtos` 
+
+Looking at the types we'll notice the DTO's are just interface type definitions with any .NET attributes added in comments using AtScript's proposed [meta-data annotations format](https://docs.google.com/document/d/11YUzC-1d0V1-Q3V0fQ7KSit97HnZoKVygDxpWzEYW0U/mobilebasic?viewopt=127). This lets you view helpful documentation about your DTO's like the different custom routes available for each Request DTO.
+
+By default DTO properties are optional but can be made a required field by annotating the .NET property with the `[Required]` attribute or by uncommenting `MakePropertiesOptional: False` in the header comments which instead defaults all properties as required.
+
+Property names always reflect to match the remote servers JSON Serialization configuration, i.e. will use **camelCase** properties when the `AppHost` is configured with:
+
+```csharp
+JsConfig.EmitCamelCaseNames = true;
+```
+
+### Referencing TypeScript DTO's
+
+
+Once added to your project, use VS.NET's JavaScript Doc Comments to reference the TypeScript definitions in your `.ts` scripts. The example below shows how to use the above TypeScript definitions to create a typed Request/Response utilizing jQuery's Ajax API to fire off a new Ajax request on every keystroke:
+
+```html
+/// <reference path="MyApis.dtos.d.ts"/>
+...
+
+<input type="text" id="txtHello" data-keyup="sayHello" /> 
+<div id="result"></div>
+
+<script>
+$(document).bindHandlers({
+    sayHello: function () {
+        var request: dtos.Hello = {};
+        request.title = "Dr";
+        request.name = this.value;
+        
+        $.getJSON(createUrl("/hello", request), request, 
+            function (r: dtos.HelloResponse) {
+                $("#result").html(r.result);
+            });
+    }
+});
+
+function createUrl(path: string, params: any): string {
+    for (var key in params) {
+        path += path.indexOf('?') < 0 ? "?" : "&";
+        path += key + "=" + encodeURIComponent(params[key]);
+    }
+    return path;
+}
+</script>
+```
+
+Here we're just using a simple inline `createUrl()` function to show how we're creating the url for the **GET** HTTP Request by appending all Request DTO properties to the QueryString, resulting in a HTTP GET Request that looks like:
+
+    /hello?title=Dr&name=World
+
+There's also a new `$.ss.createUrl()` API in [ss-utils.js](https://github.com/ServiceStack/ServiceStack/wiki/ss-utils.js-JavaScript-Client-Library) which also handles .NET Route definitions where it will populate any variables in the `/path/{info}` instead of adding them to the `?QueryString`, e.g:
+
+```typescript
+$(document).bindHandlers({
+    sayHello: function () {
+        var request: dtos.Hello = {};
+        request.title = "Dr";
+        request.name = this.value;
+        
+        $.getJSON($.ss.createUrl("/hello/{Name}", request), request, 
+            function (r: dtos.HelloResponse) {
+                $("#result").html(r.result);
+            });
+    }
+});
+```
+
+Which results in a HTTP GET request with the expected Url:
+
+    /hello/World?title=Dr
+
+### [ss-utils.d.ts](https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack/js/ss-utils.d.ts)
+
+To coincide with the new TypeScript Reference support, we've also included a TypeScript declaration file for [ss-utils.js](https://github.com/ServiceStack/ServiceStack/wiki/ss-utils.js-JavaScript-Client-Library). that's also available as an embedded resource in `ServiceStack.dll` at [/js/ss-utils.d.ts](https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack/js/ss-utils.d.ts).
+
+### [Upgrade ServiceStackVS](https://github.com/ServiceStack/ServiceStack/wiki/Creating-your-first-project)
+
+To take advantage of **Add TypeScript Reference** feature, [Upgrade or Install ServiceStackVS](https://github.com/ServiceStack/ServiceStack/wiki/Creating-your-first-project) VS.NET Extension: 
+
+[![VS.NET Gallery Download](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/servicestackvs/vsgallery-download.png)](http://visualstudiogallery.msdn.microsoft.com/5bd40817-0986-444d-a77d-482e43a48da7)
+
+> If you already have ServiceStackVS installed, uninstall it first from **Tools -> Extensions and Updates...**  then in the Extensions dialog find **ServiceStackVS -> Uninstall**.
+
+## Auto Batched Requests
+
+One of the best ways to improve performance, efficiency and reduce latency is to minimize the number of network requests required, which is one of the reasons we've always encouraged [Coarse-grained API designs](https://github.com/ServiceStack/ServiceStack/wiki/Why-Servicestack#servicestack-encourages-development-of-message-style-re-usable-and-batch-full-web-services) - which also lend themselves to better encapsulation and re-use. 
+
+Another common use-case that can be improved are clients making multiple requests to the same API, but due to the lack of a better alternative batched API or control over the server implementation, will default to making multiple N+1 web service requests - thanks to ServiceStack's [message-based design](https://github.com/ServiceStack/ServiceStack/wiki/Advantages-of-message-based-web-services), that better alternative now exists :)
+
+### All Services now support Batching!
+
+With the introduction of **Auto Batched Requests** in this release, all ServiceStack Services now include implicit support for batching, automatically, without any additional effort - where multiple requests of the same type can be sent together in a single HTTP Request.
+
+This is now enabled in all [.NET Service Clients](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client) via the new `SendAll()` and `SendAllOneWay()` API's, e.g:
+
+```csharp
+var client = new JsonServiceClient(BaseUrl);
+var requests = new[]
+{
+    new Request { Id = 1, Name = "Foo" },
+    new Request { Id = 2, Name = "Bar" },
+    new Request { Id = 3, Name = "Baz" },
+};
+
+List<Response> responses = client.SendAll(requests);
+```
+
+The API works as you would expect where multiple requests can be sent together and the Service Client will return a list of all responses in the same order as the requests were sent. 
+
+And on the back-end, your Services are none the wiser, remaining focused on handling a single Request DTO. In the case below the Service does some work then stores the response in Redis before returning it:
+
+```csharp
+public class MyServices : Service
+{
+    public object Any(Request request)
+    {
+        var response = DoWork(request);
+        Redis.Store(response);
+        return response;
+    }
+}
+```
+
+### Request Execution Flow
+
+From the Service's point of view nothing changes. Request DTO's still get executed one at a time, through all existing filters just as if they we're sent on their own. They're just delivered together within a single HTTP Request, in this case POST'ed as JSON to the `/json/reply/Request[]` [pre-defined route](https://github.com/ServiceStack/ServiceStack/wiki/Routing#pre-defined-routes):
+
+![Auto Batched Requests](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/auto-batched-requests.png)
+
+### Custom Batched Requests Implementations
+
+If a client was previously calling the same API 100 times, the existing overhead of 100 HTTP Requests would be reduced to just **1 HTTP Request** when batched. Although the above Service would still be calling Redis 100 times to store each Response.
+
+If later this API has become really hot and you want to improve it even further, you can later add a custom implementation that accepts a `Request[]` and it will only get called once, with access to all the Request DTO's together. In this case we can use a custom implementation and take advantage of Redis's own batched API's and reduce this further to 1 Redis operation:
+
+```csharp
+public class MyServices : Service
+{
+    public object Any(Request request)
+    {
+        var response = DoWork(request);
+        Redis.Store(response);
+        return response;
+    }
+    
+    public object Any(Request[] requests)
+    {
+        var responses = requests.Map(DoWork);
+        Redis.StoreAll(responses);
+        return responses;
+    }
+}
+```
+
+So with this custom implementation we've gone from **100 HTTP Requests + 100 Redis Operations** to **1 HTTP Request + 1 Redis Operation**.
+
+Another scenario where you may consider using a **Custom Batched Implementation** is if you wanted to execute all requests within a single RDBMS transaction, which with [OrmLite](https://github.com/ServiceStack/ServiceStack.OrmLite) would look something like:
+
+```csharp
+public class MyServices : Service
+{
+	public object Any(Request request)
+	{
+	    var response = DoWork(request);
+	    Db.Insert(request);
+	    return response;
+	}
+	
+	public object Any(Request[] requests)
+	{
+	    using (var trans = Db.OpenTransaction())
+	    {
+	        var responses = requests.Map(x => Any(x));	
+
+	        trans.Commit();
+	        return responses;
+	    }
+	}
+}
+```
+
+Just like with normal Batched Requests, Custom Batched implementations are still executed one at a time through all request/response filters, taking advantage of any existing logic/validation. If you instead only wanted multiple Requests to be treated as a single Request through the entire pipeline you can create a new Request DTO that inherits from `List<TRequest>` which then gets treated as a normal Request DTO e, g:
+
+```csharp
+public class Requests : List<Request> {}
+
+public class MyServices : Service
+{
+	...
+    public object Any(Requests requests)
+    {
+        var responses = requests.Map(DoWork);
+        Redis.StoreAll(responses);
+        return responses;
+    }
+}
+```
+
+More examples of Auto Batched Requests and its behavior can be found in the [ReplyAllTests suite](https://github.com/ServiceStack/ServiceStack/blob/master/tests/ServiceStack.WebHost.Endpoints.Tests/ReplyAllTests.cs).
+
+## New [ReactJS App Template](https://github.com/ServiceStack/ServiceStack/wiki/Creating-your-first-project)!
+
+The new ServiceStackVS **ReactJS App** template shares the same approach for developing modern Single Page Apps in VS.NET as the existing [AngularJS App](https://github.com/ServiceStack/ServiceStackVS/blob/master/angular-spa.md) template by leveraging the **node.js** ecosystem for managing all aspects of Client App development utilizing the best-in-class libraries:
+
+ - [npm](https://www.npmjs.org/) to manage node.js dependencies (bower, grunt, gulp)
+ - [Bower](http://bower.io/) for managing client dependencies (angular, jquery, bootstrap, etc)
+ - [Grunt](http://gruntjs.com/) as the primary task runner for server, client packaging and deployments
+ - [Gulp](http://gulpjs.com/) used by Grunt to do the heavy-lifting bundling and minification
+
+The templates conveniently pre-configures the above libraries into a working out-of-the-box solution, including high-level grunt tasks to take care of the full-dev-cycle of **building**, **packaging** and **deploying** your app:
+
+ - **[01-run-tests](https://github.com/ServiceStack/ServiceStackVS/blob/angular-spa-template/angular-spa.md#01-run-tests)** - Runs Karma JavaScript Unit Tests
+ - **[02-package-server](https://github.com/ServiceStack/ServiceStackVS/blob/angular-spa-template/angular-spa.md#02-package-server)** - Uses msbuild to build the application and copies server artefacts to `/wwwroot`
+ - **[03-package-client](https://github.com/ServiceStack/ServiceStackVS/blob/angular-spa-template/angular-spa.md#03-package-client)** - Optimizes and packages the client artefacts for deployment in `/wwwroot`
+ - **[04-deploy-app](https://github.com/ServiceStack/ServiceStackVS/blob/angular-spa-template/angular-spa.md#04-deploy-app)** - Uses MS WebDeploy and `/wwwroot_buld/publish/config.json` to deploy app to specified server
+
+## [React Chat](https://github.com/ServiceStackApps/Chat-React)
+
+To help to get started with the **ReactJS App** VS.NET template and learn React, we've rewritten [ServiceStack Chat](https://github.com/ServiceStackApps/Chat) ServerEvents demo using [React](http://facebook.github.io/react/):
+
+[![React Chat](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/livedemos/chat-react.png)](http://react-chat.servicestack.net)
+
+> Live Demo: http://react-chat.servicestack.net
+
+### [Intro to developing apps with React and Reflux](https://github.com/ServiceStackApps/Chat-React)
+
+The [React Chat GitHub Repository](https://github.com/ServiceStackApps/Chat-React) also includes a guide of Facebook's [React](http://facebook.github.io/react/) library and [Flux pattern](http://facebook.github.io/react/docs/flux-overview.html) and walks through how to use them to put together a React-based App - making use of the scripts in the ServiceStackVS template along the way to optimize, package and deploy React Chat.
+
+## [Redis](https://github.com/ServiceStack/ServiceStack.Redis)
+
+### Heartbeats enabled on [RedisPubSubServer](https://github.com/ServiceStack/ServiceStack.Redis#new-managed-pubsub-server)
+
+`RedisPubServer` now maintains periodic heartbeats with Redis and will auto-reconnect when it detects a connection has dropped. Heartbeats can be disabled by setting `HeartbeatInterval=null`.
+
+The new heartbeat support should also improve resiliency in components powered by RedisPubServer, including `RedisMqServer` and `RedisServerEvents`.
+
+### Updated [RedisManagerPool](https://github.com/ServiceStack/ServiceStack.Redis#redismanagerpool) Pooling Behavior
+
+`RedisManagerPool` is our new streamlined version of `PooledRedisClientManager` with a simplified API courtesy of the configuration moving into the [Redis Connection String](https://github.com/ServiceStack/ServiceStack.Redis#redis-connection-strings). As an new and alternative Pooled Client Manager we've taken the opportunity to tweak the pooling behavior so that any connections required after the maximum Pool size has been reached will be created and disposed outside of the Pool. 
+
+This is different to `PooledRedisClientManager` which imposes a maximum connection limit and when its maximum pool size has been reached will instead block on any new connection requests until the next RedisClient is released back into the pool. If no client became available within `PoolTimeout`, a Pool Timeout exception will be thrown. 
+
+By not being restricted to a maximum pool size, the new pooling behavior in `RedisManagerPool` lets it maintain a smaller connection pool size at the cost of potentially having a higher opened/closed connection count.
+
+### Redis HTTP [Request Logger](https://github.com/ServiceStack/ServiceStack/wiki/Request-logger)
+
+A new `RedisRequestLogger` is available in the **ServiceStack.Server** NuGet package to provide an alternative back-end for the [Request Logs Feature](https://github.com/ServiceStack/ServiceStack/wiki/Request-logger) to log HTTP Requests with Redis so they remain available after AppDomain restarts.
+
+`RequestLogsFeature` can be configured to use the new `RedisRequestLogger` with:
+
+```csharp
+Plugins.Add(new RequestLogsFeature {
+    RequestLogger = new RedisRequestLogger(
+	    container.Resolve<IRedisClientsManager>(), capacity:1000)
+});
+```
+
+## [OrmLite](https://github.com/ServiceStack/ServiceStack.OrmLite)
+
+### [Multiple Self References](https://github.com/ServiceStack/ServiceStack.OrmLite#multiple-self-references)
+
+Supports for multiple Self References of the same type has been added where if there are multiple fields containing `[References]` to the same type, OrmLite will fallback to matching properties based on `{PropertyName}Id` property naming convention, e.g:
+
+```csharp
+public class Customer
+{
+    [AutoIncrement]
+    public int Id { get; set; }
+    public string Name { get; set; }
+
+    [References(typeof(CustomerAddress))]
+    public int? HomeAddressId { get; set; }
+
+    [References(typeof(CustomerAddress))]
+    public int? WorkAddressId { get; set; }
+
+    [Reference]
+    public CustomerAddress HomeAddress { get; set; }
+
+    [Reference]
+    public CustomerAddress WorkAddress { get; set; }
+}
+```
+
+> Self References now also support mixing and matching of property names and DB Alias naming conventions
+
+### Support for CROSS JOIN's
+
+New `CrossJoin` API's were added to `SqlExpression` that works similarly to other JOIN's, e.g:
+
+```csharp
+var q = db.From<TableA>()
+          .CrossJoin<TableB>()
+          .OrderBy<TableB>(x => x.Id);
+
+var results = db.Select<CrossJoinResult>(q);
+```
+
+### OpenDbConnectionString()
+
+A new `OpenDbConnectionString` API was added to open adhoc connection strings using the same `OrmLiteConnectionFactory` and `DialectProvider` instance. This makes creating Multi Tenant DB Factories a little easier, e.g:
+
+```csharp
+public class MultiTenantDbFactory : IDbConnectionFactory
+{
+    private readonly IDbConnectionFactory dbFactory;
+
+    public MultiTenantDbFactory(IDbConnectionFactory dbFactory)
+    {
+        this.dbFactory = dbFactory;
+    }
+
+    public IDbConnection OpenDbConnection()
+    {
+        var tenantId = RequestContext.Instance.Items["TenantId"] as string;
+        return tenantId != null
+            ? dbFactory.OpenDbConnectionString(GetConnectionString(tenantId))
+            : dbFactory.OpenDbConnection();
+    }
+
+    public IDbConnection CreateDbConnection()
+    {
+        return dbFactory.CreateDbConnection();
+    }
+}
+```
+
+A complete Multi Tenant OrmLite example can be found in [MultiTennantAppHostTests.cs](https://github.com/ServiceStack/ServiceStack/blob/master/tests/ServiceStack.WebHost.Endpoints.Tests/MultiTennantAppHostTests.cs)
+
+### Oracle Provider returns to form
+
+Thanks to [@TroyDycavinu-AI](https://github.com/TroyDycavinu-AI) efforts, the [Oracle OrmLite Provider](http://nuget.org/packages/ServiceStack.OrmLite.Oracle) test suite is back in the green
+
+## [Razor](http://razor.servicestack.net/)
+
+### RenderToAction()
+
+The new `RenderToAction()` method lets you execute a Service in a Razor View and include it's rendered partial view using just a relative Url:
+
+```csharp
+@Html.RenderAction("/products/1")
+```
+It also takes an optional view name if you want a different view than the default:
+
+```csharp
+@Html.RenderAction("/products/1", "CustomProductView")
+```
+
+An alternative approach to include another Services View is with `Html.Partial()` specifying which view and model you want to render:
+
+```csharp
+@Html.Partial("GetProduct", 
+    base.ExecuteService<ProductService>(s => s.Any(new GetProduct { Id = 1 })))
+```
+ 
+Where `ExecuteService` is a shorthand wrapper around using `ResolveService<T>` in a `using` block:
+
+```csharp
+@{
+   Response response = null;
+   using (var service = base.ResolveService<ProductService>())
+   {
+       response = service.Any(new GetProduct { Id = 1 });
+   }
+}
+@Html.Partial("GetProduct", response)
+```
+
+### Relative Content Partials
+
+In addition to Shared Razor Views in `/Views` you can now include Partials relative to the containing Razor Content Page:
+
+```csharp
+@Html.Partial("LocalPartial", model)
+@Html.Partial("SubDir/NestedPartial", model)
+```
+
+## [AutoQuery](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query)
+
+### Unlimited Custom Table Joins
+
+AutoQuery now supports joining any number of tables together by annotating the Request DTO with multiple `IJoin<>` interface markers e.g:
+
+```csharp
+public class MyQuery : QueryBase<Table>, 
+	IJoin<T1,T2>,
+	IJoin<T2,T3>,
+	IJoin<T3,T4>,
+	//... 
+{
+}
+```
+
+## [Add ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference)
+
+ - DTO Interfaces are now included in all C#, F#, VB.NET and TypeScript Native Type providers.
+ - F# developers can specify `GlobalNamespace` in their generated `.dtos.fs`
+
+
+## [Authentication](https://github.com/ServiceStack/ServiceStack/wiki/Authentication-and-authorization)
+
+The `RavenDbUserAuthRepository` now supports specialization so it can be used to persist extended custom `UserAuth` and `UserAuthDetails` types, e.g:
+
+```csharp
+public class CustomRavenDbAuthRepository 
+    : RavenDbUserAuthRepository<MyUserAuth, MyUserAuthDetails>
+{
+	//...
+}
+```
+
+### [Sessions](https://github.com/ServiceStack/ServiceStack/wiki/Sessions)
+
+If needed, Sessions can be injected or modified in ASP.NET hosts with:
+
+```csharp
+HttpContext.Current.Items[ServiceExtensions.RequestItemsSessionKey] =
+    new AuthUserSession { ... };
+```
+
+New Session API's added:
+
+ - `IRequest.RemoveSession(sessionId)` - Remove the Session 
+ - `IRequest.GetSessionTimeToLive()` - Time remaining before current Session expires
+ - `ICacheClient.GetSessionTimeToLive(id)` - Time remaining before specified Session expires
+
+
+
+## Other Features
+
+ - SOAP no longer emits the UTF8 BOM by default, overridable in `Config.XmlWriterSettings`
+ - CORS Support added in Server Events raw HTTP Handlers
+ - C# Server Events Client auto restarts when Heartbeat has elapsed the Servers `IdleTimeoutMs`
+ - Added [workaround for supporting Mono with Redis SSL](https://github.com/mono/mono/pull/1399)
+
+
+## Breaking Changes
+
+### PCL NuGet Packages Merged
+
+The **ServiceStack.Client.Pcl** and **ServiceStack.Stripe.Pcl** NuGet packages have been merged into the main **ServiceStack.Client** and **ServiceStack.Stripe** NuGet packages and as a result will no longer receive future updates. If you're using them please update your NuGet references.
+
+### Refactored Redis Client API's
+
+`IRedisClient.GetTimeToLive()` now returns a `TimeSpan?` will will return:
+  - `null` if no key exists
+  - `TimeSpan.MaxValue` if there is no expiry set on the key
+  - or a `TimeSpan` value with the time remaining before the key is set to expire
+
+ `KeepAliveRetryAfterMs` has been renamed to `WaitBeforeNextRestart` in `RedisPubSubServer` and the classes that use it: `RedisServerEvents` and `RedisMqServer`.
+
 # v4.0.33 Release Notes
 
 ## OrmLite now supports Async!
