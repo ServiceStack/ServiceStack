@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
@@ -186,10 +187,23 @@ namespace ServiceStack.ServiceHost
         //signature matches ServiceExecFn
         public object Process(IRequestContext requestContext, object instance, object request)
         {
-            return requestContext != null && requestContext.EndpointAttributes.Has(EndpointAttributes.OneWay) 
+            var operationReturn = requestContext != null && requestContext.EndpointAttributes.Has(EndpointAttributes.OneWay) 
                 ? ExecuteOneWay(requestContext, instance, (TRequest)request) 
                 : Execute(requestContext, instance, (TRequest)request);
+
+            // This is a temporary solution that minimally supports async operations. Services may implement
+            // async endpoints, and the eventual responseDto will contain the correct response, but true async behavior
+            // is not implemented at this time. The Task<TResponse> returned by the operation will block in ".Result".
+            // TODO: Implement a real async stack, all the way from HttpAsyncHandler down to this point.
+            var operationReturnAsAsync = operationReturn as Task<object>;
+            if (operationReturnAsAsync == null)
+            {
+                return operationReturn;
+            }
+            else
+            {
+                return operationReturnAsAsync.Result;
+            }
         }
     }
-
 }
