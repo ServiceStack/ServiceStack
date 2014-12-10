@@ -221,7 +221,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsOperation;
                 if (addVersionInfo)
                 {
-                    sb.AppendLine("{0}:number; //{1}".Fmt("Version".PropertyStyle(), Config.AddImplicitVersion));
+                    sb.AppendLine("{0}: number; //{1}".Fmt("Version".PropertyStyle(), Config.AddImplicitVersion));
                 }
 
                 AddProperties(sb, type);
@@ -265,7 +265,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
-                    sb.AppendLine("{1}{2}:{0};".Fmt(propType, prop.Name.SafeToken().PropertyStyle(), optional));
+                    sb.AppendLine("{1}{2}: {0};".Fmt(propType, prop.Name.SafeToken().PropertyStyle(), optional));
                 }
             }
 
@@ -276,7 +276,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine("{0}:ResponseStatus;".Fmt("ResponseStatus".PropertyStyle()));
+                sb.AppendLine("{0}: ResponseStatus;".Fmt("ResponseStatus".PropertyStyle()));
             }
         }
 
