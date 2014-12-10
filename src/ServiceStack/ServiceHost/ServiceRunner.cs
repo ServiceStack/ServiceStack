@@ -193,7 +193,7 @@ namespace ServiceStack.ServiceHost
 
             // This is a temporary solution that minimally supports async operations. Services may implement
             // async endpoints, and the eventual responseDto will contain the correct response, but true async behavior
-            // is not implemented at this time. The Task<Tresponse> returned by the operation will block in ".Result".
+            // is not implemented at this time. The Task<TResponse> returned by the operation will block in ".Result".
             // TODO: Implement a real async stack, all the way from HttpAsyncHandler down to this point.
             var operationReturnAsAsync = operationReturn as Task<object>;
             if (operationReturnAsAsync == null)
