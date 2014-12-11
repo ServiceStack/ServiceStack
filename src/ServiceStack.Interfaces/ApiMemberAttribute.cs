@@ -8,11 +8,6 @@ namespace ServiceStack
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
     public class ApiMemberAttribute : AttributeBase
     {
-        public ApiMemberAttribute()
-        {
-            DataType = "string";
-        }
-
         /// <summary>
         /// Gets or sets verb to which applies attribute. By default applies to all verbs.
         /// </summary>
