@@ -59,5 +59,14 @@ namespace Check.ServiceModel
         [ApiMember]
         [DataMember(Order = 1, IsRequired = false)]
         public string Name1 { get; set; }
+
+        public MenuItemExampleItem MenuItemExampleItem { get; set; }
+    }
+
+    public class MenuItemExampleItem
+    {
+        [ApiMember]
+        [DataMember(Order = 1, IsRequired = false)]
+        public string Name1 { get; set; }
     }
 }
