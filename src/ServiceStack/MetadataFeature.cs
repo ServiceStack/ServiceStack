@@ -115,6 +115,12 @@ namespace ServiceStack
             return metadata;
         }
 
+        public static MetadataFeature RemovePluginLink(this MetadataFeature metadata, string href)
+        {
+            metadata.PluginLinks.Remove(href);
+            return metadata;
+        }
+
         public static MetadataFeature AddDebugLink(this MetadataFeature metadata, string href, string title)
         {
             if (metadata != null)
@@ -124,6 +130,12 @@ namespace ServiceStack
 
                 metadata.DebugLinks[href] = title;
             }
+            return metadata;
+        }
+
+        public static MetadataFeature RemoveDebugLink(this MetadataFeature metadata, string href)
+        {
+            metadata.DebugLinks.Remove(href);
             return metadata;
         }
     }
