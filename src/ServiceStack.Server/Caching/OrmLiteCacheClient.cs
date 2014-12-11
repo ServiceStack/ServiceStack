@@ -141,22 +141,52 @@ namespace ServiceStack.Caching
             }
         }
 
+        private static bool UpdateIfExists<T>(IDbConnection db, string key, T value)
+        {
+            var exists = db.UpdateOnly(new CacheEntry
+                {
+                    Id = key,
+                    Data = db.Serialize(value),
+                    ModifiedDate = DateTime.UtcNow,
+                },
+                onlyFields: q => new { q.Data, q.ModifiedDate },
+                @where: q => q.Id == key) == 1;
+
+            return exists;
+        }
+
+        private static bool UpdateIfExists<T>(IDbConnection db, string key, T value, DateTime expiresAt)
+        {
+            var exists = db.UpdateOnly(new CacheEntry
+                {
+                    Id = key,
+                    Data = db.Serialize(value),
+                    ExpiryDate = expiresAt,
+                    ModifiedDate = DateTime.UtcNow,
+                },
+                onlyFields: q => new { q.Data, ExpiredDate = q.ExpiryDate, q.ModifiedDate },
+                @where: q => q.Id == key) == 1;
+
+            return exists;
+        }
+
         public bool Set<T>(string key, T value)
         {
             return Exec(db =>
             {
-                var exists = db.UpdateOnly(new CacheEntry
-                    {
-                        Id = key,
-                        Data = db.Serialize(value),
-                        ModifiedDate = DateTime.UtcNow,
-                    },
-                    onlyFields: q => new { q.Data, q.ModifiedDate },
-                    where: q => q.Id == key) == 1;
+                var exists = UpdateIfExists(db, key, value);
 
                 if (!exists)
                 {
-                    db.Insert(CreateEntry(key, db.Serialize(value)));
+                    try
+                    {
+                        db.Insert(CreateEntry(key, db.Serialize(value)));
+                    }
+                    catch (Exception)
+                    {
+                        exists = UpdateIfExists(db, key, value);
+                        if (!exists) throw;
+                    }
                 }
 
                 return true;
@@ -205,19 +235,18 @@ namespace ServiceStack.Caching
         {
             return Exec(db =>
             {
-                var exists = db.UpdateOnly(new CacheEntry
-                    {
-                        Id = key,
-                        Data = db.Serialize(value),
-                        ExpiryDate = expiresAt,
-                        ModifiedDate = DateTime.UtcNow,
-                    },
-                    onlyFields: q => new { q.Data, ExpiredDate = q.ExpiryDate, q.ModifiedDate },
-                    where: q => q.Id == key) == 1;
-
+                var exists = UpdateIfExists(db, key, value, expiresAt);
                 if (!exists)
                 {
-                    db.Insert(CreateEntry(key, db.Serialize(value), expires: expiresAt));
+                    try
+                    {
+                        db.Insert(CreateEntry(key, db.Serialize(value), expires: expiresAt));
+                    }
+                    catch (Exception)
+                    {
+                        exists = UpdateIfExists(db, key, value, expiresAt);
+                        if (!exists) throw;
+                    }
                 }
 
                 return true;
@@ -268,19 +297,18 @@ namespace ServiceStack.Caching
         {
             return Exec(db =>
             {
-                var exists = db.UpdateOnly(new CacheEntry
-                    {
-                        Id = key,
-                        Data = db.Serialize(value),
-                        ExpiryDate = DateTime.UtcNow.Add(expiresIn),
-                        ModifiedDate = DateTime.UtcNow,
-                    },
-                    onlyFields: q => new { q.Data, ExpiredDate = q.ExpiryDate, q.ModifiedDate },
-                    where: q => q.Id == key) == 1;
-
+                var exists = UpdateIfExists(db, key, DateTime.UtcNow.Add(expiresIn));
                 if (!exists)
                 {
-                    db.Insert(CreateEntry(key, db.Serialize(value), expires: DateTime.UtcNow.Add(expiresIn)));
+                    try
+                    {
+                        db.Insert(CreateEntry(key, db.Serialize(value), expires: DateTime.UtcNow.Add(expiresIn)));
+                    }
+                    catch (Exception)
+                    {
+                        exists = UpdateIfExists(db, key, value, DateTime.UtcNow.Add(expiresIn));
+                        if (!exists) throw;
+                    }
                 }
 
                 return true;

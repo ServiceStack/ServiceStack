@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
@@ -314,6 +315,20 @@ namespace ServiceStack.Server.Tests.Properties
             Assert.That(typedSession.Custom, Is.EqualTo("custom"));
 
             JsConfig.ExcludeTypeInfo = false;
+        }
+
+        [Test]
+        public void Can_cache_multiple_items_in_parallel()
+        {
+            Parallel.Invoke(() =>
+            {
+                var cache = CreateClient();
+                cache.Set("concurrent-test", "1");    
+            }, () =>
+            {
+                var cache = CreateClient();
+                cache.Set("concurrent-test", "2");
+            });
         }
     }
 }
