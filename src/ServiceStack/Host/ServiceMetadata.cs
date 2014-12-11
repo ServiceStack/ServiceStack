@@ -367,7 +367,10 @@ namespace ServiceStack.Host
                 {
                     var type = FindMetadataType(metadataTypes, p.Type, p.TypeNamespace);
                     if (type != null && !types.Contains(type))
+                    {
                         types.Add(type);
+                        AddReferencedTypes(type, metadataTypes, types);
+                    }
 
                     if (!p.GenericArgs.IsEmpty())
                     {

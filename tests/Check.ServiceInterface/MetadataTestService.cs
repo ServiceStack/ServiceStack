@@ -24,5 +24,16 @@ namespace Check.ServiceInterface
                 }
             };
         }
+
+        public object Any(GetExample request)
+        {
+            return new GetExampleResponse
+            {
+                MenuExample1 = new MenuExample
+                {
+                    MenuItemExample1 = new MenuItemExample { Name1 = "foo" }
+                }
+            };
+        }
     }
 }
