@@ -99,7 +99,7 @@ namespace ServiceStack.Server.Tests.Properties
     {
         public override ICacheClient CreateClient()
         {
-            return new RedisClient(Environment.GetEnvironmentVariable("CI_HOST"));
+            return new RedisManagerPool(Environment.GetEnvironmentVariable("CI_HOST")).GetCacheClient();
         }
     }
 
@@ -320,15 +320,16 @@ namespace ServiceStack.Server.Tests.Properties
         [Test]
         public void Can_cache_multiple_items_in_parallel()
         {
-            Parallel.Invoke(() =>
+            var cache = CreateClient();
+            var fns = 10.Times(i => (Action)(() =>
             {
-                var cache = CreateClient();
-                cache.Set("concurrent-test", "1");    
-            }, () =>
-            {
-                var cache = CreateClient();
-                cache.Set("concurrent-test", "2");
-            });
+                cache.Set("concurrent-test", "Data: {0}".Fmt(i));
+            }));
+
+            Parallel.Invoke(fns.ToArray());
+
+            var entry = cache.Get<string>("concurrent-test");
+            Assert.That(entry, Is.StringStarting("Data: "));
         }
     }
 }

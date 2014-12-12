@@ -297,7 +297,7 @@ namespace ServiceStack.Caching
         {
             return Exec(db =>
             {
-                var exists = UpdateIfExists(db, key, DateTime.UtcNow.Add(expiresIn));
+                var exists = UpdateIfExists(db, key, value, DateTime.UtcNow.Add(expiresIn));
                 if (!exists)
                 {
                     try
