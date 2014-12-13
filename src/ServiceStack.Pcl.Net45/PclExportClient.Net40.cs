@@ -4,6 +4,8 @@
 #if !(XBOX || SL5 || NETFX_CORE || WP || PCL)
 using System;
 using System.Collections.Specialized;
+using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Web;
 using ServiceStack;
@@ -50,6 +52,12 @@ namespace ServiceStack
         public override string HtmlDecode(string html)
         {
             return HttpUtility.HtmlDecode(html);
+        }
+
+        public override string GetHeader(WebHeaderCollection headers, string name, Func<string, bool> valuePredicate)
+        {
+            var values = headers.GetValues(name);
+            return values == null ? null : values.FirstOrDefault(valuePredicate);
         }
 
         public override ITimer CreateTimer(TimerCallback cb, TimeSpan timeOut, object state)

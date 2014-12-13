@@ -9,6 +9,32 @@ using ServiceStack.Text;
 
 namespace PclTest.Android
 {
+    [Flags]
+    public enum DbModelComparisonTypesEnum : int
+    {
+        /// <summary>
+        /// Compare only the PrimaryKey values
+        /// </summary>
+        PkOnly = 1,
+        /// <summary>
+        /// Compare only the non PrimaryKey values
+        /// </summary>
+        NonPkOnly = 2,
+        /// <summary>
+        /// Compare all values
+        /// (The PrimaryKey and non PrimaryKey values too)
+        /// </summary>
+        All = 3 // PkOnly & NonPkOnly
+    }
+
+    public partial class Question
+    {
+        public static DbModelComparisonTypesEnum DefaultComparisonType { get; set; }
+
+        public Guid Id { get; set; }
+        public string Title { get; set; }
+    }
+
     [Activity(Label = "PclTest.Android", MainLauncher = true, Icon = "@drawable/icon")]
     public class Activity1 : Activity
     {
@@ -56,6 +82,15 @@ namespace PclTest.Android
             {
                 try
                 {
+                    var dto = new Question
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = "Title",
+                    };
+
+                    var json = dto.ToJson();
+                    var q = json.FromJson<Question>();
+                    lblResults.Text = "{0}:{1}".Fmt(q.Id, q.Title);
                 }
                 catch (Exception ex)
                 {
