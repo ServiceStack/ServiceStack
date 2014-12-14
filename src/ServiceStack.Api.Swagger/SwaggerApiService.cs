@@ -524,7 +524,7 @@ namespace ServiceStack.Api.Swagger
                     where !string.Equals(member.ParameterType, "model") 
                     select new MethodOperationParameter
                     {
-                        DataType = member.DataType,
+                        DataType = member.DataType ?? SwaggerType.String,
                         AllowMultiple = member.AllowMultiple,
                         Description = member.Description,
                         Name = member.Name ?? key,
