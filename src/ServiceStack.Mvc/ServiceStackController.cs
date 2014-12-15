@@ -104,7 +104,7 @@ namespace ServiceStack.Mvc
             };
         }
 
-        public virtual ActionResult InvokeDefaultAction(HttpContextBase httpContext)
+        protected virtual ActionResult InvokeDefaultAction(HttpContextBase httpContext)
         {
             try
             {
@@ -201,35 +201,35 @@ namespace ServiceStack.Mvc
         {
             get { return ServiceStackProvider.IsAuthenticated; }
         }
-        public virtual T TryResolve<T>()
+        protected virtual T TryResolve<T>()
         {
             return ServiceStackProvider.TryResolve<T>();
         }
-        public virtual T ResolveService<T>()
+        protected virtual T ResolveService<T>()
         {
             return ServiceStackProvider.ResolveService<T>();
         }
-        public virtual object Execute(object requestDto)
+        protected virtual object Execute(object requestDto)
         {
             return ServiceStackProvider.Execute(requestDto);
         }
-        public virtual object ForwardRequestToServiceStack(IRequest request = null)
+        protected virtual object ForwardRequestToServiceStack(IRequest request = null)
         {
             return ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);
         }
-        public virtual IAuthSession GetSession(bool reload = true)
+        protected virtual IAuthSession GetSession(bool reload = true)
         {
             return ServiceStackProvider.GetSession(reload);
         }
-        public virtual TUserSession SessionAs<TUserSession>()
+        protected virtual TUserSession SessionAs<TUserSession>()
         {
             return ServiceStackProvider.SessionAs<TUserSession>();
         }
-        public virtual void ClearSession()
+        protected virtual void ClearSession()
         {
             ServiceStackProvider.ClearSession();
         }
-        public virtual void PublishMessage<T>(T message)
+        protected virtual void PublishMessage<T>(T message)
         {
             ServiceStackProvider.PublishMessage(message);
         }
