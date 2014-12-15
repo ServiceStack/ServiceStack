@@ -118,6 +118,16 @@ namespace ServiceStack.ServiceHost
 
                 var response = AfterEachRequest(requestContext, request, ServiceAction(instance, request));
 
+                // This is a temporary solution that minimally supports async operations. Services may implement
+                // async endpoints, and the eventual responseDto will contain the correct response, but true async behavior
+                // is not implemented at this time. The Task<TResponse> returned by the operation will block in ".Result".
+                // TODO: Implement a real async stack, all the way from HttpAsyncHandler down to this point.
+                var responseAsAsync = response as Task<object>;
+                if (responseAsAsync != null)
+                {
+                    response = responseAsAsync.Result;
+                }
+
                 if (ResponseFilters != null)
                 {
                     foreach (var responseFilter in ResponseFilters)
@@ -187,23 +197,10 @@ namespace ServiceStack.ServiceHost
         //signature matches ServiceExecFn
         public object Process(IRequestContext requestContext, object instance, object request)
         {
-            var operationReturn = requestContext != null && requestContext.EndpointAttributes.Has(EndpointAttributes.OneWay) 
+            return requestContext != null && requestContext.EndpointAttributes.Has(EndpointAttributes.OneWay) 
                 ? ExecuteOneWay(requestContext, instance, (TRequest)request) 
                 : Execute(requestContext, instance, (TRequest)request);
 
-            // This is a temporary solution that minimally supports async operations. Services may implement
-            // async endpoints, and the eventual responseDto will contain the correct response, but true async behavior
-            // is not implemented at this time. The Task<TResponse> returned by the operation will block in ".Result".
-            // TODO: Implement a real async stack, all the way from HttpAsyncHandler down to this point.
-            var operationReturnAsAsync = operationReturn as Task<object>;
-            if (operationReturnAsAsync == null)
-            {
-                return operationReturn;
-            }
-            else
-            {
-                return operationReturnAsAsync.Result;
-            }
         }
     }
 }
