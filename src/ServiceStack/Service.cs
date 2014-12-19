@@ -66,20 +66,30 @@ namespace ServiceStack
             {
                 return cache ??
                     (cache = TryResolve<ICacheClient>()) ??
-                    (cache = (TryResolve<IRedisClientsManager>() != null ? TryResolve<IRedisClientsManager>().GetCacheClient() : null));
+                    (cache = (RedisManager != null ? RedisManager.GetCacheClient() : null));
             }
+        }
+
+        public virtual IDbConnectionFactory DbFactory
+        {
+            get { return TryResolve<IDbConnectionFactory>(); }
+        }
+
+        public virtual IRedisClientsManager RedisManager
+        {
+            get { return TryResolve<IRedisClientsManager>(); }
         }
 
         private IDbConnection db;
         public virtual IDbConnection Db
         {
-            get { return db ?? (db = TryResolve<IDbConnectionFactory>().OpenDbConnection()); }
+            get { return db ?? (db = DbFactory.OpenDbConnection()); }
         }
 
         private IRedisClient redis;
         public virtual IRedisClient Redis
         {
-            get { return redis ?? (redis = TryResolve<IRedisClientsManager>().GetClient()); }
+            get { return redis ?? (redis = RedisManager.GetClient()); }
         }
 
         private IMessageFactory messageFactory;
