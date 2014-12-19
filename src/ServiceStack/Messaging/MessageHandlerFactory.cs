@@ -13,7 +13,7 @@ namespace ServiceStack.Messaging
         public string[] PublishResponsesWhitelist { get; set; }
 
         private readonly Func<IMessage<T>, object> processMessageFn;
-        private readonly Action<IMessage<T>, Exception> processExceptionFn;
+        private readonly Action<IMessageHandler, IMessage<T>, Exception> processExceptionFn;
         public int RetryCount { get; set; }
 
         public MessageHandlerFactory(IMessageService messageService, Func<IMessage<T>, object> processMessageFn)
@@ -23,7 +23,7 @@ namespace ServiceStack.Messaging
 
         public MessageHandlerFactory(IMessageService messageService,
             Func<IMessage<T>, object> processMessageFn,
-            Action<IMessage<T>, Exception> processExceptionEx)
+            Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx)
         {
             if (messageService == null)
                 throw new ArgumentNullException("messageService");

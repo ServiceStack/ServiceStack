@@ -14,6 +14,11 @@ namespace ServiceStack.Messaging
         Type MessageType { get; }
 
         /// <summary>
+        /// The MqClient processing the message
+        /// </summary>
+        IMessageQueueClient MqClient { get; }
+
+        /// <summary>
         /// Process all messages pending
         /// </summary>
         /// <param name="mqClient"></param>

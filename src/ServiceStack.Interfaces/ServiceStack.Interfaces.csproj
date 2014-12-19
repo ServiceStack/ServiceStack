@@ -144,6 +144,7 @@
     <Compile Include="Logging\StringBuilderLog.cs" />
     <Compile Include="Logging\TestLogFactory.cs" />
     <Compile Include="Logging\TestLogger.cs" />
+    <Compile Include="Messaging\IMessageHandler.cs" />
     <Compile Include="Messaging\MessagingException.cs" />
     <Compile Include="Model\IHasGuidId.cs">
       <SubType>Code</SubType>

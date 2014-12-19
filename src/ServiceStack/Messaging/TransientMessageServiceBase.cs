@@ -42,7 +42,7 @@ namespace ServiceStack.Messaging
         }
 
         public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn,
-            Action<IMessage<T>, Exception> processExceptionEx)
+            Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx)
         {
             if (handlerMap.ContainsKey(typeof(T)))
             {
@@ -82,8 +82,8 @@ namespace ServiceStack.Messaging
         }
 
         protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(
-            Func<IMessage<T>, object> processMessageFn, 
-            Action<IMessage<T>, Exception> processExceptionEx)
+            Func<IMessage<T>, object> processMessageFn,
+            Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx)
         {
             return new MessageHandlerFactory<T>(this, processMessageFn, processExceptionEx) {
                 RetryCount = RetryCount,

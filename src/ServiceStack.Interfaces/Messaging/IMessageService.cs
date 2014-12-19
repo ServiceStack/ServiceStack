@@ -27,7 +27,7 @@ namespace ServiceStack.Messaging
         /// <typeparam name="T"></typeparam>
         /// <param name="processMessageFn"></param>
         /// <param name="processExceptionEx"></param>
-        void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessage<T>, Exception> processExceptionEx);
+        void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx);
 
         /// <summary>
         /// Get Total Current Stats for all Message Handlers

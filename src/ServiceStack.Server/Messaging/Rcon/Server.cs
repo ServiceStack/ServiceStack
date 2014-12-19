@@ -43,7 +43,7 @@ namespace ServiceStack.Messaging.Rcon
             RegisterHandler(processMessageFn, null);
         }
 
-        public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessage<T>, Exception> processExceptionEx)
+        public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx)
         {
             if (handlerMap.ContainsKey(typeof(T)))
             {
@@ -53,7 +53,7 @@ namespace ServiceStack.Messaging.Rcon
             handlerMap[typeof(T)] = CreateMessageHandlerFactory(processMessageFn, processExceptionEx);
         }
 
-        protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessage<T>, Exception> processExceptionEx)
+        protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx)
         {
             return new MessageHandlerFactory<T>(this, processMessageFn, processExceptionEx);
         }

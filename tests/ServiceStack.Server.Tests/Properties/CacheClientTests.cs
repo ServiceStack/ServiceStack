@@ -14,6 +14,10 @@ namespace ServiceStack.Server.Tests.Properties
 {
     public class Config
     {
+        public const string ServiceStackBaseUri = "http://localhost:20000";
+        public const string AbsoluteBaseUri = ServiceStackBaseUri + "/";
+        public const string ListeningOn = ServiceStackBaseUri + "/";
+
         public static string SqlServerBuildDb = "Server={0};Database=test;User Id=test;Password=test;".Fmt(Environment.GetEnvironmentVariable("CI_HOST"));
     }
 

@@ -79,6 +79,7 @@
   <ItemGroup>
     <Compile Include="Benchmarks\RedisMqServerBenchmarks.cs" />
     <Compile Include="Benchmarks\RedisMqServerServerBenchmarks.cs" />
+    <Compile Include="Messaging\MqAppHostTests.cs" />
     <Compile Include="Messaging\MqNameTests.cs" />
     <Compile Include="Messaging\MqRequestReplyTests.cs" />
     <Compile Include="Messaging\MqServerIntroTests.cs" />
