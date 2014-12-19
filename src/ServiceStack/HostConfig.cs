@@ -76,7 +76,7 @@ namespace ServiceStack
                     "js", "ts", "jsx", "css", "htm", "html", "shtm", "txt", "xml", "rss", "csv", "pdf",  
                     "jpg", "jpeg", "gif", "png", "bmp", "ico", "tif", "tiff", "svg",
                     "avi", "divx", "m3u", "mov", "mp3", "mpeg", "mpg", "qt", "vob", "wav", "wma", "wmv", 
-                    "flv", "swf", "xap", "xaml", "ogg", "mp4", "webm", "eot", "ttf", "woff", "map"
+                    "flv", "swf", "xap", "xaml", "ogg", "mp4", "webm", "eot", "ttf", "woff", "woff2", "map"
                 },
                 DebugAspNetHostEnvironment = Env.IsMono ? "FastCGI" : "IIS7",
                 DebugHttpListenerHostEnvironment = Env.IsMono ? "XSP" : "WebServer20",
