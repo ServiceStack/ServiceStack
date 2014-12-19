@@ -25,8 +25,8 @@ namespace ServiceStack
             this.Response = responseDto;
         }
 
-        public HttpError(object responseDto, int statusCode, string errorCode, string errorMessage = null)
-            : this(statusCode, errorCode, errorMessage)
+        public HttpError(object responseDto, int statusCode, string errorCode, string errorMessage = null, Exception innerException=null)
+            : this(statusCode, errorCode, errorMessage, innerException)
         {
             this.Response = responseDto;
         }
@@ -34,8 +34,8 @@ namespace ServiceStack
         public HttpError(HttpStatusCode statusCode, string errorCode, string errorMessage)
             : this((int)statusCode, errorCode, errorMessage){}
 
-        public HttpError(int statusCode, string errorCode, string errorMessage)
-            : base(errorMessage ?? errorCode ?? statusCode.ToString())
+        public HttpError(int statusCode, string errorCode, string errorMessage, Exception innerException = null)
+            : base(errorMessage ?? errorCode ?? statusCode.ToString(), innerException)
         {
             this.ErrorCode = errorCode ?? statusCode.ToString();
             this.Status = statusCode;

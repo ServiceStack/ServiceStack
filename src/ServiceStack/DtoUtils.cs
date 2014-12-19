@@ -94,7 +94,7 @@ namespace ServiceStack
                 errorMsg = responseStatus.Message ?? errorMsg;
             }
 
-            return new HttpError(responseDto, ex.ToStatusCode(), errorCode, errorMsg);
+            return new HttpError(responseDto, ex.ToStatusCode(), errorCode, errorMsg, ex);
         }
 
         /// <summary>
