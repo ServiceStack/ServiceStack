@@ -84,7 +84,9 @@ namespace ServiceStack
             return this.Roles != null && this.Roles.Contains(role);
         }
 
-        public virtual void OnRegistered(IServiceBase service) { } //backward compat
+        [Obsolete("Use OnRegistered(IRequest httpReq, IAuthSession session, IServiceBase service)")]
+        public virtual void OnRegistered(IServiceBase service) { }
+
         public virtual void OnRegistered(IRequest httpReq, IAuthSession session, IServiceBase service)
         {
             OnRegistered(service); 
