@@ -397,7 +397,7 @@ namespace ServiceStack.Auth
 
         public IUserAuthDetails CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
         {
-            TUserAuth userAuth = (TUserAuth)GetUserAuth(authSession, tokens) 
+            TUserAuth userAuth = (TUserAuth)GetUserAuth(authSession, tokens)
                 ?? typeof(TUserAuth).CreateInstance<TUserAuth>();
 
             using (var db = dbFactory.Open())
@@ -412,7 +412,7 @@ namespace ServiceStack.Auth
                     authDetails.UserId = tokens.UserId;
                 }
 
-                authDetails.PopulateMissing(tokens, overwriteReserved:true);
+                authDetails.PopulateMissing(tokens, overwriteReserved: true);
                 userAuth.PopulateMissingExtended(authDetails);
 
                 userAuth.ModifiedDate = DateTime.UtcNow;

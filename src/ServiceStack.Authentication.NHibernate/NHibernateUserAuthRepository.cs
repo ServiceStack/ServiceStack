@@ -101,7 +101,7 @@ namespace ServiceStack.Authentication.NHibernate
                 userId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
                 return true;
             }
-            return false;  
+            return false;
         }
 
         public bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)

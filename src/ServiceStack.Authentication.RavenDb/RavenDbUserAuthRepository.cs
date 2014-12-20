@@ -12,7 +12,7 @@ namespace ServiceStack.Authentication.RavenDb
 {
     public class RavenDbUserAuthRepository : RavenDbUserAuthRepository<UserAuth, UserAuthDetails>, IUserAuthRepository
     {
-        public RavenDbUserAuthRepository(IDocumentStore documentStore) : base(documentStore) {}
+        public RavenDbUserAuthRepository(IDocumentStore documentStore) : base(documentStore) { }
     }
 
     public class RavenDbUserAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository

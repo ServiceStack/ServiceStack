@@ -257,7 +257,7 @@ namespace ServiceStack.Auth
 
             return redis.As<IUserAuth>().GetById(longId);
         }
-         
+
         public IUserAuth GetUserAuth(string userAuthId)
         {
             using (var redis = factory.GetClient())
@@ -399,7 +399,7 @@ namespace ServiceStack.Auth
                     redis.SetEntryInHash(idx, tokens.UserId, authDetails.Id.ToString(CultureInfo.InvariantCulture));
                 }
 
-                authDetails.PopulateMissing(tokens, overwriteReserved:true);
+                authDetails.PopulateMissing(tokens, overwriteReserved: true);
                 userAuth.PopulateMissingExtended(authDetails);
 
                 userAuth.ModifiedDate = DateTime.UtcNow;
@@ -425,5 +425,5 @@ namespace ServiceStack.Auth
         }
 
         public void Clear() { factory.Clear(); }
-   }
+    }
 }
