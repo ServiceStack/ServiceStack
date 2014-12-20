@@ -134,7 +134,6 @@
     <Compile Include="Host\Handlers\CustomActionHandler.cs" />
     <Compile Include="Host\Handlers\HttpAsyncTaskHandler.cs" />
     <Compile Include="Host\RequestBaseWrapper.cs" />
-    <Compile Include="Messaging\IMessageHandler.cs" />
     <Compile Include="Messaging\IMessageHandlerDisposer.cs" />
     <Compile Include="Messaging\IMessageHandlerFactory.cs" />
     <Compile Include="Messaging\InMemoryTransientMessageFactory.cs" />
