@@ -365,7 +365,7 @@ namespace ServiceStack.Authentication.MongoDb
 			return null;
 		}
 
-		public string CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
+        public IUserAuthDetails CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
 		{
 			var userAuth = GetUserAuth(authSession, tokens) ?? new UserAuth();
 
@@ -374,19 +374,19 @@ namespace ServiceStack.Authentication.MongoDb
 							Query.EQ("UserId",  tokens.UserId)
 						);
             var providerCollection = mongoDatabase.GetCollection<UserAuthDetails>(UserOAuthProvider_Col);
-			var oAuthProvider = providerCollection.FindOne(query);
+			var authDetails = providerCollection.FindOne(query);
 
-			if (oAuthProvider == null)
+			if (authDetails == null)
 			{
-                oAuthProvider = new UserAuthDetails
+                authDetails = new UserAuthDetails
 				{
 					Provider = tokens.Provider,
 					UserId = tokens.UserId,
 				};
 			}
 
-			oAuthProvider.PopulateMissing(tokens);
-			userAuth.PopulateMissingExtended(oAuthProvider);
+			authDetails.PopulateMissing(tokens);
+			userAuth.PopulateMissingExtended(authDetails);
 
 			userAuth.ModifiedDate = DateTime.UtcNow;
 			if (userAuth.CreatedDate == default(DateTime))
@@ -394,18 +394,18 @@ namespace ServiceStack.Authentication.MongoDb
 
 			SaveUser((UserAuth)userAuth);
 
-			if (oAuthProvider.Id == default(int))
-				oAuthProvider.Id = IncUserOAuthProviderCounter();
+			if (authDetails.Id == default(int))
+				authDetails.Id = IncUserOAuthProviderCounter();
 
-			oAuthProvider.UserAuthId = userAuth.Id;
+			authDetails.UserAuthId = userAuth.Id;
 
-			if (oAuthProvider.CreatedDate == default(DateTime))
-				oAuthProvider.CreatedDate = userAuth.ModifiedDate;
-			oAuthProvider.ModifiedDate = userAuth.ModifiedDate;
+			if (authDetails.CreatedDate == default(DateTime))
+				authDetails.CreatedDate = userAuth.ModifiedDate;
+			authDetails.ModifiedDate = userAuth.ModifiedDate;
 
-			providerCollection.Save(oAuthProvider);
+			providerCollection.Save(authDetails);
 
-			return oAuthProvider.UserAuthId.ToString(CultureInfo.InvariantCulture);
+            return authDetails;
 		}
 
 		public void Clear()

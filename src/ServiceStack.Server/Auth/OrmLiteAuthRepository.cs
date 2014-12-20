@@ -395,25 +395,25 @@ namespace ServiceStack.Auth
             }
         }
 
-        public string CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
+        public IUserAuthDetails CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
         {
             TUserAuth userAuth = (TUserAuth)GetUserAuth(authSession, tokens) 
                 ?? typeof(TUserAuth).CreateInstance<TUserAuth>();
 
             using (var db = dbFactory.Open())
             {
-                var oAuthProvider = db.Select<TUserAuthDetails>(
+                var authDetails = db.Select<TUserAuthDetails>(
                     q => q.Provider == tokens.Provider && q.UserId == tokens.UserId).FirstOrDefault();
 
-                if (oAuthProvider == null)
+                if (authDetails == null)
                 {
-                    oAuthProvider = typeof(TUserAuthDetails).CreateInstance<TUserAuthDetails>();
-                    oAuthProvider.Provider = tokens.Provider;
-                    oAuthProvider.UserId = tokens.UserId;
+                    authDetails = typeof(TUserAuthDetails).CreateInstance<TUserAuthDetails>();
+                    authDetails.Provider = tokens.Provider;
+                    authDetails.UserId = tokens.UserId;
                 }
 
-                oAuthProvider.PopulateMissing(tokens, overwriteReserved:true);
-                userAuth.PopulateMissingExtended(oAuthProvider);
+                authDetails.PopulateMissing(tokens, overwriteReserved:true);
+                userAuth.PopulateMissingExtended(authDetails);
 
                 userAuth.ModifiedDate = DateTime.UtcNow;
                 if (userAuth.CreatedDate == default(DateTime))
@@ -423,17 +423,17 @@ namespace ServiceStack.Auth
 
                 db.Save(userAuth);
 
-                oAuthProvider.UserAuthId = userAuth.Id;
+                authDetails.UserAuthId = userAuth.Id;
 
-                if (oAuthProvider.CreatedDate == default(DateTime))
+                if (authDetails.CreatedDate == default(DateTime))
                 {
-                    oAuthProvider.CreatedDate = userAuth.ModifiedDate;
+                    authDetails.CreatedDate = userAuth.ModifiedDate;
                 }
-                oAuthProvider.ModifiedDate = userAuth.ModifiedDate;
+                authDetails.ModifiedDate = userAuth.ModifiedDate;
 
-                db.Save(oAuthProvider);
+                db.Save(authDetails);
 
-                return oAuthProvider.UserAuthId.ToString(CultureInfo.InvariantCulture);
+                return authDetails;
             }
         }
 

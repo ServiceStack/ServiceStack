@@ -7,7 +7,7 @@ namespace ServiceStack.Auth
         void LoadUserAuth(IAuthSession session, IAuthTokens tokens);
         void SaveUserAuth(IAuthSession authSession);
         List<IUserAuthDetails> GetUserAuthDetails(string userAuthId);
-        string CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens);
+        IUserAuthDetails CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens);
 
         IUserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens);
         IUserAuth GetUserAuthByUserName(string userNameOrEmail);

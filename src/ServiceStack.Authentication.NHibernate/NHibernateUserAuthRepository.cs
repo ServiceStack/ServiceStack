@@ -144,28 +144,28 @@ namespace ServiceStack.Authentication.NHibernate
             }
         }
 
-        public string CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
+        public IUserAuthDetails CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
         {
             var userAuth = GetUserAuth(authSession, tokens) ?? new UserAuthNHibernate();
 
             using (var nhSession = GetCurrentSessionFn(sessionFactory))
             {
-                var oAuthProvider = nhSession.QueryOver<UserAuthDetailsNHibernate>()
+                var authDetails = nhSession.QueryOver<UserAuthDetailsNHibernate>()
                     .Where(x => x.Provider == tokens.Provider)
                     .And(x => x.UserId == tokens.UserId)
                     .SingleOrDefault();
 
-                if (oAuthProvider == null)
+                if (authDetails == null)
                 {
-                    oAuthProvider = new UserAuthDetailsNHibernate
+                    authDetails = new UserAuthDetailsNHibernate
                     {
                         Provider = tokens.Provider,
                         UserId = tokens.UserId,
                     };
                 }
 
-                oAuthProvider.PopulateMissing(tokens);
-                userAuth.PopulateMissingExtended(oAuthProvider);
+                authDetails.PopulateMissing(tokens);
+                userAuth.PopulateMissingExtended(authDetails);
 
                 userAuth.ModifiedDate = DateTime.UtcNow;
                 if (userAuth.CreatedDate == default(DateTime))
@@ -173,15 +173,15 @@ namespace ServiceStack.Authentication.NHibernate
 
                 nhSession.Save(userAuth);
 
-                oAuthProvider.UserAuthId = userAuth.Id;
+                authDetails.UserAuthId = userAuth.Id;
 
-                if (oAuthProvider.CreatedDate == default(DateTime))
-                    oAuthProvider.CreatedDate = userAuth.ModifiedDate;
-                oAuthProvider.ModifiedDate = userAuth.ModifiedDate;
+                if (authDetails.CreatedDate == default(DateTime))
+                    authDetails.CreatedDate = userAuth.ModifiedDate;
+                authDetails.ModifiedDate = userAuth.ModifiedDate;
 
-                nhSession.Save(oAuthProvider);
+                nhSession.Save(authDetails);
 
-                return oAuthProvider.UserAuthId.ToString(CultureInfo.InvariantCulture);
+                return authDetails;
             }
         }
 

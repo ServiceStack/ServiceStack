@@ -266,6 +266,11 @@ namespace ServiceStack.AuthWeb.Tests
         {
             "OnAuthenticated()".Print();
         }
+
+        public override void OnRegistered(IRequest httpReq, IAuthSession session, IServiceBase service)
+        {
+            "OnRegistered()".Print();
+        }
     }
 
     public class DataSource

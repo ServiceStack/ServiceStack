@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using ServiceStack.Redis;
-using ServiceStack.Text;
 
 namespace ServiceStack.Auth
 {
@@ -15,9 +14,9 @@ namespace ServiceStack.Auth
         public RedisAuthRepository(IRedisClientManagerFacade factory) : base(factory) { }
     }
 
-    public class RedisAuthRepository<TUserAuth, TUserAuthProvider> : IUserAuthRepository, IClearable
+    public class RedisAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IClearable
         where TUserAuth : class, IUserAuth
-        where TUserAuthProvider : class, IUserAuthDetails
+        where TUserAuthDetails : class, IUserAuthDetails
     {
         //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
         public Regex ValidUserNameRegEx = new Regex(@"^(?=.{3,15}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
@@ -322,7 +321,7 @@ namespace ServiceStack.Auth
             {
                 var idx = IndexUserAuthAndProviderIdsSet(long.Parse(userAuthId));
                 var authProiverIds = redis.GetAllItemsFromSet(idx);
-                return redis.As<TUserAuthProvider>().GetByIds(authProiverIds).OrderBy(x => x.ModifiedDate).Cast<IUserAuthDetails>().ToList();
+                return redis.As<TUserAuthDetails>().GetByIds(authProiverIds).OrderBy(x => x.ModifiedDate).Cast<IUserAuthDetails>().ToList();
             }
         }
 
@@ -361,7 +360,7 @@ namespace ServiceStack.Auth
             var oAuthProviderId = GetAuthProviderByUserId(redis, tokens.Provider, tokens.UserId);
             if (!oAuthProviderId.IsNullOrEmpty())
             {
-                var oauthProvider = redis.As<TUserAuthProvider>().GetById(oAuthProviderId);
+                var oauthProvider = redis.As<TUserAuthDetails>().GetById(oAuthProviderId);
                 if (oauthProvider != null)
                 {
                     return redis.As<IUserAuth>().GetById(oauthProvider.UserAuthId);
@@ -370,16 +369,16 @@ namespace ServiceStack.Auth
             return null;
         }
 
-        public string CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
+        public IUserAuthDetails CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
         {
             using (var redis = factory.GetClient())
             {
-                TUserAuthProvider authProvider = null;
+                TUserAuthDetails authDetails = null;
 
                 var oAuthProviderId = GetAuthProviderByUserId(redis, tokens.Provider, tokens.UserId);
                 if (!oAuthProviderId.IsNullOrEmpty())
                 {
-                    authProvider = redis.As<TUserAuthProvider>().GetById(oAuthProviderId);
+                    authDetails = redis.As<TUserAuthDetails>().GetById(oAuthProviderId);
                 }
 
                 var userAuth = GetUserAuth(redis, authSession, tokens);
@@ -389,32 +388,32 @@ namespace ServiceStack.Auth
                     userAuth.Id = redis.As<IUserAuth>().GetNextSequence();
                 }
 
-                if (authProvider == null)
+                if (authDetails == null)
                 {
-                    authProvider = typeof(TUserAuthProvider).CreateInstance<TUserAuthProvider>();
-                    authProvider.Id = redis.As<TUserAuthProvider>().GetNextSequence();
-                    authProvider.UserAuthId = userAuth.Id;
-                    authProvider.Provider = tokens.Provider;
-                    authProvider.UserId = tokens.UserId;
+                    authDetails = typeof(TUserAuthDetails).CreateInstance<TUserAuthDetails>();
+                    authDetails.Id = redis.As<TUserAuthDetails>().GetNextSequence();
+                    authDetails.UserAuthId = userAuth.Id;
+                    authDetails.Provider = tokens.Provider;
+                    authDetails.UserId = tokens.UserId;
                     var idx = IndexProviderToUserIdHash(tokens.Provider);
-                    redis.SetEntryInHash(idx, tokens.UserId, authProvider.Id.ToString(CultureInfo.InvariantCulture));
+                    redis.SetEntryInHash(idx, tokens.UserId, authDetails.Id.ToString(CultureInfo.InvariantCulture));
                 }
 
-                authProvider.PopulateMissing(tokens, overwriteReserved:true);
-                userAuth.PopulateMissingExtended(authProvider);
+                authDetails.PopulateMissing(tokens, overwriteReserved:true);
+                userAuth.PopulateMissingExtended(authDetails);
 
                 userAuth.ModifiedDate = DateTime.UtcNow;
-                if (authProvider.CreatedDate == default(DateTime))
+                if (authDetails.CreatedDate == default(DateTime))
                 {
-                    authProvider.CreatedDate = userAuth.ModifiedDate;
+                    authDetails.CreatedDate = userAuth.ModifiedDate;
                 }
-                authProvider.ModifiedDate = userAuth.ModifiedDate;
+                authDetails.ModifiedDate = userAuth.ModifiedDate;
 
                 redis.Store(userAuth);
-                redis.Store(authProvider);
-                redis.AddItemToSet(IndexUserAuthAndProviderIdsSet(userAuth.Id), authProvider.Id.ToString(CultureInfo.InvariantCulture));
+                redis.Store(authDetails);
+                redis.AddItemToSet(IndexUserAuthAndProviderIdsSet(userAuth.Id), authDetails.Id.ToString(CultureInfo.InvariantCulture));
 
-                return userAuth.Id.ToString(CultureInfo.InvariantCulture);
+                return authDetails;
             }
         }
 

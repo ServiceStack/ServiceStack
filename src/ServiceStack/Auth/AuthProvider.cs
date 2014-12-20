@@ -100,7 +100,7 @@ namespace ServiceStack.Auth
             if (authRepo == null) return;
             if (tokens != null)
             {
-                session.UserAuthId = authRepo.CreateOrMergeAuthSession(session, tokens);
+                session.UserAuthId = authRepo.CreateOrMergeAuthSession(session, tokens).UserAuthId.ToString();
             }
 
             authRepo.LoadUserAuth(session, tokens);
@@ -184,7 +184,15 @@ namespace ServiceStack.Auth
 
                     if (hasTokens)
                     {
-                        session.UserAuthId = authRepo.CreateOrMergeAuthSession(session, tokens);
+                        var authDetails = authRepo.CreateOrMergeAuthSession(session, tokens);
+                        session.UserAuthId = authDetails.UserAuthId.ToString();
+
+                        var firstTimeAuthenticated = authDetails.CreatedDate == authDetails.ModifiedDate;
+                        if (firstTimeAuthenticated)
+                        {
+                            session.OnRegistered(authService.Request, session, authService);
+                            AuthEvents.OnRegistered(authService.Request, session, authService);
+                        }
                     }
 
                     authRepo.LoadUserAuth(session, tokens);

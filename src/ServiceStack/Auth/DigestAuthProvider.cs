@@ -111,7 +111,7 @@ namespace ServiceStack.Auth
             if (authRepo != null) {
                 if (tokens != null) {
                     authInfo.ForEach((x, y) => tokens.Items[x] = y);
-                    session.UserAuthId = authRepo.CreateOrMergeAuthSession(session, tokens);
+                    session.UserAuthId = authRepo.CreateOrMergeAuthSession(session, tokens).UserAuthId.ToString();
                 }
 
                 foreach (var oAuthToken in session.ProviderOAuthAccess) {
