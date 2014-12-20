@@ -62,6 +62,7 @@ namespace ServiceStack.Host.Handlers
         private DateTime DefaultFileModified { get; set; }
         private string DefaultFilePath { get; set; }
         private byte[] DefaultFileContents { get; set; }
+        public IVirtualNode VirtualNode { get; set; }
 
         /// <summary>
         /// Keep default file contents in-memory
@@ -88,7 +89,7 @@ namespace ServiceStack.Host.Handlers
 
             response.EndHttpHandlerRequest(skipClose: true, afterHeaders: r =>
             {
-                var node = request.GetVirtualNode();
+                var node = this.VirtualNode ?? request.GetVirtualNode();
                 var file = node as IVirtualFile;
                 if (file == null)
                 {
