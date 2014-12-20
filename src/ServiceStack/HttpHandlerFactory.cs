@@ -21,7 +21,7 @@ namespace ServiceStack
         static private readonly RedirectHttpHandler NonRootModeDefaultHttpHandler = null;
         static private readonly IHttpHandler ForbiddenHttpHandler = null;
         static private readonly IHttpHandler NotFoundHttpHandler = null;
-        static private readonly IHttpHandler StaticFileHandler = new StaticFileHandler();
+        static private readonly IHttpHandler StaticFilesHandler = new StaticFileHandler();
         private static readonly bool IsIntegratedPipeline = false;
         private static readonly bool HostAutoRedirectsDirs = false;
 
@@ -61,12 +61,10 @@ namespace ServiceStack
                     if (!fileNameLower.EndsWith(".aspx"))
                     {
                         DefaultRootFileName = fileNameLower;
-                        var staticFileHandler = ((StaticFileHandler) StaticFileHandler);
-                        staticFileHandler.SetDefaultFile(file.VirtualPath, file.ReadAllBytes(), file.LastModified);
-                        staticFileHandler.VirtualNode = file;
+                        StaticFileHandler.SetDefaultFile(file.VirtualPath, file.ReadAllBytes(), file.LastModified);
 
                         if (DefaultHttpHandler == null)
-                            DefaultHttpHandler = staticFileHandler;
+                            DefaultHttpHandler = new StaticFileHandler { VirtualNode = file };
                     }
                 }
                 WebHostRootFileNames.Add(fileNameLower);
@@ -175,7 +173,7 @@ namespace ServiceStack
                     return DefaultHttpHandler;
 
                 if (DefaultRootFileName != null)
-                    return StaticFileHandler;
+                    return StaticFilesHandler;
 
                 return NonRootModeDefaultHttpHandler;
             }
@@ -249,7 +247,7 @@ namespace ServiceStack
                     return DefaultHttpHandler;
 
                 if (DefaultRootFileName != null)
-                    return StaticFileHandler;
+                    return StaticFilesHandler;
 
                 return NonRootModeDefaultHttpHandler;
             }
@@ -350,12 +348,12 @@ namespace ServiceStack
                 if (!isFileRequest)
                 {
                     return appHost.VirtualPathProvider.DirectoryExists(pathInfo)
-                        ? StaticFileHandler
+                        ? StaticFilesHandler
                         : NotFoundHttpHandler;
                 }
 
                 return ShouldAllow(requestPath)
-                    ? StaticFileHandler
+                    ? StaticFilesHandler
                     : ForbiddenHttpHandler;
             }
 
