@@ -65,13 +65,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         public static Rockstar[] SeedRockstars = new[] {
-            new Rockstar { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27 },
-            new Rockstar { Id = 2, FirstName = "Jim", LastName = "Morrison", Age = 27 },
-            new Rockstar { Id = 3, FirstName = "Kurt", LastName = "Cobain", Age = 27 },
-            new Rockstar { Id = 4, FirstName = "Elvis", LastName = "Presley", Age = 42 },
-            new Rockstar { Id = 5, FirstName = "David", LastName = "Grohl", Age = 44 },
-            new Rockstar { Id = 6, FirstName = "Eddie", LastName = "Vedder", Age = 48 },
-            new Rockstar { Id = 7, FirstName = "Michael", LastName = "Jackson", Age = 50 },
+            new Rockstar { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27, LivingStatus = LivingStatus.Dead },
+            new Rockstar { Id = 2, FirstName = "Jim", LastName = "Morrison", Age = 27, LivingStatus = LivingStatus.Dead },
+            new Rockstar { Id = 3, FirstName = "Kurt", LastName = "Cobain", Age = 27, LivingStatus = LivingStatus.Dead },
+            new Rockstar { Id = 4, FirstName = "Elvis", LastName = "Presley", Age = 42, LivingStatus = LivingStatus.Dead },
+            new Rockstar { Id = 5, FirstName = "David", LastName = "Grohl", Age = 44, LivingStatus = LivingStatus.Alive },
+            new Rockstar { Id = 6, FirstName = "Eddie", LastName = "Vedder", Age = 48, LivingStatus = LivingStatus.Alive },
+            new Rockstar { Id = 7, FirstName = "Michael", LastName = "Jackson", Age = 50, LivingStatus = LivingStatus.Dead },
         };
 
         public static RockstarAlbum[] SeedAlbums = new[] {
@@ -106,6 +106,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class QueryRockstars : QueryBase<Rockstar>
     {
         public int? Age { get; set; }
+        //public LivingStatus? LivingStatus { get; set; }
     }
 
     public class QueryRockstarsConventions : QueryBase<Rockstar>
@@ -444,6 +445,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars")
                 .AddQueryParam("FirstName", "Jim")
+                .AddQueryParam("LivingStatus", "Dead")
                 .GetJsonFromUrl()
                 .FromJson<QueryResponse<Rockstar>>();
 
@@ -906,7 +908,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             url = Config.ListeningOn + "query/rockstars.csv?Age=27";
             csv = url.GetStringFromUrl();
             headers = csv.SplitOnFirst('\n')[0].Trim();
-            Assert.That(headers, Is.EqualTo("Id,FirstName,LastName,Age"));
+            Assert.That(headers, Is.EqualTo("Id,FirstName,LastName,Age,LivingStatus"));
             csv.Print();
 
             url = Config.ListeningOn + "customrockstars.csv";

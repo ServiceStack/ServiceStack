@@ -29,6 +29,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string LastName { get; set; }
     }
 
+    public enum LivingStatus
+    {
+        Alive,
+        Dead
+    }
+
     // Types
     public class Rockstar
     {
@@ -36,6 +42,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public int? Age { get; set; }
+        public LivingStatus LivingStatus { get; set; }
     }
 
     public class RockstarStatus
