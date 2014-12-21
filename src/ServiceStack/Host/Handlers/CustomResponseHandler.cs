@@ -18,6 +18,9 @@ namespace ServiceStack.Host.Handlers
             if (Action == null)
                 throw new Exception("Action was not supplied to ActionHandler");
 
+            if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
+                return;
+
             if (httpReq.OperationName == null)
                 httpReq.SetOperationName(RequestName);
 

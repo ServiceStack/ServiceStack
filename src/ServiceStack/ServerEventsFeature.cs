@@ -87,6 +87,9 @@ namespace ServiceStack
 
         public override Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
         {
+            if (HostContext.ApplyCustomHandlerRequestFilters(req, res))
+                return EmptyTask;
+
             var feature = HostContext.GetPlugin<ServerEventsFeature>();
 
             var session = req.GetSession();
@@ -177,6 +180,9 @@ namespace ServiceStack
 
         public override Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
         {
+            if (HostContext.ApplyCustomHandlerRequestFilters(req, res))
+                return EmptyTask;
+
             res.ApplyGlobalResponseHeaders();
 
             var feature = HostContext.GetPlugin<ServerEventsFeature>();

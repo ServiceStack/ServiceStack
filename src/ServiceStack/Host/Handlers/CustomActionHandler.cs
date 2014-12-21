@@ -18,6 +18,9 @@ namespace ServiceStack.Host.Handlers
 
         public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {
+            if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
+                return;
+
             Action(httpReq, httpRes);
         }
 
