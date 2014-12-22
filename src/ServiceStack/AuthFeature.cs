@@ -24,8 +24,6 @@ namespace ServiceStack
 
         public bool IncludeAuthMetadataProvider { get; set; }
 
-        public bool AddParamsToQueryString { get; set; }
-
         public bool IncludeAssignRoleServices
         {
             set
@@ -139,20 +137,6 @@ namespace ServiceStack
                 return feature.HtmlRedirect;
 
             return "~/" + HostContext.ResolveLocalizedString(LocalizedStrings.Login);
-        }
-
-        public static string AddAuthParam(this string url, string key, object val)
-        {
-            return url.AddAuthParam(key, val.ToString());
-        }
-
-        public static string AddAuthParam(this string url, string key, string val)
-        {
-            var authFeature = HostContext.GetPlugin<AuthFeature>();
-            var addToQueryString = authFeature != null && authFeature.AddParamsToQueryString;
-            return addToQueryString
-                ? url.AddQueryParam(key, val)
-                : url.AddHashParam(key, val);
         }
     }
 }

@@ -239,7 +239,20 @@ namespace ServiceStack
 			var lastWt = lastModified.Value.ToUniversalTime();
 			httpRes.AddHeader(HttpHeaders.LastModified, lastWt.ToString("r"));
 		}
-	}
+
+        public static string AddParam(this string url, string key, object val)
+        {
+            return url.AddParam(key, val.ToString());
+        }
+
+        public static string AddParam(this string url, string key, string val)
+        {
+            var addToQueryString = HostContext.Config.AddParamsToQueryString;
+            return addToQueryString
+                ? url.AddQueryParam(key, val)
+                : url.AddHashParam(key, val);
+        }
+    }
 
     public enum AuthenticationHeaderType
     {

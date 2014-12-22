@@ -160,19 +160,19 @@ namespace ServiceStack.Auth
                     return response;
 
                 // Has access!
-                return authService.Redirect(this.CallbackUrl.AddAuthParam("s", "1"));
+                return authService.Redirect(this.CallbackUrl.AddParam("s", "1"));
             }
             catch (WebException webEx)
             {
                 var statusCode = ((HttpWebResponse)webEx.Response).StatusCode;
                 if (statusCode == HttpStatusCode.BadRequest)
                 {
-                    return authService.Redirect(this.CallbackUrl.AddAuthParam("f", "AccessTokenFailed"));
+                    return authService.Redirect(this.CallbackUrl.AddParam("f", "AccessTokenFailed"));
                 }
             }
 
             // Unknown error, shouldn't get here.
-            return authService.Redirect(this.CallbackUrl.AddAuthParam("f", "Unknown"));
+            return authService.Redirect(this.CallbackUrl.AddParam("f", "Unknown"));
         }
 
         /// <summary>

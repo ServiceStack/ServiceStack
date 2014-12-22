@@ -68,19 +68,19 @@ namespace ServiceStack.Auth
                 session.IsAuthenticated = true;
                 
                 return OnAuthenticated(authService, session, tokens, authInfo.ToDictionary())
-                    ?? authService.Redirect(session.ReferrerUrl.AddAuthParam("s", "1")); //Haz access!
+                    ?? authService.Redirect(session.ReferrerUrl.AddParam("s", "1")); //Haz access!
             }
             catch (WebException we)
             {
                 var statusCode = ((HttpWebResponse)we.Response).StatusCode;
                 if (statusCode == HttpStatusCode.BadRequest)
                 {
-                    return authService.Redirect(session.ReferrerUrl.AddAuthParam("f", "AccessTokenFailed"));
+                    return authService.Redirect(session.ReferrerUrl.AddParam("f", "AccessTokenFailed"));
                 }
             }
 
             //Shouldn't get here
-            return authService.Redirect(session.ReferrerUrl.AddAuthParam("f", "Unknown"));
+            return authService.Redirect(session.ReferrerUrl.AddParam("f", "Unknown"));
         }
 
         protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, System.Collections.Generic.Dictionary<string, string> authInfo)

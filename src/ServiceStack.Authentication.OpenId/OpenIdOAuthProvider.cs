@@ -85,7 +85,7 @@ namespace ServiceStack.Authentication.OpenId
                 catch (ProtocolException ex)
                 {
                     Log.Error("Failed to login to {0}".Fmt(openIdUrl), ex);
-                    return authService.Redirect(session.ReferrerUrl.AddAuthParam("f", "Unknown"));
+                    return authService.Redirect(session.ReferrerUrl.AddParam("f", "Unknown"));
                 }
             }
 
@@ -107,20 +107,20 @@ namespace ServiceStack.Authentication.OpenId
                                 session.IsAuthenticated = true;
 
                                 return OnAuthenticated(authService, session, tokens, authInfo)
-                                    ?? authService.Redirect(session.ReferrerUrl.AddAuthParam("s", "1")); //Haz access!
+                                    ?? authService.Redirect(session.ReferrerUrl.AddParam("s", "1")); //Haz access!
 
                             case AuthenticationStatus.Canceled:
-                                return authService.Redirect(session.ReferrerUrl.AddAuthParam("f", "ProviderCancelled"));
+                                return authService.Redirect(session.ReferrerUrl.AddParam("f", "ProviderCancelled"));
 
                             case AuthenticationStatus.Failed:
-                                return authService.Redirect(session.ReferrerUrl.AddAuthParam("f", "Unknown"));
+                                return authService.Redirect(session.ReferrerUrl.AddParam("f", "Unknown"));
                         }
                     }
                 }
             }
 
             //Shouldn't get here
-            return authService.Redirect(session.ReferrerUrl.AddAuthParam("f", "Unknown"));
+            return authService.Redirect(session.ReferrerUrl.AddParam("f", "Unknown"));
         }
 
         protected virtual Dictionary<string, string> CreateAuthInfo(IAuthenticationResponse response)

@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 namespace ServiceStack
 {
     [DataContract]
-    public class Authenticate : IReturn<AuthenticateResponse>
+    public class Authenticate : IReturn<AuthenticateResponse>, IMeta
     {
         [DataMember(Order = 1)] public string provider { get; set; }
         [DataMember(Order = 2)] public string State { get; set; }
@@ -24,6 +24,7 @@ namespace ServiceStack
         [DataMember(Order = 12)] public string qop { get; set; }
         [DataMember(Order = 13)] public string nc { get; set; }
         [DataMember(Order = 14)] public string cnonce { get; set; }
+        [DataMember(Order = 15)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]

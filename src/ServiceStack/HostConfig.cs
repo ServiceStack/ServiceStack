@@ -106,6 +106,7 @@ namespace ServiceStack
                 Return204NoContentForEmptyResponse = true,
                 AllowPartialResponses = true,
                 AllowAclUrlReservation = true,
+                AddParamsToQueryString = false,
                 RedirectToDefaultDocuments = false,
                 StripApplicationVirtualPath = false,
                 ScanSkipPaths = new List<string> {
@@ -182,6 +183,7 @@ namespace ServiceStack
             this.IgnoreWarningsOnPropertyNames = instance.IgnoreWarningsOnPropertyNames;
             this.FallbackRestPath = instance.FallbackRestPath;
             this.AllowAclUrlReservation = instance.AllowAclUrlReservation;
+            this.AddParamsToQueryString = instance.AddParamsToQueryString;
             this.RedirectToDefaultDocuments = instance.RedirectToDefaultDocuments;
             this.StripApplicationVirtualPath = instance.StripApplicationVirtualPath;
             this.ScanSkipPaths = instance.ScanSkipPaths;
@@ -256,6 +258,7 @@ namespace ServiceStack
         public bool AllowPartialResponses { get; set; }
         public bool AllowNonHttpOnlyCookies { get; set; }
         public bool AllowAclUrlReservation { get; set; }
+        public bool AddParamsToQueryString { get; set; }
         public bool RedirectToDefaultDocuments { get; set; }
         public bool StripApplicationVirtualPath { get; set; }
 
