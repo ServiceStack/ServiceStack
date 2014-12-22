@@ -127,7 +127,9 @@ namespace ServiceStack.Host.Handlers
                         {
                             var msg = ErrorMessages.FileNotExistsFmt.Fmt(request.PathInfo);
                             log.WarnFormat("{0} in path: {1}", msg, originalFileName);
-                            throw HttpError.NotFound(msg);
+                            response.StatusCode = 404;
+                            response.StatusDescription = msg;
+                            return;
                         }
                     }
                 }
