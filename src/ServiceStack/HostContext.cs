@@ -196,12 +196,14 @@ namespace ServiceStack
 
         public static T GetPlugin<T>() where T : class, IPlugin
         {
-            return AssertAppHost().GetPlugin<T>();
+            var appHost = AppHost;
+            return appHost == null ? default(T) : appHost.GetPlugin<T>();
         }
 
         public static bool HasPlugin<T>() where T : class, IPlugin
         {
-            return AssertAppHost().HasPlugin<T>();
+            var appHost = AppHost;
+            return appHost != null && appHost.HasPlugin<T>();
         }
 
         public static string GetAppConfigPath()

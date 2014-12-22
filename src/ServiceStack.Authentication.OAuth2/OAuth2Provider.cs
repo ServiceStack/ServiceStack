@@ -94,7 +94,7 @@ namespace ServiceStack.Authentication.OAuth2
                 catch (ProtocolException ex)
                 {
                     Log.Error("Failed to login to {0}".Fmt(this.Provider), ex);
-                    return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "Unknown"));
+                    return authService.Redirect(session.ReferrerUrl.AddAuthParam("f", "Unknown"));
                 }
             }
 
@@ -112,19 +112,19 @@ namespace ServiceStack.Authentication.OAuth2
                     session.IsAuthenticated = true;
                     
                     return OnAuthenticated(authService, session, tokens, authInfo)
-                        ?? authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
+                        ?? authService.Redirect(session.ReferrerUrl.AddAuthParam("s", "1"));
                 }
                 catch (WebException we)
                 {
                     var statusCode = ((HttpWebResponse)we.Response).StatusCode;
                     if (statusCode == HttpStatusCode.BadRequest)
                     {
-                        return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "AccessTokenFailed"));
+                        return authService.Redirect(session.ReferrerUrl.AddAuthParam("f", "AccessTokenFailed"));
                     }
                 }
             }
 
-            return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "RequestTokenFailed"));
+            return authService.Redirect(session.ReferrerUrl.AddAuthParam("f", "RequestTokenFailed"));
         }
 
         public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)

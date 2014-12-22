@@ -110,7 +110,10 @@ namespace ServiceStack.AuthWeb.Tests
                     new YandexAuthProvider(appSettings),        //Sign-in with Yandex OAuth Provider        
                     new VkAuthProvider(appSettings),            //Sign-in with VK.com OAuth Provider 
                     new OdnoklassnikiAuthProvider(appSettings), //Sign-in with Odnoklassniki OAuth Provider 
-                }));
+                })
+                {
+                    AddParamsToQueryString = true
+                });
 
 #if HTTP_LISTENER
             //Required for DotNetOpenAuth in HttpListener 

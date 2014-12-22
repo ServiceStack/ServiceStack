@@ -86,7 +86,7 @@ namespace ServiceStack.Auth
             service.RemoveSession();
 
             if (service.Request.ResponseContentType == MimeTypes.Html && !String.IsNullOrEmpty(referrerUrl))
-                return service.Redirect(referrerUrl.AddHashParam("s", "-1"));
+                return service.Redirect(referrerUrl.AddAuthParam("s", "-1"));
 
             return new AuthenticateResponse();
         }
@@ -350,12 +350,12 @@ namespace ServiceStack.Auth
 
             if (EmailAlreadyExists(authRepo, userAuth, tokens))
             {
-                return authService.Redirect(GetReferrerUrl(authService, session).AddHashParam("f", "EmailAlreadyExists"));
+                return authService.Redirect(GetReferrerUrl(authService, session).AddAuthParam("f", "EmailAlreadyExists"));
             }
 
             if (IsAccountLocked(authRepo, userAuth, tokens))
             {
-                return authService.Redirect(GetReferrerUrl(authService, session).AddHashParam("f", "AccountLocked"));
+                return authService.Redirect(GetReferrerUrl(authService, session).AddAuthParam("f", "AccountLocked"));
             }
 
             return null;

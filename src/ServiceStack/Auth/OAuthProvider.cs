@@ -80,14 +80,14 @@ namespace ServiceStack.Auth
                     tokens.AccessTokenSecret = OAuthUtils.AccessTokenSecret;
 
                     return OnAuthenticated(authService, session, tokens, OAuthUtils.AuthInfo)
-                        ?? authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1")); //Haz Access
+                        ?? authService.Redirect(session.ReferrerUrl.AddAuthParam("s", "1")); //Haz Access
                 }
 
                 //No Joy :(
                 tokens.RequestToken = null;
                 tokens.RequestTokenSecret = null;
                 authService.SaveSession(session, SessionExpiry);
-                return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "AccessTokenFailed"));
+                return authService.Redirect(session.ReferrerUrl.AddAuthParam("f", "AccessTokenFailed"));
             }
             if (OAuthUtils.AcquireRequestToken())
             {
@@ -101,7 +101,7 @@ namespace ServiceStack.Auth
                     .AddQueryParam("oauth_callback", session.ReferrerUrl));
             }
 
-            return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "RequestTokenFailed"));
+            return authService.Redirect(session.ReferrerUrl.AddAuthParam("f", "RequestTokenFailed"));
         }
 
         /// <summary>

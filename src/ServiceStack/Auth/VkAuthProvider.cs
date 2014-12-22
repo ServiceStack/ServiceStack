@@ -52,7 +52,7 @@ namespace ServiceStack.Auth
             if (hasError)
             {
                 Log.Error("VK error callback. {0}".Fmt(httpRequest.QueryString));
-                return authService.Redirect(session.ReferrerUrl.AddHashParam("f",
+                return authService.Redirect(session.ReferrerUrl.AddAuthParam("f",
                   (httpRequest.QueryString["error_reason"]
                     ?? httpRequest.QueryString["error_description"]
                     ?? "Unknown").UrlEncode()));
@@ -86,7 +86,7 @@ namespace ServiceStack.Auth
                 if (!accessTokenError.IsNullOrEmpty())
                 {
                     Log.Error("VK access_token error callback. {0}".Fmt(authInfo.ToString()));
-                    return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "AccessTokenFailed"));
+                    return authService.Redirect(session.ReferrerUrl.AddAuthParam("f", "AccessTokenFailed"));
                 }
                 tokens.AccessTokenSecret = authInfo.Get("access_token");
                 tokens.UserId = authInfo.Get("user_id");
@@ -94,7 +94,7 @@ namespace ServiceStack.Auth
                 session.IsAuthenticated = true;
 
                 return OnAuthenticated(authService, session, tokens, authInfo.ToDictionary())
-                    ?? authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
+                    ?? authService.Redirect(session.ReferrerUrl.AddAuthParam("s", "1"));
             }
             catch (WebException webException)
             {
@@ -102,10 +102,10 @@ namespace ServiceStack.Auth
                 HttpStatusCode statusCode = ((HttpWebResponse)webException.Response).StatusCode;
                 if (statusCode == HttpStatusCode.BadRequest)
                 {
-                    return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "AccessTokenFailed"));
+                    return authService.Redirect(session.ReferrerUrl.AddAuthParam("f", "AccessTokenFailed"));
                 }
             }
-            return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "Unknown"));
+            return authService.Redirect(session.ReferrerUrl.AddAuthParam("f", "Unknown"));
         }
 
         /// <summary>
