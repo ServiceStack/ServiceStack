@@ -61,7 +61,7 @@ namespace ServiceStack.RabbitMq
                 {"x-dead-letter-routing-key", queueName.Replace(".inq",".dlq").Replace(".priorityq",".dlq") },
             };
 
-            if (!queueName.StartsWithIgnoreCase("mq:tmp:")) //Already declared in GetTempQueueName()
+            if (!QueueNames.IsTempQueue(queueName)) //Already declared in GetTempQueueName()
             {
                 channel.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false, arguments: args);
             }

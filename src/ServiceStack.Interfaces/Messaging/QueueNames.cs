@@ -72,6 +72,12 @@ namespace ServiceStack.Messaging
             return QueuePrefix + MqPrefix + typeName + queueSuffix;
         }
 
+        public static bool IsTempQueue(string queueName)
+        {
+            return queueName != null 
+                && queueName.StartsWith(TempMqPrefix, StringComparison.OrdinalIgnoreCase);
+        }
+
         public static void SetQueuePrefix(string prefix)
         {
             TopicIn = prefix + MqPrefix + "topic:in";
