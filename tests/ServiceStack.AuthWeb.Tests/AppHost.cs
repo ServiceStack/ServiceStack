@@ -79,7 +79,7 @@ namespace ServiceStack.AuthWeb.Tests
 
             SetConfig(new HostConfig {
                 DebugMode = true,
-                AddParamsToQueryString = true,
+                AddRedirectParamsToQueryString = true,
             });
         }
 

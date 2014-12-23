@@ -247,7 +247,7 @@ namespace ServiceStack
 
         public static string AddParam(this string url, string key, string val)
         {
-            var addToQueryString = HostContext.Config.AddParamsToQueryString;
+            var addToQueryString = HostContext.Config.AddRedirectParamsToQueryString;
             return addToQueryString
                 ? url.AddQueryParam(key, val)
                 : url.AddHashParam(key, val);
