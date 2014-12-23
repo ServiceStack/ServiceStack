@@ -271,7 +271,7 @@ namespace ServiceStack
             errorsCount++;
 
             ex = ex.UnwrapIfSingleException();
-            log.Error("OnExceptionReceived: {0} on #{1}".Fmt(ex.Message, ConnectionInfo.DisplayName), ex);
+            log.Error("OnExceptionReceived: {0} on #{1}".Fmt(ex.Message, ConnectionInfo != null ? ConnectionInfo.DisplayName : "UNDEFINED"), ex);
 
             if (OnException != null)
                 OnException(ex);
@@ -286,7 +286,12 @@ namespace ServiceStack
                 Stop();
                 SleepBackOffMultiplier(errorsCount)
                     .ContinueWith(t =>
-                        Start());
+                        Start())
+                    .ContinueWith(t =>
+                    {
+                        if (t.IsFaulted && t.Exception != null)
+                            OnExceptionReceived(t.Exception);
+                    });
             }
             catch (Exception ex)
             {
