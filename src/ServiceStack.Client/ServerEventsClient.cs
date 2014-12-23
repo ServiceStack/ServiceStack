@@ -67,6 +67,11 @@ namespace ServiceStack
             get { return ConnectionInfo != null ? ConnectionInfo.Id : null; }
         }
 
+        public string ConnectionDisplayName
+        {
+            get { return ConnectionInfo != null ? ConnectionInfo.DisplayName : "(not connected)"; }
+        }
+
         public string EventStreamUri { get; set; }
         public string Channel { get; set; }
         public IServiceClient ServiceClient { get; set; }
@@ -167,7 +172,7 @@ namespace ServiceStack
         {
             if (log.IsDebugEnabled)
                 log.DebugFormat("OnConnectReceived: {0} on #{1} / {2}", 
-                    ConnectionInfo.EventId, ConnectionInfo.DisplayName, ConnectionInfo.Id);
+                    ConnectionInfo.EventId, ConnectionDisplayName, ConnectionInfo.Id);
 
             var hold = connectTcs;
             connectTcs = new TaskCompletionSource<ServerEventConnect>();
@@ -240,7 +245,7 @@ namespace ServiceStack
         protected void OnCommandReceived(ServerEventCommand e)
         {
             if (log.IsDebugEnabled)
-                log.DebugFormat("OnCommandReceived: {0} on #{1}", e.EventId, ConnectionInfo.DisplayName);
+                log.DebugFormat("OnCommandReceived: {0} on #{1}", e.EventId, ConnectionDisplayName);
 
             var hold = commandTcs;
             commandTcs = new TaskCompletionSource<ServerEventCommand>();
@@ -254,7 +259,7 @@ namespace ServiceStack
         protected void OnMessageReceived(ServerEventMessage e)
         {
             if (log.IsDebugEnabled)
-                log.DebugFormat("OnMessageReceived: {0} on #{1}", e.EventId, ConnectionInfo.DisplayName);
+                log.DebugFormat("OnMessageReceived: {0} on #{1}", e.EventId, ConnectionDisplayName);
 
             var hold = messageTcs;
             messageTcs = new TaskCompletionSource<ServerEventMessage>();
@@ -271,7 +276,7 @@ namespace ServiceStack
             errorsCount++;
 
             ex = ex.UnwrapIfSingleException();
-            log.Error("OnExceptionReceived: {0} on #{1}".Fmt(ex.Message, ConnectionInfo.DisplayName), ex);
+            log.Error("OnExceptionReceived: {0} on #{1}".Fmt(ex.Message, ConnectionDisplayName), ex);
 
             if (OnException != null)
                 OnException(ex);
@@ -286,7 +291,16 @@ namespace ServiceStack
                 Stop();
                 SleepBackOffMultiplier(errorsCount)
                     .ContinueWith(t =>
-                        Start());
+                    {
+                        try
+                        {
+                            Start();
+                        }
+                        catch (Exception ex)
+                        {
+                            OnExceptionReceived(ex);
+                        }
+                    });
             }
             catch (Exception ex)
             {
@@ -365,7 +379,7 @@ namespace ServiceStack
                 {
                     if (log.IsDebugEnabled)
                         log.DebugFormat("Connection ended on {0}", 
-                            ConnectionInfo != null ? ConnectionInfo.DisplayName : null);
+                            ConnectionInfo != null ? ConnectionDisplayName : null);
                 }
             });
         }
