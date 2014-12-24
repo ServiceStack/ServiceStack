@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web;
+using ServiceStack.Auth;
 using ServiceStack.FluentValidation;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
@@ -386,6 +387,20 @@ namespace ServiceStack
                     Message = errorMsg,
                 });
             }
+        }
+
+        public virtual void OnSaveSession(IRequest httpReq, IAuthSession session, TimeSpan? expiresIn = null)
+        {
+            if (httpReq == null) return;
+
+            using (var cache = httpReq.GetCacheClient())
+            {
+                var sessionKey = SessionFeature.GetSessionKey(httpReq.GetSessionId());
+                session.LastModified = DateTime.UtcNow;
+                cache.CacheSet(sessionKey, session, expiresIn ?? HostContext.GetDefaultSessionExpiry());
+            }
+
+            httpReq.Items[ServiceExtensions.RequestItemsSessionKey] = session;
         }
     }
 

@@ -93,16 +93,7 @@ namespace ServiceStack
 
         public static void SaveSession(this IRequest httpReq, IAuthSession session, TimeSpan? expiresIn = null)
         {
-            if (httpReq == null) return;
-
-            using (var cache = httpReq.GetCacheClient())
-            {
-                var sessionKey = SessionFeature.GetSessionKey(httpReq.GetSessionId());
-                session.LastModified = DateTime.UtcNow;
-                cache.CacheSet(sessionKey, session, expiresIn ?? HostContext.GetDefaultSessionExpiry());
-            }
-
-            httpReq.Items[RequestItemsSessionKey] = session;
+            HostContext.AppHost.OnSaveSession(httpReq, session, expiresIn);
         }
 
         public static void RemoveSession(this IRequest httpReq)
