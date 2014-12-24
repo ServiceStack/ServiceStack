@@ -55,6 +55,8 @@ namespace ServiceStack.ServiceModel.Serialization
 
         public void SerializeToStream<T>(T obj, Stream stream)
         {
+            if (obj == null) return;
+
             if (TextSerializer != null)
             {
                 TextSerializer.SerializeToStream(obj, stream);
