@@ -8,7 +8,6 @@ using System.Web;
 using ServiceStack.Auth;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Logging;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -478,14 +477,13 @@ namespace ServiceStack
         {
             foreach (var channel in channels)
             {
-                var msg = new Dictionary<string, string>(meta) { { "channel", channel } };
-                Notify(ChannelSubcriptions, channel, selector, msg, channel);
+                NotifyChannel(channel, selector, meta);
             }
         }
 
         public void NotifyChannel(string channel, string selector, object message)
         {
-            Notify(ChannelSubcriptions, channel, selector, message, channel);
+            Notify(ChannelSubcriptions, channel, channel + "@" + selector, message, channel);
         }
 
         public void NotifyUserId(string userId, string selector, object message, string channel = null)

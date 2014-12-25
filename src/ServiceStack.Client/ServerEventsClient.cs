@@ -442,6 +442,13 @@ namespace ServiceStack
         {
             var parts = e.Data.SplitOnFirst(' ');
             e.Selector = parts[0];
+            var selParts = e.Selector.SplitOnFirst('@');
+            if (selParts.Length > 1)
+            {
+                e.Channel = selParts[0];
+                e.Selector = selParts[1];
+            }
+
             e.Json = parts[1];
 
             if (!string.IsNullOrEmpty(e.Selector))
@@ -519,7 +526,6 @@ namespace ServiceStack
             joinMsg.UserId = msg.Get("userId");
             joinMsg.DisplayName = msg.Get("displayName");
             joinMsg.ProfileUrl = msg.Get("profileUrl");
-            joinMsg.Channel = msg.Get("channel");
 
             OnCommandReceived(joinMsg);
         }
@@ -593,6 +599,7 @@ namespace ServiceStack
             dst.EventId = src.EventId;
             dst.Data = src.Data;
             dst.Selector = src.Selector;
+            dst.Channel = src.Channel;
             dst.Json = src.Json;
             dst.Op = src.Op;
 
