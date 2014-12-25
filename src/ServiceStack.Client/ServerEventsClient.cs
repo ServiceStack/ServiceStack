@@ -31,9 +31,12 @@ namespace ServiceStack
 
     public class ServerEventCommand : ServerEventMessage { }
 
+    public class ServerEventHeartbeat : ServerEventCommand { }
+
     public class ServerEventMessage : IMeta
     {
         public long EventId { get; set; }
+        public string Channel { get; set; }
         public string Data { get; set; }
         public string Selector { get; set; }
         public string Json { get; set; }
@@ -73,7 +76,7 @@ namespace ServiceStack
         }
 
         public string EventStreamUri { get; set; }
-        public string Channel { get; set; }
+        public string[] Channels { get; set; }
         public IServiceClient ServiceClient { get; set; }
         public DateTime LastPulseAt { get; set; }
 
@@ -95,13 +98,14 @@ namespace ServiceStack
             EmptyTask = tcs.Task;
         }
 
-        public ServerEventsClient(string baseUri, string channel=null)
+        public ServerEventsClient(string baseUri, params string[] channels)
         {
             this.EventStreamUri = baseUri.CombineWith("event-stream");
-            this.Channel = channel;
+            this.Channels = channels;
 
-            if (Channel != null)
-                this.EventStreamUri = this.EventStreamUri.AddQueryParam("channel", Channel);
+            if (Channels != null && Channels.Length > 0)
+                this.EventStreamUri = this.EventStreamUri
+                    .AddQueryParam("channel", string.Join(",", Channels));
 
             this.ServiceClient = new JsonServiceClient(baseUri);
 
@@ -134,6 +138,8 @@ namespace ServiceStack
                 connectTcs = new TaskCompletionSource<ServerEventConnect>();
             if (commandTcs == null || commandTcs.Task.IsCompleted)
                 commandTcs = new TaskCompletionSource<ServerEventCommand>();
+            if (heartbeatTcs == null || heartbeatTcs.Task.IsCompleted)
+                heartbeatTcs = new TaskCompletionSource<ServerEventHeartbeat>();
             if (messageTcs == null || messageTcs.Task.IsCompleted)
                 messageTcs = new TaskCompletionSource<ServerEventMessage>();
 
@@ -161,6 +167,13 @@ namespace ServiceStack
             return commandTcs.Task;
         }
 
+        private TaskCompletionSource<ServerEventHeartbeat> heartbeatTcs;
+        public Task<ServerEventHeartbeat> WaitForNextHeartbeat()
+        {
+            Contract.Assert(!heartbeatTcs.Task.IsCompleted);
+            return heartbeatTcs.Task;
+        }
+
         private TaskCompletionSource<ServerEventMessage> messageTcs;
         public Task<ServerEventMessage> WaitForNextMessage()
         {
@@ -171,8 +184,10 @@ namespace ServiceStack
         protected void OnConnectReceived()
         {
             if (log.IsDebugEnabled)
-                log.DebugFormat("OnConnectReceived: {0} on #{1} / {2}", 
-                    ConnectionInfo.EventId, ConnectionDisplayName, ConnectionInfo.Id);
+                log.DebugFormat("OnConnectReceived: {0} on #{1} / {2} on ({3})",
+                    ConnectionInfo.EventId, ConnectionDisplayName, ConnectionInfo.Id, string.Join(", ", Channels));
+
+            StartNewHeartbeat();
 
             var hold = connectTcs;
             connectTcs = new TaskCompletionSource<ServerEventConnect>();
@@ -180,14 +195,12 @@ namespace ServiceStack
             if (OnConnect != null)
                 OnConnect(ConnectionInfo);
 
-            hold.SetResult(ConnectionInfo);
-
-            StartNewHeartbeat();
+            hold.SetResult(ConnectionInfo); //needs to be at end or control yielded before Heartbeat can start
         }
 
-        private void StartNewHeartbeat()
+        protected void StartNewHeartbeat()
         {
-            if (string.IsNullOrEmpty(ConnectionInfo.HeartbeatUrl)) 
+            if (ConnectionInfo == null || string.IsNullOrEmpty(ConnectionInfo.HeartbeatUrl)) 
                 return;
 
             if (heartbeatTimer != null)
@@ -211,13 +224,16 @@ namespace ServiceStack
 
             EnsureSynchronizationContext();
 
+            if (ConnectionInfo == null)
+                return;
+
             ConnectionInfo.HeartbeatUrl.GetStringFromUrlAsync(requestFilter:HeartbeatRequestFilter)
                 .Success(t => {
                     if (cancel.IsCancellationRequested)
                         return;
 
                     if (log.IsDebugEnabled)
-                        log.DebugFormat("Heartbeat sent to: " + ConnectionInfo.HeartbeatUrl);
+                        log.DebugFormat("[SSE-CLIENT] Heartbeat sent to: " + ConnectionInfo.HeartbeatUrl);
 
                     StartNewHeartbeat();
                 })
@@ -226,7 +242,7 @@ namespace ServiceStack
                         return;
 
                     if (log.IsDebugEnabled)
-                        log.DebugFormat("Error from Heartbeat: {0}", ex.UnwrapIfSingleException().Message);
+                        log.DebugFormat("[SSE-CLIENT] Error from Heartbeat: {0}", ex.UnwrapIfSingleException().Message);
                     OnExceptionReceived(ex);
                 });
         }
@@ -236,8 +252,8 @@ namespace ServiceStack
             if (SynchronizationContext.Current != null) return;
             
             //Unit test runner
-            if (log.IsDebugEnabled)
-                log.DebugFormat("SynchronizationContext.Current == null");
+            //if (log.IsDebugEnabled)
+            //    log.DebugFormat("[SSE-CLIENT] SynchronizationContext.Current == null");
 
             SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
         }
@@ -245,7 +261,7 @@ namespace ServiceStack
         protected void OnCommandReceived(ServerEventCommand e)
         {
             if (log.IsDebugEnabled)
-                log.DebugFormat("OnCommandReceived: {0} on #{1}", e.EventId, ConnectionDisplayName);
+                log.DebugFormat("[SSE-CLIENT] OnCommandReceived: ({0}) #{1} on #{2} ({3})", e.GetType().Name, e.EventId, ConnectionDisplayName, string.Join(", ", Channels));
 
             var hold = commandTcs;
             commandTcs = new TaskCompletionSource<ServerEventCommand>();
@@ -256,10 +272,24 @@ namespace ServiceStack
             hold.SetResult(e);
         }
 
+        protected void OnHeartbeatReceived(ServerEventHeartbeat e)
+        {
+            if (log.IsDebugEnabled)
+                log.DebugFormat("[SSE-CLIENT] OnHeartbeatReceived: ({0}) #{1} on #{2} ({3})", e.GetType().Name, e.EventId, ConnectionDisplayName, string.Join(", ", Channels));
+
+            var hold = heartbeatTcs;
+            heartbeatTcs = new TaskCompletionSource<ServerEventHeartbeat>();
+
+            if (OnHeartbeat != null)
+                OnHeartbeat();
+
+            hold.SetResult(e);
+        }
+
         protected void OnMessageReceived(ServerEventMessage e)
         {
             if (log.IsDebugEnabled)
-                log.DebugFormat("OnMessageReceived: {0} on #{1}", e.EventId, ConnectionDisplayName);
+                log.DebugFormat("[SSE-CLIENT] OnMessageReceived: {0} on #{1} ({2})", e.EventId, ConnectionDisplayName, string.Join(", ", Channels));
 
             var hold = messageTcs;
             messageTcs = new TaskCompletionSource<ServerEventMessage>();
@@ -276,7 +306,7 @@ namespace ServiceStack
             errorsCount++;
 
             ex = ex.UnwrapIfSingleException();
-            log.Error("OnExceptionReceived: {0} on #{1}".Fmt(ex.Message, ConnectionDisplayName), ex);
+            log.Error("[SSE-CLIENT] OnExceptionReceived: {0} on #{1}".Fmt(ex.Message, ConnectionDisplayName), ex);
 
             if (OnException != null)
                 OnException(ex);
@@ -284,7 +314,7 @@ namespace ServiceStack
             Restart();
         }
 
-        private void Restart()
+        public void Restart()
         {
             try
             {
@@ -304,7 +334,7 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                log.Error("Error whilst restarting: {0}".Fmt(ex.Message), ex);
+                log.Error("[SSE-CLIENT] Error whilst restarting: {0}".Fmt(ex.Message), ex);
             }
         }
 
@@ -378,8 +408,7 @@ namespace ServiceStack
                 else
                 {
                     if (log.IsDebugEnabled)
-                        log.DebugFormat("Connection ended on {0}", 
-                            ConnectionInfo != null ? ConnectionDisplayName : null);
+                        log.DebugFormat("Connection ended on {0}", ConnectionDisplayName);
                 }
             });
         }
@@ -490,6 +519,7 @@ namespace ServiceStack
             joinMsg.UserId = msg.Get("userId");
             joinMsg.DisplayName = msg.Get("displayName");
             joinMsg.ProfileUrl = msg.Get("profileUrl");
+            joinMsg.Channel = msg.Get("channel");
 
             OnCommandReceived(joinMsg);
         }
@@ -498,6 +528,7 @@ namespace ServiceStack
         {
             var msg = JsonObject.Parse(e.Json);
             var leaveMsg = new ServerEventLeave().Populate(e, msg);
+            leaveMsg.Channel = msg.Get("channel");
 
             OnCommandReceived(leaveMsg);
         }
@@ -506,12 +537,9 @@ namespace ServiceStack
         {
             LastPulseAt = DateTime.UtcNow;
             var msg = JsonObject.Parse(e.Json);
-            var heartbeatMsg = new ServerEventLeave().Populate(e, msg);
+            var heartbeatMsg = new ServerEventHeartbeat().Populate(e, msg);
 
-            if (OnHeartbeat != null)
-                OnHeartbeat();
-
-            OnCommandReceived(heartbeatMsg);
+            OnHeartbeatReceived(heartbeatMsg);
         }
 
         public virtual void Stop()

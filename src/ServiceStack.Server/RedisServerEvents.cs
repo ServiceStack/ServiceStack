@@ -126,7 +126,7 @@ namespace ServiceStack
 
         void HandleOnJoin(IEventSubscription sub)
         {
-            NotifyChannel(sub.Channel, "cmd.onJoin", sub.Meta);
+            NotifyChannels(sub.Channels, "cmd.onJoin", sub.Meta);
         }
 
         void HandleOnLeave(IEventSubscription sub)
@@ -134,12 +134,12 @@ namespace ServiceStack
             var info = sub.GetInfo();
             RemoveSubscriptionFromRedis(info);
 
-            NotifyChannel(sub.Channel, "cmd.onLeave", sub.Meta);
+            NotifyChannels(sub.Channels, "cmd.onLeave", sub.Meta);
         }
 
         void HandleOnHeartbeat(IEventSubscription sub)
         {
-            NotifyChannel(sub.Channel, "cmd.onHeartbeat", sub.Meta);
+            NotifySubscription(sub.SubscriptionId, "cmd.onHeartbeat", sub.Meta);
         }
 
         private void RemoveSubscriptionFromRedis(SubscriptionInfo info)
@@ -151,7 +151,7 @@ namespace ServiceStack
             {
                 trans.QueueCommand(r => r.Remove(RedisIndex.Subscription.Fmt(id)));
                 trans.QueueCommand(r => r.RemoveItemFromSortedSet(RedisIndex.ActiveSubscriptionsSet, id));
-                trans.QueueCommand(r => r.RemoveItemFromSet(RedisIndex.ChannelSet.Fmt(info.Channel), id));
+                trans.QueueCommand(r => r.RemoveItemFromSet(RedisIndex.ChannelSet.Fmt(info.Channels), id));
                 trans.QueueCommand(r => r.RemoveItemFromSet(RedisIndex.UserIdSet.Fmt(info.UserId), id));
 
                 if (info.UserName != null)
@@ -171,6 +171,15 @@ namespace ServiceStack
         public void NotifyAll(string selector, object message)
         {
             NotifyRedis("notify.all", selector, message);
+        }
+
+        public void NotifyChannels(string[] channels, string selector, Dictionary<string, string> meta)
+        {
+            foreach (var channel in channels)
+            {
+                var msg = new Dictionary<string, string>(meta) { { "channel", channel } };
+                NotifyRedis("notify.channel." + channel, selector, msg);
+            }
         }
 
         public void NotifyChannel(string channel, string selector, object message)
@@ -243,7 +252,7 @@ namespace ServiceStack
             {
                 trans.QueueCommand(r => r.AddItemToSortedSet(RedisIndex.ActiveSubscriptionsSet, id, RedisPubSub.CurrentServerTime.Ticks));
                 trans.QueueCommand(r => r.Set(RedisIndex.Subscription.Fmt(id), info));
-                trans.QueueCommand(r => r.AddItemToSet(RedisIndex.ChannelSet.Fmt(info.Channel), id));
+                trans.QueueCommand(r => r.AddItemToSet(RedisIndex.ChannelSet.Fmt(info.Channels), id));
                 trans.QueueCommand(r => r.AddItemToSet(RedisIndex.UserIdSet.Fmt(info.UserId), id));
 
                 if (info.UserName != null)
@@ -272,11 +281,20 @@ namespace ServiceStack
             }
         }
 
-        public List<Dictionary<string, string>> GetSubscriptionsDetails(string channel = null)
+        public List<Dictionary<string, string>> GetSubscriptionsDetails(params string[] channels)
         {
             using (var redis = clientsManager.GetClient())
             {
-                var ids = redis.GetAllItemsFromSet(RedisIndex.ChannelSet.Fmt(channel));
+                var ids = new HashSet<string>();
+                foreach (var channel in channels)
+                {
+                    var channelIds = redis.GetAllItemsFromSet(RedisIndex.ChannelSet.Fmt(channel));
+                    foreach (var channelId in channelIds)
+                    {
+                        ids.Add(channelId);
+                    }
+                }
+
                 var keys = ids.Map(x => RedisIndex.Subscription.Fmt(x));
                 var infos = redis.GetValues<SubscriptionInfo>(keys);
 
