@@ -339,7 +339,7 @@
         function onMessage(e) {
             var parts = $.ss.splitOnFirst(e.data, ' ');
             var selector = parts[0];
-            var selParts = selector.splitOnFirst('@');
+            var selParts = $.ss.splitOnFirst(selector, '@');
             if (selParts.length > 1) {
                 e.channel = selParts[0];
                 selector = selParts[1];
