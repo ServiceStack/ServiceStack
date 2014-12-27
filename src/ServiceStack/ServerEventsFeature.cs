@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -129,11 +130,14 @@ namespace ServiceStack
             if (!string.IsNullOrEmpty(channel))
                 channels.AddRange(channel.Split(','));
 
+            if (channels.Count == 0)
+                channels = EventSubscription.UnknownChannel.ToList();
+
             var subscription = new EventSubscription(res)
             {
                 CreatedAt = now,
                 LastPulseAt = now,
-                Channels = channels.Count > 0 ? channels.ToArray() : EventSubscription.UnknownChannel,
+                Channels = channels.ToArray(),
                 SubscriptionId = subscriptionId,
                 UserId = userId,
                 UserName = session != null ? session.UserName : null,
@@ -144,6 +148,7 @@ namespace ServiceStack
                 Meta = {
                     { "userId", userId },
                     { "displayName", displayName },
+                    { "channels", string.Join(",", channels) },
                     { AuthMetadataProvider.ProfileUrlKey, session.GetProfileUrl() ?? AuthMetadataProvider.DefaultNoProfileImgUrl },
                 }
             };
@@ -321,7 +326,6 @@ namespace ServiceStack
                 lock (response)
                 {
                     response.OutputStream.Write(frame);
-                    response.Flush();
                     response.Flush();
 
                     if (OnPublish != null)

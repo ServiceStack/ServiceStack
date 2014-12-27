@@ -74,7 +74,7 @@ namespace ServiceStack
                 NotifyJoin = HandleOnJoin,
                 NotifyLeave = HandleOnLeave,
                 NotifyHeartbeat = HandleOnHeartbeat,
-                Serialize = HandleSerialize, 
+                Serialize = HandleSerialize,
             };
 
             var appHost = HostContext.AppHost;
@@ -122,7 +122,7 @@ namespace ServiceStack
         }
 
         public RedisServerEvents(IRedisClientsManager clientsManager)
-            : this(new RedisPubSubServer(clientsManager, Topic)) {}
+            : this(new RedisPubSubServer(clientsManager, Topic)) { }
 
         void HandleOnJoin(IEventSubscription sub)
         {
@@ -151,8 +151,12 @@ namespace ServiceStack
             {
                 trans.QueueCommand(r => r.Remove(RedisIndex.Subscription.Fmt(id)));
                 trans.QueueCommand(r => r.RemoveItemFromSortedSet(RedisIndex.ActiveSubscriptionsSet, id));
-                trans.QueueCommand(r => r.RemoveItemFromSet(RedisIndex.ChannelSet.Fmt(info.Channels), id));
                 trans.QueueCommand(r => r.RemoveItemFromSet(RedisIndex.UserIdSet.Fmt(info.UserId), id));
+
+                foreach (var channel in info.Channels)
+                {
+                    trans.QueueCommand(r => r.RemoveItemFromSet(RedisIndex.ChannelSet.Fmt(channel), id));
+                }
 
                 if (info.UserName != null)
                     trans.QueueCommand(r => r.RemoveItemFromSet(RedisIndex.UserNameSet.Fmt(info.UserName), id));
@@ -252,8 +256,12 @@ namespace ServiceStack
             {
                 trans.QueueCommand(r => r.AddItemToSortedSet(RedisIndex.ActiveSubscriptionsSet, id, RedisPubSub.CurrentServerTime.Ticks));
                 trans.QueueCommand(r => r.Set(RedisIndex.Subscription.Fmt(id), info));
-                trans.QueueCommand(r => r.AddItemToSet(RedisIndex.ChannelSet.Fmt(info.Channels), id));
                 trans.QueueCommand(r => r.AddItemToSet(RedisIndex.UserIdSet.Fmt(info.UserId), id));
+
+                foreach (var channel in info.Channels)
+                {
+                    trans.QueueCommand(r => r.AddItemToSet(RedisIndex.ChannelSet.Fmt(channel), id));
+                }
 
                 if (info.UserName != null)
                     trans.QueueCommand(r => r.AddItemToSet(RedisIndex.UserNameSet.Fmt(info.UserName), id));
@@ -311,7 +319,7 @@ namespace ServiceStack
                 if (info == null)
                     return false;
 
-                redis.AddItemToSortedSet(RedisIndex.ActiveSubscriptionsSet, 
+                redis.AddItemToSortedSet(RedisIndex.ActiveSubscriptionsSet,
                     info.SubscriptionId, RedisPubSub.CurrentServerTime.Ticks);
 
                 NotifyRedis("pulse.id." + subscriptionId, null, null);
@@ -434,14 +442,14 @@ namespace ServiceStack
                         local.Pulse(id);
                     }
                     break;
-            } 
+            }
         }
 
         public void Dispose()
         {
             if (RedisPubSub != null)
                 RedisPubSub.Dispose();
-   
+
             if (local != null)
                 local.Dispose();
 
