@@ -548,7 +548,7 @@ namespace ServiceStack
             OnHeartbeatReceived(heartbeatMsg);
         }
 
-        public virtual void Stop()
+        public virtual Task Stop()
         {
             if (log.IsDebugEnabled)
                 log.DebugFormat("Stop()");
@@ -556,11 +556,13 @@ namespace ServiceStack
             if (cancel != null)
                 cancel.Cancel();
 
+            Task task = EmptyTask;
+
             if (ConnectionInfo != null && ConnectionInfo.UnRegisterUrl != null)
             {
                 EnsureSynchronizationContext();
-                ConnectionInfo.UnRegisterUrl.GetStringFromUrlAsync()
-                    .Error(ex => { /*ignore*/});
+                task = ConnectionInfo.UnRegisterUrl.GetStringFromUrlAsync();
+                task.Error(ex => { /*ignore*/});
             }
 
             using (response)
@@ -570,6 +572,8 @@ namespace ServiceStack
 
             ConnectionInfo = null;
             httpReq = null;
+
+            return task;
         }
 
         public void Dispose()
