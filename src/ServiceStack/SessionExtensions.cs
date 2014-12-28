@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.Web;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Web;
@@ -20,6 +21,9 @@ namespace ServiceStack
     {
         public static string GetSessionId(this IRequest httpReq)
         {
+            if (httpReq == null)
+                httpReq = HostContext.GetCurrentRequest();
+
             var sessionOptions = GetSessionOptions(httpReq);
 
             return sessionOptions.Contains(SessionOptions.Permanent)
@@ -179,7 +183,7 @@ namespace ServiceStack
 
         public static string GetSessionKey(IRequest httpReq = null)
         {
-            var sessionId = SessionFeature.GetSessionId(httpReq);
+            var sessionId = httpReq.GetSessionId();
             return sessionId == null ? null : SessionFeature.GetSessionKey(sessionId);
         }
 

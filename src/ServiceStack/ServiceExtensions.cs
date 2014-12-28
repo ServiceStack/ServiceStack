@@ -53,7 +53,7 @@ namespace ServiceStack
         /// <summary>
         /// If they don't have an ICacheClient configured use an In Memory one.
         /// </summary>
-        internal static readonly MemoryCacheClient DefaultCache = new MemoryCacheClient { FlushOnDispose = true };
+        internal static readonly MemoryCacheClient DefaultCache = new MemoryCacheClient();
 
         public static ICacheClient GetCacheClient(this IResolver service)
         {
@@ -136,7 +136,8 @@ namespace ServiceStack
             using (var cache = httpReq.GetCacheClient())
             {
                 var sessionId = httpReq.GetSessionId();
-                var session = cache.Get<IAuthSession>(SessionFeature.GetSessionKey(sessionId)) 
+                var sessionKey = SessionFeature.GetSessionKey(sessionId);
+                var session = (sessionKey != null ? cache.Get<IAuthSession>(sessionKey) : null)
                     ?? SessionFeature.CreateNewSession(httpReq, sessionId);
 
                 if (httpReq.Items.ContainsKey(RequestItemsSessionKey))

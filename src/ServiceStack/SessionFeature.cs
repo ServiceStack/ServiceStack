@@ -2,14 +2,12 @@ using System;
 using System.Web;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
 {
     public class SessionFeature : IPlugin
     {
-        public const string OnlyAspNet = "Only ASP.NET Requests accessible via Singletons are supported";
         public const string SessionId = "ss-id";
         public const string PermanentSessionId = "ss-pid";
         public const string SessionOptionsKey = "ss-opt";
@@ -45,45 +43,31 @@ namespace ServiceStack
             }
         }
 
-        public static string GetSessionId(IRequest httpReq = null)
-        {
-            if (httpReq == null && HttpContext.Current == null)
-                throw new NotImplementedException(OnlyAspNet);
-
-            httpReq = httpReq ?? HttpContext.Current.ToRequest();
-
-            return httpReq.GetSessionId();
-        }
-
         public static string CreateSessionIds(IRequest httpReq = null, IResponse httpRes = null)
         {
-            if (httpReq == null || httpRes == null)
-            {
-                if (HttpContext.Current == null)
-                    throw new NotImplementedException(OnlyAspNet);
-            }
-
-            httpReq = httpReq ?? HttpContext.Current.ToRequest();
-            httpRes = httpRes ?? httpReq.Response;
+            if (httpReq == null)
+                httpReq = HostContext.GetCurrentRequest();
+            if (httpRes == null)
+                httpRes = httpReq.Response;
 
             return httpRes.CreateSessionIds(httpReq);
         }
 
         public static string GetSessionKey(IRequest httpReq = null)
         {
-            var sessionId = GetSessionId(httpReq);
+            var sessionId = httpReq.GetSessionId();
             return sessionId == null ? null : GetSessionKey(sessionId);
         }
 
         public static string GetSessionKey(string sessionId)
         {
-            return IdUtils.CreateUrn<IAuthSession>(sessionId);
+            return sessionId == null ? null : IdUtils.CreateUrn<IAuthSession>(sessionId);
         }
 
         public static T GetOrCreateSession<T>(ICacheClient cache = null, IRequest httpReq = null, IResponse httpRes = null)
         {
             if (httpReq == null)
-                httpReq = HttpContext.Current.ToRequest();
+                httpReq = HostContext.GetCurrentRequest();
 
             var sessionId = httpReq.GetSessionId();
             var sessionKey = GetSessionKey(sessionId);

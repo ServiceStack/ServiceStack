@@ -3,12 +3,14 @@
 
 
 using System;
+using System.Runtime.CompilerServices;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -149,13 +151,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(altClient.Get(request).Qty, Is.EqualTo(1));
         }
 
+        public static T Log<T>(T item, [CallerMemberName] string caller = null)
+        {
+            "{0}: {1}".Print(caller, item.Dump());
+            return item;
+        }
+
         [Test]
         public void Can_increment_typed_session_tag()
         {
             var client = new JsonServiceClient(Config.AbsoluteBaseUri);
 
-            Assert.That(client.Get(new SessionTypedIncr()).Tag, Is.EqualTo(1));
-            Assert.That(client.Get(new SessionTypedIncr()).Tag, Is.EqualTo(2));
+            Assert.That(Log(client.Get(new SessionTypedIncr())).Tag, Is.EqualTo(1));
+            Assert.That(Log(client.Get(new SessionTypedIncr())).Tag, Is.EqualTo(2));
         }
 
         [Test]
@@ -164,10 +172,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var client = new JsonServiceClient(Config.AbsoluteBaseUri);
             var altClient = new JsonServiceClient(Config.AbsoluteBaseUri);
 
-            Assert.That(client.Get(new SessionTypedIncr()).Tag, Is.EqualTo(1));
-            Assert.That(client.Get(new SessionTypedIncr()).Tag, Is.EqualTo(2));
-            Assert.That(altClient.Get(new SessionTypedIncr()).Tag, Is.EqualTo(1));
-            Assert.That(altClient.Get(new SessionTypedIncr()).Tag, Is.EqualTo(2));
+            Assert.That(Log(client.Get(new SessionTypedIncr())).Tag, Is.EqualTo(1));
+            Assert.That(Log(client.Get(new SessionTypedIncr())).Tag, Is.EqualTo(2));
+            Assert.That(Log(altClient.Get(new SessionTypedIncr())).Tag, Is.EqualTo(1));
+            Assert.That(Log(altClient.Get(new SessionTypedIncr())).Tag, Is.EqualTo(2));
 
             Assert.That(client.Get(new SessionTypedIncr()).Tag, Is.EqualTo(3));
             Assert.That(altClient.Get(new SessionTypedIncr()).Tag, Is.EqualTo(3));
