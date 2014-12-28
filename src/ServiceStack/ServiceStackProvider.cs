@@ -165,9 +165,7 @@ namespace ServiceStack
         {
             get
             {
-                return cache ??
-                    (cache = TryResolve<ICacheClient>()) ??
-                    (cache = (TryResolve<IRedisClientsManager>() != null ? TryResolve<IRedisClientsManager>().GetCacheClient() : null));
+                return cache ?? (cache = HostContext.AppHost.GetCacheClient());
             }
         }
 
@@ -211,7 +209,7 @@ namespace ServiceStack
             var ret = TryResolve<TUserSession>();
             return !Equals(ret, default(TUserSession))
                 ? ret
-                : SessionFeature.GetOrCreateSession<TUserSession>(cache, Request, Response);
+                : SessionFeature.GetOrCreateSession<TUserSession>(Cache, Request, Response);
         }
 
         public virtual void ClearSession()

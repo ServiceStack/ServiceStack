@@ -416,7 +416,7 @@ namespace ServiceStack.Razor
         private ICacheClient cache;
         public ICacheClient Cache
         {
-            get { return cache ?? (cache = Get<ICacheClient>()); }
+            get { return cache ?? (cache = AppHost.GetCacheClient()); }
         }
 
         private IDbConnection db;

@@ -44,7 +44,7 @@ namespace ServiceStack.WebHost.IntegrationTests
 
         public new ICacheClient Cache
         {
-            get { return HostContext.Resolve<ICacheClient>(); }
+            get { return HostContext.AppHost.GetCacheClient(); }
         }
 
         private ISessionFactory sessionFactory;

@@ -53,7 +53,7 @@ namespace ServiceStack
         /// <summary>
         /// If they don't have an ICacheClient configured use an In Memory one.
         /// </summary>
-        private static readonly MemoryCacheClient DefaultCache = new MemoryCacheClient { FlushOnDispose = true };
+        internal static readonly MemoryCacheClient DefaultCache = new MemoryCacheClient { FlushOnDispose = true };
 
         public static ICacheClient GetCacheClient(this IResolver service)
         {

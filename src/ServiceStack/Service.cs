@@ -140,7 +140,7 @@ namespace ServiceStack
             var ret = TryResolve<TUserSession>();
             return !Equals(ret, default(TUserSession))
                 ? ret
-                : SessionFeature.GetOrCreateSession<TUserSession>(cache, Request, Response);
+                : SessionFeature.GetOrCreateSession<TUserSession>(Cache, Request, Response);
         }
 
         public virtual bool IsAuthenticated
