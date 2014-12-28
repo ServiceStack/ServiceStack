@@ -80,19 +80,22 @@ namespace ServiceStack
             return IdUtils.CreateUrn<IAuthSession>(sessionId);
         }
 
-        public static T GetOrCreateSession<T>(ICacheClient cache, IRequest httpReq = null, IResponse httpRes = null) 
+        public static T GetOrCreateSession<T>(ICacheClient cache = null, IRequest httpReq = null, IResponse httpRes = null)
         {
+            if (httpReq == null)
+                httpReq = HttpContext.Current.ToRequest();
+
             var sessionId = httpReq.GetSessionId();
             var sessionKey = GetSessionKey(sessionId);
             if (sessionKey != null)
             {
-                var session = cache.Get<T>(sessionKey);
+                var session = (cache ?? httpReq.GetCacheClient()).Get<T>(sessionKey);
                 if (!Equals(session, default(T)))
                     return session;
             }
             else
             {
-                sessionId = CreateSessionIds(httpReq, httpRes);
+                sessionId = CreateSessionIds(httpReq, httpRes ?? httpReq.Response);
             }
 
             return (T)CreateNewSession(httpReq, sessionId);
