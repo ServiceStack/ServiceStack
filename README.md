@@ -4,8 +4,37 @@ Join the [ServiceStack Google+ Community](https://plus.google.com/u/0/communitie
 follow [@ServiceStack](http://twitter.com/servicestack) for project updates. 
 You can catch some community members hanging out on [JabbR](http://jabbr.net/#/rooms/servicestack).
 
-Service Stack is a high-performance .NET web services platform that simplifies the development of high-performance 
-REST (JSON, XML, JSV, HTML, MsgPack, ProtoBuf, CSV) and WCF SOAP [Web Services](https://github.com/ServiceStack/ServiceStack/wiki/Service-Stack-Web-Services). 
+ServiceStack is a simple, fast, versatile and full-featured [Web](http://razor.servicestack.net) and 
+[Web Services](https://github.com/ServiceStack/ServiceStack/wiki/Service-Stack-Web-Services) Framework that's 
+thoughtfully-architected to [reduce artificial complexity](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query#why-not-complexity) and promote 
+[remote services best-practices](https://github.com/ServiceStack/ServiceStack/wiki/Advantages-of-message-based-web-services) 
+with a [message-based design](https://github.com/ServiceStack/ServiceStack/wiki/What-is-a-message-based-web-service%3F) 
+that allows for maximum re-use where ServiceStack Services are able to be consumed via an array of built-in fast data formats (inc. 
+[JSON](https://github.com/ServiceStack/ServiceStack.Text), 
+XML, 
+[CSV](https://github.com/ServiceStack/ServiceStack/wiki/ServiceStack-CSV-Format), 
+[JSV](https://github.com/ServiceStack/ServiceStack.Text/wiki/JSV-Format), 
+[ProtoBuf](https://github.com/ServiceStack/ServiceStack/wiki/Protobuf-format) and 
+[MsgPack](https://github.com/ServiceStack/ServiceStack/wiki/MessagePack-Format)) 
+as well as XSD/WSDL for [SOAP endpoints](https://github.com/ServiceStack/ServiceStack/wiki/SOAP-support) and 
+[Rabbit MQ](https://github.com/ServiceStack/ServiceStack/wiki/Rabbit-MQ) and 
+[Redis MQ](https://github.com/ServiceStack/ServiceStack/wiki/Messaging-and-Redis) hosts. 
+
+Your same Services also serve as the Controller in ServiceStack's [Smart Razor Views](http://razor.servicestack.net/)
+reducing the effort to serve both 
+[Web and Single Page Apps](https://github.com/ServiceStackApps/LiveDemos) as well as 
+[Rich Desktop and Mobile Clients](https://github.com/ServiceStackApps/HelloMobile).
+
+ServiceStack Services also maximize productivity for consumers providing an 
+[instant end-to-end typed API without code-gen](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client), 
+or when preferred, clients can 
+[Add a remote ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference) to generate typed DTO's for 
+[C#](https://github.com/ServiceStack/ServiceStack/wiki/CSharp-Add-ServiceStack-Reference), 
+[F#](https://github.com/ServiceStack/ServiceStack/wiki/FSharp-Add-ServiceStack-Reference), 
+[VB.NET](https://github.com/ServiceStack/ServiceStack/wiki/VB.Net-Add-ServiceStack-Reference)
+and 
+[TypeScript](https://github.com/ServiceStack/ServiceStack/wiki/TypeScript-Add-ServiceStack-Reference) 
+clients.
 
 
 Simple REST service example
