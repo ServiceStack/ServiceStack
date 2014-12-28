@@ -859,45 +859,48 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 clientA.OnCommand = e =>
                 {
                     if (e is ServerEventJoin)
+                    {
                         joinA.Add((ServerEventJoin)e);
+                        if (joinA.Count == 2)
+                            joinARecieved.SetResult(true);
+                    }
                     else if (e is ServerEventLeave)
                         leaveA.Add((ServerEventLeave)e);
-                    if (joinA.Count == 2)
-                        joinARecieved.SetResult(true);
                 };
 
                 clientB.OnCommand = e =>
                 {
                     if (e is ServerEventJoin)
+                    {
                         joinB.Add((ServerEventJoin)e);
+                        if (joinB.Count == 2)
+                            joinBRecieved.SetResult(true);
+                    }
                     else if (e is ServerEventLeave)
                         leaveB.Add((ServerEventLeave)e);
-                    if (joinB.Count == 2)
-                        joinBRecieved.SetResult(true);
                 };
 
                 clientAB.OnCommand = e =>
                 {
                     if (e is ServerEventJoin)
+                    {
                         joinAB.Add((ServerEventJoin)e);
+                        if (joinAB.Count == 2)
+                            joinABRecieved.SetResult(true);
+                    }
                     else if (e is ServerEventLeave)
                         leaveAB.Add((ServerEventLeave)e);
-                    if (joinAB.Count == 4)
-                        joinABRecieved.SetResult(true);
                 };
 
                 await clientA.Connect();
                 await clientB.Connect();
                 await clientAB.Connect();
 
-                await clientAB.WaitForNextCommand();
-                await clientAB.WaitForNextCommand();
+                await Task.WhenAll(joinARecieved.Task, joinBRecieved.Task, joinABRecieved.Task);
 
-                await Task.Delay(100);
-
-                Assert.That(joinA.Count, Is.EqualTo(2));  //A + (A,B)
-                Assert.That(joinB.Count, Is.EqualTo(2));  //B + (A,B)
-                Assert.That(joinAB.Count, Is.EqualTo(2)); //(A,B) + (A,B)
+                Assert.That(joinA.Count, Is.EqualTo(2));  //A + [(A) B]
+                Assert.That(joinB.Count, Is.EqualTo(2));  //B + [A (B)]
+                Assert.That(joinAB.Count, Is.EqualTo(2)); //[(A) B] + [A (B)]
 
                 var usersA = clientA.ServiceClient.Get(new GetEventSubscribers { Channels = new[] { "A" } });
                 var usersB = clientA.ServiceClient.Get(new GetEventSubscribers { Channels = new[] { "B" } });
@@ -908,14 +911,93 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(usersAB.Count, Is.EqualTo(3));
 
                 await clientAB.Stop();
+                await Task.Delay(100);
+
                 await clientB.Stop();
                 await clientA.Stop();
 
                 await Task.Delay(100);
 
-                Assert.That(joinA.Count, Is.EqualTo(2));
-                Assert.That(joinB.Count, Is.EqualTo(2));
-                Assert.That(joinAB.Count, Is.EqualTo(2));
+                Assert.That(leaveA.Count, Is.EqualTo(1));
+                Assert.That(leaveB.Count, Is.EqualTo(1));
+                Assert.That(leaveAB.Count, Is.EqualTo(0));
+            }
+        }
+
+        [Test]
+        public async Task MultiChannel_Does_receive_all_join_and_leave_messages()
+        {
+            var joinA = new List<ServerEventJoin>();
+            var joinB = new List<ServerEventJoin>();
+            var joinAB = new List<ServerEventJoin>();
+
+            var leaveA = new List<ServerEventLeave>();
+            var leaveB = new List<ServerEventLeave>();
+            var leaveAB = new List<ServerEventLeave>();
+
+            using (var clientAB = CreateServerEventsClient("A", "B"))
+            using (var clientA = CreateServerEventsClient("A"))
+            using (var clientB = CreateServerEventsClient("B"))
+            {
+                var joinARecieved = new TaskCompletionSource<bool>();
+                var joinBRecieved = new TaskCompletionSource<bool>();
+                var joinABRecieved = new TaskCompletionSource<bool>();
+
+                clientA.OnCommand = e =>
+                {
+                    if (e is ServerEventJoin)
+                    {
+                        joinA.Add((ServerEventJoin)e);
+                        if (joinA.Count == 1)
+                            joinARecieved.SetResult(true);
+                    }
+                    else if (e is ServerEventLeave)
+                        leaveA.Add((ServerEventLeave)e);
+                };
+
+                clientB.OnCommand = e =>
+                {
+                    if (e is ServerEventJoin)
+                    {
+                        joinB.Add((ServerEventJoin)e);
+                        if (joinB.Count == 1)
+                            joinBRecieved.SetResult(true);
+                    }
+                    else if (e is ServerEventLeave)
+                        leaveB.Add((ServerEventLeave)e);
+                };
+
+                clientAB.OnCommand = e =>
+                {
+                    if (e is ServerEventJoin)
+                    {
+                        joinAB.Add((ServerEventJoin)e);
+                        if (joinAB.Count == 4)
+                            joinABRecieved.SetResult(true);
+                    }
+                    else if (e is ServerEventLeave)
+                        leaveAB.Add((ServerEventLeave)e);
+                };
+
+                await clientAB.Connect();
+                await clientA.Connect();
+                await clientB.Connect();
+
+                await Task.WhenAll(joinARecieved.Task, joinBRecieved.Task, joinABRecieved.Task);
+
+                Assert.That(joinAB.Count, Is.EqualTo(4)); //[(A) B] + [A (B)] + A + B
+                Assert.That(joinA.Count, Is.EqualTo(1));  //A
+                Assert.That(joinB.Count, Is.EqualTo(1));  //B
+
+                await clientA.Stop();
+                await clientB.Stop();
+
+                await Task.Delay(100);
+                await clientAB.Stop();
+
+                Assert.That(leaveAB.Count, Is.EqualTo(2));
+                Assert.That(leaveA.Count, Is.EqualTo(0));
+                Assert.That(leaveB.Count, Is.EqualTo(0));
             }
         }
     }
