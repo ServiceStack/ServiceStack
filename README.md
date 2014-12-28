@@ -3,7 +3,7 @@ See [servicestack.net/features](http://servicestack.net/features) for an overvie
 Join the [ServiceStack Google+ Community](https://plus.google.com/u/0/communities/112445368900682590445) or
 follow [@ServiceStack](http://twitter.com/servicestack) for project updates. 
 
-## Simple, Fast, Versatile and full-featured Web and Web Services Framework
+### Simple, Fast, Versatile and full-featured Services Framework
 
 ServiceStack is a simple, fast, versatile and full-featured [Web](http://razor.servicestack.net) and 
 [Web Services](https://github.com/ServiceStack/ServiceStack/wiki/Service-Stack-Web-Services) Framework that's 
