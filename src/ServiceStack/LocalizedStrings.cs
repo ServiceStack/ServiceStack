@@ -38,5 +38,7 @@
         //Validation
         public static string RequestAlreadyProcessedFmt = "Request '{0}' has already been processed";
         
+        //Hosts
+        public static string OnlyAllowedInAspNetHosts = "Only ASP.NET Requests can be accessed via Singletons";
     }
 }

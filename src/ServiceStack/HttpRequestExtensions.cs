@@ -866,6 +866,9 @@ namespace ServiceStack
 
         public static IHttpRequest ToRequest(this HttpContext httpCtx, string operationName = null)
         {
+            if (httpCtx == null)
+                throw new NotImplementedException(ErrorMessages.OnlyAllowedInAspNetHosts);
+
             return new AspNetRequest(httpCtx.ToHttpContextBase(), operationName);
         }
         public static IHttpRequest ToRequest(this HttpContextBase httpCtx, string operationName = null)
