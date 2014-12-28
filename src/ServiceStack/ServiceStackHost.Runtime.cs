@@ -393,9 +393,9 @@ namespace ServiceStack
         {
             if (httpReq == null) return;
 
-            using (var cache = httpReq.GetCacheClient())
+            using (var cache = this.GetCacheClient())
             {
-                var sessionKey = SessionFeature.GetSessionKey(httpReq.GetSessionId());
+                var sessionKey = SessionFeature.GetSessionKey(session.Id ?? httpReq.GetOrCreateSessionId());
                 session.LastModified = DateTime.UtcNow;
                 cache.CacheSet(sessionKey, session, expiresIn ?? HostContext.GetDefaultSessionExpiry());
             }

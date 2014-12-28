@@ -77,10 +77,6 @@ namespace ServiceStack
                 if (!Equals(session, default(T)))
                     return session;
             }
-            else
-            {
-                sessionId = CreateSessionIds(httpReq, httpRes ?? httpReq.Response);
-            }
 
             return (T)CreateNewSession(httpReq, sessionId);
         }
@@ -88,7 +84,7 @@ namespace ServiceStack
         public static IAuthSession CreateNewSession(IRequest httpReq, string sessionId)
         {
             var session = AuthenticateService.CurrentSessionFactory();
-            session.Id = sessionId;
+            session.Id = sessionId ?? CreateSessionIds(httpReq);
             session.CreatedAt = session.LastModified = DateTime.UtcNow;
             session.OnCreated(httpReq);
 

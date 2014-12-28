@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
-using System.Web;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Web;
@@ -19,6 +18,12 @@ namespace ServiceStack
     /// </summary>
     public static class SessionExtensions
     {
+        public static string GetOrCreateSessionId(this IRequest httpReq)
+        {
+            var sessionId = httpReq.GetSessionId();
+            return sessionId ?? SessionFeature.CreateSessionIds(httpReq);
+        }
+
         public static string GetSessionId(this IRequest httpReq)
         {
             if (httpReq == null)
