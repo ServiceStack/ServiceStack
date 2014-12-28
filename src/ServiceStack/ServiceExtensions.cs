@@ -136,18 +136,8 @@ namespace ServiceStack
             using (var cache = httpReq.GetCacheClient())
             {
                 var sessionId = httpReq.GetSessionId();
-                var session = cache.Get<IAuthSession>(SessionFeature.GetSessionKey(sessionId));
-                if (session == null)
-                {
-                    session = AuthenticateService.CurrentSessionFactory();
-                    session.Id = sessionId;
-                    session.CreatedAt = session.LastModified = DateTime.UtcNow;
-                    session.OnCreated(httpReq);
-
-                    var authEvents = HostContext.TryResolve<IAuthEvents>();
-                    if (authEvents != null) 
-                        authEvents.OnCreated(httpReq, session);
-                }
+                var session = cache.Get<IAuthSession>(SessionFeature.GetSessionKey(sessionId)) 
+                    ?? SessionFeature.CreateNewSession(httpReq, sessionId);
 
                 if (httpReq.Items.ContainsKey(RequestItemsSessionKey))
                     httpReq.Items.Remove(RequestItemsSessionKey);

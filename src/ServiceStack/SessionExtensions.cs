@@ -186,20 +186,7 @@ namespace ServiceStack
         public static TUserSession SessionAs<TUserSession>(this ICacheClient cache,
             IRequest httpReq = null, IResponse httpRes = null)
         {
-            var sessionKey = GetSessionKey(httpReq);
-
-            if (sessionKey != null)
-            {
-                var userSession = cache.Get<TUserSession>(sessionKey);
-                if (!Equals(userSession, default(TUserSession)))
-                    return userSession;
-            }
-
-            if (sessionKey == null)
-                SessionFeature.CreateSessionIds(httpReq, httpRes);
-
-            var unAuthorizedSession = (TUserSession)typeof(TUserSession).CreateInstance();
-            return unAuthorizedSession;
+            return SessionFeature.GetOrCreateSession<TUserSession>(cache, httpReq, httpRes);
         }
 
         public static IAuthSession GetUntypedSession(this ICacheClient cache,
