@@ -167,6 +167,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(client.Get(new SessionTypedIncr()).Tag, Is.EqualTo(1));
             Assert.That(client.Get(new SessionTypedIncr()).Tag, Is.EqualTo(2));
             Assert.That(altClient.Get(new SessionTypedIncr()).Tag, Is.EqualTo(1));
+            Assert.That(altClient.Get(new SessionTypedIncr()).Tag, Is.EqualTo(2));
+
+            Assert.That(client.Get(new SessionTypedIncr()).Tag, Is.EqualTo(3));
+            Assert.That(altClient.Get(new SessionTypedIncr()).Tag, Is.EqualTo(3));
         }
     }
 }

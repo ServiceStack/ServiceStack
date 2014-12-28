@@ -211,7 +211,7 @@ namespace ServiceStack
             var ret = TryResolve<TUserSession>();
             return !Equals(ret, default(TUserSession))
                 ? ret
-                : Cache.SessionAs<TUserSession>(Request, Response);
+                : SessionFeature.GetOrCreateSession<TUserSession>(cache, Request, Response);
         }
 
         public virtual void ClearSession()
