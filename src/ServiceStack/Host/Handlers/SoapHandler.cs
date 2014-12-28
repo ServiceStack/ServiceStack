@@ -61,24 +61,22 @@ namespace ServiceStack.Host.Handlers
                 : Message.CreateMessage(requestMsg.Version, requestType.GetOperationName() + "Response", response);
         }
 
-        protected Message ExecuteMessage(Message message, RequestAttributes requestAttributes, IRequest httpRequest, IResponse httpResponse)
+        protected Message ExecuteMessage(Message message, RequestAttributes requestAttributes, IRequest httpReq, IResponse httpRes)
         {
             var soapFeature = requestAttributes.ToSoapFeature();
             HostContext.AppHost.AssertFeatures(soapFeature);
 
-            var httpReq = HttpContext.Current != null && httpRequest == null
-                    ? HttpContext.Current.ToRequest()
-                    : httpRequest;
+            if (httpReq == null)
+                httpReq = HostContext.GetCurrentRequest();
 
-            var httpRes = HttpContext.Current != null && httpResponse == null
-                ? httpReq.Response
-                : httpResponse;
+            if (httpRes == null && httpReq != null)
+                httpRes = httpReq.Response;
 
             if (httpReq == null)
-                throw new ArgumentNullException("httpRequest");
+                throw new ArgumentNullException("httpReq");
 
             if (httpRes == null)
-                throw new ArgumentNullException("httpResponse");
+                throw new ArgumentNullException("httpRes");
 
             httpReq.UseBufferedStream = true;
             var requestMsg = message ?? GetRequestMessageFromStream(httpReq.InputStream);

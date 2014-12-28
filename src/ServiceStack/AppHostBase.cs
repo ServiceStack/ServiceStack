@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Web;
 using ServiceStack.Host.AspNet;
 using ServiceStack.Web;
 
@@ -23,6 +24,11 @@ namespace ServiceStack
         {
             var path = ((AspNetRequest)httpReq).HttpRequest.PhysicalPath;
             return path;
+        }
+
+        public override IRequest GetCurrentRequest()
+        {
+            return HttpContext.Current.ToRequest();
         }
     }
 }

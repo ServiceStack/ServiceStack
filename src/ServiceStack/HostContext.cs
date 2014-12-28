@@ -331,7 +331,7 @@ namespace ServiceStack
         {
             var service = AssertAppHost().Container.Resolve<T>();
             if (service == null) return null;
-            service.Request = httpCtx != null ? httpCtx.ToRequest() : HttpContext.Current.ToRequest();
+            service.Request = httpCtx != null ? httpCtx.ToRequest() : GetCurrentRequest();
             return service;
         }
 
@@ -370,6 +370,11 @@ namespace ServiceStack
         public static void OnExceptionTypeFilter(Exception exception, ResponseStatus responseStatus)
         {
             AssertAppHost().OnExceptionTypeFilter(exception, responseStatus);
+        }
+
+        public static IRequest GetCurrentRequest()
+        {
+            return AssertAppHost().GetCurrentRequest();
         }
     }
 }

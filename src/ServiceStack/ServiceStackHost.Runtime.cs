@@ -402,6 +402,11 @@ namespace ServiceStack
 
             httpReq.Items[ServiceExtensions.RequestItemsSessionKey] = session;
         }
+
+        public virtual IRequest GetCurrentRequest()
+        {
+            throw new NotImplementedException(ErrorMessages.HostDoesNotSupportSingletonRequest);
+        }
     }
 
 }

@@ -871,6 +871,7 @@ namespace ServiceStack
 
             return new AspNetRequest(httpCtx.ToHttpContextBase(), operationName);
         }
+
         public static IHttpRequest ToRequest(this HttpContextBase httpCtx, string operationName = null)
         {
             return new AspNetRequest(httpCtx, operationName);
