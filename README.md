@@ -2,7 +2,8 @@ See [servicestack.net/features](http://servicestack.net/features) for an overvie
 
 Join the [ServiceStack Google+ Community](https://plus.google.com/u/0/communities/112445368900682590445) or
 follow [@ServiceStack](http://twitter.com/servicestack) for project updates. 
-You can catch some community members hanging out on [JabbR](http://jabbr.net/#/rooms/servicestack).
+
+## Simple, Fast, Versatile and full-featured Web and Web Services Framework
 
 ServiceStack is a simple, fast, versatile and full-featured [Web](http://razor.servicestack.net) and 
 [Web Services](https://github.com/ServiceStack/ServiceStack/wiki/Service-Stack-Web-Services) Framework that's 
@@ -37,8 +38,7 @@ and
 clients.
 
 
-Simple REST service example
-=========================== 
+## Simple REST service example
 
 This example is also available as a [stand-alone integration test](https://github.com/ServiceStack/ServiceStack/blob/master/tests/ServiceStack.WebHost.Endpoints.Tests/NewApiTodos.cs):
 
