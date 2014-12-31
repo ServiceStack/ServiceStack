@@ -1,3 +1,165 @@
+# v4.0.35 Release Notes
+
+We're ending 2014 with a short release cycle primarily focused on a polished and fixes Release, ready for before everyone gets back at work - re-energized for a Happy New 2015 work year :)
+
+## New [TechStacks](http://techstacks.io) LiveDemo!
+
+We've been gradually refining our modern [AngularJS](https://github.com/ServiceStack/ServiceStackVS/blob/master/angular-spa.md) and [React](https://github.com/ServiceStackApps/Chat-React) Single Page App VS.NET templates which represents what we believe to be the optimal formula for developing future .NET-based JS Apps - utilizing a best-of-breed node.js, npm, bower, grunt/gulp build system.
+
+To this end we're developing new Single Page Apps alongside to further refine these VS.NET templates and demonstrate their potential in using the pre-configured Grunt tasks to manage the full iterative client/server building, optimization and deployment dev workflows. 
+
+We're happy to be able to preview the latest Live Demo built on the **AngularJS App** VS.NET template in: http://techstacks.io 
+
+[![TechStacks](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/livedemos/techstacks/screenshots/techstacks.png)](http://techstacks.io)
+
+TechStacks is a modern [AngularJS](https://angularjs.org/) CRUD App that lets you Browse and Add Technology Stacks of popular StartUps. After Signing in you can add your own TechStacks and favorite technologies to create a personalized custom 'feed' to view Websites and Apps built with your favorite programming languages and technologies.
+
+TechStacks is based on a [Bootstrap template](http://getbootstrap.com) with client-side features:
+
+ - HTML5 Routing to enable pretty urls, also supports full page reloads and back button support
+ - Same Services supporting both human-readable Slugs or int primary keys
+ - Responsive design supporting iPad Landscape and Portrait modes
+ - Preloading and background data fetching to reduce flicker and maximize responsiveness
+ - [Disqus](https://disqus.com/) commenting system
+ - [Chosen](http://harvesthq.github.io/chosen/) for UX-friendly multi combo boxes
+
+and some of TechStacks back-end features include: 
+
+ - [Twitter and Facebook OAuth Providers](https://github.com/ServiceStack/ServiceStack/wiki/Authentication-and-authorization)
+ - Substitutable [OrmLite](https://github.com/ServiceStack/ServiceStack.OrmLite) RDBMS [PostgreSQL and Sqlite](https://github.com/ServiceStackApps/TechStacks/blob/875e78910e43d2230f0925b71d5990497216511e/src/TechStacks/TechStacks/AppHost.cs#L49-L56) back-ends
+ - [Auto Query](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query) for automatic services of RDBMS tables
+ - [RDBMS Sessions and In Memory Caching](https://github.com/ServiceStack/ServiceStack/wiki/Caching)
+ - [Smart Razor Views](http://razor.servicestack.net)
+ - [Fluent Validation](https://github.com/ServiceStack/ServiceStack/wiki/Validation)
+
+TechStacks is a good example of the experience you can get running a packaged ServiceStack/AngularJS App on modest hardware - [techstacks.io](http://techstacks.io) is currently running on a single **m1.small** AWS EC2 instance and **db.t1.micro** RDS PostgreSQL instance that hosts all [Live Demos](https://github.com/ServiceStackApps/LiveDemos).
+
+<img src="https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/techstacks-client-layout.png" align="right" hspace="30" />
+
+### [View the Source](https://github.com/ServiceStackApps/TechStacks)
+
+Checkout the [Source Code for TechStacks](https://github.com/ServiceStackApps/TechStacks) for the full details to see how it's built. The project also includes an [example client layout](https://github.com/ServiceStackApps/TechStacks/tree/master/src/TechStacks/TechStacks/js) for structuring larger AngularJS projects in an extensible layout:
+
+### HTML5 Routing and Full-page reloads
+
+One of the disadvantages of Single Page Apps is having to resort to hash-style `#!` url suffix hacks to prevent JavaScript apps from making full-page reloads. By utilizing [AngularJS's HTML5 mode](https://docs.angularjs.org/guide/$location#html5-mode) we can take advantage of modern browsers support for HTML5 History API to retain the optimal pretty urls (we'd have if this were a server generated website) whilst still retaining the responsiveness of JS Apps which are able to load just the minimum content required, i.e. instead of waiting for the full page rendering of Server generated pages and their resource dependencies again.
+
+ServiceStack has great support for these modern-style SPA's which lets you specify a fallback handler for any non-matching routes to return the same `/default.cshtml` home page so AngularJS is able to handle the request and perform the same client-side routing it would've had the url been navigated from within the App - using the [AppHost configuration below](https://github.com/ServiceStackApps/TechStacks/blob/41efa5d8add1c4b0bdd449d6507878f2c8387bbc/src/TechStacks/TechStacks/AppHost.cs#L41):
+
+```csharp
+base.CustomErrorHttpHandlers[HttpStatusCode.NotFound] = new RazorHandler("/default.cshtml");
+```
+
+This lets you re-use pretty client-side routes like:
+
+ - http://techstacks.io/tech/servicestack
+
+And deep-link them to support full round-trip requests (i.e. outside of AngularJS) - where as `/tech/servicestack` doesn't match any custom Server routes, ServiceStack instead executes the above `/default.cshtml` home page. At which point AngularJS takes over and navigates to the internal route mapping matching `/tech/servicestack`.
+
+> To get the latest AngularJS and React.js App templates download the latest [ServiceStackVS VS.NET Extension](https://visualstudiogallery.msdn.microsoft.com/5bd40817-0986-444d-a77d-482e43a48da7)
+
+## ServerEvents now supports Multiple Channels per subscription
+
+To ensure each Client only ever needs 1 ServerEvents subscription, subscriptions now support subscribing to multiple channels. Multi Channel Support is fully implemented in all [JavaScript ServerEvents](https://github.com/ServiceStack/ServiceStack/wiki/JavaScript-Server-Events-Client) and [C#/.NET ServerEvents](https://github.com/ServiceStack/ServiceStack/wiki/C%23-Server-Events-Client) Clients as well as both [back-end InMemory](https://github.com/ServiceStack/ServiceStack/wiki/Server-Events) and [Redis ServerEvents](https://github.com/ServiceStack/ServiceStack/wiki/Redis-Server-Events) providers.
+
+The API remains similar to the previous Single Channel Routes where in addition to subscribing to a single channel:
+
+    /event-stream?channel=Home
+
+Clients can also subscribe to multiple channels:
+
+    /event-stream?channel=Home,Work,Play
+
+> If preferred, clients can also use the more readable **?channels=** plural variable name
+
+And the above example again using the [C#/.NET ServerEvents Client](https://github.com/ServiceStack/ServiceStack/wiki/C%23-Server-Events-Client):
+
+```csharp
+var client = new ServerEventsClient(BaseUri, "Home");
+
+var client = new ServerEventsClient(BaseUri, "Home", "Work", "Play");
+```
+
+Multi-Channel subscriptions works conceptually similar to having multiple "single channel" subscriptions where multiple Join/Leave/Message events are fired for events occurring in each channel. For more details on this checkout the [multi-channel ServerEvents tests](https://github.com/ServiceStack/ServiceStack/blob/42d08dee1f4945f1a7be29ac234ce1250e04de9b/tests/ServiceStack.WebHost.Endpoints.Tests/ServerEventTests.cs#L781).
+
+### Multi-Channel Chat Apps
+
+With this feature, we can now create multi-channel Chat Apps using only a single ServerEvents subscription: 
+
+[![React Multi-Channel Chat](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/livedemos/chat-react-multichannels.png)](http://react-chat.servicestack.net/?channels=home,work,play)
+
+> Multi-Channel React Chat preview
+
+Surprisingly it only took a small amount of code to add support for multiple chat rooms in all the different Chat Apps which now all support Multiple Chat rooms:
+
+ - Upgrade [jQuery Chat Client/Server](https://github.com/ServiceStackApps/Chat/commit/f23bb912791425abcba1bc724cd86cb4ab8cac82) to support multi channels
+ - Upgrade [React Chat Client](https://github.com/ServiceStackApps/Chat-React/commit/8969ce9c291d88f63d84500b3bb281c3b1f451c7) to support multi channels
+ - Upgrade [React Chat Server](https://github.com/ServiceStackApps/Chat-React/commit/cae43b6923771b02c28726dcfa4927d8490275ee) to support multi channels
+ - Upgrade [ServiceStack.Gap Chat Client/Server](https://github.com/ServiceStack/ServiceStack.Gap/commit/6ee72d81fcf7cd73573b686400500d7516f312b9) to support multiple channels
+
+Should you want to run the previous "single channel" Chat Apps, they're available in the **single-channel** branches:
+
+ - [jQuery Chat](https://github.com/ServiceStackApps/Chat/tree/single-channel)
+ - [React Chat](https://github.com/ServiceStackApps/Chat-React/tree/singe-channel)
+
+> Multi-Channel support is mostly backwards compatible where all Chat Apps can be run as-is when upgraded to the latest v4.0.35+ of ServiceStack, but it does require upgrading both v4.0.35 Client and Server libraries together.
+
+## Minor Changes and Fixes
+
+Rest of this release was focused on minor features, changes and fixes:
+
+### Framework Changes 
+
+ - Custom HTTP Handlers now execute Global Request Filters [709fb73](https://github.com/ServiceStack/ServiceStack/commit/709fb73c1450f13ba6449eed9101e588775c3d9d)
+ - Static Default html pages (e.g. default.html) are served directly from root instead of being redirected to static file - Behavior is now in-line with `default.cshtml` in Razor Support [5b5d7fa](https://github.com/ServiceStack/ServiceStack/commit/5b5d7fa66bbd3d4237ede8a5bc9054354dfa7b2c)
+ - StaticFileHandler HTTP Handler is now re-usable `VirtualNode` for returning Static Files [8571ecd](https://github.com/ServiceStack/ServiceStack/commit/8571ecd6f7e244ee152e959e6759f6a1ee82fe4d)
+ - Original C#/.NET Exception is now accessible as `InnerException` in wrapped `HttpError` [42d5976](https://github.com/ServiceStack/ServiceStack/commit/42d59767fd8ea9414470cbedbac8b2bae308e9e8)
+ - Added overridable `IDbConnectionFactory` and `IRedisClientsManager` properties in `Service` base class [c18215b](https://github.com/ServiceStack/ServiceStack/commit/c18215b58a7a71f9537f8614ce42acf91beaee3b)
+ - Add `.woff2` to `Config.AllowFileExtensions` white-list [aa1e93a](https://github.com/ServiceStack/ServiceStack/commit/aa1e93adcea85216aac807cad4bdbe8f71ff2f52)
+ - Changed all methods in MVC ServiceStackController base class to protected to prevent MVC Controller Factories from assuming their MVC Actions [eff11c](https://github.com/ServiceStack/ServiceStack/commit/eff11c8992df78b18b07cc0137d27ea1e2d7eb47)
+ - Added Remove Plugin and Debug Link API's [9002d48](https://github.com/ServiceStack/ServiceStack/commit/9002d4827c43dd91e02b298a3b5a56e6e376963a)
+ - Added Retry logic on Concurrent Update collisions in `OrmLiteCacheClient` [aa6d62c](https://github.com/ServiceStack/ServiceStack/commit/aa6d62ca23ebef30eb3727f3894d214d320843b0)
+ - Added Runtime Attribute Filter example [355365b](https://github.com/ServiceStack/ServiceStack/commit/355365bbfc45e1309fa2d91fcbc1856e874a9676)
+ - Add support for implicit querying of enums in AutoQuery [b5d2477](https://github.com/ServiceStack/ServiceStack/commit/b5d2477c581152168f43017a355cbcae9dccbefb)
+ - Handle Retry Exceptions during on `ServerEventsClient` reconnections [7833cd8](https://github.com/ServiceStack/ServiceStack/commit/7833cd8c25e0eb4dc10cd0e0033d2d156393625a)
+ - Added `AppHost.GetCurrentRequest()` to allow different AppHosts to return the current HttpContext [7cbadda](https://github.com/ServiceStack/ServiceStack/commit/7cbadda18f5666a4c24a0e49fa1af740afd0fec4)
+ - Fixed NRE during max pool-size overflow handling in `RedisManagerPool` [c94eedd](https://github.com/ServiceStack/ServiceStack.Redis/commit/c94eedd2e3467a418b290209fdf52b01c0516855)
+
+### Auth Changes
+
+ - `IAuthRepository.CreateOrMergeAuthSession()` now returns the merged `IUserAuthDetails` [f2383ff](https://github.com/ServiceStack/ServiceStack/commit/f2383fffd390d58d2da55dd47eb2b68110066c51)
+   - `OnRegistered()` callback now fired for successful first-time OAuth requests (in addition to `/register` Service)
+ - Added `AppHost.OnSaveSession()` to allow custom logic whenever a User Session is saved to the Cache [002a4eb](https://github.com/ServiceStack/ServiceStack/commit/002a4ebf9ea75e922554148ffa2581be05e2c359)
+ - New `Dictionary<string,string> Meta` added to allow custom Auth params on `Authenticate` during Authentication [4d339c1](https://github.com/ServiceStack/ServiceStack/commit/4d339c190bf086e2639c3373792b9f4547e0851b)
+ - New `Config.AddRedirectParamsToQueryString` option added to change redirect params to be added to QueryString instead of hash `#` params [fea60fa](https://github.com/ServiceStack/ServiceStack/commit/fea60fa37000ff7603dc15a31b53150d72bae131)
+ - `NHibernateUserAuthRepository.GetCurrentSession()` is now overridable to customize NH Session Initialization [7249c9a](https://github.com/ServiceStack/ServiceStack/commit/7249c9af8191ec1bdf7b95db0bba607fe5015dc8)
+
+### MQ Changes
+
+ - Added `QueueNames.IsTempQueue()` API to determine if a MQ name is a Temp Queue even when custom naming conventions are used [c3ee3d0](https://github.com/ServiceStack/ServiceStack/commit/c3ee3d037ec5676a05e0852ea90d0d75f0d25787)
+ - Pass `IMessageHandler` in custom MQ Error Handlers so Nak's can be sent from same client that received the message [3be2e3f](https://github.com/ServiceStack/ServiceStack/commit/3be2e3f9d3e9340c4993f8eabc8805c2b1325b18)
+
+### OrmLite Changes
+
+ - `SqlProc` no longer disposes `IDbCommand` before returning it [9e71480](https://github.com/ServiceStack/ServiceStack.OrmLite/commit/9e714808079aa08f8b7b90766ba308279532c08f)
+ - Fixed `SingleAsync` API to call correct internal API [b23410](https://github.com/ServiceStack/ServiceStack.OrmLite/commit/b234105065b38df5eb18449e2fb8d5173458c269)
+ - Added support new Multi-Column OrderBy Descending API's [33292ef](https://github.com/ServiceStack/ServiceStack.OrmLite/commit/33292ef67ec09cbe005afc2cba1f7c417da4434c)
+ - Add support for `ConvertToList<T>` to handle Scalars as well [4290229](https://github.com/ServiceStack/ServiceStack.OrmLite/commit/4290229cd50ae6475a3edffc198bbdc87cc54539)
+
+### ServiceStack.Text Changes
+
+ - Add support for Dates in `yyyyMMdd` format [a752f2a](https://github.com/ServiceStack/ServiceStack.Text/commit/a752f2af70f165398899e92b2775daa0d870ff57)
+   - Add New `DateTimeSerializer.OnParseErrorFn` fallback can be used to handle unknown Date Formats
+ - Added convenient `Task.Success()` and `Task.Error()` extension methods for non-generic `Task` [b17866a](https://github.com/ServiceStack/ServiceStack.Text/commit/b17866a3b46e3e6c699c20b7f33ef3738fdffd46)
+ - PCL version of `GetPublicProperties()` now only return instance (non-static) properties [dbe1f83](https://github.com/ServiceStack/ServiceStack.Text/commit/dbe1f8349600ba47e2c4aaaa49c4759198a6ac1f)
+
+### Dependencies Updated
+
+ - FacebookAuthProvider upgraded to use v2.0 of Facebook's API
+ - Swagger UI updated latest version
+ - Memcached updated to 0.57
+ - FluentNHibernate to 2.0.1.0
+
 # v4.0.34 Release Notes
 
 ## [Add TypeScript Reference!](https://github.com/ServiceStack/ServiceStack/wiki/TypeScript-Add-ServiceStack-Reference)
