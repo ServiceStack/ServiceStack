@@ -38,11 +38,11 @@ TechStacks is a good example of the experience you can get running a packaged Se
 
 ### [View the Source](https://github.com/ServiceStackApps/TechStacks)
 
-Checkout the [Source Code for TechStacks](https://github.com/ServiceStackApps/TechStacks) for the full details to see how it's built. The project also includes an [example client layout](https://github.com/ServiceStackApps/TechStacks/tree/master/src/TechStacks/TechStacks/js) for structuring larger AngularJS projects in an extensible layout:
+Checkout the [Source Code for TechStacks](https://github.com/ServiceStackApps/TechStacks) for the full details to see how it's built. The project also includes an [example client layout](https://github.com/ServiceStackApps/TechStacks/tree/master/src/TechStacks/TechStacks/js) for structuring larger AngularJS projects in an extensible layout files and folder structure:
 
 ### HTML5 Routing and Full-page reloads
 
-One of the disadvantages of Single Page Apps is having to resort to hash-style `#!` url suffix hacks to prevent JavaScript apps from making full-page reloads. By utilizing [AngularJS's HTML5 mode](https://docs.angularjs.org/guide/$location#html5-mode) we can take advantage of modern browsers support for HTML5 History API to retain the optimal pretty urls (we'd have if this were a server generated website) whilst still retaining the responsiveness of JS Apps which are able to load just the minimum content required, i.e. instead of waiting for the full page rendering of Server generated pages and their resource dependencies again.
+One of the disadvantages of Single Page Apps is having to resort to hash-style `#!` url suffix hacks to prevent JavaScript apps from making full-page reloads. By utilizing [AngularJS's HTML5 mode](https://docs.angularjs.org/guide/$location#html5-mode) we can take advantage of modern browsers support for HTML5 History API to retain the optimal pretty urls (we'd have if this were a server generated website) whilst still retaining the responsiveness of JS Apps which are able to load just the minimum content required, i.e. instead of waiting for the full page rendering of Server generated pages and their resource dependencies to be loaded again.
 
 ServiceStack has great support for these modern-style SPA's which lets you specify a fallback handler for any non-matching routes to return the same `/default.cshtml` home page so AngularJS is able to handle the request and perform the same client-side routing it would've had the url been navigated from within the App - using the [AppHost configuration below](https://github.com/ServiceStackApps/TechStacks/blob/41efa5d8add1c4b0bdd449d6507878f2c8387bbc/src/TechStacks/TechStacks/AppHost.cs#L41):
 
@@ -54,7 +54,7 @@ This lets you re-use pretty client-side routes like:
 
  - http://techstacks.io/tech/servicestack
 
-And deep-link them to support full round-trip requests (i.e. outside of AngularJS) - where as `/tech/servicestack` doesn't match any custom Server routes, ServiceStack instead executes the above `/default.cshtml` home page. At which point AngularJS takes over and navigates to the internal route mapping matching `/tech/servicestack`.
+And allow deep-link support for full round-trip requests (i.e. outside of AngularJS) - where since `/tech/servicestack` doesn't match any custom Server routes, ServiceStack instead responds with the above `/default.cshtml` Razor View. At which point AngularJS takes over and navigates to the internal route mapping that matches `/tech/servicestack`.
 
 > To get the latest AngularJS and React.js App templates download the latest [ServiceStackVS VS.NET Extension](https://visualstudiogallery.msdn.microsoft.com/5bd40817-0986-444d-a77d-482e43a48da7)
 
@@ -82,9 +82,9 @@ var client = new ServerEventsClient(BaseUri, "Home", "Work", "Play");
 
 Multi-Channel subscriptions works conceptually similar to having multiple "single channel" subscriptions where multiple Join/Leave/Message events are fired for events occurring in each channel. For more details on this checkout the [multi-channel ServerEvents tests](https://github.com/ServiceStack/ServiceStack/blob/42d08dee1f4945f1a7be29ac234ce1250e04de9b/tests/ServiceStack.WebHost.Endpoints.Tests/ServerEventTests.cs#L781).
 
-### Multi-Channel Chat Apps
+### Chat Apps now support multiple Chat Roons
 
-With this feature, we can now create multi-channel Chat Apps using only a single ServerEvents subscription: 
+With this feature, we can now create Chat Apps that support multiple Chat Rooms using only a single ServerEvents subscription: 
 
 [![React Multi-Channel Chat](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/livedemos/chat-react-multichannels.png)](http://react-chat.servicestack.net/?channels=home,work,play)
 
@@ -92,17 +92,17 @@ With this feature, we can now create multi-channel Chat Apps using only a single
 
 Surprisingly it only took a small amount of code to add support for multiple chat rooms in all the different Chat Apps which now all support Multiple Chat rooms:
 
- - Upgrade [jQuery Chat Client/Server](https://github.com/ServiceStackApps/Chat/commit/f23bb912791425abcba1bc724cd86cb4ab8cac82) to support multi channels
- - Upgrade [React Chat Client](https://github.com/ServiceStackApps/Chat-React/commit/8969ce9c291d88f63d84500b3bb281c3b1f451c7) to support multi channels
- - Upgrade [React Chat Server](https://github.com/ServiceStackApps/Chat-React/commit/cae43b6923771b02c28726dcfa4927d8490275ee) to support multi channels
- - Upgrade [ServiceStack.Gap Chat Client/Server](https://github.com/ServiceStack/ServiceStack.Gap/commit/6ee72d81fcf7cd73573b686400500d7516f312b9) to support multiple channels
+ - Upgrade [jQuery Chat Client/Server](https://github.com/ServiceStackApps/Chat/commit/f23bb912791425abcba1bc724cd86cb4ab8cac82) to support multiple Chat Rooms
+ - Upgrade [React Chat Client](https://github.com/ServiceStackApps/Chat-React/commit/8969ce9c291d88f63d84500b3bb281c3b1f451c7) to support multiple Chat Rooms
+ - Upgrade [React Chat Server](https://github.com/ServiceStackApps/Chat-React/commit/cae43b6923771b02c28726dcfa4927d8490275ee) to support multiple Chat Rooms
+ - Upgrade [ServiceStack.Gap Chat Client/Server](https://github.com/ServiceStack/ServiceStack.Gap/commit/6ee72d81fcf7cd73573b686400500d7516f312b9) to support multiple Chat Rooms
 
-Should you want to run the previous "single channel" Chat Apps, they're available in the **single-channel** branches:
+Should you want to run the previous "Single Room" Chat Apps, they're available in the **single-channel** branches:
 
  - [jQuery Chat](https://github.com/ServiceStackApps/Chat/tree/single-channel)
  - [React Chat](https://github.com/ServiceStackApps/Chat-React/tree/singe-channel)
 
-> Multi-Channel support is mostly backwards compatible where all Chat Apps can be run as-is when upgraded to the latest v4.0.35+ of ServiceStack, but it does require upgrading both v4.0.35 Client and Server libraries together.
+> Multi-Channel support is mostly backwards compatible where all Chat Apps can be run as-is when upgraded to use the latest ServiceStack v4.0.35+ - but it does require upgrading both v4.0.35 Client and Server libraries together.
 
 ## Minor Changes and Fixes
 
