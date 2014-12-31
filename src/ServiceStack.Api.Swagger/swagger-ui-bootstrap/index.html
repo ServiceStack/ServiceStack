@@ -61,7 +61,7 @@
             }
 
             $(document).ready(function () {
-                var resourcesRequest = getRequest("http://petstore.swagger.wordnik.com/api/api-docs");
+                var resourcesRequest = getRequest("http://petstore.swagger.wordnik.com/v2/swagger.json");
                 resourcesRequest.done(function (resources) {
                     resources.apis.forEach(function (api, key) {
                         var placeholder = $('<div />').css({'margin-bottom': '1em'}).appendTo($("#main")), 
