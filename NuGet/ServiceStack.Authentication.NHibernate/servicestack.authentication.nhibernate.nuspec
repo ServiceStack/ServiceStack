@@ -22,7 +22,7 @@
       <dependency id="ServiceStack" version="4.0" />
       <dependency id="NHibernate" version="4.0.2.4000" />
       <dependency id="Iesi.Collections" version="4.0.1.4000" />
-      <dependency id="FluentNHibernate" version="1.4.0.0" />
+      <dependency id="FluentNHibernate" version="2.0.1.0" />
     </dependencies>
   </metadata>
   <files>
