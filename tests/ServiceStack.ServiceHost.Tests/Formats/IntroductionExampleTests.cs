@@ -50,7 +50,7 @@ Checkout [this product](/Product/Details/@productId)";
 
 			var expectedHtml = 
 @"<h1>Razor Example</h1>
-<h3>Hello Demis, the year is 2014</h3>
+<h3>Hello Demis, the year is 2015</h3>
 <p>Checkout <a href=""/Product/Details/10"">this product</a></p>
 ".NormalizeNewLines();
 
@@ -198,16 +198,16 @@ Your Message: @message
 		{
 			var template = 
 @"
-@if (DateTime.Now.Year == 2014) {
+@if (DateTime.Now.Year == 2015) {
 
-If the year is 2014 then print this 
+If the year is 2015 then print this 
 multi-line text block and 
 the date: @DateTime.Now
 }
 ".NormalizeNewLines();
 
 			var expectedHtml = 
-@"<p>If the year is 2014 then print this 
+@"<p>If the year is 2015 then print this 
 multi-line text block and 
 the date: 02/06/2014 06:42:45</p>
 ".NormalizeNewLines();

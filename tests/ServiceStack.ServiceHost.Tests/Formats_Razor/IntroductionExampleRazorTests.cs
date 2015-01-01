@@ -73,7 +73,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 			var expectedHtml = 
 @"<h1>Razor Example</h1>
 
-<h3>Hello Demis, the year is 2014</h3>
+<h3>Hello Demis, the year is 2015</h3>
 
 <p>Checkout <a href=""/Product/Details/10"">this product</a></p>
 ".NormalizeNewLines();
@@ -177,15 +177,15 @@ var message = ""Number is "" + number;
 		{
 			var template = 
 @"
-@if (DateTime.Now.Year == 2014) {
-<p>If the year is 2014 then print this 
+@if (DateTime.Now.Year == 2015) {
+<p>If the year is 2015 then print this 
 multi-line text block and 
 the date: @DateTime.Now</p>
 }
 ".NormalizeNewLines();
 
 			var expectedHtml = 
-@"<p>If the year is 2014 then print this 
+@"<p>If the year is 2015 then print this 
 multi-line text block and 
 the date: 02/06/2013 06:42:45</p>
 ".NormalizeNewLines();
