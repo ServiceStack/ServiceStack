@@ -277,4 +277,21 @@ namespace RazorRockstars.Console.Files
             return request;
         }
     }
+
+    [Route("/contentpages/{PathInfo*}")]
+    public class TestRazorContentPage
+    {
+        public string PathInfo { get; set; }
+    }
+
+    public class TestRazorContentPageService : Service
+    {
+        public object Any(TestRazorContentPage request)
+        {
+            return new HttpResult(request)
+            {
+                View = "/" + request.PathInfo
+            };
+        }
+    }
 }

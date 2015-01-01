@@ -172,6 +172,7 @@ namespace RazorRockstars.Console.Files
         static string ViewM_Pages_Dir2_Default = "<!--view:Pages/Dir2/default.md-->";
         static string View_RequestFilters = "<!--view:RequestFilters.cshtml-->";
         static string View_RequestFiltersPage = "<!--view:RequestFiltersPage.cshtml-->";
+        static string View_Content_ContentPage = "<!--view:Content/content-page.cshtml-->";
 
         static string Template_Layout = "<!--template:_Layout.cshtml-->";
         static string Template_Pages_Layout = "<!--template:Pages/_Layout.cshtml-->";
@@ -288,6 +289,16 @@ namespace RazorRockstars.Console.Files
                 View_Pages_Default, Template_Pages_Layout, ViewRazorPartial, ViewMarkdownPartial, ViewRazorPartialModel, ViewPagesPartialModel);
             Assert200(Host + "/Pages/Dir/",
                 View_Pages_Dir_Default, Template_SimpleLayout, ViewRazorPartial, ViewMarkdownPartial, ViewRazorPartialModel);
+        }
+
+        [Test]
+        public void Can_get_ContentPages_via_HttpResult_View()
+        {
+            Assert200(Host + "/contentpages/NoModelNoController.cshtml",
+                ViewNoModelNoController, Template_SimpleLayout, ViewRazorPartial, ViewMarkdownPartial);
+
+            Assert200(Host + "/contentpages/Content/content-page.cshtml",
+                View_Content_ContentPage, Template_SimpleLayout);
         }
 
         [Test]
