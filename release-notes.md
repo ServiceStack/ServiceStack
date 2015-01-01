@@ -82,7 +82,7 @@ var client = new ServerEventsClient(BaseUri, "Home", "Work", "Play");
 
 Multi-Channel subscriptions works conceptually similar to having multiple "single channel" subscriptions where multiple Join/Leave/Message events are fired for events occurring in each channel. For more details on this checkout the [multi-channel ServerEvents tests](https://github.com/ServiceStack/ServiceStack/blob/42d08dee1f4945f1a7be29ac234ce1250e04de9b/tests/ServiceStack.WebHost.Endpoints.Tests/ServerEventTests.cs#L781).
 
-### Chat Apps now support multiple Chat Roons
+### Chat Apps now support multiple Chat Rooms
 
 With this feature, we can now create Chat Apps that support multiple Chat Rooms using only a single ServerEvents subscription: 
 
