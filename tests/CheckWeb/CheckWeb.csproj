@@ -101,7 +101,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="default-rename.cshtml" />
+    <Content Include="default.cshtml" />
     <Content Include="ServiceModels.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>ServiceModels.cs</LastGenOutput>
@@ -110,7 +110,8 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>HttpBenchmarks.cs</LastGenOutput>
     </Content>
-    <Content Include="index.html" />
+    <Content Include="index-rename.html" />
+    <Content Include="Views\Shared\SimpleLayout.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

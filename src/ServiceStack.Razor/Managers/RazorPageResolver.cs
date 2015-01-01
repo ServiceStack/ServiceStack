@@ -108,9 +108,12 @@ namespace ServiceStack.Razor.Managers
             if (httpResult != null)
                 dto = httpResult.Response;
 
-            var existingRazorPage = ResolveViewPage(httpReq, dto);
+            var existingRazorPage = ResolveViewPage(httpReq, dto)
+                ?? ResolveContentPage(httpReq);
             if (existingRazorPage == null)
+            {
                 return false;
+            }
 
             using (ExecuteRazorPage(httpReq, httpRes, dto, existingRazorPage))
             {
@@ -121,6 +124,10 @@ namespace ServiceStack.Razor.Managers
 
         public RazorPage ResolveContentPage(IRequest httpReq)
         {
+            var viewName = httpReq.GetItem(ViewKey) as string;
+            if (viewName != null)
+                return viewManager.GetContentPage(viewName);
+
             return viewManager.GetContentPage(httpReq.PathInfo);
         }
 
