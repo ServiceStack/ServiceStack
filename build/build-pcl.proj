@@ -113,9 +113,6 @@
     <MSBuild Projects="../src/ServiceStack.Client/ServiceStack.Client.Pcl.csproj" Properties="Configuration=$(Configuration);DefineConstants=PCL"/>
     <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/portable-net45+win8+monotouch+monoandroid" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/portable-net45+win8+monotouch+monoandroid')" />
-    <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/portable-net45+win8+monotouch+monoandroid" />
-
     <MakeDir Directories="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/portable-net45+win8+monotouch+monoandroid" Condition="!Exists('$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/portable-net45+win8+monotouch+monoandroid')" />
     <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/portable-net45+win8+monotouch+monoandroid" />
 
@@ -123,27 +120,23 @@
 
     <MSBuild Projects="../src/ServiceStack.Pcl.Net45/ServiceStack.Pcl.Net45.csproj" Properties="Configuration=$(Configuration);OutputPath=bin/$(Configuration)"/>
     <Copy SourceFiles="%(Net45Files.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
-    <Copy SourceFiles="%(Net45Files.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/net45" />
 
     <!-- WinStore pcl provider -->
 
     <MSBuild Projects="../src/ServiceStack.Pcl.WinStore/ServiceStack.Pcl.WinStore.csproj" Properties="Configuration=$(Configuration);DefineConstants=NETFX_CORE;OutputPath=bin/$(Configuration)"/>
     <Copy SourceFiles="%(WinStoreFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
-    <Copy SourceFiles="%(WinStoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/win" />
     <Copy SourceFiles="%(WinStoreFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/win" />
 
     <!-- Android pcl provider -->
 
     <MSBuild Projects="../src/ServiceStack.Pcl.Android/ServiceStack.Pcl.Android.csproj" Properties="Configuration=$(Configuration);DefineConstants=ANDROID;OutputPath=bin/$(Configuration)"/>
     <Copy SourceFiles="%(AndroidFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
-    <Copy SourceFiles="%(AndroidFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/MonoAndroid" />
     <Copy SourceFiles="%(AndroidFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/MonoAndroid" />
 
     <!-- iOS pcl provider -->
 
     <MSBuild Projects="../src/ServiceStack.Pcl.iOS/ServiceStack.Pcl.iOS.csproj" Properties="Configuration=$(Configuration);DefineConstants=__IOS__;OutputPath=bin/iPhone/$(Configuration)" />
     <Copy SourceFiles="%(IosFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
-    <Copy SourceFiles="%(IosFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/MonoTouch" />
     <Copy SourceFiles="%(IosFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/MonoTouch" />
 
     <!-- Silverlight -->
@@ -153,23 +146,14 @@
 
     <Copy SourceFiles="%(ClientFilesSL5.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/sl5" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/sl5" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/sl5')" />
     <Copy SourceFiles="%(ClientFilesSL5.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/sl5" />
     <Copy SourceFiles="%(ClientFilesSL5.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/sl5" />
 
-    <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/net45" />
-    
-    <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/win" />    
     <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/win" />
     
-    <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/MonoTouch" />
     <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/MonoTouch" />
     
-    <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/MonoAndroid" />
     <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/MonoAndroid" />
-
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Client.Pcl/servicestack.client.pcl.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
-            LogStandardErrorAsError="true" />
     
   </Target>
 
