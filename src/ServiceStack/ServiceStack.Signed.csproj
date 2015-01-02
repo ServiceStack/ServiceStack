@@ -147,6 +147,7 @@
     <Compile Include="PostmanFeature.cs" />
     <Compile Include="RequestContext.cs" />
     <Compile Include="ServerEventsFeature.cs" />
+    <Compile Include="SitemapFeature.cs" />
     <Compile Include="SmartThreadPool\CallerThreadContext.cs" />
     <Compile Include="SmartThreadPool\CanceledWorkItemsGroup.cs" />
     <Compile Include="SmartThreadPool\EventWaitHandle.cs" />

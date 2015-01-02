@@ -111,6 +111,9 @@
     <EmbeddedResource Include="swagger-ui\lib\swagger-oauth.js" />
     <EmbeddedResource Include="swagger-ui\o2c.html" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="swagger-ui\lib\swagger-client.js" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
