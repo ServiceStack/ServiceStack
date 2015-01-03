@@ -44,6 +44,14 @@ namespace ServiceStack
         Never
     }
 
+    public class SitemapCustomXml
+    {
+        public string SitemapIndexHeaderXml { get; set; }
+        public string SitemapIndexFooterXml { get; set; }
+        public string UrlSetHeaderXml { get; set; }
+        public string UrlSetFooterXml { get; set; }
+    }
+
     public class SitemapFeature : IPlugin
     {
         public Dictionary<string, string> SitemapIndexNamespaces { get; set; }
@@ -53,6 +61,8 @@ namespace ServiceStack
 
         public List<Sitemap> SitemapIndex { get; set; }
         public List<SitemapUrl> UrlSet { get; set; }
+
+        public SitemapCustomXml CustomXml { get; set; }
 
         public SitemapFeature()
         {
@@ -122,6 +132,11 @@ namespace ServiceStack
                 }
                 xml.AppendLine(">");
 
+                if (feature.CustomXml != null)
+                {
+                    if (feature.CustomXml.SitemapIndexHeaderXml != null)
+                        xml.AppendLine(feature.CustomXml.SitemapIndexHeaderXml);
+                }
 
                 foreach (var sitemap in feature.SitemapIndex.Safe())
                 {
@@ -136,6 +151,12 @@ namespace ServiceStack
                         xml.AppendLine(sitemap.CustomXml);
 
                     xml.AppendLine("</sitemap>");
+                }
+
+                if (feature.CustomXml != null)
+                {
+                    if (feature.CustomXml.SitemapIndexFooterXml != null)
+                        xml.AppendLine(feature.CustomXml.SitemapIndexFooterXml);
                 }
 
                 xml.AppendLine("</sitemapindex>");
@@ -172,6 +193,12 @@ namespace ServiceStack
                 }
                 xml.AppendLine(">");
 
+                if (feature.CustomXml != null)
+                {
+                    if (feature.CustomXml.UrlSetHeaderXml != null)
+                        xml.AppendLine(feature.CustomXml.UrlSetHeaderXml);
+                }
+
                 foreach (var url in urlSet.Safe())
                 {
                     xml.AppendLine("<url>");
@@ -189,6 +216,12 @@ namespace ServiceStack
                         xml.AppendLine(url.CustomXml);
 
                     xml.AppendLine("</url>");
+                }
+
+                if (feature.CustomXml != null)
+                {
+                    if (feature.CustomXml.UrlSetFooterXml != null)
+                        xml.AppendLine(feature.CustomXml.UrlSetFooterXml);
                 }
 
                 xml.AppendLine("</urlset>");
