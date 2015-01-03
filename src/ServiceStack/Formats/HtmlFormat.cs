@@ -48,6 +48,18 @@ namespace ServiceStack.Formats
                     request.Items[ErrorStatusKey] = responseStatus;
                 }
 
+                if (response is CompressedResult)
+                {
+                    if (httpRes.Dto != null)
+                    {
+                        response = httpRes.Dto;
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Cannot use Cached Result as ViewModel");
+                    }
+                }
+
                 if (AppHost.ViewEngines.Any(x => x.ProcessRequest(request, httpRes, response))) return;
             }
             catch (Exception ex)

@@ -94,24 +94,18 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServiceModels.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>ServiceModels.tt</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="default.cshtml" />
-    <Content Include="ServiceModels.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>ServiceModels.cs</LastGenOutput>
-    </Content>
     <Content Include="HttpBenchmarks.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>HttpBenchmarks.cs</LastGenOutput>
     </Content>
     <Content Include="index-rename.html" />
     <Content Include="Views\Shared\SimpleLayout.cshtml" />
+    <Content Include="Views\TestView.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

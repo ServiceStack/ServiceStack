@@ -21,6 +21,15 @@ namespace Check.ServiceInterface
             return new Echo { Sentence = request.Sentence };
         }
 
+        public object Any(CachedEcho request)
+        {
+            if (request.Reload)
+                Cache.ClearCaches(request.Sentence);
+
+            return Request.ToOptimizedResultUsingCache(Cache, request.Sentence, () => 
+                new Echo {Sentence = request.Sentence});
+        }
+
         public async Task<object> Any(AsyncTest request)
         {
             var response = await Client.PostAsync(new Echoes { Sentence = "Foo" });

@@ -22,7 +22,6 @@ namespace ServiceStack
             string modifiers = null;
             if (!request.ResponseContentType.IsBinary())
             {
-
                 if (request.ResponseContentType == MimeTypes.Json)
                 {
                     string jsonp = request.GetJsonpCallback();
@@ -81,6 +80,7 @@ namespace ServiceStack
             IRequest request,
             TimeSpan? expireCacheIn = null)
         {
+            request.Response.Dto = responseDto;
             cacheClient.Set(cacheKey, responseDto, expireCacheIn);
 
             if (!request.ResponseContentType.IsBinary())

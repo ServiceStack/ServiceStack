@@ -210,7 +210,9 @@ namespace ServiceStack.Host
             if (serializer == null)
                 throw new NotSupportedException("ContentType not supported: " + contentType);
 
-            var httpRes = new HttpResponseStreamWrapper(responseStream);
+            var httpRes = new HttpResponseStreamWrapper(responseStream) {
+                Dto = requestContext.Response.Dto
+            };
             serializer(requestContext, response, httpRes);
         }
 

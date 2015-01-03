@@ -45,8 +45,10 @@ namespace ServiceStack
 		/// <param name="request"></param>
 		/// <param name="dto"></param>
 		/// <returns></returns>
-		public static object ToOptimizedResult<T>(this IRequest request, T dto) 
+		public static object ToOptimizedResult<T>(this IRequest request, T dto)
 		{
+		    request.Response.Dto = dto;
+
 			string serializedDto = HostContext.ContentTypes.SerializeToString(request, dto);
 		    var compressionType = request.GetCompressionType();
 		    if (compressionType == null)

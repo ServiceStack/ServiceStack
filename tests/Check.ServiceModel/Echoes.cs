@@ -43,4 +43,10 @@ namespace Check.ServiceModel
             ParameterType = "form")]
         public string Sentence { get; set; }
     }
+
+    public class CachedEcho
+    {
+        public bool Reload { get; set; }
+        public string Sentence { get; set; }
+    }
 }
