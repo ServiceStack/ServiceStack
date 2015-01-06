@@ -44,15 +44,7 @@ namespace ServiceStack.Metadata
 
         public virtual void Render(HtmlTextWriter output)
         {
-            var baseUrl = HttpRequest.GetParentAbsolutePath().ToParentPath();
-            if (string.IsNullOrEmpty(baseUrl))
-                baseUrl = "/";
-            // use a fully qualified path if WebHostUrl is set
-            if (HostContext.Config.WebHostUrl != null)
-            {
-                baseUrl = HostContext.Config.WebHostUrl.CombineWith(baseUrl);
-            }
-
+            string baseUrl = HttpRequest.ResolveAbsoluteUrl("~/");
             var renderedTemplate = HtmlTemplates.Format(HtmlTemplates.GetOperationControlTemplate(),
                 Title,
                 baseUrl.CombineWith(MetadataConfig.DefaultMetadataUri),

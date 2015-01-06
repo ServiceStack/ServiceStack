@@ -21,11 +21,7 @@ namespace ServiceStack.Metadata
                 && !MetadataConfig.AlwaysHideInMetadata(operation); //Hide When [Restrict(VisibilityTo = None)]
 
             // use a fully qualified path if WebHostUrl is set
-            string baseUrl = HttpRequest.GetParentAbsolutePath();
-            if (HostContext.Config.WebHostUrl != null)
-            {
-                baseUrl = HostContext.Config.WebHostUrl.CombineWith(baseUrl);
-            }
+            string baseUrl = HttpRequest.ResolveAbsoluteUrl("~/");
 
             var opTemplate = new StringBuilder("<tr><th>{0}</th>");
             foreach (var config in MetadataConfig.AvailableFormatConfigs)
