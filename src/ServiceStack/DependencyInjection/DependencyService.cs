@@ -55,6 +55,11 @@ namespace ServiceStack.DependencyInjection
             SetSharing(registration, Sharing.Singleton);
         }
 
+        public ContainerBuilder GetContainerBuilder()
+        {
+            return _containerBuilder;
+        }
+
         public void UpdateRegistrations()
         {
             lock (_lockObject)
