@@ -126,6 +126,10 @@ namespace ServiceStack
         {
             if (httpReq == null) return null;
 
+            var mockSession = httpReq.TryResolve<IAuthSession>(); //testing
+            if (mockSession != null)
+                return mockSession;
+
             object oSession = null;
             if (!reload)
                 httpReq.Items.TryGetValue(RequestItemsSessionKey, out oSession);
