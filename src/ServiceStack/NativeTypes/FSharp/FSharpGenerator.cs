@@ -173,7 +173,7 @@ namespace ServiceStack.NativeTypes.FSharp
         private string AppendType(ref StringBuilderWrapper sb, MetadataType type, string lastNS,
             CreateTypeOptions options)
         {
-            if (type == null || (type.Namespace != null && type.Namespace.StartsWith("System")))
+            if (type.IgnoreSystemType())
                 return lastNS;
 
             sb = sb.Indent();

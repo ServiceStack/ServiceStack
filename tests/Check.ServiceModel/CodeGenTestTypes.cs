@@ -32,6 +32,26 @@ namespace Check.ServiceModel.Operations
             public string Value { get; set; }
         }
     }
+
+    public class ListResult
+    {
+        public string Result { get; set; }
+    }
+
+    public class ArrayResult
+    {
+        public string Result { get; set; }
+    }
+
+    public class HelloList : IReturn<List<ListResult>>
+    {
+        public List<string> Names { get; set; }
+    }
+
+    public class HelloArray : IReturn<ArrayResult[]>
+    {
+        public List<string> Names { get; set; }
+    }
     
     public class HelloWithEnum
     {

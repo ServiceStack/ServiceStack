@@ -150,6 +150,15 @@ namespace ServiceStack.NativeTypes
             while (queue.Count > 0)
             {
                 var type = queue.Dequeue();
+
+                if (IsSystemCollection(type))
+                {
+                    type = type.GetCollectionType();
+                    if (type != null) 
+                        registerTypeFn(type);
+                    continue;
+                }
+
                 if (!type.IsUserType() && !type.IsInterface) continue;
 
                 foreach (var pi in type.GetSerializableProperties()
@@ -203,6 +212,14 @@ namespace ServiceStack.NativeTypes
             }
 
             return metadata;
+        }
+
+        private static bool IsSystemCollection(Type type)
+        {
+            return type.IsArray 
+                || (type.Namespace != null
+                    && type.Namespace.StartsWith("System")
+                    && type.IsOrHasGenericInterfaceTypeOf(typeof (IEnumerable<>)));
         }
 
         public MetadataTypeName ToTypeName(Type type)
@@ -527,6 +544,16 @@ namespace ServiceStack.NativeTypes
             return type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
                 .Where(t => t.GetIndexParameters().Length == 0) // ignore indexed properties
                 .ToArray();
+        }
+    }
+
+    public static class MetadataExtensions
+    {
+        public static bool IgnoreSystemType(this MetadataType type)
+        {
+            return type == null
+                || (type.Namespace != null && type.Namespace.StartsWith("System"))
+                || (type.Inherits != null && type.Inherits.Name == "Array");
         }
     }
 }

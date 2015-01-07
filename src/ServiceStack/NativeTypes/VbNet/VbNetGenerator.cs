@@ -163,9 +163,8 @@ namespace ServiceStack.NativeTypes.VbNet
 
         private string AppendType(ref StringBuilderWrapper sb, MetadataType type, string lastNS, List<MetadataType> allTypes, CreateTypeOptions options)
         {
-            if (type == null ||
-                (type.IsNested.GetValueOrDefault() && !options.IsNestedType) ||
-                (type.Namespace != null && type.Namespace.StartsWith("System")))
+            if (type.IgnoreSystemType()
+                || (type.IsNested.GetValueOrDefault() && !options.IsNestedType))
                 return lastNS;
 
             if (type.Namespace != lastNS)

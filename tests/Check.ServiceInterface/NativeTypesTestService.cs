@@ -21,6 +21,16 @@ namespace Check.ServiceInterface
             return new HelloResponse { Result = request.Name };
         }
 
+        public object Any(HelloList request)
+        {
+            return request.Names.Map(name => new ListResult { Result = name });
+        }
+
+        public object Any(HelloArray request)
+        {
+            return request.Names.Map(name => new ArrayResult { Result = name });
+        }
+
         public object Any(HelloWithEnum request)
         {
             return request;
