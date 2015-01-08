@@ -16,6 +16,7 @@ namespace ServiceStack.Auth
     {
         protected static readonly ILog Log = LogManager.GetLogger(typeof(AuthProvider));
         public static bool ValidateUniqueEmails = true; //Temporary, remove later when no issues.
+        public static bool ValidateUniqueUserNames = true; //Temporary, remove later when no issues.
 
         public TimeSpan SessionExpiry { get; set; }
         public string AuthRealm { get; set; }
@@ -316,6 +317,20 @@ namespace ServiceStack.Auth
             httpRes.EndRequest();
         }
 
+        protected virtual bool UserNameAlreadyExists(IAuthRepository authRepo, IUserAuth userAuth, IAuthTokens tokens = null)
+        {
+            if (ValidateUniqueUserNames && tokens != null && tokens.UserName != null)
+            {
+                var userWithUserName = authRepo.GetUserAuthByUserName(tokens.UserName);
+                if (userWithUserName == null)
+                    return false;
+
+                var isAnotherUser = userAuth == null || (userAuth.Id != userWithUserName.Id);
+                return isAnotherUser;
+            }
+            return false;
+        }
+
         protected virtual bool EmailAlreadyExists(IAuthRepository authRepo, IUserAuth userAuth, IAuthTokens tokens = null)
         {
             if (ValidateUniqueEmails && tokens != null && tokens.Email != null)
@@ -325,10 +340,7 @@ namespace ServiceStack.Auth
                     return false;
 
                 var isAnotherUser = userAuth == null || (userAuth.Id != userWithEmail.Id);
-                if (isAnotherUser)
-                {
-                    return true;
-                }
+                return isAnotherUser;
             }
             return false;
         }
@@ -347,6 +359,11 @@ namespace ServiceStack.Auth
         protected virtual IHttpResult ValidateAccount(IServiceBase authService, IAuthRepository authRepo, IAuthSession session, IAuthTokens tokens)
         {
             var userAuth = authRepo.GetUserAuth(session, tokens);
+
+            if (UserNameAlreadyExists(authRepo, userAuth, tokens))
+            {
+                return authService.Redirect(GetReferrerUrl(authService, session).AddParam("f", "UserNameAlreadyExists"));
+            }
 
             if (EmailAlreadyExists(authRepo, userAuth, tokens))
             {
