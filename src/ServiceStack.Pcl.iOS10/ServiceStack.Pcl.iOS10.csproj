@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>ServiceStack.Pcl.iOS</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
-    <AssemblyName>ServiceStackPcliOS</AssemblyName>
+    <AssemblyName>ServiceStack.Pcl.iOS</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
     <DebugSymbols>true</DebugSymbols>
