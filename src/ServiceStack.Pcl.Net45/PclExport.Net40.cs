@@ -25,6 +25,10 @@ using ServiceStack.Text.Json;
 #if !__IOS__
 using System.Reflection.Emit;
 using FastMember = ServiceStack.Text.FastMember;
+#elif __IOS10__
+using Preserve = Foundation.PreserveAttribute;
+#else
+using Preserve = MonoTouch.Foundation.PreserveAttribute;
 #endif
 
 namespace ServiceStack
@@ -39,7 +43,7 @@ namespace ServiceStack
             this.DirSep = Path.DirectorySeparatorChar;
             this.AltDirSep = Path.DirectorySeparatorChar == '/' ? '\\' : '/';
             this.RegexOptions = RegexOptions.Compiled;
-            this.InvariantComparison = StringComparison.InvariantCulture;            
+            this.InvariantComparison = StringComparison.InvariantCulture;
             this.InvariantComparisonIgnoreCase = StringComparison.InvariantCultureIgnoreCase;
             this.InvariantComparer = StringComparer.InvariantCulture;
             this.InvariantComparerIgnoreCase = StringComparer.InvariantCultureIgnoreCase;
@@ -123,7 +127,7 @@ namespace ServiceStack
 
         public override void AddCompression(WebRequest webReq)
         {
-            var httpReq = (HttpWebRequest)webReq; 
+            var httpReq = (HttpWebRequest)webReq;
             httpReq.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip,deflate");
             httpReq.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
         }
@@ -295,7 +299,7 @@ namespace ServiceStack
         {
             field = newValue;
         }
-        
+
         public override PropertySetterDelegate GetFieldSetterFn(FieldInfo fieldInfo)
         {
             if (!SupportsExpression)
@@ -341,7 +345,7 @@ namespace ServiceStack
 
                 var fieldGetterFn = Expression.Lambda<PropertyGetterDelegate>
                     (
-                        oExprCallFieldGetFn, 
+                        oExprCallFieldGetFn,
                         oInstanceParam
                     )
                     .Compile();
@@ -434,7 +438,7 @@ namespace ServiceStack
                 return DeserializeDynamic<TSerializer>.Parse;
             }
 #endif
-			return null;
+            return null;
         }
 
         public override XmlSerializer NewXmlSerializer()
@@ -472,7 +476,7 @@ namespace ServiceStack
         public override void VerifyInAssembly(Type accessType, ICollection<string> assemblyNames)
         {
             //might get merged/mangled on alt platforms
-            if (assemblyNames.Contains(accessType.Assembly.ManifestModule.Name)) 
+            if (assemblyNames.Contains(accessType.Assembly.ManifestModule.Name))
                 return;
 
             try
@@ -618,7 +622,7 @@ namespace ServiceStack
     }
 
 #if __IOS__
-    [MonoTouch.Foundation.Preserve(AllMembers = true)]
+    [Preserve(AllMembers = true)]
     internal class Poco
     {
         public string Dummy { get; set; }
@@ -654,12 +658,12 @@ namespace ServiceStack
         /// Provide hint to IOS AOT compiler to pre-compile generic classes for all your DTOs.
         /// Just needs to be called once in a static constructor.
         /// </summary>
-        [MonoTouch.Foundation.Preserve]
+        [Preserve]
         public static void InitForAot()
         {
         }
 
-        [MonoTouch.Foundation.Preserve]
+        [Preserve]
         public override void RegisterForAot()
         {
             RegisterTypeForAot<Poco>();
@@ -708,20 +712,20 @@ namespace ServiceStack
             RegisterTypeForAot<Guid?>();
         }
 
-        [MonoTouch.Foundation.Preserve]
+        [Preserve]
         public static void RegisterTypeForAot<T>()
         {
             AotConfig.RegisterSerializers<T>();
         }
 
-        [MonoTouch.Foundation.Preserve]
+        [Preserve]
         public static void RegisterQueryStringWriter()
         {
             var i = 0;
             if (QueryStringWriter<Poco>.WriteFn() != null) i++;
         }
 
-        [MonoTouch.Foundation.Preserve]
+        [Preserve]
         public static int RegisterElement<T, TElement>()
         {
             var i = 0;
@@ -734,7 +738,7 @@ namespace ServiceStack
         ///<summary>
         /// Class contains Ahead-of-Time (AOT) explicit class declarations which is used only to workaround "-aot-only" exceptions occured on device only. 
         /// </summary>			
-        [MonoTouch.Foundation.Preserve(AllMembers = true)]
+        [Preserve(AllMembers = true)]
         internal class AotConfig
         {
             internal static JsReader<JsonTypeSerializer> jsonReader;

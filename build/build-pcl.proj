@@ -88,6 +88,7 @@
       <WinStoreFiles Include="$(SrcDir)/ServiceStack.Pcl.WinStore/bin/$(Configuration)/ServiceStack.Pcl.WinStore.*"></WinStoreFiles>
       <AndroidFiles Include="$(SrcDir)/ServiceStack.Pcl.Android/bin/$(Configuration)/ServiceStack.Pcl.Android.*"></AndroidFiles>
       <IosFiles Include="$(SrcDir)/ServiceStack.Pcl.iOS/bin/iPhone/$(Configuration)/ServiceStack.Pcl.iOS.*"></IosFiles>
+      <Ios10Files Include="$(SrcDir)/ServiceStack.Pcl.iOS10/bin/iPhone/$(Configuration)/ServiceStack.Pcl.iOS.*"></Ios10Files>
     </ItemGroup>
 
     <!-- ServiceStack.Interfaces -->
@@ -139,7 +140,13 @@
     <Copy SourceFiles="%(IosFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
     <Copy SourceFiles="%(IosFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/MonoTouch" />
 
-    <!-- Silverlight -->
+    <!-- iOS10 pcl provider -->
+
+    <MSBuild Projects="../src/ServiceStack.Pcl.iOS10/ServiceStack.Pcl.iOS10.csproj" Properties="Configuration=$(Configuration);DefineConstants=__IOS__;__IOS10__;OutputPath=bin/iPhone/$(Configuration)" />
+    <Copy SourceFiles="%(Ios10Files.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
+    <Copy SourceFiles="%(Ios10Files.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/Xamarin.iOS10" />
+
+      <!-- Silverlight -->
     <MSBuild Projects="$(SrcDir)/ServiceStack.Client/ServiceStack.Client.SL5.csproj"
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration);Optimize=True;DebugSymbols=True;DefineConstants=SL5;Platform=Any CPU;OutputPath=bin/SL5;DocumentationFile=bin/SL5/ServiceStack.Text.xml" />
@@ -150,9 +157,11 @@
     <Copy SourceFiles="%(ClientFilesSL5.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/sl5" />
 
     <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/win" />
-    
+
     <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/MonoTouch" />
-    
+
+    <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/Xamarin.iOS10" />
+
     <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/MonoAndroid" />
     
   </Target>
