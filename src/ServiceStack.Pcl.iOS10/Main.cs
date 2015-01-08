@@ -5,7 +5,7 @@ using System.Linq;
 using Foundation;
 using UIKit;
 
-namespace iOS10
+namespace ServiceStack.Pcl.iOS10
 {
     public class Application
     {

@@ -21,6 +21,7 @@ COPY ..\..\ServiceStack.Text\src\ServiceStack.Text\Pcl.* ..\src\ServiceStack.Pcl
 COPY ..\src\ServiceStack.Client\Pcl.NameValueCollectionWrapper.cs ..\src\ServiceStack.Pcl.Android
 COPY ..\src\ServiceStack.Client\PclExportClient.Android.cs ..\src\ServiceStack.Pcl.Android
 COPY ..\src\ServiceStack.Client\Pcl.NameValueCollectionWrapper.cs ..\src\ServiceStack.Pcl.iOS
+COPY ..\src\ServiceStack.Client\Pcl.NameValueCollectionWrapper.cs ..\src\ServiceStack.Pcl.iOS10
 COPY ..\src\ServiceStack.Client\PclExportClient.iOS.cs ..\src\ServiceStack.Pcl.iOS
 COPY ..\src\ServiceStack.Client\PclExportClient.iOS.cs ..\src\ServiceStack.Pcl.iOS10
 COPY ..\src\ServiceStack.Client\Pcl.NameValueCollectionWrapper.cs ..\src\ServiceStack.Pcl.Net45

@@ -25,7 +25,7 @@ using ServiceStack.Text.Json;
 #if !__IOS__
 using System.Reflection.Emit;
 using FastMember = ServiceStack.Text.FastMember;
-#elif __IOS10__
+#elif __UNIFIED__
 using Preserve = Foundation.PreserveAttribute;
 #else
 using Preserve = MonoTouch.Foundation.PreserveAttribute;
