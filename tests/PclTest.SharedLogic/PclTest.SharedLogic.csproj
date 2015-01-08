@@ -42,10 +42,6 @@
       <Project>{135808a7-ce69-4c32-be30-25a8ffbf4a58}</Project>
       <Name>ServiceStack.Client.PCL</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-      <Project>{55942102-033a-4da8-a6af-1db7b2f34a2d}</Project>
-      <Name>ServiceStack.Interfaces</Name>
-    </ProjectReference>
     <ProjectReference Include="..\PclTest.ServiceModel\PclTest.ServiceModel.csproj">
       <Project>{891D214F-C5B2-46B7-B648-FB735612C1C9}</Project>
       <Name>PclTest.ServiceModel</Name>
@@ -54,6 +50,11 @@
   <ItemGroup>
     <Compile Include="SharedGateway.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

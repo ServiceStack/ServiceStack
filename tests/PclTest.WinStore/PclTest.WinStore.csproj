@@ -105,10 +105,6 @@
       <Project>{135808A7-CE69-4C32-BE30-25A8FFBF4A58}</Project>
       <Name>ServiceStack.Client.PCL</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-      <Project>{55942102-033a-4da8-a6af-1db7b2f34a2d}</Project>
-      <Name>ServiceStack.Interfaces</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Pcl.WinStore\ServiceStack.Pcl.WinStore.csproj">
       <Project>{3F246BD3-8D56-43AC-84AD-681371A9D6A9}</Project>
       <Name>ServiceStack.Pcl.WinStore</Name>
@@ -158,6 +154,10 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="ServiceStack.Interfaces, Version=4.0.0.0, Culture=neutral, PublicKeyToken=e06fbc6124f57c43, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Text, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\pcl\ServiceStack.Text.dll</HintPath>
