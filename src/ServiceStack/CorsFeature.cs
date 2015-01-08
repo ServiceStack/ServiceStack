@@ -96,9 +96,7 @@ namespace ServiceStack
                 //Handles Request and closes Response after emitting global HTTP Headers
                 var emitGlobalHeadersHandler = new CustomActionHandler(
                     (httpReq, httpRes) => {
-                        if (allowOriginFilter != null)
-                            allowOriginFilter(httpReq, httpRes);
-                        httpRes.EndRequest();
+                        httpRes.EndRequest(); //PreRequestFilters already written in CustomActionHandler
                     });
 
                 appHost.RawHttpHandlers.Add(httpReq =>
