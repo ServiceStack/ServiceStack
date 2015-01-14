@@ -360,12 +360,12 @@ namespace ServiceStack.Auth
 
             var authFeature = HostContext.GetPlugin<AuthFeature>();
 
-            if (authFeature.ValidateUniqueUserNames && UserNameAlreadyExists(authRepo, userAuth, tokens))
+            if (authFeature != null && authFeature.ValidateUniqueUserNames && UserNameAlreadyExists(authRepo, userAuth, tokens))
             {
                 return authService.Redirect(GetReferrerUrl(authService, session).AddParam("f", "UserNameAlreadyExists"));
             }
 
-            if (authFeature.ValidateUniqueEmails && EmailAlreadyExists(authRepo, userAuth, tokens))
+            if (authFeature != null && authFeature.ValidateUniqueEmails && EmailAlreadyExists(authRepo, userAuth, tokens))
             {
                 return authService.Redirect(GetReferrerUrl(authService, session).AddParam("f", "EmailAlreadyExists"));
             }
