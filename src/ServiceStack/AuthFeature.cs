@@ -24,6 +24,10 @@ namespace ServiceStack
 
         public bool IncludeAuthMetadataProvider { get; set; }
 
+        public bool ValidateUniqueEmails { get; set; }
+
+        public bool ValidateUniqueUserNames { get; set; }
+
         public bool IncludeAssignRoleServices
         {
             set
@@ -80,6 +84,8 @@ namespace ServiceStack
 
             this.HtmlRedirect = htmlRedirect ?? "~/" + localize(LocalizedStrings.Login);
             this.IncludeAuthMetadataProvider = true;
+            this.ValidateUniqueEmails = true;
+            this.ValidateUniqueUserNames = true;
         }
 
         public void Register(IAppHost appHost)

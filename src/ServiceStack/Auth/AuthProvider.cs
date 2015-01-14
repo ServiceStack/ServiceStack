@@ -15,8 +15,6 @@ namespace ServiceStack.Auth
     public abstract class AuthProvider : IAuthProvider
     {
         protected static readonly ILog Log = LogManager.GetLogger(typeof(AuthProvider));
-        public static bool ValidateUniqueEmails = true; //Temporary, remove later when no issues.
-        public static bool ValidateUniqueUserNames = true; //Temporary, remove later when no issues.
 
         public TimeSpan SessionExpiry { get; set; }
         public string AuthRealm { get; set; }
@@ -319,7 +317,7 @@ namespace ServiceStack.Auth
 
         protected virtual bool UserNameAlreadyExists(IAuthRepository authRepo, IUserAuth userAuth, IAuthTokens tokens = null)
         {
-            if (ValidateUniqueUserNames && tokens != null && tokens.UserName != null)
+            if (tokens != null && tokens.UserName != null)
             {
                 var userWithUserName = authRepo.GetUserAuthByUserName(tokens.UserName);
                 if (userWithUserName == null)
@@ -333,7 +331,7 @@ namespace ServiceStack.Auth
 
         protected virtual bool EmailAlreadyExists(IAuthRepository authRepo, IUserAuth userAuth, IAuthTokens tokens = null)
         {
-            if (ValidateUniqueEmails && tokens != null && tokens.Email != null)
+            if (tokens != null && tokens.Email != null)
             {
                 var userWithEmail = authRepo.GetUserAuthByUserName(tokens.Email);
                 if (userWithEmail == null) 
@@ -360,12 +358,14 @@ namespace ServiceStack.Auth
         {
             var userAuth = authRepo.GetUserAuth(session, tokens);
 
-            if (UserNameAlreadyExists(authRepo, userAuth, tokens))
+            var authFeature = HostContext.GetPlugin<AuthFeature>();
+
+            if (authFeature.ValidateUniqueUserNames && UserNameAlreadyExists(authRepo, userAuth, tokens))
             {
                 return authService.Redirect(GetReferrerUrl(authService, session).AddParam("f", "UserNameAlreadyExists"));
             }
 
-            if (EmailAlreadyExists(authRepo, userAuth, tokens))
+            if (authFeature.ValidateUniqueEmails && EmailAlreadyExists(authRepo, userAuth, tokens))
             {
                 return authService.Redirect(GetReferrerUrl(authService, session).AddParam("f", "EmailAlreadyExists"));
             }
