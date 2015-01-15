@@ -323,4 +323,4 @@ new PooledRedisClientsManager("localhost?db=1");
 
 ---
 
-## [2014 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md)
+## [2014 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2014/release-notes.md)
