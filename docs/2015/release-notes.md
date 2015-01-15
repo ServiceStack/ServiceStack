@@ -27,7 +27,7 @@ Installation is straightforward if you've installed Xamarin Add-ins before, just
 
 ### Adding a ServiceStack Reference
 
-Once installed, adding a ServiceStack Reference is very similar to [ServiceStackVS in VS.NET](https://github.com/ServiceStack/ServiceStack/wiki/CSharp-Add-ServiceStack-Reference#add-servicestack-reference) where you can just click on `Add -> Add ServiceStack Reference...` on the projects context menu to bring up the familar Add Reference dialog. After adding the `BaseUrl` of the remote ServiceStack instance, click OK to add the generated DTO's to your project using the name specified:
+Once installed, adding a ServiceStack Reference is very similar to [ServiceStackVS in VS.NET](https://github.com/ServiceStack/ServiceStack/wiki/CSharp-Add-ServiceStack-Reference#add-servicestack-reference) where you can just click on `Add -> Add ServiceStack Reference...` on the project's context menu to bring up the familiar Add Reference dialog. After adding the `BaseUrl` of the remote ServiceStack instance, click OK to add the generated DTO's to your project using the name specified:
 
 ![](https://github.com/ServiceStack/Assets/blob/master/img/servicestackvs/servicestack%20reference/ssxs-mac-add-reference.gif)
 
@@ -176,7 +176,7 @@ Whilst not specifically Framework features, we've added some features to [techst
 
 ### Server Generated HTML Pages
 
-Whilst we believe Single Page Apps offer the more responsive UI, we've also added a server html version of [techstacks.io](http://techstacks.io) which we serve to WebCrawlers like **Googlebot** so they're better able to properly index content in the AngularJS SPA website. It also provides a good insight into the UX difference between a Single Page App vs Server HTML generated websites. Since [techstacks.io](http://techstacks.io) is running on modest hardware (i.e. IIS on shared **m1.small** instance with a shared **micro** RDS PostgreSQL backend) the differences are more visible with the AngularJS version still being able to yield a snappy App-like experience whilst the full-page reloads of the Server HTML version is clearly visible on each request.
+Whilst we believe Single Page Apps offer the more responsive UI, we've also added a server html version of [techstacks.io](http://techstacks.io) which we serve to WebCrawlers like **Googlebot** so they're better able to properly index content in the AngularJS SPA website. It also provides a good insight into the UX difference between a Single Page App vs Server HTML generated websites. Since [techstacks.io](http://techstacks.io) is running on modest hardware (i.e. IIS on shared **m1.small** EC2 instance with a shared **micro** RDS PostgreSQL backend) the differences are more visible with the AngularJS version still being able to yield a snappy App-like experience whilst the full-page reloads of the Server HTML version is clearly visible on each request.
 
 The code to enable this is in [ClientRoutesService.cs](https://github.com/ServiceStackApps/TechStacks/blob/master/src/TechStacks/TechStacks.ServiceInterface/ClientRoutesService.cs) which illustrates a simple technique used to show different versions of your website which by default is enabled implicitly for `Googlebot` User Agents, or can be toggled explicitly between by visiting the routes below:
 
@@ -205,7 +205,7 @@ public class ClientTechnology
 }
 ```
 
-Then we implement ServiceStack Services for these routes. The `ShowServerHtml()` helper method is used to deterine whether 
+Then we implement ServiceStack Services for these routes. The `ShowServerHtml()` helper method is used to determine whether 
 to show the AngularJS or Server HTML version of the website which it does by setting a permanent cookie when 
 `techstacks.io?html=server` is requested (or if the UserAgent is `Googlebot`). 
 Every subsequent request then contains the `html=server` Cookie and so will show the Server HTML version. 
@@ -259,13 +259,13 @@ public class ClientRoutesService : Service
 ```
 
 The difference between which Website to display boils down to which Razor page to render, where for AngularJS we return the `/default.cshtml` 
-Home Page where client routes are then hanlded by AngularJS. The Server HTML version just renders the appropriate Razor View for that request.
+Home Page where the client routes then get handled by AngularJS. Whereas for the Server HTML version, it just renders the appropriate Razor View for that request.
 
 The `base.ExecuteRequest(new GetAllTechnologies())` API lets you execute a ServiceStack Service internally by just passing the 
 `GetAllTechnologies` Request DTO. The Resposne DTO returned by the Service is then passed as a view model to the `/Views/AllTech.cshtml` Razor View. 
 
-AngularJS declarative HTML pages holds an advantage when hosting multiple websites as porting AngularJS views to Razor is relatively 
-straight-forward, basically consisting of converting Angular `ng-attributes` to `@Razor` statements, as can be seen in the client vs server 
+AngularJS declarative HTML pages holds an advantage when maintaining multiple versions of a websites as porting AngularJS views to Razor is relatively 
+straight-forward process, basically consisting of converting Angular `ng-attributes` to `@Razor` statements, as can be seen in the client vs server 
 versions of [techstacks.io/tech](http://techstacks.io/tech) index page:
 
   - [/partials/tech/latest.html](https://github.com/ServiceStackApps/TechStacks/blob/master/src/TechStacks/TechStacks/partials/tech/latest.html)
@@ -275,7 +275,7 @@ versions of [techstacks.io/tech](http://techstacks.io/tech) index page:
 
 Another way to increase user engagement of your website is by posting Twitter Updates, [techstacks.io](http://techstacks.io) does this whenever anyone adds a new Technology or Technology Stack by posting a status update to [@webstacks](https://twitter.com/webstacks). The [code to make authorized Twitter API requests](https://github.com/ServiceStackApps/TechStacks/blob/master/src/TechStacks/TechStacks.ServiceInterface/TwitterUpdates.cs) ends up being fairly lightweight as it can take advantage of ServiceStack's built-in support for Twitter OAuth.
 
-> We'd also love for others to Sign In and add their Company's Technology Stack on [techstacks.io](http://techstacks.io) so we have a better idea what technologies everyone is using.
+> We'd also love for others to Sign In and add their Company's Technology Stack on [techstacks.io](http://techstacks.io) so everyone can get a better idea what technologies everyone's using.
 
 ## ServiceStack.Text
 
@@ -336,3 +336,5 @@ new PooledRedisClientsManager("localhost?db=1");
 ---
 
 ## [2014 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2014/release-notes.md)
+
+
