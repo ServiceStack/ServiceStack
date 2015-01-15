@@ -85,11 +85,10 @@ namespace ServiceStack.DependencyInjection
                     registration.InstancePerDependency();
                     break;
                 case Sharing.PerRequest:
-                    registration.InstancePerMatchingLifetimeScope("httpRequest");
+                    registration.InstancePerLifetimeScope();
                     break;
                 case Sharing.Singleton:
-                    registration.RegistrationData.Sharing = InstanceSharing.Shared;
-                    registration.RegistrationData.Lifetime = new RootScopeLifetime();
+                    registration.SingleInstance();
                     break;
             }
         }
