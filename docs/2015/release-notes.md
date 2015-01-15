@@ -205,7 +205,11 @@ public class ClientTechnology
 }
 ```
 
-We then create a ServiceStack Service that handles these routes. The `ShowServerHtml()` helper method is used to deterine whether to show the AngularJS or Server HTML version of the website which it does by setting a permanent cookie when `techstacks.io?html=server` is requested or if the UserAgent is `Googlebot`. Every subsequent request then contains the `html=server` Cookie and so will show the Server HTML version of the website. Users can then go to `techstacks.io?html=server` to delete the cookie and resume viewing the AngularJS version of the website:
+We then create a ServiceStack Service that handles these routes. The `ShowServerHtml()` helper method is used to deterine whether 
+to show the AngularJS or Server HTML version of the website which it does by setting a permanent cookie when 
+`techstacks.io?html=server` is requested (or if the UserAgent is `Googlebot`). 
+Every subsequent request then contains the `html=server` Cookie and so will show the Server HTML version of the website. 
+Users can then go to `techstacks.io?html=client` to delete the cookie and resume viewing the default AngularJS version of the website:
 
 ```csharp
 public class ClientRoutesService : Service
@@ -254,11 +258,15 @@ public class ClientRoutesService : Service
 }
 ```
 
-The difference between which Website to display boils down to which Razor page to render, where for AngularJS version we return the `/default.cshtml` Home Page where client routes are then hanlded by AngularJS and the Server HTML version just renders the appropriate Razor View for that request.
+The difference between which Website to display boils down to which Razor page to render, where for AngularJS version we return the `/default.cshtml` 
+Home Page where client routes are then hanlded by AngularJS and the Server HTML version just renders the appropriate Razor View for that request.
 
-The `base.ExecuteRequest(new GetAllTechnologies())` API lets you execute a ServiceStack Service internally by just passing the `new GetAllTechnologies()` Request DTO, the Resposne DTO of which is then passed as a view model to the `/Views/AllTech.cshtml` Razor View. 
+The `base.ExecuteRequest(new GetAllTechnologies())` API lets you execute a ServiceStack Service internally by just passing the 
+`new GetAllTechnologies()` Request DTO, the Resposne DTO of which is then passed as a view model to the `/Views/AllTech.cshtml` Razor View. 
 
-AngularJS declarative HTML pages holds an advantage when hosting multiple websites as porting AngularJS views to Razor is relatively straight-forward which basically just involves converting Angular `ng-attributes` to `@Razor` statements as seen in the client vs server versions of [techstacks.io/tech](http://techstacks.io/tech) index page:
+AngularJS declarative HTML pages holds an advantage when hosting multiple websites as porting AngularJS views to Razor is relatively 
+straight-forward which basically just involves converting Angular `ng-attributes` to `@Razor` statements as seen in the client vs server 
+versions of [techstacks.io/tech](http://techstacks.io/tech) index page:
 
   - [/partials/tech/latest.html](https://github.com/ServiceStackApps/TechStacks/blob/master/src/TechStacks/TechStacks/partials/tech/latest.html)
   - [/Views/Tech/AllTech.cshtml](https://github.com/ServiceStackApps/TechStacks/blob/master/src/TechStacks/TechStacks/Views/Tech/AllTech.cshtml)
