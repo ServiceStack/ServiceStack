@@ -56,6 +56,8 @@ namespace ServiceStack
         {
             this.FileInfo = fileResponse;
             this.AllowsPartialResponse = true;
+            if (FileInfo != null && !FileInfo.Exists)
+                throw HttpError.NotFound("{0} was not found".Fmt(FileInfo.Name));
 
             if (!asAttachment) return;
 
