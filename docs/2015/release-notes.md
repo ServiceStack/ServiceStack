@@ -1,8 +1,8 @@
 # v4.0.36 Release Notes
 
-## Xamarin Unified API Support
+<img src="https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/xamarin-unifiedapi.png" align="right" vspace="10" width="300" />
 
-<img src="https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/xamarin-unifiedapi.png" align="right" hspace="5" vspace="10" width="300" />
+## Xamarin Unified API Support
 
 We have a short release cycle this release to be able to release the [ServiceStack PCL ServiceClients](https://github.com/ServiceStackApps/HelloMobile) support for 
 [Xamarin's Unified API](http://developer.xamarin.com/guides/cross-platform/macios/unified/) to everyone as quickly as possible. As [announced on their blog](http://blog.xamarin.com/xamarin.ios-unified-api-with-64-bit-support/), Xamarin has released the stable build of Xamarin.iOS Unified API with 64-bit support. As per [Apple's deadlines](https://developer.apple.com/news/?id=12172014b) **new iOS Apps** published after **February 1st** must include 64-bit support, this deadline extends to updates of **existing Apps** on **June 1st**. One of the benefits of upgrading is being able to share code between iOS and OSX Apps with Xamarin.Mac.
