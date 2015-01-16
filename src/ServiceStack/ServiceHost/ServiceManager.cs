@@ -88,7 +88,7 @@ namespace ServiceStack.ServiceHost
             }
 
             return this;
-		}
+        }
 
 		public void RegisterService<T>()
 		{
