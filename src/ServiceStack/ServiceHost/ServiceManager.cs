@@ -84,7 +84,7 @@ namespace ServiceStack.ServiceHost
 
             foreach (var type in this.Metadata.ServiceTypes)
 		    {
-		        this.DependencyService.RegisterTypeAsItself(type);
+                this.DependencyService.RegisterType(type, DependencyService.Sharing.None, registerAsImplementedInterfaces: false, includeNonPublicConstructors: false);
 		    }
 
 		    return this;
@@ -144,7 +144,7 @@ namespace ServiceStack.ServiceHost
         {
             var serviceType = serviceImplementation.GetType();
 
-            DependencyService.RegisterSingletonInstance(serviceImplementation, serviceType);
+            DependencyService.RegisterSingletonInstance(serviceImplementation, registerAsImplementedInterfaces: false);
 
             this.ServiceController.RegisterNService(serviceType, DependencyService);
 

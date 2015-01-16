@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Autofac;
 using Autofac.Builder;
 using Autofac.Core;
@@ -37,22 +38,63 @@ namespace ServiceStack.DependencyInjection
             _containerBuilder = new ContainerBuilder();
         }
 
-        public void RegisterTypeAsItself(Type classType, Sharing sharing = Sharing.None)
+        public void RegisterType(Type implementingType, Sharing sharing, bool registerAsImplementedInterfaces, bool includeNonPublicConstructors)
         {
-            var registration = _containerBuilder.RegisterType(classType);
-            SetSharing(registration, sharing);
+            if (implementingType.IsGenericType)
+            {
+                var registration = _containerBuilder.RegisterGeneric(implementingType);
+                if (registerAsImplementedInterfaces)
+                {
+                    registration = registration.AsImplementedInterfaces();
+                }
+                if (includeNonPublicConstructors)
+                {
+                    registration = registration.FindConstructorsWith(type => type.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic));
+                }
+                registration = SetRegistrationLifetime(registration, sharing);
+            }
+            else
+            {
+                var registration = _containerBuilder.RegisterType(implementingType).AsSelf();
+                if (registerAsImplementedInterfaces)
+                {
+                    registration = registration.AsImplementedInterfaces();
+                }
+                if (includeNonPublicConstructors)
+                {
+                    registration = registration.FindConstructorsWith(type => type.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic));
+                }
+                registration = SetRegistrationLifetime(registration, sharing);
+            }
         }
 
-        public void RegisterTypeAsInterface(Type classType, Type interfaceType, Sharing sharing = Sharing.None)
+        public void RegisterSingletonInstance(object classInstance, bool registerAsImplementedInterfaces)
         {
-            var registration = _containerBuilder.RegisterType(classType).As(interfaceType);
-            SetSharing(registration, sharing);
+            var registration = _containerBuilder.Register(c => classInstance).AsSelf();
+            if (registerAsImplementedInterfaces)
+            {
+                registration = registration.AsImplementedInterfaces();
+            }
+            registration = SetRegistrationLifetime(registration, Sharing.Singleton);
         }
 
-        public void RegisterSingletonInstance(object classInstance, Type classOrInterfaceType)
+        private IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> SetRegistrationLifetime<TLimit, TActivatorData, TRegistrationStyle>(
+            IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> registration,
+            Sharing sharing)
         {
-            var registration = _containerBuilder.Register(c => classInstance).As(classOrInterfaceType);
-            SetSharing(registration, Sharing.Singleton);
+            switch (sharing)
+            {
+                case Sharing.None:
+                    registration = registration.InstancePerDependency();
+                    break;
+                case Sharing.PerRequest:
+                    registration = registration.InstancePerLifetimeScope();
+                    break;
+                case Sharing.Singleton:
+                    registration = registration.SingleInstance();
+                    break;
+            }
+            return registration;
         }
 
         public ContainerBuilder GetContainerBuilder()
@@ -75,24 +117,7 @@ namespace ServiceStack.DependencyInjection
                 _containerBuilder = new ContainerBuilder();
             }
         }
-
-        private void SetSharing(IRegistrationBuilder<object, object, SingleRegistrationStyle> registration,
-                                Sharing sharing)
-        {
-            switch (sharing)
-            {
-                case Sharing.None:
-                    registration.InstancePerDependency();
-                    break;
-                case Sharing.PerRequest:
-                    registration.InstancePerLifetimeScope();
-                    break;
-                case Sharing.Singleton:
-                    registration.SingleInstance();
-                    break;
-            }
-        }
-
+        
         public DependencyResolver CreateResolver()
         {
             if (_container == null)
