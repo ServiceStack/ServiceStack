@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Autofac;
 using Autofac.Builder;
@@ -49,7 +50,7 @@ namespace ServiceStack.DependencyInjection
                 }
                 if (includeNonPublicConstructors)
                 {
-                    registration = registration.FindConstructorsWith(type => type.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic));
+                    registration = registration.FindConstructorsWith(type => type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
                 }
                 registration = SetRegistrationLifetime(registration, sharing);
             }
@@ -62,7 +63,7 @@ namespace ServiceStack.DependencyInjection
                 }
                 if (includeNonPublicConstructors)
                 {
-                    registration = registration.FindConstructorsWith(type => type.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic));
+                    registration = registration.FindConstructorsWith(type => type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
                 }
                 registration = SetRegistrationLifetime(registration, sharing);
             }
@@ -70,21 +71,30 @@ namespace ServiceStack.DependencyInjection
 
         public void RegisterAsType(Type implementingType, Type registrationType, Sharing sharing, bool includeNonPublicConstructors)
         {
-            var registration = _containerBuilder.RegisterType(implementingType).As(registrationType);
+            RegisterAsType(implementingType, new Type[] {registrationType}, sharing, includeNonPublicConstructors);
+        }
+
+        public void RegisterAsType(Type implementingType, Type[] registrationTypes, Sharing sharing, bool includeNonPublicConstructors)
+        {
+            var registration = _containerBuilder.RegisterType(implementingType).As(registrationTypes);
             if (includeNonPublicConstructors)
             {
-                registration = registration.FindConstructorsWith(type => type.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic));
+                registration = registration.FindConstructorsWith(type => type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
             }
             registration = SetRegistrationLifetime(registration, sharing);
         }
 
         public void RegisterSingletonInstance(object classInstance, bool registerAsImplementedInterfaces)
         {
-            var registration = _containerBuilder.Register(c => classInstance).AsSelf();
+            var classType = classInstance.GetType();
+            var registrationTypes = new Type[] { classType };
             if (registerAsImplementedInterfaces)
             {
-                registration = registration.AsImplementedInterfaces();
+                var interfaceTypes = classType.GetInterfaces();
+                registrationTypes = registrationTypes.Union(interfaceTypes).ToArray();
             }
+            var registration = _containerBuilder.Register(c => classInstance);
+            registration = registration.As(registrationTypes);
             registration = SetRegistrationLifetime(registration, Sharing.Singleton);
         }
 
