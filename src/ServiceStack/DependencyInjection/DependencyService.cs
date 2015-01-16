@@ -44,27 +44,33 @@ namespace ServiceStack.DependencyInjection
             if (implementingType.IsGenericType)
             {
                 var registration = _containerBuilder.RegisterGeneric(implementingType);
+
                 if (registerAsImplementedInterfaces)
                 {
                     registration = registration.AsImplementedInterfaces();
                 }
+
                 if (includeNonPublicConstructors)
                 {
                     registration = registration.FindConstructorsWith(type => type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
                 }
+
                 registration = SetRegistrationLifetime(registration, sharing);
             }
             else
             {
                 var registration = _containerBuilder.RegisterType(implementingType).AsSelf();
+
                 if (registerAsImplementedInterfaces)
                 {
                     registration = registration.AsImplementedInterfaces();
                 }
+
                 if (includeNonPublicConstructors)
                 {
                     registration = registration.FindConstructorsWith(type => type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
                 }
+
                 registration = SetRegistrationLifetime(registration, sharing);
             }
         }
