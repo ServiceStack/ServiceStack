@@ -38,7 +38,7 @@ namespace ServiceStack.DependencyInjection
             _containerBuilder = new ContainerBuilder();
         }
 
-        public void RegisterType(Type implementingType, Sharing sharing, bool registerAsImplementedInterfaces, bool includeNonPublicConstructors)
+        public void Register(Type implementingType, Sharing sharing, bool registerAsImplementedInterfaces, bool includeNonPublicConstructors)
         {
             if (implementingType.IsGenericType)
             {
@@ -66,6 +66,16 @@ namespace ServiceStack.DependencyInjection
                 }
                 registration = SetRegistrationLifetime(registration, sharing);
             }
+        }
+
+        public void RegisterAsType(Type implementingType, Type registrationType, Sharing sharing, bool includeNonPublicConstructors)
+        {
+            var registration = _containerBuilder.RegisterType(implementingType).As(registrationType);
+            if (includeNonPublicConstructors)
+            {
+                registration = registration.FindConstructorsWith(type => type.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic));
+            }
+            registration = SetRegistrationLifetime(registration, sharing);
         }
 
         public void RegisterSingletonInstance(object classInstance, bool registerAsImplementedInterfaces)
@@ -134,21 +144,29 @@ namespace ServiceStack.DependencyInjection
 
         // These methods are obsolete. They are called in code branches that are believed to be dead.
         // If any of that code ever becomes active, we need to know that, so the code 'throws' here.
-        public void AutoWire(object instance) // ServiceRunner, EndPointHost
+        [Obsolete]
+        internal void AutoWire(object instance) // ServiceRunner, EndPointHost
             { throw new NotImplementedException("AutoWire(object)"); }
-        public void RegisterAutoWiredType(Type type) // ServiceManager
+        [Obsolete]
+        internal void RegisterAutoWiredType(Type type) // ServiceManager
             { throw new NotImplementedException("AutoWiredType(Type)"); }
-        public void RegisterAutoWiredAs<T, TAs>() // AppHostBase, HttpListenerBase
+        [Obsolete]
+        internal void RegisterAutoWiredAs<T, TAs>() // AppHostBase, HttpListenerBase
             { throw new NotImplementedException("RegisterAutoWiredAs<T, TAs>()"); }
-        public void RegisterAutoWired<T>() // ServiceManager
+        [Obsolete]
+        internal void RegisterAutoWired<T>() // ServiceManager
             { throw new NotImplementedException("RegisterAutoWired<T>()"); }
-        public void Register<T>(T instance) // AppHostBase, HttpListenerBase, EndpointHost
+        [Obsolete]
+        internal void Register<T>(T instance) // AppHostBase, HttpListenerBase, EndpointHost
             { throw new NotImplementedException("Register<T>(instance)"); }
-        public T Resolve<T>(ILifetimeScope lifetimeScope = null) // AppHostBase, HttpListenerBase
+        [Obsolete]
+        internal T Resolve<T>(ILifetimeScope lifetimeScope = null) // AppHostBase, HttpListenerBase
             { throw new NotImplementedException("Resolve<T>(ILifetimeScope)"); }
-        public void Register(Func<Container, object> f)// ValidationFeature [ServiceStack.erviceInterface], EndpointHost
+        [Obsolete]
+        internal void Register(Func<Container, object> f)// ValidationFeature [ServiceStack.erviceInterface], EndpointHost
             { throw new NotImplementedException("Register(Func<Container, object>)"); }
-        public void RegisterAutoWiredType(Type serviceType, Type inFunqAsType) // ValidationFeature [ServiceInterface]
+        [Obsolete]
+        internal void RegisterAutoWiredType(Type serviceType, Type inFunqAsType) // ValidationFeature [ServiceInterface]
             { throw new NotImplementedException(""); }
     }
 }
