@@ -864,7 +864,7 @@
             <para>db.LoadReferences(customer)</para> 
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteSchemaApi.TableExists(System.Data.IDbConnection,System.String)">
+        <member name="M:ServiceStack.OrmLite.OrmLiteSchemaApi.TableExists(System.Data.IDbConnection,System.String,System.String)">
             <summary>
             Checks whether a Table Exists. E.g:
             <para>db.TableExists("Person")</para>
@@ -1004,12 +1004,6 @@
             <para>db.Delete&lt;Person&gt;(new { FirstName = "Jimi", Age = 27 })</para>
             </summary>
             <returns>number of rows deleted</returns>
-        </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.Delete``1(System.Data.IDbConnection,System.Object[])">
-            <summary>
-            Delete 1 or more rows in a transaction using an anonymous type filter. E.g:
-            <para>db.Delete&lt;Person&gt;(new { FirstName = "Jimi", Age = 27 }, new { FirstName = "Janis", Age = 27 })</para>
-            </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.Delete``1(System.Data.IDbConnection,``0)">
             <summary>
