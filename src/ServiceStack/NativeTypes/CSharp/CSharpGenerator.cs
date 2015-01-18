@@ -146,6 +146,7 @@ namespace ServiceStack.NativeTypes.CSharp
                 {
                     lastNS = AppendType(ref sb, type, lastNS, allTypes, 
                         new CreateTypeOptions { IsType = true });
+                    existingOps.Add(fullTypeName);
                 }
             }
 
