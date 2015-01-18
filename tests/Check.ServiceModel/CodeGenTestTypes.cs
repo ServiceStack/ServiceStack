@@ -52,6 +52,19 @@ namespace Check.ServiceModel.Operations
     {
         public List<string> Names { get; set; }
     }
+
+    public class HelloExisting : IReturn<HelloExistingResponse>
+    {
+        public List<string> Names { get; set; }
+    }
+
+    public class HelloExistingResponse
+    {
+        public HelloList HelloList { get; set; }
+        public HelloArray HelloArray { get; set; }
+        public ArrayResult[] ArrayResults { get; set; }
+        public List<ListResult> ListResults { get; set; }
+    }
     
     public class HelloWithEnum
     {

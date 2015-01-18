@@ -77,7 +77,7 @@ namespace ServiceStack.NativeTypes.VbNet
 
             string lastNS = null;
 
-            var existingOps = new HashSet<string>();
+            var existingTypes = new HashSet<string>();
 
             var requestTypes = metadata.Operations.Select(x => x.Request).ToHashSet();
             var requestTypesMap = metadata.Operations.ToSafeDictionary(x => x.Request);
@@ -99,7 +99,7 @@ namespace ServiceStack.NativeTypes.VbNet
                 var fullTypeName = type.GetFullName();
                 if (requestTypes.Contains(type))
                 {
-                    if (!existingOps.Contains(fullTypeName))
+                    if (!existingTypes.Contains(fullTypeName))
                     {
                         MetadataType response = null;
                         MetadataOperationType operation;
@@ -129,24 +129,26 @@ namespace ServiceStack.NativeTypes.VbNet
                                 IsRequest = true,
                             });
 
-                        existingOps.Add(fullTypeName);
+                        existingTypes.Add(fullTypeName);
                     }
                 }
                 else if (responseTypes.Contains(type))
                 {
-                    if (!existingOps.Contains(fullTypeName)
+                    if (!existingTypes.Contains(fullTypeName)
                         && !Config.IgnoreTypesInNamespaces.Contains(type.Namespace))
                     {
                         lastNS = AppendType(ref sb, type, lastNS, allTypes,
                             new CreateTypeOptions { IsResponse = true, });
 
-                        existingOps.Add(fullTypeName);
+                        existingTypes.Add(fullTypeName);
                     }
                 }
-                else if (types.Contains(type) && !existingOps.Contains(fullTypeName))
+                else if (types.Contains(type) && !existingTypes.Contains(fullTypeName))
                 {
                     lastNS = AppendType(ref sb, type, lastNS, allTypes,
                         new CreateTypeOptions { IsType = true });
+
+                    existingTypes.Add(fullTypeName);
                 }
             }
 

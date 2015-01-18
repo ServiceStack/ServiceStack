@@ -31,6 +31,15 @@ namespace Check.ServiceInterface
             return request.Names.Map(name => new ArrayResult { Result = name });
         }
 
+        public object Any(HelloExisting request)
+        {
+            return new HelloExistingResponse
+            {
+                ArrayResults = request.Names.Map(x => new ArrayResult { Result = x }).ToArray(),
+                ListResults = request.Names.Map(x => new ListResult { Result = x }),
+            };
+        }
+
         public object Any(HelloWithEnum request)
         {
             return request;
