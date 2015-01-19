@@ -142,7 +142,7 @@ namespace ServiceStack.NativeTypes
                 queue.Enqueue(t);
 
                 if ((t.IsUserType() || t.IsUserEnum() || t.IsInterface)
-                    && !(t.IsGenericParameter || t.IsGenericTypeDefinition))
+                    && !(t.IsGenericParameter))
                 {
                     metadata.Types.Add(ToType(t));
                 }
