@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Autofac;
 using Autofac.Builder;
 using Autofac.Core;
@@ -37,22 +39,88 @@ namespace ServiceStack.DependencyInjection
             _containerBuilder = new ContainerBuilder();
         }
 
-        public void RegisterTypeAsItself(Type classType, Sharing sharing = Sharing.None)
+        public void Register(Type implementingType, Sharing sharing, bool registerAsImplementedInterfaces, bool includeNonPublicConstructors)
         {
-            var registration = _containerBuilder.RegisterType(classType);
-            SetSharing(registration, sharing);
+            if (implementingType.IsGenericType)
+            {
+                var registration = _containerBuilder.RegisterGeneric(implementingType);
+
+                if (registerAsImplementedInterfaces)
+                {
+                    registration = registration.AsImplementedInterfaces();
+                }
+
+                if (includeNonPublicConstructors)
+                {
+                    registration = registration.FindConstructorsWith(type => type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
+                }
+
+                registration = SetRegistrationLifetime(registration, sharing);
+            }
+            else
+            {
+                var registration = _containerBuilder.RegisterType(implementingType).AsSelf();
+
+                if (registerAsImplementedInterfaces)
+                {
+                    registration = registration.AsImplementedInterfaces();
+                }
+
+                if (includeNonPublicConstructors)
+                {
+                    registration = registration.FindConstructorsWith(type => type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
+                }
+
+                registration = SetRegistrationLifetime(registration, sharing);
+            }
         }
 
-        public void RegisterTypeAsInterface(Type classType, Type interfaceType, Sharing sharing = Sharing.None)
+        public void RegisterAsType(Type implementingType, Type registrationType, Sharing sharing, bool includeNonPublicConstructors)
         {
-            var registration = _containerBuilder.RegisterType(classType).As(interfaceType);
-            SetSharing(registration, sharing);
+            RegisterAsType(implementingType, new Type[] {registrationType}, sharing, includeNonPublicConstructors);
         }
 
-        public void RegisterSingletonInstance(object classInstance, Type classOrInterfaceType)
+        public void RegisterAsType(Type implementingType, Type[] registrationTypes, Sharing sharing, bool includeNonPublicConstructors)
         {
-            var registration = _containerBuilder.Register(c => classInstance).As(classOrInterfaceType);
-            SetSharing(registration, Sharing.Singleton);
+            var registration = _containerBuilder.RegisterType(implementingType).As(registrationTypes);
+            if (includeNonPublicConstructors)
+            {
+                registration = registration.FindConstructorsWith(type => type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
+            }
+            registration = SetRegistrationLifetime(registration, sharing);
+        }
+
+        public void RegisterSingletonInstance(object classInstance, bool registerAsImplementedInterfaces)
+        {
+            var classType = classInstance.GetType();
+            var registrationTypes = new Type[] { classType };
+            if (registerAsImplementedInterfaces)
+            {
+                var interfaceTypes = classType.GetInterfaces();
+                registrationTypes = registrationTypes.Union(interfaceTypes).ToArray();
+            }
+            var registration = _containerBuilder.Register(c => classInstance);
+            registration = registration.As(registrationTypes);
+            registration = SetRegistrationLifetime(registration, Sharing.Singleton);
+        }
+
+        private IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> SetRegistrationLifetime<TLimit, TActivatorData, TRegistrationStyle>(
+            IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> registration,
+            Sharing sharing)
+        {
+            switch (sharing)
+            {
+                case Sharing.None:
+                    registration = registration.InstancePerDependency();
+                    break;
+                case Sharing.PerRequest:
+                    registration = registration.InstancePerLifetimeScope();
+                    break;
+                case Sharing.Singleton:
+                    registration = registration.SingleInstance();
+                    break;
+            }
+            return registration;
         }
 
         public ContainerBuilder GetContainerBuilder()
@@ -75,25 +143,7 @@ namespace ServiceStack.DependencyInjection
                 _containerBuilder = new ContainerBuilder();
             }
         }
-
-        private void SetSharing(IRegistrationBuilder<object, object, SingleRegistrationStyle> registration,
-                                Sharing sharing)
-        {
-            switch (sharing)
-            {
-                case Sharing.None:
-                    registration.InstancePerDependency();
-                    break;
-                case Sharing.PerRequest:
-                    registration.InstancePerMatchingLifetimeScope("httpRequest");
-                    break;
-                case Sharing.Singleton:
-                    registration.RegistrationData.Sharing = InstanceSharing.Shared;
-                    registration.RegistrationData.Lifetime = new RootScopeLifetime();
-                    break;
-            }
-        }
-
+        
         public DependencyResolver CreateResolver()
         {
             if (_container == null)
@@ -110,21 +160,29 @@ namespace ServiceStack.DependencyInjection
 
         // These methods are obsolete. They are called in code branches that are believed to be dead.
         // If any of that code ever becomes active, we need to know that, so the code 'throws' here.
-        public void AutoWire(object instance) // ServiceRunner, EndPointHost
+        [Obsolete]
+        internal void AutoWire(object instance) // ServiceRunner, EndPointHost
             { throw new NotImplementedException("AutoWire(object)"); }
-        public void RegisterAutoWiredType(Type type) // ServiceManager
+        [Obsolete]
+        internal void RegisterAutoWiredType(Type type) // ServiceManager
             { throw new NotImplementedException("AutoWiredType(Type)"); }
-        public void RegisterAutoWiredAs<T, TAs>() // AppHostBase, HttpListenerBase
+        [Obsolete]
+        internal void RegisterAutoWiredAs<T, TAs>() // AppHostBase, HttpListenerBase
             { throw new NotImplementedException("RegisterAutoWiredAs<T, TAs>()"); }
-        public void RegisterAutoWired<T>() // ServiceManager
+        [Obsolete]
+        internal void RegisterAutoWired<T>() // ServiceManager
             { throw new NotImplementedException("RegisterAutoWired<T>()"); }
-        public void Register<T>(T instance) // AppHostBase, HttpListenerBase, EndpointHost
+        [Obsolete]
+        internal void Register<T>(T instance) // AppHostBase, HttpListenerBase, EndpointHost
             { throw new NotImplementedException("Register<T>(instance)"); }
-        public T Resolve<T>(ILifetimeScope lifetimeScope = null) // AppHostBase, HttpListenerBase
+        [Obsolete]
+        internal T Resolve<T>(ILifetimeScope lifetimeScope = null) // AppHostBase, HttpListenerBase
             { throw new NotImplementedException("Resolve<T>(ILifetimeScope)"); }
-        public void Register(Func<Container, object> f)// ValidationFeature [ServiceStack.erviceInterface], EndpointHost
+        [Obsolete]
+        internal void Register(Func<Container, object> f)// ValidationFeature [ServiceStack.erviceInterface], EndpointHost
             { throw new NotImplementedException("Register(Func<Container, object>)"); }
-        public void RegisterAutoWiredType(Type serviceType, Type inFunqAsType) // ValidationFeature [ServiceInterface]
+        [Obsolete]
+        internal void RegisterAutoWiredType(Type serviceType, Type inFunqAsType) // ValidationFeature [ServiceInterface]
             { throw new NotImplementedException(""); }
     }
 }
