@@ -144,5 +144,15 @@ namespace Check.ServiceInterface
         {
             return request;
         }
+    
+        public object Get(Request1 request)
+        {
+            return new Request1Response();
+        }
+
+        public object Get(Request2 request)
+        {
+            return new Request2Response();
+        }
     }
 }

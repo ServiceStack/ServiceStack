@@ -375,4 +375,39 @@ namespace Check.ServiceModel.Types
 
     public interface IEmptyInterface {}
     public class EmptyClass {}
+
+    /// <summary>
+    /// Duplicate Types
+    /// </summary>
+    public class TypeB
+    {
+        public string Foo { get; set; }
+    }
+
+    public class TypeA
+    {
+        public List<TypeB> Bar { get; set; }
+    }
+
+    public class Request1 : IReturn<Request1Response>
+    {
+        public TypeA Test { get; set; }
+    }
+
+    public class Request1Response
+    {
+        public TypeA Test { get; set; }
+    }
+
+    public class Request2 : IReturn<Request2Response>
+    {
+        public TypeA Test { get; set; }
+    }
+
+    public class Request2Response
+    {
+        public TypeA Test { get; set; }
+    }
 }
+
+

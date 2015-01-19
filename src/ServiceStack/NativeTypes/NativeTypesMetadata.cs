@@ -141,7 +141,8 @@ namespace ServiceStack.NativeTypes
                 considered.Add(t);
                 queue.Enqueue(t);
 
-                if (t.IsUserType() || t.IsUserEnum() || t.IsInterface)
+                if ((t.IsUserType() || t.IsUserEnum() || t.IsInterface)
+                    && !(t.IsGenericParameter || t.IsGenericTypeDefinition))
                 {
                     metadata.Types.Add(ToType(t));
                 }
@@ -154,12 +155,13 @@ namespace ServiceStack.NativeTypes
                 if (IsSystemCollection(type))
                 {
                     type = type.GetCollectionType();
-                    if (type != null) 
+                    if (type != null && !ignoreTypeFn(type)) 
                         registerTypeFn(type);
                     continue;
                 }
 
-                if (!type.IsUserType() && !type.IsInterface) continue;
+                if (!type.IsUserType() && !type.IsInterface) 
+                    continue;
 
                 foreach (var pi in type.GetSerializableProperties()
                     .Where(pi => !ignoreTypeFn(pi.PropertyType)))
@@ -201,7 +203,8 @@ namespace ServiceStack.NativeTypes
                     }
                 }
 
-                if (!type.IsGenericType()) continue;
+                if (!type.IsGenericType()) 
+                    continue;
 
                 //Register Generic Arg Types 
                 var args = type.GetGenericArguments();
