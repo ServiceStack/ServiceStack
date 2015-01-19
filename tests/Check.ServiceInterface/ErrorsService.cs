@@ -9,5 +9,10 @@ namespace Check.ServiceInterface
         {
             throw new HttpError(request.Status, request.Message);
         }
+
+        public object Any(Throw404 request)
+        {
+            throw HttpError.NotFound(request.Message ?? "Custom Status Description");
+        }
     }
 }

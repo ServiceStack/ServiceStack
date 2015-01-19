@@ -26,13 +26,20 @@ namespace ServiceStack.Host.Handlers
 
 		    var text = new StringBuilder();
 
+            var responseStatus = response.Dto.GetResponseStatus();
+		    if (responseStatus != null)
+		        text.AppendLine(
+                    responseStatus.ErrorCode != responseStatus.Message
+                    ? "Error ({0}): {1}\n".Fmt(responseStatus.ErrorCode, responseStatus.Message)
+                    : "Error: {0}\n".Fmt(responseStatus.Message ?? responseStatus.ErrorCode));
+
             if (HostContext.DebugMode)
             {
-                text.AppendLine("Handler for Request not found: \n\n")
-                    .AppendLine("Request.HttpMethod: " + request.Verb)
-                    .AppendLine("Request.PathInfo: " + request.PathInfo)
-                    .AppendLine("Request.QueryString: " + request.QueryString)
-                    .AppendLine("Request.RawUrl: " + request.RawUrl);
+                text.AppendLine("Handler for Request not found (404):\n")
+                    .AppendLine("  Request.HttpMethod: " + request.Verb)
+                    .AppendLine("  Request.PathInfo: " + request.PathInfo)
+                    .AppendLine("  Request.QueryString: " + request.QueryString)
+                    .AppendLine("  Request.RawUrl: " + request.RawUrl);
             }
             else
             {
@@ -41,6 +48,10 @@ namespace ServiceStack.Host.Handlers
 
 		    response.ContentType = "text/plain";
 			response.StatusCode = 404;
+
+            if (responseStatus != null)
+                response.StatusDescription = responseStatus.ErrorCode;
+
             response.EndHttpHandlerRequest(skipClose: true, afterHeaders: r => r.Write(text.ToString()));
 		}
 
