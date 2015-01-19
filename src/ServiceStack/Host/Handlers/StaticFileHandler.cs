@@ -44,7 +44,7 @@ namespace ServiceStack.Host.Handlers
         private static readonly ILog log = LogManager.GetLogger(typeof(StaticFileHandler));
         public static int DefaultBufferSize = 1024 * 1024;
 
-        public static Action<IRequest, IResponse, IVirtualFile> ResponseFilter { get; set; } 
+        public static Action<IRequest, IResponse, IVirtualFile> ResponseFilter { get; set; }
 
         public StaticFileHandler()
         {

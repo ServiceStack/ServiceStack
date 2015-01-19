@@ -7,19 +7,20 @@ namespace ServiceStack.Host.Handlers
 {
     public class ForbiddenHttpHandler : HttpAsyncTaskHandler
     {
-		public bool? IsIntegratedPipeline { get; set; }
-		public string WebHostPhysicalPath { get; set; }
-		public List<string> WebHostRootFileNames { get; set; }
-		public string WebHostUrl { get; set; }
-		public string DefaultRootFileName { get; set; }
-		public string DefaultHandler { get; set; }
+        public bool? IsIntegratedPipeline { get; set; }
+        public string WebHostPhysicalPath { get; set; }
+        public List<string> WebHostRootFileNames { get; set; }
+        public string WebHostUrl { get; set; }
+        public string DefaultRootFileName { get; set; }
+        public string DefaultHandler { get; set; }
 
         public override void ProcessRequest(IRequest request, IResponse response, string operationName)
         {
             response.ContentType = "text/plain";
             response.StatusCode = 403;
 
-		    response.EndHttpHandlerRequest(skipClose: true, afterHeaders: r => {
+            response.EndHttpHandlerRequest(skipClose: true, afterHeaders: r =>
+            {
                 r.Write("Forbidden\n\n");
 
                 r.Write("\nRequest.HttpMethod: " + request.Verb);
@@ -46,7 +47,7 @@ namespace ServiceStack.Host.Handlers
                         r.Write("\nApp.DebugLastHandlerArgs: " + HttpHandlerFactory.DebugLastHandlerArgs);
                 }
             });
-		}
+        }
 
         public override void ProcessRequest(HttpContextBase context)
         {
@@ -56,7 +57,8 @@ namespace ServiceStack.Host.Handlers
             response.ContentType = "text/plain";
             response.StatusCode = 403;
 
-            response.EndHttpHandlerRequest(skipClose:true, afterHeaders: r=> {
+            response.EndHttpHandlerRequest(skipClose: true, afterHeaders: r =>
+            {
                 r.Write("Forbidden\n\n");
 
                 r.Write("\nRequest.HttpMethod: " + request.HttpMethod);
@@ -79,7 +81,7 @@ namespace ServiceStack.Host.Handlers
                         r.Write("\nApp.DefaultRootFileName: " + DefaultRootFileName);
                 }
             });
-		}
+        }
 
         public override bool IsReusable
         {

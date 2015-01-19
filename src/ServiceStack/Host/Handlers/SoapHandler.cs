@@ -43,7 +43,7 @@ namespace ServiceStack.Host.Handlers
 
             return ExecuteMessage(requestMsg, endpointAttributes, null, null);
         }
-        
+
         protected Message Send(Message requestMsg, IRequest httpRequest, IResponse httpResponse)
         {
             var endpointAttributes = RequestAttributes.Reply | this.HandlerAttributes;
@@ -147,7 +147,7 @@ namespace ServiceStack.Host.Handlers
                 var noMsgAction = requestMsg.Headers.Action == null;
                 var responseMsg = CreateResponseMessage(response, requestMsg.Version, requestType, noMsgAction);
 
-                if (httpResult != null) 
+                if (httpResult != null)
                 {
                     SetErrorStatusIfAny(httpReq.Response, responseMsg, httpResult.Status);
                 }

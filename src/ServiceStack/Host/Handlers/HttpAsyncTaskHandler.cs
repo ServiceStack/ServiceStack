@@ -66,7 +66,8 @@ namespace ServiceStack.Host.Handlers
             var ctx = HttpContext.Current;
 
             //preserve Current Culture:
-            return new Task(() => {
+            return new Task(() =>
+            {
                 Thread.CurrentThread.CurrentCulture = currentCulture;
                 Thread.CurrentThread.CurrentUICulture = currentUiCulture;
                 //HttpContext is not preserved in ThreadPool threads: http://stackoverflow.com/a/13558065/85785
@@ -125,7 +126,7 @@ namespace ServiceStack.Host.Handlers
 
             if (DefaultHandledRequest(context)) return;
 
-            var httpReq = ((HttpListenerBase)ServiceStackHost.Instance).CreateRequest(context, operationName);   
+            var httpReq = ((HttpListenerBase)ServiceStackHost.Instance).CreateRequest(context, operationName);
 
             ProcessRequest(httpReq, httpReq.Response, operationName);
         }
