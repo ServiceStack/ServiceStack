@@ -1,5 +1,5 @@
 /* Options:
-Date: 2015-01-19 20:27:38
+Date: 2015-01-20 15:55:59
 Version: 1
 BaseUrl: http://localhost:55799
 
@@ -468,8 +468,8 @@ namespace dtos
         public virtual int? Age { get; set; }
     }
 
-    [Route("/throw404/{Message}")]
     [Route("/throw404")]
+    [Route("/throw404/{Message}")]
     public partial class Throw404
     {
         public virtual string Message { get; set; }
@@ -491,8 +491,8 @@ namespace dtos
     [DataContract]
     public partial class AllowedAttributes
     {
-        [Required]
         [Default(5)]
+        [Required]
         public virtual int Id { get; set; }
 
         [DataMember(Name="Aliased")]
@@ -500,8 +500,8 @@ namespace dtos
         public virtual double Range { get; set; }
 
         [StringLength(20)]
-        [Meta("Foo", "Bar")]
         [References(typeof(Check.ServiceModel.Operations.Hello))]
+        [Meta("Foo", "Bar")]
         public virtual string Name { get; set; }
     }
 
@@ -725,7 +725,7 @@ namespace dtos
         : IReturn<HelloResponse>
     {
         public virtual string Name { get; set; }
-        public virtual NestedClass NestedClassProp { get; set; }
+        public virtual HelloWithNestedClass.NestedClass NestedClassProp { get; set; }
 
         public partial class NestedClass
         {
@@ -852,6 +852,17 @@ namespace dtos
         public virtual int Id { get; set; }
     }
 
+    public partial class HelloInnerTypes
+        : IReturn<HelloInnerTypesResponse>
+    {
+    }
+
+    public partial class HelloInnerTypesResponse
+    {
+        public virtual TypesGroup.InnerType InnerType { get; set; }
+        public virtual TypesGroup.InnerEnum InnerEnum { get; set; }
+    }
+
     public partial class HelloInterface
     {
         public virtual IPoco Poco { get; set; }
@@ -939,6 +950,23 @@ namespace dtos
     public partial class TypeB
     {
         public virtual string Foo { get; set; }
+    }
+
+    public partial class TypesGroup
+    {
+
+        public partial class InnerType
+        {
+            public virtual long Id { get; set; }
+            public virtual string Name { get; set; }
+        }
+
+        public enum InnerEnum
+        {
+            Foo,
+            Bar,
+            Baz,
+        }
     }
 }
 

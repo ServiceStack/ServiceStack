@@ -1,5 +1,5 @@
 /* Options:
-Date: 2015-01-20 03:03:14
+Date: 2015-01-20 20:41:52
 Version: 1
 BaseUrl: http://test.servicestack.net
 
@@ -23,10 +23,19 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
+using System.Net;
+using System.IO;
+using System.Data;
 using External.ServiceModel;
 using Test.ServiceModel;
 using Test.ServiceModel.Types;
 using Test.ServiceInterface;
+using ServiceStack.Web;
+using ServiceStack.Caching;
+using ServiceStack.Data;
+using ServiceStack.Redis;
+using ServiceStack.Messaging;
+using ServiceStack.Model;
 
 
 namespace External.ServiceModel
@@ -96,6 +105,164 @@ namespace External.ServiceModel
     public partial class ExternalType
     {
         public virtual ExternalEnum2 ExternalEnum2 { get; set; }
+    }
+}
+
+namespace ServiceStack.Caching
+{
+
+    public partial interface ICacheClient
+    {
+    }
+
+    public partial interface ISession
+    {
+    }
+
+    public partial interface ISessionFactory
+    {
+    }
+}
+
+namespace ServiceStack.Data
+{
+
+    public partial interface IDbConnectionFactory
+    {
+    }
+}
+
+namespace ServiceStack.Messaging
+{
+
+    public partial interface IMessageFactory
+    {
+    }
+
+    public partial interface IMessageProducer
+    {
+    }
+}
+
+namespace ServiceStack.Model
+{
+
+    public partial interface IHasNamed<IRedisList>
+    {
+    }
+}
+
+namespace ServiceStack.Redis
+{
+
+    public partial interface IRedisClient
+    {
+        long Db { get; set; }
+        long DbSize { get; set; }
+        Dictionary<string, string> Info { get; set; }
+        DateTime LastSave { get; set; }
+        string Host { get; set; }
+        int Port { get; set; }
+        int ConnectTimeout { get; set; }
+        int RetryTimeout { get; set; }
+        int RetryCount { get; set; }
+        int SendTimeout { get; set; }
+        string Password { get; set; }
+        bool HadExceptions { get; set; }
+        IHasNamed<IRedisList> Lists { get; set; }
+        IHasNamed<IRedisSet> Sets { get; set; }
+        IHasNamed<IRedisSortedSet> SortedSets { get; set; }
+        IHasNamed<IRedisHash> Hashes { get; set; }
+    }
+
+    public partial interface IRedisClientsManager
+    {
+    }
+
+    public partial interface IRedisHash
+    {
+    }
+
+    public partial interface IRedisList
+    {
+    }
+
+    public partial interface IRedisSet
+    {
+    }
+
+    public partial interface IRedisSortedSet
+    {
+    }
+}
+
+namespace ServiceStack.Web
+{
+
+    public partial interface IHttpFile
+    {
+        string FileName { get; set; }
+        long ContentLength { get; set; }
+        string ContentType { get; set; }
+        Stream InputStream { get; set; }
+    }
+
+    public partial interface INameValueCollection
+    {
+        Object Original { get; set; }
+        string[] AllKeys { get; set; }
+    }
+
+    public partial interface IRequest
+    {
+        Object OriginalRequest { get; set; }
+        IResponse Response { get; set; }
+        string OperationName { get; set; }
+        string Verb { get; set; }
+        RequestAttributes RequestAttributes { get; set; }
+        IRequestPreferences RequestPreferences { get; set; }
+        Object Dto { get; set; }
+        string ContentType { get; set; }
+        bool IsLocal { get; set; }
+        string UserAgent { get; set; }
+        IDictionary<string, Cookie> Cookies { get; set; }
+        string ResponseContentType { get; set; }
+        bool HasExplicitResponseContentType { get; set; }
+        Dictionary<string, Object> Items { get; set; }
+        INameValueCollection Headers { get; set; }
+        INameValueCollection QueryString { get; set; }
+        INameValueCollection FormData { get; set; }
+        bool UseBufferedStream { get; set; }
+        string RawUrl { get; set; }
+        string AbsoluteUri { get; set; }
+        string UserHostAddress { get; set; }
+        string RemoteIp { get; set; }
+        bool IsSecureConnection { get; set; }
+        string[] AcceptTypes { get; set; }
+        string PathInfo { get; set; }
+        Stream InputStream { get; set; }
+        long ContentLength { get; set; }
+        IHttpFile[] Files { get; set; }
+        Uri UrlReferrer { get; set; }
+    }
+
+    public partial interface IRequestPreferences
+    {
+        bool AcceptsGzip { get; set; }
+        bool AcceptsDeflate { get; set; }
+    }
+
+    public partial interface IResponse
+    {
+        Object OriginalResponse { get; set; }
+        int StatusCode { get; set; }
+        string StatusDescription { get; set; }
+        string ContentType { get; set; }
+        Stream OutputStream { get; set; }
+        Object Dto { get; set; }
+        bool UseBufferedStream { get; set; }
+        bool IsClosed { get; set; }
+        bool KeepAlive { get; set; }
     }
 }
 
@@ -209,6 +376,16 @@ namespace Test.ServiceInterface
         public virtual ResponseStatus ResponseStatus { get; set; }
     }
 
+    public partial class PingService
+        : Service
+    {
+
+        [Route("/reset-connections")]
+        public partial class ResetConnections
+        {
+        }
+    }
+
     public partial class Project
     {
         public virtual string Account { get; set; }
@@ -247,22 +424,22 @@ namespace Test.ServiceModel
     ///AllowedAttributes Description
     ///</summary>
     [Route("/allowed-attributes", "GET")]
-    [Api("AllowedAttributes Description")]
     [ApiResponse(400, "Your request was not understood")]
+    [Api("AllowedAttributes Description")]
     [DataContract]
     public partial class AllowedAttributes
     {
-        [Required]
         [Default(5)]
+        [Required]
         public virtual int Id { get; set; }
 
         [DataMember(Name="Aliased")]
         [ApiMember(ParameterType="path", Description="Range Description", DataType="double", IsRequired=true)]
         public virtual double Range { get; set; }
 
-        [References(typeof(Test.ServiceModel.Hello))]
-        [Meta("Foo", "Bar")]
         [StringLength(20)]
+        [Meta("Foo", "Bar")]
+        [References(typeof(Test.ServiceModel.Hello))]
         public virtual string Name { get; set; }
     }
 
@@ -391,6 +568,17 @@ namespace Test.ServiceModel
         public virtual string Name { get; set; }
     }
 
+    public partial class HelloInnerTypes
+        : IReturn<HelloInnerTypesResponse>
+    {
+    }
+
+    public partial class HelloInnerTypesResponse
+    {
+        public virtual TypesGroup.InnerType InnerType { get; set; }
+        public virtual TypesGroup.InnerEnum InnerEnum { get; set; }
+    }
+
     public partial class HelloInterface
     {
         public virtual IPoco Poco { get; set; }
@@ -505,7 +693,7 @@ namespace Test.ServiceModel
         : IReturn<HelloResponse>
     {
         public virtual string Name { get; set; }
-        public virtual NestedClass NestedClassProp { get; set; }
+        public virtual HelloWithNestedClass.NestedClass NestedClassProp { get; set; }
 
         public partial class NestedClass
         {
@@ -646,6 +834,23 @@ namespace Test.ServiceModel
     {
         public virtual string Result { get; set; }
         public virtual ResponseStatus ResponseStatus { get; set; }
+    }
+
+    public partial class TypesGroup
+    {
+
+        public partial class InnerType
+        {
+            public virtual long Id { get; set; }
+            public virtual string Name { get; set; }
+        }
+
+        public enum InnerEnum
+        {
+            Foo,
+            Bar,
+            Baz,
+        }
     }
 }
 

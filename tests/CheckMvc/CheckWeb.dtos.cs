@@ -1,5 +1,5 @@
 /* Options:
-Date: 2015-01-19 20:26:59
+Date: 2015-01-20 15:56:10
 Version: 1
 BaseUrl: http://localhost:55799
 
@@ -475,8 +475,8 @@ namespace Check.ServiceModel
         public virtual int? Age { get; set; }
     }
 
-    [Route("/throw404/{Message}")]
     [Route("/throw404")]
+    [Route("/throw404/{Message}")]
     public partial class Throw404
     {
         public virtual string Message { get; set; }
@@ -502,8 +502,8 @@ namespace Check.ServiceModel.Operations
     [DataContract]
     public partial class AllowedAttributes
     {
-        [Required]
         [Default(5)]
+        [Required]
         public virtual int Id { get; set; }
 
         [DataMember(Name="Aliased")]
@@ -511,8 +511,8 @@ namespace Check.ServiceModel.Operations
         public virtual double Range { get; set; }
 
         [StringLength(20)]
-        [Meta("Foo", "Bar")]
         [References(typeof(Check.ServiceModel.Operations.Hello))]
+        [Meta("Foo", "Bar")]
         public virtual string Name { get; set; }
     }
 
@@ -736,7 +736,7 @@ namespace Check.ServiceModel.Operations
         : IReturn<HelloResponse>
     {
         public virtual string Name { get; set; }
-        public virtual NestedClass NestedClassProp { get; set; }
+        public virtual HelloWithNestedClass.NestedClass NestedClassProp { get; set; }
 
         public partial class NestedClass
         {
@@ -867,6 +867,17 @@ namespace Check.ServiceModel.Types
         public virtual int Id { get; set; }
     }
 
+    public partial class HelloInnerTypes
+        : IReturn<HelloInnerTypesResponse>
+    {
+    }
+
+    public partial class HelloInnerTypesResponse
+    {
+        public virtual TypesGroup.InnerType InnerType { get; set; }
+        public virtual TypesGroup.InnerEnum InnerEnum { get; set; }
+    }
+
     public partial class HelloInterface
     {
         public virtual IPoco Poco { get; set; }
@@ -954,6 +965,23 @@ namespace Check.ServiceModel.Types
     public partial class TypeB
     {
         public virtual string Foo { get; set; }
+    }
+
+    public partial class TypesGroup
+    {
+
+        public partial class InnerType
+        {
+            public virtual long Id { get; set; }
+            public virtual string Name { get; set; }
+        }
+
+        public enum InnerEnum
+        {
+            Foo,
+            Bar,
+            Baz,
+        }
     }
 }
 
