@@ -301,7 +301,7 @@ namespace ServiceStack.NativeTypes.CSharp
             {
                 sb.AppendLine("{0} = new {1}{{}};".Fmt(
                 prop.Name.SafeToken(),
-                Type(prop.Type, prop.GenericArgs)));
+                Type(prop.Type, prop.GenericArgs, includeNested: true)));
             }
 
             sb = sb.UnIndent();

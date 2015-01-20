@@ -312,7 +312,7 @@ namespace ServiceStack.NativeTypes.VbNet
                 var suffix = prop.IsArray() ? "{}" : "";
                 sb.AppendLine("{0} = New {1}{2}".Fmt(
                 prop.Name.SafeToken(),
-                Type(prop.Type, prop.GenericArgs),
+                Type(prop.Type, prop.GenericArgs, includeNested:true),
                 suffix));
             }
 
