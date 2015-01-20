@@ -154,5 +154,10 @@ namespace Check.ServiceInterface
         {
             return new Request2Response();
         }
+
+        public object Any(HelloInnerTypes request)
+        {
+            return new HelloInnerTypesResponse();
+        }
     }
 }

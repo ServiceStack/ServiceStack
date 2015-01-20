@@ -408,6 +408,32 @@ namespace Check.ServiceModel.Types
     {
         public TypeA Test { get; set; }
     }
+
+    public class TypesGroup
+    {
+        public class InnerType
+        {
+            public long Id { get; set; }
+            public string Name { get; set; }
+        }
+
+        public enum InnerEnum
+        {
+            Foo,
+            Bar,
+            Baz
+        }
+    }
+
+    public class HelloInnerTypes : IReturn<HelloInnerTypesResponse> { }
+
+    public class HelloInnerTypesResponse
+    {
+        public TypesGroup.InnerType InnerType { get; set; }
+
+        public TypesGroup.InnerEnum InnerEnum { get; set; }
+    }
+
 }
 
 
