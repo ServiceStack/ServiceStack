@@ -50,6 +50,7 @@ namespace ServiceStack.NativeTypes.VbNet
             sb.AppendLine("'Version: {0}".Fmt(metadata.Version));
             sb.AppendLine("'BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine("'");
+            sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
             sb.AppendLine("{0}MakePartial: {1}".Fmt(defaultValue("MakePartial"), Config.MakePartial));
             sb.AppendLine("{0}MakeVirtual: {1}".Fmt(defaultValue("MakeVirtual"), Config.MakeVirtual));
             sb.AppendLine("{0}MakeDataContractsExtensible: {1}".Fmt(defaultValue("MakeDataContractsExtensible"), Config.MakeDataContractsExtensible));
@@ -177,7 +178,7 @@ namespace ServiceStack.NativeTypes.VbNet
                 return lastNS;
 
             var ns = Config.GlobalNamespace ?? type.Namespace;
-            if (type.Namespace != lastNS)
+            if (ns != lastNS)
             {
                 if (lastNS != null)
                     sb.AppendLine("End Namespace");
