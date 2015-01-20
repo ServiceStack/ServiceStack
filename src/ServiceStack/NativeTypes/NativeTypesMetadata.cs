@@ -145,6 +145,12 @@ namespace ServiceStack.NativeTypes
                     && !(t.IsGenericParameter))
                 {
                     metadata.Types.Add(ToType(t));
+
+                    foreach (var ns in GetNamespacesUsed(t))
+                    {
+                        if (!metadata.Namespaces.Contains(ns))
+                            metadata.Namespaces.Add(ns);
+                    }
                 }
             };
 
@@ -158,6 +164,12 @@ namespace ServiceStack.NativeTypes
                     if (type != null && !ignoreTypeFn(type)) 
                         registerTypeFn(type);
                     continue;
+                }
+
+                if (type.DeclaringType != null)
+                {
+                    if (!ignoreTypeFn(type.DeclaringType))
+                        registerTypeFn(type.DeclaringType);
                 }
 
                 if (!type.IsUserType() && !type.IsInterface) 
@@ -259,14 +271,7 @@ namespace ServiceStack.NativeTypes
 
             if (type.BaseType != null && type.BaseType != typeof(object) && !type.IsEnum)
             {
-                metaType.Inherits = new MetadataTypeName 
-                {
-                    Name = type.BaseType.GetOperationName(),
-                    Namespace = type.BaseType.Namespace,
-                    GenericArgs = type.BaseType.IsGenericType
-                        ? type.BaseType.GetGenericArguments().Select(x => x.GetOperationName()).ToArray()
-                        : null
-                };
+                metaType.Inherits = ToTypeName(type.BaseType);
             }
 
             if (type.GetTypeWithInterfaceOf(typeof(IReturnVoid)) != null)
@@ -364,6 +369,41 @@ namespace ServiceStack.NativeTypes
                 : GetInstancePublicProperties(type).Select(x => ToProperty(x)).ToList();
 
             return props == null || props.Count == 0 ? null : props;
+        }
+
+        public HashSet<string> GetNamespacesUsed(Type type)
+        {
+            var to = new HashSet<string>();
+
+            if (type.IsUserType() || type.IsInterface || type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>)))
+            {
+                foreach (var pi in GetInstancePublicProperties(type))
+                {
+                    if (pi.PropertyType.Namespace != null)
+                    {
+                        to.Add(pi.PropertyType.Namespace);
+                    }
+
+                    if (pi.PropertyType.IsGenericType)
+                    {
+                        pi.PropertyType.GetGenericArguments()
+                            .Where(x => x.Namespace != null).Each(x => to.Add(x.Namespace));
+                    }
+                }
+
+                if (type.IsGenericType)
+                {                   
+                    type.GetGenericArguments()
+                        .Where(x => x.Namespace != null).Each(x => to.Add(x.Namespace));
+                }
+            }
+
+            if (type.Namespace != null)
+            {
+                to.Add(type.Namespace);
+            }
+
+            return to;
         }
 
         public bool IncludeAttrsFilter(Attribute x)
@@ -557,6 +597,26 @@ namespace ServiceStack.NativeTypes
             return type == null
                 || (type.Namespace != null && type.Namespace.StartsWith("System"))
                 || (type.Inherits != null && type.Inherits.Name == "Array");
+        }
+
+        public static HashSet<string> GetDefaultNamespaces(this MetadataTypesConfig config, MetadataTypes metadata)
+        {
+            var namespaces = config.DefaultNamespaces.ToHashSet();
+
+            //Add any ignored namespaces used
+            foreach (var ns in metadata.Namespaces)
+            {
+                //Ignored by IsUserType()
+                if (!ns.StartsWith("System") && !config.IgnoreTypesInNamespaces.Contains(ns)) 
+                    continue;
+                
+                if (!namespaces.Contains(ns))
+                {
+                    namespaces.Add(ns);
+                }
+            }
+
+            return namespaces;
         }
     }
 }
