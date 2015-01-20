@@ -1,9 +1,9 @@
 /* Options:
-Date: 2015-01-19 20:26:59
+Date: 2015-01-19 20:27:38
 Version: 1
 BaseUrl: http://localhost:55799
 
-//GlobalNamespace: 
+GlobalNamespace: dtos
 //MakePartial: True
 //MakeVirtual: True
 //MakeDataContractsExtensible: False
@@ -23,13 +23,10 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
-using Check.ServiceModel;
-using Check.ServiceModel.Operations;
-using Check.ServiceModel.Types;
-using Check.ServiceInterface;
+using dtos;
 
 
-namespace Check.ServiceInterface
+namespace dtos
 {
 
     [Route("/api/acsprofiles/{profileId}")]
@@ -335,10 +332,6 @@ namespace Check.ServiceInterface
 
         public virtual string[] Ratings { get; set; }
     }
-}
-
-namespace Check.ServiceModel
-{
 
     public partial class AsyncTest
         : IReturn<Echo>
@@ -488,10 +481,6 @@ namespace Check.ServiceModel
         public virtual int Status { get; set; }
         public virtual string Message { get; set; }
     }
-}
-
-namespace Check.ServiceModel.Operations
-{
 
     ///<summary>
     ///AllowedAttributes Description
@@ -799,10 +788,6 @@ namespace Check.ServiceModel.Operations
         public virtual string Name { get; set; }
         public virtual Hello Hello { get; set; }
     }
-}
-
-namespace Check.ServiceModel.Types
-{
 
     public partial class AllCollectionTypes
     {

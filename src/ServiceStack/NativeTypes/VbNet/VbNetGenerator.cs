@@ -31,8 +31,16 @@ namespace ServiceStack.NativeTypes.VbNet
         {
             var namespaces = new HashSet<string>();
             Config.DefaultNamespaces.Each(x => namespaces.Add(x));
-            metadata.Types.Each(x => namespaces.Add(x.Namespace));
-            metadata.Operations.Each(x => namespaces.Add(x.Request.Namespace));
+
+            if (Config.GlobalNamespace == null)
+            {
+                metadata.Types.Each(x => namespaces.Add(x.Namespace));
+                metadata.Operations.Each(x => namespaces.Add(x.Request.Namespace));
+            }
+            else
+            {
+                namespaces.Add(Config.GlobalNamespace);
+            }
 
             Func<string, string> defaultValue = k =>
                 request.QueryString[k].IsNullOrEmpty() ? "'''" : "'";
@@ -169,15 +177,16 @@ namespace ServiceStack.NativeTypes.VbNet
                 || (type.IsNested.GetValueOrDefault() && !options.IsNestedType))
                 return lastNS;
 
+            var ns = Config.GlobalNamespace ?? type.Namespace;
             if (type.Namespace != lastNS)
             {
                 if (lastNS != null)
                     sb.AppendLine("End Namespace");
 
-                lastNS = type.Namespace;
+                lastNS = ns;
 
                 sb.AppendLine();
-                sb.AppendLine("Namespace {0}".Fmt(type.Namespace.SafeToken()));
+                sb.AppendLine("Namespace {0}".Fmt(ns.SafeToken()));
                 //sb.AppendLine("{");
             }
 

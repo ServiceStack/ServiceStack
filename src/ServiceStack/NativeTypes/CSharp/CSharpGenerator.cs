@@ -32,8 +32,16 @@ namespace ServiceStack.NativeTypes.CSharp
         {
             var namespaces = new HashSet<string>();
             Config.DefaultNamespaces.Each(x => namespaces.Add(x));
-            metadata.Types.Each(x => namespaces.Add(x.Namespace));
-            metadata.Operations.Each(x => namespaces.Add(x.Request.Namespace));
+
+            if (Config.GlobalNamespace == null)
+            {
+                metadata.Types.Each(x => namespaces.Add(x.Namespace));
+                metadata.Operations.Each(x => namespaces.Add(x.Request.Namespace));
+            }
+            else
+            {
+                namespaces.Add(Config.GlobalNamespace);
+            }
 
             Func<string,string> defaultValue = k =>
                 request.QueryString[k].IsNullOrEmpty() ? "//" : "";
@@ -44,6 +52,7 @@ namespace ServiceStack.NativeTypes.CSharp
             sb.AppendLine("Version: {0}".Fmt(metadata.Version));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
+            sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
             sb.AppendLine("{0}MakePartial: {1}".Fmt(defaultValue("MakePartial"), Config.MakePartial));
             sb.AppendLine("{0}MakeVirtual: {1}".Fmt(defaultValue("MakeVirtual"), Config.MakeVirtual));
             sb.AppendLine("{0}MakeDataContractsExtensible: {1}".Fmt(defaultValue("MakeDataContractsExtensible"), Config.MakeDataContractsExtensible));
@@ -164,15 +173,16 @@ namespace ServiceStack.NativeTypes.CSharp
                 || (type.IsNested.GetValueOrDefault() && !options.IsNestedType))
                 return lastNS;
 
-            if (type.Namespace != lastNS)
+            var ns = Config.GlobalNamespace ?? type.Namespace;
+            if (ns != lastNS)
             {
                 if (lastNS != null)
                     sb.AppendLine("}");
 
-                lastNS = type.Namespace;
+                lastNS = ns;
 
                 sb.AppendLine();
-                sb.AppendLine("namespace {0}".Fmt(type.Namespace.SafeToken()));
+                sb.AppendLine("namespace {0}".Fmt(ns.SafeToken()));
                 sb.AppendLine("{");
             }
 
