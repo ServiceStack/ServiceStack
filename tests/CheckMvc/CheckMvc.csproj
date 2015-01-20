@@ -126,6 +126,7 @@
   <ItemGroup>
     <Compile Include="CheckWeb.dtos.cs" />
     <Compile Include="CheckWebGlobalNamespace.dtos.cs" />
+    <Compile Include="TestGlobalNamespace.dtos.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

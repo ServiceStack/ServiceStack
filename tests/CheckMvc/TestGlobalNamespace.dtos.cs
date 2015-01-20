@@ -1,9 +1,9 @@
 /* Options:
-Date: 2015-01-20 21:48:38
+Date: 2015-01-20 21:51:30
 Version: 1
 BaseUrl: http://test.servicestack.net
 
-//GlobalNamespace: 
+GlobalNamespace: testdtos
 //MakePartial: True
 //MakeVirtual: True
 //MakeDataContractsExtensible: False
@@ -26,19 +26,10 @@ using ServiceStack.DataAnnotations;
 using System.Net;
 using System.IO;
 using System.Data;
-using External.ServiceModel;
-using Test.ServiceModel;
-using Test.ServiceModel.Types;
-using Test.ServiceInterface;
-using ServiceStack.Web;
-using ServiceStack.Caching;
-using ServiceStack.Data;
-using ServiceStack.Redis;
-using ServiceStack.Messaging;
-using ServiceStack.Model;
+using testdtos;
 
 
-namespace External.ServiceModel
+namespace testdtos
 {
 
     public enum ExternalEnum
@@ -106,10 +97,6 @@ namespace External.ServiceModel
     {
         public virtual ExternalEnum2 ExternalEnum2 { get; set; }
     }
-}
-
-namespace ServiceStack.Caching
-{
 
     public partial interface ICacheClient
     {
@@ -122,18 +109,10 @@ namespace ServiceStack.Caching
     public partial interface ISessionFactory
     {
     }
-}
-
-namespace ServiceStack.Data
-{
 
     public partial interface IDbConnectionFactory
     {
     }
-}
-
-namespace ServiceStack.Messaging
-{
 
     public partial interface IMessageFactory
     {
@@ -142,18 +121,10 @@ namespace ServiceStack.Messaging
     public partial interface IMessageProducer
     {
     }
-}
-
-namespace ServiceStack.Model
-{
 
     public partial interface IHasNamed<IRedisList>
     {
     }
-}
-
-namespace ServiceStack.Redis
-{
 
     public partial interface IRedisClient
     {
@@ -194,10 +165,6 @@ namespace ServiceStack.Redis
     public partial interface IRedisSortedSet
     {
     }
-}
-
-namespace ServiceStack.Web
-{
 
     public partial interface IHttpFile
     {
@@ -264,10 +231,6 @@ namespace ServiceStack.Web
         bool IsClosed { get; set; }
         bool KeepAlive { get; set; }
     }
-}
-
-namespace Test.ServiceInterface
-{
 
     public partial class Account
     {
@@ -415,10 +378,6 @@ namespace Test.ServiceInterface
     {
         public virtual string CustomName { get; set; }
     }
-}
-
-namespace Test.ServiceModel
-{
 
     ///<summary>
     ///AllowedAttributes Description
@@ -852,10 +811,6 @@ namespace Test.ServiceModel
             Baz,
         }
     }
-}
-
-namespace Test.ServiceModel.Types
-{
 
     public partial class AllCollectionTypes
     {
