@@ -28,8 +28,7 @@ namespace ServiceStack.NativeTypes.FSharp
 
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
-            var namespaces = new HashSet<string>();
-            Config.DefaultNamespaces.Each(x => namespaces.Add(x));
+            var namespaces = Config.GetDefaultNamespaces(metadata);
 
             var typeNamespaces = new HashSet<string>();
             metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));

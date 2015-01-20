@@ -29,8 +29,7 @@ namespace ServiceStack.NativeTypes.VbNet
 
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
-            var namespaces = new HashSet<string>();
-            Config.DefaultNamespaces.Each(x => namespaces.Add(x));
+            var namespaces = Config.GetDefaultNamespaces(metadata);
 
             if (Config.GlobalNamespace == null)
             {
@@ -336,7 +335,7 @@ namespace ServiceStack.NativeTypes.VbNet
                 {
                     if (wasAdded) sb.AppendLine();
 
-                    var propType = Type(prop.Type, prop.GenericArgs);
+                    var propType = Type(prop.Type, prop.GenericArgs, includeNested:true);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
                     var visibility = type.IsInterface() ? "" : "Public ";
