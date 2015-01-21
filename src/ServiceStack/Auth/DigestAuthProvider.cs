@@ -42,7 +42,10 @@ namespace ServiceStack.Auth
             var digestInfo = authService.Request.GetDigestAuth();
             IUserAuth userAuth;
             if (authRepo.TryAuthenticate(digestInfo, PrivateKey, NonceTimeOut, session.Sequence, out userAuth)) {
-                session.PopulateWith(userAuth);
+
+                var holdSessionId = session.Id;
+                session.PopulateWith(userAuth); //overwrites session.Id
+                session.Id = holdSessionId;
                 session.IsAuthenticated = true;
                 session.Sequence = digestInfo["nc"];
                 session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
