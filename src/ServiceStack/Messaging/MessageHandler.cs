@@ -174,13 +174,21 @@ namespace ServiceStack.Messaging
                 //If there's no response publish the request message to its OutQ
                 if (response == null)
                 {
-                    var messageOptions = (MessageOption) message.Options;
-                    if (messageOptions.Has(MessageOption.NotifyOneWay))
+                    if (message.ReplyTo != null)
                     {
-                        mqClient.Notify(QueueNames<T>.Out, message);
+                        response = message.GetBody();
+                    }
+                    else
+                    {
+                        var messageOptions = (MessageOption) message.Options;
+                        if (messageOptions.Has(MessageOption.NotifyOneWay))
+                        {
+                            mqClient.Notify(QueueNames<T>.Out, message);
+                        }
                     }
                 }
-                else
+                
+                if (response != null)
                 {
                     var responseType = response.GetType();
 

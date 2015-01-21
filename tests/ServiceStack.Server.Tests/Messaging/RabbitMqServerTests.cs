@@ -473,7 +473,67 @@ namespace ServiceStack.Server.Tests.Messaging
                 var msg = basicMsg.ToMessage<HelloResponse>();
                 Assert.That(msg.GetBody().Result, Is.EqualTo("Hello, Bugs Bunny!"));
             }
+        }
 
+        [Test]
+        public void Messages_with_null_Response_is_published_to_OutMQ()
+        {
+            int msgsReceived = 0;
+            var mqServer = CreateMqServer();
+            mqServer.RegisterHandler<Hello>(m =>
+            {
+                msgsReceived++;
+                return null;
+            });
+
+            mqServer.Start();
+
+            using (mqServer)
+            using (var mqClient = mqServer.CreateMessageQueueClient())
+            {
+                mqClient.Publish(new Hello { Name = "Into the Void" });
+
+                var msg = mqClient.Get<Hello>(QueueNames<Hello>.Out);
+
+                Hello response = msg.GetBody();
+
+                Thread.Sleep(100);
+
+                Assert.That(response.Name, Is.EqualTo("Into the Void"));
+                Assert.That(msgsReceived, Is.EqualTo(1));
+            }
+        }
+
+        [Test]
+        public void Messages_with_null_Response_is_published_to_ReplyMQ()
+        {
+            int msgsReceived = 0;
+            var mqServer = CreateMqServer();
+            mqServer.RegisterHandler<Hello>(m =>
+            {
+                msgsReceived++;
+                return null;
+            });
+
+            mqServer.Start();
+
+            using (mqServer)
+            using (var mqClient = mqServer.CreateMessageQueueClient())
+            {
+                var replyMq = mqClient.GetTempQueueName();
+                mqClient.Publish(new Message<Hello>(new Hello { Name = "Into the Void" }) {
+                    ReplyTo = replyMq
+                });
+
+                var msg = mqClient.Get<Hello>(replyMq);
+
+                Hello response = msg.GetBody();
+
+                Thread.Sleep(100);
+
+                Assert.That(response.Name, Is.EqualTo("Into the Void"));
+                Assert.That(msgsReceived, Is.EqualTo(1));
+            }
         }
     }
 }
