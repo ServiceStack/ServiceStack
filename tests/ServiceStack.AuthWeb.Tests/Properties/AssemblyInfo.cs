@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("ServiceStack.AuthWeb.Tests")]
-[assembly: AssemblyCopyright("Copyright (c)  2013")]
+[assembly: AssemblyCopyright("Copyright (c) ServiceStack 2015")]
 [assembly: AssemblyTrademark("Service Stack")]
 [assembly: AssemblyCulture("")]
 

@@ -17,7 +17,7 @@
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>ServiceStack Authentication Authorization RavenDB Raven NoSQL POCO Code-First</tags>
     <language>en-US</language> 
-    <copyright>ServiceStack 2014 and contributors</copyright>
+    <copyright>ServiceStack 2015 and contributors</copyright>
     <dependencies>
       <dependency id="ServiceStack" version="4.0" />
       <dependency id="RavenDB.Client" version="2.5.2939" />
