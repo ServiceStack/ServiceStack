@@ -174,6 +174,9 @@ namespace ServiceStack.Auth
 
         public virtual IUserAuth GetUserAuthByUserName(string userNameOrEmail)
         {
+            if (userNameOrEmail == null)
+                return null;
+
             using (var redis = factory.GetClient())
             {
                 return GetUserAuthByUserName(redis, userNameOrEmail);
@@ -182,6 +185,9 @@ namespace ServiceStack.Auth
 
         private IUserAuth GetUserAuthByUserName(IRedisClientFacade redis, string userNameOrEmail)
         {
+            if (userNameOrEmail == null)
+                return null;
+
             var isEmail = userNameOrEmail.Contains("@");
             var userId = isEmail
                 ? redis.GetValueFromHash(IndexEmailToUserId, userNameOrEmail)

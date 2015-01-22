@@ -193,6 +193,9 @@ namespace ServiceStack.Authentication.RavenDb
 
         public IUserAuth GetUserAuthByUserName(string userNameOrEmail)
         {
+            if (userNameOrEmail == null)
+                return null;
+
             using (var session = documentStore.OpenSession())
             {
                 var userAuth = session.Query<UserAuth_By_UserNameOrEmail.Result, UserAuth_By_UserNameOrEmail>()

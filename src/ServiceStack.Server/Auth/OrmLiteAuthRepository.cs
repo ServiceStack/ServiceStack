@@ -182,6 +182,9 @@ namespace ServiceStack.Auth
 
         public IUserAuth GetUserAuthByUserName(string userNameOrEmail)
         {
+            if (userNameOrEmail == null)
+                return null;
+
             if (!hasInitSchema)
             {
                 using (var db = dbFactory.Open())

@@ -125,6 +125,9 @@ namespace ServiceStack.Authentication.NHibernate
 
         public IUserAuth GetUserAuthByUserName(string userNameOrEmail)
         {
+            if (userNameOrEmail == null)
+                return null;
+
             using (var nhSession = GetCurrentSessionFn(sessionFactory))
             {
                 UserAuthNHibernate user;

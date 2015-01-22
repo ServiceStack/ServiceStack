@@ -225,6 +225,9 @@ namespace ServiceStack.Authentication.MongoDb
 
         private static UserAuth GetUserAuthByUserName(MongoDatabase mongoDatabase, string userNameOrEmail)
         {
+            if (userNameOrEmail == null)
+                return null;
+
             var isEmail = userNameOrEmail.Contains("@");
             var collection = mongoDatabase.GetCollection<UserAuth>(UserAuth_Col);
 
