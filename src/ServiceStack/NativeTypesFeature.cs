@@ -134,6 +134,7 @@ namespace ServiceStack
                     "ServiceStack.Auth",
                     "ServiceStack.Caching",
                     "ServiceStack.Configuration",
+                    "ServiceStack.Data",
                     "ServiceStack.IO",
                     "ServiceStack.Logging",
                     "ServiceStack.Messaging",
