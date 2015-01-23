@@ -86,7 +86,7 @@ namespace ServiceStack.NativeTypes.Swift
                 .Map(x => x.Name);
 
             sb.AppendLine("import Foundation");
-            sb.AppendLine("import JsonHttpClient");
+            sb.AppendLine("import JsonServiceClient");
 
             //ServiceStack core interfaces
             foreach (var type in allTypes)
@@ -189,8 +189,8 @@ namespace ServiceStack.NativeTypes.Swift
                         var name = type.EnumNames[i];
                         var value = type.EnumValues != null ? type.EnumValues[i] : null;
                         sb.AppendLine(value == null
-                            ? "{0},".Fmt(name.PropertyStyle())
-                            : "{0} = {1},".Fmt(name.PropertyStyle(), value));
+                            ? "case {0}".Fmt(name.PropertyStyle())
+                            : "case {0} = {1}".Fmt(name.PropertyStyle(), value));
                     }
                 }
 
@@ -226,7 +226,7 @@ namespace ServiceStack.NativeTypes.Swift
 
                 if (!type.IsInterface())
                 {
-                    sb.AppendLine("required init(){}");
+                    sb.AppendLine("required public init(){}");
                 }
 
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsOperation;
@@ -259,7 +259,7 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt = sbExt.Indent();
 
             //func typeConfig()
-            sbExt.AppendLine("public class func typeConfig() -> JsonConfigType<{0}>".Fmt(Type(type.Name, type.GenericArgs)));
+            sbExt.AppendLine("public class func typeConfig() -> JsConfigType<{0}>".Fmt(Type(type.Name, type.GenericArgs)));
             sbExt.AppendLine("{");
             sbExt = sbExt.Indent();
             sbExt.AppendLine(
@@ -524,7 +524,11 @@ namespace ServiceStack.NativeTypes.Swift
 
         public string Type(string type, string[] genericArgs)
         {
-            IDictionary<string, string> d;
+            if (type == "HelloArray")
+            {
+                "HERE".Print();
+            }
+
             if (!genericArgs.IsEmpty())
             {
                 if (type == "Nullable`1")
@@ -556,9 +560,9 @@ namespace ServiceStack.NativeTypes.Swift
 
         private string TypeAlias(string type)
         {
-            var arrParts = type.SplitOnFirst('[');
-            if (arrParts.Length > 1)
-                return "[{0}]".Fmt(TypeAlias(arrParts[0]));
+            var isArray = type.StartsWith("[") || type.EndsWith("[]");
+            if (isArray)
+                return "[{0}]".Fmt(TypeAlias(type.Trim('[', ']')));
 
             string typeAlias;
             Config.SwiftTypeAlias.TryGetValue(type, out typeAlias);
@@ -677,9 +681,9 @@ namespace ServiceStack.NativeTypes.Swift
 
         public static string InheritedType(this string type)
         {
-            var arrParts = type.SplitOnFirst('[');
-            return arrParts.Length > 1 
-                ? "Array<{0}>".Fmt(arrParts[0]) 
+            var isArray = type.StartsWith("[");
+            return isArray 
+                ? "List<{0}>".Fmt(type.Trim('[',']')) 
                 : type;
         }
 
