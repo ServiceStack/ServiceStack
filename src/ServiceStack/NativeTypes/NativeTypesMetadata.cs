@@ -31,13 +31,13 @@ namespace ServiceStack.NativeTypes
                 AddReturnMarker = req.AddReturnMarker ?? defaults.AddReturnMarker,
                 AddDescriptionAsComments = req.AddDescriptionAsComments ?? defaults.AddDescriptionAsComments,
                 AddDataContractAttributes = req.AddDataContractAttributes ?? defaults.AddDataContractAttributes,
-                MakeDataContractsExtensible =
-                    req.MakeDataContractsExtensible ?? defaults.MakeDataContractsExtensible,
+                MakeDataContractsExtensible = req.MakeDataContractsExtensible ?? defaults.MakeDataContractsExtensible,
                 AddIndexesToDataMembers = req.AddIndexesToDataMembers ?? defaults.AddIndexesToDataMembers,
                 InitializeCollections = req.InitializeCollections ?? defaults.InitializeCollections,
                 AddImplicitVersion = req.AddImplicitVersion ?? defaults.AddImplicitVersion,
                 AddResponseStatus = req.AddResponseStatus ?? defaults.AddResponseStatus,
                 AddServiceStackTypes = req.AddServiceStackTypes ?? defaults.AddServiceStackTypes,
+                AddModelExtensions = req.AddModelExtensions ?? defaults.AddModelExtensions,
                 MakePropertiesOptional = req.MakePropertiesOptional ?? defaults.MakePropertiesOptional,
                 AddDefaultXmlNamespace = req.AddDefaultXmlNamespace ?? defaults.AddDefaultXmlNamespace,
                 DefaultNamespaces = req.DefaultNamespaces ?? defaults.DefaultNamespaces,
@@ -48,6 +48,7 @@ namespace ServiceStack.NativeTypes
                 FSharpTypeAlias = defaults.FSharpTypeAlias,
                 VbNetTypeAlias = defaults.VbNetTypeAlias,
                 TypeScriptTypeAlias = defaults.TypeScriptTypeAlias,
+                SwiftTypeAlias = defaults.SwiftTypeAlias,
                 VbNetKeyWords = defaults.VbNetKeyWords,
                 GlobalNamespace = req.GlobalNamespace ?? defaults.GlobalNamespace,
             };

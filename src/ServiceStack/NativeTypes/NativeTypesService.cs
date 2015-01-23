@@ -2,6 +2,7 @@
 using ServiceStack.DataAnnotations;
 using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.NativeTypes.FSharp;
+using ServiceStack.NativeTypes.Swift;
 using ServiceStack.NativeTypes.TypeScript;
 using ServiceStack.NativeTypes.VbNet;
 using ServiceStack.Web;
@@ -28,6 +29,10 @@ namespace ServiceStack.NativeTypes
     [Route("/types/typescript.d")]
     public class TypesTypeScript : NativeTypesBase { }
 
+    [Exclude(Feature.Soap)]
+    [Route("/types/swift")]
+    public class TypesSwift : NativeTypesBase { }
+
     public class NativeTypesBase
     {
         public string BaseUrl { get; set; }
@@ -42,6 +47,7 @@ namespace ServiceStack.NativeTypes
         public int? AddImplicitVersion { get; set; }
         public bool? AddResponseStatus { get; set; }
         public bool? AddServiceStackTypes { get; set; }
+        public bool? AddModelExtensions { get; set; }        
         public bool? MakePropertiesOptional { get; set; }
         public string AddDefaultXmlNamespace { get; set; }
         public string GlobalNamespace { get; set; }
@@ -133,5 +139,16 @@ namespace ServiceStack.NativeTypes
             return typeScript;
         }
 
+        [AddHeader(ContentType = MimeTypes.PlainText)]
+        public object Any(TypesSwift request)
+        {
+            if (request.BaseUrl == null)
+                request.BaseUrl = Request.GetBaseUrl();
+
+            var typesConfig = NativeTypesMetadata.GetConfig(request);
+            var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
+            var swift = new SwiftGenerator(typesConfig).GetCode(metadataTypes, base.Request);
+            return swift;
+        }
     }
 }

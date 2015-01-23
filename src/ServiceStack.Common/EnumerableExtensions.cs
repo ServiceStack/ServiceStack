@@ -10,6 +10,11 @@ namespace ServiceStack
             return collection == null || collection.Count == 0;
         }
 
+        public static bool IsEmpty<T>(this T[] collection)
+        {
+            return collection == null || collection.Length == 0;
+        }
+
         public static HashSet<T> ToHashSet<T>(this IEnumerable<T> items)
         {
             return new HashSet<T>(items);

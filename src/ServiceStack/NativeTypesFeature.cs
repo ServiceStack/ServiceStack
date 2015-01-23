@@ -57,6 +57,22 @@ namespace ServiceStack
                     { "Double", "number" },    
                     { "Decimal", "number" },    
                 },
+                SwiftTypeAlias = new Dictionary<string, string>
+                {
+                    { "Boolean", "Bool" },    
+                    { "DateTime", "String" },    
+                    { "TimeSpan", "String" },    
+                    { "Byte", "Int8" },    
+                    { "Int16", "Int16" },    
+                    { "Int32", "Int" },    
+                    { "Int64", "Int64" },    
+                    { "UInt16", "UInt16" },    
+                    { "UInt32", "UInt32" },    
+                    { "UInt64", "UInt64" },    
+                    { "Single", "Float" },    
+                    { "Double", "Double" },    
+                    { "Decimal", "Double" },    
+                },
                 VbNetKeyWords = new HashSet<string>
                 {
                     "Default",

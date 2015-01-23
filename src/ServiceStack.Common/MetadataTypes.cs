@@ -17,6 +17,7 @@ namespace ServiceStack
             string addDefaultXmlNamespace = null,
             bool addResponseStatus = false,
             bool addServiceStackTypes = true,
+            bool addModelExtensions = true,
             bool makePropertiesOptional = true,
             bool makeDataContractsExtensible = false,
             bool initializeCollections = true,
@@ -34,6 +35,7 @@ namespace ServiceStack
             InitializeCollections = initializeCollections;
             AddResponseStatus = addResponseStatus;
             AddServiceStackTypes = addServiceStackTypes;
+            AddModelExtensions = addModelExtensions;
             MakePropertiesOptional = makePropertiesOptional;
             AddImplicitVersion = addImplicitVersion;
         }
@@ -48,6 +50,7 @@ namespace ServiceStack
         public int? AddImplicitVersion { get; set; }
         public bool AddResponseStatus { get; set; }
         public bool AddServiceStackTypes { get; set; }
+        public bool AddModelExtensions { get; set; }
         public bool MakePropertiesOptional { get; set; }
         public string AddDefaultXmlNamespace { get; set; }
         public bool MakeDataContractsExtensible { get; set; }
@@ -60,6 +63,7 @@ namespace ServiceStack
         public Dictionary<string, string> FSharpTypeAlias { get; set; }
         public Dictionary<string, string> VbNetTypeAlias { get; set; }
         public Dictionary<string, string> TypeScriptTypeAlias { get; set; }
+        public Dictionary<string, string> SwiftTypeAlias { get; set; }
         public HashSet<string> VbNetKeyWords { get; set; }
         public HashSet<Type> IgnoreTypes { get; set; }
         public HashSet<Type> ExportAttributes { get; set; }
