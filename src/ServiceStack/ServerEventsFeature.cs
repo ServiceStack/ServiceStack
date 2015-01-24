@@ -555,13 +555,15 @@ namespace ServiceStack
         {
             if (id == null) return null;
             IEventSubscription[] subs;
-            if (Subcriptions.TryGetValue(id, out subs) == false)
+            if (!Subcriptions.TryGetValue(id, out subs))
                 return null;
+
             foreach (var sub in subs)
             {
                 if (sub != null)
                     return sub;
             }
+
             return null;
         }
 
@@ -572,18 +574,20 @@ namespace ServiceStack
 
         public List<SubscriptionInfo> GetSubscriptionInfosByUserId(string userId)
         {
-            var userSubs = new List<SubscriptionInfo>();
-            if (userId == null) return userSubs;
+            var subInfos = new List<SubscriptionInfo>();
+            if (userId == null) return subInfos;
+            
             IEventSubscription[] subs;
-            if (UserIdSubcriptions.TryGetValue(userId, out subs) == false)
-                return userSubs;
+            if (!UserIdSubcriptions.TryGetValue(userId, out subs))
+                return subInfos;
+
             foreach (var sub in subs)
             {
                 var info = sub.GetInfo();
                 if (info != null)
-                    userSubs.Add(info);
+                    subInfos.Add(info);
             }
-            return userSubs;
+            return subInfos;
         }
 
         ConcurrentDictionary<string, long> SequenceCounters = new ConcurrentDictionary<string, long>();
@@ -596,14 +600,24 @@ namespace ServiceStack
         public List<Dictionary<string, string>> GetSubscriptionsDetails(params string[] channels)
         {
             var ret = new List<Dictionary<string, string>>();
-            foreach (var subs in Subcriptions.Values)
+            var alreadyAdded = new HashSet<string>();
+
+            foreach (var channel in channels)
             {
+                IEventSubscription[] subs;
+                if (!ChannelSubcriptions.TryGetValue(channel, out subs))
+                    continue;
+
                 foreach (var sub in subs)
                 {
-                    if (sub.HasAnyChannel(channels))
+                    if (!alreadyAdded.Contains(sub.SubscriptionId))
+                    {
                         ret.Add(sub.Meta);
+                        alreadyAdded.Add(sub.SubscriptionId);
+                    }
                 }
             }
+
             return ret;
         }
 
