@@ -12,11 +12,13 @@ namespace ServiceStack.NativeTypes.Swift
     public class SwiftGenerator
     {
         readonly MetadataTypesConfig Config;
+        readonly List<MetadataType> AllTypes;
         List<string> conflictTypeNames = new List<string>();
 
         public SwiftGenerator(MetadataTypesConfig config)
         {
             Config = config;
+            AllTypes = new List<MetadataType>();
         }
 
         class CreateTypeOptions
@@ -51,6 +53,7 @@ namespace ServiceStack.NativeTypes.Swift
             //sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
             sb.AppendLine("{0}AddModelExtensions: {1}".Fmt(defaultValue("AddModelExtensions"), Config.AddModelExtensions));
+            sb.AppendLine("{0}FlattenAbstractTypes: {1}".Fmt(defaultValue("FlattenAbstractTypes"), Config.FlattenAbstractTypes));
             sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
             sb.AppendLine("{0}DefaultNamespaces: {1}".Fmt(defaultValue("DefaultNamespaces"), defaultNamespaces.ToArray().Join(", ")));
@@ -69,26 +72,25 @@ namespace ServiceStack.NativeTypes.Swift
                 .Select(x => x.Response).ToHashSet();
             var types = metadata.Types.ToHashSet();
 
-            var allTypes = new List<MetadataType>();
-            allTypes.AddRange(types);
-            allTypes.AddRange(responseTypes);
-            allTypes.AddRange(requestTypes);
+            AllTypes.AddRange(types);
+            AllTypes.AddRange(responseTypes);
+            AllTypes.AddRange(requestTypes);
 
             //Swift doesn't support reusing same type name with different generic airity
-            var conflictPartialNames = allTypes.Map(x => x.Name).Distinct()
+            var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
                 .GroupBy(g => g.SplitOnFirst('`')[0])
                 .Where(g => g.Count() > 1)
                 .Select(g => g.Key)
                 .ToList();
 
-            this.conflictTypeNames = allTypes
+            this.conflictTypeNames = AllTypes
                 .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
                 .Map(x => x.Name);
 
             defaultNamespaces.Each(x => sb.AppendLine("import {0}".Fmt(x)));
 
             //ServiceStack core interfaces
-            foreach (var type in allTypes)
+            foreach (var type in AllTypes)
             {
                 var fullTypeName = type.GetFullName();
                 if (requestTypes.Contains(type))
@@ -316,6 +318,20 @@ namespace ServiceStack.NativeTypes.Swift
 
         private void AddTypeExtension(ref StringBuilderWrapper sbExt, MetadataType type, bool initCollections)
         {
+            //Swift doesn't support extensions on same protocol used by Base and Sub types
+            if (Config.FlattenAbstractTypes && type.IsAbstract())
+                return;
+
+            var typeProperties = type.Properties.Safe().ToList();
+            if (Config.FlattenAbstractTypes)
+            {
+                var baseType = FindType(type.Inherits);
+                if (baseType != null && baseType.IsAbstract())
+                {
+                    typeProperties.InsertRange(0, baseType.Properties.Safe());
+                }
+            }
+
             var typeName = Type(type.Name, type.GenericArgs);
 
             var typeNameOnly = typeName.SplitOnFirst('<')[0];
@@ -335,7 +351,8 @@ namespace ServiceStack.NativeTypes.Swift
 
             sbExt.AppendLine("writers: [");
             sbExt = sbExt.Indent();
-            foreach (var prop in type.Properties.Safe())
+
+            foreach (var prop in typeProperties)
             {
                 var isOptional = !(initCollections 
                     && (prop.IsArray() 
@@ -352,7 +369,7 @@ namespace ServiceStack.NativeTypes.Swift
 
             sbExt.AppendLine("readers: [");
             sbExt = sbExt.Indent();
-            foreach (var prop in type.Properties.Safe())
+            foreach (var prop in typeProperties)
             {
                 sbExt.AppendLine("(\"{1}\", {{ (x:{0}) in x.{1} as Any }}),".Fmt(
                     typeName,
@@ -577,6 +594,41 @@ namespace ServiceStack.NativeTypes.Swift
             return Type(typeName.Name, typeName.GenericArgs);
         }
 
+        public MetadataType FindType(MetadataTypeName typeName)
+        {
+            if (typeName == null)
+                return null;
+
+            var foundType = AllTypes
+                .FirstOrDefault(x => x.Namespace == typeName.Namespace
+                    && x.Name == typeName.Name
+                    && x.GenericArgs.Safe().Count() == typeName.GenericArgs.Safe().Count());
+
+            if (foundType != null)
+                return foundType;
+
+            if (typeName.Name == typeof(QueryBase).Name || typeName.Name == typeof(QueryBase<>).Name)
+                return CreateType(typeof(QueryBase)); //Properties are on QueryBase
+           
+
+            if (typeName.Name == typeof(AuthUserSession).Name)
+                return CreateType(typeof(AuthUserSession));
+
+            return null;
+        }
+
+        MetadataType CreateType(Type type)
+        {
+            var nativeTypes = HostContext.TryResolve<INativeTypesMetadata>() as NativeTypesMetadata;
+            if (nativeTypes != null)
+            {
+                var typesGenerator = nativeTypes.GetMetadataTypesGenerator(Config);
+                return typesGenerator.ToType(type);
+            }
+
+            return null;
+        }
+
         public static HashSet<string> ArrayTypes = new HashSet<string>
         {
             "List`1",
@@ -601,11 +653,6 @@ namespace ServiceStack.NativeTypes.Swift
 
         public string Type(string type, string[] genericArgs)
         {
-            if (type == "HelloArray")
-            {
-                "HERE".Print();
-            }
-
             if (!genericArgs.IsEmpty())
             {
                 if (type == "Nullable`1")
@@ -766,11 +813,13 @@ namespace ServiceStack.NativeTypes.Swift
 
         public static string PropertyStyle(this string name)
         {
-            return JsConfig.EmitCamelCaseNames
-                ? name.ToCamelCase()
-                : JsConfig.EmitLowercaseUnderscoreNames
-                    ? name.ToLowercaseUnderscore()
-                    : name;
+            return name.ToCamelCase(); //Always use Swift conventions for now
+
+            //return JsConfig.EmitCamelCaseNames
+            //    ? name.ToCamelCase()
+            //    : JsConfig.EmitLowercaseUnderscoreNames
+            //        ? name.ToLowercaseUnderscore()
+            //        : name;
         }
     }
 }

@@ -18,6 +18,7 @@ namespace ServiceStack
             bool addResponseStatus = false,
             bool addServiceStackTypes = true,
             bool addModelExtensions = true,
+            bool flattenAbstractTypes = true,
             bool makePropertiesOptional = true,
             bool makeDataContractsExtensible = false,
             bool initializeCollections = true,
@@ -36,6 +37,7 @@ namespace ServiceStack
             AddResponseStatus = addResponseStatus;
             AddServiceStackTypes = addServiceStackTypes;
             AddModelExtensions = addModelExtensions;
+            FlattenAbstractTypes = flattenAbstractTypes;
             MakePropertiesOptional = makePropertiesOptional;
             AddImplicitVersion = addImplicitVersion;
         }
@@ -51,6 +53,7 @@ namespace ServiceStack
         public bool AddResponseStatus { get; set; }
         public bool AddServiceStackTypes { get; set; }
         public bool AddModelExtensions { get; set; }
+        public bool FlattenAbstractTypes { get; set; }
         public bool MakePropertiesOptional { get; set; }
         public string AddDefaultXmlNamespace { get; set; }
         public bool MakeDataContractsExtensible { get; set; }
@@ -109,6 +112,7 @@ namespace ServiceStack
         public bool? IsNested { get; set; }
         public bool? IsEnum { get; set; }
         public bool? IsInterface { get; set; }
+        public bool? IsAbstract { get; set; }
 
         public MetadataTypeName ReturnMarkerTypeName { get; set; }
 

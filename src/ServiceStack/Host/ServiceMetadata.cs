@@ -628,5 +628,11 @@ namespace ServiceStack.Host
         {
             return type.IsInterface.GetValueOrDefault();
         }
+
+        public static bool IsAbstract(this MetadataType type)
+        {
+            return type.IsAbstract.GetValueOrDefault()
+                || type.Name == typeof(AuthUserSession).Name; //not abstract but treat it as so
+        }
     }
 }

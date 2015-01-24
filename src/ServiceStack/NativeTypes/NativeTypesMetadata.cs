@@ -38,6 +38,7 @@ namespace ServiceStack.NativeTypes
                 AddResponseStatus = req.AddResponseStatus ?? defaults.AddResponseStatus,
                 AddServiceStackTypes = req.AddServiceStackTypes ?? defaults.AddServiceStackTypes,
                 AddModelExtensions = req.AddModelExtensions ?? defaults.AddModelExtensions,
+                FlattenAbstractTypes = req.FlattenAbstractTypes ?? defaults.FlattenAbstractTypes,
                 MakePropertiesOptional = req.MakePropertiesOptional ?? defaults.MakePropertiesOptional,
                 AddDefaultXmlNamespace = req.AddDefaultXmlNamespace ?? defaults.AddDefaultXmlNamespace,
                 DefaultNamespaces = req.DefaultNamespaces ?? defaults.DefaultNamespaces,
@@ -277,6 +278,7 @@ namespace ServiceStack.NativeTypes
                 IsNested = type.IsNested ? true : (bool?)null,
                 IsEnum = type.IsEnum ? true : (bool?)null,
                 IsInterface = type.IsInterface ? true : (bool?)null,
+                IsAbstract = type.IsAbstract ? true : (bool?)null,
             };
 
             if (type.BaseType != null && type.BaseType != typeof(object) && !type.IsEnum

@@ -327,7 +327,7 @@ namespace Check.ServiceModel.Types
         public string Name { get; set; }
     }
 
-    public class HelloBase
+    public abstract class HelloBase
     {
         public int Id { get; set; }
     }
