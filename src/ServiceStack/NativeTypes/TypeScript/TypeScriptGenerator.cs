@@ -29,8 +29,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
-            var namespaces = new HashSet<string>();
-            Config.DefaultNamespaces.Each(x => namespaces.Add(x));
+            var defaultNamespaces = Config.DefaultSwiftNamespaces;
 
             var typeNamespaces = new HashSet<string>();
             metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
@@ -56,6 +55,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
+            sb.AppendLine("{0}DefaultNamespaces: {1}".Fmt(defaultValue("DefaultNamespaces"), defaultNamespaces.ToArray().Join(", ")));
 
             sb.AppendLine("*/");
             sb.AppendLine();
@@ -86,6 +86,8 @@ namespace ServiceStack.NativeTypes.TypeScript
             this.conflictTypeNames = allTypes
                 .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
                 .Map(x => x.Name);
+
+            defaultNamespaces.Each(x => sb.AppendLine("import {0};".Fmt(x)));
 
             sb.AppendLine("declare module {0}".Fmt(globalNamespace.SafeToken()));
             sb.AppendLine("{");

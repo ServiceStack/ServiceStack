@@ -56,6 +56,8 @@ namespace ServiceStack
         public bool MakeDataContractsExtensible { get; set; }
         public bool InitializeCollections { get; set; }
         public List<string> DefaultNamespaces { get; set; }
+        public List<string> DefaultTypeScriptNamespaces { get; set; }
+        public List<string> DefaultSwiftNamespaces { get; set; }
 
         public string GlobalNamespace { get; set; }
 
