@@ -41,6 +41,8 @@ namespace ServiceStack.NativeTypes
                 MakePropertiesOptional = req.MakePropertiesOptional ?? defaults.MakePropertiesOptional,
                 AddDefaultXmlNamespace = req.AddDefaultXmlNamespace ?? defaults.AddDefaultXmlNamespace,
                 DefaultNamespaces = req.DefaultNamespaces ?? defaults.DefaultNamespaces,
+                DefaultTypeScriptNamespaces = req.DefaultNamespaces ?? defaults.DefaultTypeScriptNamespaces,
+                DefaultSwiftNamespaces = req.DefaultNamespaces ?? defaults.DefaultSwiftNamespaces,
                 ExportAttributes = defaults.ExportAttributes,
                 IgnoreTypes = defaults.IgnoreTypes,
                 IgnoreTypesInNamespaces = defaults.IgnoreTypesInNamespaces,
@@ -174,26 +176,32 @@ namespace ServiceStack.NativeTypes
                         registerTypeFn(type.DeclaringType);
                 }
 
+                if (type.HasInterface(typeof(IService)) && type.GetNestedTypes().IsEmpty())
+                    continue;
+
                 if (!type.IsUserType() && !type.IsInterface) 
                     continue;
 
-                foreach (var pi in type.GetSerializableProperties()
-                    .Where(pi => !ignoreTypeFn(pi.PropertyType)))
+                if (!type.HasInterface(typeof(IService)))
                 {
-                    registerTypeFn(pi.PropertyType);
-
-                    //Register Property Array Element Types 
-                    if (pi.PropertyType.IsArray && !ignoreTypeFn(pi.PropertyType.GetElementType()))
+                    foreach (var pi in type.GetSerializableProperties()
+                        .Where(pi => !ignoreTypeFn(pi.PropertyType)))
                     {
-                        registerTypeFn(pi.PropertyType.GetElementType());
-                    }
+                        registerTypeFn(pi.PropertyType);
 
-                    //Register Property Generic Arg Types 
-                    if (!pi.PropertyType.IsGenericType()) continue;
-                    var propArgs = pi.PropertyType.GetGenericArguments();
-                    foreach (var arg in propArgs.Where(arg => !ignoreTypeFn(arg)))
-                    {
-                        registerTypeFn(arg);
+                        //Register Property Array Element Types 
+                        if (pi.PropertyType.IsArray && !ignoreTypeFn(pi.PropertyType.GetElementType()))
+                        {
+                            registerTypeFn(pi.PropertyType.GetElementType());
+                        }
+
+                        //Register Property Generic Arg Types 
+                        if (!pi.PropertyType.IsGenericType()) continue;
+                        var propArgs = pi.PropertyType.GetGenericArguments();
+                        foreach (var arg in propArgs.Where(arg => !ignoreTypeFn(arg)))
+                        {
+                            registerTypeFn(arg);
+                        }
                     }
                 }
 
@@ -271,7 +279,8 @@ namespace ServiceStack.NativeTypes
                 IsInterface = type.IsInterface ? true : (bool?)null,
             };
 
-            if (type.BaseType != null && type.BaseType != typeof(object) && !type.IsEnum)
+            if (type.BaseType != null && type.BaseType != typeof(object) && !type.IsEnum
+                && !type.HasInterface(typeof(IService)))
             {
                 metaType.Inherits = ToTypeName(type.BaseType);
             }
