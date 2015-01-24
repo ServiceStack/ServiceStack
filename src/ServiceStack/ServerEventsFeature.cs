@@ -554,13 +554,13 @@ namespace ServiceStack
         public IEventSubscription GetSubscription(string id)
         {
             if (id == null) return null;
-            foreach (var subs in Subcriptions.Values)
+            IEventSubscription[] subs;
+            if (Subcriptions.TryGetValue(id, out subs) == false)
+                return null;
+            foreach (var sub in subs)
             {
-                foreach (var sub in subs)
-                {
-                    if (sub != null && sub.SubscriptionId == id)
-                        return sub;
-                }
+                if (sub != null)
+                    return sub;
             }
             return null;
         }
@@ -574,14 +574,14 @@ namespace ServiceStack
         {
             var userSubs = new List<SubscriptionInfo>();
             if (userId == null) return userSubs;
-            foreach (var subs in Subcriptions.Values)
+            IEventSubscription[] subs;
+            if (UserIdSubcriptions.TryGetValue(userId, out subs) == false)
+                return userSubs;
+            foreach (var sub in subs)
             {
-                foreach (var sub in subs)
-                {
-                    var info = sub.GetInfo();
-                    if (info != null && info.UserId == userId)
-                        userSubs.Add(info);
-                }
+                var info = sub.GetInfo();
+                if (info != null)
+                    userSubs.Add(info);
             }
             return userSubs;
         }
