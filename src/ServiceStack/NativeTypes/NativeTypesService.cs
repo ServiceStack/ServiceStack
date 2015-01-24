@@ -47,7 +47,8 @@ namespace ServiceStack.NativeTypes
         public int? AddImplicitVersion { get; set; }
         public bool? AddResponseStatus { get; set; }
         public bool? AddServiceStackTypes { get; set; }
-        public bool? AddModelExtensions { get; set; }        
+        public bool? AddModelExtensions { get; set; }
+        public bool? FlattenAbstractTypes { get; set; }        
         public bool? MakePropertiesOptional { get; set; }
         public string AddDefaultXmlNamespace { get; set; }
         public string GlobalNamespace { get; set; }
