@@ -30,8 +30,7 @@ namespace ServiceStack.NativeTypes.Swift
 
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
-            var namespaces = new HashSet<string>();
-            Config.DefaultNamespaces.Each(x => namespaces.Add(x));
+            var defaultNamespaces = Config.DefaultSwiftNamespaces;
 
             var typeNamespaces = new HashSet<string>();
             metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
@@ -54,6 +53,7 @@ namespace ServiceStack.NativeTypes.Swift
             sb.AppendLine("{0}AddModelExtensions: {1}".Fmt(defaultValue("AddModelExtensions"), Config.AddModelExtensions));
             sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
+            sb.AppendLine("{0}DefaultNamespaces: {1}".Fmt(defaultValue("DefaultNamespaces"), defaultNamespaces.ToArray().Join(", ")));
 
             sb.AppendLine("*/");
             sb.AppendLine();
@@ -85,8 +85,7 @@ namespace ServiceStack.NativeTypes.Swift
                 .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
                 .Map(x => x.Name);
 
-            sb.AppendLine("import Foundation");
-            sb.AppendLine("import JsonServiceClient");
+            defaultNamespaces.Each(x => sb.AppendLine("import {0}".Fmt(x)));
 
             //ServiceStack core interfaces
             foreach (var type in allTypes)
@@ -201,28 +200,66 @@ namespace ServiceStack.NativeTypes.Swift
             }
             else
             {
+                var defType = "class";
+                var typeName = Type(type.Name, type.GenericArgs);
                 var extends = new List<string>();
 
                 //: BaseClass, Interfaces
                 if (type.Inherits != null)
-                    extends.Add(Type(type.Inherits).InheritedType());
+                {
+                    var baseType = Type(type.Inherits).InheritedType();
+
+                    //Swift requires re-declaring base type generics definition on super type
+                    var genericDefPos = baseType.IndexOf("<");
+                    if (genericDefPos >= 0)
+                    {
+                        typeName += baseType.Substring(genericDefPos);
+                    }
+
+                    extends.Add(baseType);
+                }
+
+                var typeAliases = new List<string>();
 
                 if (options.ImplementsFn != null)
                 {
-                    var implStr = options.ImplementsFn();
-                    if (!string.IsNullOrEmpty(implStr))
-                        extends.Add(implStr);
+                    //Swift doesn't support Generic Interfaces like IReturn<T> 
+                    //Converting them into protocols with typealiases instead 
+                    ExtractTypeAliases(options, typeAliases, extends);
+                }
+
+                if (type.IsInterface())
+                {
+                    defType = "protocol";
+
+                    //Extract Protocol Arguments into different typealiases
+                    if (!type.GenericArgs.IsEmpty())
+                    {
+                        typeName = Type(type.Name, null);
+                        foreach (var arg in type.GenericArgs)
+                        {
+                            typeAliases.Add("typealias {0} = {0}".Fmt(arg));
+                        }
+                    }
                 }
 
                 var extend = extends.Count > 0
                     ? " : " + (string.Join(", ", extends.ToArray()))
                     : "";
 
-                var defType = type.IsInterface() ? "protocol" : "class";
-                sb.AppendLine("public {0} {1}{2}".Fmt(defType, Type(type.Name, type.GenericArgs), extend));
+                sb.AppendLine("public {0} {1}{2}".Fmt(defType, typeName, extend));
                 sb.AppendLine("{");
 
                 sb = sb.Indent();
+
+                if (typeAliases.Count > 0)
+                {
+                    foreach (var typeAlias in typeAliases)
+                    {
+                        sb.AppendLine(typeAlias);
+                    }
+                    sb.AppendLine();
+                }
 
                 if (!type.IsInterface())
                 {
@@ -241,9 +278,11 @@ namespace ServiceStack.NativeTypes.Swift
                 sb = sb.UnIndent();
                 sb.AppendLine("}");
 
-
-                AddTypeExtension(ref sbExt, type,
-                    initCollections: !type.IsInterface() && Config.InitializeCollections);
+                if (!type.IsInterface())
+                {
+                    AddTypeExtension(ref sbExt, type,
+                        initCollections: Config.InitializeCollections);
+                }
             }
 
             //sb = sb.UnIndent();
@@ -251,19 +290,47 @@ namespace ServiceStack.NativeTypes.Swift
             return lastNS;
         }
 
+        private static void ExtractTypeAliases(CreateTypeOptions options, List<string> typeAliases, List<string> extends)
+        {
+            var implStr = options.ImplementsFn();
+            if (!string.IsNullOrEmpty(implStr))
+            {
+                var interfaceParts = implStr.SplitOnFirst('<');
+                if (interfaceParts.Length > 1)
+                {
+                    implStr = interfaceParts[0];
+
+                    //Strip 'I' prefix for interfaces and use as typealias for protocol
+                    var alias = implStr.StartsWith("I")
+                        ? implStr.Substring(1)
+                        : implStr;
+
+                    var genericType = interfaceParts[1].Substring(0, interfaceParts[1].Length - 1);
+
+                    typeAliases.Add("typealias {0} = {1}".Fmt(alias, genericType));
+                }
+
+                extends.Add(implStr);
+            }
+        }
+
         private void AddTypeExtension(ref StringBuilderWrapper sbExt, MetadataType type, bool initCollections)
         {
+            var typeName = Type(type.Name, type.GenericArgs);
+
+            var typeNameOnly = typeName.SplitOnFirst('<')[0];
+
             sbExt.AppendLine();
-            sbExt.AppendLine("extension {0} : JsonSerializable".Fmt(Type(type.Name, type.GenericArgs)));
+            sbExt.AppendLine("extension {0} : JsonSerializable".Fmt(typeNameOnly));
             sbExt.AppendLine("{");
             sbExt = sbExt.Indent();
 
             //func typeConfig()
-            sbExt.AppendLine("public class func typeConfig() -> JsConfigType<{0}>".Fmt(Type(type.Name, type.GenericArgs)));
+            sbExt.AppendLine("public class func typeConfig() -> JsConfigType<{0}>".Fmt(typeName));
             sbExt.AppendLine("{");
             sbExt = sbExt.Indent();
             sbExt.AppendLine(
-                "return JsConfig.typeConfig() ?? JsConfig.configure(JsConfigType<{0}>(".Fmt(Type(type.Name, type.GenericArgs)));
+                "return JsConfig.typeConfig() ?? JsConfig.configure(JsConfigType<{0}>(".Fmt(typeName));
             sbExt = sbExt.Indent();
 
             sbExt.AppendLine("writers: [");
@@ -278,7 +345,7 @@ namespace ServiceStack.NativeTypes.Swift
                 var fn = isOptional ? "setOptionalValue" : "setValue";
 
                 sbExt.AppendLine("(\"{1}\", {{ (x:{0}, map:NSDictionary) in {2}(&x.{1}, map, \"{1}\") }}),".Fmt(
-                        Type(type.Name, type.GenericArgs), prop.Name.SafeToken().PropertyStyle(), fn));
+                        typeName, prop.Name.SafeToken().PropertyStyle(), fn));
             }
             sbExt = sbExt.UnIndent();
             sbExt.AppendLine("],");
@@ -288,13 +355,14 @@ namespace ServiceStack.NativeTypes.Swift
             foreach (var prop in type.Properties.Safe())
             {
                 sbExt.AppendLine("(\"{1}\", {{ (x:{0}) in x.{1} as Any }}),".Fmt(
-                    Type(type.Name, type.GenericArgs),
+                    typeName,
                     prop.Name.SafeToken().PropertyStyle()));
             }
             sbExt = sbExt.UnIndent();
             sbExt.AppendLine("]");
 
             sbExt = sbExt.UnIndent();
+
             sbExt.AppendLine("))");
 
             sbExt = sbExt.UnIndent();
@@ -305,25 +373,25 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt.AppendLine("public func toJson() -> String");
             sbExt.AppendLine("{");
             sbExt = sbExt.Indent();
-            sbExt.AppendLine("return serializeToJson(self, {0}.typeConfig())".Fmt(Type(type.Name, type.GenericArgs)));
+            sbExt.AppendLine("return serializeToJson(self, {0}.typeConfig())".Fmt(typeName));
             sbExt = sbExt.UnIndent();
             sbExt.AppendLine("}");
 
             //fromDictionary()
             sbExt.AppendLine();
-            sbExt.AppendLine("public func fromDictionary(map:NSDictionary) -> {0}".Fmt(Type(type.Name, type.GenericArgs)));
+            sbExt.AppendLine("public class func fromDictionary(map:NSDictionary) -> {0}".Fmt(typeName));
             sbExt.AppendLine("{");
             sbExt = sbExt.Indent();
-            sbExt.AppendLine("return populate({0}(), map, {0}.typeConfig())".Fmt(Type(type.Name, type.GenericArgs)));
+            sbExt.AppendLine("return populate({0}(), map, {0}.typeConfig())".Fmt(typeName));
             sbExt = sbExt.UnIndent();
             sbExt.AppendLine("}");
 
             //fromJson()
             sbExt.AppendLine();
-            sbExt.AppendLine("public func fromJson(json:String) -> {0}".Fmt(Type(type.Name, type.GenericArgs)));
+            sbExt.AppendLine("public class func fromJson(json:String) -> {0}".Fmt(typeName));
             sbExt.AppendLine("{");
             sbExt = sbExt.Indent();
-            sbExt.AppendLine("return populate({0}(), json, {0}.typeConfig())".Fmt(Type(type.Name, type.GenericArgs)));
+            sbExt.AppendLine("return populate({0}(), json, {0}.typeConfig())".Fmt(typeName));
             sbExt = sbExt.UnIndent();
             sbExt.AppendLine("}");
 
@@ -346,7 +414,7 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt.AppendLine("switch self {");
             foreach (var name in type.EnumNames)
             {
-                sbExt.AppendLine("case .{0}: return \"{0}\"".Fmt(name));
+                sbExt.AppendLine("case .{0}: return \"{0}\"".Fmt(name.PropertyStyle()));
             }
             sbExt.AppendLine("}");
             sbExt = sbExt.UnIndent();
@@ -360,7 +428,7 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt.AppendLine("switch strValue {");
             foreach (var name in type.EnumNames)
             {
-                sbExt.AppendLine("case \"{0}\": return .{0}".Fmt(name));
+                sbExt.AppendLine("case \"{0}\": return .{0}".Fmt(name.PropertyStyle()));
             }
             sbExt.AppendLine("default: return nil");
 
@@ -422,8 +490,17 @@ namespace ServiceStack.NativeTypes.Swift
 
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
-                    sb.AppendLine("public var {0}:{1}{2}{3}".Fmt(
-                        prop.Name.SafeToken().PropertyStyle(), propType, optional, defaultValue));
+
+                    if (type.IsInterface())
+                    {
+                        sb.AppendLine("var {0}:{1}{2} {{ get set }}".Fmt(
+                            prop.Name.SafeToken().PropertyStyle(), propType, optional));
+                    }
+                    else
+                    {
+                        sb.AppendLine("public var {0}:{1}{2}{3}".Fmt(
+                            prop.Name.SafeToken().PropertyStyle(), propType, optional, defaultValue));
+                    }
                 }
             }
 
