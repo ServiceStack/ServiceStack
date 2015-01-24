@@ -6,6 +6,16 @@ namespace Check.ServiceInterface
 {
     public class NativeTypesTestService : Service
     {
+        public class HelloInService : IReturn<HelloResponse>
+        {
+            public string Name { get; set; }
+        }
+
+        public object Any(HelloInService request)
+        {
+            return new HelloResponse { Result = request.Name };
+        }
+
         public object Any(Hello request)
         {
             return new HelloResponse { Result = request.Name };

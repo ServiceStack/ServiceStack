@@ -21,6 +21,7 @@ namespace Check.ServiceModel.Operations
         public string Result { get; set; }
     }
 
+
     public class HelloWithNestedClass : IReturn<HelloResponse>
     {
         public string Name { get; set; }
@@ -170,7 +171,7 @@ namespace Check.ServiceModel.Operations
         public string Name { get; set; }
     }
 
-    public class HelloVoid
+    public class HelloVoid : IReturnVoid
     {
         public string Name { get; set; }
     }
@@ -361,11 +362,13 @@ namespace Check.ServiceModel.Types
         public AuthUserSession Result { get; set; }
     }
 
-    public class HelloInterface
+    public class HelloInterface : IGenericInterface<string>
     {
         public IPoco Poco { get; set; }
         public IEmptyInterface EmptyInterface { get; set; }
         public EmptyClass EmptyClass { get; set; }
+        public string Value { get; set; }
+        //public IGenericInterface<string> GenericInterface { get; set; }
     }
 
     public interface IPoco
@@ -375,6 +378,11 @@ namespace Check.ServiceModel.Types
 
     public interface IEmptyInterface {}
     public class EmptyClass {}
+
+    public interface IGenericInterface<T>
+    {
+        T Value { get; }
+    }
 
     /// <summary>
     /// Duplicate Types
