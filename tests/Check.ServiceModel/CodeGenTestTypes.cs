@@ -320,6 +320,9 @@ namespace Check.ServiceModel.Types
 
         public Poco[] PocoArray { get; set; }
         public List<Poco> PocoList { get; set; }
+
+        public Dictionary<string, List<Poco>> PocoLookup { get; set; }
+        public Dictionary<string, List<Dictionary<string,Poco>>> PocoLookupMap { get; set; } 
     }
 
     public class Poco
