@@ -111,6 +111,34 @@ namespace ServiceStack
             return type.IsGenericParameter ? "'" + typeName : typeName;
         }
 
+        public static string ExpandTypeName(this Type type)
+        {
+            var typeName = type.IsGenericType
+                ?  ExpandGenericTypeName(type) 
+                : type.Name;
+
+            typeName = typeName.Replace('+', '.');
+
+            return type.IsGenericParameter ? "'" + typeName : typeName;
+        }
+
+        public static string ExpandGenericTypeName(Type type)
+        {
+            var nameOnly = type.Name.SplitOnFirst('`')[0];
+
+            var sb = new StringBuilder();
+            foreach (var arg in type.GetGenericArguments())
+            {
+                if (sb.Length > 0)
+                    sb.Append(",");
+
+                sb.Append(arg.ExpandTypeName());
+            }
+
+            var fullName = "{0}<{1}>".Fmt(nameOnly, sb);
+            return fullName;
+        }
+
         public static string ToUrl(this object requestDto, string httpMethod = "GET", string formatFallbackToPredefinedRoute = null)
         {
             httpMethod = httpMethod.ToUpper();
