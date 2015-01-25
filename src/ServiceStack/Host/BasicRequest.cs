@@ -73,7 +73,7 @@ namespace ServiceStack.Host
             return headerValue;
         }
 
-        public Dictionary<string, object> Items { get; private set; }
+        public Dictionary<string, object> Items { get; set; }
 
         public string UserAgent { get; private set; }
 
@@ -141,6 +141,19 @@ namespace ServiceStack.Host
         public long ContentLength
         {
             get { return (GetRawBody() ?? "").Length; }
+        }
+
+        public BasicRequest PopulateWith(IRequest request)
+        {
+            this.Headers = request.Headers;
+            this.Cookies = request.Cookies;
+            this.Items = request.Items;
+            this.UserAgent = request.UserAgent;
+            this.RemoteIp = request.RemoteIp;
+            this.UserHostAddress = request.UserHostAddress;
+            this.IsSecureConnection = request.IsSecureConnection;
+            this.AcceptTypes = request.AcceptTypes;
+            return this;
         }
     }
 }

@@ -135,7 +135,7 @@ namespace ServiceStack.Html
                 PathInfo = route,
                 ContentType = MimeTypes.Html,
                 ResponseContentType = MimeTypes.Html,
-            };
+            }.PopulateWith(HttpRequest);
     
             req.SetTemplate(EmptyTemplate);
 
