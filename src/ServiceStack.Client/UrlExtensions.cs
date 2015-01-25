@@ -113,7 +113,7 @@ namespace ServiceStack
 
         public static string ExpandTypeName(this Type type)
         {
-            var typeName = type.IsGenericType
+            var typeName = type.IsGenericType()
                 ?  ExpandGenericTypeName(type) 
                 : type.Name;
 
