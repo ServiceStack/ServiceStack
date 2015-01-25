@@ -31,8 +31,8 @@ namespace ServiceStack.NativeTypes.FSharp
             var namespaces = Config.GetDefaultNamespaces(metadata);
 
             var typeNamespaces = new HashSet<string>();
-            metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
-            metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
+            metadata.Types.Where(x => !x.IgnoreType(Config)).Each(x => typeNamespaces.Add(x.Namespace));
+            metadata.Operations.Where(x => !x.Request.IgnoreType(Config)).Each(x => typeNamespaces.Add(x.Request.Namespace));
 
             // Look first for shortest Namespace ending with `ServiceModel` convention, else shortest ns
             var globalNamespace = Config.GlobalNamespace
@@ -57,6 +57,8 @@ namespace ServiceStack.NativeTypes.FSharp
             sb.AppendLine("{0}AddIndexesToDataMembers: {1}".Fmt(defaultValue("AddIndexesToDataMembers"), Config.AddIndexesToDataMembers));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
+            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
             //sb.AppendLine("{0}AddDefaultXmlNamespace: {1}".Fmt(defaultValue("AddDefaultXmlNamespace"), Config.AddDefaultXmlNamespace));
             //sb.AppendLine("{0}DefaultNamespaces: {1}".Fmt(defaultValue("DefaultNamespaces"), Config.DefaultNamespaces.ToArray().Join(", ")));
@@ -174,7 +176,7 @@ namespace ServiceStack.NativeTypes.FSharp
         private string AppendType(ref StringBuilderWrapper sb, MetadataType type, string lastNS,
             CreateTypeOptions options)
         {
-            if (type.IgnoreSystemType())
+            if (type.IgnoreType(Config))
                 return lastNS;
 
             sb = sb.Indent();

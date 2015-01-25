@@ -82,7 +82,9 @@
     </Content>
     <Content Include="Global.asax" />
     <Content Include="Test.dtos.d.ts" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HttpBenchmarks.cs">

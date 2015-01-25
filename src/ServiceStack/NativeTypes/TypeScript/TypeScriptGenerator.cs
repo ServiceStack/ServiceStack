@@ -29,11 +29,11 @@ namespace ServiceStack.NativeTypes.TypeScript
 
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
-            var defaultNamespaces = Config.DefaultSwiftNamespaces;
+            var defaultNamespaces = Config.DefaultSwiftNamespaces.Safe();
 
             var typeNamespaces = new HashSet<string>();
-            metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
-            metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
+            metadata.Types.Where(x => !x.IgnoreType(Config)).Each(x => typeNamespaces.Add(x.Namespace));
+            metadata.Operations.Where(x => !x.Request.IgnoreType(Config)).Each(x => typeNamespaces.Add(x.Request.Namespace));
 
             // Look first for shortest Namespace ending with `ServiceModel` convention, else shortest ns
             var globalNamespace = Config.GlobalNamespace
@@ -55,7 +55,9 @@ namespace ServiceStack.NativeTypes.TypeScript
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
-            sb.AppendLine("{0}DefaultNamespaces: {1}".Fmt(defaultValue("DefaultNamespaces"), defaultNamespaces.ToArray().Join(", ")));
+            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}DefaultNamespaces: {1}".Fmt(defaultValue("DefaultNamespaces"), defaultNamespaces.ToArray().Join(",")));
 
             sb.AppendLine("*/");
             sb.AppendLine();
@@ -75,6 +77,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             allTypes.AddRange(types);
             allTypes.AddRange(responseTypes);
             allTypes.AddRange(requestTypes);
+            allTypes.RemoveAll(x => x.IgnoreType(Config));
 
             //TypeScript doesn't support reusing same type name with different generic airity
             var conflictPartialNames = allTypes.Map(x => x.Name).Distinct()
@@ -163,7 +166,7 @@ namespace ServiceStack.NativeTypes.TypeScript
         private string AppendType(ref StringBuilderWrapper sb, MetadataType type, string lastNS,
             CreateTypeOptions options)
         {
-            if (type.IgnoreSystemType())
+            if (type.IgnoreType(Config))
                 return lastNS;
 
             sb = sb.Indent();
@@ -374,11 +377,13 @@ namespace ServiceStack.NativeTypes.TypeScript
             if (genericArgs != null)
             {
                 if (type == "Nullable`1")
-                    return "{0}?".Fmt(TypeAlias(genericArgs[0].GenericArg()));
+                    return "{0}?".Fmt(GenericArg(genericArgs[0]));
                 if (ArrayTypes.Contains(type))
-                    return "{0}[]".Fmt(TypeAlias(genericArgs[0].GenericArg()));
+                    return "{0}[]".Fmt(GenericArg(genericArgs[0]));
                 if (DictionaryTypes.Contains(type))
-                    return "{{ [index:{0}]: {1}; }}".Fmt(TypeAlias(genericArgs[0].GenericArg()), TypeAlias(genericArgs[1].TrimStart('\'')));
+                    return "{{ [index:{0}]: {1}; }}".Fmt(
+                        GenericArg(genericArgs[0]),
+                        GenericArg(genericArgs[1]));
 
                 var parts = type.Split('`');
                 if (parts.Length > 1)
@@ -389,7 +394,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                         if (args.Length > 0)
                             args.Append(", ");
 
-                        args.Append(TypeAlias(arg.GenericArg()));
+                        args.Append(GenericArg(arg));
                     }
 
                     var typeName = TypeAlias(type);
@@ -512,15 +517,54 @@ namespace ServiceStack.NativeTypes.TypeScript
 
             return true;
         }
+
+        public string GenericArg(string arg)
+        {
+            return ConvertFromCSharp(arg.TrimStart('\'').ParseTypeIntoNodes());
+        }
+
+        public string ConvertFromCSharp(TextNode node)
+        {
+            var sb = new StringBuilder();
+
+            if (node.Text == "List")
+            {
+                sb.Append(ConvertFromCSharp(node.Children[0]));
+                sb.Append("[]");
+            }
+            else if (node.Text == "Dictionary")
+            {
+                sb.Append("{ [index:");
+                sb.Append(ConvertFromCSharp(node.Children[0]));
+                sb.Append("]: ");
+                sb.Append(ConvertFromCSharp(node.Children[1]));
+                sb.Append("; }");
+            }
+            else
+            {
+                sb.Append(TypeAlias(node.Text));
+                if (node.Children.Count > 0)
+                {
+                    sb.Append("<");
+                    for (var i = 0; i < node.Children.Count; i++)
+                    {
+                        var childNode = node.Children[i];
+
+                        if (i == 0)
+                            sb.Append(",");
+
+                        sb.Append(ConvertFromCSharp(childNode));
+                    }
+                    sb.Append(">");
+                }
+            }
+
+            return sb.ToString();
+        }
     }
 
     public static class TypeScriptGeneratorExtensions
     {
-        public static string GenericArg(this string arg)
-        {
-            return arg.TrimStart('\'');
-        }
-
         //TypeScript doesn't support short-hand T[] notation in extension list
         public static string InheritedType(this string type)
         {

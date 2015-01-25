@@ -33,8 +33,8 @@ namespace ServiceStack.NativeTypes.VbNet
 
             if (Config.GlobalNamespace == null)
             {
-                metadata.Types.Each(x => namespaces.Add(x.Namespace));
-                metadata.Operations.Each(x => namespaces.Add(x.Request.Namespace));
+                metadata.Types.Where(x => !x.IgnoreType(Config)).Each(x => namespaces.Add(x.Namespace));
+                metadata.Operations.Where(x => !x.Request.IgnoreType(Config)).Each(x => namespaces.Add(x.Request.Namespace));
             }
             else
             {
@@ -61,6 +61,8 @@ namespace ServiceStack.NativeTypes.VbNet
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
             sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
+            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(", ")));
+            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(", ")));
             sb.AppendLine("{0}AddDefaultXmlNamespace: {1}".Fmt(defaultValue("AddDefaultXmlNamespace"), Config.AddDefaultXmlNamespace));
             //sb.AppendLine("{0}DefaultNamespaces: {1}".Fmt(defaultValue("DefaultNamespaces"), Config.DefaultNamespaces.ToArray().Join(", ")));
             sb.AppendLine();
@@ -98,6 +100,8 @@ namespace ServiceStack.NativeTypes.VbNet
             allTypes.AddRange(requestTypes);
             allTypes.AddRange(responseTypes);
             allTypes.AddRange(types);
+            allTypes.RemoveAll(x => x.IgnoreType(Config));
+
             var orderedTypes = allTypes
                 .OrderBy(x => x.Namespace)
                 .ThenBy(x => x.Name);
@@ -173,7 +177,7 @@ namespace ServiceStack.NativeTypes.VbNet
 
         private string AppendType(ref StringBuilderWrapper sb, MetadataType type, string lastNS, List<MetadataType> allTypes, CreateTypeOptions options)
         {
-            if (type.IgnoreSystemType()
+            if (type.IgnoreType(Config)
                 || (type.IsNested.GetValueOrDefault() && !options.IsNestedType))
                 return lastNS;
 
@@ -466,6 +470,11 @@ namespace ServiceStack.NativeTypes.VbNet
 
         private string TypeAlias(string type, bool includeNested = false)
         {
+            if (type.Contains("<"))
+            {
+                type = type.Replace("<", "(Of ").Replace(">", ")");
+            }
+
             var arrParts = type.SplitOnFirst('[');
             if (arrParts.Length > 1)
                 return "{0}()".Fmt(TypeAlias(arrParts[0], includeNested: includeNested));

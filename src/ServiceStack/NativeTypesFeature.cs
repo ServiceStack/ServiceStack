@@ -56,6 +56,7 @@ namespace ServiceStack
                     { "Single", "number" },    
                     { "Double", "number" },    
                     { "Decimal", "number" },    
+                    { "List", "Array" },    
                 },
                 SwiftTypeAlias = new Dictionary<string, string>
                 {
