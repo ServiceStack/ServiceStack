@@ -32,11 +32,11 @@ namespace ServiceStack.NativeTypes.Swift
 
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
-            var defaultNamespaces = Config.DefaultSwiftNamespaces;
+            var defaultNamespaces = Config.DefaultSwiftNamespaces.Safe();
 
             var typeNamespaces = new HashSet<string>();
-            metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
-            metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
+            metadata.Types.Where(x => !x.IgnoreType(Config)).Each(x => typeNamespaces.Add(x.Namespace));
+            metadata.Operations.Where(x => !x.Request.IgnoreType(Config)).Each(x => typeNamespaces.Add(x.Request.Namespace));
 
             Func<string, string> defaultValue = k =>
                 request.QueryString[k].IsNullOrEmpty() ? "//" : "";
@@ -56,7 +56,9 @@ namespace ServiceStack.NativeTypes.Swift
             sb.AppendLine("{0}FlattenAbstractTypes: {1}".Fmt(defaultValue("FlattenAbstractTypes"), Config.FlattenAbstractTypes));
             sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
-            sb.AppendLine("{0}DefaultNamespaces: {1}".Fmt(defaultValue("DefaultNamespaces"), defaultNamespaces.ToArray().Join(", ")));
+            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}DefaultNamespaces: {1}".Fmt(defaultValue("DefaultNamespaces"), defaultNamespaces.ToArray().Join(",")));
 
             sb.AppendLine("*/");
             sb.AppendLine();
@@ -75,6 +77,7 @@ namespace ServiceStack.NativeTypes.Swift
             AllTypes.AddRange(types);
             AllTypes.AddRange(responseTypes);
             AllTypes.AddRange(requestTypes);
+            AllTypes.RemoveAll(x => x.IgnoreType(Config));
 
             //Swift doesn't support reusing same type name with different generic airity
             var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
@@ -163,7 +166,7 @@ namespace ServiceStack.NativeTypes.Swift
         private string AppendType(ref StringBuilderWrapper sb, ref StringBuilderWrapper sbExt, MetadataType type, string lastNS,
             CreateTypeOptions options)
         {
-            if (type.IgnoreSystemType())
+            if (type.IgnoreType(Config))
                 return lastNS;
 
             //sb = sb.Indent();
@@ -190,8 +193,8 @@ namespace ServiceStack.NativeTypes.Swift
                         var name = type.EnumNames[i];
                         var value = type.EnumValues != null ? type.EnumValues[i] : null;
                         sb.AppendLine(value == null
-                            ? "case {0}".Fmt(name.PropertyStyle())
-                            : "case {0} = {1}".Fmt(name.PropertyStyle(), value));
+                            ? "case {0}".Fmt(name)
+                            : "case {0} = {1}".Fmt(name, value));
                     }
                 }
 
@@ -431,7 +434,7 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt.AppendLine("switch self {");
             foreach (var name in type.EnumNames)
             {
-                sbExt.AppendLine("case .{0}: return \"{0}\"".Fmt(name.PropertyStyle()));
+                sbExt.AppendLine("case .{0}: return \"{0}\"".Fmt(name));
             }
             sbExt.AppendLine("}");
             sbExt = sbExt.UnIndent();
@@ -445,7 +448,7 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt.AppendLine("switch strValue {");
             foreach (var name in type.EnumNames)
             {
-                sbExt.AppendLine("case \"{0}\": return .{0}".Fmt(name.PropertyStyle()));
+                sbExt.AppendLine("case \"{0}\": return .{0}".Fmt(name));
             }
             sbExt.AppendLine("default: return nil");
 
@@ -660,7 +663,9 @@ namespace ServiceStack.NativeTypes.Swift
                 if (ArrayTypes.Contains(type))
                     return "[{0}]".Fmt(TypeAlias(genericArgs[0].GenericArg()));
                 if (DictionaryTypes.Contains(type))
-                    return "[{0}:{1}]".Fmt(TypeAlias(genericArgs[0].GenericArg()), TypeAlias(genericArgs[1].TrimStart('\'')));
+                    return "[{0}:{1}]".Fmt(
+                        TypeAlias(genericArgs[0].GenericArg()),
+                        TypeAlias(genericArgs[1].GenericArg()));
 
                 var parts = type.Split('`');
                 if (parts.Length > 1)
@@ -800,7 +805,47 @@ namespace ServiceStack.NativeTypes.Swift
     {
         public static string GenericArg(this string arg)
         {
-            return arg.TrimStart('\'');
+            return ConvertFromCSharp(arg.TrimStart('\'').ParseTypeIntoNodes());
+        }
+
+        public static string ConvertFromCSharp(TextNode node)
+        {
+            var sb = new StringBuilder();
+
+            if (node.Text == "List")
+            {
+                sb.Append("[");
+                sb.Append(ConvertFromCSharp(node.Children[0]));
+                sb.Append("]");
+            }
+            else if (node.Text == "Dictionary")
+            {
+                sb.Append("[");
+                sb.Append(ConvertFromCSharp(node.Children[0]));
+                sb.Append(":");
+                sb.Append(ConvertFromCSharp(node.Children[1]));
+                sb.Append("]");
+            }
+            else
+            {
+                sb.Append(node.Text);
+                if (node.Children.Count > 0)
+                {
+                    sb.Append("<");
+                    for (var i = 0; i < node.Children.Count; i++)
+                    {
+                        var childNode = node.Children[i];
+
+                        if (i == 0)
+                            sb.Append(",");
+
+                        sb.Append(ConvertFromCSharp(childNode));
+                    }
+                    sb.Append(">");
+                }
+            }
+
+            return sb.ToString();
         }
 
         public static string InheritedType(this string type)
