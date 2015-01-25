@@ -766,6 +766,18 @@ namespace ServiceStack.NativeTypes
             return to;
         }
 
+        public static void RemoveIgnoredTypes(this MetadataTypes metadata, MetadataTypesConfig config)
+        {
+            metadata.Types.RemoveAll(x => x.IgnoreType(config));
+            metadata.Operations.RemoveAll(x => x.Request.IgnoreType(config));
+            metadata.Operations.Each(x => {
+                if (x.Response != null && x.Response.IgnoreType(config))
+                {
+                    x.Response = null;
+                }
+            });
+        }
+
         public static bool IgnoreType(this MetadataType type, MetadataTypesConfig config)
         {
             if (type.IgnoreSystemType())

@@ -31,10 +31,12 @@ namespace ServiceStack.NativeTypes.VbNet
         {
             var namespaces = Config.GetDefaultNamespaces(metadata);
 
+            metadata.RemoveIgnoredTypes(Config);
+
             if (Config.GlobalNamespace == null)
             {
-                metadata.Types.Where(x => !x.IgnoreType(Config)).Each(x => namespaces.Add(x.Namespace));
-                metadata.Operations.Where(x => !x.Request.IgnoreType(Config)).Each(x => namespaces.Add(x.Request.Namespace));
+                metadata.Types.Each(x => namespaces.Add(x.Namespace));
+                metadata.Operations.Each(x => namespaces.Add(x.Request.Namespace));
             }
             else
             {
@@ -177,8 +179,7 @@ namespace ServiceStack.NativeTypes.VbNet
 
         private string AppendType(ref StringBuilderWrapper sb, MetadataType type, string lastNS, List<MetadataType> allTypes, CreateTypeOptions options)
         {
-            if (type.IgnoreType(Config)
-                || (type.IsNested.GetValueOrDefault() && !options.IsNestedType))
+            if (type.IsNested.GetValueOrDefault() && !options.IsNestedType)
                 return lastNS;
 
             var ns = Config.GlobalNamespace ?? type.Namespace;
