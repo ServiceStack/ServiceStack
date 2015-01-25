@@ -53,6 +53,8 @@ namespace ServiceStack.NativeTypes
         public string AddDefaultXmlNamespace { get; set; }
         public string GlobalNamespace { get; set; }
         public List<string> DefaultNamespaces { get; set; }
+        public List<string> IncludeTypes { get; set; }
+        public List<string> ExcludeTypes { get; set; }
     }
 
     public interface INativeTypesMetadata
@@ -127,6 +129,8 @@ namespace ServiceStack.NativeTypes
                 typesConfig.IgnoreTypesInNamespaces = new List<string>();
 
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
+
+            metadataTypes.Types.RemoveAll(x => x.Name == "Service");
 
             if (typesConfig.AddServiceStackTypes)
             {
