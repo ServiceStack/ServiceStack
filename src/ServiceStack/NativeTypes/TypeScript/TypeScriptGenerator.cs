@@ -32,8 +32,9 @@ namespace ServiceStack.NativeTypes.TypeScript
             var defaultNamespaces = Config.DefaultSwiftNamespaces.Safe();
 
             var typeNamespaces = new HashSet<string>();
-            metadata.Types.Where(x => !x.IgnoreType(Config)).Each(x => typeNamespaces.Add(x.Namespace));
-            metadata.Operations.Where(x => !x.Request.IgnoreType(Config)).Each(x => typeNamespaces.Add(x.Request.Namespace));
+            metadata.RemoveIgnoredTypes(Config);
+            metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
+            metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
 
             // Look first for shortest Namespace ending with `ServiceModel` convention, else shortest ns
             var globalNamespace = Config.GlobalNamespace
@@ -166,9 +167,6 @@ namespace ServiceStack.NativeTypes.TypeScript
         private string AppendType(ref StringBuilderWrapper sb, MetadataType type, string lastNS,
             CreateTypeOptions options)
         {
-            if (type.IgnoreType(Config))
-                return lastNS;
-
             sb = sb.Indent();
 
             sb.AppendLine();
@@ -550,7 +548,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                     {
                         var childNode = node.Children[i];
 
-                        if (i == 0)
+                        if (i > 0)
                             sb.Append(",");
 
                         sb.Append(ConvertFromCSharp(childNode));

@@ -35,8 +35,9 @@ namespace ServiceStack.NativeTypes.Swift
             var defaultNamespaces = Config.DefaultSwiftNamespaces.Safe();
 
             var typeNamespaces = new HashSet<string>();
-            metadata.Types.Where(x => !x.IgnoreType(Config)).Each(x => typeNamespaces.Add(x.Namespace));
-            metadata.Operations.Where(x => !x.Request.IgnoreType(Config)).Each(x => typeNamespaces.Add(x.Request.Namespace));
+            metadata.RemoveIgnoredTypes(Config);
+            metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
+            metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
 
             Func<string, string> defaultValue = k =>
                 request.QueryString[k].IsNullOrEmpty() ? "//" : "";
@@ -77,7 +78,6 @@ namespace ServiceStack.NativeTypes.Swift
             AllTypes.AddRange(types);
             AllTypes.AddRange(responseTypes);
             AllTypes.AddRange(requestTypes);
-            AllTypes.RemoveAll(x => x.IgnoreType(Config));
 
             //Swift doesn't support reusing same type name with different generic airity
             var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
@@ -166,9 +166,6 @@ namespace ServiceStack.NativeTypes.Swift
         private string AppendType(ref StringBuilderWrapper sb, ref StringBuilderWrapper sbExt, MetadataType type, string lastNS,
             CreateTypeOptions options)
         {
-            if (type.IgnoreType(Config))
-                return lastNS;
-
             //sb = sb.Indent();
 
             sb.AppendLine();
@@ -676,7 +673,7 @@ namespace ServiceStack.NativeTypes.Swift
                         if (args.Length > 0)
                             args.Append(", ");
 
-                        args.Append(TypeAlias(arg.GenericArg()));
+                        args.Append(arg.GenericArg());
                     }
 
                     var typeName = TypeAlias(type);
@@ -836,7 +833,7 @@ namespace ServiceStack.NativeTypes.Swift
                     {
                         var childNode = node.Children[i];
 
-                        if (i == 0)
+                        if (i > 0)
                             sb.Append(",");
 
                         sb.Append(ConvertFromCSharp(childNode));
