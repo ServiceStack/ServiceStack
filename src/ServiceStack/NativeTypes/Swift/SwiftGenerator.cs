@@ -371,7 +371,7 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt = sbExt.Indent();
             foreach (var prop in typeProperties)
             {
-                sbExt.AppendLine("(\"{1}\", {{ (x:{0}) in x.{1} as Any }}),".Fmt(
+                sbExt.AppendLine("(\"{1}\", Type<{0}>.value {{ $0.{1} }}),".Fmt(
                     typeName,
                     prop.Name.SafeToken().PropertyStyle()));
             }
@@ -842,7 +842,8 @@ namespace ServiceStack.NativeTypes.Swift
                 }
             }
 
-            return sb.ToString();
+            var typeName = sb.ToString();
+            return typeName.SplitOnLast('.').Last(); //remove nested class
         }
 
         public static string InheritedType(this string type)
