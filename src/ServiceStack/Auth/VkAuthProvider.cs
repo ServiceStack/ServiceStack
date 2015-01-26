@@ -44,29 +44,26 @@ namespace ServiceStack.Auth
             IAuthTokens tokens = Init(authService, ref session, request);
             IRequest httpRequest = authService.Request;
 
-            string error = httpRequest.QueryString["error"]
-                           ?? httpRequest.QueryString["error_reason"]
-                           ?? httpRequest.QueryString["error_description"];
+            string error = httpRequest.QueryString["error_reason"]
+                           ?? httpRequest.QueryString["error_description"]
+                           ?? httpRequest.QueryString["error"];
 
             bool hasError = !error.IsNullOrEmpty();
             if (hasError)
             {
                 Log.Error("VK error callback. {0}".Fmt(httpRequest.QueryString));
-                return authService.Redirect(session.ReferrerUrl.AddParam("f",
-                  (httpRequest.QueryString["error_reason"]
-                    ?? httpRequest.QueryString["error_description"]
-                    ?? "Unknown").UrlEncode()));
+                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.AddParam("f", error)));
             }
 
             string code = httpRequest.QueryString["code"];
             bool isPreAuthCallback = !code.IsNullOrEmpty();
             if (!isPreAuthCallback)
             {
-                string url = PreAuthUrl + "?client_id={0}&scope={1}&redirect_uri={2}&response_type=code&v={3}"
+                string preAuthUrl = PreAuthUrl + "?client_id={0}&scope={1}&redirect_uri={2}&response_type=code&v={3}"
                   .Fmt(ApplicationId, Scope, CallbackUrl.UrlEncode(), ApiVersion);
 
                 authService.SaveSession(session, SessionExpiry);
-                return authService.Redirect(url);
+                return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
             }
 
             try
@@ -76,7 +73,7 @@ namespace ServiceStack.Auth
                 string accessTokeUrl = AccessTokenUrl + "?client_id={0}&client_secret={1}&code={2}&redirect_uri={3}"
                   .Fmt(ApplicationId, SecureKey, code, CallbackUrl.UrlEncode());
 
-                string contents = accessTokeUrl.GetStringFromUrl("*/*", RequestFilter);
+                string contents = AccessTokenUrlFilter(this, accessTokeUrl).GetStringFromUrl("*/*", RequestFilter);
 
                 var authInfo = JsonObject.Parse(contents);
 
@@ -94,7 +91,7 @@ namespace ServiceStack.Auth
                 session.IsAuthenticated = true;
 
                 return OnAuthenticated(authService, session, tokens, authInfo.ToDictionary())
-                    ?? authService.Redirect(session.ReferrerUrl.AddParam("s", "1"));
+                    ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.AddParam("s", "1")));
             }
             catch (WebException webException)
             {
@@ -102,10 +99,10 @@ namespace ServiceStack.Auth
                 HttpStatusCode statusCode = ((HttpWebResponse)webException.Response).StatusCode;
                 if (statusCode == HttpStatusCode.BadRequest)
                 {
-                    return authService.Redirect(session.ReferrerUrl.AddParam("f", "AccessTokenFailed"));
+                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.AddParam("f", "AccessTokenFailed")));
                 }
             }
-            return authService.Redirect(session.ReferrerUrl.AddParam("f", "Unknown"));
+            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.AddParam("f", "Unknown")));
         }
 
         /// <summary>

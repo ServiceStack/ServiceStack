@@ -49,18 +49,18 @@ namespace ServiceStack.Auth
             if (hasError)
             {
                 Log.Error("GitHub error callback. {0}".Fmt(httpRequest.QueryString));
-                throw HttpError.Unauthorized(error);
+                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.AddParam("f", error)));
             }
 
             var code = httpRequest.QueryString["code"];
             var isPreAuthCallback = !code.IsNullOrEmpty();
             if (!isPreAuthCallback)
             {
-                string url = PreAuthUrl + "?client_id={0}&redirect_uri={1}&scope={2}&state={3}"
+                string preAuthUrl = PreAuthUrl + "?client_id={0}&redirect_uri={1}&scope={2}&state={3}"
                   .Fmt(ClientId, CallbackUrl.UrlEncode(), Scopes.Join(","), Guid.NewGuid().ToString("N"));
 
                 authService.SaveSession(session, SessionExpiry);
-                return authService.Redirect(url);
+                return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
             }
 
             string accessTokenUrl = AccessTokenUrl + "?client_id={0}&redirect_uri={1}&client_secret={2}&code={3}"
@@ -68,7 +68,7 @@ namespace ServiceStack.Auth
 
             try
             {
-                var contents = accessTokenUrl.GetStringFromUrl();
+                var contents = AccessTokenUrlFilter(this, accessTokenUrl).GetStringFromUrl();
                 var authInfo = HttpUtility.ParseQueryString(contents);
 
                 //GitHub does not throw exception, but just return error with descriptions
@@ -80,14 +80,14 @@ namespace ServiceStack.Auth
                 if (!accessTokenError.IsNullOrEmpty())
                 {
                     Log.Error("GitHub access_token error callback. {0}".Fmt(authInfo.ToString()));
-                    return authService.Redirect(session.ReferrerUrl.AddParam("f", "AccessTokenFailed"));
+                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.AddParam("f", "AccessTokenFailed")));
                 }
                 tokens.AccessTokenSecret = authInfo["access_token"];
 
                 session.IsAuthenticated = true;
                 
                 return OnAuthenticated(authService, session, tokens, authInfo.ToDictionary())
-                    ?? authService.Redirect(session.ReferrerUrl.AddParam("s", "1")); //Haz Access!
+                    ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.AddParam("s", "1"))); //Haz Access!
             }
             catch (WebException webException)
             {
@@ -95,10 +95,10 @@ namespace ServiceStack.Auth
                 var statusCode = ((HttpWebResponse)webException.Response).StatusCode;
                 if (statusCode == HttpStatusCode.BadRequest)
                 {
-                    return authService.Redirect(session.ReferrerUrl.AddParam("f", "AccessTokenFailed"));
+                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.AddParam("f", "AccessTokenFailed")));
                 }
             }
-            return authService.Redirect(session.ReferrerUrl.AddParam("f", "Unknown"));
+            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.AddParam("f", "Unknown")));
 
         }
 

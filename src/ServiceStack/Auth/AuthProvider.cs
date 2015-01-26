@@ -26,6 +26,17 @@ namespace ServiceStack.Auth
 
         public Func<AuthContext, IHttpResult> CustomValidationFilter { get; set; }
 
+        public Func<AuthProvider, string, string> PreAuthUrlFilter = UrlFilter;
+        public Func<AuthProvider, string, string> AccessTokenUrlFilter = UrlFilter;
+        public Func<AuthProvider, string, string> SuccessRedirectUrlFilter = UrlFilter;
+        public Func<AuthProvider, string, string> FailedRedirectUrlFilter = UrlFilter;
+        public Func<AuthProvider, string, string> LogoutUrlFilter = UrlFilter;
+
+        public static string UrlFilter(AuthProvider provider, string url)
+        {
+            return url;
+        }
+        
         protected AuthProvider()
         {
             this.SessionExpiry = SessionFeature.DefaultSessionExpiry;
@@ -85,7 +96,7 @@ namespace ServiceStack.Auth
             service.RemoveSession();
 
             if (service.Request.ResponseContentType == MimeTypes.Html && !String.IsNullOrEmpty(referrerUrl))
-                return service.Redirect(referrerUrl.AddParam("s", "-1"));
+                return service.Redirect(LogoutUrlFilter(this, referrerUrl.AddParam("s", "-1")));
 
             return new AuthenticateResponse();
         }
@@ -362,17 +373,17 @@ namespace ServiceStack.Auth
 
             if (authFeature != null && authFeature.ValidateUniqueUserNames && UserNameAlreadyExists(authRepo, userAuth, tokens))
             {
-                return authService.Redirect(GetReferrerUrl(authService, session).AddParam("f", "UserNameAlreadyExists"));
+                return authService.Redirect(FailedRedirectUrlFilter(this, GetReferrerUrl(authService, session).AddParam("f", "UserNameAlreadyExists")));
             }
 
             if (authFeature != null && authFeature.ValidateUniqueEmails && EmailAlreadyExists(authRepo, userAuth, tokens))
             {
-                return authService.Redirect(GetReferrerUrl(authService, session).AddParam("f", "EmailAlreadyExists"));
+                return authService.Redirect(FailedRedirectUrlFilter(this, GetReferrerUrl(authService, session).AddParam("f", "EmailAlreadyExists")));
             }
 
             if (IsAccountLocked(authRepo, userAuth, tokens))
             {
-                return authService.Redirect(GetReferrerUrl(authService, session).AddParam("f", "AccountLocked"));
+                return authService.Redirect(FailedRedirectUrlFilter(this, GetReferrerUrl(authService, session).AddParam("f", "AccountLocked")));
             }
 
             return null;
@@ -391,7 +402,7 @@ namespace ServiceStack.Auth
             var requestUri = authService.Request.AbsoluteUri;
             if (referrerUrl.IsNullOrEmpty()
                 || referrerUrl.IndexOf("/auth", StringComparison.OrdinalIgnoreCase) >= 0)
-                return this.RedirectUrl
+                referrerUrl = this.RedirectUrl
                     ?? HttpHandlerFactory.GetBaseUrl()
                     ?? requestUri.Substring(0, requestUri.IndexOf("/", "https://".Length + 1, StringComparison.Ordinal));
 
