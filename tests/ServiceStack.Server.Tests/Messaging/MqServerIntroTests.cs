@@ -1,10 +1,13 @@
 ﻿using System;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Auth;
+using ServiceStack.Host;
 using ServiceStack.Messaging;
 using ServiceStack.Messaging.Redis;
 using ServiceStack.RabbitMq;
 using ServiceStack.Redis;
+using ServiceStack.Server.Tests.Properties;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 
@@ -52,6 +55,30 @@ namespace ServiceStack.Server.Tests.Messaging
         }
     }
 
+    public class MqAuthOnly : IReturn<MqAuthOnlyResponse>
+    {
+        public string Name { get; set; }
+        public string SessionId { get; set; }
+    }
+
+    public class MqAuthOnlyResponse
+    {
+        public string Result { get; set; }
+    }
+
+    public class MqAuthOnlyService : Service 
+    {
+        [Authenticate]
+        public object Any(MqAuthOnly request)
+        {
+            var session = base.SessionAs<AuthUserSession>();
+            return new MqAuthOnlyResponse {
+                Result = "Hello, {0}! Your UserName is {1}"
+                    .Fmt(request.Name, session.UserAuthName)
+            };
+        }
+    }
+
     public class AppHost : AppSelfHostBase
     {
         private readonly Func<IMessageService> createMqServerFn;
@@ -64,11 +91,34 @@ namespace ServiceStack.Server.Tests.Messaging
 
         public override void Configure(Container container)
         {
+            Plugins.Add(new AuthFeature(() => new AuthUserSession(), 
+                new IAuthProvider[] {
+                    new CredentialsAuthProvider(AppSettings), 
+                }));
+
+            container.Register<IUserAuthRepository>(c => new InMemoryAuthRepository());
+
+            var authRepo = container.Resolve<IUserAuthRepository>();
+
+            authRepo.CreateUserAuth(new UserAuth {
+                Id = 1,
+                UserName = "mythz",
+                FirstName = "First",
+                LastName = "Last",
+                DisplayName = "Display",
+            }, "p@55word");
+
             container.Register(c => createMqServerFn());
 
             var mqServer = container.Resolve<IMessageService>();
 
             mqServer.RegisterHandler<HelloIntro>(ServiceController.ExecuteMessage);
+            mqServer.RegisterHandler<MqAuthOnly>(m => {
+                var req = new BasicRequest { Verb = HttpMethods.Post };
+                req.Headers["X-ss-id"] = m.GetBody().SessionId;
+                var response = ServiceController.ExecuteMessage(m, req);
+                return response;
+            });
             mqServer.Start();
         }
     }
@@ -211,6 +261,38 @@ namespace ServiceStack.Server.Tests.Messaging
                     responseMsg = mqClient.Get<HelloIntroResponse>(QueueNames<HelloIntroResponse>.In);
                     mqClient.Ack(responseMsg);
                     Assert.That(responseMsg.GetBody().Result, Is.EqualTo("Hello, Bar!"));
+                }
+            }
+        }
+
+        [Test]
+        public void Can_make_authenticated_requests_with_MQ()
+        {
+            using (var appHost = new AppHost(() => CreateMqServer()).Init())
+            {
+                appHost.Start(Config.ListeningOn);
+
+                var client = new JsonServiceClient(Config.ListeningOn);
+
+                var response = client.Post(new Authenticate {
+                    UserName = "mythz",
+                    Password = "p@55word"
+                });
+
+                var sessionId = response.SessionId;
+
+                using (var mqClient = appHost.Resolve<IMessageService>().CreateMessageQueueClient())
+                {
+
+                    mqClient.Publish(new MqAuthOnly {                        
+                        Name = "MQ Auth",
+                        SessionId = sessionId,
+                    });
+
+                    var responseMsg = mqClient.Get<MqAuthOnlyResponse>(QueueNames<MqAuthOnlyResponse>.In);
+                    mqClient.Ack(responseMsg);
+                    Assert.That(responseMsg.GetBody().Result,
+                        Is.EqualTo("Hello, MQ Auth! Your UserName is mythz"));
                 }
             }
         }
