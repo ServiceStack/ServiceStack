@@ -46,6 +46,7 @@ namespace ServiceStack.Host
             Response = new BasicResponse(this);
             this.RequestAttributes = requestAttributes;
 
+            this.Verb = HttpMethods.Post;
             this.Cookies = new Dictionary<string, Cookie>();
             this.Items = new Dictionary<string, object>();
             this.QueryString = PclExportClient.Instance.NewNameValueCollection();
