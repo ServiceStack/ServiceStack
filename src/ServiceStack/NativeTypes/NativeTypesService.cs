@@ -152,8 +152,15 @@ namespace ServiceStack.NativeTypes
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
-            var swift = new SwiftGenerator(typesConfig).GetCode(metadataTypes, base.Request);
-            return swift;
+            try
+            {
+                var swift = new SwiftGenerator(typesConfig).GetCode(metadataTypes, base.Request);
+                return swift;
+            }
+            catch (System.Exception ex)
+            {
+                throw;
+            }
         }
     }
 }

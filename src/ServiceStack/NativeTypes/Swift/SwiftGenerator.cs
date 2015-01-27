@@ -274,8 +274,8 @@ namespace ServiceStack.NativeTypes.Swift
                     sb.AppendLine("public var {0}:Int = {1}".Fmt("Version".PropertyStyle(), Config.AddImplicitVersion));
                 }
 
-                AddProperties(sb, type, 
-                    initCollections:!type.IsInterface() && Config.InitializeCollections);
+                AddProperties(sb, type,
+                    initCollections: !type.IsInterface() && Config.InitializeCollections);
 
                 sb = sb.UnIndent();
                 sb.AppendLine("}");
@@ -342,73 +342,87 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt = sbExt.Indent();
 
             //func typeConfig()
-            sbExt.AppendLine("public class func typeConfig() -> JsConfigType<{0}>".Fmt(typeName));
-            sbExt.AppendLine("{");
+            sbExt.AppendLine("public class func reflect() -> Type<{0}> {{".Fmt(typeName));
             sbExt = sbExt.Indent();
             sbExt.AppendLine(
-                "return JsConfig.typeConfig() ?? JsConfig.configure(JsConfigType<{0}>(".Fmt(typeName));
+                "return TypeConfig.config() ?? TypeConfig.configure(Type<{0}>(".Fmt(typeName));
             sbExt = sbExt.Indent();
 
-            sbExt.AppendLine("writers: [");
+            sbExt.AppendLine("name: \"{0}\",".Fmt(typeName));
+            sbExt.AppendLine("properties: [".Fmt(typeName));
             sbExt = sbExt.Indent();
 
             foreach (var prop in typeProperties)
             {
-                var isOptional = !(initCollections 
-                    && (prop.IsArray() 
-                        || (!prop.GenericArgs.IsEmpty()
-                            && (ArrayTypes.Contains(prop.Type) || DictionaryTypes.Contains(prop.Type)))
-                        ));
-                var fn = isOptional ? "setOptionalValue" : "setValue";
+                var fnName = "property";
+                if (prop.IsArray() || ArrayTypes.Contains(prop.Type))
+                {
+                    fnName = initCollections
+                        ? "arrayProperty"
+                        : "optionalArrayProperty";
+                }
+                else if (DictionaryTypes.Contains(prop.Type))
+                {
+                    fnName = initCollections
+                        ? "objectProperty"
+                        : "optionalObjectProperty";
+                }
+                else
+                {
+                    var propType = FindType(prop.Type, prop.TypeNamespace, prop.GenericArgs);
+                    if (propType != null && !propType.IsEnum.GetValueOrDefault())
+                    {
+                        fnName = "optionalObjectProperty";
+                    }
+                    else
+                    {
+                        fnName = "optionalProperty";
+                    }
+                }
 
-                sbExt.AppendLine("(\"{1}\", {{ (x:{0}, map:NSDictionary) in {2}(&x.{1}, map, \"{1}\") }}),".Fmt(
-                        typeName, prop.Name.SafeToken().PropertyStyle(), fn));
+                sbExt.AppendLine("Type<{0}>.{1}(\"{2}\", get: {{ $0.{2} }}, set: {{ $0.{2} = $1 }}),".Fmt(
+                        typeName, fnName, prop.Name.SafeToken().PropertyStyle()));
             }
             sbExt = sbExt.UnIndent();
-            sbExt.AppendLine("],");
-
-            sbExt.AppendLine("readers: [");
-            sbExt = sbExt.Indent();
-            foreach (var prop in typeProperties)
-            {
-                sbExt.AppendLine("(\"{1}\", Type<{0}>.value {{ $0.{1} }}),".Fmt(
-                    typeName,
-                    prop.Name.SafeToken().PropertyStyle()));
-            }
-            sbExt = sbExt.UnIndent();
-            sbExt.AppendLine("]");
+            sbExt.AppendLine("]))");
 
             sbExt = sbExt.UnIndent();
-
-            sbExt.AppendLine("))");
-
             sbExt = sbExt.UnIndent();
             sbExt.AppendLine("}");
+
 
             //toJson()
-            sbExt.AppendLine();
-            sbExt.AppendLine("public func toJson() -> String");
-            sbExt.AppendLine("{");
+            sbExt.AppendLine("public func toJson() -> String {");
             sbExt = sbExt.Indent();
-            sbExt.AppendLine("return serializeToJson(self, {0}.typeConfig())".Fmt(typeName));
-            sbExt = sbExt.UnIndent();
-            sbExt.AppendLine("}");
-
-            //fromDictionary()
-            sbExt.AppendLine();
-            sbExt.AppendLine("public class func fromDictionary(map:NSDictionary) -> {0}".Fmt(typeName));
-            sbExt.AppendLine("{");
-            sbExt = sbExt.Indent();
-            sbExt.AppendLine("return populate({0}(), map, {0}.typeConfig())".Fmt(typeName));
+            sbExt.AppendLine("return {0}.reflect().toJson(self)".Fmt(typeName));
             sbExt = sbExt.UnIndent();
             sbExt.AppendLine("}");
 
             //fromJson()
-            sbExt.AppendLine();
-            sbExt.AppendLine("public class func fromJson(json:String) -> {0}".Fmt(typeName));
-            sbExt.AppendLine("{");
+            sbExt.AppendLine("public class func fromJson(json:String) -> {0}? {{".Fmt(typeName));
             sbExt = sbExt.Indent();
-            sbExt.AppendLine("return populate({0}(), json, {0}.typeConfig())".Fmt(typeName));
+            sbExt.AppendLine("return {0}.reflect().fromJson({0}(), json: json)".Fmt(typeName));
+            sbExt = sbExt.UnIndent();
+            sbExt.AppendLine("}");
+
+            //fromObject()
+            sbExt.AppendLine("public class func fromObject(any:AnyObject) -> {0}? {{".Fmt(typeName));
+            sbExt = sbExt.Indent();
+            sbExt.AppendLine("return {0}.reflect().fromObject({0}(), any:any)".Fmt(typeName));
+            sbExt = sbExt.UnIndent();
+            sbExt.AppendLine("}");
+
+            //toString()
+            sbExt.AppendLine("public func toString() -> String {");
+            sbExt = sbExt.Indent();
+            sbExt.AppendLine("return {0}.reflect().toString(self)".Fmt(typeName));
+            sbExt = sbExt.UnIndent();
+            sbExt.AppendLine("}");
+
+            //fromString()
+            sbExt.AppendLine("public class func fromString(string:String) -> {0}? {{".Fmt(typeName));
+            sbExt = sbExt.Indent();
+            sbExt.AppendLine("return {0}.reflect().fromString({0}(), string: string)".Fmt(typeName));
             sbExt = sbExt.UnIndent();
             sbExt.AppendLine("}");
 
@@ -419,14 +433,22 @@ namespace ServiceStack.NativeTypes.Swift
         private void AddEnumExtension(ref StringBuilderWrapper sbExt, MetadataType type)
         {
             if (type.EnumNames == null) return;
-            
+
             sbExt.AppendLine();
-            sbExt.AppendLine("extension {0} : StringSerializable".Fmt(Type(type.Name, type.GenericArgs)));
+            var typeName = Type(type.Name, type.GenericArgs);
+            sbExt.AppendLine("extension {0} : StringSerializable".Fmt(typeName));
             sbExt.AppendLine("{");
             sbExt = sbExt.Indent();
 
-            sbExt.AppendLine("public func toString() -> String");
-            sbExt.AppendLine("{");
+            //toJson()
+            sbExt.AppendLine("public func toJson() -> String {");
+            sbExt = sbExt.Indent();
+            sbExt.AppendLine("return jsonStringRaw(toString())");
+            sbExt = sbExt.UnIndent();
+            sbExt.AppendLine("}");
+
+            //toString()
+            sbExt.AppendLine("public func toString() -> String {");
             sbExt = sbExt.Indent();
             sbExt.AppendLine("switch self {");
             foreach (var name in type.EnumNames)
@@ -437,9 +459,8 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt = sbExt.UnIndent();
             sbExt.AppendLine("}");
 
-            sbExt.AppendLine();
-            sbExt.AppendLine("public static func fromString(strValue:String) -> {0}?".Fmt(Type(type.Name, type.GenericArgs)));
-            sbExt.AppendLine("{");
+            //fromString()
+            sbExt.AppendLine("public static func fromString(strValue:String) -> {0}? {{".Fmt(typeName));
             sbExt = sbExt.Indent();
 
             sbExt.AppendLine("switch strValue {");
@@ -449,6 +470,17 @@ namespace ServiceStack.NativeTypes.Swift
             }
             sbExt.AppendLine("default: return nil");
 
+            sbExt.AppendLine("}");
+            sbExt = sbExt.UnIndent();
+            sbExt.AppendLine("}");
+
+            //fromObject()
+            sbExt.AppendLine("public static func fromObject(any:AnyObject) -> {0}? {{".Fmt(typeName));
+            sbExt = sbExt.Indent();
+            sbExt.AppendLine("switch any {");
+            sbExt.AppendLine("case let i as Int: return {0}(rawValue: i)".Fmt(typeName));
+            sbExt.AppendLine("case let s as String: return fromString(s)");
+            sbExt.AppendLine("default: return nil");
             sbExt.AppendLine("}");
             sbExt = sbExt.UnIndent();
             sbExt.AppendLine("}");
@@ -594,6 +626,16 @@ namespace ServiceStack.NativeTypes.Swift
             return Type(typeName.Name, typeName.GenericArgs);
         }
 
+        public MetadataType FindType(string typeName, string typeNamespace, params string[] genericArgs)
+        {
+            return FindType(new MetadataTypeName
+                {
+                    Name = typeName, 
+                    Namespace = typeNamespace,
+                    GenericArgs = genericArgs,
+                });
+        }
+
         public MetadataType FindType(MetadataTypeName typeName)
         {
             if (typeName == null)
@@ -609,7 +651,7 @@ namespace ServiceStack.NativeTypes.Swift
 
             if (typeName.Name == typeof(QueryBase).Name || typeName.Name == typeof(QueryBase<>).Name)
                 return CreateType(typeof(QueryBase)); //Properties are on QueryBase
-           
+
 
             if (typeName.Name == typeof(AuthUserSession).Name)
                 return CreateType(typeof(AuthUserSession));
@@ -649,6 +691,14 @@ namespace ServiceStack.NativeTypes.Swift
             "StringDictionary",
             "IDictionary",
             "IOrderedDictionary",
+        };
+
+        public static HashSet<string> MissingObjectTypes = new HashSet<string>
+        {
+            "AuthUserSession",
+            "AuthTokens",
+            "ResponseStatus",
+            "ResponseError",
         };
 
         public string Type(string type, string[] genericArgs)
@@ -699,7 +749,7 @@ namespace ServiceStack.NativeTypes.Swift
         public string NameOnly(string type)
         {
             var name = conflictTypeNames.Contains(type)
-                ? type.Replace('`','_')
+                ? type.Replace('`', '_')
                 : type.SplitOnFirst('`')[0];
 
             return name.SplitOnLast('.').Last().SafeToken();
@@ -849,8 +899,8 @@ namespace ServiceStack.NativeTypes.Swift
         public static string InheritedType(this string type)
         {
             var isArray = type.StartsWith("[");
-            return isArray 
-                ? "List<{0}>".Fmt(type.Trim('[',']')) 
+            return isArray
+                ? "List<{0}>".Fmt(type.Trim('[', ']'))
                 : type;
         }
 

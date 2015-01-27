@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ namespace ServiceStack.Auth
     /// <summary>
     /// Thread-safe In memory UserAuth data store so it can be used without a dependency on Redis.
     /// </summary>
-    public class InMemoryAuthRepository : RedisAuthRepository
+    public class InMemoryAuthRepository : RedisAuthRepository, IDisposable 
     {
         public static readonly InMemoryAuthRepository Instance = new InMemoryAuthRepository();
 
@@ -204,5 +205,9 @@ namespace ServiceStack.Auth
             }
         }
 
+        public void Dispose()
+        {
+            Clear();
+        }
     }
 }
