@@ -204,7 +204,7 @@ namespace ServiceStack.NativeTypes.Swift
             else
             {
                 var defType = "class";
-                var typeName = Type(type.Name, type.GenericArgs);
+                var typeName = Type(type.Name, type.GenericArgs).AddGenericConstraints();
                 var extends = new List<string>();
 
                 //: BaseClass, Interfaces
@@ -218,8 +218,7 @@ namespace ServiceStack.NativeTypes.Swift
                     {
                         //Need to declare BaseType is JsonSerializable
                         var subBaseType = baseType.Substring(genericDefPos)
-                            .Replace(",", " : JsonSerializable,")
-                            .Replace(">", " : JsonSerializable>");
+                            .AddGenericConstraints();
 
                         typeName += subBaseType;
                     }
@@ -939,6 +938,13 @@ namespace ServiceStack.NativeTypes.Swift
             //    : JsConfig.EmitLowercaseUnderscoreNames
             //        ? name.ToLowercaseUnderscore()
             //        : name;
+        }
+
+        public static string AddGenericConstraints(this string typeDef)
+        {
+            return typeDef
+                .Replace(",", " : JsonSerializable,")
+                .Replace(">", " : JsonSerializable>");
         }
     }
 }
