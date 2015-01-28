@@ -54,6 +54,7 @@ namespace ServiceStack.NativeTypes.Swift
             //sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
             sb.AppendLine("{0}AddModelExtensions: {1}".Fmt(defaultValue("AddModelExtensions"), Config.AddModelExtensions));
+            sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
             sb.AppendLine("{0}FlattenAbstractTypes: {1}".Fmt(defaultValue("FlattenAbstractTypes"), Config.FlattenAbstractTypes));
             sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
@@ -215,7 +216,12 @@ namespace ServiceStack.NativeTypes.Swift
                     var genericDefPos = baseType.IndexOf("<");
                     if (genericDefPos >= 0)
                     {
-                        typeName += baseType.Substring(genericDefPos);
+                        //Need to declare BaseType is JsonSerializable
+                        var subBaseType = baseType.Substring(genericDefPos)
+                            .Replace(",", " : JsonSerializable,")
+                            .Replace(">", " : JsonSerializable>");
+
+                        typeName += subBaseType;
                     }
 
                     extends.Add(baseType);
@@ -354,6 +360,10 @@ namespace ServiceStack.NativeTypes.Swift
 
             foreach (var prop in typeProperties)
             {
+                var propType = FindType(prop.Type, prop.TypeNamespace, prop.GenericArgs);
+                if (propType.IsInterface() || IgnorePropertyTypeNames.Contains(prop.Type))
+                    continue;
+
                 var fnName = "property";
                 if (prop.IsArray() || ArrayTypes.Contains(prop.Type))
                 {
@@ -369,7 +379,6 @@ namespace ServiceStack.NativeTypes.Swift
                 }
                 else
                 {
-                    var propType = FindType(prop.Type, prop.TypeNamespace, prop.GenericArgs);
                     if (propType != null && !propType.IsEnum.GetValueOrDefault())
                     {
                         fnName = "optionalObjectProperty";
@@ -500,12 +509,13 @@ namespace ServiceStack.NativeTypes.Swift
                 {
                     if (wasAdded) sb.AppendLine();
 
-                    var propType = Type(prop.Type, prop.GenericArgs);
+                    var propTypeName = Type(prop.Type, prop.GenericArgs);
+                    var propType = FindType(prop.Type, prop.TypeNamespace, prop.GenericArgs);
                     var optional = "";
                     var defaultValue = "";
-                    if (propType.EndsWith("?"))
+                    if (propTypeName.EndsWith("?"))
                     {
-                        propType = propType.Substring(0, propType.Length - 1);
+                        propTypeName = propTypeName.Substring(0, propTypeName.Length - 1);
                         optional = "?";
                     }
                     if (Config.MakePropertiesOptional)
@@ -540,15 +550,25 @@ namespace ServiceStack.NativeTypes.Swift
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
-                    if (type.IsInterface())
+                    if (propType.IsInterface())
+                    {
+                        sb.AppendLine("//{0}:{1} ignored. Swift doesn't support interface properties"
+                            .Fmt(prop.Name.SafeToken().PropertyStyle(), propTypeName));
+                    }
+                    else if (IgnorePropertyTypeNames.Contains(propTypeName))
+                    {
+                        sb.AppendLine("//{0}:{1} ignored. Type could not be extended in Swift"
+                            .Fmt(prop.Name.SafeToken().PropertyStyle(), propTypeName));
+                    }
+                    else if (type.IsInterface())
                     {
                         sb.AppendLine("var {0}:{1}{2} {{ get set }}".Fmt(
-                            prop.Name.SafeToken().PropertyStyle(), propType, optional));
+                            prop.Name.SafeToken().PropertyStyle(), propTypeName, optional));
                     }
                     else
                     {
                         sb.AppendLine("public var {0}:{1}{2}{3}".Fmt(
-                            prop.Name.SafeToken().PropertyStyle(), propType, optional, defaultValue));
+                            prop.Name.SafeToken().PropertyStyle(), propTypeName, optional, defaultValue));
                     }
                 }
             }
@@ -693,12 +713,9 @@ namespace ServiceStack.NativeTypes.Swift
             "IOrderedDictionary",
         };
 
-        public static HashSet<string> MissingObjectTypes = new HashSet<string>
+        public static HashSet<string> IgnorePropertyTypeNames = new HashSet<string>
         {
-            "AuthUserSession",
-            "AuthTokens",
-            "ResponseStatus",
-            "ResponseError",
+            "Object",
         };
 
         public string Type(string type, string[] genericArgs)
@@ -904,9 +921,17 @@ namespace ServiceStack.NativeTypes.Swift
                 : type;
         }
 
+        public static HashSet<string> SwiftKeyWords = new HashSet<string>
+        {
+            "continue",
+        };
+
         public static string PropertyStyle(this string name)
         {
-            return name.ToCamelCase(); //Always use Swift conventions for now
+            var propName = name.ToCamelCase(); //Always use Swift conventions for now
+            return SwiftKeyWords.Contains(propName) 
+                ? propName.ToTitleCase() 
+                : propName;
 
             //return JsConfig.EmitCamelCaseNames
             //    ? name.ToCamelCase()

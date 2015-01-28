@@ -151,7 +151,15 @@ namespace ServiceStack.NativeTypes
                 request.BaseUrl = Request.GetBaseUrl();
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
+
+            //Include SS types by removing ServiceStack namespaces
+            if (typesConfig.AddServiceStackTypes)
+                typesConfig.IgnoreTypesInNamespaces = new List<string>();
+
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
+
+            metadataTypes.Types.RemoveAll(x => x.Name == "Service");
+
             try
             {
                 var swift = new SwiftGenerator(typesConfig).GetCode(metadataTypes, base.Request);

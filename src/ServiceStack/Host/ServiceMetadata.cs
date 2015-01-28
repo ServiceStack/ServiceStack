@@ -621,12 +621,12 @@ namespace ServiceStack.Host
 
         public static bool IsArray(this MetadataPropertyType prop)
         {
-            return prop.Type.SplitOnFirst('[').Length > 1;
+            return prop.Type.IndexOf('[') >= 0;
         }
 
         public static bool IsInterface(this MetadataType type)
         {
-            return type.IsInterface.GetValueOrDefault();
+            return type != null && type.IsInterface.GetValueOrDefault();
         }
 
         public static bool IsAbstract(this MetadataType type)
