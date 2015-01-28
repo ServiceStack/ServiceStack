@@ -24,6 +24,13 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         public string Result { get; set; }
     }
 
+    [Restrict(RequestAttributes.Xml)]
+    [Route("/Leads/LeadData/", "POST", Notes = "LMS - DirectApi")]
+    public class CustomXml : IRequiresRequestStream
+    {
+        public Stream RequestStream { get; set; }
+    }
+
     public class RawRequestService : IService
     {
         public object Any(RawRequest request)
@@ -36,6 +43,12 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         {
             var rawRequest = request.RequestStream.ToUtf8String();
             return new RawRequestResponse { Result = request.Path + ":" + request.Param + ":" + rawRequest };
+        }
+
+        public object Any(CustomXml request)
+        {
+            var xml = request.RequestStream.ReadFully().FromUtf8Bytes();
+            return xml;
         }
     }
 
@@ -73,6 +86,28 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             Assert.That(response.Result, Is.EqualTo(rawData));
         }
 
+        [Test]
+        public void Can_POST_Custom_XML()
+        {
+            var xml = @"<LeadApplications>
+                          <LeadApplication>
+                            <Email>daffy.duck@example.com</Email>
+                            <FirstName>Joey</FirstName>
+                            <MiddleName>Disney</MiddleName>
+                            <LastName>Duck</LastName>
+                            <Street1>1 Disneyland Street</Street1>
+                            <Street2>2 Disneyland Street</Street2>
+                            <City>PAUMA VALLEY</City>
+                            <State>CA</State>   
+                            <Zip>92503</Zip>
+                          </LeadApplication>
+                        </LeadApplications>";
+
+            var requestUrl = Config.ServiceStackBaseUri + "/Leads/LeadData/";
+            var responseXml = requestUrl.PostXmlToUrl(xml);
+
+            Assert.That(responseXml, Is.EqualTo(xml));
+        }
     }
 
 }

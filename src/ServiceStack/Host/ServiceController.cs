@@ -168,7 +168,7 @@ namespace ServiceStack.Host
                         this.RequestTypeFactoryMap[requestType] = req =>
                         {
                             var restPath = req.GetRoute();
-                            var request = RestHandler.CreateRequest(req, restPath, req.GetRequestParams());
+                            var request = RestHandler.CreateRequest(req, restPath, req.GetRequestParams(), requestType.CreateInstance());
 
                             var rawReq = (IRequiresRequestStream)request;
                             rawReq.RequestStream = req.InputStream;

@@ -161,6 +161,11 @@ namespace ServiceStack.Host
         {
             var requestDto = CreateContentTypeRequest(httpReq, restPath.RequestType, httpReq.ContentType);
 
+            return CreateRequest(httpReq, restPath, requestParams, requestDto);
+        }
+
+        public static object CreateRequest(IRequest httpReq, IRestPath restPath, Dictionary<string, string> requestParams, object requestDto)
+        {
             string contentType;
             var pathInfo = !restPath.IsWildCardPath
                 ? GetSanitizedPathInfo(httpReq.PathInfo, out contentType)
