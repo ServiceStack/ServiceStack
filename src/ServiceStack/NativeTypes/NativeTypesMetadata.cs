@@ -610,6 +610,7 @@ namespace ServiceStack.NativeTypes
         public static PropertyInfo[] GetInstancePublicProperties(Type type)
         {
             return type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .OnlySerializableProperties(type)
                 .Where(t => t.GetIndexParameters().Length == 0) // ignore indexed properties
                 .ToArray();
         }
