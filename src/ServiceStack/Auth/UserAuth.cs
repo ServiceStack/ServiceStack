@@ -288,6 +288,21 @@ namespace ServiceStack.Auth
             instance.Meta[typeof(T).GetOperationName()] = TypeSerializer.SerializeToString(value);
             return value;
         }
+
+        public static AuthTokens ToAuthTokens(this IAuthTokens from)
+        {
+            return new AuthTokens {
+                Provider = from.Provider,
+                UserId = from.UserId,
+                AccessToken = from.AccessToken,
+                AccessTokenSecret = from.AccessTokenSecret,
+                RefreshToken = from.RefreshToken,
+                RefreshTokenExpiry = from.RefreshTokenExpiry,
+                RequestToken = from.RequestToken,
+                RequestTokenSecret = from.RequestTokenSecret,
+                Items = from.Items,
+            };
+        }
     }
 
 }
