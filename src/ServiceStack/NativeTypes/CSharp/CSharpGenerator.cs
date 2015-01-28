@@ -431,10 +431,10 @@ namespace ServiceStack.NativeTypes.CSharp
                         if (args.Length > 0)
                             args.Append(", ");
 
-                        args.Append(TypeAlias(arg.TrimStart('\''), includeNested: includeNested));
+                        args.Append(TypeAlias(arg.SanitizeType(), includeNested: includeNested));
                     }
 
-                    var typeName = NameOnly(type, includeNested: includeNested);
+                    var typeName = NameOnly(type, includeNested: includeNested).SanitizeType();
                     return "{0}<{1}>".Fmt(typeName, args);
                 }
             }
@@ -444,6 +444,7 @@ namespace ServiceStack.NativeTypes.CSharp
 
         private string TypeAlias(string type, bool includeNested = false)
         {
+            type = type.SanitizeType();
             var arrParts = type.SplitOnFirst('[');
             if (arrParts.Length > 1)
                 return "{0}[]".Fmt(TypeAlias(arrParts[0], includeNested: includeNested));

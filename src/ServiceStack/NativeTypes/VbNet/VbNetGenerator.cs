@@ -461,7 +461,7 @@ namespace ServiceStack.NativeTypes.VbNet
                         args.Append(TypeAlias(arg.TrimStart('\''), includeNested: includeNested));
                     }
 
-                    var typeName = NameOnly(type, includeNested: includeNested);
+                    var typeName = NameOnly(type, includeNested: includeNested).SanitizeType();
                     return "{0}(Of {1})".Fmt(typeName, args);
                 }
             }
@@ -471,6 +471,7 @@ namespace ServiceStack.NativeTypes.VbNet
 
         private string TypeAlias(string type, bool includeNested = false)
         {
+            type = type.SanitizeType();
             if (type.Contains("<"))
             {
                 type = type.Replace("<", "(Of ").Replace(">", ")");

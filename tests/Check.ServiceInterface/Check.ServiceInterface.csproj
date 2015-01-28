@@ -62,6 +62,7 @@
     <Compile Include="FallbackRouteService.cs" />
     <Compile Include="MetadataTestService.cs" />
     <Compile Include="NamedConnectionService.cs" />
+    <Compile Include="NativeTypeIssuesService.cs" />
     <Compile Include="NativeTypesTestService.cs" />
     <Compile Include="EchoesService.cs" />
     <Compile Include="ErrorsService.cs" />

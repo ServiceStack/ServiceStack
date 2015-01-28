@@ -753,6 +753,7 @@ namespace ServiceStack.NativeTypes.Swift
 
         private string TypeAlias(string type)
         {
+            type = type.SanitizeType();
             var isArray = type.StartsWith("[") || type.EndsWith("[]");
             if (isArray)
                 return "[{0}]".Fmt(TypeAlias(type.Trim('[', ']')));

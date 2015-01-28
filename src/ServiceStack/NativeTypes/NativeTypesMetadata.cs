@@ -792,5 +792,10 @@ namespace ServiceStack.NativeTypes
 
             return false;
         }
+
+        public static string SanitizeType(this string typeName)
+        {
+            return typeName != null ? typeName.TrimStart('\'') : null;
+        }
     }
 }

@@ -405,6 +405,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
         private string TypeAlias(string type)
         {
+            type = type.SanitizeType();
             var arrParts = type.SplitOnFirst('[');
             if (arrParts.Length > 1)
                 return "{0}[]".Fmt(TypeAlias(arrParts[0]));
