@@ -31,7 +31,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
                     new HttpRequest(null, "http://example.com", null),
                     new HttpResponse(new StringWriter()));
 
-                HttpContext.Current.Items[ServiceExtensions.RequestItemsSessionKey] =
+                HttpContext.Current.Items[SessionFeature.RequestItemsSessionKey] =
                     new AuthUserSession
                     {
                         Id = "mock-session-id",

@@ -113,7 +113,7 @@ namespace ServiceStack
                 cache.Remove(sessionKey);
             }
 
-            httpReq.Items.Remove(RequestItemsSessionKey);
+            httpReq.Items.Remove(SessionFeature.RequestItemsSessionKey);
         }
 
         public static IAuthSession GetSession(this IServiceBase service, bool reload = false)
@@ -121,7 +121,8 @@ namespace ServiceStack
             return service.Request.GetSession(reload);
         }
 
-        public const string RequestItemsSessionKey = "__session";
+        [Obsolete("Use SessionFeature.RequestItemsSessionKey")]
+        public const string RequestItemsSessionKey = SessionFeature.RequestItemsSessionKey;
         public static IAuthSession GetSession(this IRequest httpReq, bool reload = false)
         {
             if (httpReq == null) return null;
@@ -132,7 +133,7 @@ namespace ServiceStack
 
             object oSession = null;
             if (!reload)
-                httpReq.Items.TryGetValue(RequestItemsSessionKey, out oSession);
+                httpReq.Items.TryGetValue(SessionFeature.RequestItemsSessionKey, out oSession);
 
             if (oSession != null)
                 return (IAuthSession)oSession;
@@ -144,10 +145,10 @@ namespace ServiceStack
                 var session = (sessionKey != null ? cache.Get<IAuthSession>(sessionKey) : null)
                     ?? SessionFeature.CreateNewSession(httpReq, sessionId);
 
-                if (httpReq.Items.ContainsKey(RequestItemsSessionKey))
-                    httpReq.Items.Remove(RequestItemsSessionKey);
+                if (httpReq.Items.ContainsKey(SessionFeature.RequestItemsSessionKey))
+                    httpReq.Items.Remove(SessionFeature.RequestItemsSessionKey);
 
-                httpReq.Items.Add(RequestItemsSessionKey, session);
+                httpReq.Items.Add(SessionFeature.RequestItemsSessionKey, session);
                 return session;
             }
         }

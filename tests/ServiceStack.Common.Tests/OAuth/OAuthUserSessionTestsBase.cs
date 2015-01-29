@@ -157,7 +157,7 @@ namespace ServiceStack.Common.Tests.OAuth
 				oAuthUserSession = request.ReloadSession();
 
             oAuthUserSession.Id = request.Response.CreateSessionId(request);
-            request.Items[ServiceExtensions.RequestItemsSessionKey] = oAuthUserSession;
+            request.Items[SessionFeature.RequestItemsSessionKey] = oAuthUserSession;
 
 			var mockAppHost = new BasicAppHost();
 

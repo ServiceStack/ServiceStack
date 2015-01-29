@@ -400,7 +400,7 @@ namespace ServiceStack
                 cache.CacheSet(sessionKey, session, expiresIn ?? HostContext.GetDefaultSessionExpiry());
             }
 
-            httpReq.Items[ServiceExtensions.RequestItemsSessionKey] = session;
+            httpReq.Items[SessionFeature.RequestItemsSessionKey] = session;
         }
 
         public virtual IRequest GetCurrentRequest()
