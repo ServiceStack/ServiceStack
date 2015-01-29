@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
+using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.Common.Web;
 #if NETFX_CORE
@@ -648,9 +649,20 @@ namespace ServiceStack.ServiceClient.Web
                         // pass that around instead after this point?
                         stream.Position = 0;
 #endif
+                        var responseType = typeof (TResponse);
+                        var responseDto = default(TResponse);
+                        if ((responseType is IHasResponseStatus ||
+                             responseType.GetPropertyInfo("ResponseStatus") != null))
+                        {
+                            responseDto = (TResponse) this.StreamDeserializer(responseType, stream);
+                            serviceEx.ResponseDto = responseDto;
+                        }
+                        else
+                        {
+                            serviceEx.ResponseDto = this.StreamDeserializer(typeof (ErrorResponse), stream);
+                        }
 
-                        serviceEx.ResponseDto = this.StreamDeserializer(typeof(TResponse), stream);
-                        requestState.HandleError((TResponse)serviceEx.ResponseDto, serviceEx);
+                        requestState.HandleError(responseDto, serviceEx);
                     }
                 }
                 catch (Exception innerEx)
