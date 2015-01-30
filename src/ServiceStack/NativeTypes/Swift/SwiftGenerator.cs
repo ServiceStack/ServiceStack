@@ -123,7 +123,7 @@ namespace ServiceStack.NativeTypes.Swift
                                     if (type.ReturnMarkerTypeName != null)
                                         return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName) });
                                     return response != null
-                                        ? Type("IReturn`1", new[] { Type(type.Name, type.GenericArgs) })
+                                        ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
                                         : null;
                                 },
                                 IsRequest = true,

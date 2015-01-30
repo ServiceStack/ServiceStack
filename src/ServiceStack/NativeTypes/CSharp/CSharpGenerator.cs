@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -135,8 +134,8 @@ namespace ServiceStack.NativeTypes.CSharp
                                         if (type.ReturnMarkerTypeName != null)
                                             return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName) });
                                         return response != null
-                                                    ? Type("IReturn`1", new[] { Type(type.Name, type.GenericArgs) })
-                                                    : null;
+                                            ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
+                                            : null;
                                     },
                                 IsRequest = true,
                             });
