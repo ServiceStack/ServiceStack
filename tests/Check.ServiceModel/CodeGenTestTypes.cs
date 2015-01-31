@@ -301,6 +301,9 @@ namespace Check.ServiceModel.Types
         public string String { get; set; }
         public DateTime DateTime { get; set; }
         public TimeSpan TimeSpan { get; set; }
+        public DateTimeOffset DateTimeOffset { get; set; }
+        public Guid Guid { get; set; }
+        public Char Char { get; set; }
         public DateTime? NullableDateTime { get; set; }
         public TimeSpan? NullableTimeSpan { get; set; }
         public List<string> StringList { get; set; }

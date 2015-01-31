@@ -21,6 +21,26 @@ namespace ServiceStack.NativeTypes.Swift
             AllTypes = new List<MetadataType>();
         }
 
+        public static Dictionary<string, string> TypeAliases = new Dictionary<string, string>
+        {
+            {"Boolean", "Bool"},
+            {"DateTime", "NSDate"},
+            {"TimeSpan", "NSTimeInterval"},
+            {"DateTimeOffset", "NSDate"},
+            {"Guid", "String"},
+            {"Char", "Character"},
+            {"Byte", "Int8"},
+            {"Int16", "Int16"},
+            {"Int32", "Int32"},
+            {"Int64", "Int64"},
+            {"UInt16", "UInt16"},
+            {"UInt32", "UInt32"},
+            {"UInt64", "UInt64"},
+            {"Single", "Float"},
+            {"Double", "Double"},
+            {"Decimal", "Double"},
+        };
+
         class CreateTypeOptions
         {
             public Func<string> ImplementsFn { get; set; }
@@ -346,6 +366,8 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt.AppendLine("{");
             sbExt = sbExt.Indent();
 
+            sbExt.AppendLine("public class var typeName:String {{ return \"{0}\" }}".Fmt(typeName));
+
             //func typeConfig()
             sbExt.AppendLine("public class func reflect() -> Type<{0}> {{".Fmt(typeName));
             sbExt = sbExt.Indent();
@@ -353,7 +375,6 @@ namespace ServiceStack.NativeTypes.Swift
                 "return TypeConfig.config() ?? TypeConfig.configure(Type<{0}>(".Fmt(typeName));
             sbExt = sbExt.Indent();
 
-            sbExt.AppendLine("name: \"{0}\",".Fmt(typeName));
             sbExt.AppendLine("properties: [".Fmt(typeName));
             sbExt = sbExt.Indent();
 
@@ -447,6 +468,8 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt.AppendLine("extension {0} : StringSerializable".Fmt(typeName));
             sbExt.AppendLine("{");
             sbExt = sbExt.Indent();
+
+            sbExt.AppendLine("public static var typeName:String {{ return \"{0}\" }}".Fmt(typeName));
 
             //toJson()
             sbExt.AppendLine("public func toJson() -> String {");
@@ -758,7 +781,7 @@ namespace ServiceStack.NativeTypes.Swift
                 return "[{0}]".Fmt(TypeAlias(type.Trim('[', ']')));
 
             string typeAlias;
-            Config.SwiftTypeAlias.TryGetValue(type, out typeAlias);
+            TypeAliases.TryGetValue(type, out typeAlias);
 
             return typeAlias ?? NameOnly(type);
         }
