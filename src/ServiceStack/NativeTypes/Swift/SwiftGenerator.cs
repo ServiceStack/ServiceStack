@@ -31,7 +31,7 @@ namespace ServiceStack.NativeTypes.Swift
             {"Char", "Character"},
             {"Byte", "Int8"},
             {"Int16", "Int16"},
-            {"Int32", "Int32"},
+            {"Int32", "Int"},
             {"Int64", "Int64"},
             {"UInt16", "UInt16"},
             {"UInt32", "UInt32"},
