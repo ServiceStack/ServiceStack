@@ -49,12 +49,6 @@ namespace ServiceStack.NativeTypes
                 ExportAttributes = defaults.ExportAttributes,
                 IgnoreTypes = defaults.IgnoreTypes,
                 IgnoreTypesInNamespaces = defaults.IgnoreTypesInNamespaces,
-                CSharpTypeAlias = defaults.CSharpTypeAlias,
-                FSharpTypeAlias = defaults.FSharpTypeAlias,
-                VbNetTypeAlias = defaults.VbNetTypeAlias,
-                TypeScriptTypeAlias = defaults.TypeScriptTypeAlias,
-                SwiftTypeAlias = defaults.SwiftTypeAlias,
-                VbNetKeyWords = defaults.VbNetKeyWords,
                 GlobalNamespace = req.GlobalNamespace ?? defaults.GlobalNamespace,
             };
         }

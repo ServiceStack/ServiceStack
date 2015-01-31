@@ -18,6 +18,25 @@ namespace ServiceStack.NativeTypes.TypeScript
             Config = config;
         }
 
+        public static Dictionary<string, string> TypeAliases = new Dictionary<string, string>
+        {
+            {"String", "string"},
+            {"Boolean", "boolean"},
+            {"DateTime", "string"},
+            {"TimeSpan", "string"},
+            {"Byte", "number"},
+            {"Int16", "number"},
+            {"Int32", "number"},
+            {"Int64", "number"},
+            {"UInt16", "number"},
+            {"UInt32", "number"},
+            {"UInt64", "number"},
+            {"Single", "number"},
+            {"Double", "number"},
+            {"Decimal", "number"},
+            {"List", "Array"},
+        };
+
         class CreateTypeOptions
         {
             public Func<string> ImplementsFn { get; set; }
@@ -411,7 +430,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 return "{0}[]".Fmt(TypeAlias(arrParts[0]));
 
             string typeAlias;
-            Config.TypeScriptTypeAlias.TryGetValue(type, out typeAlias);
+            TypeAliases.TryGetValue(type, out typeAlias);
 
             return typeAlias ?? NameOnly(type);
         }

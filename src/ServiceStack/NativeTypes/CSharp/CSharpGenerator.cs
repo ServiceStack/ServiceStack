@@ -17,6 +17,22 @@ namespace ServiceStack.NativeTypes.CSharp
             Config = config;
         }
 
+        public static Dictionary<string, string> TypeAliases = new Dictionary<string, string> 
+        {
+            { "String", "string" },    
+            { "Boolean", "bool" },    
+            { "Byte", "byte" },    
+            { "Int16", "short" },    
+            { "Int32", "int" },    
+            { "Int64", "long" },    
+            { "UInt16", "ushort" },    
+            { "UInt32", "uint" },    
+            { "UInt64", "ulong" },    
+            { "Single", "float" },    
+            { "Double", "double" },    
+            { "Decimal", "decimal" },    
+        };
+
         class CreateTypeOptions
         {
             public Func<string> ImplementsFn { get; set; }
@@ -449,7 +465,7 @@ namespace ServiceStack.NativeTypes.CSharp
                 return "{0}[]".Fmt(TypeAlias(arrParts[0], includeNested: includeNested));
 
             string typeAlias;
-            Config.CSharpTypeAlias.TryGetValue(type, out typeAlias);
+            TypeAliases.TryGetValue(type, out typeAlias);
 
             return typeAlias ?? NameOnly(type, includeNested: includeNested);
         }

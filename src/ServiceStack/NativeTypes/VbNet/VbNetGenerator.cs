@@ -17,6 +17,52 @@ namespace ServiceStack.NativeTypes.VbNet
             Config = config;
         }
 
+        public static Dictionary<string, string> TypeAliases = new Dictionary<string, string>
+        {
+            {"Int16", "Short"},
+            {"Int32", "Integer"},
+            {"Int64", "Long"},
+            {"DateTime", "Date"},
+        };
+
+        public static HashSet<string> KeyWords = new HashSet<string>
+        {
+            "Default",
+            "Dim",
+            "Catch",
+            "Byte",
+            "Short",
+            "Integer",
+            "Long",
+            "UShort",
+            "ULong",
+            "Double",
+            "Decimal",
+            "String",
+            "Object",
+            "Each",
+            "Error",
+            "Finally",
+            "Function",
+            "Global",
+            "If",
+            "Imports",
+            "Inherits",
+            "Not",
+            "IsNot",
+            "Module",
+            "MyBase",
+            "Option",
+            "Out",
+            "Protected",
+            "Return",
+            "Shadows",
+            "Static",
+            "Then",
+            "With",
+            "When",
+        };
+
         class CreateTypeOptions
         {
             public Func<string> ImplementsFn { get; set; }
@@ -482,7 +528,7 @@ namespace ServiceStack.NativeTypes.VbNet
                 return "{0}()".Fmt(TypeAlias(arrParts[0], includeNested: includeNested));
 
             string typeAlias;
-            Config.VbNetTypeAlias.TryGetValue(type, out typeAlias);
+            TypeAliases.TryGetValue(type, out typeAlias);
 
             return typeAlias ?? NameOnly(type, includeNested: includeNested);
         }
@@ -499,7 +545,7 @@ namespace ServiceStack.NativeTypes.VbNet
 
         public string EscapeKeyword(string name)
         {
-            return Config.VbNetKeyWords.Contains(name) ? "[{0}]".Fmt(name) : name;
+            return KeyWords.Contains(name) ? "[{0}]".Fmt(name) : name;
         }
 
         public void AppendComments(StringBuilderWrapper sb, string desc)
