@@ -583,20 +583,23 @@ namespace ServiceStack.NativeTypes.Swift
                         }
                     }
 
-                    wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
-                    wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
-
-                    if (propType.IsInterface())
+                    if (propType.IsInterface() || IgnorePropertyNames.Contains(prop.Name))
                     {
                         sb.AppendLine("//{0}:{1} ignored. Swift doesn't support interface properties"
                             .Fmt(prop.Name.SafeToken().PropertyStyle(), propTypeName));
+                        continue;
                     }
                     else if (IgnorePropertyTypeNames.Contains(propTypeName))
                     {
                         sb.AppendLine("//{0}:{1} ignored. Type could not be extended in Swift"
                             .Fmt(prop.Name.SafeToken().PropertyStyle(), propTypeName));
+                        continue;
                     }
-                    else if (type.IsInterface())
+
+                    wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
+                    wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
+
+                    if (type.IsInterface())
                     {
                         sb.AppendLine("var {0}:{1}{2} {{ get set }}".Fmt(
                             prop.Name.SafeToken().PropertyStyle(), propTypeName, optional));
@@ -698,7 +701,7 @@ namespace ServiceStack.NativeTypes.Swift
                 return null;
 
             var foundType = AllTypes
-                .FirstOrDefault(x => x.Namespace == typeName.Namespace
+                .FirstOrDefault(x => (typeName.Namespace == null || x.Namespace == typeName.Namespace)
                     && x.Name == typeName.Name
                     && x.GenericArgs.Safe().Count() == typeName.GenericArgs.Safe().Count());
 
@@ -752,6 +755,11 @@ namespace ServiceStack.NativeTypes.Swift
         public static HashSet<string> IgnorePropertyTypeNames = new HashSet<string>
         {
             "Object",
+        };
+
+        public static HashSet<string> IgnorePropertyNames = new HashSet<string>
+        {
+            "ProviderOAuthAccess",
         };
 
         public string Type(string type, string[] genericArgs)

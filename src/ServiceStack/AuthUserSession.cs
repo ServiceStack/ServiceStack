@@ -54,17 +54,7 @@ namespace ServiceStack
         [DataMember(Order = 37)] public virtual bool IsAuthenticated { get; set; }
         [DataMember(Order = 38)] public virtual string Sequence { get; set; }
         [DataMember(Order = 39)] public long Tag { get; set; }
-
-        public List<IAuthTokens> ProviderOAuthAccess { get; set; }
-
-        [DataMember(Order = 40)]
-        public List<AuthTokens> AuthTokens
-        {
-            get
-            {
-                return ProviderOAuthAccess.Map(x => x.ToAuthTokens());
-            }
-        }
+        [DataMember(Order = 40)] public List<IAuthTokens> ProviderOAuthAccess { get; set; }
 
         public virtual bool IsAuthorized(string provider)
         {
