@@ -139,6 +139,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
                 this.Headers = new Dictionary<string, string>();
                 this.MemoryStream = new MemoryStream();
                 this.Cookies = new Cookies(this);
+                this.Items = new Dictionary<string, object>();
             }
 
             public object OriginalResponse
@@ -205,6 +206,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
             }
 
             public bool KeepAlive { get; set; }
+
+            public Dictionary<string, object> Items { get; private set; }
 
             public void SetCookie(Cookie cookie)
             {                

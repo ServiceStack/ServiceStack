@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -15,6 +16,7 @@ namespace ServiceStack.Testing
             this.OutputStream = new MemoryStream();
             this.TextWritten = new StringBuilder();
             this.Cookies = new Cookies(this);
+            this.Items = new Dictionary<string, object>();
         }
 
         public object OriginalResponse { get; private set; }
@@ -86,6 +88,8 @@ namespace ServiceStack.Testing
         }
 
         public bool KeepAlive { get; set; }
+
+        public Dictionary<string, object> Items { get; private set; }
 
         public void SetCookie(Cookie cookie)
         {            

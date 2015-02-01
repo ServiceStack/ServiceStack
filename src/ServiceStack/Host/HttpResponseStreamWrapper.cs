@@ -14,6 +14,7 @@ namespace ServiceStack.Host
         {
             this.OutputStream = stream;
             this.Headers = new Dictionary<string, string>();
+            this.Items = new Dictionary<string, object>();
         }
 
         public Dictionary<string, string> Headers { get; set; }
@@ -81,6 +82,8 @@ namespace ServiceStack.Host
         public void SetContentLength(long contentLength) {}
 
         public bool KeepAlive { get; set; }
+
+        public Dictionary<string, object> Items { get; private set; }
 
         public void SetCookie(Cookie cookie)
         {

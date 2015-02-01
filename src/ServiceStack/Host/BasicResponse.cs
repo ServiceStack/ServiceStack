@@ -13,6 +13,7 @@ namespace ServiceStack.Host
         {
             this.requestContext = requestContext;
             this.Headers = new Dictionary<string, string>();
+            this.Items = new Dictionary<string, object>();
         }
 
         public object OriginalResponse { get; set; }
@@ -74,5 +75,7 @@ namespace ServiceStack.Host
         }
 
         public bool KeepAlive { get; set; }
+
+        public Dictionary<string, object> Items { get; private set; }
     }
 }
