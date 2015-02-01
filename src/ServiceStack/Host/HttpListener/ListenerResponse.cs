@@ -2,6 +2,7 @@
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using ServiceStack.Logging;
@@ -19,6 +20,7 @@ namespace ServiceStack.Host.HttpListener
         {
             this.response = response;
             this.Cookies = new Cookies(this);
+            this.Items = new Dictionary<string, object>();
         }
 
         public object OriginalResponse
@@ -56,35 +58,35 @@ namespace ServiceStack.Host.HttpListener
             response.Redirect(url);
         }
 
-        private MemoryStream bufferedStream;
+        public MemoryStream BufferedStream { get; set; }
         public Stream OutputStream
         {
-            get { return bufferedStream ?? response.OutputStream; }
+            get { return BufferedStream ?? response.OutputStream; }
         }
 
         public bool UseBufferedStream
         {
-            get { return bufferedStream != null; }
+            get { return BufferedStream != null; }
             set
             {
-                bufferedStream = value
-                    ? bufferedStream ?? new MemoryStream()
+                BufferedStream = value
+                    ? BufferedStream ?? new MemoryStream()
                     : null;
             }
         }
 
         private void FlushBufferIfAny()
         {
-            if (bufferedStream == null)
+            if (BufferedStream == null)
                 return;
 
-            var bytes = bufferedStream.ToArray();
+            var bytes = BufferedStream.ToArray();
             try {
                 SetContentLength(bytes.LongLength); //safe to set Length in Buffered Response
             } catch {}
 
             response.OutputStream.Write(bytes, 0, bytes.Length);
-            bufferedStream = new MemoryStream();
+            BufferedStream = new MemoryStream();
         }
 
         public object Dto { get; set; }
@@ -156,6 +158,8 @@ namespace ServiceStack.Host.HttpListener
             get { return response.KeepAlive; }
             set { response.KeepAlive = true; }
         }
+
+        public Dictionary<string, object> Items { get; private set; }
 
         public void SetCookie(Cookie cookie)
         {
