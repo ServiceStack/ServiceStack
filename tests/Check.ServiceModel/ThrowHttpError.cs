@@ -15,4 +15,16 @@ namespace Check.ServiceModel
     {
         public string Message { get; set; }
     }
+
+    [Route("/throw/{Type}")]
+    public class ThrowType : IReturn<ThrowTypeResponse>
+    {
+        public string Type { get; set; }
+        public string Message { get; set; }
+    }
+
+    public class ThrowTypeResponse
+    {
+        public ResponseStatus ResponseStatus { get; set; }
+    }
 }
