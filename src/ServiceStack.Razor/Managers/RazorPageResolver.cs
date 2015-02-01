@@ -117,7 +117,7 @@ namespace ServiceStack.Razor.Managers
 
             using (ExecuteRazorPage(httpReq, httpRes, dto, existingRazorPage))
             {
-                httpRes.EndRequest();
+                httpRes.EndRequest(skipHeaders:true);
                 return true;    
             }
         }
