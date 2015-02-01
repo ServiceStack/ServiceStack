@@ -43,7 +43,7 @@ namespace ServiceStack.NativeTypes.Swift
 
         public static HashSet<string> OverrideInitForBaseClasses = new HashSet<string> {
             "NSObject"
-        };  
+        };
 
         class CreateTypeOptions
         {
@@ -969,6 +969,7 @@ namespace ServiceStack.NativeTypes.Swift
         public static HashSet<string> SwiftKeyWords = new HashSet<string>
         {
             "continue",
+            "description", //can't override NSObject's description computed property
         };
 
         public static string PropertyStyle(this string name)
