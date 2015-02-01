@@ -41,6 +41,10 @@ namespace ServiceStack.NativeTypes.Swift
             {"Decimal", "Double"},
         };
 
+        public static HashSet<string> OverrideInitForBaseClasses = new HashSet<string> {
+            "NSObject"
+        };  
+
         class CreateTypeOptions
         {
             public Func<string> ImplementsFn { get; set; }
@@ -70,8 +74,7 @@ namespace ServiceStack.NativeTypes.Swift
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
 
-            //sb.AppendLine("{0}MakePropertiesOptional: {1}".Fmt(defaultValue("MakePropertiesOptional"), Config.MakePropertiesOptional));
-            //sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
+            sb.AppendLine("{0}BaseClass: {1}".Fmt(defaultValue("BaseClass"), Config.BaseClass));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
             sb.AppendLine("{0}AddModelExtensions: {1}".Fmt(defaultValue("AddModelExtensions"), Config.AddModelExtensions));
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
@@ -245,6 +248,10 @@ namespace ServiceStack.NativeTypes.Swift
 
                     extends.Add(baseType);
                 }
+                else if (Config.BaseClass != null && !type.IsInterface())
+                {
+                    extends.Add(Config.BaseClass);
+                }
 
                 var typeAliases = new List<string>();
 
@@ -290,7 +297,14 @@ namespace ServiceStack.NativeTypes.Swift
 
                 if (!type.IsInterface())
                 {
-                    sb.AppendLine("required public init(){}");
+                    if (extends.Count > 0 && OverrideInitForBaseClasses.Contains(extends[0]))
+                    {
+                        sb.AppendLine("required public override init(){}");
+                    }
+                    else
+                    {
+                        sb.AppendLine("required public init(){}");
+                    }
                 }
 
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsOperation;

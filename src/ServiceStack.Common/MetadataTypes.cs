@@ -15,6 +15,7 @@ namespace ServiceStack
             bool addDataContractAttributes = false,
             bool addIndexesToDataMembers = false,
             string addDefaultXmlNamespace = null,
+            string baseClass = null,
             bool addResponseStatus = false,
             bool addServiceStackTypes = true,
             bool addModelExtensions = true,
@@ -31,6 +32,7 @@ namespace ServiceStack
             AddDescriptionAsComments = convertDescriptionToComments;
             AddDataContractAttributes = addDataContractAttributes;
             AddDefaultXmlNamespace = addDefaultXmlNamespace;
+            BaseClass = baseClass;
             MakeDataContractsExtensible = makeDataContractsExtensible;
             AddIndexesToDataMembers = addIndexesToDataMembers;
             InitializeCollections = initializeCollections;
@@ -45,6 +47,7 @@ namespace ServiceStack
         public string BaseUrl { get; set; }
         public bool MakePartial { get; set; }
         public bool MakeVirtual { get; set; }
+        public string BaseClass { get; set; }
         public bool AddReturnMarker { get; set; }
         public bool AddDescriptionAsComments { get; set; }
         public bool AddDataContractAttributes { get; set; }

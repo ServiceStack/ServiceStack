@@ -35,6 +35,7 @@ namespace ServiceStack.NativeTypes
                 AddIndexesToDataMembers = req.AddIndexesToDataMembers ?? defaults.AddIndexesToDataMembers,
                 InitializeCollections = req.InitializeCollections ?? defaults.InitializeCollections,
                 AddImplicitVersion = req.AddImplicitVersion ?? defaults.AddImplicitVersion,
+                BaseClass = req.BaseClass ?? defaults.BaseClass,
                 AddResponseStatus = req.AddResponseStatus ?? defaults.AddResponseStatus,
                 AddServiceStackTypes = req.AddServiceStackTypes ?? defaults.AddServiceStackTypes,
                 AddModelExtensions = req.AddModelExtensions ?? defaults.AddModelExtensions,
