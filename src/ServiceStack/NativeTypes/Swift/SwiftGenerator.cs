@@ -78,7 +78,6 @@ namespace ServiceStack.NativeTypes.Swift
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
             sb.AppendLine("{0}AddModelExtensions: {1}".Fmt(defaultValue("AddModelExtensions"), Config.AddModelExtensions));
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
-            sb.AppendLine("{0}FlattenAbstractTypes: {1}".Fmt(defaultValue("FlattenAbstractTypes"), Config.FlattenAbstractTypes));
             sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
             sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
@@ -355,21 +354,30 @@ namespace ServiceStack.NativeTypes.Swift
             }
         }
 
+        public List<MetadataPropertyType> GetPropertes(MetadataType type)
+        {
+            var to = new List<MetadataPropertyType>();
+
+            if (type.Properties != null)
+                to.AddRange(type.Properties);
+
+            if (type.Inherits != null)
+            {
+                var baseType = FindType(type.Inherits);
+                if (baseType != null)
+                {
+                    to.AddRange(GetPropertes(baseType));
+                }
+            }
+
+            return to;
+        }
+
         private void AddTypeExtension(ref StringBuilderWrapper sbExt, MetadataType type, bool initCollections)
         {
             //Swift doesn't support extensions on same protocol used by Base and Sub types
-            if (Config.FlattenAbstractTypes && type.IsAbstract())
+            if (type.IsAbstract())
                 return;
-
-            var typeProperties = type.Properties.Safe().ToList();
-            if (Config.FlattenAbstractTypes)
-            {
-                var baseType = FindType(type.Inherits);
-                if (baseType != null && baseType.IsAbstract())
-                {
-                    typeProperties.InsertRange(0, baseType.Properties.Safe());
-                }
-            }
 
             var typeName = Type(type.Name, type.GenericArgs);
 
@@ -392,7 +400,7 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt.AppendLine("properties: [".Fmt(typeName));
             sbExt = sbExt.Indent();
 
-            foreach (var prop in typeProperties)
+            foreach (var prop in GetPropertes(type))
             {
                 var propType = FindType(prop.Type, prop.TypeNamespace, prop.GenericArgs);
                 if (propType.IsInterface() || IgnorePropertyTypeNames.Contains(prop.Type))
@@ -539,76 +547,73 @@ namespace ServiceStack.NativeTypes.Swift
             var wasAdded = false;
 
             var dataMemberIndex = 1;
-            if (type.Properties != null)
+            foreach (var prop in type.Properties.Safe())
             {
-                foreach (var prop in type.Properties)
+                if (wasAdded) sb.AppendLine();
+
+                var propTypeName = Type(prop.Type, prop.GenericArgs);
+                var propType = FindType(prop.Type, prop.TypeNamespace, prop.GenericArgs);
+                var optional = "";
+                var defaultValue = "";
+                if (propTypeName.EndsWith("?"))
                 {
-                    if (wasAdded) sb.AppendLine();
+                    propTypeName = propTypeName.Substring(0, propTypeName.Length - 1);
+                    optional = "?";
+                }
+                if (Config.MakePropertiesOptional)
+                {
+                    optional = "?";
+                }
 
-                    var propTypeName = Type(prop.Type, prop.GenericArgs);
-                    var propType = FindType(prop.Type, prop.TypeNamespace, prop.GenericArgs);
-                    var optional = "";
-                    var defaultValue = "";
-                    if (propTypeName.EndsWith("?"))
-                    {
-                        propTypeName = propTypeName.Substring(0, propTypeName.Length - 1);
-                        optional = "?";
-                    }
-                    if (Config.MakePropertiesOptional)
-                    {
-                        optional = "?";
-                    }
+                if (prop.Attributes.Safe().FirstOrDefault(x => x.Name == "Required") != null)
+                {
+                    optional = "?"; //always use optional
+                }
 
-                    if (prop.Attributes.Safe().FirstOrDefault(x => x.Name == "Required") != null)
-                    {
-                        optional = "?"; //always use optional
-                    }
-
-                    if (prop.IsArray())
+                if (prop.IsArray())
+                {
+                    optional = "";
+                    defaultValue = " = []";
+                }
+                else if (initCollections && !prop.GenericArgs.IsEmpty())
+                {
+                    if (ArrayTypes.Contains(prop.Type))
                     {
                         optional = "";
                         defaultValue = " = []";
                     }
-                    else if (initCollections && !prop.GenericArgs.IsEmpty())
+                    if (DictionaryTypes.Contains(prop.Type))
                     {
-                        if (ArrayTypes.Contains(prop.Type))
-                        {
-                            optional = "";
-                            defaultValue = " = []";
-                        }
-                        if (DictionaryTypes.Contains(prop.Type))
-                        {
-                            optional = "";
-                            defaultValue = " = [:]";
-                        }
+                        optional = "";
+                        defaultValue = " = [:]";
                     }
+                }
 
-                    if (propType.IsInterface() || IgnorePropertyNames.Contains(prop.Name))
-                    {
-                        sb.AppendLine("//{0}:{1} ignored. Swift doesn't support interface properties"
-                            .Fmt(prop.Name.SafeToken().PropertyStyle(), propTypeName));
-                        continue;
-                    }
-                    else if (IgnorePropertyTypeNames.Contains(propTypeName))
-                    {
-                        sb.AppendLine("//{0}:{1} ignored. Type could not be extended in Swift"
-                            .Fmt(prop.Name.SafeToken().PropertyStyle(), propTypeName));
-                        continue;
-                    }
+                if (propType.IsInterface() || IgnorePropertyNames.Contains(prop.Name))
+                {
+                    sb.AppendLine("//{0}:{1} ignored. Swift doesn't support interface properties"
+                        .Fmt(prop.Name.SafeToken().PropertyStyle(), propTypeName));
+                    continue;
+                }
+                else if (IgnorePropertyTypeNames.Contains(propTypeName))
+                {
+                    sb.AppendLine("//{0}:{1} ignored. Type could not be extended in Swift"
+                        .Fmt(prop.Name.SafeToken().PropertyStyle(), propTypeName));
+                    continue;
+                }
 
-                    wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
-                    wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
+                wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
+                wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
-                    if (type.IsInterface())
-                    {
-                        sb.AppendLine("var {0}:{1}{2} {{ get set }}".Fmt(
-                            prop.Name.SafeToken().PropertyStyle(), propTypeName, optional));
-                    }
-                    else
-                    {
-                        sb.AppendLine("public var {0}:{1}{2}{3}".Fmt(
-                            prop.Name.SafeToken().PropertyStyle(), propTypeName, optional, defaultValue));
-                    }
+                if (type.IsInterface())
+                {
+                    sb.AppendLine("var {0}:{1}{2} {{ get set }}".Fmt(
+                        prop.Name.SafeToken().PropertyStyle(), propTypeName, optional));
+                }
+                else
+                {
+                    sb.AppendLine("public var {0}:{1}{2}{3}".Fmt(
+                        prop.Name.SafeToken().PropertyStyle(), propTypeName, optional, defaultValue));
                 }
             }
 

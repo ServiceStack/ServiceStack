@@ -39,7 +39,6 @@ namespace ServiceStack.NativeTypes
                 AddResponseStatus = req.AddResponseStatus ?? defaults.AddResponseStatus,
                 AddServiceStackTypes = req.AddServiceStackTypes ?? defaults.AddServiceStackTypes,
                 AddModelExtensions = req.AddModelExtensions ?? defaults.AddModelExtensions,
-                FlattenAbstractTypes = req.FlattenAbstractTypes ?? defaults.FlattenAbstractTypes,
                 MakePropertiesOptional = req.MakePropertiesOptional ?? defaults.MakePropertiesOptional,
                 AddDefaultXmlNamespace = req.AddDefaultXmlNamespace ?? defaults.AddDefaultXmlNamespace,
                 DefaultNamespaces = req.DefaultNamespaces ?? defaults.DefaultNamespaces,
