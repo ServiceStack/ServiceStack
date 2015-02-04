@@ -31,6 +31,11 @@ namespace ServiceStack.Caching
 
 			/// <summary>UTC time at which CacheEntry expires.</summary>
 			internal DateTime? ExpiresAt { get; set; }
+
+		    internal bool HasExpired
+		    {
+                get { return ExpiresAt != null && ExpiresAt < DateTime.UtcNow; }
+		    }
 			
 			internal object Value
 			{
@@ -155,7 +160,7 @@ namespace ServiceStack.Caching
 			CacheEntry cacheEntry;
 			if (this.memory.TryGetValue(key, out cacheEntry))
 			{
-				if (cacheEntry.ExpiresAt < DateTime.UtcNow)
+                if (cacheEntry.HasExpired)
 				{
 					this.memory.TryRemove(key, out cacheEntry);
 					return null;
@@ -313,22 +318,57 @@ namespace ServiceStack.Caching
 		{
 			var regex = new Regex(pattern);
 			var enumerator = this.memory.GetEnumerator();
+		    var keysToRemove = new List<string>();
 			try
 			{
 				while (enumerator.MoveNext())
 				{
 					var current = enumerator.Current;
-					if (regex.IsMatch(current.Key))
+					if (regex.IsMatch(current.Key) || current.Value.HasExpired)
 					{
-						this.Remove(current.Key);
+                        keysToRemove.Add(current.Key);
 					}
 				}
+                RemoveAll(keysToRemove);
 			}
 			catch (Exception ex)
 			{
 				Log.Error(string.Format("Error trying to remove items from cache with this {0} pattern", pattern), ex);
 			}
 		}
+
+        public List<string> GetKeysByPattern(string pattern)
+        {
+            var regex = new Regex(pattern);
+            var enumerator = this.memory.GetEnumerator();
+            var keys = new List<string>();
+            var expiredKeys = new List<string>();
+            try
+            {
+                while (enumerator.MoveNext())
+                {
+                    var current = enumerator.Current;
+                    if (!regex.IsMatch(current.Key))
+                        continue;
+
+                    if (current.Value.HasExpired)
+                    {
+                        expiredKeys.Add(current.Key);
+                    }
+                    else
+                    {
+                        keys.Add(current.Key);
+                    }
+                }
+
+                RemoveAll(expiredKeys);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(string.Format("Error trying to remove items from cache with this {0} pattern", pattern), ex);
+            }
+            return keys;
+        }
 
 	    public TimeSpan? GetTimeToLive(string key)
 	    {
