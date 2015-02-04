@@ -15,7 +15,7 @@ namespace ServiceStack.Caching.Azure
         public AzureCacheClient(string cacheName = null)
         {
             CacheFactory = new DataCacheFactory();
-            if(string.IsNullOrEmpty(cacheName))
+            if (string.IsNullOrEmpty(cacheName))
                 DataCache = CacheFactory.GetDefaultCache();
             else
                 DataCache = CacheFactory.GetCache(cacheName);
@@ -61,11 +61,11 @@ namespace ServiceStack.Caching.Azure
         /// <param name="checkLastVersion"> The check last version</param>
         /// <returns>True; if it succeeded</returns>        
         private bool CacheSet(string key, object value, DateTime expiresAt, DataCacheItemVersion checkLastVersion = null)
-        {            
+        {
             if (checkLastVersion != null)
             {
-                object entry = DataCache.GetIfNewer(key, ref checkLastVersion);                
-                if(entry != null)
+                object entry = DataCache.GetIfNewer(key, ref checkLastVersion);
+                if (entry != null)
                 {
                     //update value and version
                     DataCache.Put(key, value, checkLastVersion, expiresAt.Subtract(DateTime.Now));
@@ -87,8 +87,8 @@ namespace ServiceStack.Caching.Azure
         }
 
         private bool CacheReplace(string key, object value, DateTime expiresAt)
-        {            
-            return !CacheSet(key, value, expiresAt);;
+        {
+            return !CacheSet(key, value, expiresAt); ;
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace ServiceStack.Caching.Azure
         {
             if (!FlushOnDispose) return;
 
-            FlushAll();            
+            FlushAll();
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace ServiceStack.Caching.Azure
         /// </returns>
         public bool Remove(string key)
         {
-            return DataCache.Remove(key); 
+            return DataCache.Remove(key);
         }
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace ServiceStack.Caching.Azure
                 {
                     Remove(key);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Log.Error(string.Format("Error trying to remove {0} from azure cache", key), ex);
                 }
@@ -141,7 +141,7 @@ namespace ServiceStack.Caching.Azure
 
         public object Get(string key, out DataCacheItemVersion version)
         {
-            return DataCache.Get(key, out version);            
+            return DataCache.Get(key, out version);
         }
 
         /// <summary>
@@ -172,13 +172,13 @@ namespace ServiceStack.Caching.Azure
         /// <remarks>The item must be inserted into the cache before it can be changed. The item must be inserted as a <see cref="T:System.String"/>. The operation only works with <see cref="System.UInt32"/> values, so -1 always indicates that the item was not found.</remarks>
         public long Increment(string key, uint amount)
         {
-            return UpdateCounter(key, (int) amount);
+            return UpdateCounter(key, (int)amount);
         }
 
         private long UpdateCounter(string key, int value)
         {
             long longVal;
-            if(Int64.TryParse(Get(key).ToString(), out longVal))
+            if (Int64.TryParse(Get(key).ToString(), out longVal))
             {
                 longVal += value;
                 CacheSet(key, longVal);
