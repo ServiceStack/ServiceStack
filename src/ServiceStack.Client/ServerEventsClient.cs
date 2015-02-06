@@ -389,14 +389,16 @@ namespace ServiceStack
                     {
                         if (text == "\n")
                         {
-                            ProcessEventMessage(currentMsg);
+                            if (currentMsg != null) 
+                                ProcessEventMessage(currentMsg);
                             currentMsg = null;
                             text = "";
                             break;
                         }
 
                         var line = text.Substring(0, pos);
-                        ProcessLine(line);
+                        if (!string.IsNullOrWhiteSpace(line)) 
+                            ProcessLine(line);
                         if (text.Length > pos + 1)
                             text = text.Substring(pos + 1);
                     }

@@ -149,6 +149,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public bool UseRedisServerEvents { get; set; }
         public bool LimitToAuthenticatedUsers { get; set; }
+        public Action<Web.IResponse, string> OnPublish { get; set; }
 
         public override void Configure(Container container)
         {
@@ -156,6 +157,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 HeartbeatInterval = TimeSpan.FromMilliseconds(200),
                 LimitToAuthenticatedUsers = LimitToAuthenticatedUsers,
+                OnPublish = OnPublish
             });
 
             if (UseRedisServerEvents)
@@ -183,6 +185,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public override bool TryAuthenticate(IServiceBase authService, string userName, string password)
         {
             return userName == "user" && password == "pass";
+        }
+    }
+
+
+    [TestFixture]
+    public class MemoryServerEventsWithNewlineOnPublishTests : ServerEventsTests
+    {
+        protected override ServiceStackHost CreateAppHost()
+        {
+            return new ServerEventsAppHost()
+            {
+                 
+                OnPublish = (res, msg) =>
+                {
+                    res.OutputStream.Write("\n\n\n\n\n\n\n\n\n\n");
+                }
+            }
+                .Init()
+                .Start(Config.AbsoluteBaseUri);
         }
     }
 
