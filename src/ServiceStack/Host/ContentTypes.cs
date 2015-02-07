@@ -166,7 +166,6 @@ namespace ServiceStack.Host
             {
                 using (var ms = MemoryStreamFactory.GetStream())
                 {
-
                     var httpRes = new HttpResponseStreamWrapper(ms) {
                         KeepOpen = true, //Don't let view engines close the OutputStream
                     };
@@ -174,8 +173,6 @@ namespace ServiceStack.Host
 
                     var bytes = ms.ToArray();
                     var result = bytes.FromUtf8Bytes();
-
-                    httpRes.ForceClose(); //Manually close the OutputStream
 
                     return result;
                 }

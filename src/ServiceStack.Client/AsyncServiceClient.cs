@@ -343,7 +343,8 @@ namespace ServiceStack
                         }
                         else
                         {
-                            using (var reader = requestState.BytesData)
+                            var reader = requestState.BytesData;
+                            try
                             {
                                 if (typeof(T) == typeof(string))
                                 {
@@ -360,6 +361,11 @@ namespace ServiceStack
                                 {
                                     response = (T)this.StreamDeserializer(typeof(T), reader);
                                 }
+                            }
+                            finally
+                            {
+                                if (reader.CanRead)
+                                    reader.Dispose(); // Not yet disposed, but could've been.
                             }
                         }
 

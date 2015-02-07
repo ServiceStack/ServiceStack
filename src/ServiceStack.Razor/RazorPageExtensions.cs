@@ -9,8 +9,8 @@ namespace ServiceStack.Razor
          public static string RenderSectionToHtml(this IRazorView razorView, string sectionName)
          {
              using (var ms = MemoryStreamFactory.GetStream())
-             using (var writer = new StreamWriter(ms))
              {
+                 var writer = new StreamWriter(ms);
                  razorView.RenderChildSection(sectionName, writer);
                  writer.Flush();
                  return ms.ToArray().FromUtf8Bytes();

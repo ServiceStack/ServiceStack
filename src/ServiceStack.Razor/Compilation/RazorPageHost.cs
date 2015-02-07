@@ -168,8 +168,8 @@ namespace ServiceStack.Razor.Compilation
                 try
                 {
                     using (var stream = File.OpenRead())
-                    using (var reader = new StreamReader(stream, Encoding.Default, detectEncodingFromByteOrderMarks: true))
                     {
+                        var reader = new StreamReader(stream, Encoding.Default, detectEncodingFromByteOrderMarks: true);
                         results = engine.GenerateCode(reader, className: DefaultClassName, rootNamespace: DefaultNamespace, sourceFileName: this.File.RealPath);
                     }
                 }

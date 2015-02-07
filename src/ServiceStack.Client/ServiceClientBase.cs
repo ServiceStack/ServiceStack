@@ -615,10 +615,13 @@ namespace ServiceStack
                     {
                         var bytes = errorResponse.GetResponseStream().ReadFully();
                         using (__requestAccess())
-                        using (var stream = MemoryStreamFactory.GetStream(bytes))
                         {
+                            var stream = MemoryStreamFactory.GetStream(bytes);
                             serviceEx.ResponseBody = bytes.FromUtf8Bytes();
                             serviceEx.ResponseDto = DeserializeFromStream<TResponse>(stream);
+
+                            if (stream.CanRead)
+                                stream.Dispose(); //alt ms throws when you dispose twice
                         }
                     }
                     else

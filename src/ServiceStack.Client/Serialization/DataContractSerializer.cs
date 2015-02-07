@@ -45,28 +45,21 @@ XmlDictionaryReaderQuotas quotas = null
                 {
                     var serializer = new System.Runtime.Serialization.DataContractSerializer(from.GetType());
 #if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
-                    using (var xw = new XmlTextWriter(ms, Encoding)) 
+                    var xw = new XmlTextWriter(ms, Encoding); 
+                    if (indentXml)
                     {
-                        if (indentXml)
-                        {
-                            xw.Formatting = Formatting.Indented;	
-                        }
-
-                        serializer.WriteObject(xw, from);
-                        xw.Flush();
-#else
-                        serializer.WriteObject(ms, from);
-#endif
-
-                        ms.Seek(0, SeekOrigin.Begin);
-                        using (var reader = new StreamReader(ms))
-                        {
-                            return reader.ReadToEnd();
-                        }
-
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
+                        xw.Formatting = Formatting.Indented;	
                     }
+
+                    serializer.WriteObject(xw, from);
+                    xw.Flush();
+#else
+                    serializer.WriteObject(ms, from);
 #endif
+
+                    ms.Seek(0, SeekOrigin.Begin);
+                    var reader = new StreamReader(ms);
+                    return reader.ReadToEnd();
                 }
             }
             catch (Exception ex)
@@ -109,7 +102,7 @@ XmlDictionaryReaderQuotas quotas = null
 
         public byte[] Compress<XmlDto>(XmlDto from)
         {
-            using (var ms = MemoryStreamFactory.GetStream())
+            using (var ms = new MemoryStream()) //only use MS with .NET's incompat Compression classes
             {
                 CompressToStream(from, ms);
                 
