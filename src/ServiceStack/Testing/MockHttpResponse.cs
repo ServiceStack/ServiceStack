@@ -14,7 +14,7 @@ namespace ServiceStack.Testing
         public MockHttpResponse()
         {
             this.Headers = PclExportClient.Instance.NewNameValueCollection();
-            this.OutputStream = MemoryStreamFactory.GetStream();
+            this.OutputStream = new MemoryStream();
             this.TextWritten = new StringBuilder();
             this.Cookies = new Cookies(this);
             this.Items = new Dictionary<string, object>();

@@ -71,7 +71,7 @@ namespace ServiceStack.Host.HttpListener
             set
             {
                 BufferedStream = value
-                    ? BufferedStream ?? MemoryStreamFactory.GetStream()
+                    ? BufferedStream ?? new MemoryStream()
                     : null;
             }
         }

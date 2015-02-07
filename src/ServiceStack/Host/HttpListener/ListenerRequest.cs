@@ -78,10 +78,8 @@ namespace ServiceStack.Host.HttpListener
                 return BufferedStream.ToArray().FromUtf8Bytes();
             }
 
-            using (var reader = new StreamReader(InputStream))
-            {
-                return reader.ReadToEnd();
-            }
+            var reader = new StreamReader(InputStream);
+            return reader.ReadToEnd();
         }
 
         public string RawUrl
@@ -310,7 +308,7 @@ namespace ServiceStack.Host.HttpListener
             set
             {
                 BufferedStream = value
-                    ? BufferedStream ?? MemoryStreamFactory.GetStream(request.InputStream.ReadFully())
+                    ? BufferedStream ?? new MemoryStream(request.InputStream.ReadFully())
                     : null;
             }
         }

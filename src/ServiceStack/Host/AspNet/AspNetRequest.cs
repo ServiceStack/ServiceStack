@@ -346,7 +346,7 @@ namespace ServiceStack.Host.AspNet
             set
             {
                 BufferedStream = value
-                    ? BufferedStream ?? MemoryStreamFactory.GetStream(request.InputStream.ReadFully())
+                    ? BufferedStream ?? new MemoryStream(request.InputStream.ReadFully())
                     : null;
             }
         }

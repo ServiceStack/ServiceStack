@@ -42,7 +42,7 @@ namespace ServiceStack.Host
 
         public Stream OutputStream
         {
-            get { return ms ?? (ms = MemoryStreamFactory.GetStream()); }
+            get { return ms ?? (ms = new MemoryStream()); }
         }
 
         public object Dto { get; set; }
@@ -58,6 +58,8 @@ namespace ServiceStack.Host
         public void Close()
         {
             IsClosed = true;
+            if (ms != null && ms.CanWrite)
+                ms.Dispose();
         }
 
         public void End()

@@ -81,7 +81,7 @@ namespace ServiceStack.Host.AspNet
                     response.BufferOutput = false;
 
                 BufferedStream = value
-                    ? BufferedStream ?? MemoryStreamFactory.GetStream()
+                    ? BufferedStream ?? new MemoryStream()
                     : null;
             }
         }
