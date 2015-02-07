@@ -7,6 +7,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 #if NETFX_CORE
@@ -415,7 +416,7 @@ namespace ServiceStack
                         }
                         else //Android
                         {
-                            using (var ms = new MemoryStream(bytes))
+                            using (var ms = MemoryStreamFactory.GetStream(bytes))
                             {
                                 serviceEx.ResponseDto = this.StreamDeserializer(typeof(TResponse), ms);
                             }

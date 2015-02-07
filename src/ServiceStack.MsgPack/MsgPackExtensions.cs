@@ -3,6 +3,7 @@
 
 
 using System.IO;
+using ServiceStack.Text;
 
 namespace ServiceStack.MsgPack
 {
@@ -10,7 +11,7 @@ namespace ServiceStack.MsgPack
     {
         public static byte[] ToMsgPack<T>(this T obj)
         {
-            using (var ms = new MemoryStream())
+            using (var ms = MemoryStreamFactory.GetStream())
             {
                 MsgPackFormat.Serialize(obj, ms);
                 var bytes = ms.ToArray();
@@ -20,7 +21,7 @@ namespace ServiceStack.MsgPack
 
         public static T FromMsgPack<T>(this byte[] bytes)
         {
-            using (var ms = new MemoryStream(bytes))
+            using (var ms = MemoryStreamFactory.GetStream(bytes))
             {
                 var obj = (T)MsgPackFormat.Deserialize(typeof(T), ms);
                 return obj;

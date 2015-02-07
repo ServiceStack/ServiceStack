@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Web;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.AspNet
@@ -80,7 +81,7 @@ namespace ServiceStack.Host.AspNet
                     response.BufferOutput = false;
 
                 BufferedStream = value
-                    ? BufferedStream ?? new MemoryStream()
+                    ? BufferedStream ?? MemoryStreamFactory.GetStream()
                     : null;
             }
         }
@@ -96,7 +97,7 @@ namespace ServiceStack.Host.AspNet
             } catch {}
 
             response.OutputStream.Write(bytes, 0, bytes.Length);
-            BufferedStream = new MemoryStream();
+            BufferedStream = MemoryStreamFactory.GetStream();
         }
 
         public object Dto { get; set; }

@@ -424,7 +424,7 @@ namespace ServiceStack
         protected T Deserialize<T>(string text)
         {
             using (__requestAccess())
-            using (var ms = new MemoryStream(text.ToUtf8Bytes()))
+            using (var ms = MemoryStreamFactory.GetStream(text.ToUtf8Bytes()))
             {
                 return DeserializeFromStream<T>(ms);
             }
@@ -615,7 +615,7 @@ namespace ServiceStack
                     {
                         var bytes = errorResponse.GetResponseStream().ReadFully();
                         using (__requestAccess())
-                        using (var stream = new MemoryStream(bytes))
+                        using (var stream = MemoryStreamFactory.GetStream(bytes))
                         {
                             serviceEx.ResponseBody = bytes.FromUtf8Bytes();
                             serviceEx.ResponseDto = DeserializeFromStream<TResponse>(stream);

@@ -99,7 +99,7 @@ namespace ServiceStack.Host
             if (this.ContentTypeSerializers.TryGetValue(contentType, out responseStreamWriter) ||
                 this.ContentTypeSerializers.TryGetValue(ContentFormat.GetRealContentType(contentType), out responseStreamWriter))
             {
-                using (var ms = new MemoryStream())
+                using (var ms = MemoryStreamFactory.GetStream())
                 {
                     responseStreamWriter(req, response, ms);
                     ms.Position = 0;
@@ -111,7 +111,7 @@ namespace ServiceStack.Host
             if (this.ContentTypeResponseSerializers.TryGetValue(contentType, out responseWriter) ||
                 this.ContentTypeResponseSerializers.TryGetValue(ContentFormat.GetRealContentType(contentType), out responseWriter))
             {
-                using (var ms = new MemoryStream())
+                using (var ms = MemoryStreamFactory.GetStream())
                 {
                     var httpRes = new HttpResponseStreamWrapper(ms);
                     responseWriter(req, response, httpRes);
@@ -150,7 +150,7 @@ namespace ServiceStack.Host
             if (this.ContentTypeSerializers.TryGetValue(contentType, out responseStreamWriter) ||
                 this.ContentTypeSerializers.TryGetValue(ContentFormat.GetRealContentType(contentType), out responseStreamWriter))
             {
-                using (var ms = new MemoryStream())
+                using (var ms = MemoryStreamFactory.GetStream())
                 {
                     responseStreamWriter(req, response, ms);
 
@@ -164,7 +164,7 @@ namespace ServiceStack.Host
             if (this.ContentTypeResponseSerializers.TryGetValue(contentType, out responseWriter) ||
                 this.ContentTypeResponseSerializers.TryGetValue(ContentFormat.GetRealContentType(contentType), out responseWriter))
             {
-                using (var ms = new MemoryStream())
+                using (var ms = MemoryStreamFactory.GetStream())
                 {
 
                     var httpRes = new HttpResponseStreamWrapper(ms) {

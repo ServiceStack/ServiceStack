@@ -33,7 +33,7 @@ namespace ServiceStack.Serialization
             var type = obj.GetType();
             try
             {
-                using (var ms = new MemoryStream())
+                using (var ms = MemoryStreamFactory.GetStream())
                 {
                     var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(type);
                     serializer.WriteObject(ms, obj);

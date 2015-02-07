@@ -8,6 +8,7 @@ using System.Net;
 using System.Web;
 using Funq;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.AspNet
@@ -345,7 +346,7 @@ namespace ServiceStack.Host.AspNet
             set
             {
                 BufferedStream = value
-                    ? BufferedStream ?? new MemoryStream(request.InputStream.ReadFully())
+                    ? BufferedStream ?? MemoryStreamFactory.GetStream(request.InputStream.ReadFully())
                     : null;
             }
         }

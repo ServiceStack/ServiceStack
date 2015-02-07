@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
@@ -41,7 +42,7 @@ namespace ServiceStack.Host
 
         public Stream OutputStream
         {
-            get { return ms ?? (ms = new MemoryStream()); }
+            get { return ms ?? (ms = MemoryStreamFactory.GetStream()); }
         }
 
         public object Dto { get; set; }

@@ -92,7 +92,7 @@ namespace ServiceStack
             : this(null, contentType, HttpStatusCode.OK)
         {
             this.AllowsPartialResponse = true;
-            this.ResponseStream = new MemoryStream(responseBytes);
+            this.ResponseStream = MemoryStreamFactory.GetStream(responseBytes);
         }
 
         public string ResponseText { get; private set; }
@@ -326,7 +326,7 @@ namespace ServiceStack
             }
             else if (ResponseText != null)
             {
-                using (var ms = new MemoryStream(Encoding.UTF8.GetBytes(ResponseText)))
+                using (var ms = MemoryStreamFactory.GetStream(Encoding.UTF8.GetBytes(ResponseText)))
                 {
                     ms.WritePartialTo(outputStream, rangeStart, rangeEnd);
                 }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.HttpListener
@@ -70,7 +71,7 @@ namespace ServiceStack.Host.HttpListener
             set
             {
                 BufferedStream = value
-                    ? BufferedStream ?? new MemoryStream()
+                    ? BufferedStream ?? MemoryStreamFactory.GetStream()
                     : null;
             }
         }
@@ -86,7 +87,7 @@ namespace ServiceStack.Host.HttpListener
             } catch {}
 
             response.OutputStream.Write(bytes, 0, bytes.Length);
-            BufferedStream = new MemoryStream();
+            BufferedStream = MemoryStreamFactory.GetStream();
         }
 
         public object Dto { get; set; }

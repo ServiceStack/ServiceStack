@@ -2,6 +2,7 @@
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System.IO;
+using ServiceStack.Text;
 
 namespace ServiceStack.ProtoBuf
 {
@@ -9,7 +10,7 @@ namespace ServiceStack.ProtoBuf
     {
         public static byte[] ToProtoBuf<T>(this T obj)
         {
-            using (var ms = new MemoryStream())
+            using (var ms = MemoryStreamFactory.GetStream())
             {
                 ProtoBufFormat.Serialize(obj, ms);
                 var bytes = ms.ToArray();
@@ -19,7 +20,7 @@ namespace ServiceStack.ProtoBuf
 
         public static T FromProtoBuf<T>(this byte[] bytes)
         {
-            using (var ms = new MemoryStream(bytes))
+            using (var ms = MemoryStreamFactory.GetStream(bytes))
             {
                 var obj = (T)ProtoBufFormat.Deserialize(typeof(T), ms);
                 return obj;

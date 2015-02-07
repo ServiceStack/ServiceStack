@@ -6,6 +6,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -17,7 +18,7 @@ namespace ServiceStack
         {
             BufferRead = new byte[bufferSize];
             TextData = new StringBuilder();
-            BytesData = new MemoryStream(bufferSize);
+            BytesData = MemoryStreamFactory.GetStream(bufferSize);
             WebRequest = null;
             ResponseStream = null;
         }

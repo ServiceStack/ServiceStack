@@ -41,7 +41,7 @@ XmlDictionaryReaderQuotas quotas = null
             try
             {
                 if (Equals(@from, default(XmlDto))) return null;
-                using (var ms = new MemoryStream())
+                using (var ms = MemoryStreamFactory.GetStream())
                 {
                     var serializer = new System.Runtime.Serialization.DataContractSerializer(from.GetType());
 #if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
@@ -109,7 +109,7 @@ XmlDictionaryReaderQuotas quotas = null
 
         public byte[] Compress<XmlDto>(XmlDto from)
         {
-            using (var ms = new MemoryStream())
+            using (var ms = MemoryStreamFactory.GetStream())
             {
                 CompressToStream(from, ms);
                 

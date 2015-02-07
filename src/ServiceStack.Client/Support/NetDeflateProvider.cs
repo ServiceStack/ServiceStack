@@ -12,7 +12,7 @@ namespace ServiceStack.Support
         public byte[] Deflate(string text)
         {
             var buffer = Encoding.UTF8.GetBytes(text);
-            using(var ms = new MemoryStream())
+            using (var ms = MemoryStreamFactory.GetStream())
             using (var zipStream = new DeflateStream(ms, CompressionMode.Compress))
             {
                 zipStream.Write(buffer, 0, buffer.Length);
@@ -24,7 +24,7 @@ namespace ServiceStack.Support
 
         public string Inflate(byte[] gzBuffer)
         {
-            using (var compressedStream = new MemoryStream(gzBuffer))
+            using (var compressedStream = MemoryStreamFactory.GetStream(gzBuffer))
             using (var zipStream = new DeflateStream(compressedStream, CompressionMode.Decompress))
             {
                 var utf8Bytes = zipStream.ReadFully();

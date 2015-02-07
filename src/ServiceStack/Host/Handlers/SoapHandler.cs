@@ -218,7 +218,7 @@ namespace ServiceStack.Host.Handlers
 
         public static byte[] SerializeSoap11ToBytes(IRequest req, object response)
         {
-            using (var ms = new MemoryStream())
+            using (var ms = MemoryStreamFactory.GetStream())
             {
                 SerializeSoapToStream(req, response, MessageVersion.Soap11WSAddressingAugust2004, ms);
                 return ms.ToArray();
@@ -227,7 +227,7 @@ namespace ServiceStack.Host.Handlers
 
         public static byte[] SerializeSoap12ToBytes(IRequest req, object response)
         {
-            using (var ms = new MemoryStream())
+            using (var ms = MemoryStreamFactory.GetStream())
             {
                 SerializeSoapToStream(req, response, MessageVersion.Soap12WSAddressingAugust2004, ms);
                 return ms.ToArray();

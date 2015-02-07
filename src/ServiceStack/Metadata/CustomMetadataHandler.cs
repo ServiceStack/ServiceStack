@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using ServiceStack.Host;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 
 namespace ServiceStack.Metadata
 {
@@ -28,7 +29,7 @@ namespace ServiceStack.Metadata
             {
                 var requestObj = AutoMappingUtils.PopulateWith(Activator.CreateInstance(dtoType));
 
-                using (var ms = new MemoryStream())
+                using (var ms = MemoryStreamFactory.GetStream())
                 {
                     HostContext.ContentTypes.SerializeToStream(
                         new BasicRequest { ContentType = this.ContentType }, requestObj, ms);

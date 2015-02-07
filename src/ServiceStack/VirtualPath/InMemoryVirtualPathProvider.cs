@@ -197,7 +197,7 @@ namespace ServiceStack.VirtualPath
 
         public override Stream OpenRead()
         {
-            return new MemoryStream(ByteContents ?? (TextContents ?? "").ToUtf8Bytes());
+            return MemoryStreamFactory.GetStream(ByteContents ?? (TextContents ?? "").ToUtf8Bytes());
         }
     }
 }

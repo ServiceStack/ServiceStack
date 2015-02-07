@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using ServiceStack.Text;
 
 namespace ServiceStack.Html.AntiXsrf
 {
@@ -21,7 +22,7 @@ namespace ServiceStack.Html.AntiXsrf
         public AntiForgeryToken Deserialize(string serializedToken)
         {
             try {
-                using (MemoryStream stream = new MemoryStream(_cryptoSystem.Unprotect(serializedToken))) {
+                using (MemoryStream stream = MemoryStreamFactory.GetStream(_cryptoSystem.Unprotect(serializedToken))) {
                     using (BinaryReader reader = new BinaryReader(stream)) {
                         AntiForgeryToken token = DeserializeImpl(reader);
                         if (token != null) {
@@ -88,7 +89,7 @@ namespace ServiceStack.Html.AntiXsrf
 #if NET_4_0
             Contract.Assert(token != null);
 #endif
-            using (MemoryStream stream = new MemoryStream()) {
+            using (MemoryStream stream = MemoryStreamFactory.GetStream()) {
                 using (BinaryWriter writer = new BinaryWriter(stream)) {
                     writer.Write(TokenVersion);
                     writer.Write(token.SecurityToken.GetData());

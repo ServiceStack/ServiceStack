@@ -16,7 +16,7 @@ namespace ServiceStack.Serialization
         {
             try
             {
-                using (var ms = new MemoryStream())
+                using (var ms = MemoryStreamFactory.GetStream())
                 {
                     using (XmlWriter xw = new XmlTextWriter(ms, Encoding.UTF8))
                     {

@@ -38,6 +38,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Web;
+using ServiceStack.Text;
 
 namespace ServiceStack.Host.HttpListener
 {
@@ -74,7 +75,7 @@ namespace ServiceStack.Host.HttpListener
 
             //DB: 30/01/11 - Hack to get around non-seekable stream and received HTTP request
             //Not ending with \r\n?
-            var ms = new MemoryStream(32 * 1024);
+            var ms = MemoryStreamFactory.GetStream(32 * 1024);
             input.CopyTo(ms);
             input = ms;
             ms.WriteByte((byte)'\r');

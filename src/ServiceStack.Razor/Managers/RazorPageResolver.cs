@@ -178,7 +178,7 @@ namespace ServiceStack.Razor.Managers
 
         private Tuple<IRazorView, string> ExecuteRazorPageWithLayout(RazorPage razorPage, IRequest httpReq, IResponse httpRes, object model, IRazorView pageInstance, Func<string> layout)
         {
-            using (var ms = new MemoryStream())
+            using (var ms = MemoryStreamFactory.GetStream())
             {
                 using (var childWriter = new StreamWriter(ms, UTF8EncodingWithoutBom))
                 {

@@ -9,6 +9,7 @@ using System.Net;
 using System.Text;
 using System.Web;
 using Funq;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.HttpListener
@@ -309,7 +310,7 @@ namespace ServiceStack.Host.HttpListener
             set
             {
                 BufferedStream = value
-                    ? BufferedStream ?? new MemoryStream(request.InputStream.ReadFully())
+                    ? BufferedStream ?? MemoryStreamFactory.GetStream(request.InputStream.ReadFully())
                     : null;
             }
         }

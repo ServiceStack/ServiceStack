@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.IO;
+using ServiceStack.Text;
 
 namespace ServiceStack.Html.AntiXsrf
 {
@@ -124,7 +125,7 @@ namespace ServiceStack.Html.AntiXsrf
         // integer describing the encoded byte length of the string.
         public static byte[] ComputeSHA256(IList<string> parameters)
         {
-            using (MemoryStream ms = new MemoryStream()) {
+            using (MemoryStream ms = MemoryStreamFactory.GetStream()) {
                 using (BinaryWriter bw = new BinaryWriter(ms)) {
                     foreach (string parameter in parameters) {
                         bw.Write(parameter); // also writes the length as a prefix; unambiguous

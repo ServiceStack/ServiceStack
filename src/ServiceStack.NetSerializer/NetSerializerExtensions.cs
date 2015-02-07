@@ -2,6 +2,7 @@
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System.IO;
+using ServiceStack.Text;
 
 namespace ServiceStack.NetSerializer
 {
@@ -9,7 +10,7 @@ namespace ServiceStack.NetSerializer
     {
         public static byte[] ToNetSerializer<T>(this T obj)
         {
-            using (var ms = new MemoryStream())
+            using (var ms = MemoryStreamFactory.GetStream())
             {
                 NetSerializerFormat.Serialize(obj, ms);
                 var bytes = ms.ToArray();
@@ -19,7 +20,7 @@ namespace ServiceStack.NetSerializer
 
         public static T FromNetSerializer<T>(this byte[] bytes)
         {
-            using (var ms = new MemoryStream(bytes))
+            using (var ms = MemoryStreamFactory.GetStream(bytes))
             {
                 var obj = (T)NetSerializerFormat.Deserialize(typeof(T), ms);
                 return obj;

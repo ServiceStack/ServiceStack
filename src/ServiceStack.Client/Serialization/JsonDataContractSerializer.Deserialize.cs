@@ -19,7 +19,7 @@ namespace ServiceStack.Serialization
 
             try
             {
-                using (var ms = new MemoryStream())
+                using (var ms = MemoryStreamFactory.GetStream())
                 {
                     var bytes = Encoding.UTF8.GetBytes(json);
                     ms.Write(bytes, 0, bytes.Length);

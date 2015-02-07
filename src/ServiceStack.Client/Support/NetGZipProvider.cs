@@ -3,6 +3,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 using ServiceStack.Caching;
+using ServiceStack.Text;
 
 namespace ServiceStack.Support
 {
@@ -11,7 +12,7 @@ namespace ServiceStack.Support
         public byte[] GZip(string text)
         {
             var buffer = Encoding.UTF8.GetBytes(text);
-            using (var ms = new MemoryStream())
+            using (var ms = MemoryStreamFactory.GetStream())
             using (var zipStream = new GZipStream(ms, CompressionMode.Compress))
             {
                 zipStream.Write(buffer, 0, buffer.Length);
@@ -23,7 +24,7 @@ namespace ServiceStack.Support
         
         public string GUnzip(byte[] gzBuffer)
         {
-            using (var compressedStream = new MemoryStream(gzBuffer))
+            using (var compressedStream = MemoryStreamFactory.GetStream(gzBuffer))
             using (var zipStream = new GZipStream(compressedStream, CompressionMode.Decompress))
             {
                 var utf8Bytes = zipStream.ReadFully();
