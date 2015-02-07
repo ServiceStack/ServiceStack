@@ -12,7 +12,8 @@ namespace ServiceStack.Support
         public byte[] GZip(string text)
         {
             var buffer = Encoding.UTF8.GetBytes(text);
-            using (var ms = MemoryStreamFactory.GetStream())
+            // Don't risk using non-MemoryStream's in incompatible Deflate/GZip classes
+            using (var ms = new MemoryStream())
             using (var zipStream = new GZipStream(ms, CompressionMode.Compress))
             {
                 zipStream.Write(buffer, 0, buffer.Length);
@@ -24,7 +25,7 @@ namespace ServiceStack.Support
         
         public string GUnzip(byte[] gzBuffer)
         {
-            using (var compressedStream = MemoryStreamFactory.GetStream(gzBuffer))
+            using (var compressedStream = new MemoryStream(gzBuffer))
             using (var zipStream = new GZipStream(compressedStream, CompressionMode.Decompress))
             {
                 var utf8Bytes = zipStream.ReadFully();
